@@ -34,7 +34,8 @@ describe("product UI primitives", () => {
     );
 
     expect(html).toContain("appearance-none");
-    expect(html).toContain("pe-10");
+    expect(html).toContain("pe-12");
+    expect(html).toContain("z-10");
     expect(html).toContain("pointer-events-none");
     expect(html).toContain("aria-hidden=\"true\"");
   });
