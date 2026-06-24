@@ -26,6 +26,8 @@ export const metadata: Metadata = {
 
 type SearchParams = Record<string, string | string[] | undefined>;
 type CalendarAppointment = Awaited<ReturnType<typeof listAdminCalendarAppointments>>["items"][number];
+type CalendarCaseOption = Awaited<ReturnType<typeof listCalendarCaseOptions>>[number];
+type CalendarLawyerOption = Awaited<ReturnType<typeof getAdminCaseFilterOptions>>["lawyers"][number];
 
 const appointmentStatusOptions = ["SCHEDULED", "RESCHEDULED", "COMPLETED", "CANCELLED", "NO_SHOW"];
 const appointmentModeOptions = ["COURT", "OFFICE", "ONLINE", "PHONE"];
@@ -106,7 +108,7 @@ export default async function AdminCalendarPage({ searchParams = {} }: { searchP
   }
 
   const requestedCaseId = typeof query.caseId === "string" ? query.caseId : undefined;
-  const defaultCaseId = caseOptions.some((legalCase) => legalCase.id === requestedCaseId) ? requestedCaseId : undefined;
+  const defaultCaseId = caseOptions.some((legalCase: CalendarCaseOption) => legalCase.id === requestedCaseId) ? requestedCaseId : undefined;
   const groupedAppointments = groupAppointmentsByDay(result.items);
 
   return (
@@ -142,7 +144,7 @@ export default async function AdminCalendarPage({ searchParams = {} }: { searchP
               {filterOptions.lawyers.length ? (
                 <Select className="min-w-44" defaultValue={result.filters.lawyerId ?? ""} label="المحامي" name="lawyerId">
                   <option value="">كل المحامين</option>
-                  {filterOptions.lawyers.map((lawyer) => (
+                  {filterOptions.lawyers.map((lawyer: CalendarLawyerOption) => (
                     <option key={lawyer.id} value={lawyer.id}>
                       {lawyer.name}
                     </option>
