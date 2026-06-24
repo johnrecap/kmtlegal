@@ -68,7 +68,7 @@ Status: implemented as a frontend foundation.
 ## States Covered
 
 - Button: default, hover, active, disabled, loading.
-- Field controls: label, hint, error, disabled, focus.
+- Field controls: label, hint, error, disabled, focus, and RTL-safe select arrow spacing.
 - Badge: neutral, active, pending, closed, danger.
 - DataTable: populated and empty.
 - StateBlock: empty, loading, error, permission.

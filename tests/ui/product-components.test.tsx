@@ -2,7 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { DashboardShell } from "@/components/layout";
-import { Badge, Button, DataTable, StateBlock, TextInput } from "@/components/ui";
+import { Badge, Button, DataTable, Select, StateBlock, TextInput } from "@/components/ui";
 
 describe("product UI primitives", () => {
   it("renders button states and accessible text", () => {
@@ -24,6 +24,19 @@ describe("product UI primitives", () => {
     expect(html).toContain("اسم العميل");
     expect(html).toContain("aria-invalid");
     expect(html).toContain("هذا الحقل مطلوب");
+  });
+
+  it("renders selects with reserved arrow spacing for RTL fields", () => {
+    const html = renderToStaticMarkup(
+      <Select defaultValue="client" label="الدور" name="roleId">
+        <option value="client">Client</option>
+      </Select>
+    );
+
+    expect(html).toContain("appearance-none");
+    expect(html).toContain("pe-10");
+    expect(html).toContain("pointer-events-none");
+    expect(html).toContain("aria-hidden=\"true\"");
   });
 
   it("renders semantic status badges", () => {

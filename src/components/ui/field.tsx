@@ -36,6 +36,8 @@ function FieldShell({ label, htmlFor, hint, error, children }: FieldShellProps) 
 const controlClasses =
   "w-full rounded border border-slate-300 bg-white px-3 py-2.5 text-base text-kmt-ink placeholder:text-slate-400 shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500";
 
+const selectClasses = cn(controlClasses, "appearance-none bg-none pe-10");
+
 export type TextInputProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
   hint?: ReactNode;
@@ -88,15 +90,22 @@ export function Select({ id, label, hint, error, className, children, ...props }
   const htmlFor = id || props.name || label;
   return (
     <FieldShell htmlFor={htmlFor} label={label} hint={hint} error={error}>
-      <select
-        id={htmlFor}
-        className={cn(controlClasses, error ? "border-kmt-danger focus:border-kmt-danger" : undefined, className)}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={[hint ? `${htmlFor}-hint` : "", error ? `${htmlFor}-error` : ""].filter(Boolean).join(" ") || undefined}
-        {...props}
-      >
-        {children}
-      </select>
+      <div className="relative">
+        <select
+          id={htmlFor}
+          className={cn(selectClasses, error ? "border-kmt-danger focus:border-kmt-danger" : undefined, className)}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={[hint ? `${htmlFor}-hint` : "", error ? `${htmlFor}-error` : ""].filter(Boolean).join(" ") || undefined}
+          {...props}
+        >
+          {children}
+        </select>
+        <span className="pointer-events-none absolute inset-y-0 end-3 flex items-center text-kmt-muted" aria-hidden="true">
+          <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none">
+            <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+          </svg>
+        </span>
+      </div>
     </FieldShell>
   );
 }
