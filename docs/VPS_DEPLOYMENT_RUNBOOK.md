@@ -85,11 +85,12 @@ On the VPS release directory:
 
 ```bash
 npm ci
-npm run db:generate
 npm run build
 npm run db:migrate
 sudo systemctl restart kmt-legal
 ```
+
+`npm run build` runs `prisma generate` first through the `prebuild` script. In production, set `DATABASE_URL` before building so Prisma can generate the client against the intended PostgreSQL datasource.
 
 Use `npm run db:migrate` for production migrations. `npm run db:migrate:dev` is for local development only.
 

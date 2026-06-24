@@ -138,6 +138,8 @@ npm run security:secrets
 npm run test:e2e
 ```
 
+`npm run build` automatically runs `prisma generate` first through `prebuild`. Production builds therefore require `DATABASE_URL` to be present before running the build command.
+
 `qa:db` requires `DATABASE_URL` and runs migrate + seed + seed + DB-backed E2E. `qa:release` adds DB gate, smoke E2E, dependency audit, and secret scan. `qa:local:release` is only a local release-candidate check and does not close production readiness.
 
 ## Demo Accounts
