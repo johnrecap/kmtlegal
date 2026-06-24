@@ -1,0 +1,854 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RoleStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum UserStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum SessionStatus {
+  PENDING_2FA
+  ACTIVE
+  REVOKED
+  EXPIRED
+}
+
+enum ClientStatus {
+  LEAD
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+  DELETED
+}
+
+enum ConsultationStatus {
+  NEW
+  REVIEWING
+  SCHEDULED
+  REJECTED
+  CONVERTED
+}
+
+enum Urgency {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum ConsultationMode {
+  PHONE
+  ONLINE
+  OFFICE
+}
+
+enum AppointmentType {
+  CONSULTATION
+  COURT_SESSION
+  INTERNAL_MEETING
+  CALL
+  ONLINE_MEETING
+}
+
+enum AppointmentMode {
+  OFFICE
+  PHONE
+  ONLINE
+  COURT
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+  NO_SHOW
+}
+
+enum CaseStatus {
+  NEW
+  UNDER_REVIEW
+  ACTIVE
+  AWAITING_JUDGMENT
+  COMPLETED
+  CLOSED
+  ARCHIVED
+}
+
+enum CasePriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum PartyType {
+  CLIENT
+  OPPOSING_PARTY
+  WITNESS
+  EXPERT
+  OTHER
+}
+
+enum DocumentStatus {
+  NEW
+  UNDER_REVIEW
+  NEEDS_CLARIFICATION
+  ACCEPTED
+  REJECTED
+  DELETED
+}
+
+enum DocumentVisibility {
+  CLIENT_VISIBLE
+  STAFF_ONLY
+  INTERNAL_ONLY
+}
+
+enum DocumentCategory {
+  CONTRACT
+  COURT_FILE
+  IDENTITY
+  EVIDENCE
+  PAYMENT
+  OTHER
+}
+
+enum TaskStatus {
+  NEW
+  IN_PROGRESS
+  REVIEW
+  COMPLETED
+  OVERDUE
+  ARCHIVED
+}
+
+enum TaskPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum PaymentStatus {
+  DRAFT
+  ISSUED
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum Currency {
+  EGP
+  USD
+  EUR
+  SAR
+  AED
+}
+
+enum TwoFactorRecoveryState {
+  PENDING_SETUP
+  ENABLED
+  RESET_REQUIRED
+  DISABLED_BY_ADMIN
+}
+
+enum OtpPurpose {
+  STAFF_2FA
+  PASSWORD_SECURITY
+}
+
+enum EmailStatus {
+  QUEUED
+  SENT
+  FAILED
+  SUPPRESSED
+}
+
+enum AiRunStatus {
+  STARTED
+  SUCCEEDED
+  SCHEMA_INVALID
+  PROVIDER_ERROR
+  TIMEOUT
+}
+
+enum ContentStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CaseStudyStatus {
+  DRAFT
+  LEGAL_REVIEW
+  APPROVED
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum SocialDraftStatus {
+  DRAFT
+  LEGAL_REVIEW
+  APPROVED
+  SCHEDULED
+  PUBLISHED
+  REJECTED
+  ARCHIVED
+}
+
+enum NotificationType {
+  SYSTEM
+  CASE
+  APPOINTMENT
+  DOCUMENT
+  PAYMENT
+  SECURITY
+}
+
+enum AnalyticsEventSource {
+  PUBLIC
+  PORTAL
+  ADMIN
+  SERVER
+}
+
+enum AnalyticsEventOutcome {
+  INFO
+  SUCCESS
+  FAILURE
+}
+
+model Role {
+  id          String           @id @default(uuid()) @db.Uuid
+  name        String           @unique
+  description String?
+  status      RoleStatus       @default(ACTIVE)
+  users       User[]
+  permissions RolePermission[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(uuid()) @db.Uuid
+  key         String           @unique
+  description String?
+  roles       RolePermission[]
+  createdAt   DateTime         @default(now())
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String     @db.Uuid
+  permissionId String     @db.Uuid
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+model User {
+  id                     String                    @id @default(uuid()) @db.Uuid
+  name                   String
+  email                  String                    @unique
+  phone                  String?
+  passwordHash           String?
+  roleId                 String                    @db.Uuid
+  role                   Role                      @relation(fields: [roleId], references: [id])
+  status                 UserStatus                @default(INVITED)
+  locale                 String                    @default("ar")
+  clientProfile          Client?                   @relation("ClientUser")
+  lawyerProfile          LawyerProfile?
+  sessions               Session[]                 @relation("UserSessions")
+  assignedClients        Client[]                  @relation("AssignedLawyerClients")
+  assignedConsultations  ConsultationRequest[]     @relation("AssignedLawyerConsultations")
+  lawyerAppointments     Appointment[]             @relation("AppointmentLawyer")
+  assignedCases          LegalCase[]               @relation("AssignedCaseLawyer")
+  createdCaseSessions    CaseSession[]             @relation("CaseSessionCreator")
+  uploadedDocuments      Document[]                @relation("DocumentUploader")
+  assignedTasks          Task[]                    @relation("TaskAssignee")
+  createdTasks           Task[]                    @relation("TaskCreator")
+  internalNotes          InternalNote[]            @relation("InternalNoteAuthor")
+  createdPayments        Payment[]                 @relation("PaymentCreator")
+  twoFactorCredential    StaffTwoFactorCredential?
+  emailOtpChallenges     EmailOtpChallenge[]
+  emailMessages          EmailMessage[]
+  aiProviderRuns         AiProviderRun[]
+  articles               Article[]                 @relation("ArticleAuthor")
+  approvedCaseStudies    CaseStudy[]               @relation("CaseStudyApprover")
+  createdSocialDrafts    SocialPostDraft[]         @relation("SocialDraftCreator")
+  approvedSocialDrafts   SocialPostDraft[]         @relation("SocialDraftApprover")
+  notifications          Notification[]
+  auditLogs              AuditLog[]                @relation("AuditActor")
+  updatedSettings        SystemSetting[]           @relation("SystemSettingUpdater")
+  createdAt              DateTime                  @default(now())
+  updatedAt              DateTime                  @updatedAt
+  deletedAt              DateTime?
+
+  @@index([phone])
+  @@index([roleId])
+  @@index([status])
+  @@map("users")
+}
+
+model Session {
+  id                  String        @id @default(uuid()) @db.Uuid
+  userId              String        @db.Uuid
+  user                User          @relation("UserSessions", fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash           String        @unique
+  status              SessionStatus @default(PENDING_2FA)
+  twoFactorVerifiedAt DateTime?
+  twoFactorAttemptCount Int         @default(0)
+  twoFactorLockedUntil  DateTime?
+  lastTwoFactorFailedAt DateTime?
+  expiresAt           DateTime
+  revokedAt           DateTime?
+  ipAddress           String?
+  userAgent           String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@index([expiresAt])
+  @@index([twoFactorLockedUntil])
+  @@map("sessions")
+}
+
+model Client {
+  id                   String                @id @default(uuid()) @db.Uuid
+  userId               String?               @unique @db.Uuid
+  user                 User?                 @relation("ClientUser", fields: [userId], references: [id], onDelete: SetNull)
+  fullName             String
+  phone                String
+  email                String?
+  city                 String?
+  source               String?
+  status               ClientStatus          @default(LEAD)
+  assignedLawyerId     String?               @db.Uuid
+  assignedLawyer       User?                 @relation("AssignedLawyerClients", fields: [assignedLawyerId], references: [id], onDelete: SetNull)
+  cases                LegalCase[]
+  consultationRequests ConsultationRequest[]
+  appointments         Appointment[]
+  documents            Document[]
+  payments             Payment[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  deletedAt            DateTime?
+
+  @@index([phone])
+  @@index([email])
+  @@index([status])
+  @@index([assignedLawyerId])
+  @@index([createdAt])
+  @@map("clients")
+}
+
+model LawyerProfile {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @unique @db.Uuid
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  publicSlug     String   @unique
+  title          String
+  bio            String
+  specialties    Json
+  languages      Json
+  isPublic       Boolean  @default(false)
+  bookingEnabled Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([isPublic])
+  @@index([bookingEnabled])
+  @@map("lawyer_profiles")
+}
+
+model LegalService {
+  id                String   @id @default(uuid()) @db.Uuid
+  title             String
+  slug              String   @unique
+  category          String
+  description       String
+  content           String
+  requiredDocuments Json
+  isPublished       Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([category])
+  @@index([isPublished])
+  @@map("legal_services")
+}
+
+model ConsultationRequest {
+  id                 String             @id @default(uuid()) @db.Uuid
+  clientId           String?            @db.Uuid
+  client             Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  fullName           String
+  phone              String
+  email              String?
+  city               String?
+  serviceCategory    String
+  summary            String
+  opposingPartyName  String?
+  urgency            Urgency            @default(NORMAL)
+  preferredMode      ConsultationMode
+  status             ConsultationStatus @default(NEW)
+  aiClassification   Json?
+  aiSummary          String?
+  assignedLawyerId   String?            @db.Uuid
+  assignedLawyer     User?              @relation("AssignedLawyerConsultations", fields: [assignedLawyerId], references: [id], onDelete: SetNull)
+  convertedCase      LegalCase?
+  appointments       Appointment[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([phone])
+  @@index([status])
+  @@index([assignedLawyerId])
+  @@index([createdAt])
+  @@index([serviceCategory])
+  @@map("consultation_requests")
+}
+
+model Appointment {
+  id                    String               @id @default(uuid()) @db.Uuid
+  clientId              String               @db.Uuid
+  client                Client               @relation(fields: [clientId], references: [id])
+  lawyerId              String?              @db.Uuid
+  lawyer                User?                @relation("AppointmentLawyer", fields: [lawyerId], references: [id], onDelete: SetNull)
+  consultationRequestId String?              @db.Uuid
+  consultationRequest   ConsultationRequest? @relation(fields: [consultationRequestId], references: [id], onDelete: SetNull)
+  caseId                String?              @db.Uuid
+  case                  LegalCase?           @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  caseSession           CaseSession?
+  title                 String
+  type                  AppointmentType
+  mode                  AppointmentMode
+  location              String?
+  startsAt              DateTime
+  endsAt                DateTime
+  status                AppointmentStatus    @default(SCHEDULED)
+  notes                 String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  @@index([clientId])
+  @@index([lawyerId])
+  @@index([caseId])
+  @@index([startsAt])
+  @@index([status])
+  @@map("appointments")
+}
+
+model LegalCase {
+  id                    String               @id @default(uuid()) @db.Uuid
+  internalFileNumber    String               @unique
+  clientId              String               @db.Uuid
+  client                Client               @relation(fields: [clientId], references: [id])
+  assignedLawyerId      String               @db.Uuid
+  assignedLawyer        User                 @relation("AssignedCaseLawyer", fields: [assignedLawyerId], references: [id])
+  consultationRequestId String?              @unique @db.Uuid
+  consultationRequest   ConsultationRequest? @relation(fields: [consultationRequestId], references: [id], onDelete: SetNull)
+  title                 String
+  caseType              String
+  courtName             String?
+  externalCaseNumber    String?
+  status                CaseStatus           @default(NEW)
+  priority              CasePriority         @default(NORMAL)
+  summary               String?
+  nextSessionAt         DateTime?
+  parties               CaseParty[]
+  sessions              CaseSession[]
+  appointments          Appointment[]
+  documents             Document[]
+  tasks                 Task[]
+  internalNotes         InternalNote[]
+  payments              Payment[]
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  deletedAt             DateTime?
+
+  @@index([clientId])
+  @@index([assignedLawyerId])
+  @@index([status])
+  @@index([priority])
+  @@index([nextSessionAt])
+  @@index([createdAt])
+  @@map("cases")
+}
+
+model CaseParty {
+  id        String    @id @default(uuid()) @db.Uuid
+  caseId    String    @db.Uuid
+  case      LegalCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  name      String
+  partyType PartyType
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([caseId])
+  @@index([name])
+  @@map("case_parties")
+}
+
+model CaseSession {
+  id              String       @id @default(uuid()) @db.Uuid
+  caseId          String       @db.Uuid
+  case            LegalCase    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  appointmentId   String?      @unique @db.Uuid
+  appointment     Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  courtName       String?
+  sessionDate     DateTime
+  decision        String?
+  nextAction      String?
+  nextSessionDate DateTime?
+  createdById     String       @db.Uuid
+  createdBy       User         @relation("CaseSessionCreator", fields: [createdById], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([caseId])
+  @@index([sessionDate])
+  @@index([createdById])
+  @@map("case_sessions")
+}
+
+model Document {
+  id            String             @id @default(uuid()) @db.Uuid
+  ownerClientId String?            @db.Uuid
+  ownerClient   Client?            @relation(fields: [ownerClientId], references: [id], onDelete: SetNull)
+  caseId        String?            @db.Uuid
+  case          LegalCase?         @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  uploadedById  String             @db.Uuid
+  uploadedBy    User               @relation("DocumentUploader", fields: [uploadedById], references: [id])
+  fileName      String
+  fileKey       String             @unique
+  fileType      String
+  fileSize      Int
+  category      DocumentCategory   @default(OTHER)
+  status        DocumentStatus     @default(NEW)
+  visibility    DocumentVisibility @default(STAFF_ONLY)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  deletedAt     DateTime?
+
+  @@index([ownerClientId])
+  @@index([caseId])
+  @@index([uploadedById])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+  @@map("documents")
+}
+
+model Task {
+  id           String       @id @default(uuid()) @db.Uuid
+  title        String
+  description  String?
+  status       TaskStatus   @default(NEW)
+  priority     TaskPriority @default(NORMAL)
+  assignedToId String       @db.Uuid
+  assignedTo   User         @relation("TaskAssignee", fields: [assignedToId], references: [id])
+  caseId       String?      @db.Uuid
+  case         LegalCase?   @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  dueDate      DateTime?
+  createdById  String       @db.Uuid
+  createdBy    User         @relation("TaskCreator", fields: [createdById], references: [id])
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([assignedToId])
+  @@index([caseId])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([createdAt])
+  @@map("tasks")
+}
+
+model InternalNote {
+  id        String    @id @default(uuid()) @db.Uuid
+  caseId    String    @db.Uuid
+  case      LegalCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  authorId  String    @db.Uuid
+  author    User      @relation("InternalNoteAuthor", fields: [authorId], references: [id])
+  content   String
+  visibility String   @default("internal_only")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([caseId])
+  @@index([authorId])
+  @@index([createdAt])
+  @@map("internal_notes")
+}
+
+model Payment {
+  id            String        @id @default(uuid()) @db.Uuid
+  invoiceNumber String        @unique
+  clientId      String        @db.Uuid
+  client        Client        @relation(fields: [clientId], references: [id])
+  caseId        String?       @db.Uuid
+  case          LegalCase?    @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  issueDate     DateTime
+  dueDate       DateTime?
+  amount        Decimal       @db.Decimal(12, 2)
+  currency      Currency      @default(EGP)
+  status        PaymentStatus @default(DRAFT)
+  paymentMethod String?
+  receiptNumber String?
+  paidAt        DateTime?
+  notes         String?
+  createdById   String        @db.Uuid
+  createdBy     User          @relation("PaymentCreator", fields: [createdById], references: [id])
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([clientId])
+  @@index([caseId])
+  @@index([status])
+  @@index([issueDate])
+  @@index([dueDate])
+  @@index([createdAt])
+  @@map("payments")
+}
+
+model StaffTwoFactorCredential {
+  id                  String                 @id @default(uuid()) @db.Uuid
+  userId              String                 @unique @db.Uuid
+  user                User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totpSecretEncrypted String?
+  enabledAt           DateTime?
+  lastVerifiedAt      DateTime?
+  recoveryState       TwoFactorRecoveryState @default(PENDING_SETUP)
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  @@index([recoveryState])
+  @@index([enabledAt])
+  @@map("staff_two_factor_credentials")
+}
+
+model EmailOtpChallenge {
+  id           String     @id @default(uuid()) @db.Uuid
+  userId       String     @db.Uuid
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose      OtpPurpose
+  otpHash      String
+  expiresAt    DateTime
+  consumedAt   DateTime?
+  attemptCount Int        @default(0)
+  createdAt    DateTime   @default(now())
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+  @@index([consumedAt])
+  @@map("email_otp_challenges")
+}
+
+model EmailMessage {
+  id                String      @id @default(uuid()) @db.Uuid
+  toUserId          String?     @db.Uuid
+  toUser            User?       @relation(fields: [toUserId], references: [id], onDelete: SetNull)
+  toEmailHash       String
+  templateKey       String
+  purpose           String
+  status            EmailStatus @default(QUEUED)
+  providerMessageId String?
+  errorCode         String?
+  sentAt            DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([toUserId])
+  @@index([templateKey])
+  @@index([purpose])
+  @@index([status])
+  @@index([createdAt])
+  @@map("email_messages")
+}
+
+model AiProviderRun {
+  id             String      @id @default(uuid()) @db.Uuid
+  provider       String
+  model          String
+  task           String
+  requestId      String
+  reviewRequired Boolean     @default(true)
+  latencyMs      Int
+  usageJson      Json?
+  status         AiRunStatus @default(STARTED)
+  errorCode      String?
+  createdById    String?     @db.Uuid
+  createdBy      User?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt      DateTime    @default(now())
+
+  @@index([provider])
+  @@index([model])
+  @@index([task])
+  @@index([status])
+  @@index([requestId])
+  @@index([createdAt])
+  @@map("ai_provider_runs")
+}
+
+model Article {
+  id          String        @id @default(uuid()) @db.Uuid
+  title       String
+  slug        String        @unique
+  excerpt     String
+  content     String
+  authorId    String        @db.Uuid
+  author      User          @relation("ArticleAuthor", fields: [authorId], references: [id])
+  category    String
+  status      ContentStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@index([publishedAt])
+  @@map("articles")
+}
+
+model CaseStudy {
+  id             String          @id @default(uuid()) @db.Uuid
+  title          String
+  slug           String          @unique
+  category       String
+  challenge      String
+  approach       String
+  generalOutcome String
+  lessons        String
+  status         CaseStudyStatus @default(DRAFT)
+  isAnonymized   Boolean         @default(false)
+  approvedById   String?         @db.Uuid
+  approvedBy     User?           @relation("CaseStudyApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  publishedAt    DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@index([publishedAt])
+  @@index([approvedById])
+  @@map("case_studies")
+}
+
+model SocialPostDraft {
+  id           String            @id @default(uuid()) @db.Uuid
+  title        String
+  platform     String
+  content      String
+  sourceType   String?
+  sourceId     String?
+  status       SocialDraftStatus @default(DRAFT)
+  scheduledAt  DateTime?
+  createdById  String            @db.Uuid
+  createdBy    User              @relation("SocialDraftCreator", fields: [createdById], references: [id])
+  approvedById String?           @db.Uuid
+  approvedBy   User?             @relation("SocialDraftApprover", fields: [approvedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([platform])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([createdById])
+  @@map("social_post_drafts")
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  type      NotificationType @default(SYSTEM)
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@index([readAt])
+  @@index([createdAt])
+  @@index([type])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  actorId      String?  @db.Uuid
+  actor        User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  action       String
+  resourceType String
+  resourceId   String?
+  metadata     Json?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([resourceType])
+  @@index([resourceId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model AnalyticsEvent {
+  id          String                @id @default(uuid()) @db.Uuid
+  name        String
+  source      AnalyticsEventSource
+  outcome     AnalyticsEventOutcome @default(INFO)
+  properties  Json
+  requestId   String?
+  actorHash   String?
+  actorRole   String?
+  environment String
+  release     String?
+  createdAt   DateTime              @default(now())
+
+  @@index([name])
+  @@index([source])
+  @@index([outcome])
+  @@index([requestId])
+  @@index([actorHash])
+  @@index([createdAt])
+  @@map("analytics_events")
+}
+
+model SystemSetting {
+  id          String   @id @default(uuid()) @db.Uuid
+  key         String   @unique
+  value       Json
+  updatedById String?  @db.Uuid
+  updatedBy   User?    @relation("SystemSettingUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime @updatedAt
+
+  @@map("system_settings")
+}

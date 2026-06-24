@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>المحتوى والسوشيال - KMT Legal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#000000",
+                        "on-tertiary-fixed-variant": "#3a485b",
+                        "surface": "#f7f9fb",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#dae2fd",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-container-low": "#f2f4f6",
+                        "on-secondary-fixed-variant": "#5b4311",
+                        "surface-container-highest": "#e0e3e5",
+                        "inverse-primary": "#bec6e0",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c6c6cd",
+                        "tertiary": "#000000",
+                        "secondary-fixed-dim": "#e5c184",
+                        "on-surface-variant": "#45464d",
+                        "surface-container-high": "#e6e8ea",
+                        "on-surface": "#191c1e",
+                        "background": "#f7f9fb",
+                        "primary-container": "#131b2e",
+                        "on-tertiary-fixed": "#0d1c2e",
+                        "tertiary-fixed": "#d5e3fc",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "on-secondary-fixed": "#271900",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#77859a",
+                        "on-primary-container": "#7c839b",
+                        "secondary-container": "#fdd898",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#bec6e0",
+                        "surface-dim": "#d8dadc",
+                        "outline": "#76777d",
+                        "on-primary-fixed": "#131b2e",
+                        "tertiary-fixed-dim": "#b9c7df",
+                        "tertiary-container": "#0d1c2e",
+                        "on-background": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "surface-tint": "#565e74",
+                        "secondary": "#755a26",
+                        "on-primary": "#ffffff",
+                        "on-secondary-container": "#785d29",
+                        "secondary-fixed": "#ffdea7",
+                        "surface-variant": "#e0e3e5",
+                        "surface-container": "#eceef0",
+                        "on-primary-fixed-variant": "#3f465c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-md": "1rem",
+                        "margin-desktop": "2.5rem",
+                        "stack-sm": "0.5rem",
+                        "gutter": "1.5rem",
+                        "container-max": "1200px",
+                        "stack-lg": "2rem",
+                        "margin-mobile": "1rem"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["IBM Plex Sans Arabic"],
+                        "body-md": ["IBM Plex Sans Arabic"],
+                        "headline-md": ["IBM Plex Sans Arabic"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["IBM Plex Sans Arabic"],
+                        "display-lg": ["IBM Plex Sans Arabic"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #F8FAFC; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20; }
+        .icon-fill { font-variation-settings: 'FILL' 1; }
+        
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Status Badges */
+        .badge-draft { background-color: #f1f5f9; color: #475569; } /* Gray */
+        .badge-law-review { background-color: #fef3c7; color: #92400e; } /* Amber */
+        .badge-approved { background-color: #e0f2fe; color: #0369a1; } /* Blue */
+        .badge-scheduled { background-color: #fce7f3; color: #9d174d; } /* Pink */
+        .badge-published { background-color: #dcfce7; color: #166534; } /* Green */
+        
+        /* Content Types */
+        .type-article { border-right: 3px solid #0f172a; }
+        .type-case-study { border-right: 3px solid #b45309; }
+        .type-social { border-right: 3px solid #0369a1; }
+    </style>
+</head>
+<body class="text-on-surface font-body-md antialiased min-h-screen flex">
+<!-- SideNavBar (Suppressed based on logic - this is a focused content hub, but it could be a top-level nav item in a marketing portal. Let's assume it's part of the main portal for this specific user role, but for the sake of the prompt's focus on the "Content & Social Hub page", we'll provide the sidebar to show grid layout mastery as requested in style guidance: "3-column sidebar with a 9-column main view"). -->
+<!-- Actually, the prompt doesn't explicitly mention the sidebar, but the 12-column grid rules suggest it. Let's include the SideNavBar from JSON. -->
+<nav class="h-screen w-64 fixed right-0 top-0 rtl bg-surface-container-low dark:bg-surface-container-low border-l border-outline-variant dark:border-outline flat no shadows flex flex-col h-full py-stack-md z-40 hidden lg:flex">
+<div class="px-margin-desktop mb-stack-lg">
+<h1 class="text-headline-md font-headline-md text-primary truncate">KMT Legal</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mt-1">Management Portal</p>
+</div>
+<div class="px-4 mb-6">
+<button class="w-full bg-secondary hover:bg-on-secondary-container text-white py-2.5 px-4 rounded-lg font-label-sm text-label-sm flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                New Filing
+            </button>
+</div>
+<ul class="flex-1 space-y-1">
+<li>
+<a class="flex items-center gap-3 py-2.5 px-3 mx-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 py-2.5 px-3 mx-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">folder_shared</span>
+<span class="font-label-sm text-label-sm">Cases</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 py-2.5 px-3 mx-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">description</span>
+<span class="font-label-sm text-label-sm">Documents</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 py-2.5 px-3 mx-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+<span class="font-label-sm text-label-sm">Calendar</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 py-2.5 px-3 mx-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="font-label-sm text-label-sm">Clients</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 py-2.5 px-3 mx-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto border-t border-outline-variant pt-4 space-y-1">
+<a class="flex items-center gap-3 py-2.5 px-3 mx-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+<span class="font-label-sm text-label-sm">Support</span>
+</a>
+<a class="flex items-center gap-3 py-2.5 px-3 mx-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="font-label-sm text-label-sm">Logout</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 lg:mr-64 p-margin-desktop max-w-container-max mx-auto w-full">
+<!-- Header -->
+<header class="flex flex-col md:flex-row md:items-center justify-between mb-stack-lg gap-4">
+<div>
+<h1 class="font-display-lg text-display-lg text-primary">المحتوى والسوشيال</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">إدارة النشر، مراجعة المحتوى القانوني، وجدولة المشاركات.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-surface-container-high hover:bg-surface-container-highest text-primary px-4 py-2 rounded-DEFAULT font-label-sm text-label-sm border border-outline-variant transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                    تصفية
+                </button>
+<button class="bg-secondary hover:bg-on-secondary-container text-white px-5 py-2 rounded-DEFAULT font-label-sm text-label-sm transition-colors flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">edit_document</span>
+                    إنشاء محتوى جديد
+                </button>
+</div>
+</header>
+<!-- Navigation Tabs -->
+<div class="border-b border-outline-variant mb-stack-md overflow-x-auto">
+<nav class="flex gap-6 min-w-max">
+<a class="font-label-sm text-label-sm py-3 px-1 border-b-2 border-secondary text-primary font-semibold" href="#">Articles</a>
+<a class="font-label-sm text-label-sm py-3 px-1 border-b-2 border-transparent text-on-surface-variant hover:text-primary transition-colors" href="#">Case Studies</a>
+<a class="font-label-sm text-label-sm py-3 px-1 border-b-2 border-transparent text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1" href="#">
+                    Social Posts
+                    <span class="bg-surface-container-high text-primary px-1.5 py-0.5 rounded text-[10px]">12</span>
+</a>
+<a class="font-label-sm text-label-sm py-3 px-1 border-b-2 border-transparent text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1" href="#">
+                    Pending Approval
+                    <span class="bg-error-container text-on-error-container px-1.5 py-0.5 rounded text-[10px]">3</span>
+</a>
+</nav>
+</div>
+<!-- Layout Grid: 12 Columns -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-gutter">
+<!-- Main Content Canvas (8 Cols) -->
+<div class="xl:col-span-8 space-y-stack-md">
+<!-- Search & Filters Bar (Minimalist) -->
+<div class="bg-surface-container-lowest p-3 rounded-lg border border-outline-variant flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">search</span>
+<input class="flex-1 bg-transparent border-none focus:ring-0 font-body-md text-body-md text-primary placeholder-outline p-0" placeholder="البحث في المحتوى..." type="text"/>
+</div>
+<!-- Data Table Container -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-right border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant font-label-sm text-label-sm text-on-surface-variant">
+<th class="py-3 px-4 font-medium">العنوان (Title)</th>
+<th class="py-3 px-4 font-medium">النوع (Type)</th>
+<th class="py-3 px-4 font-medium">المنصة (Platform)</th>
+<th class="py-3 px-4 font-medium">الحالة (Status)</th>
+<th class="py-3 px-4 font-medium">المؤلف (Author)</th>
+<th class="py-3 px-4 font-medium">التاريخ (Date)</th>
+<th class="py-3 px-4 font-medium text-center">إجراء</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group type-article">
+<td class="py-4 px-4 font-medium text-primary">تأثير التعديلات الضريبية الجديدة 2024</td>
+<td class="py-4 px-4 text-on-surface-variant">Article</td>
+<td class="py-4 px-4"><span class="material-symbols-outlined text-outline text-[20px]">language</span></td>
+<td class="py-4 px-4">
+<span class="badge-law-review px-2.5 py-1 rounded-full font-label-sm text-label-sm inline-block">Law Review</span>
+</td>
+<td class="py-4 px-4 text-on-surface-variant">أحمد خليل</td>
+<td class="py-4 px-4 text-on-surface-variant text-sm">Oct 24</td>
+<td class="py-4 px-4 text-center">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group type-case-study">
+<td class="py-4 px-4 font-medium text-primary">استحواذ شركة التقنية الإقليمية</td>
+<td class="py-4 px-4 text-on-surface-variant">Case Study</td>
+<td class="py-4 px-4"><span class="material-symbols-outlined text-outline text-[20px]">description</span></td>
+<td class="py-4 px-4">
+<span class="badge-published px-2.5 py-1 rounded-full font-label-sm text-label-sm inline-block">Published</span>
+</td>
+<td class="py-4 px-4 text-on-surface-variant">فريق الشركات</td>
+<td class="py-4 px-4 text-on-surface-variant text-sm">Oct 22</td>
+<td class="py-4 px-4 text-center">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group type-social">
+<td class="py-4 px-4 font-medium text-primary">نصائح الامتثال للشركات الناشئة</td>
+<td class="py-4 px-4 text-on-surface-variant">Social Post</td>
+<td class="py-4 px-4 flex items-center gap-1">
+<span class="material-symbols-outlined text-outline text-[20px]">work</span> <!-- LinkedIn proxy -->
+</td>
+<td class="py-4 px-4">
+<span class="badge-scheduled px-2.5 py-1 rounded-full font-label-sm text-label-sm inline-block">Scheduled</span>
+</td>
+<td class="py-4 px-4 text-on-surface-variant">سارة منصور</td>
+<td class="py-4 px-4 text-on-surface-variant text-sm">Oct 26</td>
+<td class="py-4 px-4 text-center">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group type-article bg-surface-container-low/50">
+<td class="py-4 px-4 font-medium text-primary">دليل قوانين العمل عن بعد</td>
+<td class="py-4 px-4 text-on-surface-variant">Article</td>
+<td class="py-4 px-4"><span class="material-symbols-outlined text-outline text-[20px]">language</span></td>
+<td class="py-4 px-4">
+<span class="badge-draft px-2.5 py-1 rounded-full font-label-sm text-label-sm inline-block">Draft</span>
+</td>
+<td class="py-4 px-4 text-on-surface-variant">محمود سعيد</td>
+<td class="py-4 px-4 text-on-surface-variant text-sm">--</td>
+<td class="py-4 px-4 text-center">
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination (Minimal) -->
+<div class="px-4 py-3 border-t border-outline-variant flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">عرض 1-4 من 24</span>
+<div class="flex gap-2">
+<button class="p-1 rounded text-outline hover:bg-surface-container-high transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+<button class="p-1 rounded text-outline hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Contextual Sidebar / AI Panel (4 Cols) -->
+<aside class="xl:col-span-4 flex flex-col gap-gutter">
+<!-- AI Draft Panel (Glassmorphism/High-end UI) -->
+<div class="glass-panel rounded-xl p-6 relative overflow-hidden">
+<!-- Subtle background decoration -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary-container/20 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-secondary icon-fill">auto_awesome</span>
+<h2 class="font-headline-md text-body-lg font-medium text-primary">AI Draft Panel</h2>
+</div>
+<p class="font-body-md text-label-sm text-on-surface-variant mb-4 leading-relaxed">
+                        توليد مسودات لمنشورات منصات التواصل الاجتماعي تلقائياً بناءً على دراسات الحالة الحديثة أو الأحكام القانونية.
+                    </p>
+<form class="space-y-4 relative z-10">
+<div>
+<label class="block font-label-sm text-label-sm text-primary mb-1">المصدر (Source)</label>
+<div class="relative">
+<select class="w-full bg-surface-container-lowest border border-outline-variant rounded-DEFAULT py-2 px-3 appearance-none font-body-md text-label-sm text-primary focus:border-tertiary focus:ring-0">
+<option>استحواذ شركة التقنية الإقليمية</option>
+<option>قضية نزاع عقاري تجاري #402</option>
+<option>تسوية حقوق الملكية الفكرية</option>
+</select>
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-[18px] pointer-events-none">expand_more</span>
+</div>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-primary mb-1">المنصة (Platform)</label>
+<div class="flex gap-2">
+<label class="flex-1 cursor-pointer">
+<input checked="" class="peer sr-only" name="platform" type="radio"/>
+<div class="border border-outline-variant rounded-DEFAULT p-2 text-center peer-checked:border-secondary peer-checked:bg-secondary-container/10 transition-colors">
+<span class="font-label-sm text-label-sm text-primary">LinkedIn</span>
+</div>
+</label>
+<label class="flex-1 cursor-pointer">
+<input class="peer sr-only" name="platform" type="radio"/>
+<div class="border border-outline-variant rounded-DEFAULT p-2 text-center peer-checked:border-secondary peer-checked:bg-secondary-container/10 transition-colors">
+<span class="font-label-sm text-label-sm text-primary">X / Twitter</span>
+</div>
+</label>
+</div>
+</div>
+<div class="pt-2">
+<button class="w-full bg-tertiary hover:bg-primary-container text-white py-2.5 rounded-DEFAULT font-label-sm text-label-sm transition-colors flex items-center justify-center gap-2" type="button">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+                                توليد المسودة
+                            </button>
+</div>
+</form>
+</div>
+<!-- Quick Stats / Insights (Bento style small card) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-4">نظرة عامة هذا الشهر</h3>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<p class="font-display-lg text-headline-md text-primary font-medium">12</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">تم النشر</p>
+</div>
+<div>
+<p class="font-display-lg text-headline-md text-secondary font-medium">5</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">قيد المراجعة</p>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</body></html>

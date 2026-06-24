@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KMT Legal - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&amp;family=Inter:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#000000",
+                        "on-tertiary-fixed-variant": "#3a485b",
+                        "surface": "#f7f9fb",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#dae2fd",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-container-low": "#f2f4f6",
+                        "on-secondary-fixed-variant": "#5b4311",
+                        "surface-container-highest": "#e0e3e5",
+                        "inverse-primary": "#bec6e0",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c6c6cd",
+                        "tertiary": "#000000",
+                        "secondary-fixed-dim": "#e5c184",
+                        "on-surface-variant": "#45464d",
+                        "surface-container-high": "#e6e8ea",
+                        "on-surface": "#191c1e",
+                        "background": "#f7f9fb",
+                        "primary-container": "#131b2e",
+                        "on-tertiary-fixed": "#0d1c2e",
+                        "tertiary-fixed": "#d5e3fc",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "on-secondary-fixed": "#271900",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#77859a",
+                        "on-primary-container": "#7c839b",
+                        "secondary-container": "#fdd898",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#bec6e0",
+                        "surface-dim": "#d8dadc",
+                        "outline": "#76777d",
+                        "on-primary-fixed": "#131b2e",
+                        "tertiary-fixed-dim": "#b9c7df",
+                        "tertiary-container": "#0d1c2e",
+                        "on-background": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "surface-tint": "#565e74",
+                        "secondary": "#755a26",
+                        "on-primary": "#ffffff",
+                        "on-secondary-container": "#785d29",
+                        "secondary-fixed": "#ffdea7",
+                        "surface-variant": "#e0e3e5",
+                        "surface-container": "#eceef0",
+                        "on-primary-fixed-variant": "#3f465c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-md": "1rem",
+                        "margin-desktop": "2.5rem",
+                        "stack-sm": "0.5rem",
+                        "gutter": "1.5rem",
+                        "container-max": "1200px",
+                        "stack-lg": "2rem",
+                        "margin-mobile": "1rem"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["IBM Plex Sans Arabic"],
+                        "body-md": ["IBM Plex Sans Arabic"],
+                        "headline-md": ["IBM Plex Sans Arabic"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["IBM Plex Sans Arabic"],
+                        "display-lg": ["IBM Plex Sans Arabic"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["32px", {"lineHeight": "40px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .form-input-glow:focus {
+            box-shadow: 0 0 0 2px rgba(19, 27, 46, 0.1);
+            border-color: #131b2e;
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen font-body-md text-on-background antialiased flex flex-col md:flex-row">
+<!-- Left Side: Visual / Branding (Hidden on mobile) -->
+<div class="hidden md:flex md:w-1/2 lg:w-3/5 bg-surface-container-low relative flex-col justify-between p-margin-desktop overflow-hidden border-l border-outline-variant">
+<!-- Background Image/Texture -->
+<div class="absolute inset-0 z-0 opacity-80" data-alt="A sophisticated, abstract legal-tech visualization featuring subtle geometric lines and scales of justice integrated into a modern architectural space. The environment is bathed in bright, soft white lighting typical of a high-end corporate office. The color palette emphasizes clean whites, light grays, and muted navy blues, conveying absolute security, precision, and modern legal authority." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDA2vaC9dn6RSXfZ7POMHuXzp6LrHFyrLSpB7-xhH224f0X8AKpzgbAqQAvnb4QjaXEudX0GKSVKGoxKsdvuEeY5Szhoah-NmMR7PYlvK85qAkPg4a-ddAlVFLvCKFhq3esNLAJTTA6XX3wSdinHleNBkzx01jw0puhB-IymNwpTrlWFRqPr1UwlqKFHDQc4QpJtM9P7-YhVqPVxVdg15J4qSxlRtawokyn0juSS8ZChn7LtNuzisYCHoY7wAJ7hXG96jBLXme4ED02')">
+</div>
+<!-- Gradient Overlay -->
+<div class="absolute inset-0 z-10 bg-gradient-to-t from-surface-container-low via-transparent to-surface-container-low/50"></div>
+<!-- Branding -->
+<div class="relative z-20">
+<h1 class="font-headline-md text-headline-md text-primary font-bold">KMT Legal</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-md">
+                التميز في تقديم الاستشارات القانونية. حماية بياناتك وأعمالك هي أولويتنا القصوى.
+            </p>
+</div>
+<!-- Role Hint & Security Note -->
+<div class="relative z-20 mt-auto glass-panel p-stack-lg rounded-xl max-w-lg">
+<div class="flex items-center gap-3 mb-stack-sm">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">shield_lock</span>
+<h3 class="font-headline-md text-body-lg font-semibold text-primary">بوابة العملاء وفريق المكتب</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                هذا النظام محمي بأحدث تقنيات التشفير. يتم مراقبة جميع عمليات الدخول لضمان أقصى درجات السرية والأمان لملفاتك القانونية.
+            </p>
+</div>
+</div>
+<!-- Right Side: Login Form -->
+<div class="w-full md:w-1/2 lg:w-2/5 flex flex-col justify-center px-margin-mobile md:px-margin-desktop py-stack-lg bg-surface-container-lowest min-h-screen">
+<div class="max-w-md w-full mx-auto">
+<!-- Mobile Branding (Visible only on mobile) -->
+<div class="md:hidden text-center mb-stack-lg">
+<h1 class="font-headline-md text-display-lg-mobile text-primary font-bold mb-2">KMT Legal</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Client Portal</p>
+</div>
+<!-- Header -->
+<div class="mb-stack-lg text-center md:text-right">
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-primary mb-stack-sm">تسجيل الدخول</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">الرجاء إدخال بيانات الاعتماد الخاصة بك للوصول إلى لوحة التحكم.</p>
+</div>
+<!-- Form -->
+<form action="#" class="space-y-stack-md" method="POST">
+<!-- Email -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface mb-2" for="email">البريد الإلكتروني</label>
+<div class="relative">
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">mail</span>
+</div>
+<input class="block w-full pl-3 pr-10 py-3 bg-surface border border-outline-variant rounded-lg text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:ring-0 form-input-glow transition-all duration-200" dir="ltr" id="email" name="email" placeholder="name@kmtlegal.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface mb-2" for="password">كلمة المرور</label>
+<div class="relative">
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">lock</span>
+</div>
+<input class="block w-full pl-3 pr-10 py-3 bg-surface border border-outline-variant rounded-lg text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:ring-0 form-input-glow transition-all duration-200" dir="ltr" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+</div>
+</div>
+<!-- Options Row -->
+<div class="flex items-center justify-between py-2">
+<div class="flex items-center">
+<input class="h-4 w-4 text-secondary focus:ring-primary border-outline-variant rounded cursor-pointer" id="remember-me" name="remember-me" type="checkbox"/>
+<label class="mr-2 block font-body-md text-label-sm text-on-surface-variant cursor-pointer" for="remember-me">
+                            تذكرني
+                        </label>
+</div>
+<div class="text-sm">
+<a class="font-label-sm text-label-sm text-secondary hover:text-on-secondary-fixed-variant transition-colors underline-offset-2 hover:underline" href="#">
+                            نسيت كلمة المرور؟
+                        </a>
+</div>
+</div>
+<!-- Submit Button -->
+<div class="pt-stack-sm">
+<button class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm font-label-sm text-body-md font-medium text-white bg-secondary hover:bg-on-secondary-fixed-variant focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary transition-colors duration-200" type="submit">
+                        تسجيل الدخول
+                        <span class="material-symbols-outlined mr-2 text-[20px]" style="font-variation-settings: 'FILL' 0;">arrow_left_alt</span>
+</button>
+</div>
+</form>
+<!-- Footer minimal -->
+<div class="mt-stack-lg text-center">
+<p class="font-label-sm text-label-sm text-outline">
+                    © 2024 KMT Legal. جميع الحقوق محفوظة.
+                </p>
+</div>
+</div>
+</div>
+</body></html>

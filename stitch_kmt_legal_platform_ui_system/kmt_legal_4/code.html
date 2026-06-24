@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+
+<html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>المهام - KMT Legal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;family=Inter:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#000000",
+                        "on-tertiary-fixed-variant": "#3a485b",
+                        "surface": "#f7f9fb",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#dae2fd",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-container-low": "#f2f4f6",
+                        "on-secondary-fixed-variant": "#5b4311",
+                        "surface-container-highest": "#e0e3e5",
+                        "inverse-primary": "#bec6e0",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c6c6cd",
+                        "tertiary": "#000000",
+                        "secondary-fixed-dim": "#e5c184",
+                        "on-surface-variant": "#45464d",
+                        "surface-container-high": "#e6e8ea",
+                        "on-surface": "#191c1e",
+                        "background": "#f7f9fb",
+                        "primary-container": "#131b2e",
+                        "on-tertiary-fixed": "#0d1c2e",
+                        "tertiary-fixed": "#d5e3fc",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "on-secondary-fixed": "#271900",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#77859a",
+                        "on-primary-container": "#7c839b",
+                        "secondary-container": "#fdd898",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#bec6e0",
+                        "surface-dim": "#d8dadc",
+                        "outline": "#76777d",
+                        "on-primary-fixed": "#131b2e",
+                        "tertiary-fixed-dim": "#b9c7df",
+                        "tertiary-container": "#0d1c2e",
+                        "on-background": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "surface-tint": "#565e74",
+                        "secondary": "#755a26",
+                        "on-primary": "#ffffff",
+                        "on-secondary-container": "#785d29",
+                        "secondary-fixed": "#ffdea7",
+                        "surface-variant": "#e0e3e5",
+                        "surface-container": "#eceef0",
+                        "on-primary-fixed-variant": "#3f465c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-md": "1rem",
+                        "margin-desktop": "2.5rem",
+                        "stack-sm": "0.5rem",
+                        "gutter": "1.5rem",
+                        "container-max": "1200px",
+                        "stack-lg": "2rem",
+                        "margin-mobile": "1rem"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["IBM Plex Sans Arabic"],
+                        "body-md": ["IBM Plex Sans Arabic"],
+                        "headline-md": ["IBM Plex Sans Arabic"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["IBM Plex Sans Arabic"],
+                        "display-lg": ["IBM Plex Sans Arabic"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .kanban-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        .kanban-scroll::-webkit-scrollbar-track {
+            background: #f2f4f6; 
+            border-radius: 4px;
+        }
+        .kanban-scroll::-webkit-scrollbar-thumb {
+            background: #c6c6cd; 
+            border-radius: 4px;
+        }
+        .kanban-scroll::-webkit-scrollbar-thumb:hover {
+            background: #76777d; 
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex selection:bg-secondary-container selection:text-on-secondary-container">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-low dark:bg-surface-container-low h-screen w-64 fixed right-0 top-0 rtl border-l border-outline-variant dark:border-outline flex flex-col h-full py-stack-md z-50 transition-transform duration-300 transform md:translate-x-0 translate-x-full" id="mobile-menu">
+<div class="px-margin-desktop mb-stack-lg flex items-center justify-between">
+<div>
+<h1 class="text-headline-md font-headline-md text-primary">KMT Legal</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-1">Management Portal</p>
+</div>
+<button class="md:hidden text-on-surface-variant hover:text-primary" id="close-menu">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="px-margin-desktop mb-stack-lg">
+<button class="w-full bg-secondary text-on-primary py-2 px-4 rounded font-label-sm hover:bg-on-secondary-container transition-colors duration-200 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">add</span>
+                New Filing
+            </button>
+</div>
+<ul class="flex-1 overflow-y-auto space-y-1">
+<li>
+<a class="flex items-center gap-3 px-margin-desktop py-2 text-on-surface-variant hover:bg-surface-container-high mx-2 rounded transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-margin-desktop py-2 bg-secondary-container text-on-secondary-container rounded-lg mx-2 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">assignment</span>
+<span class="font-label-sm text-label-sm font-bold">المهام</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-margin-desktop py-2 text-on-surface-variant hover:bg-surface-container-high mx-2 rounded transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">folder_shared</span>
+<span class="font-label-sm text-label-sm">Cases</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-margin-desktop py-2 text-on-surface-variant hover:bg-surface-container-high mx-2 rounded transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">description</span>
+<span class="font-label-sm text-label-sm">Documents</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-margin-desktop py-2 text-on-surface-variant hover:bg-surface-container-high mx-2 rounded transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">calendar_month</span>
+<span class="font-label-sm text-label-sm">Calendar</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-margin-desktop py-2 text-on-surface-variant hover:bg-surface-container-high mx-2 rounded transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">group</span>
+<span class="font-label-sm text-label-sm">Clients</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-margin-desktop py-2 text-on-surface-variant hover:bg-surface-container-high mx-2 rounded transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto border-t border-outline-variant pt-stack-md">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-margin-desktop py-2 text-on-surface-variant hover:bg-surface-container-high mx-2 rounded transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">help</span>
+<span class="font-label-sm text-label-sm">Support</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-margin-desktop py-2 text-on-surface-variant hover:bg-surface-container-high mx-2 rounded transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">logout</span>
+<span class="font-label-sm text-label-sm">Logout</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:mr-64 flex flex-col min-h-screen">
+<!-- TopAppBar / Header -->
+<header class="bg-surface-container-lowest border-b border-outline-variant sticky top-0 z-40 px-margin-desktop py-4 flex justify-between items-center h-20">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-on-surface-variant hover:text-primary" id="open-menu">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="font-headline-md text-headline-md text-primary">المهام</h2>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="pl-4 pr-10 py-2 border border-outline-variant rounded bg-surface-container-low text-body-md focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-shadow w-64 text-right dir-rtl" placeholder="بحث في المهام..." type="text"/>
+</div>
+<button class="text-on-surface-variant hover:text-secondary transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="w-px h-6 bg-outline-variant mx-2 hidden sm:block"></div>
+<button class="bg-secondary text-on-primary px-4 py-2 rounded font-label-sm text-label-sm hover:bg-on-secondary-container transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">add</span>
+                    إضافة مهمة
+                </button>
+</div>
+</header>
+<!-- Kanban Board Container -->
+<div class="flex-1 p-margin-desktop overflow-hidden flex flex-col bg-background">
+<!-- Filters & Controls (Optional but good for premium feel) -->
+<div class="mb-stack-lg flex justify-between items-center flex-wrap gap-4">
+<div class="flex gap-2">
+<button class="px-3 py-1.5 rounded-full border border-outline-variant bg-surface-container-lowest text-label-sm font-label-sm text-on-surface-variant hover:border-secondary hover:text-secondary transition-colors">الكل</button>
+<button class="px-3 py-1.5 rounded-full border border-outline-variant bg-surface-container-lowest text-label-sm font-label-sm text-on-surface-variant hover:border-secondary hover:text-secondary transition-colors">مهامي</button>
+<button class="px-3 py-1.5 rounded-full border border-outline-variant bg-surface-container-lowest text-label-sm font-label-sm text-error hover:border-error transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span> متأخرة
+                    </button>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-label-sm text-on-surface-variant">ترتيب حسب:</span>
+<select class="border border-outline-variant rounded bg-surface-container-lowest text-label-sm font-label-sm py-1.5 pl-8 pr-3 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary">
+<option>الأولوية</option>
+<option>تاريخ الاستحقاق</option>
+<option>تاريخ الإنشاء</option>
+</select>
+</div>
+</div>
+<!-- Kanban Columns Grid -->
+<div class="flex-1 overflow-x-auto kanban-scroll flex gap-gutter pb-4 items-start h-full">
+<!-- Column: New (جديد) -->
+<div class="min-w-[300px] w-[300px] flex-shrink-0 flex flex-col max-h-full bg-surface-container-low rounded-lg p-3">
+<div class="flex justify-between items-center mb-3 px-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-inverse-primary"></span>
+<h3 class="font-headline-md text-[16px] font-semibold text-on-surface">جديد</h3>
+<span class="bg-surface-variant text-on-surface-variant text-xs py-0.5 px-2 rounded-full font-label-sm">3</span>
+</div>
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-[18px]">more_horiz</span></button>
+</div>
+<div class="flex-1 overflow-y-auto space-y-3 pr-1 kanban-scroll pb-2">
+<!-- Task Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 shadow-sm hover:border-secondary transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-2">
+<span class="bg-surface-container text-on-surface-variant text-[10px] px-2 py-1 rounded font-label-sm font-medium">قضية #492-أ</span>
+<span class="material-symbols-outlined text-[16px] text-outline group-hover:text-secondary opacity-0 group-hover:opacity-100 transition-opacity">edit</span>
+</div>
+<h4 class="font-body-md font-medium text-on-surface mb-3 leading-tight">مراجعة مسودة العقد التجاري لشركة النور</h4>
+<div class="flex items-center justify-between mt-auto pt-3 border-t border-outline-variant/50">
+<div class="flex items-center gap-2 text-on-surface-variant text-[11px] font-label-sm">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+<span>15 مايو 2024</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline-variant" title="أولوية منخفضة"></span>
+<img alt="Assigned" class="w-6 h-6 rounded-full object-cover border border-outline-variant" data-alt="Corporate headshot of an Arab male lawyer in a dark suit, modern office lighting, shallow depth of field, high-end professional style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlrIyMyKnlOLDhHGg5Jg0n1i_Q26npCh_g7tZ9BldqQpGDqDaqnvJ4-arxF8oWc-p4BwVRLbfxurQkVLJwiu7D7gVf4TW4hw6Qm5rVZ-6F7PKE7ZgkFl_u1eI4K37AHjt0QKkN3bKw1YG-2dSdGNPLJpc63U0Q6Hri9fRSMntPaQXdym9uEMtl3wXXK1m9y_CSsWyB55GSdOZB0JBhr2QzFThGBNhlqCOPM_xrslZE2Hm6se3UUd28aBCaSFuyDap2ARa6SegHg5_y"/>
+</div>
+</div>
+</div>
+<!-- Task Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 shadow-sm hover:border-secondary transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-2">
+<span class="bg-surface-container text-on-surface-variant text-[10px] px-2 py-1 rounded font-label-sm font-medium">استشارة عامة</span>
+</div>
+<h4 class="font-body-md font-medium text-on-surface mb-3 leading-tight">تجهيز ملف التسجيل الضريبي الجديد</h4>
+<div class="flex items-center justify-between mt-auto pt-3 border-t border-outline-variant/50">
+<div class="flex items-center gap-2 text-on-surface-variant text-[11px] font-label-sm">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+<span>18 مايو 2024</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed-dim" title="أولوية متوسطة"></span>
+<div class="w-6 h-6 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center text-[10px] font-bold border border-outline-variant">أ.س</div>
+</div>
+</div>
+</div>
+</div>
+<button class="mt-2 w-full py-2 text-on-surface-variant hover:bg-surface-container-high rounded text-sm flex items-center justify-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[18px]">add</span> إضافة بطاقة
+                    </button>
+</div>
+<!-- Column: In Progress (قيد التنفيذ) -->
+<div class="min-w-[300px] w-[300px] flex-shrink-0 flex flex-col max-h-full bg-surface-container-low rounded-lg p-3">
+<div class="flex justify-between items-center mb-3 px-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed-dim"></span>
+<h3 class="font-headline-md text-[16px] font-semibold text-on-surface">قيد التنفيذ</h3>
+<span class="bg-surface-variant text-on-surface-variant text-xs py-0.5 px-2 rounded-full font-label-sm">2</span>
+</div>
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-[18px]">more_horiz</span></button>
+</div>
+<div class="flex-1 overflow-y-auto space-y-3 pr-1 kanban-scroll pb-2">
+<!-- Task Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 shadow-sm hover:border-secondary transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-2">
+<span class="bg-surface-container text-on-surface-variant text-[10px] px-2 py-1 rounded font-label-sm font-medium">قضية #102-ج</span>
+</div>
+<h4 class="font-body-md font-medium text-on-surface mb-3 leading-tight">صياغة مذكرة الدفاع لجلسة الاستئناف</h4>
+<div class="flex items-center justify-between mt-auto pt-3 border-t border-outline-variant/50">
+<div class="flex items-center gap-2 text-secondary text-[11px] font-label-sm">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+<span>غداً</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error" title="أولوية عالية"></span>
+<img alt="Assigned" class="w-6 h-6 rounded-full object-cover border border-outline-variant" data-alt="Corporate headshot of an Arab female lawyer wearing a dark blazer and elegant hijab, professional lighting, clean white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgxY_45lZPVhP4AS_2ipYiE_zQP6FjqFMrN4JEljRfeVVpjAFjBiYWkd4LWIZUrB-x3nNcrauW0-5QFo_5O7GB9hLV7P9fSM1YqcHblfjgoNOUlKHJS8epFXQnBRvgO0NO1XBLrw5fihfINOko-e9PdlKB-5-OQzN85saj3VP1rFier6shEWmjo4A6CGdUTUXJTQ1vLNwShE5AEvUQQXDI3e67i61NFEPUfPqyawV2-c5aBOIbZxm8-ns4zC5Hb1wxcD7N_xFufJh4"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Waiting Review (بانتظار المراجعة) -->
+<div class="min-w-[300px] w-[300px] flex-shrink-0 flex flex-col max-h-full bg-surface-container-low rounded-lg p-3">
+<div class="flex justify-between items-center mb-3 px-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span>
+<h3 class="font-headline-md text-[16px] font-semibold text-on-surface">بانتظار المراجعة</h3>
+<span class="bg-surface-variant text-on-surface-variant text-xs py-0.5 px-2 rounded-full font-label-sm">1</span>
+</div>
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined text-[18px]">more_horiz</span></button>
+</div>
+<div class="flex-1 overflow-y-auto space-y-3 pr-1 kanban-scroll pb-2">
+<!-- Task Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 shadow-sm hover:border-secondary transition-colors cursor-pointer group relative overflow-hidden">
+<div class="flex justify-between items-start mb-2">
+<span class="bg-surface-container text-on-surface-variant text-[10px] px-2 py-1 rounded font-label-sm font-medium">قضية #881-م</span>
+</div>
+<h4 class="font-body-md font-medium text-on-surface mb-3 leading-tight">مراجعة تسوية النزاع العمالي</h4>
+<div class="flex items-center justify-between mt-auto pt-3 border-t border-outline-variant/50">
+<div class="flex items-center gap-2 text-on-surface-variant text-[11px] font-label-sm">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+<span>20 مايو 2024</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed-dim" title="أولوية متوسطة"></span>
+<div class="flex -space-x-2 -space-x-reverse">
+<img alt="Assigned" class="w-6 h-6 rounded-full object-cover border-2 border-surface-container-lowest relative z-10" data-alt="Corporate headshot of an Arab female lawyer wearing a dark blazer and elegant hijab, professional lighting, clean white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBsbn870InSNFPhUBDbKEuGHo7bns_N1XhhGR4vB2xN3wQSyRxIK7JjAqnOOIMUFOLIt7cG7O1xpOS_MSZNidWsdEWm-uWBhlYzgM0zT0wRI59MjqxjIRmv9KCX2i6OPtuJnEb3oC8d1lH2_Q4TicJa3bA2MbN7gJ66xMkzopDyLcwtOCIDIrzwQDv1UzhNMJ8VdrODoLjjmWeO3RMRMgT7yGC-vmklqd3lLyBk0fwlhAML5RlvCr7030zuA9DJFpFiBu9ZCEB58g9"/>
+<div class="w-6 h-6 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center text-[10px] font-bold border-2 border-surface-container-lowest relative z-0">م.ك</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Overdue (متأخرة) -->
+<div class="min-w-[300px] w-[300px] flex-shrink-0 flex flex-col max-h-full bg-error-container/20 rounded-lg p-3 border border-error-container/50">
+<div class="flex justify-between items-center mb-3 px-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<h3 class="font-headline-md text-[16px] font-semibold text-error">متأخرة</h3>
+<span class="bg-error text-on-error text-xs py-0.5 px-2 rounded-full font-label-sm">2</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto space-y-3 pr-1 kanban-scroll pb-2">
+<!-- Overdue Task Card -->
+<div class="bg-surface-container-lowest border-l-4 border-l-error border-y border-r border-outline-variant rounded-lg p-4 shadow-sm hover:border-y-secondary hover:border-r-secondary transition-colors cursor-pointer group">
+<div class="flex justify-between items-start mb-2">
+<span class="bg-surface-container text-on-surface-variant text-[10px] px-2 py-1 rounded font-label-sm font-medium">إداري</span>
+<div class="bg-error-container text-on-error-container text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">warning</span> متأخر يومين
+                                </div>
+</div>
+<h4 class="font-body-md font-medium text-on-surface mb-3 leading-tight">تجديد تراخيص الفرع الرئيسي</h4>
+<div class="flex items-center justify-between mt-auto pt-3 border-t border-outline-variant/50">
+<div class="flex items-center gap-2 text-error font-bold text-[11px] font-label-sm">
+<span class="material-symbols-outlined text-[14px]">calendar_today</span>
+<span>10 مايو 2024</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error" title="أولوية عالية"></span>
+<img alt="Assigned" class="w-6 h-6 rounded-full object-cover border border-outline-variant" data-alt="Corporate headshot of an Arab male lawyer in a dark suit, modern office lighting, shallow depth of field, high-end professional style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxlJnClDaYcKcNtkO8jp3EZ7cbHKNMUM8p1_3Zh7VLWVESmHm6Nqx61_KJ6wt7PqJkk_349O6sXEhxGRKm971L1H2hkHy4tDTtXQ0Gw_H_BDgo1GbWuuxnYkr3C2MSdoXEqpuNlZ-qkzYtNkdNaVBtWKP26IXcGALvAoHlGy19tUfyeQhzg6H35P4BZrMOS6eGQTEBXDglu5siMq_euZyvZo9V7YYN3OuSshKTtF6YBMWVVPjRg2KEO3VRFwL6YSKmytyWFd6-k74M"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Column: Completed (مكتملة) -->
+<div class="min-w-[300px] w-[300px] flex-shrink-0 flex flex-col max-h-full bg-surface-container-low rounded-lg p-3 opacity-80">
+<div class="flex justify-between items-center mb-3 px-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">check_circle</span>
+<h3 class="font-headline-md text-[16px] font-semibold text-on-surface-variant">مكتملة</h3>
+<span class="bg-surface-variant text-on-surface-variant text-xs py-0.5 px-2 rounded-full font-label-sm">24</span>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto space-y-3 pr-1 kanban-scroll pb-2">
+<!-- Completed Task Card -->
+<div class="bg-surface-container-lowest border border-outline-variant/50 rounded-lg p-4 shadow-sm cursor-pointer group">
+<div class="flex justify-between items-start mb-2">
+<span class="bg-surface-container text-on-surface-variant text-[10px] px-2 py-1 rounded font-label-sm font-medium line-through">قضية #332-ف</span>
+</div>
+<h4 class="font-body-md font-medium text-on-surface-variant mb-3 leading-tight line-through">إيداع رسوم الخبراء بالمحكمة</h4>
+<div class="flex items-center justify-between mt-auto pt-3 border-t border-outline-variant/30">
+<div class="flex items-center gap-2 text-on-surface-variant text-[11px] font-label-sm">
+<span class="material-symbols-outlined text-[14px]">done_all</span>
+<span>أنجزت في 8 مايو</span>
+</div>
+<div class="w-6 h-6 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center text-[10px] font-bold border border-outline-variant/50">أ.س</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple script for mobile menu toggle
+        document.getElementById('open-menu').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.remove('translate-x-full');
+        });
+        
+        document.getElementById('close-menu').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.add('translate-x-full');
+        });
+    </script>
+</body></html>

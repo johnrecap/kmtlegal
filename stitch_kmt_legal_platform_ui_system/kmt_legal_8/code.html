@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>إدارة القضايا - KMT Legal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary": "#000000",
+                      "on-tertiary-fixed-variant": "#3a485b",
+                      "surface": "#f7f9fb",
+                      "on-error": "#ffffff",
+                      "primary-fixed": "#dae2fd",
+                      "inverse-on-surface": "#eff1f3",
+                      "surface-container-low": "#f2f4f6",
+                      "on-secondary-fixed-variant": "#5b4311",
+                      "surface-container-highest": "#e0e3e5",
+                      "inverse-primary": "#bec6e0",
+                      "error-container": "#ffdad6",
+                      "outline-variant": "#c6c6cd",
+                      "tertiary": "#000000",
+                      "secondary-fixed-dim": "#e5c184",
+                      "on-surface-variant": "#45464d",
+                      "surface-container-high": "#e6e8ea",
+                      "on-surface": "#191c1e",
+                      "background": "#f7f9fb",
+                      "primary-container": "#131b2e",
+                      "on-tertiary-fixed": "#0d1c2e",
+                      "tertiary-fixed": "#d5e3fc",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-bright": "#f7f9fb",
+                      "on-secondary-fixed": "#271900",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-container": "#77859a",
+                      "on-primary-container": "#7c839b",
+                      "secondary-container": "#fdd898",
+                      "error": "#ba1a1a",
+                      "primary-fixed-dim": "#bec6e0",
+                      "surface-dim": "#d8dadc",
+                      "outline": "#76777d",
+                      "on-primary-fixed": "#131b2e",
+                      "tertiary-fixed-dim": "#b9c7df",
+                      "tertiary-container": "#0d1c2e",
+                      "on-background": "#191c1e",
+                      "inverse-surface": "#2d3133",
+                      "surface-tint": "#565e74",
+                      "secondary": "#755a26",
+                      "on-primary": "#ffffff",
+                      "on-secondary-container": "#785d29",
+                      "secondary-fixed": "#ffdea7",
+                      "surface-variant": "#e0e3e5",
+                      "surface-container": "#eceef0",
+                      "on-primary-fixed-variant": "#3f465c"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "stack-md": "1rem",
+                      "margin-desktop": "2.5rem",
+                      "stack-sm": "0.5rem",
+                      "gutter": "1.5rem",
+                      "container-max": "1200px",
+                      "stack-lg": "2rem",
+                      "margin-mobile": "1rem"
+              },
+              "fontFamily": {
+                      "display-lg-mobile": [
+                              "IBM Plex Sans Arabic"
+                      ],
+                      "body-md": [
+                              "IBM Plex Sans Arabic"
+                      ],
+                      "headline-md": [
+                              "IBM Plex Sans Arabic"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "IBM Plex Sans Arabic"
+                      ],
+                      "display-lg": [
+                              "IBM Plex Sans Arabic"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "60px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body { background-color: #F8FAFC; }
+      </style>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased rtl flex">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-surface-container-low dark:bg-surface-container-low text-secondary dark:text-secondary-fixed font-label-sm text-label-sm h-screen w-64 fixed right-0 top-0 rtl border-l border-outline-variant dark:border-outline flat no shadows flex flex-col h-full py-stack-md z-50">
+<!-- Header -->
+<div class="px-margin-desktop mb-stack-lg flex flex-col items-center">
+<div class="w-16 h-16 bg-surface-container-highest rounded-full flex items-center justify-center mb-stack-sm text-primary">
+<span class="material-symbols-outlined text-headline-md font-headline-md" data-icon="gavel" style="font-variation-settings: 'FILL' 1;">gavel</span>
+</div>
+<h1 class="text-headline-md font-headline-md text-primary">KMT Legal</h1>
+<p class="text-on-surface-variant mt-1">Management Portal</p>
+</div>
+<!-- CTA -->
+<div class="px-gutter mb-stack-md">
+<button class="w-full bg-secondary text-on-secondary py-3 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-label-sm font-label-sm" data-icon="add">add</span>
+                New Filing
+            </button>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto px-2 space-y-1">
+<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 py-3 px-4 bg-secondary-container text-on-secondary-container rounded-lg mx-2 cursor-pointer active:opacity-80 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="folder_shared" style="font-variation-settings: 'FILL' 1;">folder_shared</span>
+                Cases
+            </a>
+<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-container-high mx-2 hover:bg-surface-container-high transition-all cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+                Documents
+            </a>
+<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-container-high mx-2 hover:bg-surface-container-high transition-all cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+                Calendar
+            </a>
+<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-container-high mx-2 hover:bg-surface-container-high transition-all cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+                Clients
+            </a>
+<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-container-high mx-2 hover:bg-surface-container-high transition-all cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+</div>
+<!-- Footer Links -->
+<div class="px-2 mt-auto pt-stack-md border-t border-outline-variant dark:border-outline space-y-1">
+<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-container-high mx-2 hover:bg-surface-container-high transition-all rounded-lg cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                Support
+            </a>
+<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-container-high mx-2 hover:bg-surface-container-high transition-all rounded-lg cursor-pointer active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Logout
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 mr-64 min-h-screen pb-stack-lg">
+<!-- Top Utility Bar (Minimal) -->
+<header class="h-20 bg-surface-container-lowest border-b border-outline-variant flex items-center justify-between px-margin-desktop sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<h2 class="text-headline-md font-headline-md text-primary">إدارة القضايا</h2>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-secondary cursor-pointer transition-colors" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-secondary cursor-pointer transition-colors" data-icon="search">search</span>
+<div class="h-8 w-px bg-outline-variant mx-2"></div>
+<button class="font-label-sm text-label-sm text-secondary hover:underline uppercase">EN</button>
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant ml-2">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a legal associate in a modern corporate setting, natural lighting, sharp focus, wearing a dark navy suit against a soft grey background. Quiet luxury aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDV5FOYfYLe1fT8H0RK6m4EWKMm6buV7pqKs-9ufdsCRSMt0_hxDvSzD7h6W2YEPpEamVqEqK1HlS8YA6mbFrXsT39i4FQuvBpydJAgSVVZS19CjoqJDuLefrJnhp2KGp7mvnP9CqU2lq_mSDuvrfHiD9CVFy7861JAPMq_gsMoZFo0pOI-6R4m8J98SHMPj9v06Um_r_Idf_nMpRaIrDBXQ8xoG_UZFNjKh_8ks37m80IwVyQNW4neXxZ8Hr_l5IrYw77IuIsbI9lR"/>
+</div>
+</div>
+</header>
+<div class="px-margin-desktop mt-stack-lg max-w-container-max mx-auto">
+<!-- Page Header & Primary Action -->
+<div class="flex justify-between items-end mb-stack-md">
+<div>
+<p class="text-on-surface-variant font-body-md text-body-md mb-1">نظرة عامة على جميع القضايا النشطة والمغلقة</p>
+<div class="flex gap-2">
+<span class="inline-flex items-center gap-1 px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full font-label-sm text-label-sm">إجمالي: 142</span>
+<span class="inline-flex items-center gap-1 px-3 py-1 bg-primary-fixed text-on-primary-fixed rounded-full font-label-sm text-label-sm">نشط: 86</span>
+</div>
+</div>
+<button class="bg-secondary text-on-secondary px-6 py-2.5 rounded hover:opacity-90 transition-opacity font-body-md text-body-md flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
+                    إضافة قضية
+                </button>
+</div>
+<!-- Filters Bar (Bento-style container) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 mb-stack-lg shadow-sm">
+<div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+<!-- Search Input -->
+<div class="relative col-span-1 md:col-span-2">
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-outline" data-icon="search">search</span>
+<input class="w-full bg-surface border border-outline-variant rounded-lg pl-3 pr-10 py-2 text-body-md font-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container outline-none transition-all" placeholder="البحث برقم القضية، العميل، أو المحامي..." type="text"/>
+</div>
+<!-- Type Filter -->
+<select class="bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md font-body-md focus:border-primary-container outline-none appearance-none">
+<option value="">نوع القضية</option>
+<option value="commercial">تجاري</option>
+<option value="civil">مدني</option>
+<option value="criminal">جنائي</option>
+<option value="family">أحوال شخصية</option>
+</select>
+<!-- Status Filter -->
+<select class="bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md font-body-md focus:border-primary-container outline-none appearance-none">
+<option value="">الحالة</option>
+<option value="new">جديدة</option>
+<option value="under_study">قيد الدراسة</option>
+<option value="active">نشطة</option>
+<option value="finished">منتهية</option>
+</select>
+<!-- Next Session Filter -->
+<div class="flex items-center gap-2">
+<button class="flex-1 bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md font-body-md text-on-surface-variant hover:bg-surface-container-high transition-colors flex items-center justify-between">
+<span>تاريخ الجلسة</span>
+<span class="material-symbols-outlined text-[18px]" data-icon="calendar_today">calendar_today</span>
+</button>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant flex justify-between items-center">
+<div class="flex gap-2">
+<button class="text-secondary font-label-sm text-label-sm hover:underline">مزيد من الفلاتر</button>
+</div>
+<button class="text-on-surface-variant font-label-sm text-label-sm hover:text-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="filter_list_off">filter_list_off</span>
+                        مسح الفلاتر
+                    </button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-right border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-4 px-6 font-semibold">المعرف الداخلي</th>
+<th class="py-4 px-6 font-semibold">الاسم المختصر</th>
+<th class="py-4 px-6 font-semibold">النوع</th>
+<th class="py-4 px-6 font-semibold">العميل</th>
+<th class="py-4 px-6 font-semibold">المحكمة</th>
+<th class="py-4 px-6 font-semibold">الجلسة القادمة</th>
+<th class="py-4 px-6 font-semibold">الحالة</th>
+<th class="py-4 px-6 font-semibold">المحامي المعين</th>
+<th class="py-4 px-6 font-semibold text-center">إجراءات</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant text-body-md font-body-md text-on-surface">
+<!-- Row 1: Active Case -->
+<tr class="hover:bg-surface transition-colors group">
+<td class="py-4 px-6 font-medium text-tertiary">#KMT-2024-089</td>
+<td class="py-4 px-6">نزاع عقاري - مجموعة الأفق</td>
+<td class="py-4 px-6 text-on-surface-variant">تجاري</td>
+<td class="py-4 px-6">شركة الأفق للتطوير</td>
+<td class="py-4 px-6 text-on-surface-variant">المحكمة التجارية (دائرة 3)</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-error" data-icon="event">event</span>
+<span class="text-error font-medium">12 أكتوبر 2024</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-fixed text-on-primary-fixed border border-inverse-primary">
+                                        نشطة
+                                    </span>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">أ</div>
+<span>أحمد المحمود</span>
+</div>
+</td>
+<td class="py-4 px-6 text-center">
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Under Study -->
+<tr class="hover:bg-surface transition-colors group">
+<td class="py-4 px-6 font-medium text-tertiary">#KMT-2024-102</td>
+<td class="py-4 px-6">استحواذ تقنية الرواد</td>
+<td class="py-4 px-6 text-on-surface-variant">اندماج واستحواذ</td>
+<td class="py-4 px-6">صندوق الاستثمار المتقدم</td>
+<td class="py-4 px-6 text-on-surface-variant">-</td>
+<td class="py-4 px-6 text-on-surface-variant">-</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-container text-on-secondary-container border border-secondary-fixed-dim">
+                                        قيد الدراسة
+                                    </span>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-tint text-on-primary flex items-center justify-center font-bold text-xs">س</div>
+<span>سارة العتيبي</span>
+</div>
+</td>
+<td class="py-4 px-6 text-center">
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: New -->
+<tr class="hover:bg-surface transition-colors group">
+<td class="py-4 px-6 font-medium text-tertiary">#KMT-2024-105</td>
+<td class="py-4 px-6">دعوى عمالية جماعية</td>
+<td class="py-4 px-6 text-on-surface-variant">عمالي</td>
+<td class="py-4 px-6">مصنع الروابي</td>
+<td class="py-4 px-6 text-on-surface-variant">المحكمة العمالية</td>
+<td class="py-4 px-6 text-on-surface-variant">يحدد لاحقاً</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tertiary-fixed text-on-tertiary-fixed border border-tertiary-fixed-dim">
+                                        جديدة
+                                    </span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant italic">
+                                    غير معين
+                                </td>
+<td class="py-4 px-6 text-center">
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Finished -->
+<tr class="hover:bg-surface transition-colors group opacity-75">
+<td class="py-4 px-6 font-medium text-tertiary line-through">#KMT-2023-045</td>
+<td class="py-4 px-6">تصفية تركة (عائلة السعيد)</td>
+<td class="py-4 px-6 text-on-surface-variant">أحوال شخصية</td>
+<td class="py-4 px-6">ورثة محمد السعيد</td>
+<td class="py-4 px-6 text-on-surface-variant">محكمة الأحوال الشخصية</td>
+<td class="py-4 px-6 text-on-surface-variant">منتهية</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-container-high text-on-surface border border-outline-variant">
+                                        منتهية
+                                    </span>
+</td>
+<td class="py-4 px-6">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">أ</div>
+<span>أحمد المحمود</span>
+</div>
+</td>
+<td class="py-4 px-6 text-center">
+<button class="text-on-surface-variant hover:text-secondary p-1 rounded transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="more_vert">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="bg-surface-container-low px-6 py-4 border-t border-outline-variant flex items-center justify-between">
+<div class="text-label-sm font-label-sm text-on-surface-variant">
+                        عرض 1 إلى 4 من 142 سجل
+                    </div>
+<div class="flex items-center gap-2">
+<button class="p-2 border border-outline-variant rounded bg-surface hover:bg-surface-container-high text-on-surface-variant disabled:opacity-50 transition-colors" disabled="">
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
+</button>
+<button class="px-3 py-1 bg-secondary text-on-secondary rounded font-label-sm">1</button>
+<button class="px-3 py-1 border border-outline-variant bg-surface hover:bg-surface-container-high rounded font-label-sm text-on-surface transition-colors">2</button>
+<button class="px-3 py-1 border border-outline-variant bg-surface hover:bg-surface-container-high rounded font-label-sm text-on-surface transition-colors">3</button>
+<span class="text-on-surface-variant px-2">...</span>
+<button class="p-2 border border-outline-variant rounded bg-surface hover:bg-surface-container-high text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="chevron_left">chevron_left</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

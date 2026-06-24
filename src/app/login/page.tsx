@@ -1,0 +1,33 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Suspense } from "react";
+import { LoginForm } from "@/features/auth/login-form";
+
+export const metadata: Metadata = {
+  title: "تسجيل الدخول | KMT Legal",
+  description: "تسجيل الدخول إلى بوابة العميل أو لوحة مكتب KMT Legal."
+};
+
+export default function LoginPage() {
+  return (
+    <main className="min-h-screen bg-kmt-canvas">
+      <div className="mx-auto grid min-h-screen max-w-6xl items-center gap-10 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_460px] lg:px-10">
+        <section className="max-w-xl">
+          <Link className="text-xl font-semibold text-kmt-ink" href="/">
+            KMT Legal
+          </Link>
+          <h1 className="mt-8 text-4xl font-semibold leading-tight text-kmt-ink">وصول آمن للعميل وفريق المكتب.</h1>
+          <p className="mt-4 text-base leading-8 text-kmt-muted">
+            جلسات العمل تعتمد على كوكي آمن، وحسابات فريق العمل لا تفتح لوحة المكتب إلا بعد التحقق الثنائي.
+          </p>
+          <div className="mt-8 rounded-lg border border-kmt-border bg-white p-5 text-sm leading-7 text-kmt-muted">
+            بيانات التطوير تأتي من `npm run db:seed` بعد تشغيل PostgreSQL محلي. لا تستخدم بيانات حقيقية في بيئة التطوير.
+          </div>
+        </section>
+        <Suspense fallback={<div className="min-h-64 rounded-lg border border-kmt-border bg-white" />}>
+          <LoginForm />
+        </Suspense>
+      </div>
+    </main>
+  );
+}

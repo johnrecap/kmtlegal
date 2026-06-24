@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>خدمات KMT Legal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#eceef0",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-bright": "#f7f9fb",
+                        "surface-variant": "#e0e3e5",
+                        "secondary": "#755a26",
+                        "surface-tint": "#565e74",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#271900",
+                        "tertiary-fixed-dim": "#b9c7df",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-primary-fixed": "#131b2e",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#785d29",
+                        "secondary-container": "#fdd898",
+                        "inverse-primary": "#bec6e0",
+                        "primary-fixed-dim": "#bec6e0",
+                        "tertiary": "#000000",
+                        "on-tertiary-container": "#77859a",
+                        "secondary-fixed": "#ffdea7",
+                        "surface-dim": "#d8dadc",
+                        "error-container": "#ffdad6",
+                        "outline": "#76777d",
+                        "inverse-surface": "#2d3133",
+                        "surface": "#f7f9fb",
+                        "tertiary-container": "#0d1c2e",
+                        "tertiary-fixed": "#d5e3fc",
+                        "on-error-container": "#93000a",
+                        "primary": "#000000",
+                        "surface-container-low": "#f2f4f6",
+                        "on-background": "#191c1e",
+                        "on-surface-variant": "#45464d",
+                        "outline-variant": "#c6c6cd",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#7c839b",
+                        "on-surface": "#191c1e",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3a485b",
+                        "surface-container-high": "#e6e8ea",
+                        "on-tertiary-fixed": "#0d1c2e",
+                        "primary-container": "#131b2e",
+                        "primary-fixed": "#dae2fd",
+                        "on-secondary-fixed-variant": "#5b4311",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "secondary-fixed-dim": "#e5c184",
+                        "background": "#f7f9fb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-sm": "0.5rem",
+                        "stack-md": "1rem",
+                        "container-max": "1200px",
+                        "margin-mobile": "1rem",
+                        "gutter": "1.5rem",
+                        "stack-lg": "2rem",
+                        "margin-desktop": "2.5rem"
+                    },
+                    "fontFamily": {
+                        "body-md": ["IBM Plex Sans Arabic"],
+                        "body-lg": ["IBM Plex Sans Arabic"],
+                        "display-lg": ["IBM Plex Sans Arabic"],
+                        "headline-md": ["IBM Plex Sans Arabic"],
+                        "label-sm": ["inter"],
+                        "display-lg-mobile": ["IBM Plex Sans Arabic"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="bg-surface-container-lowest dark:bg-surface-container-lowest text-secondary dark:text-secondary-fixed font-body-md text-body-md w-full top-0 sticky border-b border-outline-variant dark:border-outline flat no shadows z-50">
+<div class="flex justify-between items-center px-margin-desktop max-w-container-max mx-auto h-20 rtl">
+<!-- Brand -->
+<div class="text-headline-md font-headline-md text-primary dark:text-on-primary-fixed flex items-center gap-2 cursor-pointer">
+<span>KMT Legal</span>
+</div>
+<!-- Navigation Links -->
+<div class="hidden md:flex items-center gap-gutter">
+<a class="text-secondary font-bold border-b-2 border-secondary pb-1 cursor-pointer active:opacity-80" href="#">Practice Areas</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Our Team</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Insights</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Contact</a>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-stack-md">
+<button class="hidden md:flex items-center justify-center p-2 text-on-surface-variant hover:text-secondary transition-colors rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="hidden md:flex items-center justify-center p-2 text-on-surface-variant hover:text-secondary transition-colors rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary font-label-sm text-label-sm transition-colors uppercase">EN</button>
+<button class="bg-secondary text-on-secondary px-6 py-2 rounded-lg font-body-md hover:bg-opacity-90 transition-opacity">Book Consultation</button>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-stack-lg flex flex-col gap-stack-lg">
+<!-- Hero Section -->
+<section class="text-center py-12 md:py-20 flex flex-col items-center justify-center relative overflow-hidden rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm">
+<div class="absolute inset-0 opacity-5 pointer-events-none" style="background-image: radial-gradient(#000000 1px, transparent 1px); background-size: 20px 20px;"></div>
+<div class="relative z-10 max-w-2xl px-4">
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-6 leading-tight">خدمات قانونية متخصصة للأفراد والشركات</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8">نقدم حلولاً قانونية شاملة ومصممة خصيصاً لتلبية احتياجاتك بدقة واحترافية.</p>
+<!-- Search Bar -->
+<div class="relative w-full max-w-md mx-auto mb-8">
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline">search</span>
+</div>
+<input class="w-full pl-4 pr-10 py-3 bg-surface text-on-surface border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary transition-all outline-none font-body-md text-body-md placeholder-outline-variant shadow-sm" placeholder="ابحث عن خدمة قانونية..." type="text"/>
+</div>
+<!-- Chips -->
+<div class="flex flex-wrap justify-center gap-3">
+<button class="px-4 py-1.5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm border border-secondary transition-colors">الكل</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant border border-outline-variant font-label-sm text-label-sm hover:bg-surface-container-low transition-colors">أفراد</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant border border-outline-variant font-label-sm text-label-sm hover:bg-surface-container-low transition-colors">شركات</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant border border-outline-variant font-label-sm text-label-sm hover:bg-surface-container-low transition-colors">عقارات</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant border border-outline-variant font-label-sm text-label-sm hover:bg-surface-container-low transition-colors">أسرة</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant border border-outline-variant font-label-sm text-label-sm hover:bg-surface-container-low transition-colors">جنائي</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-lowest text-on-surface-variant border border-outline-variant font-label-sm text-label-sm hover:bg-surface-container-low transition-colors">تجاري</button>
+</div>
+</div>
+</section>
+<!-- Services Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Card 1 -->
+<div class="group bg-surface-container-lowest border border-outline-variant rounded-xl p-6 hover:shadow-md transition-shadow flex flex-col h-full">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-secondary-container transition-colors">
+<span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">gavel</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">القانون الجنائي</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 flex-grow">دفاع متخصص في القضايا الجنائية مع ضمان حماية حقوقك في كل مرحلة.</p>
+<button class="flex items-center gap-2 text-secondary font-label-sm text-label-sm group-hover:underline mt-auto">
+<span>اعرف التفاصيل</span>
+<span class="material-symbols-outlined text-sm rtl:rotate-180">arrow_forward</span>
+</button>
+</div>
+<!-- Card 2 -->
+<div class="group bg-surface-container-lowest border border-outline-variant rounded-xl p-6 hover:shadow-md transition-shadow flex flex-col h-full">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-secondary-container transition-colors">
+<span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">domain</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">تأسيس الشركات</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 flex-grow">خدمات متكاملة لتأسيس الشركات وتسجيل العلامات التجارية وحوكمة الشركات.</p>
+<button class="flex items-center gap-2 text-secondary font-label-sm text-label-sm group-hover:underline mt-auto">
+<span>اعرف التفاصيل</span>
+<span class="material-symbols-outlined text-sm rtl:rotate-180">arrow_forward</span>
+</button>
+</div>
+<!-- Card 3 -->
+<div class="group bg-surface-container-lowest border border-outline-variant rounded-xl p-6 hover:shadow-md transition-shadow flex flex-col h-full">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-secondary-container transition-colors">
+<span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">family_home</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">قانون الأسرة</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 flex-grow">استشارات قانونية في قضايا الأحوال الشخصية، الزواج، الطلاق، والمواريث.</p>
+<button class="flex items-center gap-2 text-secondary font-label-sm text-label-sm group-hover:underline mt-auto">
+<span>اعرف التفاصيل</span>
+<span class="material-symbols-outlined text-sm rtl:rotate-180">arrow_forward</span>
+</button>
+</div>
+<!-- Card 4 -->
+<div class="group bg-surface-container-lowest border border-outline-variant rounded-xl p-6 hover:shadow-md transition-shadow flex flex-col h-full">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-secondary-container transition-colors">
+<span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">real_estate_agent</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">القانون العقاري</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 flex-grow">تمثيل قانوني في النزاعات العقارية وصياغة عقود البيع والشراء والإيجار.</p>
+<button class="flex items-center gap-2 text-secondary font-label-sm text-label-sm group-hover:underline mt-auto">
+<span>اعرف التفاصيل</span>
+<span class="material-symbols-outlined text-sm rtl:rotate-180">arrow_forward</span>
+</button>
+</div>
+<!-- Card 5 -->
+<div class="group bg-surface-container-lowest border border-outline-variant rounded-xl p-6 hover:shadow-md transition-shadow flex flex-col h-full">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-secondary-container transition-colors">
+<span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">contract</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">صياغة العقود</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 flex-grow">صياغة ومراجعة العقود التجارية والمدنية بدقة لضمان حماية مصالحك.</p>
+<button class="flex items-center gap-2 text-secondary font-label-sm text-label-sm group-hover:underline mt-auto">
+<span>اعرف التفاصيل</span>
+<span class="material-symbols-outlined text-sm rtl:rotate-180">arrow_forward</span>
+</button>
+</div>
+<!-- Card 6 -->
+<div class="group bg-surface-container-lowest border border-outline-variant rounded-xl p-6 hover:shadow-md transition-shadow flex flex-col h-full">
+<div class="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-secondary-container transition-colors">
+<span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings: 'FILL' 1;">balance</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">التقاضي وفض المنازعات</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 flex-grow">تمثيل أمام كافة المحاكم وتقديم حلول بديلة لفض المنازعات كالتحكيم.</p>
+<button class="flex items-center gap-2 text-secondary font-label-sm text-label-sm group-hover:underline mt-auto">
+<span>اعرف التفاصيل</span>
+<span class="material-symbols-outlined text-sm rtl:rotate-180">arrow_forward</span>
+</button>
+</div>
+</section>
+<!-- AI Assistant Section -->
+<section class="bg-surface-container border border-outline-variant rounded-xl p-8 md:p-12 mt-4 flex flex-col md:flex-row items-center gap-8 shadow-sm">
+<div class="flex-grow text-center md:text-right">
+<h2 class="font-headline-md text-headline-md text-primary mb-2">غير متأكد من الخدمة المناسبة؟</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 md:mb-0 max-w-xl">دع مساعدنا الذكي يوجهك للخدمة القانونية الأنسب لحالتك. أجب عن بضعة أسئلة بسيطة وسنوجهك للقسم الصحيح.</p>
+</div>
+<div class="flex-shrink-0">
+<button class="bg-primary text-on-primary px-8 py-3 rounded-lg font-body-md text-body-md hover:bg-opacity-90 transition-opacity flex items-center gap-2">
+<span class="material-symbols-outlined">smart_toy</span>
+<span>ابدأ بتحديد نوع الاستشارة</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-highest dark:bg-surface-container-highest text-primary dark:text-on-primary-fixed font-body-md text-body-md w-full bottom-0 flat no shadows mt-auto">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-desktop py-stack-lg max-w-container-max mx-auto rtl">
+<div class="col-span-1 md:col-span-2">
+<div class="text-headline-md font-headline-md text-primary mb-4">KMT Legal</div>
+<p class="text-on-surface-variant mb-4 max-w-sm">© 2024 KMT Legal. All rights reserved. Licensed by the Ministry of Justice.</p>
+</div>
+<div class="flex flex-col gap-2">
+<h4 class="font-bold mb-2">Links</h4>
+<a class="text-on-surface-variant hover:text-primary underline transition-opacity duration-300" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-primary underline transition-opacity duration-300" href="#">Terms of Service</a>
+</div>
+<div class="flex flex-col gap-2">
+<h4 class="font-bold mb-2">Company</h4>
+<a class="text-on-surface-variant hover:text-primary underline transition-opacity duration-300" href="#">Office Locations</a>
+<a class="text-on-surface-variant hover:text-primary underline transition-opacity duration-300" href="#">Careers</a>
+</div>
+</div>
+</footer>
+</body></html>

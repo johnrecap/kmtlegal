@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KMT Legal - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#000000",
+                        "on-tertiary-fixed-variant": "#3a485b",
+                        "surface": "#f7f9fb",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#dae2fd",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-container-low": "#f2f4f6",
+                        "on-secondary-fixed-variant": "#5b4311",
+                        "surface-container-highest": "#e0e3e5",
+                        "inverse-primary": "#bec6e0",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c6c6cd",
+                        "tertiary": "#000000",
+                        "secondary-fixed-dim": "#e5c184",
+                        "on-surface-variant": "#45464d",
+                        "surface-container-high": "#e6e8ea",
+                        "on-surface": "#191c1e",
+                        "background": "#f7f9fb",
+                        "primary-container": "#131b2e",
+                        "on-tertiary-fixed": "#0d1c2e",
+                        "tertiary-fixed": "#d5e3fc",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "on-secondary-fixed": "#271900",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#77859a",
+                        "on-primary-container": "#7c839b",
+                        "secondary-container": "#fdd898",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#bec6e0",
+                        "surface-dim": "#d8dadc",
+                        "outline": "#76777d",
+                        "on-primary-fixed": "#131b2e",
+                        "tertiary-fixed-dim": "#b9c7df",
+                        "tertiary-container": "#0d1c2e",
+                        "on-background": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "surface-tint": "#565e74",
+                        "secondary": "#755a26",
+                        "on-primary": "#ffffff",
+                        "on-secondary-container": "#785d29",
+                        "secondary-fixed": "#ffdea7",
+                        "surface-variant": "#e0e3e5",
+                        "surface-container": "#eceef0",
+                        "on-primary-fixed-variant": "#3f465c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-md": "1rem",
+                        "margin-desktop": "2.5rem",
+                        "stack-sm": "0.5rem",
+                        "gutter": "1.5rem",
+                        "container-max": "1200px",
+                        "stack-lg": "2rem",
+                        "margin-mobile": "1rem"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["IBM Plex Sans Arabic"],
+                        "body-md": ["IBM Plex Sans Arabic"],
+                        "headline-md": ["IBM Plex Sans Arabic"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["IBM Plex Sans Arabic"],
+                        "display-lg": ["IBM Plex Sans Arabic"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen rtl flex">
+<!-- SideNavBar (from JSON) -->
+<nav class="bg-surface-container-low dark:bg-surface-container-low text-secondary dark:text-secondary-fixed font-label-sm text-label-sm h-screen w-64 fixed right-0 top-0 rtl border-l border-outline-variant dark:border-outline flat no shadows flex flex-col h-full py-stack-md z-50">
+<!-- Header -->
+<div class="px-margin-desktop mb-stack-lg">
+<h1 class="text-headline-md font-headline-md text-primary">KMT Legal</h1>
+<p class="text-on-surface-variant mt-stack-sm">Management Portal</p>
+</div>
+<!-- Navigation Links -->
+<div class="flex-grow flex flex-col gap-stack-sm">
+<!-- Active Tab: Dashboard -->
+<a class="bg-secondary-container text-on-secondary-container rounded-lg mx-2 flex items-center px-4 py-3 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined ml-3" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- Inactive Tabs -->
+<a class="text-on-surface-variant hover:bg-surface-container-high mx-2 flex items-center px-4 py-3 rounded-lg hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined ml-3" data-icon="folder_shared">folder_shared</span>
+<span>Cases</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high mx-2 flex items-center px-4 py-3 rounded-lg hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined ml-3" data-icon="description">description</span>
+<span>Documents</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high mx-2 flex items-center px-4 py-3 rounded-lg hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined ml-3" data-icon="calendar_month">calendar_month</span>
+<span>Calendar</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high mx-2 flex items-center px-4 py-3 rounded-lg hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined ml-3" data-icon="group">group</span>
+<span>Clients</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high mx-2 flex items-center px-4 py-3 rounded-lg hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined ml-3" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</div>
+<!-- CTA & Footer Actions -->
+<div class="px-margin-desktop mt-auto pt-stack-lg border-t border-outline-variant">
+<button class="w-full bg-secondary text-on-secondary rounded-lg py-2 font-label-sm mb-stack-md hover:opacity-90 transition-opacity">
+                New Filing
+            </button>
+<div class="flex flex-col gap-stack-sm">
+<a class="text-on-surface-variant hover:bg-surface-container-high flex items-center px-2 py-2 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined ml-3" data-icon="help">help</span>
+<span>Support</span>
+</a>
+<a class="text-on-surface-variant hover:bg-surface-container-high flex items-center px-2 py-2 rounded-lg transition-all duration-200" href="#">
+<span class="material-symbols-outlined ml-3" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 mr-64">
+<!-- Top App Bar (Mobile Only / Utility) -->
+<header class="bg-surface-container-lowest sticky top-0 z-40 border-b border-outline-variant px-margin-desktop py-stack-md flex justify-between items-center h-20 rtl">
+<div class="flex items-center gap-stack-md lg:hidden">
+<button class="text-on-surface-variant p-2">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<span class="text-headline-md font-headline-md text-primary">KMT Legal</span>
+</div>
+<div class="flex-grow flex justify-end items-center gap-stack-lg">
+<div class="hidden md:flex items-center gap-stack-md">
+<button class="text-on-surface-variant hover:text-secondary transition-colors duration-200">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary transition-colors duration-200 relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</div>
+<div class="flex items-center gap-stack-md border-r border-outline-variant pr-stack-md">
+<span class="font-label-sm text-on-surface-variant">محمد عبد الله</span>
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-outline-variant overflow-hidden">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="A professional headshot of a Middle Eastern male executive, late 30s, wearing a tailored dark navy suit and white shirt, subtle warm studio lighting, neutral grey background, high resolution corporate photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDC20iGq_EFb5bXm3ICMhip56iS7BsVpeGnTfS1x7llEDeK3mhMcpWm7Mc2QD-KRbYoDGVlayRpORetK_b1jjkBWqv-Sb3seH71UghHZReYgjw1nhKFABdnE16z-ed_QCKAJfCR7MkgvIktx-oHlvMU_JsG0eFMq9YIklahOiyQeEtch7v2tWUcblE60mHzBtCkcCzIRysinFoMXyglYh8ucm_mBSfs-U9IU1yJSTY1hFuqDOeSD9yYLH9-6YXFXd8orLIgOJeUNmHH"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<div class="p-margin-desktop max-w-container-max mx-auto">
+<!-- Welcome Header -->
+<div class="mb-stack-lg">
+<h2 class="font-display-lg text-display-lg text-primary mb-stack-sm">أهلاً، محمد</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">إليك نظرة عامة على ملفاتك ومواعيدك القادمة.</p>
+</div>
+<!-- Bento Grid: Key Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-stack-lg">
+<!-- Metric 1: Active Cases -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md flex flex-col justify-between h-32 hover:border-secondary transition-colors">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-sm">القضايا النشطة</span>
+<div class="p-2 bg-secondary-container/20 rounded-lg text-secondary">
+<span class="material-symbols-outlined" data-icon="folder_shared">folder_shared</span>
+</div>
+</div>
+<div>
+<span class="font-headline-md text-headline-md text-primary">3</span>
+</div>
+</div>
+<!-- Metric 2: Upcoming Appointments -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md flex flex-col justify-between h-32 hover:border-secondary transition-colors">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-sm">مواعيد قادمة</span>
+<div class="p-2 bg-surface-container-high rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="calendar_month">calendar_month</span>
+</div>
+</div>
+<div>
+<span class="font-headline-md text-headline-md text-primary">1</span>
+</div>
+</div>
+<!-- Metric 3: Required Documents -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md flex flex-col justify-between h-32 hover:border-secondary transition-colors">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-sm">مستندات مطلوبة</span>
+<div class="p-2 bg-error-container/20 rounded-lg text-error">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+</div>
+</div>
+<div>
+<span class="font-headline-md text-headline-md text-primary">2</span>
+</div>
+</div>
+<!-- Metric 4: New Messages -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md flex flex-col justify-between h-32 hover:border-secondary transition-colors">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-sm">رسائل جديدة</span>
+<div class="p-2 bg-primary-fixed-dim/20 rounded-lg text-primary-container">
+<span class="material-symbols-outlined" data-icon="mail">mail</span>
+</div>
+</div>
+<div>
+<span class="font-headline-md text-headline-md text-primary">5</span>
+</div>
+</div>
+</div>
+<!-- Asymmetric Content Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Main Column: Active Case Summaries (Span 2) -->
+<div class="lg:col-span-2 space-y-gutter">
+<div class="flex justify-between items-end mb-stack-md">
+<h3 class="font-headline-md text-headline-md text-primary">ملخص القضايا النشطة</h3>
+<a class="text-secondary font-label-sm hover:underline" href="#">عرض الكل</a>
+</div>
+<!-- Case Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md hover:border-secondary transition-colors">
+<div class="flex justify-between items-start border-b border-outline-variant pb-stack-sm mb-stack-sm">
+<div>
+<div class="flex items-center gap-stack-sm mb-2">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant font-label-sm rounded-DEFAULT text-[10px]">#KMT-2024-089</span>
+<span class="px-2 py-1 bg-blue-50 text-blue-700 font-label-sm rounded-DEFAULT text-[10px]">نشط</span>
+</div>
+<h4 class="font-body-lg text-body-lg text-primary">نزاع تجاري - شركة الأفق</h4>
+</div>
+<span class="text-on-surface-variant font-label-sm">تحديث: 12 أكتوبر</span>
+</div>
+<div class="text-on-surface-variant font-body-md mb-stack-md">
+                            تم تقديم المذكرة الجوابية للمحكمة التجارية. ننتظر تحديد موعد الجلسة القادمة.
+                        </div>
+<div class="flex gap-stack-md">
+<button class="text-secondary font-label-sm hover:opacity-80 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="visibility">visibility</span>
+                                تفاصيل القضية
+                            </button>
+</div>
+</div>
+<!-- Case Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-stack-md hover:border-secondary transition-colors">
+<div class="flex justify-between items-start border-b border-outline-variant pb-stack-sm mb-stack-sm">
+<div>
+<div class="flex items-center gap-stack-sm mb-2">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant font-label-sm rounded-DEFAULT text-[10px]">#KMT-2024-112</span>
+<span class="px-2 py-1 bg-amber-50 text-amber-700 font-label-sm rounded-DEFAULT text-[10px]">قيد المراجعة</span>
+</div>
+<h4 class="font-body-lg text-body-lg text-primary">مراجعة عقد تأسيس - فرع جديد</h4>
+</div>
+<span class="text-on-surface-variant font-label-sm">تحديث: 10 أكتوبر</span>
+</div>
+<div class="text-on-surface-variant font-body-md mb-stack-md">
+                            تم الانتهاء من المسودة الأولى للعقد. مطلوب مراجعة البند الرابع والموافقة عليه.
+                        </div>
+<div class="flex gap-stack-md">
+<button class="text-secondary font-label-sm hover:opacity-80 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="visibility">visibility</span>
+                                تفاصيل القضية
+                            </button>
+<button class="text-error font-label-sm hover:opacity-80 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="upload_file">upload_file</span>
+                                إرفاق مستند
+                            </button>
+</div>
+</div>
+</div>
+<!-- Secondary Column: Next Appointment (Span 1) -->
+<div>
+<h3 class="font-headline-md text-headline-md text-primary mb-stack-md">الموعد القادم</h3>
+<div class="bg-primary-container text-on-primary-container rounded-lg p-stack-md">
+<div class="flex items-start justify-between mb-stack-lg">
+<div class="bg-on-primary-container/20 p-3 rounded-lg">
+<span class="material-symbols-outlined text-inverse-primary" data-icon="event">event</span>
+</div>
+<div class="text-left">
+<span class="block font-headline-md text-on-primary">15</span>
+<span class="block font-label-sm text-inverse-primary">أكتوبر</span>
+</div>
+</div>
+<div class="mb-stack-lg">
+<h4 class="font-body-lg text-on-primary mb-1">اجتماع استشاري - استراتيجية التقاضي</h4>
+<p class="font-body-md text-inverse-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="schedule">schedule</span>
+                                10:00 صباحاً - 11:30 صباحاً
+                            </p>
+<p class="font-body-md text-inverse-primary flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[16px]" data-icon="location_on">location_on</span>
+                                مكتب الرياض الرئيسي
+                            </p>
+</div>
+<div class="flex flex-col gap-stack-sm">
+<button class="w-full bg-secondary text-on-secondary rounded-lg py-2 font-label-sm hover:opacity-90 transition-opacity">
+                                تأكيد الحضور
+                            </button>
+<button class="w-full border border-outline text-inverse-primary rounded-lg py-2 font-label-sm hover:bg-on-primary-container/10 transition-colors">
+                                إعادة جدولة
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

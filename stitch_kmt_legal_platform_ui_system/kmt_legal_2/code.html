@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+
+<html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>المواعيد والجلسات - KMT Legal</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config injected from system prompt -->
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary": "#000000",
+                      "on-tertiary-fixed-variant": "#3a485b",
+                      "surface": "#f7f9fb",
+                      "on-error": "#ffffff",
+                      "primary-fixed": "#dae2fd",
+                      "inverse-on-surface": "#eff1f3",
+                      "surface-container-low": "#f2f4f6",
+                      "on-secondary-fixed-variant": "#5b4311",
+                      "surface-container-highest": "#e0e3e5",
+                      "inverse-primary": "#bec6e0",
+                      "error-container": "#ffdad6",
+                      "outline-variant": "#c6c6cd",
+                      "tertiary": "#000000",
+                      "secondary-fixed-dim": "#e5c184",
+                      "on-surface-variant": "#45464d",
+                      "surface-container-high": "#e6e8ea",
+                      "on-surface": "#191c1e",
+                      "background": "#f7f9fb",
+                      "primary-container": "#131b2e",
+                      "on-tertiary-fixed": "#0d1c2e",
+                      "tertiary-fixed": "#d5e3fc",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-bright": "#f7f9fb",
+                      "on-secondary-fixed": "#271900",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-container": "#77859a",
+                      "on-primary-container": "#7c839b",
+                      "secondary-container": "#fdd898",
+                      "error": "#ba1a1a",
+                      "primary-fixed-dim": "#bec6e0",
+                      "surface-dim": "#d8dadc",
+                      "outline": "#76777d",
+                      "on-primary-fixed": "#131b2e",
+                      "tertiary-fixed-dim": "#b9c7df",
+                      "tertiary-container": "#0d1c2e",
+                      "on-background": "#191c1e",
+                      "inverse-surface": "#2d3133",
+                      "surface-tint": "#565e74",
+                      "secondary": "#755a26",
+                      "on-primary": "#ffffff",
+                      "on-secondary-container": "#785d29",
+                      "secondary-fixed": "#ffdea7",
+                      "surface-variant": "#e0e3e5",
+                      "surface-container": "#eceef0",
+                      "on-primary-fixed-variant": "#3f465c"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "stack-md": "1rem",
+                      "margin-desktop": "2.5rem",
+                      "stack-sm": "0.5rem",
+                      "gutter": "1.5rem",
+                      "container-max": "1200px",
+                      "stack-lg": "2rem",
+                      "margin-mobile": "1rem"
+              },
+              "fontFamily": {
+                      "display-lg-mobile": [
+                              "IBM Plex Sans Arabic"
+                      ],
+                      "body-md": [
+                              "IBM Plex Sans Arabic"
+                      ],
+                      "headline-md": [
+                              "IBM Plex Sans Arabic"
+                      ],
+                      "label-sm": [
+                              "inter"
+                      ],
+                      "body-lg": [
+                              "IBM Plex Sans Arabic"
+                      ],
+                      "display-lg": [
+                              "IBM Plex Sans Arabic"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "60px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { background-color: #f7f9fb; }
+        /* Custom scrollbar for better UI */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c6c6cd; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #76777d; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen flex overflow-hidden">
+<!-- SideNavBar Component (From JSON) -->
+<aside class="bg-surface-container-low h-screen w-64 fixed right-0 top-0 rtl border-l border-outline-variant flex flex-col py-stack-md z-40 hidden md:flex">
+<!-- Header -->
+<div class="px-margin-desktop mb-stack-lg flex flex-col items-center">
+<div class="w-16 h-16 rounded-full overflow-hidden mb-stack-sm border border-outline-variant">
+<img alt="KMT Logo" class="object-cover w-full h-full" data-alt="A highly detailed professional corporate logo for a high-end legal firm 'KMT Legal'. The logo features a stylized monogram or classical scale element, rendered in deep navy and gold accents on a pure white background, communicating authority, precision, and luxury." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlH0IqgvQ27lGps2RIo7FywKF-YFkbBAlAFF7BOsXHUXP4Fy4Sws0ekRgk76muiHal6caERGewN78YgJlZEXZMhVEUIaEv7P32nBn55tqAtpw3a77Pdj9tF_YIt1XVZVK0-995wDMQo-7KaqeMbC_8Uy5w-oPBU_UPYVfXt9RMkQHdJSn-U2Lvna1Zqbh0_r0inQEaY7xuvSxxaMfNa53BSyo2UNlnu5PAgyl41acppFG8YnteqvUjycpw36nYZZe4rptTlUCjXu6O"/>
+</div>
+<h1 class="text-headline-md font-headline-md text-primary text-center">KMT Legal</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant text-center mt-1">Management Portal</p>
+</div>
+<!-- Main Navigation -->
+<nav class="flex-1 overflow-y-auto px-2 space-y-1">
+<a class="flex items-center space-x-3 space-x-reverse px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center space-x-3 space-x-reverse px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="folder_shared">folder_shared</span>
+<span class="font-label-sm text-label-sm">Cases</span>
+</a>
+<a class="flex items-center space-x-3 space-x-reverse px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-sm text-label-sm">Documents</span>
+</a>
+<!-- Active State Navigation Item -->
+<a class="flex items-center space-x-3 space-x-reverse px-3 py-2 rounded-lg bg-secondary-container text-on-secondary-container mx-2 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_month" data-weight="fill" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+<span class="font-label-sm text-label-sm font-bold">Calendar</span>
+</a>
+<a class="flex items-center space-x-3 space-x-reverse px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-sm text-label-sm">Clients</span>
+</a>
+<a class="flex items-center space-x-3 space-x-reverse px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+</nav>
+<!-- CTA -->
+<div class="px-4 mt-stack-md mb-stack-md">
+<button class="w-full bg-secondary text-on-primary font-label-sm text-label-sm py-2 px-4 rounded-lg hover:opacity-90 transition-opacity flex justify-center items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+                New Filing
+            </button>
+</div>
+<!-- Footer Navigation -->
+<div class="mt-auto px-2 border-t border-outline-variant pt-stack-sm space-y-1">
+<a class="flex items-center space-x-3 space-x-reverse px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-sm text-label-sm">Support</span>
+</a>
+<a class="flex items-center space-x-3 space-x-reverse px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-sm text-label-sm">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 md:mr-64 flex flex-col h-screen overflow-hidden bg-background">
+<!-- Top App Bar (Simplified internal header) -->
+<header class="bg-surface-container-lowest border-b border-outline-variant h-20 flex items-center justify-between px-margin-desktop sticky top-0 z-30">
+<h2 class="text-headline-md font-headline-md text-primary font-semibold tracking-tight">المواعيد والجلسات</h2>
+<div class="flex items-center gap-4">
+<!-- Filters trigger -->
+<button class="flex items-center gap-2 px-3 py-1.5 border border-outline-variant rounded bg-surface text-on-surface-variant hover:bg-surface-container-high transition-colors text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-[18px]" data-icon="filter_list">filter_list</span>
+                    تصفية
+                </button>
+<!-- Date Navigation -->
+<div class="flex items-center gap-2 bg-surface-container-low rounded-lg p-1 border border-outline-variant">
+<button class="p-1.5 rounded hover:bg-surface-container-highest text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="chevron_right">chevron_right</span>
+</button>
+<span class="font-body-md text-body-md px-2 font-medium min-w-[120px] text-center">أكتوبر 2024</span>
+<button class="p-1.5 rounded hover:bg-surface-container-highest text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="chevron_left">chevron_left</span>
+</button>
+</div>
+<!-- View Toggle -->
+<div class="flex items-center bg-surface-container-low rounded-lg p-1 border border-outline-variant text-label-sm font-label-sm">
+<button class="px-3 py-1.5 rounded bg-surface shadow-sm text-primary font-medium">شهر</button>
+<button class="px-3 py-1.5 rounded hover:bg-surface-container-highest text-on-surface-variant transition-colors">أسبوع</button>
+<button class="px-3 py-1.5 rounded hover:bg-surface-container-highest text-on-surface-variant transition-colors">يوم</button>
+</div>
+</div>
+</header>
+<!-- Content Grid Layout -->
+<div class="flex-1 overflow-hidden flex flex-col lg:flex-row">
+<!-- Center: Calendar Canvas (9 columns approx) -->
+<div class="flex-1 overflow-auto p-margin-desktop">
+<!-- Quick Filters Bar -->
+<div class="flex gap-3 mb-stack-lg flex-wrap">
+<span class="px-3 py-1 rounded-full border border-outline-variant bg-surface text-on-surface text-label-sm font-label-sm flex items-center gap-2 cursor-pointer hover:bg-surface-container-low">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                        جلسات محكمة
+                    </span>
+<span class="px-3 py-1 rounded-full border border-outline-variant bg-surface text-on-surface text-label-sm font-label-sm flex items-center gap-2 cursor-pointer hover:bg-surface-container-low">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+                        استشارات أونلاين
+                    </span>
+<span class="px-3 py-1 rounded-full border border-outline-variant bg-surface text-on-surface text-label-sm font-label-sm flex items-center gap-2 cursor-pointer hover:bg-surface-container-low">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+                        اجتماعات مكتبية
+                    </span>
+</div>
+<!-- Bento-style Calendar Grid (Mockup Month View) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<!-- Days Header -->
+<div class="grid grid-cols-7 border-b border-outline-variant bg-surface-container-low text-label-sm font-label-sm text-on-surface-variant text-center py-2">
+<div>الأحد</div><div>الإثنين</div><div>الثلاثاء</div><div>الأربعاء</div><div>الخميس</div><div>الجمعة</div><div>السبت</div>
+</div>
+<!-- Calendar Body (Simplified rows) -->
+<div class="grid grid-cols-7 h-[600px]">
+<!-- Row 1 -->
+<div class="border-b border-l border-outline-variant p-2 min-h-[120px] bg-surface-container-highest/30"><span class="text-label-sm text-outline">29</span></div>
+<div class="border-b border-l border-outline-variant p-2 min-h-[120px] bg-surface-container-highest/30"><span class="text-label-sm text-outline">30</span></div>
+<div class="border-b border-l border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm text-on-surface">1</span></div>
+<div class="border-b border-l border-outline-variant p-2 min-h-[120px]">
+<span class="text-label-sm text-on-surface">2</span>
+<div class="mt-1 bg-secondary/10 border border-secondary/20 text-secondary text-[10px] px-1 py-0.5 rounded truncate">جلسة مرافعة - قضية 402</div>
+</div>
+<div class="border-b border-l border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm text-on-surface">3</span></div>
+<div class="border-b border-l border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm text-on-surface">4</span></div>
+<div class="border-b border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm text-on-surface">5</span></div>
+<!-- Row 2 -->
+<div class="border-b border-l border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm text-on-surface">6</span></div>
+<div class="border-b border-l border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm text-on-surface">7</span></div>
+<div class="border-b border-l border-outline-variant p-2 min-h-[120px] bg-primary/5">
+<span class="text-label-sm font-bold text-primary flex items-center justify-between">
+                                8 <span class="w-1.5 h-1.5 bg-error rounded-full" title="يوجد تعارض"></span>
+</span>
+<div class="mt-1 bg-primary-container text-on-primary-container text-[10px] px-1 py-0.5 rounded truncate mb-1">استشارة زووم - العميل أحمد</div>
+<div class="mt-1 bg-secondary/10 border border-secondary/20 text-secondary text-[10px] px-1 py-0.5 rounded truncate">جلسة نطق بالحكم - 10:00</div>
+</div>
+<div class="border-b border-l border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm text-on-surface">9</span></div>
+<div class="border-b border-l border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm text-on-surface">10</span></div>
+<div class="border-b border-l border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm text-on-surface">11</span></div>
+<div class="border-b border-outline-variant p-2 min-h-[120px]"><span class="text-label-sm text-on-surface">12</span></div>
+</div>
+</div>
+</div>
+<!-- Right Panel: Contextual Agenda (3 columns approx) -->
+<div class="w-full lg:w-80 border-r border-outline-variant bg-surface-container-lowest h-full overflow-y-auto flex flex-col">
+<div class="p-4 border-b border-outline-variant sticky top-0 bg-surface-container-lowest/90 backdrop-blur z-10">
+<h3 class="text-body-lg font-body-lg text-primary mb-1">أجندة اليوم</h3>
+<p class="text-label-sm font-label-sm text-on-surface-variant">الثلاثاء، 8 أكتوبر 2024</p>
+</div>
+<div class="p-4 space-y-stack-lg">
+<!-- Urgent Alerts Section -->
+<div class="bg-error-container border border-error/20 rounded-lg p-3">
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-error text-[20px]" data-icon="warning">warning</span>
+<div>
+<h4 class="text-label-sm font-bold text-on-error-container">تنبيه تعارض مواعيد</h4>
+<p class="text-[11px] text-on-error-container/80 mt-1 leading-tight">يوجد تعارض بين جلسة النطق بالحكم والاستشارة عبر زووم في تمام الساعة 10:00 صباحاً.</p>
+<button class="mt-2 text-xs text-error font-medium underline">إعادة جدولة الاستشارة</button>
+</div>
+</div>
+</div>
+<!-- Court Sessions -->
+<div>
+<h4 class="text-label-sm font-label-sm text-on-surface-variant flex items-center gap-2 mb-3 border-b border-outline-variant pb-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                            جلسات المحكمة اليوم
+                        </h4>
+<div class="space-y-3">
+<!-- Event Card -->
+<div class="group relative bg-surface border border-outline-variant rounded-lg p-3 hover:border-secondary transition-colors cursor-pointer shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<span class="text-label-sm font-bold text-primary">10:00 ص - 12:00 م</span>
+<span class="bg-surface-container-high text-on-surface-variant text-[10px] px-1.5 py-0.5 rounded">محكمة الاستئناف</span>
+</div>
+<h5 class="text-body-md font-body-md text-primary leading-tight mb-1">جلسة نطق بالحكم - قضية 892</h5>
+<p class="text-[11px] text-on-surface-variant line-clamp-1">القاضي: محمود الشريف - القاعة 4</p>
+<div class="mt-3 flex justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="text-xs text-secondary font-medium">عرض التفاصيل</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Consultations -->
+<div>
+<h4 class="text-label-sm font-label-sm text-on-surface-variant flex items-center gap-2 mb-3 border-b border-outline-variant pb-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+                            الاستشارات والاجتماعات
+                        </h4>
+<div class="space-y-3">
+<!-- Event Card -->
+<div class="group relative bg-surface border border-outline-variant rounded-lg p-3 hover:border-primary-container transition-colors cursor-pointer shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<span class="text-label-sm font-bold text-primary">10:00 ص - 10:45 ص</span>
+<span class="bg-primary-fixed/20 text-on-primary-fixed text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="videocam">videocam</span> أونلاين
+                                    </span>
+</div>
+<h5 class="text-body-md font-body-md text-primary leading-tight mb-1">استشارة مبدئية - تأسيس شركة</h5>
+<p class="text-[11px] text-on-surface-variant line-clamp-1">العميل: شركة الأفق للاستثمار</p>
+</div>
+<!-- Event Card -->
+<div class="group relative bg-surface border border-outline-variant rounded-lg p-3 hover:border-outline transition-colors cursor-pointer shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<span class="text-label-sm font-bold text-primary">02:30 م - 03:30 م</span>
+<span class="bg-surface-container-high text-on-surface-variant text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]" data-icon="meeting_room">meeting_room</span> المكتب
+                                    </span>
+</div>
+<h5 class="text-body-md font-body-md text-primary leading-tight mb-1">اجتماع مراجعة عقود</h5>
+<p class="text-[11px] text-on-surface-variant line-clamp-1">الفريق الداخلي الموكل بالقضية</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

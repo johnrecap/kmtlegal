@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ملف استشارة عقارية - KMT Legal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "primary": "#000000",
+                "on-tertiary-fixed-variant": "#3a485b",
+                "surface": "#f7f9fb",
+                "on-error": "#ffffff",
+                "primary-fixed": "#dae2fd",
+                "inverse-on-surface": "#eff1f3",
+                "surface-container-low": "#f2f4f6",
+                "on-secondary-fixed-variant": "#5b4311",
+                "surface-container-highest": "#e0e3e5",
+                "inverse-primary": "#bec6e0",
+                "error-container": "#ffdad6",
+                "outline-variant": "#c6c6cd",
+                "tertiary": "#000000",
+                "secondary-fixed-dim": "#e5c184",
+                "on-surface-variant": "#45464d",
+                "surface-container-high": "#e6e8ea",
+                "on-surface": "#191c1e",
+                "background": "#f7f9fb",
+                "primary-container": "#131b2e",
+                "on-tertiary-fixed": "#0d1c2e",
+                "tertiary-fixed": "#d5e3fc",
+                "on-secondary": "#ffffff",
+                "on-error-container": "#93000a",
+                "surface-container-lowest": "#ffffff",
+                "surface-bright": "#f7f9fb",
+                "on-secondary-fixed": "#271900",
+                "on-tertiary": "#ffffff",
+                "on-tertiary-container": "#77859a",
+                "on-primary-container": "#7c839b",
+                "secondary-container": "#fdd898",
+                "error": "#ba1a1a",
+                "primary-fixed-dim": "#bec6e0",
+                "surface-dim": "#d8dadc",
+                "outline": "#76777d",
+                "on-primary-fixed": "#131b2e",
+                "tertiary-fixed-dim": "#b9c7df",
+                "tertiary-container": "#0d1c2e",
+                "on-background": "#191c1e",
+                "inverse-surface": "#2d3133",
+                "surface-tint": "#565e74",
+                "secondary": "#755a26",
+                "on-primary": "#ffffff",
+                "on-secondary-container": "#785d29",
+                "secondary-fixed": "#ffdea7",
+                "surface-variant": "#e0e3e5",
+                "surface-container": "#eceef0",
+                "on-primary-fixed-variant": "#3f465c"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+        },
+        "spacing": {
+                "stack-md": "1rem",
+                "margin-desktop": "2.5rem",
+                "stack-sm": "0.5rem",
+                "gutter": "1.5rem",
+                "container-max": "1200px",
+                "stack-lg": "2rem",
+                "margin-mobile": "1rem"
+        },
+        "fontFamily": {
+                "display-lg-mobile": [
+                        "IBM Plex Sans Arabic"
+                ],
+                "body-md": [
+                        "IBM Plex Sans Arabic"
+                ],
+                "headline-md": [
+                        "IBM Plex Sans Arabic"
+                ],
+                "label-sm": [
+                        "inter"
+                ],
+                "body-lg": [
+                        "IBM Plex Sans Arabic"
+                ],
+                "display-lg": [
+                        "IBM Plex Sans Arabic"
+                ]
+        },
+        "fontSize": {
+                "display-lg-mobile": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-md": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-md": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "label-sm": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "500"
+                        }
+                ],
+                "body-lg": [
+                        "18px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "display-lg": [
+                        "48px",
+                        {
+                                "lineHeight": "60px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "600"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+  body {
+    background-color: theme('colors.background');
+    color: theme('colors.on-background');
+  }
+</style>
+</head>
+<body class="bg-background min-h-screen flex text-on-background rtl">
+<!-- SideNavBar Component -->
+<aside class="hidden md:flex flex-col h-screen w-64 fixed right-0 top-0 rtl bg-surface-container-low border-l border-outline-variant py-stack-md z-40">
+<div class="px-margin-desktop mb-stack-lg">
+<div class="text-headline-md font-headline-md text-primary mb-1">KMT Legal</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Management Portal</div>
+</div>
+<div class="px-4 mb-stack-lg">
+<button class="w-full bg-secondary text-on-secondary py-2 px-4 rounded font-label-sm text-label-sm flex items-center justify-center gap-2 hover:bg-on-secondary-container transition-colors">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">add</span>
+        New Filing
+      </button>
+</div>
+<nav class="flex-1 flex flex-col gap-1 px-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-secondary-container text-on-secondary-container transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">folder_shared</span>
+<span class="font-label-sm text-label-sm">Cases</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">description</span>
+<span class="font-label-sm text-label-sm">Documents</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+<span class="font-label-sm text-label-sm">Calendar</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="font-label-sm text-label-sm">Clients</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-1 px-2 border-t border-outline-variant pt-4">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+<span class="font-label-sm text-label-sm">Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="font-label-sm text-label-sm">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Mobile TopNavBar Component -->
+<header class="md:hidden w-full top-0 sticky bg-surface-container-lowest border-b border-outline-variant z-50">
+<div class="flex justify-between items-center px-margin-mobile h-20 rtl">
+<div class="text-headline-md font-headline-md text-primary">KMT Legal</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-secondary cursor-pointer">search</span>
+<span class="material-symbols-outlined text-secondary cursor-pointer">menu</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:mr-64 w-full p-margin-mobile md:p-margin-desktop max-w-container-max mx-auto">
+<!-- Page Header & Actions -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-stack-lg">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<h1 class="text-display-lg-mobile md:text-display-lg font-display-lg-mobile md:font-display-lg text-primary">ملف استشارة عقارية</h1>
+<span class="px-3 py-1 rounded-full bg-secondary-container/20 text-secondary border border-secondary/30 font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">hourglass_empty</span>
+            قيد المراجعة
+          </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">رقم الملف: #KMT-2024-0892</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-secondary text-on-secondary px-6 py-2 rounded font-body-md text-body-md flex items-center gap-2 hover:bg-on-secondary-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px]">upload_file</span>
+          إرسال مستند جديد
+        </button>
+</div>
+</div>
+<!-- Main Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Left/Main Column: Tabs & Content -->
+<div class="lg:col-span-8 flex flex-col gap-gutter">
+<!-- Tabs Navigation -->
+<div class="border-b border-outline-variant bg-surface-container-lowest px-4 pt-2 rounded-t-lg">
+<nav aria-label="Tabs" class="flex gap-6 overflow-x-auto">
+<button class="border-b-2 border-secondary py-4 px-1 font-body-md text-body-md font-medium text-secondary whitespace-nowrap">
+              الملخص
+            </button>
+<button class="border-b-2 border-transparent py-4 px-1 font-body-md text-body-md font-medium text-on-surface-variant hover:text-secondary hover:border-outline whitespace-nowrap transition-colors">
+              المواعيد
+            </button>
+<button class="border-b-2 border-transparent py-4 px-1 font-body-md text-body-md font-medium text-on-surface-variant hover:text-secondary hover:border-outline whitespace-nowrap transition-colors">
+              المستندات
+            </button>
+<button class="border-b-2 border-transparent py-4 px-1 font-body-md text-body-md font-medium text-on-surface-variant hover:text-secondary hover:border-outline whitespace-nowrap transition-colors">
+              الرسائل
+            </button>
+<button class="border-b-2 border-transparent py-4 px-1 font-body-md text-body-md font-medium text-on-surface-variant hover:text-secondary hover:border-outline whitespace-nowrap transition-colors">
+              المدفوعات
+            </button>
+</nav>
+</div>
+<!-- Tab Content Area (Summary) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-b-lg rounded-tl-lg p-6 shadow-sm">
+<h2 class="text-headline-md font-headline-md text-primary mb-stack-md">تفاصيل القضية</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-stack-lg leading-relaxed">
+            استشارة قانونية شاملة بخصوص نزاع ملكية تجارية في منطقة الأعمال المركزية. يتطلب الملف مراجعة العقود السابقة وتقييم الالتزامات القانونية للأطراف المعنية قبل الشروع في أي إجراءات تقاضي رسمية.
+          </p>
+<h3 class="font-body-lg text-body-lg text-primary mb-4 border-b border-outline-variant pb-2">سجل التطورات (Timeline)</h3>
+<div class="relative border-r border-outline-variant mr-3 pr-6 pb-4">
+<div class="absolute w-3 h-3 bg-secondary rounded-full -right-[6.5px] top-1"></div>
+<div class="mb-1">
+<span class="font-label-sm text-label-sm text-secondary bg-secondary-container/30 px-2 py-0.5 rounded">اليوم، 10:30 صباحاً</span>
+</div>
+<h4 class="font-body-md text-body-md font-medium text-primary">تم استلام الدفعة الأولى</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">تم تأكيد استلام الرسوم الاستشارية المبدئية والبدء في مراجعة الملف.</p>
+</div>
+<div class="relative border-r border-outline-variant mr-3 pr-6 pb-4">
+<div class="absolute w-3 h-3 bg-outline rounded-full -right-[6.5px] top-1"></div>
+<div class="mb-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">12 أكتوبر 2024</span>
+</div>
+<h4 class="font-body-md text-body-md font-medium text-primary">اجتماع تمهيدي</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">عقد اجتماع أولي مع العميل لمناقشة تفاصيل النزاع واستلام المستندات الأولية.</p>
+</div>
+<div class="relative mr-3 pr-6">
+<div class="absolute w-3 h-3 bg-outline rounded-full -right-[6.5px] top-1"></div>
+<div class="mb-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">10 أكتوبر 2024</span>
+</div>
+<h4 class="font-body-md text-body-md font-medium text-primary">فتح الملف</h4>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">تم إنشاء الملف وإسناده للفريق القانوني المختص بالعقارات.</p>
+</div>
+</div>
+</div>
+<!-- Right/Sidebar Column: Info Cards -->
+<div class="lg:col-span-4 flex flex-col gap-stack-md">
+<!-- Case Meta Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 shadow-sm">
+<h3 class="font-body-lg text-body-lg font-medium text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">info</span>
+            معلومات الملف
+          </h3>
+<ul class="flex flex-col gap-4">
+<li class="flex justify-between items-center border-b border-outline-variant pb-2">
+<span class="font-body-md text-body-md text-on-surface-variant">نوع الملف</span>
+<span class="font-body-md text-body-md font-medium text-primary">استشارة عقارية</span>
+</li>
+<li class="flex justify-between items-center border-b border-outline-variant pb-2">
+<span class="font-body-md text-body-md text-on-surface-variant">المحامي المسؤول</span>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container flex items-center justify-center text-secondary font-label-sm">أ.م</div>
+<span class="font-body-md text-body-md font-medium text-primary">أحمد محمود</span>
+</div>
+</li>
+<li class="flex justify-between items-center pb-1">
+<span class="font-body-md text-body-md text-on-surface-variant">تاريخ الفتح</span>
+<span class="font-body-md text-body-md font-medium text-primary">10/10/2024</span>
+</li>
+</ul>
+</div>
+<!-- Next Action Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 shadow-sm relative overflow-hidden">
+<div class="absolute top-0 right-0 w-full h-1 bg-secondary"></div>
+<h3 class="font-body-lg text-body-lg font-medium text-primary mb-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">event</span>
+            الموعد القادم
+          </h3>
+<div class="bg-surface rounded p-3 mb-4">
+<div class="font-body-md text-body-md font-medium text-primary">جلسة استماع أولية</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+              الخميس، 24 أكتوبر 2024 - 10:00 ص
+            </div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">videocam</span>
+              اجتماع مرئي (Zoom)
+            </div>
+</div>
+<button class="w-full bg-transparent border border-outline text-primary py-2 rounded font-body-md text-body-md hover:bg-surface transition-colors">
+            عرض التفاصيل
+          </button>
+</div>
+</div>
+</div>
+</main>
+</body></html>

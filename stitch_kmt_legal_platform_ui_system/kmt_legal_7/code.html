@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Internal Case Detail Page - KMT Legal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#000000",
+                        "on-tertiary-fixed-variant": "#3a485b",
+                        "surface": "#f7f9fb",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#dae2fd",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-container-low": "#f2f4f6",
+                        "on-secondary-fixed-variant": "#5b4311",
+                        "surface-container-highest": "#e0e3e5",
+                        "inverse-primary": "#bec6e0",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c6c6cd",
+                        "tertiary": "#000000",
+                        "secondary-fixed-dim": "#e5c184",
+                        "on-surface-variant": "#45464d",
+                        "surface-container-high": "#e6e8ea",
+                        "on-surface": "#191c1e",
+                        "background": "#f7f9fb",
+                        "primary-container": "#131b2e",
+                        "on-tertiary-fixed": "#0d1c2e",
+                        "tertiary-fixed": "#d5e3fc",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "on-secondary-fixed": "#271900",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#77859a",
+                        "on-primary-container": "#7c839b",
+                        "secondary-container": "#fdd898",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#bec6e0",
+                        "surface-dim": "#d8dadc",
+                        "outline": "#76777d",
+                        "on-primary-fixed": "#131b2e",
+                        "tertiary-fixed-dim": "#b9c7df",
+                        "tertiary-container": "#0d1c2e",
+                        "on-background": "#191c1e",
+                        "inverse-surface": "#2d3133",
+                        "surface-tint": "#565e74",
+                        "secondary": "#755a26",
+                        "on-primary": "#ffffff",
+                        "on-secondary-container": "#785d29",
+                        "secondary-fixed": "#ffdea7",
+                        "surface-variant": "#e0e3e5",
+                        "surface-container": "#eceef0",
+                        "on-primary-fixed-variant": "#3f465c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-md": "1rem",
+                        "margin-desktop": "2.5rem",
+                        "stack-sm": "0.5rem",
+                        "gutter": "1.5rem",
+                        "container-max": "1200px",
+                        "stack-lg": "2rem",
+                        "margin-mobile": "1rem"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["IBM Plex Sans Arabic"],
+                        "body-md": ["IBM Plex Sans Arabic"],
+                        "headline-md": ["IBM Plex Sans Arabic"],
+                        "label-sm": ["inter"],
+                        "body-lg": ["IBM Plex Sans Arabic"],
+                        "display-lg": ["IBM Plex Sans Arabic"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid theme('colors.outline-variant');
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased h-screen overflow-hidden flex">
+<!-- SideNavBar (Shared Component) -->
+<nav class="bg-surface-container-low dark:bg-surface-container-low text-secondary dark:text-secondary-fixed font-label-sm text-label-sm h-screen w-64 fixed right-0 top-0 rtl border-l border-outline-variant dark:border-outline flat no shadows flex flex-col h-full py-stack-md z-50">
+<div class="px-margin-desktop mb-stack-lg flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-headline-md">K</div>
+<div>
+<h1 class="text-headline-md font-headline-md text-primary">KMT Legal</h1>
+<p class="text-on-surface-variant">Management Portal</p>
+</div>
+</div>
+<button class="mx-margin-desktop mb-stack-lg bg-secondary text-on-primary py-2 px-4 rounded hover:bg-secondary-container hover:text-on-secondary-container transition-colors duration-200 flex items-center justify-center gap-2 font-label-sm">
+<span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+            New Filing
+        </button>
+<ul class="flex-1 space-y-2">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high mx-2 transition-colors duration-200 rounded" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg mx-2 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined fill">folder_shared</span>
+                    Cases
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high mx-2 transition-colors duration-200 rounded" href="#">
+<span class="material-symbols-outlined">description</span>
+                    Documents
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high mx-2 transition-colors duration-200 rounded" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+                    Calendar
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high mx-2 transition-colors duration-200 rounded" href="#">
+<span class="material-symbols-outlined">group</span>
+                    Clients
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high mx-2 transition-colors duration-200 rounded" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+</li>
+</ul>
+<div class="mt-auto border-t border-outline-variant pt-stack-sm mx-2">
+<ul class="space-y-2">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+                        Support
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+                        Logout
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 mr-64 h-full overflow-y-auto bg-surface-bright pb-stack-lg">
+<!-- Header Section -->
+<header class="bg-surface-container-lowest border-b border-outline-variant py-stack-md px-margin-desktop sticky top-0 z-40">
+<div class="max-w-container-max mx-auto flex justify-between items-start">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="bg-surface-container-high text-on-surface px-2 py-1 rounded text-label-sm font-label-sm">#CASE-2024-089</span>
+<span class="bg-primary-fixed text-on-primary-fixed px-2 py-1 rounded text-label-sm font-label-sm flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary inline-block"></span> Active</span>
+<span class="bg-error-container text-on-error-container px-2 py-1 rounded text-label-sm font-label-sm">High Priority</span>
+</div>
+<h2 class="text-headline-md font-headline-md text-primary mb-1">Al-Futtaim Commercial Dispute</h2>
+<p class="text-body-md font-body-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 16px;">person</span>
+                        Assigned to: <strong>Ahmed Raza (Senior Counsel)</strong>
+</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface-container-highest text-on-surface hover:bg-surface-container-high px-4 py-2 rounded transition-colors duration-200 flex items-center gap-2 font-label-sm border border-outline-variant">
+<span class="material-symbols-outlined" style="font-size: 18px;">update</span>
+                        Update Status
+                    </button>
+<button class="bg-secondary text-on-primary hover:bg-secondary-container hover:text-on-secondary-container px-4 py-2 rounded transition-colors duration-200 flex items-center gap-2 font-label-sm">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+                        Quick Action
+                    </button>
+</div>
+</div>
+<!-- Tabs -->
+<div class="max-w-container-max mx-auto mt-stack-md border-b border-outline-variant flex overflow-x-auto hide-scrollbar">
+<a class="px-4 py-3 text-secondary font-bold border-b-2 border-secondary whitespace-nowrap" href="#">Summary</a>
+<a class="px-4 py-3 text-on-surface-variant hover:text-secondary transition-colors duration-200 whitespace-nowrap" href="#">Parties</a>
+<a class="px-4 py-3 text-on-surface-variant hover:text-secondary transition-colors duration-200 whitespace-nowrap" href="#">Sessions</a>
+<a class="px-4 py-3 text-on-surface-variant hover:text-secondary transition-colors duration-200 whitespace-nowrap" href="#">Documents</a>
+<a class="px-4 py-3 text-on-surface-variant hover:text-secondary transition-colors duration-200 whitespace-nowrap" href="#">Tasks</a>
+<a class="px-4 py-3 text-on-surface-variant hover:text-secondary transition-colors duration-200 whitespace-nowrap" href="#">Notes</a>
+<a class="px-4 py-3 text-on-surface-variant hover:text-secondary transition-colors duration-200 whitespace-nowrap" href="#">Finance</a>
+<a class="px-4 py-3 text-on-surface-variant hover:text-secondary transition-colors duration-200 whitespace-nowrap" href="#">Activity Log</a>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-margin-desktop max-w-container-max mx-auto space-y-gutter">
+<!-- AI Summary Bento Box -->
+<div class="glass-card rounded-xl p-stack-md relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-fixed rounded-bl-full opacity-20 transition-transform group-hover:scale-110 duration-500"></div>
+<div class="flex items-center gap-3 mb-4 relative z-10">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined">smart_toy</span>
+</div>
+<h3 class="text-body-lg font-headline-md text-primary">ملخص مساعد للمراجعة (AI Summary)</h3>
+</div>
+<p class="text-body-md text-on-surface-variant relative z-10 leading-relaxed">
+                    هذه القضية تتعلق بنزاع تجاري حول خرق عقد توريد. المدعي يطالب بتعويض قدره 2.5 مليون درهم. الجلسة القادمة مقررة في 15 نوفمبر لتقديم مذكرات الدفاع. الأدلة الأساسية تشمل المراسلات الإلكترونية وعقد التوريد الموقع في 2022. يوصى بمراجعة البند 4.2 من العقد.
+                </p>
+<div class="mt-4 flex gap-2 relative z-10">
+<span class="bg-surface-container text-on-surface-variant px-2 py-1 rounded text-label-sm">Contract Breach</span>
+<span class="bg-surface-container text-on-surface-variant px-2 py-1 rounded text-label-sm">High Value</span>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Left Column (Wider) -->
+<div class="lg:col-span-8 space-y-gutter">
+<!-- Quick Actions Row -->
+<div class="grid grid-cols-3 gap-4">
+<button class="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-surface-container-low transition-colors text-on-surface group">
+<span class="material-symbols-outlined text-secondary group-hover:scale-110 transition-transform">event</span>
+<span class="font-label-sm text-label-sm">Add Session</span>
+</button>
+<button class="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-surface-container-low transition-colors text-on-surface group">
+<span class="material-symbols-outlined text-secondary group-hover:scale-110 transition-transform">upload_file</span>
+<span class="font-label-sm text-label-sm">Upload Document</span>
+</button>
+<button class="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg flex flex-col items-center justify-center gap-2 hover:bg-surface-container-low transition-colors text-on-surface group">
+<span class="material-symbols-outlined text-secondary group-hover:scale-110 transition-transform">task_alt</span>
+<span class="font-label-sm text-label-sm">Create Task</span>
+</button>
+</div>
+<!-- Upcoming Sessions -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-md">
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-body-lg font-headline-md text-primary">Upcoming Sessions</h3>
+<a class="text-secondary text-label-sm hover:underline" href="#">View All</a>
+</div>
+<div class="space-y-3">
+<div class="flex items-center p-3 hover:bg-surface-container-low rounded-lg border-b border-outline-variant border-opacity-50 last:border-0 transition-colors cursor-pointer">
+<div class="bg-secondary-container text-on-secondary-container w-12 h-12 rounded flex flex-col items-center justify-center ml-4 shrink-0">
+<span class="text-label-sm font-bold">NOV</span>
+<span class="text-body-md">15</span>
+</div>
+<div class="flex-1">
+<h4 class="text-body-md font-medium text-on-surface">First Hearing - Defense Memo</h4>
+<p class="text-label-sm text-on-surface-variant flex items-center gap-1"><span class="material-symbols-outlined" style="font-size: 14px;">location_on</span> Dubai Courts - Chamber 4B</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_left</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column (Sidebar) -->
+<div class="lg:col-span-4 space-y-gutter">
+<!-- Key Information -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-md">
+<h3 class="text-body-lg font-headline-md text-primary mb-4 border-b border-outline-variant pb-2">Key Details</h3>
+<ul class="space-y-4">
+<li>
+<span class="text-label-sm text-on-surface-variant block mb-1">Court</span>
+<span class="text-body-md text-on-surface">Dubai Commercial Court</span>
+</li>
+<li>
+<span class="text-label-sm text-on-surface-variant block mb-1">Filing Date</span>
+<span class="text-body-md text-on-surface">Oct 12, 2024</span>
+</li>
+<li>
+<span class="text-label-sm text-on-surface-variant block mb-1">Claim Value</span>
+<span class="text-body-md text-on-surface font-medium">AED 2,500,000</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

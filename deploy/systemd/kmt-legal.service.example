@@ -1,0 +1,22 @@
+[Unit]
+Description=KMT Legal Next.js application
+After=network.target
+
+[Service]
+Type=simple
+User=kmt-legal
+Group=kmt-legal
+WorkingDirectory=/opt/kmt-legal/current
+EnvironmentFile=/etc/kmt-legal/kmt-legal.env
+Environment=NODE_ENV=production
+Environment=NEXT_TELEMETRY_DISABLED=1
+ExecStart=/usr/bin/npm run start -- --hostname 127.0.0.1 --port 3000
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/var/lib/kmt-legal /var/lib/kmt-legal/uploads /opt/kmt-legal/current/.next
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KMT Legal Platform - مكتب محاماة عصري</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        @layer utilities {
+            .rtl { direction: rtl; }
+            .ltr { direction: ltr; }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#eceef0",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface-bright": "#f7f9fb",
+                        "surface-variant": "#e0e3e5",
+                        "secondary": "#755a26",
+                        "surface-tint": "#565e74",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#271900",
+                        "tertiary-fixed-dim": "#b9c7df",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-primary-fixed": "#131b2e",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#785d29",
+                        "secondary-container": "#fdd898",
+                        "inverse-primary": "#bec6e0",
+                        "primary-fixed-dim": "#bec6e0",
+                        "tertiary": "#000000",
+                        "on-tertiary-container": "#77859a",
+                        "secondary-fixed": "#ffdea7",
+                        "surface-dim": "#d8dadc",
+                        "error-container": "#ffdad6",
+                        "outline": "#76777d",
+                        "inverse-surface": "#2d3133",
+                        "surface": "#f7f9fb",
+                        "tertiary-container": "#0d1c2e",
+                        "tertiary-fixed": "#d5e3fc",
+                        "on-error-container": "#93000a",
+                        "primary": "#000000",
+                        "surface-container-low": "#f2f4f6",
+                        "on-background": "#191c1e",
+                        "on-surface-variant": "#45464d",
+                        "outline-variant": "#c6c6cd",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#7c839b",
+                        "on-surface": "#191c1e",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3a485b",
+                        "surface-container-high": "#e6e8ea",
+                        "on-tertiary-fixed": "#0d1c2e",
+                        "primary-container": "#131b2e",
+                        "primary-fixed": "#dae2fd",
+                        "on-secondary-fixed-variant": "#5b4311",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "secondary-fixed-dim": "#e5c184",
+                        "background": "#f7f9fb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-sm": "0.5rem",
+                        "stack-md": "1rem",
+                        "container-max": "1200px",
+                        "margin-mobile": "1rem",
+                        "gutter": "1.5rem",
+                        "stack-lg": "2rem",
+                        "margin-desktop": "2.5rem"
+                    },
+                    "fontFamily": {
+                        "body-md": ["IBM Plex Sans Arabic"],
+                        "body-lg": ["IBM Plex Sans Arabic"],
+                        "display-lg": ["IBM Plex Sans Arabic"],
+                        "headline-md": ["IBM Plex Sans Arabic"],
+                        "label-sm": ["inter"],
+                        "display-lg-mobile": ["IBM Plex Sans Arabic"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased rtl">
+<!-- TopNavBar -->
+<nav class="bg-surface-container-lowest dark:bg-surface-container-lowest w-full top-0 sticky border-b border-outline-variant dark:border-outline flat no shadows z-50">
+<div class="flex justify-between items-center px-margin-desktop max-w-container-max mx-auto h-20 rtl">
+<!-- Brand -->
+<div class="text-headline-md font-headline-md text-primary dark:text-on-primary-fixed cursor-pointer active:opacity-80">
+                KMT Legal
+            </div>
+<!-- Navigation Links (Desktop) -->
+<ul class="hidden md:flex gap-6 items-center">
+<li><a class="text-secondary font-bold border-b-2 border-secondary pb-1 hover:text-secondary transition-colors duration-200 font-body-md text-body-md" href="#">Practice Areas</a></li>
+<li><a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary transition-colors duration-200 font-body-md text-body-md" href="#">Our Team</a></li>
+<li><a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary transition-colors duration-200 font-body-md text-body-md" href="#">Insights</a></li>
+<li><a class="text-on-surface-variant dark:text-on-surface-variant hover:text-secondary transition-colors duration-200 font-body-md text-body-md" href="#">Contact</a></li>
+</ul>
+<!-- Actions -->
+<div class="flex items-center gap-4">
+<div class="flex gap-2">
+<button class="text-on-surface-variant hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-80 p-2">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-80 p-2 hidden sm:block">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+<div class="h-6 w-px bg-outline-variant mx-2 hidden sm:block"></div>
+<button class="text-secondary dark:text-secondary-fixed font-label-sm text-label-sm uppercase hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-80">
+                    EN
+                </button>
+<button class="bg-secondary text-on-secondary px-6 py-2 rounded font-body-md text-body-md hover:opacity-90 transition-opacity cursor-pointer active:opacity-80 ml-4 hidden sm:block">
+                    Book Consultation
+                </button>
+<img alt="User profile" class="w-10 h-10 rounded-full border border-outline-variant object-cover ml-2 cursor-pointer" data-alt="A professional headshot of a legal consultant in a well-lit office, wearing a dark navy suit. The image is cropped to a small circle, set against a subtle, light gray background typical of a corporate modern UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDi9K-W_ONiWnnfSywsQ0AuX2Q9O4k-L6K1aoVrpaq024Ugu0NF4uEetfTxKh3VX7daVGtwpgW-9eu-HqbTZl-Ux_9GdidQKELwRYAmaX0ss_6Ub0qTQSgAcPjysNLiVrkGQagQOgxHSQoBnDsraZ63yxyJy49Td4YmsbDM3D4RspZahcbJ9v9wUkUjTL1WUUBp1C_Ues5uzvvNMA6VAKI54bkCKAT3TupExdyI9p2X_0aDdG_xmZgQwjPSJnliok0rxpr1EqrnEbKP"/>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main>
+<!-- Hero Section -->
+<section class="relative bg-surface-container-lowest overflow-hidden py-stack-lg md:py-16">
+<div class="max-w-container-max mx-auto px-margin-desktop grid grid-cols-1 md:grid-cols-12 gap-gutter items-center min-h-[680px]">
+<!-- Hero Text (Right Side in RTL, so Col Span 7) -->
+<div class="md:col-span-6 lg:col-span-7 flex flex-col gap-stack-md z-10 relative">
+<div class="inline-flex items-center gap-2 bg-surface-container-low px-4 py-2 rounded-full w-max mb-4 border border-outline-variant">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="gavel">gavel</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">مكتب محاماة مرخص</span>
+</div>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary leading-tight">
+                        مكتب محاماة عصري يجمع الخبرة القانونية مع <span class="text-secondary">التنظيم الذكي</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-4 max-w-2xl">
+                        احجز استشارتك، ارفع مستنداتك، وتابع مواعيدك وقضاياك من مكان واحد. نحن نقدم حلولاً قانونية متكاملة بلمسة عصرية تضمن لك الشفافية والأمان.
+                    </p>
+<div class="flex flex-wrap gap-4 mt-8">
+<button class="bg-secondary text-on-secondary px-8 py-3 rounded-DEFAULT font-body-md text-body-md hover:bg-secondary/90 transition-colors shadow-sm flex items-center gap-2">
+                            احجز استشارة
+                            <span class="material-symbols-outlined text-sm ltr:rotate-180" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<button class="bg-transparent border border-primary text-primary px-8 py-3 rounded-DEFAULT font-body-md text-body-md hover:bg-surface-container-low transition-colors flex items-center gap-2">
+                            تعرف على فريقنا
+                        </button>
+</div>
+<div class="mt-12 flex items-center gap-6 border-t border-outline-variant pt-6">
+<div class="flex -space-x-4 ltr:space-x-reverse rtl:-space-x-4 rtl:space-x-reverse">
+<img alt="Client" class="w-10 h-10 rounded-full border-2 border-surface-container-lowest object-cover" data-alt="A small circular portrait of a professional corporate lawyer in a modern office. Bright, clean light mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYguxwOx83mO8po_EhRrLmwa1tol-wbALFeC8tdCUPbhvb0uWOnfknH5_uwmbrrW9Ic_tMGi2rUBkYdR0uT2hzuiJubYzbswri2fL_1IWpm11Oh30LGRhva5x6Ly4nF_FkBnJ3YbeN2bfM7lJWyaOB7CPtjD35yFhAz351ajvlYu5oiVa9WVj212q3bHm3gsVM9feCQfac2eFQc4LLUgeudFoB4GoCpF-pD5WGdbHltm-qQDH1dbhwLqUuhkdwbOVIW1w3ubuRBiZO"/>
+<img alt="Client" class="w-10 h-10 rounded-full border-2 border-surface-container-lowest object-cover" data-alt="A small circular portrait of a smiling female legal consultant. Professional corporate modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNzY1Vu7d0P5Z-ypm7fq4CaG4oiymnFNKJSbFsssOHLI0-SH3XPjdC4JLSV30rpYirktUxgxbaGmEVqntz5cIVluXsK3PkIkB0jdja6SprnNmpDhEP-CSjUeYOwLbCjXlC5G1L87kjQ90nSe5oSt-anY2o7DBNH8Y4zXV7Iil7JJ5Fue15tCAqDWnqPlNXr-t09-Zh3avxoVba2fZpnM38n3a62G4F8-XFc1dH12xHtGXOumul7UAS04JCIDR54KV4UuCp2jLZK13n"/>
+<img alt="Client" class="w-10 h-10 rounded-full border-2 border-surface-container-lowest object-cover" data-alt="A small circular portrait of a senior partner in a law firm. Minimalist, premium white background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYC4fZugQ5VuFve6mCa2kzWRGDhglTxO2KGE8TJofBC2WE2hSLxG0RFpv-6KoMa8ng7zJEF9jH48B93OmFKfTjB3rGnVHlW5TeMFLHps1pvR6gzJR0KlJW7XrHomIMDVje3IT8e9FLSYb5yqV3Xe3LZVU78ThQHHDgKviFiTVvVpj_uThXawY008y8z4xjygTYDenEpflWC6dnYmLCgS_I-KyI1bGX6wNlIFbO415xECbzYgKgmwZ6K1LTwr670pjn7zos7Hj-1xzD"/>
+</div>
+<div>
+<p class="font-body-md text-body-md font-bold text-primary">+500 عميل يثقون بنا</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">في مختلف القطاعات</p>
+</div>
+</div>
+</div>
+<!-- Hero Visual (Left Side) -->
+<div class="md:col-span-6 lg:col-span-5 relative mt-12 md:mt-0 z-0">
+<!-- Premium Visual Placeholder -->
+<div class="relative w-full aspect-[4/5] rounded-xl overflow-hidden bg-surface-container border border-outline-variant shadow-sm flex flex-col">
+<div class="h-12 bg-surface-container-low border-b border-outline-variant flex items-center px-4 gap-2">
+<div class="w-3 h-3 rounded-full bg-outline-variant"></div>
+<div class="w-3 h-3 rounded-full bg-outline-variant"></div>
+<div class="w-3 h-3 rounded-full bg-outline-variant"></div>
+</div>
+<div class="flex-1 bg-surface-container-lowest p-6 flex flex-col gap-4">
+<!-- Simulated AI Intake UI -->
+<div class="flex items-center gap-4 mb-4">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="smart_toy">smart_toy</span>
+</div>
+<div>
+<h3 class="font-body-md text-body-md font-bold text-primary">المساعد القانوني الذكي</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant">جاهز لاستقبال استفسارك</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant self-start max-w-[85%]">
+<p class="font-body-md text-body-md text-on-surface-variant">مرحباً بك في KMT Legal. كيف يمكنني مساعدتك اليوم؟</p>
+</div>
+<div class="bg-primary text-on-primary p-4 rounded-lg self-end max-w-[85%] mt-2">
+<p class="font-body-md text-body-md">أريد حجز استشارة بخصوص تأسيس شركة جديدة.</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg border border-outline-variant self-start max-w-[85%] mt-2">
+<p class="font-body-md text-body-md text-on-surface-variant mb-3">بالتأكيد، يمكنني ترتيب ذلك. يرجى اختيار الموعد المناسب:</p>
+<div class="flex gap-2 mt-2">
+<span class="px-3 py-1 bg-surface-container-lowest border border-outline-variant rounded font-label-sm text-label-sm cursor-pointer hover:border-secondary">غداً 10:00 ص</span>
+<span class="px-3 py-1 bg-secondary text-on-secondary border border-secondary rounded font-label-sm text-label-sm cursor-pointer">غداً 2:00 م</span>
+</div>
+</div>
+<!-- Trust Indicator Overlay -->
+<div class="absolute bottom-6 right-6 left-6 bg-surface-container-lowest/90 backdrop-blur-sm p-4 rounded-lg border border-outline-variant shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary" data-icon="verified_user">verified_user</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm font-bold text-primary">تشفير تام</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">بياناتك محمية بالكامل</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary" data-icon="lock">lock</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Services Preview Section -->
+<section class="py-stack-lg bg-surface-container-low">
+<div class="max-w-container-max mx-auto px-margin-desktop">
+<div class="text-center mb-12">
+<h2 class="font-headline-md text-headline-md text-primary font-bold">مجالات التخصص</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-2xl mx-auto">نقدم خدمات قانونية متخصصة تلبي احتياجات الأفراد والشركات بأعلى معايير الجودة.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Service Card 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-lg border border-outline-variant hover:border-secondary transition-colors group cursor-pointer">
+<div class="w-12 h-12 rounded bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-secondary/10 transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-secondary" data-icon="domain">domain</span>
+</div>
+<h3 class="font-body-lg text-body-lg text-primary font-bold mb-2">قضايا الشركات</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">تأسيس الشركات، العقود التجارية، والاستشارات القانونية للشركات الناشئة والكبرى.</p>
+<a class="inline-flex items-center gap-1 text-secondary font-label-sm text-label-sm hover:underline" href="#">
+                            اقرأ المزيد
+                            <span class="material-symbols-outlined text-sm ltr:rotate-180" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<!-- Service Card 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-lg border border-outline-variant hover:border-secondary transition-colors group cursor-pointer">
+<div class="w-12 h-12 rounded bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-secondary/10 transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-secondary" data-icon="family_home">family_home</span>
+</div>
+<h3 class="font-body-lg text-body-lg text-primary font-bold mb-2">قضايا الأسرة</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">النزاعات الأسرية، المواريث، والأحوال الشخصية بسرية تامة واحترافية.</p>
+<a class="inline-flex items-center gap-1 text-secondary font-label-sm text-label-sm hover:underline" href="#">
+                            اقرأ المزيد
+                            <span class="material-symbols-outlined text-sm ltr:rotate-180" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<!-- Service Card 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-lg border border-outline-variant hover:border-secondary transition-colors group cursor-pointer">
+<div class="w-12 h-12 rounded bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-secondary/10 transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-secondary" data-icon="balance">balance</span>
+</div>
+<h3 class="font-body-lg text-body-lg text-primary font-bold mb-2">القضايا الجنائية</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">تمثيل قانوني قوي ودفاع استراتيجي في مختلف أنواع القضايا الجنائية.</p>
+<a class="inline-flex items-center gap-1 text-secondary font-label-sm text-label-sm hover:underline" href="#">
+                            اقرأ المزيد
+                            <span class="material-symbols-outlined text-sm ltr:rotate-180" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<!-- Service Card 4 -->
+<div class="bg-surface-container-lowest p-6 rounded-lg border border-outline-variant hover:border-secondary transition-colors group cursor-pointer">
+<div class="w-12 h-12 rounded bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-secondary/10 transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-secondary" data-icon="real_estate_agent">real_estate_agent</span>
+</div>
+<h3 class="font-body-lg text-body-lg text-primary font-bold mb-2">العقارات</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">النزاعات العقارية، عقود الإيجار والبيع، والاستشارات المتعلقة بالتطوير العقاري.</p>
+<a class="inline-flex items-center gap-1 text-secondary font-label-sm text-label-sm hover:underline" href="#">
+                            اقرأ المزيد
+                            <span class="material-symbols-outlined text-sm ltr:rotate-180" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<!-- Service Card 5 -->
+<div class="bg-surface-container-lowest p-6 rounded-lg border border-outline-variant hover:border-secondary transition-colors group cursor-pointer">
+<div class="w-12 h-12 rounded bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-secondary/10 transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-secondary" data-icon="history_edu">history_edu</span>
+</div>
+<h3 class="font-body-lg text-body-lg text-primary font-bold mb-2">صياغة العقود</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">صياغة ومراجعة كافة أنواع العقود لضمان الحماية القانونية التامة لحقوقك.</p>
+<a class="inline-flex items-center gap-1 text-secondary font-label-sm text-label-sm hover:underline" href="#">
+                            اقرأ المزيد
+                            <span class="material-symbols-outlined text-sm ltr:rotate-180" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+<!-- Service Card 6 -->
+<div class="bg-surface-container-lowest p-6 rounded-lg border border-outline-variant hover:border-secondary transition-colors group cursor-pointer">
+<div class="w-12 h-12 rounded bg-surface-container-low flex items-center justify-center mb-4 group-hover:bg-secondary/10 transition-colors">
+<span class="material-symbols-outlined text-primary group-hover:text-secondary" data-icon="request_quote">request_quote</span>
+</div>
+<h3 class="font-body-lg text-body-lg text-primary font-bold mb-2">التحصيل التجاري</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">إجراءات فعالة لتحصيل الديون والمستحقات المالية للشركات والأفراد.</p>
+<a class="inline-flex items-center gap-1 text-secondary font-label-sm text-label-sm hover:underline" href="#">
+                            اقرأ المزيد
+                            <span class="material-symbols-outlined text-sm ltr:rotate-180" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-surface-container-highest dark:bg-surface-container-highest w-full bottom-0 bg-surface-container-highest flat no shadows">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-desktop py-stack-lg max-w-container-max mx-auto rtl">
+<!-- Brand Info -->
+<div class="flex flex-col gap-4">
+<div class="text-headline-md font-headline-md text-primary">KMT Legal</div>
+<p class="font-body-md text-body-md text-on-surface-variant">مكتب محاماة عصري يجمع الخبرة القانونية مع التنظيم الذكي لتقديم أفضل الخدمات.</p>
+</div>
+<!-- Links: Practice Areas -->
+<div class="flex flex-col gap-4">
+<h4 class="font-body-lg text-body-lg text-primary font-bold">مجالات التخصص</h4>
+<ul class="flex flex-col gap-2">
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-opacity duration-300" href="#">قضايا الشركات</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-opacity duration-300" href="#">القضايا الجنائية</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-opacity duration-300" href="#">صياغة العقود</a></li>
+</ul>
+</div>
+<!-- Links: Quick Links -->
+<div class="flex flex-col gap-4">
+<h4 class="font-body-lg text-body-lg text-primary font-bold">روابط سريعة</h4>
+<ul class="flex flex-col gap-2">
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary underline transition-opacity duration-300" href="#">Privacy Policy</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary underline transition-opacity duration-300" href="#">Terms of Service</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary underline transition-opacity duration-300" href="#">Office Locations</a></li>
+<li><a class="font-body-md text-body-md text-on-surface-variant hover:text-primary underline transition-opacity duration-300" href="#">Careers</a></li>
+</ul>
+</div>
+<!-- Contact Info -->
+<div class="flex flex-col gap-4">
+<h4 class="font-body-lg text-body-lg text-primary font-bold">تواصل معنا</h4>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="location_on">location_on</span>
+                        شارع العليا، الرياض، المملكة العربية السعودية
+                    </p>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="mail">mail</span>
+                        info@kmtlegal.com
+                    </p>
+</div>
+</div>
+<!-- Copyright -->
+<div class="border-t border-outline-variant">
+<div class="px-margin-desktop py-4 max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="font-body-md text-body-md text-on-surface-variant text-center md:text-right">
+                        © 2024 KMT Legal. All rights reserved. Licensed by the Ministry of Justice.
+                    </p>
+<div class="flex gap-4">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined" data-icon="language">language</span></a>
+</div>
+</div>
+</div>
+</footer>
+</main>
+</body></html>

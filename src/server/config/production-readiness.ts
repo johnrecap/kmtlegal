@@ -1,0 +1,218 @@
+import path from "node:path";
+
+export type ProductionReadinessIssue = {
+  code: string;
+  severity: "error" | "warning";
+  message: string;
+};
+
+const REQUIRED_UPLOAD_TYPES = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/jpeg",
+  "image/png"
+]);
+
+export function productionReadinessIssues(env: NodeJS.ProcessEnv = process.env) {
+  const issues: ProductionReadinessIssue[] = [];
+  const isProduction = env.APP_ENV === "production" || env.NODE_ENV === "production";
+
+  if (!isProduction) {
+    return issues;
+  }
+
+  if (env.NODE_ENV !== "production") {
+    issues.push({
+      code: "NODE_ENV_NOT_PRODUCTION",
+      severity: "error",
+      message: "Production VPS must run a production build with NODE_ENV=production."
+    });
+  }
+
+  if (!isHttpsOrigin(env.APP_ORIGIN)) {
+    issues.push({
+      code: "APP_ORIGIN_HTTPS_REQUIRED",
+      severity: "error",
+      message: "APP_ORIGIN must be the canonical HTTPS production origin."
+    });
+  }
+
+  if (!env.AUTH_SECRET || env.AUTH_SECRET.includes("replace-with") || env.AUTH_SECRET.length < 32) {
+    issues.push({
+      code: "AUTH_SECRET_WEAK",
+      severity: "error",
+      message: "AUTH_SECRET must be a production-only secret with at least 32 characters."
+    });
+  }
+
+  if (!env.DATABASE_URL) {
+    issues.push({
+      code: "DATABASE_URL_REQUIRED",
+      severity: "error",
+      message: "DATABASE_URL must point to the production PostgreSQL database on the VPS."
+    });
+  }
+
+  if (env.SESSION_COOKIE_SECURE !== "true") {
+    issues.push({
+      code: "SESSION_COOKIE_SECURE_REQUIRED",
+      severity: "error",
+      message: "SESSION_COOKIE_SECURE=true is required behind HTTPS on the VPS."
+    });
+  }
+
+  if (env.CSRF_STRICT_ORIGIN === "false") {
+    issues.push({
+      code: "CSRF_STRICT_ORIGIN_DISABLED",
+      severity: "error",
+      message: "CSRF_STRICT_ORIGIN must be true or unset in production so API mutations reject missing Origin/Referer headers."
+    });
+  }
+
+  if (env.STORAGE_DRIVER !== "vps-filesystem") {
+    issues.push({
+      code: "STORAGE_DRIVER_UNEXPECTED",
+      severity: "error",
+      message: "MVP production storage must use the private VPS filesystem driver."
+    });
+  }
+
+  if (!isPrivateUploadRoot(env.UPLOADS_DIR)) {
+    issues.push({
+      code: "UPLOADS_DIR_PRIVATE_REQUIRED",
+      severity: "error",
+      message: "UPLOADS_DIR must be outside public web roots and served only through authorized app routes."
+    });
+  }
+
+  if (Number(env.MAX_UPLOAD_MB) !== 5) {
+    issues.push({
+      code: "MAX_UPLOAD_MB_MISMATCH",
+      severity: "error",
+      message: "MAX_UPLOAD_MB must remain 5 for the MVP legal document contract."
+    });
+  }
+
+  const configuredTypes = new Set(
+    (env.ALLOWED_UPLOAD_TYPES ?? "")
+      .split(",")
+      .map((type) => type.trim())
+      .filter(Boolean)
+  );
+  if (!sameSet(configuredTypes, REQUIRED_UPLOAD_TYPES)) {
+    issues.push({
+      code: "ALLOWED_UPLOAD_TYPES_MISMATCH",
+      severity: "error",
+      message: "ALLOWED_UPLOAD_TYPES must match the approved PDF/DOC/DOCX/JPG/PNG allowlist."
+    });
+  }
+
+  if (env.SMTP_ENABLED === "true") {
+    issues.push({
+      code: "SMTP_ENABLED_UNSUPPORTED",
+      severity: "error",
+      message: "SMTP is documented as a future feature but must stay disabled in this release."
+    });
+  }
+
+  if ((env.SMTP_USER && !env.SMTP_PASSWORD) || (!env.SMTP_USER && env.SMTP_PASSWORD)) {
+    issues.push({
+      code: "SMTP_CREDENTIAL_PAIR_REQUIRED",
+      severity: "error",
+      message: "SMTP_USER and SMTP_PASSWORD must be configured together if SMTP credentials are staged for a later release."
+    });
+  }
+
+  if (env.KMT_DEMO_PASSWORD || env.KMT_DEMO_TOTP_SECRET) {
+    issues.push({
+      code: "DEMO_CREDENTIALS_FORBIDDEN",
+      severity: "error",
+      message: "Demo login shortcuts must not be enabled in production."
+    });
+  }
+
+  if (env.STAFF_2FA_MODE === "totp") {
+    issues.push({
+      code: "STAFF_2FA_MODE_UNSUPPORTED",
+      severity: "error",
+      message: "TOTP is deferred and must not be enabled in this release. Use STAFF_2FA_MODE=disabled."
+    });
+  }
+
+  if (env.INSTALLER_ENABLED === "true") {
+    issues.push({
+      code: "INSTALLER_ENABLED_IN_PRODUCTION",
+      severity: "error",
+      message: "The VPS installer must be disabled after the first Super Admin is created and the installer is locked."
+    });
+  }
+
+  if (env.ENABLE_STITCH_CLONE === "true") {
+    issues.push({
+      code: "STITCH_CLONE_ENABLED_IN_PRODUCTION",
+      severity: "error",
+      message: "Stitch clone reference routes must be disabled in production."
+    });
+  }
+
+  if (env.AI_PROVIDER && env.AI_PROVIDER !== "mock" && (!env.AI_BASE_URL || !env.AI_MODEL)) {
+    issues.push({
+      code: "AI_PROVIDER_CONFIG_INCOMPLETE",
+      severity: "error",
+      message: "Non-mock AI providers require AI_BASE_URL and AI_MODEL."
+    });
+  }
+
+  if (env.ANALYTICS_ENABLED === "false") {
+    issues.push({
+      code: "ANALYTICS_DISABLED",
+      severity: "warning",
+      message: "Privacy-safe analytics is disabled; production observability coverage will be reduced."
+    });
+  }
+
+  return issues;
+}
+
+export function assertProductionReady(env: NodeJS.ProcessEnv = process.env) {
+  const issues = productionReadinessIssues(env).filter((issue) => issue.severity === "error");
+  if (issues.length > 0) {
+    throw new Error(`Production readiness failed: ${issues.map((issue) => issue.code).join(", ")}`);
+  }
+}
+
+function isHttpsOrigin(value?: string) {
+  if (!value) {
+    return false;
+  }
+
+  try {
+    return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function isPrivateUploadRoot(value?: string) {
+  if (!value) {
+    return false;
+  }
+
+  const resolved = path.resolve(value).toLowerCase();
+  const publicSegment = `${path.sep}public`;
+  const staticSegments = [`${path.sep}.next`, `${path.sep}public_html`, `${path.sep}www`, `${path.sep}htdocs`];
+
+  return (
+    !resolved.endsWith(publicSegment) &&
+    !resolved.includes(`${publicSegment}${path.sep}`) &&
+    !staticSegments.some((segment) => resolved.endsWith(segment) || resolved.includes(`${segment}${path.sep}`))
+  );
+}
+
+function sameSet(left: Set<string>, right: Set<string>) {
+  if (left.size !== right.size) {
+    return false;
+  }
+  return [...left].every((value) => right.has(value));
+}
