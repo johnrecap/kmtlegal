@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { InstallWizard } from "@/features/install/install-wizard";
-import { isInstallerEnabled } from "@/server/install/installer-service";
+import { isInstallerEnabled } from "@/server/install/installer-env";
 
 export const dynamic = "force-dynamic";
 

@@ -1,16 +1,15 @@
-import { timingSafeEqual } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { z } from "zod";
-import { appendAuditLog } from "@/server/audit/audit-service";
 import { hashPassword } from "@/server/auth/password";
 import { ROLES } from "@/server/auth/policy";
-import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
+import { assertInstallerToken, getInstallerLockPath, hasInstallerLockFile, installerTokenFromRequest, isInstallerEnabled } from "@/server/install/installer-env";
 import { type HostingMode, panelPreflightChecks } from "@/server/install/panel-preflight";
 import { emailSchema, localeSchema, parseWithSchema } from "@/server/validation/schemas";
 
-const INSTALLER_LOCK_DEFAULT = "/var/lib/kmt-legal/install.lock";
+export { assertInstallerToken, getInstallerLockPath, installerTokenFromRequest, isInstallerEnabled } from "@/server/install/installer-env";
+
 const INSTALLER_COMPLETED_SETTING = "installer.completed";
 
 const officeProfileSchema = z.object({
@@ -40,33 +39,9 @@ export type InstallerStatus = {
   reason: string | null;
 };
 
-export function isInstallerEnabled(env: NodeJS.ProcessEnv = process.env) {
-  return env.INSTALLER_ENABLED === "true";
-}
-
-export function getInstallerLockPath(env: NodeJS.ProcessEnv = process.env) {
-  return env.INSTALLER_LOCK_PATH || INSTALLER_LOCK_DEFAULT;
-}
-
-export function installerTokenFromRequest(request: Request) {
-  const authorization = request.headers.get("authorization");
-  if (authorization?.startsWith("Bearer ")) {
-    return authorization.slice("Bearer ".length).trim();
-  }
-
-  return request.headers.get("x-installer-token")?.trim() || new URL(request.url).searchParams.get("token")?.trim() || "";
-}
-
-export function assertInstallerToken(token: string, env: NodeJS.ProcessEnv = process.env) {
-  const expected = env.INSTALLER_SETUP_TOKEN?.trim();
-  if (!expected || !safeEqual(token, expected)) {
-    throw new ApiError(403, "FORBIDDEN", "Installer setup token is invalid.");
-  }
-}
-
 export async function getInstallerStatus(): Promise<InstallerStatus> {
   const enabled = isInstallerEnabled();
-  const [locked, superAdminExists] = await Promise.all([hasInstallerLockFile(), hasActiveSuperAdmin()]);
+  const [locked, superAdminExists] = await Promise.all([hasInstallerLockFile(), hasActiveSuperAdmin().catch(() => false)]);
   const reason = installerUnavailableReason({ enabled, locked, hasActiveSuperAdmin: superAdminExists });
 
   return {
@@ -113,6 +88,7 @@ export async function bootstrapFirstSuperAdmin(input: { token: string; body: unk
   }
 
   const body = parseWithSchema(installerBootstrapSchema, input.body, "Installer bootstrap payload is invalid.");
+  const prisma = await getPrismaClient();
   const role = await prisma.role.findUnique({
     where: { name: ROLES.superAdmin },
     select: { id: true, name: true }
@@ -207,6 +183,7 @@ export async function bootstrapFirstSuperAdmin(input: { token: string; body: unk
     return user;
   });
 
+  const { appendAuditLog } = await import("@/server/audit/audit-service");
   await appendAuditLog({
     actorId: result.id,
     action: "installer.super_admin.bootstrap",
@@ -234,6 +211,7 @@ export async function finishInstaller(input: { token: string; request?: Request 
     throw new ApiError(409, "CONFLICT", "Installer is already locked.");
   }
 
+  const prisma = await getPrismaClient();
   const activeSuperAdmin = await prisma.user.findFirst({
     where: {
       status: "ACTIVE",
@@ -267,6 +245,7 @@ export async function finishInstaller(input: { token: string; request?: Request 
     }
   });
 
+  const { appendAuditLog } = await import("@/server/audit/audit-service");
   await appendAuditLog({
     actorId: activeSuperAdmin.id,
     action: "installer.locked",
@@ -279,16 +258,8 @@ export async function finishInstaller(input: { token: string; request?: Request 
   return { locked: true };
 }
 
-async function hasInstallerLockFile() {
-  try {
-    await fs.access(getInstallerLockPath());
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 async function hasActiveSuperAdmin() {
+  const prisma = await getPrismaClient();
   const count = await prisma.user.count({
     where: {
       status: "ACTIVE",
@@ -332,8 +303,6 @@ async function writeInstallerLock(superAdminId: string) {
   );
 }
 
-function safeEqual(actual: string, expected: string) {
-  const actualBuffer = Buffer.from(actual);
-  const expectedBuffer = Buffer.from(expected);
-  return actualBuffer.length === expectedBuffer.length && timingSafeEqual(actualBuffer, expectedBuffer);
+async function getPrismaClient() {
+  return (await import("@/server/db/prisma")).prisma;
 }

@@ -30,6 +30,8 @@ bash deploy/install/panel-install.sh --panel=aapanel
 8. Let the script run Node/Prisma build, migrations, and seed only after preflight passes.
 9. Open `/install?token=...`, create the first Super Admin, lock the installer, and disable installer mode.
 
+The `/install` UI must render even when database/bootstrap values are incomplete. Missing server values should appear as installer preflight failures, not as a generic 500 page.
+
 ## Hard Rules
 
 - Do not run the root Terminal VPS installer unless you intentionally bypass aaPanel service management.
