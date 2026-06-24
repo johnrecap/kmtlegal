@@ -17,6 +17,7 @@ export const metadata: Metadata = {
 
 type SearchParams = Record<string, string | string[] | undefined>;
 type AuditRow = Awaited<ReturnType<typeof listAdminAuditLogs>>["items"][number];
+type AuditFilterActor = { id: string; name: string; email?: string };
 
 function flattenSearchParams(searchParams: SearchParams) {
   return Object.fromEntries(
@@ -114,7 +115,7 @@ export default async function AdminAuditLogPage({ searchParams = {} }: { searchP
             <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="بحث في الإجراء أو المورد أو المنفذ" />
             <Select className="min-w-48" defaultValue={result.filters.actorId ?? ""} label="المنفذ" name="actorId">
               <option value="">كل المنفذين</option>
-              {result.filterOptions.actors.map((actor) => (
+              {result.filterOptions.actors.map((actor: AuditFilterActor) => (
                 <option key={actor.id} value={actor.id}>
                   {actor.name}
                 </option>
@@ -122,7 +123,7 @@ export default async function AdminAuditLogPage({ searchParams = {} }: { searchP
             </Select>
             <Select className="min-w-48" defaultValue={result.filters.action ?? ""} label="الإجراء" name="action">
               <option value="">كل الإجراءات</option>
-              {result.filterOptions.actions.map((action) => (
+              {result.filterOptions.actions.map((action: string) => (
                 <option key={action} value={action}>
                   {action}
                 </option>
@@ -130,7 +131,7 @@ export default async function AdminAuditLogPage({ searchParams = {} }: { searchP
             </Select>
             <Select className="min-w-44" defaultValue={result.filters.resourceType ?? ""} label="المورد" name="resourceType">
               <option value="">كل الموارد</option>
-              {result.filterOptions.resourceTypes.map((resourceType) => (
+              {result.filterOptions.resourceTypes.map((resourceType: string) => (
                 <option key={resourceType} value={resourceType}>
                   {resourceType}
                 </option>
