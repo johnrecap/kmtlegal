@@ -37,6 +37,7 @@ const controlClasses =
   "w-full rounded border border-slate-300 bg-white px-3 py-2.5 text-base text-kmt-ink placeholder:text-slate-400 shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500";
 
 const selectClasses = cn(controlClasses, "appearance-none bg-none pe-10");
+const nativePickerInputTypes = new Set(["date", "datetime-local", "month", "time", "week"]);
 
 export type TextInputProps = InputHTMLAttributes<HTMLInputElement> & {
   label: string;
@@ -44,13 +45,16 @@ export type TextInputProps = InputHTMLAttributes<HTMLInputElement> & {
   error?: ReactNode;
 };
 
-export function TextInput({ id, label, hint, error, className, ...props }: TextInputProps) {
+export function TextInput({ id, label, hint, error, className, type, dir, ...props }: TextInputProps) {
   const htmlFor = id || props.name || label;
+  const usesNativePicker = typeof type === "string" && nativePickerInputTypes.has(type);
   return (
     <FieldShell htmlFor={htmlFor} label={label} hint={hint} error={error}>
       <input
         id={htmlFor}
-        className={cn(controlClasses, error ? "border-kmt-danger focus:border-kmt-danger" : undefined, className)}
+        className={cn(controlClasses, usesNativePicker ? "pe-11 text-left" : undefined, error ? "border-kmt-danger focus:border-kmt-danger" : undefined, className)}
+        dir={dir ?? (usesNativePicker ? "ltr" : undefined)}
+        type={type}
         aria-invalid={error ? true : undefined}
         aria-describedby={[hint ? `${htmlFor}-hint` : "", error ? `${htmlFor}-error` : ""].filter(Boolean).join(" ") || undefined}
         {...props}

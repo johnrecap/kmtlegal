@@ -39,6 +39,15 @@ describe("product UI primitives", () => {
     expect(html).toContain("aria-hidden=\"true\"");
   });
 
+  it("renders native date and time inputs with picker spacing in RTL layouts", () => {
+    const html = renderToStaticMarkup(<TextInput label="وقت الموعد" name="appointmentStartsAt" type="datetime-local" />);
+
+    expect(html).toContain("type=\"datetime-local\"");
+    expect(html).toContain("dir=\"ltr\"");
+    expect(html).toContain("pe-11");
+    expect(html).toContain("text-left");
+  });
+
   it("renders semantic status badges", () => {
     const html = renderToStaticMarkup(<Badge tone="active">نشطة</Badge>);
 
