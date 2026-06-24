@@ -599,7 +599,13 @@ export async function listAdminAuditLogs(input: { actor: Principal; query: unkno
   return { items, total, filters, page: pagination.page, pageSize: pagination.pageSize, filterOptions };
 }
 
-async function getAuditFilterOptions() {
+type AuditFilterOptions = {
+  actions: string[];
+  resourceTypes: string[];
+  actors: Array<{ id: string; name: string; email: string }>;
+};
+
+async function getAuditFilterOptions(): Promise<AuditFilterOptions> {
   const [actions, resourceTypes, actors] = await Promise.all([
     prisma.auditLog.findMany({ distinct: ["action"], select: { action: true }, orderBy: { action: "asc" }, take: 100 }),
     prisma.auditLog.findMany({
