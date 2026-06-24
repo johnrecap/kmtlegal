@@ -7,6 +7,7 @@
 - Client-side booking stepper with:
   - contact data step
   - request details step
+  - recoverable field-level validation for short summaries and missing consent
   - review/consent step
   - recoverable error state
   - success/reference state
@@ -33,6 +34,7 @@
 ## Tests
 
 - `tests/server/consultation-contract.test.ts`
+- `tests/e2e/booking-stepper-validation.spec.ts`
 - Existing AI/disabled-email/contract tests still pass.
 
 ## Still Open

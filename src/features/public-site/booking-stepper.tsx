@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { AI_REVIEW_DISCLAIMER } from "@/server/ai/copy";
 import { Button, MaterialSymbol, Select, Textarea, TextInput } from "@/components/ui";
 import { trackClientAnalyticsEvent } from "@/lib/analytics-client";
@@ -35,6 +35,10 @@ type BookingSuccess = {
   };
 };
 
+type FieldErrors = Partial<Record<keyof BookingValues, string>>;
+
+const MIN_SUMMARY_LENGTH = 20;
+
 const initialValues: BookingValues = {
   fullName: "",
   phone: "",
@@ -58,7 +62,10 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
     serviceCategory: categoryFromInitialService(initialService)
   });
   const [state, setState] = useState<SubmitState>({ type: "idle" });
+  const [errors, setErrors] = useState<FieldErrors>({});
   const steps = ["بيانات التواصل", "تفاصيل الطلب", "مراجعة وإرسال"];
+  const summaryLength = values.summary.trim().length;
+  const summaryRemaining = Math.max(MIN_SUMMARY_LENGTH - summaryLength, 0);
 
   useEffect(() => {
     if (trackedSteps.current.has(step)) {
@@ -72,14 +79,34 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
     });
   }, [step, values.serviceCategory]);
 
-  const canContinue = useMemo(() => {
-    if (step === 0) return values.fullName.trim().length >= 2 && values.phone.trim().length >= 6;
-    if (step === 1) return values.summary.trim().length >= 20;
-    return values.consent;
-  }, [step, values]);
+  function updateValue<Key extends keyof BookingValues>(key: Key, value: BookingValues[Key]) {
+    setValues((current) => ({ ...current, [key]: value }));
+    setErrors((current) => {
+      if (!current[key]) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
+
+    if (state.type === "error") {
+      setState({ type: "idle" });
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const nextErrors = validateStep(step, values);
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      return;
+    }
+
+    setErrors({});
+
     if (step < 2) {
       setStep((current) => current + 1);
       return;
@@ -145,7 +172,7 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
   }
 
   return (
-    <form className="rounded-lg border border-kmt-border bg-white p-5" onSubmit={submit}>
+    <form className="rounded-lg border border-kmt-border bg-white p-5" noValidate onSubmit={submit}>
       <ol className="grid gap-2 sm:grid-cols-3">
         {steps.map((label, index) => (
           <li key={label} className={index === step ? "rounded bg-kmt-navy px-3 py-2 text-sm font-medium text-white" : "rounded bg-slate-100 px-3 py-2 text-sm font-medium text-kmt-muted"}>
@@ -156,42 +183,48 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
 
       {step === 0 ? (
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <TextInput label="الاسم الكامل" name="fullName" required value={values.fullName} onChange={(event) => setValues({ ...values, fullName: event.target.value })} />
-          <TextInput label="رقم الهاتف" name="phone" required value={values.phone} onChange={(event) => setValues({ ...values, phone: event.target.value })} />
-          <TextInput label="البريد الإلكتروني" name="email" type="email" value={values.email} onChange={(event) => setValues({ ...values, email: event.target.value })} />
-          <TextInput label="المدينة" name="city" value={values.city} onChange={(event) => setValues({ ...values, city: event.target.value })} />
+          <TextInput error={errors.fullName} label="الاسم الكامل" name="fullName" required value={values.fullName} onChange={(event) => updateValue("fullName", event.target.value)} />
+          <TextInput error={errors.phone} label="رقم الهاتف" name="phone" required value={values.phone} onChange={(event) => updateValue("phone", event.target.value)} />
+          <TextInput error={errors.email} label="البريد الإلكتروني" name="email" type="email" value={values.email} onChange={(event) => updateValue("email", event.target.value)} />
+          <TextInput label="المدينة" name="city" value={values.city} onChange={(event) => updateValue("city", event.target.value)} />
         </div>
       ) : null}
 
       {step === 1 ? (
         <div className="mt-6 grid gap-4">
           <div className="grid gap-4 md:grid-cols-3">
-            <Select label="مجال الطلب" name="serviceCategory" value={values.serviceCategory} onChange={(event) => setValues({ ...values, serviceCategory: event.target.value })}>
+            <Select label="مجال الطلب" name="serviceCategory" value={values.serviceCategory} onChange={(event) => updateValue("serviceCategory", event.target.value)}>
               <option value="corporate">الشركات والعقود</option>
               <option value="real-estate">العقارات</option>
               <option value="employment">العمل</option>
               <option value="disputes">المنازعات</option>
             </Select>
-            <Select label="درجة الاستعجال" name="urgency" value={values.urgency} onChange={(event) => setValues({ ...values, urgency: event.target.value as BookingValues["urgency"] })}>
+            <Select label="درجة الاستعجال" name="urgency" value={values.urgency} onChange={(event) => updateValue("urgency", event.target.value as BookingValues["urgency"])}>
               <option value="LOW">منخفضة</option>
               <option value="NORMAL">عادية</option>
               <option value="HIGH">مرتفعة</option>
               <option value="URGENT">عاجلة</option>
             </Select>
-            <Select label="طريقة التواصل" name="preferredMode" value={values.preferredMode} onChange={(event) => setValues({ ...values, preferredMode: event.target.value as BookingValues["preferredMode"] })}>
+            <Select label="طريقة التواصل" name="preferredMode" value={values.preferredMode} onChange={(event) => updateValue("preferredMode", event.target.value as BookingValues["preferredMode"])}>
               <option value="PHONE">هاتف</option>
               <option value="ONLINE">أونلاين</option>
               <option value="OFFICE">في المكتب</option>
             </Select>
           </div>
-          <TextInput label="اسم الطرف الآخر إن وجد" name="opposingPartyName" value={values.opposingPartyName} onChange={(event) => setValues({ ...values, opposingPartyName: event.target.value })} />
+          <TextInput label="اسم الطرف الآخر إن وجد" name="opposingPartyName" value={values.opposingPartyName} onChange={(event) => updateValue("opposingPartyName", event.target.value)} />
           <Textarea
+            error={errors.summary}
             label="ملخص الطلب"
+            minLength={MIN_SUMMARY_LENGTH}
             name="summary"
             required
             value={values.summary}
-            onChange={(event) => setValues({ ...values, summary: event.target.value })}
-            hint="اكتب الوقائع الأساسية والتواريخ المهمة بدون إرفاق مستندات أو بيانات شديدة الحساسية في هذه المرحلة."
+            onChange={(event) => updateValue("summary", event.target.value)}
+            hint={
+              summaryRemaining > 0
+                ? `اكتب ${summaryRemaining} حرفًا إضافيًا على الأقل. اذكر الواقعة الأساسية والتاريخ أو المطلوب من المكتب بدون إرفاق مستندات.`
+                : "الملخص كافٍ للانتقال. لا ترسل مستندات أو بيانات شديدة الحساسية في هذه المرحلة."
+            }
           />
         </div>
       ) : null}
@@ -213,16 +246,24 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
             </p>
           </div>
           <p className="rounded border border-amber-200 bg-amber-50 p-3 text-sm leading-7 text-amber-900">{AI_REVIEW_DISCLAIMER.ar}</p>
-          <label className="flex items-start gap-3 text-sm leading-7 text-kmt-muted">
+          <label className="flex items-start gap-3 text-sm leading-7 text-kmt-muted" htmlFor="booking-consent">
             <input
+              aria-describedby={errors.consent ? "booking-consent-error" : undefined}
+              aria-invalid={errors.consent ? true : undefined}
               checked={values.consent}
               className="mt-1 rounded border-kmt-border text-kmt-gold focus:ring-kmt-gold"
+              id="booking-consent"
               required
               type="checkbox"
-              onChange={(event) => setValues({ ...values, consent: event.target.checked })}
+              onChange={(event) => updateValue("consent", event.target.checked)}
             />
             أوافق على استخدام البيانات لمراجعة الطلب والتواصل بخصوصه، وأفهم أن النموذج لا يقدم استشارة قانونية نهائية.
           </label>
+          {errors.consent ? (
+            <p id="booking-consent-error" className="text-sm leading-6 text-kmt-danger">
+              {errors.consent}
+            </p>
+          ) : null}
         </div>
       ) : null}
 
@@ -238,12 +279,46 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
             رجوع
           </Button>
         ) : null}
-        <Button disabled={!canContinue} loading={state.type === "submitting"} type="submit">
+        <Button disabled={state.type === "submitting"} loading={state.type === "submitting"} type="submit">
           {step === 2 ? "إرسال الطلب" : "متابعة"}
         </Button>
       </div>
     </form>
   );
+}
+
+function validateStep(step: number, values: BookingValues): FieldErrors {
+  if (step === 0) {
+    const errors: FieldErrors = {};
+
+    if (values.fullName.trim().length < 2) {
+      errors.fullName = "اكتب الاسم الكامل حتى نعرف صاحب الطلب.";
+    }
+
+    if (values.phone.trim().length < 6) {
+      errors.phone = "اكتب رقم هاتف صحيح للتواصل معك.";
+    }
+
+    if (values.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
+      errors.email = "اكتب بريدًا إلكترونيًا صحيحًا أو اترك الحقل فارغًا.";
+    }
+
+    return errors;
+  }
+
+  if (step === 1 && values.summary.trim().length < MIN_SUMMARY_LENGTH) {
+    return {
+      summary: `الملخص قصير. اكتب ${MIN_SUMMARY_LENGTH} حرفًا على الأقل حتى يقدر الفريق مراجعة الطلب.`
+    };
+  }
+
+  if (step === 2 && !values.consent) {
+    return {
+      consent: "يجب الموافقة على استخدام البيانات قبل إرسال الطلب."
+    };
+  }
+
+  return {};
 }
 
 function categoryFromInitialService(initialService?: string) {
