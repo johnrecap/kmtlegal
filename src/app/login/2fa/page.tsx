@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "2FA Disabled | KMT Legal",
-  description: "Staff 2FA is deferred and disabled in this release."
+  title: "التحقق الثنائي غير مفعل | KMT Legal",
+  description: "التحقق الثنائي للموظفين مؤجل ومعطل في هذا الإصدار."
 };
 
 export default function DisabledTwoFactorPage() {

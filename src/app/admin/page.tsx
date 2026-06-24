@@ -9,7 +9,8 @@ import {
   consultationStatusLabels,
   formatDateTime,
   labelFrom,
-  modeLabels
+  modeLabels,
+  serviceCategoryLabels
 } from "@/lib/legal-format";
 import { getAdminDashboard } from "@/server/admin/dashboard-service";
 import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
@@ -53,7 +54,7 @@ export default async function AdminHomePage() {
       title="نظرة تشغيلية"
       userLabel={guard.context.user.name}
     >
-      <div className="space-y-6">
+      <div className="min-w-0 space-y-6">
         <form action="/admin/clients" method="get">
           <FilterBar>
             <SearchInput className="min-w-0 flex-1 sm:min-w-96" name="q" placeholder="بحث سريع في العملاء بالاسم أو الهاتف أو البريد" />
@@ -63,13 +64,13 @@ export default async function AdminHomePage() {
           </FilterBar>
         </form>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div className="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-5">
           {metrics.map((item) => (
             <MetricCard key={item.label} label={item.label} value={metricValue(item.value)} meta={item.definition} />
           ))}
         </div>
 
-        <div className="grid gap-5 xl:grid-cols-2">
+        <div className="grid min-w-0 gap-5 xl:grid-cols-2">
           <Card>
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -88,14 +89,14 @@ export default async function AdminHomePage() {
               ) : dashboard.latestClients.length ? (
                 <div className="space-y-3">
                   {dashboard.latestClients.map((client) => (
-                    <Link key={client.id} className="block rounded border border-kmt-border p-3 hover:bg-slate-50" href={`/admin/clients/${client.id}`}>
+                    <Link key={client.id} className="block min-w-0 rounded border border-kmt-border p-3 hover:bg-slate-50" href={`/admin/clients/${client.id}`}>
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <p className="font-semibold text-kmt-navy">{client.fullName}</p>
                         <Badge tone={client.status === "ACTIVE" ? "active" : client.status === "LEAD" ? "pending" : "neutral"}>
                           {labelFrom(clientStatusLabels, client.status)}
                         </Badge>
                       </div>
-                      <p className="mt-1 text-sm text-kmt-muted">{client.assignedLawyer?.name ?? "غير معين"} · {formatDateTime(client.createdAt)}</p>
+                      <p className="mt-1 break-words text-sm text-kmt-muted">{client.assignedLawyer?.name ?? "غير معين"} · {formatDateTime(client.createdAt)}</p>
                     </Link>
                   ))}
                 </div>
@@ -116,12 +117,12 @@ export default async function AdminHomePage() {
               ) : dashboard.upcomingAppointments.length ? (
                 <div className="space-y-3">
                   {dashboard.upcomingAppointments.map((appointment) => (
-                    <div key={appointment.id} className="rounded border border-kmt-border p-3">
+                    <div key={appointment.id} className="min-w-0 rounded border border-kmt-border p-3">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <p className="font-semibold text-kmt-ink">{appointment.title}</p>
                         <Badge tone="pending">{labelFrom(appointmentStatusLabels, appointment.status)}</Badge>
                       </div>
-                      <p className="mt-1 text-sm text-kmt-muted">
+                      <p className="mt-1 break-words text-sm text-kmt-muted">
                         {formatDateTime(appointment.startsAt)} · {appointment.client.fullName} · {labelFrom(modeLabels, appointment.mode)}
                       </p>
                     </div>
@@ -134,7 +135,7 @@ export default async function AdminHomePage() {
           </Card>
         </div>
 
-        <div className="grid gap-5 xl:grid-cols-2">
+        <div className="grid min-w-0 gap-5 xl:grid-cols-2">
           <Card>
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -153,14 +154,14 @@ export default async function AdminHomePage() {
               ) : dashboard.recentConsultations.length ? (
                 <div className="space-y-3">
                   {dashboard.recentConsultations.map((consultation) => (
-                    <Link key={consultation.id} className="block rounded border border-kmt-border p-3 hover:bg-slate-50" href={`/admin/consultations/${consultation.id}`}>
+                    <Link key={consultation.id} className="block min-w-0 rounded border border-kmt-border p-3 hover:bg-slate-50" href={`/admin/consultations/${consultation.id}`}>
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <p className="font-semibold text-kmt-navy">{consultation.fullName}</p>
                         <Badge tone={consultation.status === "CONVERTED" ? "active" : consultation.status === "REJECTED" ? "danger" : "pending"}>
                           {labelFrom(consultationStatusLabels, consultation.status)}
                         </Badge>
                       </div>
-                      <p className="mt-1 text-sm text-kmt-muted">{consultation.serviceCategory} · {formatDateTime(consultation.createdAt)}</p>
+                      <p className="mt-1 break-words text-sm text-kmt-muted">{labelFrom(serviceCategoryLabels, consultation.serviceCategory)} · {formatDateTime(consultation.createdAt)}</p>
                     </Link>
                   ))}
                 </div>
@@ -181,12 +182,12 @@ export default async function AdminHomePage() {
               ) : dashboard.recentCases.length ? (
                 <div className="space-y-3">
                   {dashboard.recentCases.map((legalCase) => (
-                    <Link key={legalCase.id} className="block rounded border border-kmt-border p-3 hover:bg-slate-50" href={`/admin/cases/${legalCase.id}`}>
+                    <Link key={legalCase.id} className="block min-w-0 rounded border border-kmt-border p-3 hover:bg-slate-50" href={`/admin/cases/${legalCase.id}`}>
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <p className="font-semibold text-kmt-ink">{legalCase.internalFileNumber}</p>
                         <Badge tone={legalCase.status === "ACTIVE" ? "active" : "neutral"}>{labelFrom(caseStatusLabels, legalCase.status)}</Badge>
                       </div>
-                      <p className="mt-1 text-sm text-kmt-muted">
+                      <p className="mt-1 break-words text-sm text-kmt-muted">
                         {legalCase.title} · {legalCase.client.fullName} · {formatDateTime(legalCase.updatedAt)}
                       </p>
                     </Link>

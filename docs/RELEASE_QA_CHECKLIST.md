@@ -1,6 +1,6 @@
 # Release QA Checklist
 
-Date: 2026-06-24
+Date: 2026-06-25
 
 ## Local Gates
 
@@ -63,6 +63,40 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 - [ ] Finance invoice/payment basics create/update and client own payment view.
 - [ ] Content/case-study approval gate prevents premature publishing.
 
+## PLAN-27 Live Site QA Gates
+
+- [ ] Homepage rendered article and case-study links resolve with status `< 400`.
+- [ ] `/articles` and `/case-studies` do not contradict homepage featured content.
+- [ ] `/articles/[slug]` and `/case-studies/[slug]` pass for every rendered public link.
+- [ ] Public link-crawl smoke covers homepage, nav, footer, services, team, articles, case studies, privacy, terms, contact, and booking.
+- [ ] Anonymous `/admin` and `/portal` redirects to `/login?next=...` without `ChunkLoadError`.
+- [ ] `_next/static` JavaScript and CSS requested during smoke return status `< 400` and correct MIME types.
+- [ ] Cloudflare Insights is either disabled or permitted by reviewed CSP; no blocked beacon console error remains.
+- [ ] `/favicon.ico` returns a successful static response.
+- [ ] `/login` in production does not mention local seed, demo data, `npm run db:seed`, or local PostgreSQL setup.
+- [ ] Login required-field and invalid-credential errors are visible, accessible, Arabic, and generic.
+- [ ] Booking success shows reference and safe next steps only; no internal AI/mock placeholder or raw enum labels render publicly.
+- [ ] Contact success cannot be accidentally submitted again without a deliberate reset/new-message action.
+- [ ] Mobile smoke passes for `/`, `/services`, `/contact`, and `/book-consultation`.
+- [ ] PLAN-27 live screenshots, console logs, and network evidence are archived.
+
+Authenticated admin live smoke:
+
+```bash
+KMT_LIVE_BASE_URL=https://kmtlegal.saeeddev.com \
+KMT_LIVE_ADMIN_EMAIL=... \
+KMT_LIVE_ADMIN_PASSWORD=... \
+npx playwright test tests/e2e/live-admin-smoke.spec.ts
+```
+
+- [ ] `/admin`, `/admin/consultations`, `/admin/cases`, `/admin/reports`, `/admin/audit-log`, and `/admin/settings` load after admin login without `ChunkLoadError` or `Application error`.
+- [ ] `_next/static` admin JS/CSS requests return status `< 400` and correct MIME; no JS/CSS response returns `text/html`.
+- [ ] `/api/auth/me`, `/api/admin/dashboard`, `/api/admin/consultations`, and `/api/admin/content` return `200` after login.
+- [ ] Admin shell/settings copy is Arabic and does not render `Management`, `Admin`, or `Staff 2FA is deferred`.
+- [ ] Admin consultation review hides legacy English mock AI placeholders/raw JSON and uses Arabic labels.
+- [ ] Mobile smoke passes for `/admin`, `/admin/clients`, and `/admin/content` at `390x844` without page-level horizontal scroll.
+- [ ] Fresh admin evidence is archived under `test-results/live-admin-qa-<date>`.
+
 ## Accessibility Gates
 
 - [ ] Public, login, booking, portal, and admin pages have meaningful headings.
@@ -107,3 +141,5 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 - DB-backed E2E must be run after PostgreSQL and seed data are available.
 - `npm run security:audit` currently fails and blocks release clearance.
 - PLAN-24 remains open until `qa:db`, `qa:release`, dependency audit remediation, and VPS smoke are complete.
+- PLAN-27 local remediation has passed `typecheck`, full `test`, `build`, and non-DB smoke E2E in this workspace.
+- PLAN-27 remains open until full public/static/mobile smoke, DB-backed staging checks, and deployed-site evidence pass.

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { Badge, Button, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
-import { consultationStatusLabels, formatDateTime, labelFrom, modeLabels, urgencyLabels } from "@/lib/legal-format";
+import { consultationStatusLabels, formatDateTime, labelFrom, modeLabels, serviceCategoryLabels, urgencyLabels } from "@/lib/legal-format";
 import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
 import { listAdminConsultations } from "@/server/admin/consultation-review-service";
 import { adminNavForPath } from "../admin-navigation";
@@ -69,8 +69,8 @@ const columns: Array<DataTableColumn<ConsultationRow>> = [
     key: "service",
     header: "نوع الطلب",
     render: (row) => (
-      <div>
-        <p className="font-medium">{row.serviceCategory}</p>
+      <div className="min-w-0">
+        <p className="break-words font-medium">{labelFrom(serviceCategoryLabels, row.serviceCategory)}</p>
         <p className="mt-1 text-xs text-kmt-muted">{labelFrom(modeLabels, row.preferredMode)}</p>
       </div>
     )
@@ -126,7 +126,7 @@ export default async function AdminConsultationsPage({ searchParams = {} }: { se
       title="مراجعة الاستشارات"
       userLabel={guard.context.user.name}
     >
-      <div className="space-y-5">
+      <div className="min-w-0 space-y-5">
         <form action="/admin/consultations" method="get">
           <FilterBar>
             <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالاسم أو الهاتف أو نوع الخدمة" />

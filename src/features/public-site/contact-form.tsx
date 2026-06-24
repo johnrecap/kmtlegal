@@ -21,9 +21,25 @@ const initialValues = {
 export function ContactForm() {
   const [values, setValues] = useState(initialValues);
   const [status, setStatus] = useState<ContactStatus>({ type: "idle" });
+  const isSubmitting = status.type === "submitting";
+  const isLockedAfterSuccess = status.type === "success";
+  const fieldsDisabled = isSubmitting || isLockedAfterSuccess;
+
+  function updateValue<Key extends keyof typeof initialValues>(key: Key, value: (typeof initialValues)[Key]) {
+    setValues((current) => ({ ...current, [key]: value }));
+
+    if (status.type === "error") {
+      setStatus({ type: "idle" });
+    }
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (isLockedAfterSuccess) {
+      return;
+    }
+
     setStatus({ type: "submitting" });
 
     const response = await fetch("/api/public/contact", {
@@ -49,10 +65,10 @@ export function ContactForm() {
   return (
     <form className="rounded-lg border border-kmt-border bg-white p-5" onSubmit={submit}>
       <div className="grid gap-4 md:grid-cols-2">
-        <TextInput label="الاسم الكامل" name="fullName" required value={values.fullName} onChange={(event) => setValues({ ...values, fullName: event.target.value })} />
-        <TextInput label="البريد الإلكتروني" name="email" required type="email" value={values.email} onChange={(event) => setValues({ ...values, email: event.target.value })} />
-        <TextInput label="رقم الهاتف" name="phone" value={values.phone} onChange={(event) => setValues({ ...values, phone: event.target.value })} />
-        <Select label="الموضوع" name="topic" value={values.topic} onChange={(event) => setValues({ ...values, topic: event.target.value })}>
+        <TextInput disabled={fieldsDisabled} label="الاسم الكامل" name="fullName" required value={values.fullName} onChange={(event) => updateValue("fullName", event.target.value)} />
+        <TextInput disabled={fieldsDisabled} label="البريد الإلكتروني" name="email" required type="email" value={values.email} onChange={(event) => updateValue("email", event.target.value)} />
+        <TextInput disabled={fieldsDisabled} label="رقم الهاتف" name="phone" value={values.phone} onChange={(event) => updateValue("phone", event.target.value)} />
+        <Select disabled={fieldsDisabled} label="الموضوع" name="topic" value={values.topic} onChange={(event) => updateValue("topic", event.target.value)}>
           <option value="consultation">طلب استشارة</option>
           <option value="documents">استفسار عن مستندات</option>
           <option value="media">إعلام أو محتوى</option>
@@ -64,8 +80,9 @@ export function ContactForm() {
           label="الرسالة"
           name="message"
           required
+          disabled={fieldsDisabled}
           value={values.message}
-          onChange={(event) => setValues({ ...values, message: event.target.value })}
+          onChange={(event) => updateValue("message", event.target.value)}
           hint="لا ترسل مستندات أو بيانات حساسة عبر نموذج التواصل العام."
         />
       </div>
@@ -73,9 +90,10 @@ export function ContactForm() {
         <input
           checked={values.consent}
           className="mt-1 rounded border-kmt-border text-kmt-gold focus:ring-kmt-gold"
+          disabled={fieldsDisabled}
           required
           type="checkbox"
-          onChange={(event) => setValues({ ...values, consent: event.target.checked })}
+          onChange={(event) => updateValue("consent", event.target.checked)}
         />
         أوافق على استخدام البيانات للتواصل بخصوص الرسالة وفق سياسة الخصوصية.
       </label>
@@ -89,9 +107,23 @@ export function ContactForm() {
           {status.message} {status.requestId ? <span className="ltr inline-block">({status.requestId})</span> : null}
         </p>
       ) : null}
-      <Button className="mt-5" loading={status.type === "submitting"} type="submit">
-        إرسال الرسالة
-      </Button>
+      <div className="mt-5 flex flex-wrap gap-3">
+        <Button disabled={isLockedAfterSuccess} loading={isSubmitting} type="submit">
+          إرسال الرسالة
+        </Button>
+        {isLockedAfterSuccess ? (
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              setValues(initialValues);
+              setStatus({ type: "idle" });
+            }}
+          >
+            رسالة جديدة
+          </Button>
+        ) : null}
+      </div>
     </form>
   );
 }

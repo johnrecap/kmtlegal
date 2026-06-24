@@ -36,6 +36,7 @@
 | Quality gates | Yes | `quality-gates.md` | Product through release and legal protection gates |
 | PLAN-24 remediation | Yes | `docs/PLAN_24_REMEDIATION_PRODUCTION_READINESS.md`, `tasks.md`, `quality-gates.md` | Tracks findings, release blockers, DB/E2E/security/VPS gates |
 | PLAN-26 panel installer | Yes | `docs/PLAN_26_PANEL_INSTALLER.md`, `docs/harness/panel-installer/team-spec.md`, `tasks.md` | Defines Terminal VPS, aaPanel, and conditional cPanel setup modes with preflight and unsupported-hosting rejection |
+| PLAN-27 live-site QA remediation | Yes | `docs/PLAN_27_LIVE_SITE_QA_REMEDIATION.md`, `tasks.md`, `quality-gates.md` | Tracks deployed-site QA remediation across public content links, deploy/admin chunks, CSP, favicon, auth/admin copy, booking/contact UX, admin mock AI/overflow cleanup, and live smoke evidence; local code fixes are partially implemented and deployed evidence remains required |
 
 ## Resolved Clarifications
 - Final hosting target: VPS-class hosting. Terminal VPS is the supported default; aaPanel is supported as a VPS panel adapter; cPanel is conditional on Node.js App, PostgreSQL, command runner, env vars, persistent process, and private storage outside `public_html`.
@@ -45,6 +46,7 @@
 - Staff 2FA: deferred by PLAN-25; `STAFF_2FA_MODE=disabled` is required and TOTP must not be enabled before a future Staff 2FA Rework.
 - Installer: PLAN-25 adds no-code VPS setup, first Super Admin bootstrap, and installer lock requirements.
 - Panel installer: PLAN-26 adds a hosting mode selector and preflight so unsupported cPanel/shared hosting fails before build, migration, or `/install` bootstrap.
+- Live QA remediation: PLAN-27 must pass before production readiness is claimed. Local code now addresses the public content mismatch, CSP/favicon, auth copy, booking success, contact duplicate-submit, admin shell/settings copy, admin mock AI display, and admin overflow findings, but broader static/mobile coverage, atomic deploy, and deployed smoke evidence are still required.
 - Manual finance: invoice/payment basics only with `invoiceNumber`, `clientId`, `caseId?`, `issueDate`, `dueDate?`, `amount`, `currency`, `status`, `paymentMethod?`, `receiptNumber?`, `paidAt?`, `notes?`, `createdById`, timestamps.
 - AI: server-side provider gateway, model/provider agnostic for OpenRouter, OpenAI-compatible APIs, local/OpenCode/custom adapters, or future models.
 
@@ -60,4 +62,4 @@
 - Admin finance/reports are MVP basics only and must not become a full accounting system.
 
 ## Readiness Verdict
-The product implementation is functionally broad but not production-clear. Before production launch, close PLAN-24 open tasks: run DB-backed gates on PostgreSQL, remediate dependency audit findings, run `qa:release`, and complete VPS smoke evidence.
+The product implementation is functionally broad but not production-clear. Before production launch, close PLAN-24 open tasks, complete PLAN-26 hosting smoke for the chosen panel path, and complete PLAN-27 live-site QA remediation: run DB-backed gates on PostgreSQL, remediate dependency audit findings, run `qa:release`, verify broader public links/static assets/mobile behavior plus CSP/favicon/auth/admin/booking/contact behavior, atomically deploy the latest build, and archive deployed smoke evidence.

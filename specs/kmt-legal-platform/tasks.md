@@ -319,3 +319,41 @@ Acceptance:
 - Unsupported shared cPanel fails fast with a clear Arabic/English reason.
 - `/install` first Super Admin bootstrap remains token-protected, no-TOTP, and locked after setup.
 - SMTP remains disabled in every setup mode.
+
+## Milestone 20 - PLAN-27 Live Site QA Remediation
+- [x] T181 Freeze live QA evidence and convert defects into `docs/PLAN_27_LIVE_SITE_QA_REMEDIATION.md`.
+- [x] T182 Decide public content source of truth for homepage, articles, and case studies.
+- [x] T183 Refactor homepage featured content to use DB-backed published articles/case studies or an empty-safe no-link state.
+- [ ] T184 Add production content bootstrap/runbook that does not rely on local demo seed data.
+- [ ] T185 Add public link-crawl coverage for homepage cards, nav links, footer links, article links, case-study links, and service/team detail links. Current status: homepage rendered article/case-study detail links are covered; full nav/footer/services/team crawl remains open.
+- [ ] T186 Add release static asset integrity smoke for `/login`, anonymous `/admin` and `/portal` redirects, `_next/static` JS/CSS status, and MIME types. Current status: `/admin` and `/portal` redirect smoke covers console `ChunkLoadError`; full static MIME crawl remains open.
+- [x] T187 Resolve Cloudflare Insights CSP mismatch by either disabling the beacon or adding reviewed minimal CSP origins.
+- [x] T188 Add favicon/app icon asset and assert `/favicon.ico` does not 404.
+- [x] T189 Remove or production-gate login page development seed/local PostgreSQL guidance.
+- [x] T190 Localize login validation and bad-credential errors while keeping generic security wording.
+- [x] T191 Clean booking success output: Arabic labels, no raw enum labels, no internal AI/mock placeholder text.
+- [x] T192 Prevent accidental duplicate contact form submission after success.
+- [ ] T193 Add mobile smoke for `/`, `/services`, `/contact`, and `/book-consultation`.
+- [x] T194 Update release checklist with PLAN-27 live smoke evidence requirements.
+- [x] T195 Run local verification: `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, and relevant Playwright smoke.
+- [ ] T196 Run DB-backed staging verification for published public content links.
+- [ ] T197 Run live smoke against the active deployed URL and archive screenshots/network/console evidence.
+- [ ] T198 Close PLAN-27 status only after public links, CSP, favicon, login, booking/contact UX, chunk integrity, and live smoke all pass.
+- [x] T199 Audit authenticated live admin routes, static chunks, CSP, API checks, copy, production mock data exposure, content emptiness, and mobile/desktop overflow.
+- [x] T200 Localize admin shell/settings copy without enabling staff 2FA.
+- [x] T201 Hide legacy mock AI classification notes from admin consultation review and render structured Arabic labels instead of raw JSON.
+- [x] T202 Add admin responsive overflow constraints for dashboard shell/cards/tables/grids.
+- [x] T203 Add opt-in authenticated live admin smoke for admin routes, APIs, `_next/static` status/MIME, CSP, dev login copy, and 390px overflow.
+- [ ] T204 Atomically deploy the latest production build to the live target, purge bad `_next/static` cache if needed, and archive fresh live admin evidence.
+
+Acceptance:
+- Homepage, `/articles`, `/articles/[slug]`, `/case-studies`, and `/case-studies/[slug]` no longer contradict each other.
+- No rendered public internal link from the homepage or public lists returns 404.
+- Anonymous protected-route redirects do not emit `ChunkLoadError`.
+- Production CSP has no blocked Cloudflare beacon error, either because the beacon is disabled or the reviewed domains are allowed.
+- `/favicon.ico` resolves successfully.
+- `/login` contains no development seed instructions and shows Arabic generic auth errors.
+- Booking success does not expose internal placeholders or raw enums.
+- Contact success avoids accidental duplicate sends.
+- Authenticated admin pages do not expose English shell/settings copy, raw legacy mock AI text, or page-level horizontal overflow.
+- PLAN-27 evidence is archived before any production-ready claim.

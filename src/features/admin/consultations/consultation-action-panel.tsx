@@ -134,7 +134,7 @@ export function ConsultationActionPanel({
               ))}
             </Select>
             <TextInput disabled={isClosed || isBusy} label="عنوان القضية" name="caseTitle" placeholder="مثال: مراجعة عقد توريد" />
-            <TextInput disabled={isClosed || isBusy} label="نوع القضية" name="caseType" placeholder="corporate" />
+            <TextInput disabled={isClosed || isBusy} label="نوع القضية" name="caseType" placeholder="الشركات والعقود" />
             <div className="grid gap-4 sm:grid-cols-2">
               <Select defaultValue="NORMAL" disabled={isClosed || isBusy} label="الأولوية" name="priority">
                 <option value="LOW">منخفضة</option>

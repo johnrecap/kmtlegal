@@ -8,10 +8,10 @@ Use this file as the first handoff map. The detailed plan tracker is `docs/KMT_L
 
 ## Current Status
 
-- `PLAN-00` through `PLAN-26` are implemented as code, tests, or handoff artifacts where local infrastructure allows.
+- `PLAN-00` through `PLAN-27` are implemented as code, tests, plans, or handoff artifacts where local infrastructure allows.
 - `PLAN-04` still needs a real PostgreSQL runtime check: run migrations and seed against a running `DATABASE_URL`, then rerun seed to verify idempotency.
 - DB-backed E2E flows need PostgreSQL plus seed data before they can run end to end.
-- PLAN-25 adds a no-code VPS installer. PLAN-26 adds panel-aware setup planning for Terminal VPS, aaPanel, and conditional cPanel support. Real hosting smoke still needs to be run before production release.
+- PLAN-25 adds a no-code VPS installer. PLAN-26 adds panel-aware setup planning for Terminal VPS, aaPanel, and conditional cPanel support. PLAN-27 local remediation covers public 404 link prevention, content-source consistency, CSP/favicon, login copy, localized auth errors, booking/contact UX, admin Arabic copy cleanup, safe admin AI display, and admin overflow constraints; broader static/mobile/live smoke plus atomic deploy evidence still needs to be run before production release.
 
 ## Install
 
@@ -116,6 +116,7 @@ Relevant files:
 - `deploy/nginx/kmt-legal.conf.example`
 - `deploy/systemd/kmt-legal.service.example`
 - `docs/PLAN_26_PANEL_INSTALLER.md`
+- `docs/PLAN_27_LIVE_SITE_QA_REMEDIATION.md`
 - `docs/INSTALL_TERMINAL_VPS.md`
 - `docs/INSTALL_AAPANEL.md`
 - `docs/INSTALL_CPANEL.md`
@@ -153,3 +154,4 @@ Production readiness is exposed at `/api/health`. It returns `200` only after en
 - DB-backed smoke for login -> staff 2FA -> admin, booking -> convert -> portal, and upload/download still requires PostgreSQL plus seed data.
 - `npm run security:audit` currently reports release-blocking dependency vulnerabilities; resolve `docs/SECURITY_AUDIT_FINDINGS.md` before production release.
 - Staff TOTP is intentionally deferred; do not enable `STAFF_2FA_MODE=totp` until a future Staff 2FA Rework plan is implemented and tested.
+- PLAN-27 live-site QA remediation is partially implemented locally; do not claim production readiness until broader static/mobile smoke, DB-backed staging checks, and deployed-site evidence pass.

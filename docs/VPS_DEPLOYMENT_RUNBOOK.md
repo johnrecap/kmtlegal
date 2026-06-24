@@ -95,6 +95,34 @@ sudo systemctl restart kmt-legal
 
 Use `npm run db:migrate` for production migrations. `npm run db:migrate:dev` is for local development only.
 
+## Atomic Release Updates
+
+For updates after first install, do not replace `.next` or `_next/static` while the live process is serving requests. Use a release directory and switch `current` only after the new build is complete.
+
+Recommended update flow:
+
+```bash
+sudo mkdir -p /opt/kmt-legal/releases
+sudo rsync -a --delete \
+  --exclude ".git" \
+  --exclude "node_modules" \
+  --exclude ".next" \
+  --exclude "_workspace" \
+  ./ /opt/kmt-legal/releases/kmt-legal-YYYYMMDDHHMMSS/
+sudo chown -R kmt-legal:kmt-legal /opt/kmt-legal/releases/kmt-legal-YYYYMMDDHHMMSS
+cd /opt/kmt-legal/releases/kmt-legal-YYYYMMDDHHMMSS
+set -a
+. /etc/kmt-legal/kmt-legal.env
+set +a
+sudo -E -u kmt-legal npm ci
+sudo -E -u kmt-legal npm run build
+sudo -E -u kmt-legal npm run db:migrate
+sudo ln -sfn /opt/kmt-legal/releases/kmt-legal-YYYYMMDDHHMMSS /opt/kmt-legal/current
+sudo systemctl restart kmt-legal
+```
+
+If Cloudflare or another proxy caches build artifacts, purge only the affected release URLs after the switch, especially `/_next/static/*`, then rerun the live smoke. A failed release must not be accepted if any `_next/static/*.js` or `*.css` request returns `400`, `404`, or `text/html`.
+
 ## Nginx
 
 Use `deploy/nginx/kmt-legal.conf.example` as the starting point.

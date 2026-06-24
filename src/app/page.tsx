@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
-import { articles, caseStudies, legalServices, lawyers, navForPath } from "@/content/public-content";
+import { legalServices, lawyers, navForPath } from "@/content/public-content";
 import { PageHero, PublicSection, TrustStrip } from "@/features/public-site/public-components";
+import { listPublishedArticles, listPublishedCaseStudies } from "@/server/public/content-service";
 
 export const metadata: Metadata = {
   title: "KMT Legal | مكتب محاماة عربي منظم",
@@ -11,7 +12,37 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" }
 };
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+type FeaturedArticle = Awaited<ReturnType<typeof listPublishedArticles>>[number];
+type FeaturedCaseStudy = Awaited<ReturnType<typeof listPublishedCaseStudies>>[number];
+
+async function loadFeaturedContent(): Promise<{
+  articles: FeaturedArticle[];
+  caseStudies: FeaturedCaseStudy[];
+}> {
+  if (!shouldLoadDatabaseContent()) {
+    return { articles: [], caseStudies: [] };
+  }
+
+  try {
+    const [articles, caseStudies] = await Promise.all([listPublishedArticles(), listPublishedCaseStudies()]);
+    return {
+      articles: articles.slice(0, 2),
+      caseStudies: caseStudies.slice(0, 1)
+    };
+  } catch {
+    return { articles: [], caseStudies: [] };
+  }
+}
+
+function shouldLoadDatabaseContent() {
+  return Boolean(process.env.DATABASE_URL) || process.env.APP_ENV === "production" || process.env.NODE_ENV === "production";
+}
+
+export default async function HomePage() {
+  const featuredContent = await loadFeaturedContent();
+
   return (
     <PublicShell navItems={navForPath("/")}>
       <PageHero
@@ -67,20 +98,34 @@ export default function HomePage() {
 
       <PublicSection eyebrow="محتوى قانوني" title="توعية بدون وعود قانونية" description="مقالات ودراسات حالة مجهولة تساعدك على تجهيز الأسئلة والمستندات قبل التواصل.">
         <div className="grid gap-4 lg:grid-cols-2">
-          {articles.slice(0, 2).map((article) => (
+          {featuredContent.articles.map((article) => (
             <Link key={article.slug} className="rounded-lg border border-kmt-border bg-white p-5 hover:border-kmt-gold" href={`/articles/${article.slug}`}>
               <p className="text-sm font-semibold text-kmt-gold">{article.readTime}</p>
               <h3 className="mt-2 text-xl font-semibold text-kmt-ink">{article.title}</h3>
               <p className="mt-3 text-sm leading-7 text-kmt-muted">{article.excerpt}</p>
             </Link>
           ))}
-          {caseStudies.slice(0, 1).map((study) => (
+          {featuredContent.caseStudies.map((study) => (
             <Link key={study.slug} className="rounded-lg border border-amber-200 bg-amber-50 p-5 hover:border-kmt-gold" href={`/case-studies/${study.slug}`}>
               <p className="text-sm font-semibold text-amber-800">دراسة حالة مجهولة</p>
               <h3 className="mt-2 text-xl font-semibold text-kmt-ink">{study.title}</h3>
               <p className="mt-3 text-sm leading-7 text-kmt-muted">{study.summary}</p>
             </Link>
           ))}
+          {featuredContent.articles.length === 0 && featuredContent.caseStudies.length === 0 ? (
+            <>
+              <Link className="rounded-lg border border-kmt-border bg-white p-5 hover:border-kmt-gold" href="/articles">
+                <p className="text-sm font-semibold text-kmt-gold">مقالات قانونية</p>
+                <h3 className="mt-2 text-xl font-semibold text-kmt-ink">استعرض أحدث المقالات المنشورة</h3>
+                <p className="mt-3 text-sm leading-7 text-kmt-muted">سيظهر المحتوى المنشور هنا بعد اعتماده من لوحة المكتب.</p>
+              </Link>
+              <Link className="rounded-lg border border-amber-200 bg-amber-50 p-5 hover:border-kmt-gold" href="/case-studies">
+                <p className="text-sm font-semibold text-amber-800">دراسات حالة مجهولة</p>
+                <h3 className="mt-2 text-xl font-semibold text-kmt-ink">دراسات حالة بلا بيانات عملاء</h3>
+                <p className="mt-3 text-sm leading-7 text-kmt-muted">لا تعرض الصفحة روابط تفاصيل إلا بعد وجود دراسة حالة منشورة ومجهولة المصدر.</p>
+              </Link>
+            </>
+          ) : null}
         </div>
       </PublicSection>
     </PublicShell>

@@ -1,6 +1,5 @@
-const isProduction = process.env.NODE_ENV === "production";
-
 function contentSecurityPolicy() {
+  const isProduction = process.env.NODE_ENV === "production";
   const directives = [
     "default-src 'self'",
     "base-uri 'self'",
@@ -10,8 +9,8 @@ function contentSecurityPolicy() {
     "img-src 'self' data: blob:",
     "font-src 'self' data:",
     "style-src 'self' 'unsafe-inline'",
-    `script-src 'self' 'unsafe-inline'${isProduction ? "" : " 'unsafe-eval'"}`,
-    `connect-src 'self'${isProduction ? "" : " ws: wss:"}`,
+    `script-src 'self' 'unsafe-inline'${isProduction ? " https://static.cloudflareinsights.com" : " 'unsafe-eval'"}`,
+    `connect-src 'self'${isProduction ? " https://cloudflareinsights.com" : " ws: wss:"}`,
     "media-src 'self'",
     "worker-src 'self' blob:",
     "manifest-src 'self'"

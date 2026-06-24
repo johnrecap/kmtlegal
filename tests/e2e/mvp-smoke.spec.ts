@@ -32,12 +32,55 @@ test.describe("MVP smoke without database", () => {
     expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
   });
 
+  test("favicon resolves without falling through to a 404 page", async ({ request }) => {
+    const response = await request.get("/favicon.ico");
+
+    expect(response.status()).toBeLessThan(400);
+    expect(response.headers()["content-type"]).toContain("image/svg+xml");
+  });
+
+  test("homepage rendered article and case-study detail links resolve", async ({ page, request }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+
+    const hrefs = await page.locator('a[href^="/articles/"], a[href^="/case-studies/"]').evaluateAll((links) =>
+      links.map((link) => link.getAttribute("href")).filter((href): href is string => Boolean(href))
+    );
+
+    for (const href of hrefs) {
+      const response = await request.get(href);
+      expect(response.status(), `${href} should resolve when linked from the homepage`).toBeLessThan(400);
+    }
+  });
+
+  test("login page does not expose local development setup copy", async ({ page }) => {
+    await page.goto("/login", { waitUntil: "domcontentloaded" });
+
+    await expect(page.getByText("npm run db:seed")).toHaveCount(0);
+    await expect(page.getByText("PostgreSQL")).toHaveCount(0);
+  });
+
   test("protected admin route redirects anonymous users to login", async ({ page }) => {
     await page.goto("/admin", { waitUntil: "domcontentloaded" });
 
     const url = new URL(page.url());
     expect(url.pathname).toBe("/login");
     expect(url.searchParams.get("next")).toBe("/admin");
+  });
+
+  test("protected portal route redirects anonymous users without chunk errors", async ({ page }) => {
+    const consoleErrors: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "error") {
+        consoleErrors.push(message.text());
+      }
+    });
+
+    await page.goto("/portal", { waitUntil: "domcontentloaded" });
+
+    const url = new URL(page.url());
+    expect(url.pathname).toBe("/login");
+    expect(url.searchParams.get("next")).toBe("/portal");
+    expect(consoleErrors).toEqual([]);
   });
 
   test("API mutation rejects cross-origin requests before handler execution", async ({ request }) => {

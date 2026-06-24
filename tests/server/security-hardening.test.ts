@@ -29,6 +29,29 @@ describe("security, privacy, upload, and observability hardening", () => {
     expect(headers.get("Permissions-Policy")).toContain("camera=()");
   });
 
+  it("allows Cloudflare analytics endpoints in production CSP", () => {
+    const require = createRequire(path.resolve(process.cwd(), "tests/server/security-hardening.test.ts"));
+    const { contentSecurityPolicy } = require("../../security-headers.cjs") as {
+      contentSecurityPolicy: () => string;
+    };
+    const previousNodeEnv = process.env.NODE_ENV;
+
+    try {
+      Reflect.set(process.env, "NODE_ENV", "production");
+      const productionCsp = contentSecurityPolicy();
+
+      expect(productionCsp).toContain("script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com");
+      expect(productionCsp).toContain("connect-src 'self' https://cloudflareinsights.com");
+      expect(productionCsp).toContain("upgrade-insecure-requests");
+    } finally {
+      if (previousNodeEnv) {
+        Reflect.set(process.env, "NODE_ENV", previousNodeEnv);
+      } else {
+        Reflect.deleteProperty(process.env, "NODE_ENV");
+      }
+    }
+  });
+
   it("rejects cross-origin state-changing API requests", () => {
     expect(
       evaluateMutationOrigin({

@@ -1,7 +1,7 @@
 # quickstart.md
 
 ## Status
-The MVP implementation and handoff artifacts now exist through PLAN-26 panel-aware installer planning. Local static/unit/build gates can run without PostgreSQL. Production readiness still requires a running PostgreSQL `DATABASE_URL`, migrations, seed data, DB-backed E2E, dependency audit remediation, installer lock, and hosting smoke for the chosen setup mode.
+The MVP implementation and handoff artifacts now exist through partial PLAN-27 live-site QA remediation. Local static/unit/build gates can run without PostgreSQL. Production readiness still requires a running PostgreSQL `DATABASE_URL`, migrations, seed data, DB-backed E2E, dependency audit remediation, installer lock, hosting smoke for the chosen setup mode, and PLAN-27 deployed-site smoke covering public links, static chunks, CSP, favicon, auth/admin copy, booking/contact UX, authenticated admin routes, mobile overflow, and approved production content.
 
 ## Prerequisites
 - Node.js version compatible with the chosen Next.js version.

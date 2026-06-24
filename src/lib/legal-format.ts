@@ -64,6 +64,13 @@ export const modeLabels: Record<string, string> = {
   COURT: "محكمة"
 };
 
+export const serviceCategoryLabels: Record<string, string> = {
+  corporate: "الشركات والعقود",
+  "real-estate": "العقارات",
+  employment: "العمل",
+  disputes: "المنازعات"
+};
+
 export const caseStatusLabels: Record<string, string> = {
   NEW: "جديدة",
   UNDER_REVIEW: "قيد المراجعة",

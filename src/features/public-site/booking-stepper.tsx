@@ -52,6 +52,26 @@ const initialValues: BookingValues = {
   consent: false
 };
 
+const serviceCategoryLabels: Record<string, string> = {
+  corporate: "الشركات والعقود",
+  "real-estate": "العقارات",
+  employment: "العمل",
+  disputes: "المنازعات"
+};
+
+const urgencyLabels: Record<string, string> = {
+  LOW: "منخفضة",
+  NORMAL: "عادية",
+  HIGH: "مرتفعة",
+  URGENT: "عاجلة"
+};
+
+const preferredModeLabels: Record<BookingValues["preferredMode"], string> = {
+  PHONE: "هاتف",
+  ONLINE: "أونلاين",
+  OFFICE: "في المكتب"
+};
+
 const bookingStepKeys = ["contact", "details", "review"] as const;
 
 export function BookingStepper({ initialService }: { initialService?: string }) {
@@ -159,8 +179,11 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
           <h3 className="font-semibold text-kmt-ink">تنظيم مبدئي للطلب</h3>
           {state.data.organizer.status === "ready" ? (
             <div className="mt-3 grid gap-3 text-sm leading-7 text-kmt-muted">
-              <p>{state.data.organizer.intakeSummary?.summary}</p>
-              <p>التصنيف المبدئي: {state.data.organizer.classification?.category}</p>
+              <p>تم حفظ ملخص الطلب وتنظيمه لمساعدة فريق المكتب على المراجعة والتواصل معك.</p>
+              <p>
+                المجال المبدئي: {labelForServiceCategory(state.data.organizer.classification?.category)} · درجة الاستعجال:{" "}
+                {labelForUrgency(state.data.organizer.classification?.urgency)}
+              </p>
             </div>
           ) : (
             <p className="mt-3 text-sm leading-7 text-kmt-muted">تم حفظ الطلب، وسيتم تنظيمه يدويًا إذا تعذر تشغيل المساعد الآن.</p>
@@ -239,7 +262,13 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
               <strong className="text-kmt-ink">الهاتف:</strong> {values.phone || "غير مكتمل"}
             </p>
             <p>
-              <strong className="text-kmt-ink">المجال:</strong> {values.serviceCategory}
+              <strong className="text-kmt-ink">المجال:</strong> {labelForServiceCategory(values.serviceCategory)}
+            </p>
+            <p>
+              <strong className="text-kmt-ink">درجة الاستعجال:</strong> {labelForUrgency(values.urgency)}
+            </p>
+            <p>
+              <strong className="text-kmt-ink">طريقة التواصل:</strong> {preferredModeLabels[values.preferredMode]}
             </p>
             <p>
               <strong className="text-kmt-ink">الملخص:</strong> {values.summary || "غير مكتمل"}
@@ -319,6 +348,16 @@ function validateStep(step: number, values: BookingValues): FieldErrors {
   }
 
   return {};
+}
+
+function labelForServiceCategory(category?: string | null) {
+  if (!category) return "غير محدد";
+  return serviceCategoryLabels[category] ?? category;
+}
+
+function labelForUrgency(urgency?: string | null) {
+  if (!urgency) return "غير محددة";
+  return urgencyLabels[urgency.toUpperCase()] ?? urgency;
 }
 
 function categoryFromInitialService(initialService?: string) {

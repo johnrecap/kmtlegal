@@ -15,12 +15,34 @@ type LoginResponse = {
   };
 };
 
+type LoginFieldErrors = {
+  email?: string;
+  password?: string;
+};
+
 async function readApiMessage(response: Response) {
   const data = (await response.json().catch(() => ({}))) as LoginResponse;
   return {
     data,
     message: data.error?.message ?? "تعذر تنفيذ الطلب الآن. حاول مرة أخرى."
   };
+}
+
+function validateLoginFields(email: string, password: string): LoginFieldErrors {
+  const errors: LoginFieldErrors = {};
+  const normalizedEmail = email.trim();
+
+  if (!normalizedEmail) {
+    errors.email = "اكتب البريد الإلكتروني.";
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    errors.email = "اكتب بريدًا إلكترونيًا صحيحًا.";
+  }
+
+  if (!password) {
+    errors.password = "اكتب كلمة المرور.";
+  }
+
+  return errors;
 }
 
 export function LoginForm() {
@@ -33,12 +55,33 @@ export function LoginForm() {
       : null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function updateEmail(value: string) {
+    setEmail(value);
+    setFieldErrors((current) => ({ ...current, email: undefined }));
+    setError(null);
+  }
+
+  function updatePassword(value: string) {
+    setPassword(value);
+    setFieldErrors((current) => ({ ...current, password: undefined }));
+    setError(null);
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+
+    const nextFieldErrors = validateLoginFields(email, password);
+    if (Object.values(nextFieldErrors).some(Boolean)) {
+      setFieldErrors(nextFieldErrors);
+      return;
+    }
+
+    setFieldErrors({});
     setIsSubmitting(true);
 
     try {
@@ -47,7 +90,7 @@ export function LoginForm() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email: email.trim(), password })
       });
       const { data, message } = await readApiMessage(response);
 
@@ -57,7 +100,7 @@ export function LoginForm() {
       }
 
       if (data.status === "two_factor_required") {
-        setError("Staff 2FA is disabled in this release. Set STAFF_2FA_MODE=disabled and try again.");
+        setError("التحقق الثنائي لفريق المكتب غير متاح في هذا الإصدار. تواصل مع مسؤول النظام قبل إعادة المحاولة.");
         return;
       }
 
@@ -82,7 +125,7 @@ export function LoginForm() {
         <CardDescription>ادخل بيانات حسابك للوصول إلى بوابة العميل أو لوحة المكتب.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="space-y-5" onSubmit={onSubmit}>
+        <form className="space-y-5" noValidate onSubmit={onSubmit}>
           {notice ? (
             <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-800" role="status">
               {notice}
@@ -90,10 +133,11 @@ export function LoginForm() {
           ) : null}
           <TextInput
             autoComplete="email"
+            error={fieldErrors.email}
             inputMode="email"
             label="البريد الإلكتروني"
             name="email"
-            onChange={(event) => setEmail(event.target.value)}
+            onChange={(event) => updateEmail(event.target.value)}
             placeholder="name@example.com"
             required
             type="email"
@@ -101,9 +145,10 @@ export function LoginForm() {
           />
           <TextInput
             autoComplete="current-password"
+            error={fieldErrors.password}
             label="كلمة المرور"
             name="password"
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(event) => updatePassword(event.target.value)}
             required
             type="password"
             value={password}

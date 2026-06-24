@@ -13,6 +13,7 @@ import {
   labelFrom,
   modeLabels,
   priorityLabels,
+  serviceCategoryLabels,
   urgencyLabels
 } from "@/lib/legal-format";
 import {
@@ -79,7 +80,7 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
         </ButtonLink>
       }
     >
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
+      <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
         <div className="space-y-5">
           <Card>
             <CardHeader>
@@ -105,7 +106,7 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid min-w-0 gap-4 md:grid-cols-4">
             <MetricCard label="القضايا" value={String(client._count.cases)} meta="كل القضايا المرتبطة بهذا العميل." />
             <MetricCard label="الاستشارات" value={String(client._count.consultationRequests)} meta="طلبات الاستشارة المرتبطة." />
             <MetricCard label="المواعيد" value={String(client._count.appointments)} meta="كل المواعيد المرتبطة." />
@@ -138,7 +139,7 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
 
-          <div className="grid gap-5 xl:grid-cols-2">
+          <div className="grid min-w-0 gap-5 xl:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>الاستشارات</CardTitle>
@@ -149,7 +150,7 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
                     {client.consultationRequests.map((consultation) => (
                       <Link key={consultation.id} className="block rounded border border-kmt-border p-3 hover:bg-slate-50" href={`/admin/consultations/${consultation.id}`}>
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="font-semibold text-kmt-navy">{consultation.serviceCategory}</p>
+                          <p className="break-words font-semibold text-kmt-navy">{labelFrom(serviceCategoryLabels, consultation.serviceCategory)}</p>
                           <Badge tone={consultation.status === "CONVERTED" ? "active" : consultation.status === "REJECTED" ? "danger" : "pending"}>
                             {labelFrom(consultationStatusLabels, consultation.status)}
                           </Badge>

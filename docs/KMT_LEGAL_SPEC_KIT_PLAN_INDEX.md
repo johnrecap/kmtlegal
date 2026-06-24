@@ -1,8 +1,8 @@
 # KMT Legal Spec Kit Plan Index
 
-## PLAN-26 Update
+## PLAN-27 Update
 
-The active Spec Kit set now contains 27 plans: PLAN-00 through PLAN-26. PLAN-24 covers remediation/production readiness, PLAN-25 covers the no-code VPS installer, first Super Admin bootstrap, disabled TOTP, disabled SMTP, and installer lock, and PLAN-26 covers panel-aware installer compatibility for Terminal VPS, aaPanel, and conditional cPanel hosting.
+The active Spec Kit set now contains 28 plans: PLAN-00 through PLAN-27. PLAN-24 covers remediation/production readiness, PLAN-25 covers the no-code VPS installer, first Super Admin bootstrap, disabled TOTP, disabled SMTP, and installer lock, PLAN-26 covers panel-aware installer compatibility for Terminal VPS, aaPanel, and conditional cPanel hosting, and PLAN-27 covers live-site QA remediation for broken public links, content-source consistency, static asset integrity, CSP/Cloudflare Insights, favicon, production login copy, localized auth errors, booking/contact success UX, authenticated admin chunk/copy/overflow remediation, and deployed smoke evidence. PLAN-27 is partially implemented locally; deployed/staging evidence is still required before closing it.
 
 تاريخ الإصدار: 2026-06-23
 
@@ -10,7 +10,7 @@ The active Spec Kit set now contains 27 plans: PLAN-00 through PLAN-26. PLAN-24 
 
 ## القرار المختصر
 
-سنقسم المشروع إلى **24 خطة Spec Kit**:
+The current active project set is **28 Spec Kit plans**:
 
 - **خطة حوكمة واحدة** تضبط طريقة استخدام Spec Kit ومصادر الحقيقة.
 - **23 خطة تنفيذ** تغطي foundation، Stitch clone، عقود data/auth/API، ثم feature slices رأسية.
@@ -775,6 +775,6 @@ PLAN-00
 
 ## ملخص عدد الخطط
 
-العدد المعتمد: **24 خطة**.
+العدد المعتمد: **28 خطة**.
 
 هذا العدد كبير عمدًا لأن المنصة واسعة وحساسة، ولأن Spec Kit يكون أقوى عندما تكون كل خطة قابلة للقبول والاختبار بدل خطة واحدة ضخمة تفقد التفاصيل.

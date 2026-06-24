@@ -24,7 +24,7 @@ export function DataTable<Row extends { id: string }>({
   }
 
   return (
-    <div className={cn("overflow-x-auto rounded-lg border border-kmt-border bg-white", className)}>
+    <div className={cn("max-w-full min-w-0 overflow-x-auto rounded-lg border border-kmt-border bg-white", className)}>
       <table className="min-w-full border-collapse text-sm">
         <thead className="bg-slate-50 text-kmt-muted">
           <tr>

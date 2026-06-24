@@ -100,6 +100,26 @@ Pass only if:
 - cPanel mode rejects missing Node.js App, PostgreSQL, SSH/command runner, env vars, persistent process, or private non-`public_html` uploads.
 - All modes keep SMTP disabled, TOTP disabled, `/install` token-protected, and installer lock required after first Super Admin bootstrap.
 
+## Gate 6B: PLAN-27 Live Site QA Remediation Ready
+Pass only if:
+- The live QA evidence from `https://kmtlegal.saeeddev.com/` is archived and mapped to remediation tasks.
+- Homepage featured article/case-study cards use the same published-content source as `/articles`, `/articles/[slug]`, `/case-studies`, and `/case-studies/[slug]`, or render an empty-safe state with no broken links.
+- A public link-crawl smoke proves rendered internal links from the homepage, public navigation, footer, services, team, articles, and case studies return status `< 400`.
+- Anonymous `/admin` and `/portal` redirects to `/login?next=...` do not produce `ChunkLoadError`.
+- Release smoke proves requested `_next/static` JS/CSS assets return status `< 400` with the expected MIME type.
+- Cloudflare Insights is either disabled at the hosting layer or explicitly allowed through a reviewed minimal CSP rule; no blocked beacon console error remains.
+- `/favicon.ico` returns a successful static response.
+- `/login` in production contains no local seed, demo, or PostgreSQL setup guidance.
+- Login required-field and bad-credential messages are visible, accessible, Arabic, and security-generic.
+- Booking success output contains a reference and safe next steps only; no internal AI/mock placeholder text or raw enum labels render publicly.
+- Contact success cannot be accidentally submitted again without a deliberate reset/new-message action.
+- Authenticated admin routes `/admin`, `/admin/consultations`, `/admin/cases`, `/admin/reports`, `/admin/audit-log`, and `/admin/settings` load after login without `ChunkLoadError`, `Application error`, or `_next/static` JS/CSS status/MIME failures.
+- Admin shell/settings copy is Arabic and does not render `Management`, `Admin`, or `Staff 2FA is deferred`; staff 2FA remains disabled/deferred.
+- Admin consultation review does not render legacy English mock AI placeholders or raw AI JSON to staff.
+- `/admin`, `/admin/clients`, and `/admin/content` have no page-level horizontal scroll at 390px; tables may scroll internally only.
+- Mobile smoke passes for `/`, `/services`, `/contact`, and `/book-consultation`.
+- PLAN-27 staging/live screenshots, console logs, and network evidence are archived before any production-ready claim.
+
 ## Gate 7: Legal Data Protection Ready
 Pass only if:
 - Internal notes cannot be exposed to clients.

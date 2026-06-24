@@ -30,14 +30,14 @@ export function DashboardShell({
   className?: string;
 }) {
   return (
-    <div className={cn("min-h-screen bg-kmt-canvas text-kmt-ink lg:flex", className)}>
-      <aside className="border-b border-kmt-border bg-white lg:min-h-screen lg:w-72 lg:border-b-0 lg:border-l">
+    <div className={cn("min-h-screen overflow-x-hidden bg-kmt-canvas text-kmt-ink lg:flex", className)}>
+      <aside className="min-w-0 border-b border-kmt-border bg-white lg:min-h-screen lg:w-72 lg:shrink-0 lg:border-b-0 lg:border-l">
         <div className="flex min-h-16 items-center justify-between border-b border-kmt-border px-5">
-          <div>
+          <div className="min-w-0">
             <p className="text-lg font-semibold">KMT Legal</p>
-            <p className="text-xs font-medium text-kmt-muted">{mode === "admin" ? "Management" : "Client Portal"}</p>
+            <p className="text-xs font-medium text-kmt-muted">{mode === "admin" ? "إدارة المكتب" : "بوابة العميل"}</p>
           </div>
-          <Badge tone={mode === "admin" ? "pending" : "active"}>{mode === "admin" ? "Admin" : "Client"}</Badge>
+          <Badge tone={mode === "admin" ? "pending" : "active"}>{mode === "admin" ? "إدارة" : "عميل"}</Badge>
         </div>
         <nav aria-label="تنقل لوحة التحكم" className="grid grid-cols-3 gap-1 p-2 sm:grid-cols-5 lg:block lg:space-y-1 lg:p-3">
           {navItems.map((item) => (
@@ -59,12 +59,12 @@ export function DashboardShell({
       <div className="min-w-0 flex-1">
         <header className="border-b border-kmt-border bg-white">
           <div className="flex min-h-16 flex-wrap items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-semibold text-kmt-gold">{eyebrow}</p>
-              <h1 className="text-2xl font-semibold text-kmt-ink">{title}</h1>
+              <h1 className="break-words text-2xl font-semibold text-kmt-ink">{title}</h1>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="hidden text-sm text-kmt-muted sm:inline">{userLabel}</span>
+            <div className="flex min-w-0 flex-wrap items-center justify-end gap-3">
+              <span className="hidden min-w-0 max-w-56 truncate text-sm text-kmt-muted sm:inline">{userLabel}</span>
               <form action="/api/auth/logout" method="post">
                 <button
                   className={buttonClasses({ variant: "ghost", size: "sm", className: "min-w-9 px-2 sm:px-3" })}
@@ -79,7 +79,7 @@ export function DashboardShell({
             </div>
           </div>
         </header>
-        <main className="px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+        <main className="min-w-0 overflow-x-hidden px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       </div>
     </div>
   );

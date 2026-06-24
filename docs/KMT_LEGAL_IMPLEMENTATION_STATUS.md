@@ -1,17 +1,17 @@
 # KMT Legal Implementation Status
 
-Last updated: 2026-06-24
+Last updated: 2026-06-25
 
-This is the main tracking file for the 27 Spec Kit implementation plans.
+This is the main tracking file for the 28 Spec Kit implementation plans.
 
 ## Summary
 
-Total plans: 27
+Total plans: 28
 
 | Status | Count |
 | --- | ---: |
 | Done | 22 |
-| In progress / partial | 5 |
+| In progress / partial | 6 |
 | Not started | 0 |
 
 ## Current Execution State
@@ -45,11 +45,12 @@ Total plans: 27
 | PLAN-24 Remediation & Production Readiness | In progress / partial | Added remediation epic docs, git hygiene for `_workspace/` and `debug.log`, no-store `/api/auth/me`, disabled Email OTP UI/routes, required destructive/action confirmation checkboxes, separated success/error states in case/document admin forms, production DB fallback removal, production seed/demo split, upload early reject, AI limiter, route-manifest contract test, secret scan script, DB E2E entrypoint. | Remaining: run `qa:db` against real PostgreSQL, execute `qa:release`, complete dependency upgrade pass, verify VPS Nginx/TLS/systemd/private uploads/backups smoke, and update audit findings after package remediation. |
 | PLAN-25 No-Code VPS Installer & First Admin Bootstrap | In progress / partial | Added PLAN-25 Spec Kit/docs, disabled active TOTP flow and `/login/2fa`, disabled TOTP/Email OTP/reset routes, staff password login with `STAFF_2FA_MODE=disabled`, token-protected installer APIs, `/install` wizard, first Super Admin bootstrap without TOTP, installer lock, VPS install script, env/systemd updates, and contract tests. | Remaining: run on real VPS/staging target, complete installer browser smoke, run `sudo kmt-legal-disable-installer`, run `qa:release`, and archive production evidence. |
 | PLAN-26 Panel-Aware Installer Compatibility | In progress / partial | Added Spec Kit plan for Terminal VPS, aaPanel, and conditional cPanel setup modes; implemented `/install` hosting selector, `hostingMode` preflight contract, Node/PostgreSQL/private uploads/SMTP/TOTP/token checks, DB connectivity/schema/seed preflight, cPanel hard-requirement checks, `deploy/install/panel-install.sh`, `existing` vs `auto` database setup choice, panel install docs, harness team spec, env names, tasks, quality gates, and contract/static tests. | Remaining: test real aaPanel and compatible cPanel targets, run hosting smoke evidence, and archive panel screenshots/logs. |
+| PLAN-27 Live Site QA Remediation | In progress / partial | Live QA evidence from `https://kmtlegal.saeeddev.com/` was converted into `docs/PLAN_27_LIVE_SITE_QA_REMEDIATION.md`, Spec Kit tasks T181-T204, and Gate 6B. Local remediation now fixes the homepage static-vs-DB featured content split, favicon, Cloudflare Insights CSP allowlist, production login copy, Arabic login validation/bad-credential copy, booking success AI/mock placeholder leakage, contact duplicate-submit UX, admin shell/settings English copy, legacy mock AI display in admin consultation review, and admin page-level overflow constraints. Smoke coverage now checks homepage rendered article/case-study detail links, `/favicon.ico`, login copy, anonymous `/admin`/`/portal` redirects without console chunk errors, and includes opt-in authenticated live admin smoke for route chunks, CSP, API status, static MIME, and 390px overflow. Local re-verification passed after the admin extension with typecheck, lint, full tests, build, smoke E2E, skipped live-admin smoke syntax check, and diff hygiene. | Remaining: add the broader nav/footer/static MIME/mobile public smoke coverage, add or document approved production content bootstrap, run DB-backed staging verification, atomically deploy the latest build, run live deployed public/admin smoke, and archive evidence before claiming production readiness. |
 
 ## Remaining Count
 
 - Fully not started: 0 plans.
-- Partially open: 5 plans.
+- Partially open: 6 plans.
 - Done: 22 plans.
 
 ## Immediate Next Steps
@@ -59,7 +60,8 @@ Total plans: 27
 3. Resolve dependency audit findings through a controlled Next/Prisma upgrade pass; do not use `npm audit fix --force` blindly.
 4. Run VPS smoke for `/api/health`, Nginx/TLS/systemd/private uploads/backups before closing PLAN-23/24. SMTP smoke is deferred until the future SMTP activation plan.
 5. For aaPanel/cPanel deployment, complete PLAN-26 preflight and smoke before claiming panel compatibility.
-6. Keep `/stitch-clone/*` frozen and disabled in production unless `ENABLE_STITCH_CLONE=true` is explicitly set for visual QA.
+6. Complete the remaining PLAN-27 gates before any production-ready claim: broader public/static/mobile smoke, approved production content bootstrap, DB-backed staging verification, atomic live deploy, live public/admin smoke, and evidence archive.
+7. Keep `/stitch-clone/*` frozen and disabled in production unless `ENABLE_STITCH_CLONE=true` is explicitly set for visual QA.
 
 ## Verification Already Passing
 
@@ -73,6 +75,8 @@ Total plans: 27
 - `npm run qa:local`
 - `npm run test:e2e:smoke`
 - `npm run security:secrets`
+- PLAN-27 local patch verification on 2026-06-25: `npm run typecheck`, `npm run test`, `npm run build`, and `npm run test:e2e:smoke`
+- PLAN-27 admin extension verification on 2026-06-25: `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e:smoke`, `npx playwright test tests/e2e/live-admin-smoke.spec.ts` with env absent/skipped, and `git diff --check`
 
 ## Important Notes
 

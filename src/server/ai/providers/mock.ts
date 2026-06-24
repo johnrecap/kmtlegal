@@ -1,6 +1,6 @@
 import type { AIProviderAdapter, AITask } from "../types";
 
-const REVIEW_NOTE = "Draft only; lawyer review is required before use.";
+const REVIEW_NOTE = "مسودة تنظيمية فقط؛ يجب أن يراجعها محام قبل الاعتماد.";
 
 export function createMockAIProvider(): AIProviderAdapter {
   return {
@@ -28,36 +28,36 @@ function mockOutputForTask(task: AITask) {
         category: "corporate",
         urgency: "normal",
         confidence: 0.82,
-        reasons: ["Mock classification based on structured intake fields."],
+        reasons: ["تصنيف تجريبي مبني على حقول طلب الاستشارة المنظمة."],
         reviewNote: REVIEW_NOTE
       };
     case "intake_summary":
       return {
-        summary: "Structured intake summary placeholder for internal review.",
-        keyFacts: ["Client submitted a legal inquiry.", "Staff review is required."],
-        missingInfo: ["Relevant documents", "Preferred appointment time"],
+        summary: "تم استلام طلب قانوني منظم يحتاج إلى مراجعة فريق المكتب قبل التواصل.",
+        keyFacts: ["أرسل العميل طلبًا قانونيًا عبر نموذج الاستشارة.", "مراجعة الفريق مطلوبة قبل تقديم أي توجيه."],
+        missingInfo: ["المستندات ذات الصلة", "الموعد المفضل للتواصل"],
         reviewNote: REVIEW_NOTE
       };
     case "document_checklist_suggestion":
       return {
         items: [
-          { label: "Client identity document", reason: "Needed to verify client profile." },
-          { label: "Relevant contract or notice", reason: "Needed to understand the dispute context." }
+          { label: "إثبات هوية العميل", reason: "مطلوب للتحقق من ملف العميل." },
+          { label: "العقد أو الإخطار ذي الصلة", reason: "مطلوب لفهم سياق الطلب أو النزاع." }
         ],
         reviewNote: REVIEW_NOTE
       };
     case "anonymous_case_study_draft":
       return {
-        title: "Anonymous legal matter draft",
-        draft: "A privacy-safe draft outline that must be reviewed and anonymized by staff.",
-        anonymizationChecklist: ["Remove names", "Remove dates that identify parties", "Remove opposing party identifiers"],
+        title: "مسودة دراسة حالة مجهولة",
+        draft: "مسودة توعوية آمنة للخصوصية يجب مراجعتها وإخفاء أي تفاصيل تعريفية قبل النشر.",
+        anonymizationChecklist: ["حذف الأسماء", "حذف التواريخ التي قد تكشف الأطراف", "حذف معرفات الطرف المقابل"],
         reviewNote: REVIEW_NOTE
       };
     case "social_post_draft":
       return {
         platform: "linkedin",
-        content: "Informational legal awareness draft for review before publishing.",
-        hashtags: ["#LegalAwareness", "#KMTLegal"],
+        content: "مسودة توعية قانونية للمراجعة قبل النشر.",
+        hashtags: ["#توعية_قانونية", "#KMTLegal"],
         reviewNote: REVIEW_NOTE
       };
   }

@@ -266,3 +266,12 @@ Prefer Server Actions for form mutations where suitable and Route Handlers for f
 - Output: Spec Kit and handoff docs for `terminal-vps`, `aapanel`, and `cpanel` setup paths.
 - Tests: preflight rejects missing Node/PostgreSQL/private storage/process manager; panel mode never runs root-only VPS commands; Terminal VPS keeps current root installer path.
 - Acceptance: user can pick the panel, see only the steps available for that panel, and unsupported hosting is rejected before migration/build/bootstrap begins.
+
+### Milestone 12 - PLAN-27 Live Site QA Remediation
+- Goal: Convert deployed-site QA findings into release-blocking fixes and evidence.
+- Tasks: align homepage articles/case studies with DB-backed published content, remove broken public links, add public link-crawl smoke, verify `_next/static` chunk/CSS integrity after auth redirects and admin routes, resolve Cloudflare Insights CSP behavior, add favicon, remove production-visible dev login copy, localize auth errors and admin shell/settings copy, clean booking/contact success UX, hide legacy admin mock AI text, constrain admin overflow, and archive live smoke evidence.
+- Dependencies: PLAN-09, PLAN-10, PLAN-11, PLAN-20, PLAN-22, PLAN-23, PLAN-26.
+- Current status: local code remediation is partially implemented and re-verified after the admin extension; atomic deploy, DB-backed staging, and deployed live evidence remain open.
+- Output: `docs/PLAN_27_LIVE_SITE_QA_REMEDIATION.md`, tasks T181-T204, Gate 6B, release checklist updates, automated smoke coverage, and live deployed evidence.
+- Tests: typecheck, unit/contract tests, build, public link-crawl Playwright smoke, authenticated admin live smoke, DB-backed public content smoke, static asset/CSP/favicon smoke, mobile smoke, and deployed live smoke.
+- Acceptance: no rendered public link returns 404, no `ChunkLoadError`, no blocked CSP beacon error, favicon resolves, production login/admin copy is clean/localized, booking/contact success states are user-safe, admin mock AI/overflow findings are cleared, and evidence is archived before production-ready status is claimed.

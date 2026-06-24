@@ -9,7 +9,7 @@ export function FilterBar({
   className?: string;
 }) {
   return (
-    <div className={cn("flex flex-wrap items-center gap-3 rounded-lg border border-kmt-border bg-white p-3", className)} role="search">
+    <div className={cn("flex w-full min-w-0 flex-wrap items-center gap-3 rounded-lg border border-kmt-border bg-white p-3", className)} role="search">
       {children}
     </div>
   );

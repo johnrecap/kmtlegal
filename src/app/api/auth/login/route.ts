@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   const requestId = getRequestId(request);
 
   try {
-    const body = await parseJsonRequest(request, loginSchema, "Email and password are required.");
+    const body = await parseJsonRequest(request, loginSchema, "البريد الإلكتروني وكلمة المرور مطلوبان.");
     enforceRateLimit(rateLimiters.login, `${body.email}:${getIpAddress(request) ?? "unknown"}`);
 
     const result = await loginWithPassword({
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     });
 
     if (!result) {
-      return jsonError(401, "UNAUTHENTICATED", "Invalid email or password.", requestId);
+      return jsonError(401, "UNAUTHENTICATED", "البريد الإلكتروني أو كلمة المرور غير صحيحة.", requestId);
     }
 
     const response = NextResponse.json(

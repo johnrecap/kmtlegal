@@ -15,7 +15,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "KMT Legal Platform",
-  description: "KMT Legal planning and Stitch clone foundation"
+  description: "KMT Legal planning and Stitch clone foundation",
+  icons: {
+    icon: "/favicon.ico"
+  }
 };
 
 export default async function RootLayout({

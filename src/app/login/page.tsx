@@ -21,7 +21,7 @@ export default function LoginPage() {
             جلسات العمل تعتمد على كوكي آمن، وحسابات فريق العمل لا تفتح لوحة المكتب إلا بعد التحقق الثنائي.
           </p>
           <div className="mt-8 rounded-lg border border-kmt-border bg-white p-5 text-sm leading-7 text-kmt-muted">
-            بيانات التطوير تأتي من `npm run db:seed` بعد تشغيل PostgreSQL محلي. لا تستخدم بيانات حقيقية في بيئة التطوير.
+            استخدم بيانات الحساب التي أرسلها لك فريق KMT Legal فقط. إذا تعذر الدخول، تواصل مع المكتب لإعادة التحقق من الحساب بدل تجربة بيانات غير موثوقة.
           </div>
         </section>
         <Suspense fallback={<div className="min-h-64 rounded-lg border border-kmt-border bg-white" />}>

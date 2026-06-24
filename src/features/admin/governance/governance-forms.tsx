@@ -368,11 +368,13 @@ export function OfficeProfileSettingForm({ value }: { value: SettingValue }) {
 }
 
 export function SecurityStaff2faSettingForm({ value }: { value: SettingValue }) {
+  const currentMode = value.requiredForStaff ? "مطلوب" : "معطل";
+
   return (
     <StateBlock
       tone="permission"
-      title="Staff 2FA is deferred"
-      description={`Current mode: ${String(value.requiredForStaff ? "required" : "disabled")}. TOTP setup, prompts, and resets are disabled until the future Staff 2FA Rework plan.`}
+      title="التحقق الثنائي للموظفين مؤجل"
+      description={`التحقق الثنائي للموظفين مؤجل في هذا الإصدار. الوضع الحالي: ${currentMode}. إعدادات TOTP والمطالبة بالكود وإعادة الضبط تظل معطلة حتى خطة Staff 2FA Rework القادمة.`}
     />
   );
 }

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { Badge, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, StateBlock } from "@/components/ui";
 import { ConsultationActionPanel } from "@/features/admin/consultations/consultation-action-panel";
-import { consultationStatusLabels, formatDateTime, labelFrom, modeLabels, urgencyLabels } from "@/lib/legal-format";
+import { consultationStatusLabels, formatDateTime, labelFrom, modeLabels, serviceCategoryLabels, urgencyLabels } from "@/lib/legal-format";
 import { getAdminConsultationDetail, listAssignableLawyers } from "@/server/admin/consultation-review-service";
 import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../../admin-navigation";
@@ -33,15 +33,93 @@ function statusTone(status: string) {
   return "neutral" as const;
 }
 
-function JsonSummary({ value }: { value: unknown }) {
+const hiddenAiTextPatterns = [/mock/i, /placeholder/i, /structured intake/i, /draft only/i, /internal review/i, /review required/i, /not legal advice/i];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+function safeAiText(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const text = value.trim();
+  if (!text || hiddenAiTextPatterns.some((pattern) => pattern.test(text))) {
+    return null;
+  }
+
+  return text;
+}
+
+function safeAiList(value: unknown) {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.map((item) => safeAiText(item)).filter((item): item is string => Boolean(item));
+}
+
+function safeConfidence(value: unknown) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+
+  const percentage = value <= 1 ? value * 100 : value;
+  return `${Math.round(percentage)}%`;
+}
+
+function AiClassificationSummary({ value }: { value: unknown }) {
   if (!value) {
     return <p className="text-sm text-kmt-muted">لا توجد نتيجة AI محفوظة لهذا الطلب.</p>;
   }
 
+  if (!isRecord(value)) {
+    return <StateBlock title="تصنيف يحتاج مراجعة" description="تم حفظ نتيجة غير منظمة من مزود AI، لذلك يتم عرضها كتصنيف مبدئي يحتاج مراجعة الفريق." />;
+  }
+
+  const category = safeAiText(value.category) ?? safeAiText(value.serviceCategory);
+  const urgency = safeAiText(value.urgency);
+  const preferredMode = safeAiText(value.preferredMode) ?? safeAiText(value.mode);
+  const confidence = safeConfidence(value.confidence);
+  const reasons = safeAiList(value.reasons);
+  const notes = [
+    safeAiText(value.reviewNote),
+    safeAiText(value.intakeSummary),
+    safeAiText(value.summary)
+  ].filter((item): item is string => Boolean(item));
+  const hasStructuredContent = Boolean(category || urgency || preferredMode || confidence || reasons.length || notes.length);
+
+  if (!hasStructuredContent) {
+    return <StateBlock title="تصنيف مبدئي يحتاج مراجعة" description="تم إخفاء نصوص AI القديمة أو التجريبية من الواجهة. راجع بيانات الطلب الأصلية قبل اتخاذ أي إجراء." />;
+  }
+
   return (
-    <pre className="max-h-80 overflow-auto rounded border border-kmt-border bg-slate-50 p-3 text-xs leading-6 text-kmt-ink">
-      {JSON.stringify(value, null, 2)}
-    </pre>
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {category ? <DetailItem label="المجال المقترح" value={labelFrom(serviceCategoryLabels, category)} /> : null}
+        {urgency ? <DetailItem label="الأولوية المقترحة" value={labelFrom(urgencyLabels, urgency)} /> : null}
+        {preferredMode ? <DetailItem label="طريقة التواصل" value={labelFrom(modeLabels, preferredMode)} /> : null}
+        {confidence ? <DetailItem label="درجة الثقة" value={confidence} /> : null}
+      </div>
+      {reasons.length ? (
+        <div>
+          <p className="text-xs font-semibold text-kmt-muted">ملاحظات التصنيف</p>
+          <ul className="mt-2 list-disc space-y-1 pr-5 text-sm leading-6 text-kmt-ink">
+            {reasons.map((reason) => (
+              <li key={reason}>{reason}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {notes.length ? (
+        <div className="rounded border border-kmt-border bg-slate-50 px-3 py-2 text-sm leading-7 text-kmt-ink">
+          {notes.map((note) => (
+            <p key={note}>{note}</p>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -81,7 +159,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
         </ButtonLink>
       }
     >
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+      <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
         <div className="space-y-5">
           <Card>
             <CardHeader>
@@ -103,7 +181,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
                 <DetailItem label="الهاتف" value={consultation.phone} />
                 <DetailItem label="البريد الإلكتروني" value={consultation.email} />
                 <DetailItem label="المدينة" value={consultation.city} />
-                <DetailItem label="نوع الخدمة" value={consultation.serviceCategory} />
+                <DetailItem label="نوع الخدمة" value={labelFrom(serviceCategoryLabels, consultation.serviceCategory)} />
                 <DetailItem label="طريقة التواصل" value={labelFrom(modeLabels, consultation.preferredMode)} />
                 <DetailItem label="تاريخ الطلب" value={formatDateTime(consultation.createdAt)} />
                 <DetailItem label="المحامي المسؤول" value={consultation.assignedLawyer?.name} />
@@ -144,7 +222,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
             </CardHeader>
             <CardContent>
               {consultation.aiSummary ? <p className="mb-4 text-sm leading-7 text-kmt-ink">{consultation.aiSummary}</p> : null}
-              <JsonSummary value={consultation.aiClassification} />
+              <AiClassificationSummary value={consultation.aiClassification} />
             </CardContent>
           </Card>
 
