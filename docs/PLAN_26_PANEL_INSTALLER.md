@@ -79,7 +79,7 @@ If any hard requirement is missing, the installer must stop with a clear unsuppo
 
 Every mode must verify:
 
-- Node.js version is >= 20.
+- Node.js version is `20.19+`, `22.12+`, or `24+`.
 - `npm` is available.
 - `DATABASE_URL` points to PostgreSQL.
 - `DB_SETUP_MODE` is `existing` or `auto`.

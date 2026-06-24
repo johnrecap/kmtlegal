@@ -92,6 +92,7 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 
 ## Deployment Gates
 
+- [ ] `GET /api/health` returns 200 after migrations, seed, first Super Admin setup, installer lock, and `INSTALLER_ENABLED=false`.
 - [ ] VPS service runs in production mode, not `next dev`.
 - [ ] Nginx proxies to the app and TLS works.
 - [ ] PostgreSQL backup exists before migration.

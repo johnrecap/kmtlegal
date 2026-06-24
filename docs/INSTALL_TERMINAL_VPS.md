@@ -8,6 +8,7 @@ Use this path for a fresh Ubuntu/Debian VPS where you have root or sudo.
 - Domain DNS points to the VPS.
 - Root or sudo terminal access.
 - No existing panel needs to own Nginx/SSL/PostgreSQL.
+- Node.js `20.19+`, `22.12+`, or `24+`; the installer will attempt to install a supported Node 20 runtime.
 
 ## Planned Flow
 
@@ -27,6 +28,12 @@ sudo bash deploy/install/install.sh
 
 ```bash
 sudo kmt-legal-disable-installer
+```
+
+9. Verify readiness:
+
+```bash
+curl -f https://your-domain.example/api/health
 ```
 
 ## Do Not Use This Path When

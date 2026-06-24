@@ -5,7 +5,7 @@ Use this path when the server is a VPS managed through aaPanel.
 ## Requirements
 
 - aaPanel on a VPS.
-- Node.js project/runtime support or PM2/process manager available.
+- Node.js `20.19+`, `22.12+`, or `24+` through aaPanel project/runtime support or PM2/process manager.
 - PostgreSQL installed or reachable.
 - Domain and SSL configured in aaPanel.
 - Reverse proxy from the domain to the app port.
@@ -29,6 +29,7 @@ bash deploy/install/panel-install.sh --panel=aapanel
 7. Provide `APP_ORIGIN`, `UPLOADS_DIR`, app port, and setup token values when prompted.
 8. Let the script run Node/Prisma build, migrations, and seed only after preflight passes.
 9. Open `/install?token=...`, create the first Super Admin, lock the installer, and disable installer mode.
+10. Verify `GET /api/health` returns `200` before sending users to the app.
 
 The `/install` UI must render even when database/bootstrap values are incomplete. Missing server values should appear as installer preflight failures, not as a generic 500 page.
 

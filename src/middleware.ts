@@ -42,24 +42,30 @@ export function middleware(request: NextRequest) {
       );
     }
 
-    return NextResponse.next();
+    return nextWithPathname(request);
   }
 
   if (!isProtectedAppPath(pathname)) {
-    return NextResponse.next();
+    return nextWithPathname(request);
   }
 
   if (!request.cookies.has(SESSION_COOKIE_NAME)) {
     return NextResponse.redirect(loginUrlForProtectedPath(request.nextUrl.origin, pathname, search));
   }
 
-  return NextResponse.next();
+  return nextWithPathname(request);
 }
 
 function isProductionRuntime() {
   return process.env.APP_ENV === "production" || process.env.NODE_ENV === "production";
 }
 
+function nextWithPathname(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-kmt-pathname", request.nextUrl.pathname);
+  return NextResponse.next({ request: { headers: requestHeaders } });
+}
+
 export const config = {
-  matcher: ["/api/:path*", "/admin/:path*", "/portal/:path*", "/stitch-clone/:path*"]
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"]
 };

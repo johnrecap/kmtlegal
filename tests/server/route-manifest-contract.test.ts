@@ -37,6 +37,7 @@ describe("route manifest contract", () => {
       ["/api/admin/calendar", "/api/admin/calendar"],
       ["/api/admin/documents/[documentId]/delete", "/api/admin/documents/{documentId}/delete"],
       ["/api/admin/users/[userId]/password", "/api/admin/users/{id}/password"],
+      ["/api/health", "/api/health"],
       ["/api/install/status", "/api/install/status"],
       ["/api/install/preflight", "/api/install/preflight"],
       ["/api/install/bootstrap-super-admin", "/api/install/bootstrap-super-admin"],

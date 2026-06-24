@@ -85,15 +85,17 @@ random_hex() {
   node -e "process.stdout.write(require('crypto').randomBytes(Number(process.argv[1])).toString('hex'))" "$1"
 }
 
+dotenv_value() {
+  node -e "process.stdout.write(JSON.stringify(String(process.argv[1])).replace(/\\$/g, '\\\\$'))" "$1"
+}
+
 url_encode() {
   node -e "process.stdout.write(encodeURIComponent(process.argv[1]))" "$1"
 }
 
 validate_node() {
-  local major
-  major="$(node -p "Number(process.versions.node.split('.')[0])")"
-  if [[ "${major}" -lt 20 ]]; then
-    echo "Node.js >= 20 is required. Current: $(node -v)"
+  if ! node -e 'const [major, minor] = process.versions.node.split(".").map(Number); process.exit((major === 20 && minor >= 19) || (major === 22 && minor >= 12) || major >= 24 ? 0 : 1)' >/dev/null 2>&1; then
+    echo "Node.js 20.19+, 22.12+, or 24+ is required. Current: $(node -v)"
     exit 1
   fi
 }
@@ -107,6 +109,23 @@ validate_postgres_url() {
       exit 1
       ;;
   esac
+
+  if [[ "${DATABASE_URL}" == *"CHANGE_ME"* ]]; then
+    echo "DATABASE_URL still contains a placeholder value."
+    exit 1
+  fi
+
+  node -e '
+    try {
+      const parsed = new URL(process.argv[1]);
+      process.exit(parsed.hostname && parsed.pathname.length > 1 && parsed.username ? 0 : 1);
+    } catch {
+      process.exit(1);
+    }
+  ' "${DATABASE_URL}" || {
+    echo "DATABASE_URL must include PostgreSQL user, host, and database name."
+    exit 1
+  }
 }
 
 validate_pg_identifier() {
@@ -241,20 +260,20 @@ cat > "${ENV_FILE}" <<EOF
 NODE_ENV=production
 APP_ENV=production
 APP_RELEASE=panel-${PANEL}
-APP_ORIGIN=${APP_ORIGIN}
-DATABASE_URL=${DATABASE_URL}
-DB_SETUP_MODE=${DB_SETUP_MODE}
+APP_ORIGIN=$(dotenv_value "${APP_ORIGIN}")
+DATABASE_URL=$(dotenv_value "${DATABASE_URL}")
+DB_SETUP_MODE=$(dotenv_value "${DB_SETUP_MODE}")
 PRISMA_POOL_MAX=${PRISMA_POOL_MAX:-5}
-AUTH_SECRET=${AUTH_SECRET}
+AUTH_SECRET=$(dotenv_value "${AUTH_SECRET}")
 SESSION_COOKIE_SECURE=true
 CSRF_STRICT_ORIGIN=true
 KMT_DEMO_PASSWORD=
 KMT_DEMO_TOTP_SECRET=
 STAFF_2FA_MODE=disabled
 INSTALLER_ENABLED=true
-INSTALLER_SETUP_TOKEN=${INSTALLER_SETUP_TOKEN}
-INSTALLER_LOCK_PATH=${INSTALLER_LOCK_PATH}
-HOSTING_MODE=${PANEL}
+INSTALLER_SETUP_TOKEN=$(dotenv_value "${INSTALLER_SETUP_TOKEN}")
+INSTALLER_LOCK_PATH=$(dotenv_value "${INSTALLER_LOCK_PATH}")
+HOSTING_MODE=$(dotenv_value "${PANEL}")
 PORT=${APP_PORT}
 APP_PORT=${APP_PORT}
 PANEL_REVERSE_PROXY_READY=true
@@ -262,7 +281,7 @@ CPANEL_NODE_APP_READY=$([[ "${PANEL}" == "cpanel" ]] && echo "true" || echo "fal
 CPANEL_COMMAND_RUNNER_READY=$([[ "${PANEL}" == "cpanel" ]] && echo "true" || echo "false")
 
 STORAGE_DRIVER=vps-filesystem
-UPLOADS_DIR=${UPLOADS_DIR}
+UPLOADS_DIR=$(dotenv_value "${UPLOADS_DIR}")
 MAX_UPLOAD_MB=5
 ALLOWED_UPLOAD_TYPES=application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png
 
@@ -288,9 +307,48 @@ EOF
 
 chmod 600 "${ENV_FILE}"
 
-set -a
-. "${ENV_FILE}"
-set +a
+export NODE_ENV=production
+export APP_ENV=production
+export APP_RELEASE="panel-${PANEL}"
+export APP_ORIGIN
+export DATABASE_URL
+export DB_SETUP_MODE
+export PRISMA_POOL_MAX="${PRISMA_POOL_MAX:-5}"
+export AUTH_SECRET
+export SESSION_COOKIE_SECURE=true
+export CSRF_STRICT_ORIGIN=true
+export KMT_DEMO_PASSWORD=
+export KMT_DEMO_TOTP_SECRET=
+export STAFF_2FA_MODE=disabled
+export INSTALLER_ENABLED=true
+export INSTALLER_SETUP_TOKEN
+export INSTALLER_LOCK_PATH
+export HOSTING_MODE="${PANEL}"
+export PORT="${APP_PORT}"
+export APP_PORT
+export PANEL_REVERSE_PROXY_READY=true
+export CPANEL_NODE_APP_READY=$([[ "${PANEL}" == "cpanel" ]] && echo "true" || echo "false")
+export CPANEL_COMMAND_RUNNER_READY=$([[ "${PANEL}" == "cpanel" ]] && echo "true" || echo "false")
+export STORAGE_DRIVER=vps-filesystem
+export UPLOADS_DIR
+export MAX_UPLOAD_MB=5
+export ALLOWED_UPLOAD_TYPES=application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png
+export SMTP_ENABLED=false
+export SMTP_HOST=
+export SMTP_PORT=587
+export SMTP_USER=
+export SMTP_PASSWORD=
+export SMTP_FROM=
+export SMTP_SECURE=false
+export AI_PROVIDER=mock
+export AI_BASE_URL=
+export AI_API_KEY=
+export AI_MODEL=
+export AI_TIMEOUT_MS=30000
+export AI_MAX_TOKENS=1200
+export AI_TEMPERATURE=0.2
+export ANALYTICS_ENABLED=true
+export ENABLE_STITCH_CLONE=false
 
 npm ci
 npm run db:generate

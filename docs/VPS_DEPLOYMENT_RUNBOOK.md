@@ -23,6 +23,7 @@ Required production decisions:
 
 - `NODE_ENV=production`
 - `APP_ENV=production`
+- Node.js `20.19+`, `22.12+`, or `24+`
 - `APP_ORIGIN=https://...`
 - `SESSION_COOKIE_SECURE=true`
 - `CSRF_STRICT_ORIGIN=true`
@@ -142,6 +143,7 @@ npm run security:audit
 
 After deploy:
 
+- `GET /api/health` returns 200. Do not treat `GET /` alone as release evidence because public pages can be static or cached while DB-backed routes are failing.
 - `GET /` returns 200 and includes security headers.
 - `GET /login` returns 200.
 - Anonymous `GET /admin` redirects to `/login?next=/admin`.

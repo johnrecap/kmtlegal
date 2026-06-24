@@ -74,7 +74,7 @@ describe("PLAN-26 panel-aware installer contract", () => {
         STORAGE_DRIVER: "vps-filesystem",
         UPLOADS_DIR: "/home/account/public_html/uploads"
       }),
-      { cwd: process.cwd(), nodeVersion: "20.11.0", npmAvailable: true }
+      { cwd: process.cwd(), nodeVersion: "20.19.0", npmAvailable: true }
     );
 
     expect(checks.find((item) => item.id === "db_setup_mode")?.ok).toBe(false);

@@ -55,6 +55,11 @@ All API Route Handlers and Server Actions must follow these standards:
 
 ## Endpoint Groups
 
+### Runtime Health
+| Method | Path | Purpose | Auth | Permission | Notes |
+| --- | --- | --- | --- | --- | --- |
+| GET | `/api/health` | Report production runtime readiness | Public status | N/A | Returns `200` only when env, database, seed, first Super Admin, and installer lock checks pass; returns `503` without secrets when blocked |
+
 ### Auth
 | Method | Path/Action | Purpose | Auth | Permission | Notes |
 | --- | --- | --- | --- | --- | --- |

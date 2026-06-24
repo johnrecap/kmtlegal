@@ -19,6 +19,8 @@ Use this file as the first handoff map. The detailed plan tracker is `docs/KMT_L
 npm ci
 ```
 
+Required Node.js versions follow the Prisma runtime constraint: `20.19+`, `22.12+`, or `24+`. The repo records this in `package.json` and `.node-version`.
+
 ## Local Environment
 
 Create a local env file from `.env.example`. Keep real `.env*` values out of version control.
@@ -131,6 +133,8 @@ sudo bash deploy/install/install.sh
 Then open the printed `/install?token=...` URL, create the first Super Admin without TOTP, lock the installer, and run `sudo kmt-legal-disable-installer`.
 
 For aaPanel or cPanel, follow PLAN-26 first. Do not run the root VPS installer inside a panel-managed environment unless you intentionally manage the whole VPS outside the panel.
+
+Production readiness is exposed at `/api/health`. It returns `200` only after env, database, seed, first Super Admin, and installer lock checks pass. Normal app pages are blocked by the readiness gate in production until those checks are healthy.
 
 ## Where To Work
 

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { hashPassword } from "@/server/auth/password";
 import { ROLES } from "@/server/auth/policy";
 import { ApiError } from "@/server/http/errors";
+import { installerDatabasePreflightChecks } from "@/server/health/runtime-readiness";
 import { assertInstallerToken, getInstallerLockPath, hasInstallerLockFile, installerTokenFromRequest, isInstallerEnabled } from "@/server/install/installer-env";
 import { type HostingMode, panelPreflightChecks } from "@/server/install/panel-preflight";
 import { emailSchema, localeSchema, parseWithSchema } from "@/server/validation/schemas";
@@ -69,7 +70,8 @@ export async function getInstallerPreflight(token: string, input: { hostingMode?
     check("storage_driver", process.env.STORAGE_DRIVER === "vps-filesystem", "STORAGE_DRIVER=vps-filesystem"),
     check("staff_2fa_disabled", process.env.STAFF_2FA_MODE !== "totp", "STAFF_2FA_MODE is disabled."),
     check("smtp_disabled", process.env.SMTP_ENABLED !== "true", "SMTP is disabled for this release."),
-    ...panelPreflightChecks(input.hostingMode ?? "terminal-vps")
+    ...panelPreflightChecks(input.hostingMode ?? "terminal-vps"),
+    ...(await installerDatabasePreflightChecks()).map((item) => check(item.id, item.ok, item.message))
   ];
 
   return {

@@ -6,7 +6,7 @@ Use this path only for cPanel hosting accounts that can run a real Next.js serve
 
 The account must provide all of these:
 
-- Node.js App or equivalent persistent Node process.
+- Node.js App or equivalent persistent Node process with Node.js `20.19+`, `22.12+`, or `24+`.
 - PostgreSQL database.
 - SSH/Terminal or equivalent command runner.
 - Environment variable configuration.
@@ -32,6 +32,7 @@ bash deploy/install/panel-install.sh --panel=cpanel
 6. Let preflight verify Node, npm, PostgreSQL, database setup mode, env vars, private uploads, process manager, disabled SMTP, disabled TOTP, and installer token.
 7. Run build/migrations/seed only after preflight passes.
 8. Open `/install?token=...`, create the first Super Admin, lock the installer, and disable installer mode.
+9. Verify `GET /api/health` returns `200` before sending users to the app.
 
 ## Unsupported cPanel Cases
 

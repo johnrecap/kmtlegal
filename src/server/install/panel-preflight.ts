@@ -37,9 +37,9 @@ export function panelPreflightChecks(
   const checks: PanelPreflightCheck[] = [
     check("hosting_mode_supported", true, `Hosting mode selected: ${hostingMode}`),
     check("db_setup_mode", dbSetupMode === "existing" || dbSetupMode === "auto", `Database setup mode: ${dbSetupMode}`),
-    check("node_version", nodeMajor(nodeVersion) >= 20, `Node.js >= 20 is installed. Current: ${nodeVersion}`),
+    check("node_version", isSupportedNodeVersion(nodeVersion), `Node.js 20.19+, 22.12+, or 24+ is installed. Current: ${nodeVersion}`),
     check("npm_available", runtime.npmAvailable ?? commandAvailable("npm"), "npm is available for install/build commands."),
-    check("database_url_postgresql", isPostgresUrl(databaseUrl), "DATABASE_URL points to PostgreSQL."),
+    check("database_url_postgresql", isConfiguredPostgresUrl(databaseUrl), "DATABASE_URL points to a configured PostgreSQL database."),
     check("app_origin", /^https?:\/\//.test(appOrigin), "APP_ORIGIN is configured with http/https."),
     check("auth_secret", (env.AUTH_SECRET?.trim().length ?? 0) >= 32, "AUTH_SECRET is configured with at least 32 characters."),
     check("uploads_dir_configured", uploadsDir.length > 0, "UPLOADS_DIR is configured."),
@@ -88,12 +88,30 @@ export function isPrivateUploadPath(uploadPath: string, cwd = process.cwd()) {
   return !normalized.includes("/public_html/") && !normalized.endsWith("/public_html");
 }
 
-function isPostgresUrl(value: string) {
-  return value.startsWith("postgresql://") || value.startsWith("postgres://");
+function isConfiguredPostgresUrl(value: string) {
+  if (!value || value.includes("CHANGE_ME")) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(value);
+    return Boolean(parsed.hostname && parsed.pathname.length > 1 && parsed.username) && (parsed.protocol === "postgresql:" || parsed.protocol === "postgres:");
+  } catch {
+    return false;
+  }
 }
 
-function nodeMajor(version: string) {
-  return Number(version.split(".")[0] ?? 0);
+function isSupportedNodeVersion(version: string) {
+  const [major = 0, minor = 0] = version
+    .replace(/^v/, "")
+    .split(".")
+    .map((part) => Number.parseInt(part, 10));
+
+  if (!Number.isFinite(major) || !Number.isFinite(minor)) {
+    return false;
+  }
+
+  return (major === 20 && minor >= 19) || (major === 22 && minor >= 12) || major >= 24;
 }
 
 function commandAvailable(command: string) {

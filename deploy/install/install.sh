@@ -42,9 +42,21 @@ echo "Installing OS packages..."
 apt-get update
 apt-get install -y ca-certificates curl gnupg nginx postgresql postgresql-contrib rsync openssl certbot python3-certbot-nginx
 
-if ! command -v node >/dev/null 2>&1 || ! node -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 20 ? 0 : 1)' >/dev/null 2>&1; then
+node_supported() {
+  node -e '
+    const [major, minor] = process.versions.node.split(".").map(Number);
+    process.exit((major === 20 && minor >= 19) || (major === 22 && minor >= 12) || major >= 24 ? 0 : 1);
+  ' >/dev/null 2>&1
+}
+
+if ! command -v node >/dev/null 2>&1 || ! node_supported; then
   curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
   apt-get install -y nodejs
+fi
+
+if ! node_supported; then
+  echo "Node.js 20.19+, 22.12+, or 24+ is required for Prisma. Current: $(node -v)"
+  exit 1
 fi
 
 if ! id "${APP_USER}" >/dev/null 2>&1; then

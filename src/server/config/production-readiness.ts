@@ -46,11 +46,11 @@ export function productionReadinessIssues(env: NodeJS.ProcessEnv = process.env) 
     });
   }
 
-  if (!env.DATABASE_URL) {
+  if (!isConfiguredPostgresUrl(env.DATABASE_URL)) {
     issues.push({
       code: "DATABASE_URL_REQUIRED",
       severity: "error",
-      message: "DATABASE_URL must point to the production PostgreSQL database on the VPS."
+      message: "DATABASE_URL must point to the production PostgreSQL database on the VPS and must not contain placeholder values."
     });
   }
 
@@ -189,6 +189,19 @@ function isHttpsOrigin(value?: string) {
 
   try {
     return new URL(value).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function isConfiguredPostgresUrl(value?: string) {
+  if (!value || value.includes("CHANGE_ME")) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(value);
+    return Boolean(parsed.hostname && parsed.pathname.length > 1 && parsed.username) && (parsed.protocol === "postgresql:" || parsed.protocol === "postgres:");
   } catch {
     return false;
   }
