@@ -175,6 +175,9 @@ if [[ -d ".next/static" ]]; then
   cp -a .next/static/. "${STATIC_BACKUP_DIR}/"
 fi
 
+log "Removing stale Next.js build output"
+rm -rf .next
+
 log "Building a fresh Next.js release"
 npm run build
 
