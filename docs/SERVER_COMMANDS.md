@@ -69,11 +69,14 @@ cd /www/wwwroot/kmtlegal
 bash deploy/install/aapanel-pm2-update.sh
 ```
 
+The update script loads `/www/wwwroot/kmtlegal/.env.production.local` before build, migrations, and PM2 restart. This is required so Prisma uses the production PostgreSQL database from `DATABASE_URL` instead of the local development default.
+
 The script:
 
 - Fetches `origin/main`.
 - Pulls with `git pull --ff-only origin main` when the server checkout is behind.
 - Fails if tracked files on the server are modified.
+- Loads the production environment file and fails if `DATABASE_URL` is missing.
 - Installs dependencies with build-time packages.
 - Removes the old `.next` build output.
 - Runs `npm run build`.
@@ -85,6 +88,7 @@ Only override defaults when the server uses different names:
 
 ```bash
 APP_DIR=/www/wwwroot/kmtlegal \
+ENV_FILE=/www/wwwroot/kmtlegal/.env.production.local \
 BRANCH=main \
 PM2_APP=kmtlegal \
 PORT=3000 \
@@ -97,6 +101,9 @@ Use this only when the update script cannot be used and you intentionally want t
 
 ```bash
 cd /www/wwwroot/kmtlegal
+set -a
+. ./.env.production.local
+set +a
 git fetch origin main
 git pull --ff-only origin main
 npm install --include=dev
@@ -108,6 +115,19 @@ pm2 save
 curl -fsSI http://127.0.0.1:3000/api/health || curl -fsSI http://127.0.0.1:3000/
 pm2 list
 ```
+
+If `npm run db:migrate` fails with `P1010: User was denied access`, do not restart PM2 yet. First confirm the loaded `DATABASE_URL` points at the aaPanel PostgreSQL database and user:
+
+```bash
+cd /www/wwwroot/kmtlegal
+set -a
+. ./.env.production.local
+set +a
+node -e 'const u=new URL(process.env.DATABASE_URL); console.log(`${u.username}@${u.hostname}:${u.port || "5432"}${u.pathname}`)'
+npm run db:migrate
+```
+
+For the current aaPanel database shown in the panel, the visible target should be the `kmtlegal` database/user, not the local development default `kmt_legal`.
 
 If the PM2 process does not exist yet:
 

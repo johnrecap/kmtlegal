@@ -6,6 +6,7 @@ BRANCH="${BRANCH:-main}"
 PM2_APP="${PM2_APP:-kmtlegal}"
 PORT="${PORT:-3000}"
 HEALTH_PATH="${HEALTH_PATH:-/api/health}"
+ENV_FILE="${ENV_FILE:-${APP_DIR}/.env.production.local}"
 
 log() {
   printf "\n==> %s\n" "$*"
@@ -32,6 +33,25 @@ if [[ ! -d "${APP_DIR}/.git" ]]; then
 fi
 
 cd "${APP_DIR}"
+
+if [[ ! -f "${ENV_FILE}" ]]; then
+  fail "Production env file was not found: ${ENV_FILE}"
+fi
+
+log "Loading production environment from ${ENV_FILE}"
+set -a
+# shellcheck disable=SC1090
+. "${ENV_FILE}"
+set +a
+
+if [[ -z "${DATABASE_URL:-}" ]]; then
+  fail "DATABASE_URL is missing after loading ${ENV_FILE}"
+fi
+
+node -e '
+  const url = new URL(process.env.DATABASE_URL);
+  console.log(`Database target: ${url.username}@${url.hostname}:${url.port || "5432"}${url.pathname}`);
+'
 
 log "Fetching ${BRANCH} from GitHub"
 git fetch origin "${BRANCH}"

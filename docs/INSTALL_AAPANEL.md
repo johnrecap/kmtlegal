@@ -44,9 +44,12 @@ cd /www/wwwroot/kmtlegal
 bash deploy/install/aapanel-pm2-update.sh
 ```
 
+The update script loads `/www/wwwroot/kmtlegal/.env.production.local` before running the build, Prisma migrations, and PM2 restart. Keep the production `DATABASE_URL` in that file pointed at the aaPanel PostgreSQL database.
+
 Defaults:
 
 - App directory: `/www/wwwroot/kmtlegal`
+- Environment file: `/www/wwwroot/kmtlegal/.env.production.local`
 - Git branch: `main`
 - PM2 process name: `kmtlegal`
 - Internal port: `3000`
@@ -55,6 +58,7 @@ Override them only if the server uses different names:
 
 ```bash
 APP_DIR=/www/wwwroot/kmtlegal \
+ENV_FILE=/www/wwwroot/kmtlegal/.env.production.local \
 BRANCH=main \
 PM2_APP=kmtlegal \
 PORT=3000 \
