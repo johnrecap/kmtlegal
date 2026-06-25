@@ -147,6 +147,7 @@ export function PaymentForm({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setMessage(null);
     setIsBusy(true);
 
@@ -154,7 +155,7 @@ export function PaymentForm({
       const response = await sendJson(
         isEdit ? `/api/admin/finance/${payment.id}` : "/api/admin/finance",
         isEdit ? "PATCH" : "POST",
-        paymentPayloadFromForm(event.currentTarget)
+        paymentPayloadFromForm(form)
       );
 
       if (!response.ok) {
@@ -163,7 +164,7 @@ export function PaymentForm({
       }
 
       if (!isEdit) {
-        event.currentTarget.reset();
+        form.reset();
       }
 
       setMessage(isEdit ? "تم حفظ الفاتورة." : "تم إنشاء الفاتورة.");

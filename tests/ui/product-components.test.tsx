@@ -170,4 +170,13 @@ describe("product UI primitives", () => {
     expect(source).not.toContain("Media/Social");
     expect(source).not.toContain("read-only");
   });
+
+  it("keeps the finance submit form reference stable across async requests", () => {
+    const source = readFileSync(join(process.cwd(), "src/features/admin/finance/finance-forms.tsx"), "utf8");
+
+    expect(source).toContain("const form = event.currentTarget;");
+    expect(source).toContain("paymentPayloadFromForm(form)");
+    expect(source).toContain("form.reset()");
+    expect(source).not.toContain("event.currentTarget.reset()");
+  });
 });
