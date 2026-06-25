@@ -8,6 +8,33 @@ This file is the project reference for local Git commands, server pull/deploy co
 - Remote: `origin`
 - Repository: `https://github.com/johnrecap/kmtlegal.git`
 
+## Mandatory Workflow For Every Change
+
+After every completed repository modification:
+
+1. Run the relevant verification for the change.
+2. Commit the change.
+3. Push to `origin/main`.
+4. Give the user the matching server pull/deploy commands.
+
+Do not leave completed work only on the local machine unless the user explicitly says not to push, the request is review-only, or verification failed and the user has not accepted that risk.
+
+Default command sequence:
+
+```bash
+git status
+git add -A
+git commit -m "describe the change"
+git push origin main
+```
+
+Default server handoff after push:
+
+```bash
+cd /www/wwwroot/kmtlegal
+bash deploy/install/aapanel-pm2-update.sh
+```
+
 ## Local Push
 
 Use these commands from the project checkout on the development machine:

@@ -26,8 +26,10 @@
 - Stitch screenshots: `npm run stitch:screenshots`
 - Server commands and push handoff: `docs/SERVER_COMMANDS.md`
 
-## Push Handoff Rule
+## Mandatory Push And Server Handoff Rule
 
+- After every completed repository modification, run the relevant verification, commit the change, and push it to `origin/main` unless the user explicitly says not to push or the change is only an uncommitted review/proposal.
+- If verification cannot be run or fails, say that clearly before deciding whether to push.
 - After any successful `git push` to `origin/main`, include the matching server pull/deploy commands in the final response.
 - Default current deployment target is aaPanel + PM2. Unless a different target is explicitly requested, hand off:
   - `cd /www/wwwroot/kmtlegal`
