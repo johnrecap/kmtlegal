@@ -18,6 +18,8 @@ describe("public website UI", () => {
     expect(html).toContain("href=\"/services\"");
     expect(html).toContain("aria-current=\"page\"");
     expect(html).toContain("احجز استشارة");
+    expect(html).toContain("bg-kmt-gold/15");
+    expect(html).not.toContain("secondary-container");
   });
 
   it("renders hero and trust strip without relying on cards inside hero", () => {
@@ -37,5 +39,21 @@ describe("public website UI", () => {
     expect(html).toContain("استشارات قانونية منظمة");
     expect(html).toContain("مراجعة بشرية");
     expect(html).toContain("object-cover");
+  });
+
+  it("renders compact public heroes for inner pages", () => {
+    const html = renderToStaticMarkup(
+      <PageHero
+        eyebrow="الخدمات"
+        image="/services.png"
+        size="compact"
+        title="خدمات قانونية قابلة للفرز"
+        description="وصف عربي واضح"
+      />
+    );
+
+    expect(html).toContain("min-h-[340px]");
+    expect(html).toContain("خدمات قانونية قابلة للفرز");
+    expect(html).not.toContain("secondary-container");
   });
 });

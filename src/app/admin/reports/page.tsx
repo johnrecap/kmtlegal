@@ -9,6 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  DataRecordCard,
   DataTable,
   FilterBar,
   MetricCard,
@@ -17,6 +18,7 @@ import {
   TextInput,
   type DataTableColumn
 } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
 import { currencyValues } from "@/lib/legal-finance";
 import {
   caseStatusLabels,
@@ -157,6 +159,30 @@ const recentPaymentColumns: Array<DataTableColumn<RecentPaymentRow>> = [
   }
 ];
 
+function RecentPaymentMobileCard({ row }: { row: RecentPaymentRow }) {
+  return (
+    <DataRecordCard
+      title={
+        <Link className="text-kmt-navy hover:underline" href={`/admin/finance?editPaymentId=${row.id}`}>
+          {row.invoiceNumber}
+        </Link>
+      }
+      description={formatDate(row.issueDate)}
+      badges={<Badge tone={statusTone(row.status)}>{labelFrom(paymentStatusLabels, row.status)}</Badge>}
+      fields={[
+        { label: "العميل", value: row.client.fullName },
+        { label: "القضية", value: row.case?.internalFileNumber ?? "بدون قضية" },
+        { label: "القيمة", value: formatMoney(row.amount.toString(), row.currency), className: "sm:col-span-2" }
+      ]}
+      action={
+        <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={`/admin/finance?editPaymentId=${row.id}`}>
+          فتح الفاتورة
+        </Link>
+      }
+    />
+  );
+}
+
 export default async function AdminReportsPage({ searchParams = {} }: { searchParams?: SearchParams }) {
   const guard = await requireAdminPage("/admin/reports");
   if (guard.status === "forbidden") {
@@ -271,7 +297,12 @@ export default async function AdminReportsPage({ searchParams = {} }: { searchPa
             </div>
           </CardHeader>
           <CardContent>
-            <DataTable columns={recentPaymentColumns} rows={report.recentPayments} empty="لا توجد فواتير داخل نطاق التقرير الحالي." />
+            <DataTable
+              columns={recentPaymentColumns}
+              rows={report.recentPayments}
+              empty="لا توجد فواتير داخل نطاق التقرير الحالي."
+              mobileRender={(row) => <RecentPaymentMobileCard row={row} />}
+            />
           </CardContent>
         </Card>
       </div>

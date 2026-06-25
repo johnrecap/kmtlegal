@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PublicShell } from "@/components/layout";
 import { navForPath } from "@/content/public-content";
 import { BookingStepper } from "@/features/public-site/booking-stepper";
-import { PublicSection } from "@/features/public-site/public-components";
+import { PageHero, PublicSection } from "@/features/public-site/public-components";
 
 export const metadata: Metadata = {
   title: "حجز استشارة | KMT Legal",
@@ -13,6 +13,13 @@ export const metadata: Metadata = {
 export default function BookConsultationPage({ searchParams }: { searchParams: { service?: string; lawyer?: string } }) {
   return (
     <PublicShell navItems={navForPath("/book-consultation")}>
+      <PageHero
+        eyebrow="طلب استشارة"
+        image="/stitch-assets/b8b47a1dd8d5ce08.png"
+        size="compact"
+        title="اكتب طلبك في خطوات قليلة"
+        description="النموذج يرتب بياناتك للمراجعة البشرية، ولا يقدم استشارة قانونية نهائية قبل تواصل الفريق."
+      />
       <PublicSection
         eyebrow="طلب استشارة"
         title="اكتب طلبك في خطوات قليلة"

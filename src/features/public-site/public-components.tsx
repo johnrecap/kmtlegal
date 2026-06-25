@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ButtonLink, MaterialSymbol } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
 export function PublicSection({
   eyebrow,
@@ -33,23 +34,27 @@ export function PageHero({
   title,
   description,
   image,
-  actions
+  actions,
+  size = "full"
 }: {
   eyebrow: string;
   title: string;
   description: string;
   image: string;
   actions?: ReactNode;
+  size?: "full" | "compact";
 }) {
+  const isCompact = size === "compact";
+
   return (
-    <section className="relative isolate min-h-[520px] overflow-hidden bg-kmt-navy text-white">
-      <img alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover opacity-35" src={image} />
+    <section className={cn("relative isolate overflow-hidden bg-kmt-navy text-white", isCompact ? "min-h-[340px]" : "min-h-[520px]")}>
+      <img alt="" aria-hidden="true" className={cn("absolute inset-0 h-full w-full object-cover", isCompact ? "opacity-30" : "opacity-35")} src={image} />
       <div className="absolute inset-0 bg-gradient-to-l from-kmt-navy via-kmt-navy/80 to-kmt-navy/20" />
-      <div className="relative mx-auto flex min-h-[520px] max-w-[1200px] items-center px-4 py-16 sm:px-6 lg:px-10">
+      <div className={cn("relative mx-auto flex max-w-[1200px] items-center px-4 sm:px-6 lg:px-10", isCompact ? "min-h-[340px] py-12" : "min-h-[520px] py-16")}>
         <div className="max-w-3xl">
-          <p className="text-sm font-semibold text-secondary-container">{eyebrow}</p>
-          <h1 className="mt-4 text-4xl font-semibold leading-tight md:text-6xl">{title}</h1>
-          <p className="mt-5 max-w-2xl text-lg leading-9 text-slate-100">{description}</p>
+          <p className="text-sm font-semibold text-amber-100">{eyebrow}</p>
+          <h1 className={cn("mt-4 font-semibold leading-tight", isCompact ? "text-3xl md:text-5xl" : "text-4xl md:text-6xl")}>{title}</h1>
+          <p className={cn("mt-5 max-w-2xl leading-9 text-slate-100", isCompact ? "text-base md:text-lg" : "text-lg")}>{description}</p>
           {actions ? <div className="mt-8 flex flex-wrap gap-3">{actions}</div> : null}
         </div>
       </div>

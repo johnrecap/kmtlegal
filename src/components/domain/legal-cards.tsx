@@ -86,7 +86,7 @@ export function AIOrganizerPanel({ title = "المساعد القانوني ال
   return (
     <section className="rounded-lg border border-kmt-border bg-white p-5">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded bg-secondary-container text-kmt-ink">
+        <div className="flex h-10 w-10 items-center justify-center rounded bg-kmt-gold/15 text-kmt-ink">
           <MaterialSymbol name="smart_toy" />
         </div>
         <h3 className="text-lg font-semibold text-kmt-ink">{title}</h3>

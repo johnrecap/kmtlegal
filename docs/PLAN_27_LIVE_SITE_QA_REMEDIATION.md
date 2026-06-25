@@ -247,15 +247,15 @@ Acceptance:
 | P27-10 Localize login errors and add visible form validation. | Done | Auth API/UI | API bad-credential/validation copy and client required-field validation are Arabic and generic. |
 | P27-11 Clean booking success copy and hide internal/mock AI placeholders. | Done | AI/booking | Public success panel uses safe Arabic copy and labels; mock AI strings are Arabic and non-placeholder. |
 | P27-12 Prevent accidental duplicate contact submission after success. | Done | Contact UI | Contact form locks after success and exposes an intentional "new message" reset. |
-| P27-13 Add mobile smoke for public critical pages. | Planned | P27-03, P27-11, P27-12 | Playwright mobile viewport evidence. |
+| P27-13 Add mobile smoke for public critical pages. | Done locally | P27-03, P27-11, P27-12 | `tests/e2e/mvp-smoke.spec.ts` checks `/`, `/services`, `/team`, `/articles`, `/case-studies`, `/media`, `/contact`, and `/book-consultation` at 390px without page-level horizontal scroll. |
 | P27-14 Run local verification: typecheck, tests, build, relevant E2E. | Done | Implementation complete | `typecheck`, full `test`, `build`, and `test:e2e:smoke` passed locally. |
 | P27-15 Run staging/live verification and archive evidence. | Planned | Deploy complete | Live smoke report and screenshots. |
 | P27-16 Update release checklist and implementation status after evidence. | Partial | P27-15 | Local implementation docs updated; deployed evidence still pending. |
 | P27-17 Audit authenticated live admin routes and APIs. | Done | Admin credentials / read-only QA | Live findings P27-F11 through P27-F15 documented; API checks returned 200 for authenticated core admin endpoints. |
 | P27-18 Localize admin shell and staff 2FA settings copy. | Done | P27-17 | `DashboardShell` and `SecurityStaff2faSettingForm` no longer render `Management`, `Admin`, or `Staff 2FA is deferred`. |
 | P27-19 Hide legacy mock AI notes in admin consultation review. | Done | P27-17 | Admin consultation detail renders structured Arabic labels and hides old mock/placeholder AI text instead of raw JSON. |
-| P27-20 Fix admin page-level overflow and add responsive constraints. | Done locally | P27-17 | Shared dashboard/card/table/filter containers and admin dashboard/detail grids now use `min-w-0`, `overflow-x-hidden`, and internal table overflow. |
-| P27-21 Add opt-in live admin smoke test. | Done | P27-17 | `tests/e2e/live-admin-smoke.spec.ts` checks admin pages, APIs, `_next/static` MIME/status, CSP errors, dev login copy, and 390px overflow when env credentials are provided. |
+| P27-20 Fix admin page-level overflow and add responsive constraints. | Done locally | P27-17 | Shared dashboard/card/table/filter containers and admin dashboard/detail grids now use responsive constraints; admin/portal tables use `DataRecordCard` mobile cards where wired, admin nav is grouped on desktop, and `/admin/clients` keeps the mobile create-client jump link. |
+| P27-21 Add opt-in live admin smoke test. | Done | P27-17 | `tests/e2e/live-admin-smoke.spec.ts` checks admin pages, APIs, `_next/static` MIME/status, CSP errors, dev login copy, and 390px overflow for key admin list pages when env credentials are provided. |
 | P27-22 Atomically redeploy and rerun authenticated live admin smoke. | Planned | P27-18 through P27-21 | Requires VPS/CI deployment access; archive evidence under `test-results/live-admin-qa-<date>`. |
 
 ## Verification Matrix
@@ -282,8 +282,11 @@ Implemented locally on 2026-06-25:
 - Production CSP now allowlists `https://static.cloudflareinsights.com` for scripts and `https://cloudflareinsights.com` for beacon connections.
 - `/favicon.ico` resolves through an App Router route and is declared in app metadata.
 - Admin shell/settings copy is localized, admin consultation AI output is rendered through safe structured labels instead of raw JSON, and dashboard containers have responsive overflow constraints.
-- An opt-in authenticated live admin Playwright smoke was added for route chunk integrity, CSP, API status, login copy, and mobile overflow verification.
+- An opt-in authenticated live admin Playwright smoke was added for route chunk integrity, CSP, API status, login copy, mobile overflow, and `/admin/clients` mobile surface verification.
 - Local verification passed for `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, and `npm run test:e2e:smoke`; the opt-in live admin smoke also passed syntax/skip behavior with required env vars absent.
+- Responsive CRM follow-up verification passed for `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npx playwright test tests/e2e/live-admin-smoke.spec.ts` with required env vars absent/skipped, and `git diff --check`.
+- Full design responsive pass added shared `DataRecordCard` mobile table rendering across admin and portal list surfaces, grouped admin navigation, KMT-token active/hover states, compact public `PageHero` variants, improved public directory filters, and safer no-DB fallbacks for article/case-study list pages.
+- Full design responsive pass verification passed for `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e:smoke`, `npx playwright test tests/e2e/live-admin-smoke.spec.ts` with required env vars absent/skipped, and `git diff --check`.
 
 ## Release Gate
 

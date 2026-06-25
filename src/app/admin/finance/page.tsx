@@ -9,6 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  DataRecordCard,
   DataTable,
   FilterBar,
   MetricCard,
@@ -191,6 +192,36 @@ function columns(query: Record<string, string>): Array<DataTableColumn<PaymentRo
   ];
 }
 
+function PaymentMobileCard({ row, query }: { row: PaymentRow; query: Record<string, string> }) {
+  return (
+    <DataRecordCard
+      title={row.invoiceNumber}
+      description={`أُنشئت بواسطة ${row.createdBy.name}`}
+      badges={<Badge tone={statusTone(row.status)}>{labelFrom(paymentStatusLabels, row.status)}</Badge>}
+      fields={[
+        {
+          label: "العميل",
+          value: (
+            <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/clients/${row.client.id}`}>
+              {row.client.fullName}
+            </Link>
+          )
+        },
+        { label: "القضية", value: row.case ? `${row.case.internalFileNumber} - ${row.case.title}` : "بدون قضية مرتبطة" },
+        { label: "القيمة", value: formatMoney(row.amount.toString(), row.currency) },
+        { label: "التواريخ", value: `إصدار: ${formatDate(row.issueDate)} · استحقاق: ${formatDate(row.dueDate)}` },
+        { label: "الدفع", value: `${row.paymentMethod || "غير محدد"} · ${row.receiptNumber || "بدون إيصال"}` },
+        { label: "آخر تحديث", value: formatDateTime(row.updatedAt) }
+      ]}
+      action={
+        <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={editHref(row.id, query)}>
+          تعديل
+        </Link>
+      }
+    />
+  );
+}
+
 export default async function AdminFinancePage({ searchParams = {} }: { searchParams?: SearchParams }) {
   const guard = await requireAdminPage("/admin/finance");
   if (guard.status === "forbidden") {
@@ -308,7 +339,7 @@ export default async function AdminFinancePage({ searchParams = {} }: { searchPa
               </p>
             </div>
 
-            <DataTable columns={columns(query)} rows={result.items} empty="لا توجد فواتير مطابقة للفلاتر الحالية." />
+            <DataTable columns={columns(query)} rows={result.items} empty="لا توجد فواتير مطابقة للفلاتر الحالية." mobileRender={(row) => <PaymentMobileCard row={row} query={query} />} />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/finance">

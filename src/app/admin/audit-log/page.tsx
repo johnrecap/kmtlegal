@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
-import { Button, DataTable, FilterBar, SearchInput, Select, TextInput, type DataTableColumn } from "@/components/ui";
+import { Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, TextInput, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { formatDateTime } from "@/lib/legal-format";
 import { canReadAdminAuditLog, listAdminAuditLogs } from "@/server/admin/governance-service";
@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "سجل التدقيق | KMT Legal",
-  description: "بحث وفلترة audit log داخل KMT Legal."
+  description: "بحث وفلترة سجل التدقيق داخل KMT Legal."
 };
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -31,6 +31,10 @@ function shortMetadata(metadata: unknown) {
   }
   const value = JSON.stringify(metadata);
   return value.length > 160 ? `${value.slice(0, 160)}...` : value;
+}
+
+function actorLabel(row: AuditRow) {
+  return row.actor ? `${row.actor.name} · ${row.actor.role.name}` : "النظام";
 }
 
 function listHref(filters: {
@@ -66,7 +70,7 @@ const columns: Array<DataTableColumn<AuditRow>> = [
   {
     key: "actor",
     header: "المنفذ",
-    render: (row) => row.actor ? `${row.actor.name} · ${row.actor.role.name}` : "System"
+    render: (row) => actorLabel(row)
   },
   {
     key: "resource",
@@ -80,12 +84,31 @@ const columns: Array<DataTableColumn<AuditRow>> = [
   },
   {
     key: "metadata",
-    header: "metadata",
+    header: "البيانات المرافقة",
     className: "min-w-72",
     render: (row) => <code className="whitespace-pre-wrap break-words text-xs text-kmt-muted">{shortMetadata(row.metadata)}</code>
   },
   { key: "ip", header: "IP", render: (row) => row.ipAddress ?? "غير مسجل" }
 ];
+
+function AuditMobileCard({ row }: { row: AuditRow }) {
+  return (
+    <DataRecordCard
+      title={row.action}
+      description={formatDateTime(row.createdAt)}
+      fields={[
+        { label: "المنفذ", value: actorLabel(row) },
+        { label: "المورد", value: row.resourceId ? `${row.resourceType} · ${row.resourceId}` : row.resourceType },
+        {
+          label: "البيانات المرافقة",
+          value: <code className="whitespace-pre-wrap break-words text-xs text-kmt-muted">{shortMetadata(row.metadata)}</code>,
+          className: "sm:col-span-2"
+        },
+        { label: "IP", value: row.ipAddress ?? "غير مسجل", dir: "ltr" }
+      ]}
+    />
+  );
+}
 
 export default async function AdminAuditLogPage({ searchParams = {} }: { searchParams?: SearchParams }) {
   const guard = await requireAdminPage("/admin/audit-log");
@@ -155,13 +178,13 @@ export default async function AdminAuditLogPage({ searchParams = {} }: { searchP
         </form>
 
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
-          <p>{result.total} حدث audit داخل الفلاتر الحالية</p>
+          <p>{result.total} حدث تدقيق داخل الفلاتر الحالية</p>
           <p>
             صفحة {result.page} من {totalPages}
           </p>
         </div>
 
-        <DataTable columns={columns} rows={result.items} empty="لا توجد أحداث audit مطابقة للفلاتر الحالية." />
+        <DataTable columns={columns} rows={result.items} empty="لا توجد أحداث تدقيق مطابقة للفلاتر الحالية." mobileRender={(row) => <AuditMobileCard row={row} />} />
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/audit-log">

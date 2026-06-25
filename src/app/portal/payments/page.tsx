@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
-import { Badge, DataTable, type DataTableColumn } from "@/components/ui";
+import { Badge, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
 import { formatDateTime, formatMoney, labelFrom, paymentStatusLabels } from "@/lib/legal-format";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
 import { listPortalPayments } from "@/server/portal/client-portal-service";
@@ -60,6 +61,38 @@ const columns: Array<DataTableColumn<PaymentRow>> = [
   }
 ];
 
+function PortalPaymentMobileCard({ row }: { row: PaymentRow }) {
+  return (
+    <DataRecordCard
+      title={row.invoiceNumber}
+      description={row.receiptNumber ? `إيصال: ${row.receiptNumber}` : undefined}
+      badges={<Badge tone={row.status === "PAID" ? "active" : row.status === "CANCELLED" ? "closed" : "pending"}>{labelFrom(paymentStatusLabels, row.status)}</Badge>}
+      fields={[
+        {
+          label: "القضية",
+          value: row.case ? (
+            <Link className="font-semibold text-kmt-navy hover:underline" href={`/portal/cases/${row.case.id}`}>
+              {row.case.internalFileNumber}
+            </Link>
+          ) : (
+            "بدون قضية"
+          )
+        },
+        { label: "المبلغ", value: formatMoney(row.amount.toString(), row.currency) },
+        { label: "تاريخ الإصدار", value: formatDateTime(row.issueDate) },
+        { label: "تاريخ الاستحقاق", value: formatDateTime(row.dueDate) }
+      ]}
+      action={
+        row.case ? (
+          <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={`/portal/cases/${row.case.id}`}>
+            فتح القضية
+          </Link>
+        ) : null
+      }
+    />
+  );
+}
+
 export default async function PortalPaymentsPage() {
   const guard = await requirePortalPage("/portal/payments");
   if (guard.status === "forbidden") {
@@ -76,7 +109,7 @@ export default async function PortalPaymentsPage() {
       title="مدفوعاتي"
       userLabel={guard.context.user.name}
     >
-      <DataTable columns={columns} rows={payments} empty="لا توجد فواتير أو إيصالات مرتبطة بحسابك حتى الآن." />
+      <DataTable columns={columns} rows={payments} empty="لا توجد فواتير أو إيصالات مرتبطة بحسابك حتى الآن." mobileRender={(row) => <PortalPaymentMobileCard row={row} />} />
     </DashboardShell>
   );
 }

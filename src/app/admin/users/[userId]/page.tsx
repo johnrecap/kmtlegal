@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
-import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, DataTable, type DataTableColumn } from "@/components/ui";
+import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
 import { AdminUserActionPanel } from "@/features/admin/governance/governance-forms";
 import { formatDateTime } from "@/lib/legal-format";
 import { canChangeAdminUserPassword, canManageAdminUsers, getAdminUserDetail, getAdminUserOptions } from "@/server/admin/governance-service";
@@ -37,6 +37,32 @@ const auditColumns: Array<DataTableColumn<AuditRow>> = [
   { key: "resource", header: "المورد", render: (row) => `${row.resourceType}${row.resourceId ? ` · ${row.resourceId}` : ""}` },
   { key: "created", header: "الوقت", render: (row) => formatDateTime(row.createdAt) }
 ];
+
+function SessionMobileCard({ row }: { row: SessionRow }) {
+  return (
+    <DataRecordCard
+      title="جلسة دخول"
+      badges={<Badge tone={statusTone(row.status)}>{row.status}</Badge>}
+      fields={[
+        { label: "بدأت", value: formatDateTime(row.createdAt) },
+        { label: "تنتهي", value: formatDateTime(row.expiresAt) },
+        { label: "IP", value: row.ipAddress ?? "غير مسجل", dir: "ltr", className: "sm:col-span-2" }
+      ]}
+    />
+  );
+}
+
+function AuditMobileCard({ row }: { row: AuditRow }) {
+  return (
+    <DataRecordCard
+      title={row.action}
+      fields={[
+        { label: "المورد", value: `${row.resourceType}${row.resourceId ? ` · ${row.resourceId}` : ""}` },
+        { label: "الوقت", value: formatDateTime(row.createdAt) }
+      ]}
+    />
+  );
+}
 
 export default async function AdminUserDetailPage({ params }: { params: { userId: string } }) {
   const guard = await requireAdminPage(`/admin/users/${params.userId}`);
@@ -89,7 +115,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
               <CardHeader>
                 <CardTitle>النشاط</CardTitle>
                 <CardDescription>
-                  {user._count.sessions} جلسة · {user._count.auditLogs} audit
+                  {user._count.sessions} جلسة · {user._count.auditLogs} حدث تدقيق
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -117,17 +143,17 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
               <CardDescription>جلسات الدخول الأخيرة بدون عرض token أو بيانات سرية.</CardDescription>
             </CardHeader>
             <CardContent>
-              <DataTable columns={sessionColumns} rows={user.sessions} empty="لا توجد جلسات مسجلة." />
+              <DataTable columns={sessionColumns} rows={user.sessions} empty="لا توجد جلسات مسجلة." mobileRender={(row) => <SessionMobileCard row={row} />} />
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>آخر audit لهذا المستخدم</CardTitle>
+              <CardTitle>آخر أحداث التدقيق لهذا المستخدم</CardTitle>
               <CardDescription>أحدث الإجراءات التي نفذها هذا الحساب.</CardDescription>
             </CardHeader>
             <CardContent>
-              <DataTable columns={auditColumns} rows={user.auditLogs} empty="لا توجد أحداث audit مرتبطة بهذا المستخدم." />
+              <DataTable columns={auditColumns} rows={user.auditLogs} empty="لا توجد أحداث تدقيق مرتبطة بهذا المستخدم." mobileRender={(row) => <AuditMobileCard row={row} />} />
             </CardContent>
           </Card>
 
@@ -138,8 +164,8 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
                 <CardDescription>روابط تشغيلية مرتبطة بحساب الدخول.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2 text-sm text-kmt-muted">
-                {user.clientProfile ? <p>Client: {user.clientProfile.fullName} · {user.clientProfile.status}</p> : null}
-                {user.lawyerProfile ? <p>Lawyer profile: {user.lawyerProfile.title}</p> : null}
+                {user.clientProfile ? <p>ملف العميل: {user.clientProfile.fullName} · {user.clientProfile.status}</p> : null}
+                {user.lawyerProfile ? <p>ملف المحامي: {user.lawyerProfile.title}</p> : null}
               </CardContent>
             </Card>
           ) : null}

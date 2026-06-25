@@ -7,13 +7,27 @@ const liveAdminPassword = process.env.KMT_LIVE_ADMIN_PASSWORD ?? "";
 const adminPages = [
   "/admin",
   "/admin/consultations",
+  "/admin/clients",
   "/admin/cases",
+  "/admin/content",
+  "/admin/finance",
+  "/admin/documents",
   "/admin/reports",
+  "/admin/users",
   "/admin/audit-log",
   "/admin/settings"
 ];
 
-const mobileAdminPages = ["/admin", "/admin/clients", "/admin/content"];
+const mobileAdminPages = [
+  "/admin",
+  "/admin/clients",
+  "/admin/consultations",
+  "/admin/cases",
+  "/admin/content",
+  "/admin/finance",
+  "/admin/documents",
+  "/admin/users"
+];
 const apiChecks = ["/api/auth/me", "/api/admin/dashboard", "/api/admin/consultations", "/api/admin/content"];
 const blockedConsolePatterns = [
   /ChunkLoadError/i,
@@ -57,6 +71,11 @@ test.describe("live admin release smoke", () => {
           scrollWidth: document.documentElement.scrollWidth
         }));
         expect(scrollWidth, `${path} should not create page-level horizontal scroll at 390px`).toBeLessThanOrEqual(clientWidth + 1);
+        if (path === "/admin/clients") {
+          await expectAdminClientsMobileSurface(page);
+        } else if (path !== "/admin") {
+          await expectAdminMobileListSurface(page);
+        }
       }
 
       expect(issues()).toEqual([]);
@@ -82,6 +101,31 @@ async function visitAdminPage(page: Page, path: string) {
   await expect(page.locator("body")).toBeVisible();
   await expect(page.locator("body")).not.toContainText("Application error");
   await page.waitForTimeout(750);
+}
+
+async function expectAdminClientsMobileSurface(page: Page) {
+  const filterBar = page.getByRole("search").first();
+
+  await expect(page.getByPlaceholder("ابحث بالاسم أو الهاتف أو البريد")).toBeVisible();
+  await expect(filterBar.getByLabel("الحالة")).toBeVisible();
+  await expect(filterBar.getByLabel("المصدر")).toBeVisible();
+  await expect(filterBar.getByRole("button", { name: "تطبيق" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "إضافة عميل" })).toBeVisible();
+
+  const hasEmptyState = await page.getByText("لا توجد ملفات عملاء مطابقة للفلاتر الحالية.").isVisible().catch(() => false);
+  const hasMobileOpenAction = await page.getByRole("link", { name: "فتح" }).first().isVisible().catch(() => false);
+  expect(hasEmptyState || hasMobileOpenAction, "clients page should show a mobile result card or an empty state").toBe(true);
+}
+
+async function expectAdminMobileListSurface(page: Page) {
+  const filterBar = page.getByRole("search").first();
+
+  await expect(filterBar).toBeVisible();
+  await expect(filterBar.getByRole("button", { name: "تطبيق" })).toBeVisible();
+
+  const hasEmptyState = await page.getByText(/لا توجد|لا توجد عناصر|لا توجد حسابات|لا توجد فواتير|لا توجد مستندات/).first().isVisible().catch(() => false);
+  const hasMobileAction = await page.getByRole("link", { name: /فتح|مراجعة|تعديل|تنزيل/ }).first().isVisible().catch(() => false);
+  expect(hasEmptyState || hasMobileAction, "admin list pages should show a mobile card/action or an empty state").toBe(true);
 }
 
 function collectReleaseIssues(page: Page) {

@@ -7,6 +7,7 @@ export type DashboardNavItem = {
   label: string;
   href: string;
   icon: string;
+  group?: string;
   active?: boolean;
 };
 
@@ -29,6 +30,16 @@ export function DashboardShell({
   action?: ReactNode;
   className?: string;
 }) {
+  const groupedNavItems = navItems.reduce<Array<{ group?: string; items: DashboardNavItem[] }>>((groups, item) => {
+    const lastGroup = groups[groups.length - 1];
+    if (lastGroup && lastGroup.group === item.group) {
+      lastGroup.items.push(item);
+      return groups;
+    }
+    groups.push({ group: item.group, items: [item] });
+    return groups;
+  }, []);
+
   return (
     <div className={cn("min-h-screen overflow-x-hidden bg-kmt-canvas text-kmt-ink lg:flex", className)}>
       <aside className="min-w-0 border-b border-kmt-border bg-white lg:min-h-screen lg:w-72 lg:shrink-0 lg:border-b-0 lg:border-l">
@@ -39,20 +50,32 @@ export function DashboardShell({
           </div>
           <Badge tone={mode === "admin" ? "pending" : "active"}>{mode === "admin" ? "إدارة" : "عميل"}</Badge>
         </div>
-        <nav aria-label="تنقل لوحة التحكم" className="grid grid-cols-3 gap-1 p-2 sm:grid-cols-5 lg:block lg:space-y-1 lg:p-3">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              className={cn(
-                "flex min-h-14 flex-col items-center justify-center gap-1 rounded px-1 text-center text-xs font-medium leading-4 transition-colors lg:min-h-11 lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:text-start lg:text-sm lg:leading-normal",
-                item.active ? "bg-secondary-container text-kmt-ink" : "text-kmt-muted hover:bg-slate-100 hover:text-kmt-ink"
-              )}
-              href={item.href}
-              aria-current={item.active ? "page" : undefined}
-            >
-              <MaterialSymbol className="text-[20px]" name={item.icon} />
-              <span className="max-w-full lg:whitespace-nowrap">{item.label}</span>
-            </Link>
+        <nav
+          aria-label="تنقل لوحة التحكم"
+          className="scrollbar-hide flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain p-2 lg:block lg:overflow-visible lg:p-3"
+        >
+          {groupedNavItems.map((group, groupIndex) => (
+            <div key={`${group.group ?? "nav"}-${groupIndex}`} className={cn("contents lg:block", groupIndex > 0 ? "lg:mt-4" : undefined)}>
+              {group.group ? (
+                <p className="hidden px-3 pb-2 pt-1 text-xs font-semibold text-kmt-muted lg:block">{group.group}</p>
+              ) : null}
+              <div className="contents lg:block lg:space-y-1">
+                {group.items.map((item) => (
+                  <Link
+                    key={item.href}
+                    className={cn(
+                      "flex min-h-12 min-w-20 shrink-0 flex-col items-center justify-center gap-1 rounded px-2 text-center text-xs font-medium leading-4 transition-colors lg:min-h-11 lg:w-full lg:min-w-0 lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:text-start lg:text-sm lg:leading-normal",
+                      item.active ? "bg-kmt-gold/15 text-kmt-ink" : "text-kmt-muted hover:bg-kmt-canvas hover:text-kmt-ink"
+                    )}
+                    href={item.href}
+                    aria-current={item.active ? "page" : undefined}
+                  >
+                    <MaterialSymbol className="text-[20px]" name={item.icon} />
+                    <span className="max-w-full truncate lg:whitespace-nowrap">{item.label}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
       </aside>

@@ -50,7 +50,7 @@ export function PublicShell({
               <Link
                 key={item.href}
                 aria-current={item.active ? "page" : undefined}
-                className={cn("shrink-0 rounded px-3 py-2 text-sm font-medium", item.active ? "bg-secondary-container text-kmt-ink" : "text-kmt-muted")}
+                className={cn("shrink-0 rounded px-3 py-2 text-sm font-medium", item.active ? "bg-kmt-gold/15 text-kmt-ink" : "text-kmt-muted")}
                 href={item.href}
               >
                 {item.label}

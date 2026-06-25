@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
-import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DataTable, FilterBar, MetricCard, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
+import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DataRecordCard, DataTable, FilterBar, MetricCard, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { AiSocialDraftForm, ArticleForm, CaseStudyForm, SocialDraftForm } from "@/features/admin/content/content-forms";
 import {
@@ -101,6 +101,13 @@ function typeLabel(type: ContentRow["type"]) {
   return "سوشيال";
 }
 
+function sourceTypeLabel(value?: string | null) {
+  if (!value || value === "manual") {
+    return "يدوي";
+  }
+  return value;
+}
+
 function statusLabel(type: ContentRow["type"], status: string) {
   if (type === "article") return labelFrom(articleStatusLabels, status);
   if (type === "caseStudy") return labelFrom(caseStudyStatusLabels, status);
@@ -140,7 +147,7 @@ function rowsFor(result: HubResult, query: Record<string, string>): ContentRow[]
       type: "social",
       title: draft.title,
       status: draft.status,
-      meta: `${labelFrom(socialPlatformLabels, draft.platform)} · ${draft.sourceType || "manual"}`,
+      meta: `${labelFrom(socialPlatformLabels, draft.platform)} · ${sourceTypeLabel(draft.sourceType)}`,
       owner: draft.approvedBy?.name ?? draft.createdBy.name,
       updatedAt: draft.updatedAt,
       href: editHref("social", "social", draft.id, query)
@@ -215,6 +222,30 @@ function columns(tab: ContentTab): Array<DataTableColumn<ContentRow>> {
       )
     }
   ];
+}
+
+function ContentMobileCard({ row, tab }: { row: ContentRow; tab: ContentTab }) {
+  return (
+    <DataRecordCard
+      title={
+        <Link className="text-kmt-navy hover:underline" href={row.href}>
+          {row.title}
+        </Link>
+      }
+      description={typeLabel(row.type)}
+      badges={<Badge tone={statusTone(row.status)}>{statusLabel(row.type, row.status)}</Badge>}
+      fields={[
+        { label: tab === "social" ? "المنصة / المصدر" : "التصنيف", value: row.meta },
+        { label: "المسؤول", value: row.owner },
+        { label: "آخر تحديث", value: formatDateTime(row.updatedAt), className: "sm:col-span-2" }
+      ]}
+      action={
+        <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={row.href}>
+          فتح
+        </Link>
+      }
+    />
+  );
 }
 
 function articleFormValue(article: Awaited<ReturnType<typeof getAdminArticleDetail>>) {
@@ -304,15 +335,15 @@ export default async function AdminContentPage({ searchParams = {} }: { searchPa
           <MetricCard label="دراسات الحالة" value={String(result.summary.caseStudies)} meta="مجهولة أو قيد الإعداد" />
           <MetricCard label="مسودات السوشيال" value={String(result.summary.socialDrafts)} meta="لا يوجد نشر خارجي تلقائي" />
           <MetricCard label="قيد الاعتماد" value={String(result.summary.pendingApproval)} meta="مراجعة قانونية مطلوبة" />
-          <MetricCard label="Media/Social" value={String(result.summary.mediaEntries)} meta="مداخل السوشيال كعداد read-only" />
+          <MetricCard label="الإعلام والسوشيال" value={String(result.summary.mediaEntries)} meta="مداخل السوشيال كعداد قراءة فقط" />
         </div>
 
         <div className="flex flex-wrap gap-2 border-b border-kmt-border">
           {[
-            ["articles", "Articles"],
-            ["case-studies", "Case Studies"],
-            ["social", "Social Posts"],
-            ["pending", "Pending Approval"]
+            ["articles", "المقالات"],
+            ["case-studies", "دراسات الحالة"],
+            ["social", "منشورات السوشيال"],
+            ["pending", "قيد الاعتماد"]
           ].map(([tab, label]) => (
             <Link
               key={tab}
@@ -383,7 +414,12 @@ export default async function AdminContentPage({ searchParams = {} }: { searchPa
               </p>
             </div>
 
-            <DataTable columns={columns(activeTab)} rows={rows} empty="لا توجد عناصر مطابقة للفلاتر الحالية." />
+            <DataTable
+              columns={columns(activeTab)}
+              rows={rows}
+              empty="لا توجد عناصر مطابقة للفلاتر الحالية."
+              mobileRender={(row) => <ContentMobileCard row={row} tab={activeTab} />}
+            />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={tabHref(activeTab)}>
@@ -436,8 +472,8 @@ export default async function AdminContentPage({ searchParams = {} }: { searchPa
             {canSocialCreate ? (
               <Card>
                 <CardHeader>
-                  <CardTitle>AI Draft Panel</CardTitle>
-                  <CardDescription>توليد مسودة توعوية فقط عبر AI Provider Gateway. كل مسودة تحفظ كـ Legal Review وتحتاج مراجعة بشرية.</CardDescription>
+                  <CardTitle>لوحة مسودات الذكاء الاصطناعي</CardTitle>
+                  <CardDescription>توليد مسودة توعوية فقط عبر بوابة مزود الذكاء الاصطناعي. تحفظ كل مسودة في حالة مراجعة قانونية وتحتاج مراجعة بشرية.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <AiSocialDraftForm />

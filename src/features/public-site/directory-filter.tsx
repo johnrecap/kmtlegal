@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Badge, ButtonLink, MaterialSymbol, TextInput } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
 export type DirectoryItem = {
   title: string;
@@ -28,14 +29,25 @@ export function DirectoryFilter({ items, searchLabel = "ابحث", emptyTitle }:
     const text = `${item.title} ${item.description} ${item.categoryLabel} ${item.meta ?? ""}`.toLowerCase();
     return matchesCategory && text.includes(query.trim().toLowerCase());
   });
+  const hasActiveFilters = query.trim().length > 0 || category !== "all";
+  const clearFilters = () => {
+    setQuery("");
+    setCategory("all");
+  };
+  const categoryButtonClasses = (active: boolean) =>
+    cn(
+      "min-h-11 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+      active ? "border-kmt-navy bg-kmt-navy text-white" : "border-kmt-border text-kmt-muted hover:border-kmt-gold hover:text-kmt-ink"
+    );
 
   return (
     <div>
-      <div className="grid gap-4 rounded-lg border border-kmt-border bg-white p-4 lg:grid-cols-[1fr_auto]">
+      <div className="grid gap-4 rounded-lg border border-kmt-border bg-white p-4 lg:grid-cols-[minmax(0,1fr)_auto]">
         <TextInput label={searchLabel} name="public-search" onChange={(event) => setQuery(event.target.value)} placeholder="اكتب كلمة بحث" value={query} />
         <div className="flex flex-wrap items-end gap-2">
           <button
-            className={category === "all" ? "rounded-full bg-kmt-navy px-3 py-2 text-sm font-medium text-white" : "rounded-full border border-kmt-border px-3 py-2 text-sm font-medium text-kmt-muted"}
+            aria-pressed={category === "all"}
+            className={categoryButtonClasses(category === "all")}
             type="button"
             onClick={() => setCategory("all")}
           >
@@ -44,13 +56,19 @@ export function DirectoryFilter({ items, searchLabel = "ابحث", emptyTitle }:
           {categories.map(([key, label]) => (
             <button
               key={key}
-              className={category === key ? "rounded-full bg-kmt-navy px-3 py-2 text-sm font-medium text-white" : "rounded-full border border-kmt-border px-3 py-2 text-sm font-medium text-kmt-muted"}
+              aria-pressed={category === key}
+              className={categoryButtonClasses(category === key)}
               type="button"
               onClick={() => setCategory(key)}
             >
               {label}
             </button>
           ))}
+          {hasActiveFilters ? (
+            <button className="min-h-11 rounded border border-kmt-border px-4 py-2 text-sm font-semibold text-kmt-navy hover:bg-kmt-canvas" type="button" onClick={clearFilters}>
+              مسح الفلاتر
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -73,7 +91,12 @@ export function DirectoryFilter({ items, searchLabel = "ابحث", emptyTitle }:
       ) : (
         <div className="mt-6 rounded-lg border border-kmt-border bg-white p-6" role="status">
           <h3 className="text-lg font-semibold text-kmt-ink">{emptyTitle}</h3>
-          <p className="mt-2 text-sm leading-6 text-kmt-muted">جرّب كلمة بحث مختلفة أو اختر تصنيفًا آخر.</p>
+          <p className="mt-2 text-sm leading-6 text-kmt-muted">لا توجد نتائج ضمن البحث أو التصنيف الحالي. امسح الفلاتر للعودة إلى كل العناصر.</p>
+          {hasActiveFilters ? (
+            <button className="mt-4 min-h-11 rounded border border-kmt-navy px-4 py-2 text-sm font-semibold text-kmt-navy hover:bg-kmt-navy hover:text-white" type="button" onClick={clearFilters}>
+              مسح الفلاتر
+            </button>
+          ) : null}
         </div>
       )}
     </div>

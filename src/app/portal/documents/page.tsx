@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DashboardShell } from "@/components/layout";
-import { Badge, DataTable, type DataTableColumn } from "@/components/ui";
+import { Badge, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
 import { DocumentUploadForm } from "@/features/portal/document-upload-form";
 import { documentCategoryLabels, documentStatusLabels, formatBytes, formatDateTime, labelFrom } from "@/lib/legal-format";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
@@ -50,6 +51,30 @@ const columns: Array<DataTableColumn<DocumentRow>> = [
   }
 ];
 
+function PortalDocumentMobileCard({ row }: { row: DocumentRow }) {
+  return (
+    <DataRecordCard
+      title={
+        <a className="text-kmt-navy hover:underline" href={`/api/files/${row.id}/download`}>
+          {row.fileName}
+        </a>
+      }
+      description={formatBytes(row.fileSize)}
+      badges={<Badge tone={row.status === "ACCEPTED" ? "active" : "neutral"}>{labelFrom(documentStatusLabels, row.status)}</Badge>}
+      fields={[
+        { label: "القضية", value: row.case ? `${row.case.internalFileNumber} - ${row.case.title}` : "بدون قضية" },
+        { label: "التصنيف", value: labelFrom(documentCategoryLabels, row.category) },
+        { label: "تاريخ الرفع", value: formatDateTime(row.createdAt), className: "sm:col-span-2" }
+      ]}
+      action={
+        <a className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={`/api/files/${row.id}/download`}>
+          تنزيل
+        </a>
+      }
+    />
+  );
+}
+
 export default async function PortalDocumentsPage() {
   const guard = await requirePortalPage("/portal/documents");
   if (guard.status === "forbidden") {
@@ -67,7 +92,7 @@ export default async function PortalDocumentsPage() {
       userLabel={guard.context.user.name}
     >
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
-        <DataTable columns={columns} rows={documents} empty="لا توجد مستندات مرئية لحسابك حتى الآن." />
+        <DataTable columns={columns} rows={documents} empty="لا توجد مستندات مرئية لحسابك حتى الآن." mobileRender={(row) => <PortalDocumentMobileCard row={row} />} />
         <DocumentUploadForm cases={cases.map((legalCase) => ({ id: legalCase.id, title: legalCase.title, internalFileNumber: legalCase.internalFileNumber }))} />
       </div>
     </DashboardShell>

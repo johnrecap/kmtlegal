@@ -1,19 +1,19 @@
 import type { DashboardNavItem } from "@/components/layout";
 
 export const adminNavItems: DashboardNavItem[] = [
-  { label: "الرئيسية", href: "/admin", icon: "dashboard" },
-  { label: "الاستشارات", href: "/admin/consultations", icon: "rate_review" },
-  { label: "العملاء", href: "/admin/clients", icon: "groups" },
-  { label: "القضايا", href: "/admin/cases", icon: "gavel" },
-  { label: "التقويم", href: "/admin/calendar", icon: "event" },
-  { label: "المهام", href: "/admin/tasks", icon: "task_alt" },
-  { label: "المستندات", href: "/admin/documents", icon: "folder" },
-  { label: "المحتوى", href: "/admin/content", icon: "campaign" },
-  { label: "الفواتير", href: "/admin/finance", icon: "receipt_long" },
-  { label: "التقارير", href: "/admin/reports", icon: "monitoring" },
-  { label: "المستخدمون", href: "/admin/users", icon: "manage_accounts" },
-  { label: "الإعدادات", href: "/admin/settings", icon: "settings" },
-  { label: "سجل التدقيق", href: "/admin/audit-log", icon: "fact_check" }
+  { label: "الرئيسية", href: "/admin", icon: "dashboard", group: "تشغيل المكتب" },
+  { label: "الاستشارات", href: "/admin/consultations", icon: "rate_review", group: "تشغيل المكتب" },
+  { label: "العملاء", href: "/admin/clients", icon: "groups", group: "تشغيل المكتب" },
+  { label: "القضايا", href: "/admin/cases", icon: "gavel", group: "تشغيل المكتب" },
+  { label: "التقويم", href: "/admin/calendar", icon: "event", group: "تشغيل المكتب" },
+  { label: "المهام", href: "/admin/tasks", icon: "task_alt", group: "تشغيل المكتب" },
+  { label: "المستندات", href: "/admin/documents", icon: "folder", group: "الملفات والمال" },
+  { label: "الفواتير", href: "/admin/finance", icon: "receipt_long", group: "الملفات والمال" },
+  { label: "التقارير", href: "/admin/reports", icon: "monitoring", group: "الملفات والمال" },
+  { label: "المحتوى", href: "/admin/content", icon: "campaign", group: "الإدارة" },
+  { label: "المستخدمون", href: "/admin/users", icon: "manage_accounts", group: "الإدارة" },
+  { label: "الإعدادات", href: "/admin/settings", icon: "settings", group: "الإدارة" },
+  { label: "سجل التدقيق", href: "/admin/audit-log", icon: "fact_check", group: "الإدارة" }
 ];
 
 export function adminNavForPath(pathname: string) {

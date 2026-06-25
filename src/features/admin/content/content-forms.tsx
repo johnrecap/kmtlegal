@@ -183,7 +183,7 @@ export function ArticleForm({ article, canApprove }: { article?: ArticleValue; c
   return (
     <form className="grid gap-4" onSubmit={submit}>
       <TextInput defaultValue={article?.title ?? ""} disabled={isBusy} label="عنوان المقال" name="title" required />
-      <TextInput defaultValue={article?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case مثل contract-risk-basics." label="Slug" name="slug" required />
+      <TextInput defaultValue={article?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case مثل contract-risk-basics." label="معرّف الرابط (Slug)" name="slug" required />
       <TextInput defaultValue={article?.category ?? ""} disabled={isBusy} label="التصنيف" name="category" required />
       <Textarea defaultValue={article?.excerpt ?? ""} disabled={isBusy} label="الملخص" name="excerpt" required />
       <Textarea className="min-h-48" defaultValue={article?.content ?? ""} disabled={isBusy} label="المحتوى" name="content" required />
@@ -251,7 +251,7 @@ export function CaseStudyForm({ study, canApprove }: { study?: CaseStudyValue; c
   return (
     <form className="grid gap-4" onSubmit={submit}>
       <TextInput defaultValue={study?.title ?? ""} disabled={isBusy} label="عنوان دراسة الحالة" name="title" required />
-      <TextInput defaultValue={study?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case." label="Slug" name="slug" required />
+      <TextInput defaultValue={study?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case." label="معرّف الرابط (Slug)" name="slug" required />
       <TextInput defaultValue={study?.category ?? ""} disabled={isBusy} label="التصنيف" name="category" required />
       <Textarea defaultValue={study?.challenge ?? ""} disabled={isBusy} label="التحدي" name="challenge" required />
       <Textarea defaultValue={study?.approach ?? ""} disabled={isBusy} label="طريقة التعامل" name="approach" required />
@@ -337,7 +337,7 @@ export function SocialDraftForm({ draft, canApprove }: { draft?: SocialDraftValu
       </div>
       <Textarea className="min-h-36" defaultValue={draft?.content ?? ""} disabled={isBusy} label="المحتوى" name="content" required />
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextInput defaultValue={draft?.sourceType ?? ""} disabled={isBusy} label="المصدر" name="sourceType" />
+        <TextInput defaultValue={draft?.sourceType ?? ""} disabled={isBusy} label="نوع المصدر" name="sourceType" />
         <TextInput defaultValue={draft?.sourceId ?? ""} disabled={isBusy} label="معرف المصدر" name="sourceId" />
       </div>
       <TextInput defaultValue={toDateTimeInput(draft?.scheduledAt)} disabled={isBusy} label="موعد الجدولة" name="scheduledAt" type="datetime-local" />
@@ -377,7 +377,7 @@ export function AiSocialDraftForm() {
       }
 
       form.reset();
-      setMessage("تم توليد مسودة AI وحفظها في حالة مراجعة قانونية.");
+      setMessage("تم توليد مسودة بالذكاء الاصطناعي وحفظها في حالة مراجعة قانونية.");
       router.refresh();
     } catch {
       setMessage("لا يمكن الوصول إلى الخادم الآن.");
@@ -399,11 +399,12 @@ export function AiSocialDraftForm() {
         </Select>
         <Select defaultValue="ar" disabled={isBusy} label="اللغة" name="locale">
           <option value="ar">العربية</option>
-          <option value="en">English</option>
+          <option value="en">الإنجليزية</option>
         </Select>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextInput defaultValue="manual" disabled={isBusy} label="نوع المصدر" name="sourceType" />
+        <input name="sourceType" type="hidden" value="manual" />
+        <TextInput defaultValue="يدوي" disabled label="نوع المصدر" name="sourceTypeDisplay" />
         <TextInput disabled={isBusy} label="معرف المصدر" name="sourceId" />
       </div>
       <Textarea className="min-h-32" disabled={isBusy} label="المادة الخام للمسودة" name="sourceText" required />

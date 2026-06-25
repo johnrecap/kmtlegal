@@ -3,7 +3,7 @@ import { PublicShell } from "@/components/layout";
 import { MaterialSymbol } from "@/components/ui";
 import { branches, navForPath } from "@/content/public-content";
 import { ContactForm } from "@/features/public-site/contact-form";
-import { PublicSection } from "@/features/public-site/public-components";
+import { PageHero, PublicSection } from "@/features/public-site/public-components";
 
 export const metadata: Metadata = {
   title: "تواصل مع KMT Legal",
@@ -14,6 +14,13 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <PublicShell navItems={navForPath("/contact")}>
+      <PageHero
+        eyebrow="تواصل"
+        image="/stitch-assets/11c3bae2e63b7192.png"
+        size="compact"
+        title="تواصل واضح من أول رسالة"
+        description="أرسل سؤالًا عامًا أو اختر حجز استشارة إذا كان الطلب يحتاج مراجعة قانونية منظمة."
+      />
       <PublicSection eyebrow="تواصل" title="ابدأ برسالة واضحة" description="استخدم نموذج التواصل للأسئلة العامة. للاستشارات القانونية، استخدم نموذج الحجز المنظم.">
         <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
           <ContactForm />

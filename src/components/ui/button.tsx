@@ -16,7 +16,7 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 const variantClasses: Record<ButtonVariant, string> = {
   primary: "border-kmt-gold bg-kmt-gold text-white hover:bg-kmt-goldDark active:bg-kmt-goldDark",
   secondary: "border-kmt-navy bg-transparent text-kmt-navy hover:bg-kmt-navy hover:text-white",
-  ghost: "border-transparent bg-transparent text-kmt-navy hover:bg-surface-container",
+  ghost: "border-transparent bg-transparent text-kmt-navy hover:bg-kmt-canvas",
   danger: "border-kmt-danger bg-kmt-danger text-white hover:bg-[#7f1d1d]"
 };
 

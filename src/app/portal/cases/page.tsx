@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
-import { Badge, DataTable, type DataTableColumn } from "@/components/ui";
+import { Badge, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
 import { caseStatusLabels, formatDateTime, labelFrom, priorityLabels } from "@/lib/legal-format";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
 import { listPortalCases } from "@/server/portal/client-portal-service";
@@ -50,6 +51,34 @@ const columns: Array<DataTableColumn<CaseRow>> = [
   }
 ];
 
+function PortalCaseMobileCard({ row }: { row: CaseRow }) {
+  return (
+    <DataRecordCard
+      title={
+        <Link className="text-kmt-navy hover:underline" href={`/portal/cases/${row.id}`}>
+          {row.title}
+        </Link>
+      }
+      description={row.internalFileNumber}
+      badges={
+        <>
+          <Badge tone={row.status === "ACTIVE" ? "active" : "neutral"}>{labelFrom(caseStatusLabels, row.status)}</Badge>
+          <Badge tone={row.priority === "URGENT" || row.priority === "HIGH" ? "pending" : "neutral"}>{labelFrom(priorityLabels, row.priority)}</Badge>
+        </>
+      }
+      fields={[
+        { label: "المحامي", value: row.assignedLawyer.name },
+        { label: "الموعد التالي", value: formatDateTime(row.nextSessionAt) }
+      ]}
+      action={
+        <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={`/portal/cases/${row.id}`}>
+          فتح
+        </Link>
+      }
+    />
+  );
+}
+
 export default async function PortalCasesPage() {
   const guard = await requirePortalPage("/portal/cases");
   if (guard.status === "forbidden") {
@@ -66,7 +95,7 @@ export default async function PortalCasesPage() {
       title="قضاياي"
       userLabel={guard.context.user.name}
     >
-      <DataTable columns={columns} rows={cases} empty="لا توجد قضايا مرتبطة بحسابك حتى الآن." />
+      <DataTable columns={columns} rows={cases} empty="لا توجد قضايا مرتبطة بحسابك حتى الآن." mobileRender={(row) => <PortalCaseMobileCard row={row} />} />
     </DashboardShell>
   );
 }

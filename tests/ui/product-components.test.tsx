@@ -1,8 +1,10 @@
 import React from "react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { DashboardShell } from "@/components/layout";
-import { Badge, Button, DataTable, Select, StateBlock, TextInput } from "@/components/ui";
+import { Badge, Button, DataRecordCard, DataTable, Select, StateBlock, Tabs, TextInput } from "@/components/ui";
 
 describe("product UI primitives", () => {
   it("renders button states and accessible text", () => {
@@ -64,6 +66,45 @@ describe("product UI primitives", () => {
     expect(html).toContain("لا توجد بيانات");
   });
 
+  it("renders optional mobile cards while keeping the desktop table", () => {
+    const html = renderToStaticMarkup(
+      <DataTable
+        columns={[{ key: "name", header: "الاسم", render: (row: { id: string; name: string }) => row.name }]}
+        rows={[
+          { id: "client-1", name: "عميل تجريبي" },
+          { id: "client-2", name: "عميل ثان" }
+        ]}
+        mobileRender={(row) => <article>{row.name}</article>}
+      />
+    );
+
+    expect(html).toContain("md:hidden");
+    expect(html).toContain("hidden md:block");
+    expect(html).toContain("<article>عميل تجريبي</article>");
+    expect(html).toContain("<article>عميل ثان</article>");
+    expect(html).toContain("<table");
+  });
+
+  it("renders mobile data record cards with labels, badges, and action areas", () => {
+    const html = renderToStaticMarkup(
+      <DataRecordCard
+        title="ملف عميل"
+        description="0100000000"
+        badges={<Badge tone="active">نشط</Badge>}
+        fields={[
+          { label: "المصدر", value: "يدوي" },
+          { label: "المحامي", value: "سارة" }
+        ]}
+        action={<a className="min-h-11" href="/admin/clients/1">فتح</a>}
+      />
+    );
+
+    expect(html).toContain("ملف عميل");
+    expect(html).toContain("المصدر");
+    expect(html).toContain("يدوي");
+    expect(html).toContain("min-h-11");
+  });
+
   it("renders recoverable state blocks", () => {
     const html = renderToStaticMarkup(
       <StateBlock description="يمكن إعادة المحاولة لاحقًا." title="تعذر تحميل البيانات" tone="error" />
@@ -78,9 +119,9 @@ describe("product UI primitives", () => {
       <DashboardShell
         eyebrow="Product System"
         navItems={[
-          { label: "لوحة التحكم", href: "/product-system", icon: "dashboard", active: true },
-          { label: "العملاء", href: "/product-system/clients", icon: "groups" },
-          { label: "القضايا", href: "/product-system/cases", icon: "folder_open" }
+          { label: "لوحة التحكم", href: "/product-system", icon: "dashboard", group: "تشغيل المكتب", active: true },
+          { label: "العملاء", href: "/product-system/clients", icon: "groups", group: "تشغيل المكتب" },
+          { label: "القضايا", href: "/product-system/cases", icon: "folder_open", group: "الملفات" }
         ]}
         title="نظام واجهة KMT Legal"
         userLabel="سارة - مدير المكتب"
@@ -91,8 +132,42 @@ describe("product UI primitives", () => {
 
     expect(html).toContain("href=\"/product-system/clients\"");
     expect(html).toContain("href=\"/product-system/cases\"");
+    expect(html).toContain("overflow-x-auto");
+    expect(html).toContain("scrollbar-hide");
+    expect(html).toContain("تشغيل المكتب");
+    expect(html).toContain("الملفات");
     expect(html).toContain("aria-current=\"page\"");
+    expect(html).toContain("bg-kmt-gold/15");
     expect(html).toContain("action=\"/api/auth/logout\"");
     expect(html).toContain("تسجيل الخروج");
+  });
+
+  it("renders Tabs as a pressed button group, not incomplete ARIA tabs", () => {
+    const html = renderToStaticMarkup(
+      <Tabs
+        activeValue="articles"
+        items={[
+          { value: "articles", label: "المقالات" },
+          { value: "cases", label: "دراسات الحالة" }
+        ]}
+      />
+    );
+
+    expect(html).toContain("role=\"group\"");
+    expect(html).toContain("aria-pressed=\"true\"");
+    expect(html).not.toContain("role=\"tablist\"");
+    expect(html).not.toContain("role=\"tab\"");
+  });
+
+  it("keeps targeted admin content labels localized", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/admin/content/page.tsx"), "utf8");
+
+    expect(source).not.toContain('["articles", "Articles"]');
+    expect(source).not.toContain('["case-studies", "Case Studies"]');
+    expect(source).not.toContain('["social", "Social Posts"]');
+    expect(source).not.toContain('["pending", "Pending Approval"]');
+    expect(source).not.toContain("AI Draft Panel");
+    expect(source).not.toContain("Media/Social");
+    expect(source).not.toContain("read-only");
   });
 });

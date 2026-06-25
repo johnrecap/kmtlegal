@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
-import { Badge, Button, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
+import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { AdminUserCreateForm } from "@/features/admin/governance/governance-forms";
 import { formatDateTime } from "@/lib/legal-format";
@@ -71,7 +71,7 @@ const columns: Array<DataTableColumn<UserRow>> = [
     header: "النشاط",
     render: (row) => (
       <span className="text-sm text-kmt-muted">
-        {row._count.sessions} جلسة · {row._count.auditLogs} audit · {row._count.assignedTasks} مهمة
+        {row._count.sessions} جلسة · {row._count.auditLogs} حدث تدقيق · {row._count.assignedTasks} مهمة
       </span>
     )
   },
@@ -86,6 +86,33 @@ const columns: Array<DataTableColumn<UserRow>> = [
     )
   }
 ];
+
+function UserMobileCard({ row }: { row: UserRow }) {
+  return (
+    <DataRecordCard
+      title={
+        <Link className="text-kmt-navy hover:underline" href={`/admin/users/${row.id}`}>
+          {row.name}
+        </Link>
+      }
+      description={row.email}
+      badges={<Badge tone={statusTone(row.status)}>{userStatusLabel(row.status)}</Badge>}
+      fields={[
+        { label: "الدور", value: row.role.name },
+        {
+          label: "النشاط",
+          value: `${row._count.sessions} جلسة · ${row._count.auditLogs} حدث تدقيق · ${row._count.assignedTasks} مهمة`
+        },
+        { label: "آخر تحديث", value: formatDateTime(row.updatedAt), className: "sm:col-span-2" }
+      ]}
+      action={
+        <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={`/admin/users/${row.id}`}>
+          فتح
+        </Link>
+      }
+    />
+  );
+}
 
 export default async function AdminUsersPage({ searchParams = {} }: { searchParams?: SearchParams }) {
   const guard = await requireAdminPage("/admin/users");
@@ -158,7 +185,7 @@ export default async function AdminUsersPage({ searchParams = {} }: { searchPara
           </p>
         </div>
 
-        <DataTable columns={columns} rows={result.items} empty="لا توجد حسابات مطابقة للفلاتر الحالية." />
+        <DataTable columns={columns} rows={result.items} empty="لا توجد حسابات مطابقة للفلاتر الحالية." mobileRender={(row) => <UserMobileCard row={row} />} />
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/users">

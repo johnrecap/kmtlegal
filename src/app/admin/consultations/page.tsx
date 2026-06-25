@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
-import { Badge, Button, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
+import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { consultationStatusLabels, formatDateTime, labelFrom, modeLabels, serviceCategoryLabels, urgencyLabels } from "@/lib/legal-format";
 import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
@@ -106,6 +106,36 @@ const columns: Array<DataTableColumn<ConsultationRow>> = [
   }
 ];
 
+function ConsultationMobileCard({ row }: { row: ConsultationRow }) {
+  return (
+    <DataRecordCard
+      title={
+        <Link className="text-kmt-navy hover:underline" href={`/admin/consultations/${row.id}`}>
+          {row.fullName}
+        </Link>
+      }
+      description={<span dir="ltr">{row.phone}</span>}
+      badges={
+        <>
+          <Badge tone={badgeTone(row.status)}>{labelFrom(consultationStatusLabels, row.status)}</Badge>
+          <Badge tone={row.urgency === "URGENT" || row.urgency === "HIGH" ? "pending" : "neutral"}>{labelFrom(urgencyLabels, row.urgency)}</Badge>
+        </>
+      }
+      fields={[
+        { label: "نوع الطلب", value: labelFrom(serviceCategoryLabels, row.serviceCategory) },
+        { label: "طريقة التواصل", value: labelFrom(modeLabels, row.preferredMode) },
+        { label: "المحامي", value: row.assignedLawyer?.name ?? "غير معين" },
+        { label: "تاريخ الطلب", value: formatDateTime(row.createdAt) }
+      ]}
+      action={
+        <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={`/admin/consultations/${row.id}`}>
+          مراجعة
+        </Link>
+      }
+    />
+  );
+}
+
 export default async function AdminConsultationsPage({ searchParams = {} }: { searchParams?: SearchParams }) {
   const guard = await requireAdminPage("/admin/consultations");
   if (guard.status === "forbidden") {
@@ -151,7 +181,12 @@ export default async function AdminConsultationsPage({ searchParams = {} }: { se
           </p>
         </div>
 
-        <DataTable columns={columns} rows={result.items} empty="لا توجد طلبات استشارة مطابقة للفلاتر الحالية." />
+        <DataTable
+          columns={columns}
+          rows={result.items}
+          empty="لا توجد طلبات استشارة مطابقة للفلاتر الحالية."
+          mobileRender={(row) => <ConsultationMobileCard row={row} />}
+        />
 
         <div className="flex flex-wrap items-center justify-end gap-3">
           {result.page > 1 ? (

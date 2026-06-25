@@ -1,6 +1,22 @@
 import { expect, test } from "@playwright/test";
 
-const publicSmokePages = ["/", "/contact", "/login", "/privacy", "/terms", "/product-system", "/stitch-clone/home"];
+const publicSmokePages = [
+  "/",
+  "/services",
+  "/team",
+  "/articles",
+  "/case-studies",
+  "/media",
+  "/contact",
+  "/book-consultation",
+  "/login",
+  "/privacy",
+  "/terms",
+  "/product-system",
+  "/stitch-clone/home"
+];
+
+const publicResponsivePages = ["/", "/services", "/team", "/articles", "/case-studies", "/media", "/contact", "/book-consultation"];
 
 test.describe("MVP smoke without database", () => {
   for (const path of publicSmokePages) {
@@ -30,6 +46,26 @@ test.describe("MVP smoke without database", () => {
     expect(headers["x-content-type-options"]).toBe("nosniff");
     expect(headers["x-frame-options"]).toBe("DENY");
     expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
+  });
+
+  test.describe("public mobile responsiveness", () => {
+    test.use({ viewport: { width: 390, height: 844 } });
+
+    for (const path of publicResponsivePages) {
+      test(`${path} fits a 390px viewport without page-level horizontal scroll`, async ({ page }) => {
+        const response = await page.goto(path, { waitUntil: "domcontentloaded" });
+
+        expect(response?.status(), `${path} should render on mobile`).toBeLessThan(400);
+        await expect(page.locator("body")).toBeVisible();
+        await expect(page.getByRole("heading").first()).toBeVisible();
+
+        const { clientWidth, scrollWidth } = await page.evaluate(() => ({
+          clientWidth: document.documentElement.clientWidth,
+          scrollWidth: document.documentElement.scrollWidth
+        }));
+        expect(scrollWidth, `${path} should not create page-level horizontal scroll at 390px`).toBeLessThanOrEqual(clientWidth + 1);
+      });
+    }
   });
 
   test("favicon resolves without falling through to a 404 page", async ({ request }) => {

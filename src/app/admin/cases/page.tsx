@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
-import { Badge, Button, DataTable, FilterBar, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
+import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { caseStatusLabels, formatDateTime, labelFrom, priorityLabels } from "@/lib/legal-format";
 import {
@@ -139,6 +139,53 @@ const columns: Array<DataTableColumn<CaseRow>> = [
   }
 ];
 
+function CaseMobileCard({ row }: { row: CaseRow }) {
+  return (
+    <DataRecordCard
+      title={
+        <Link className="text-kmt-navy hover:underline" href={`/admin/cases/${row.id}`}>
+          {row.internalFileNumber}
+        </Link>
+      }
+      description={
+        <>
+          <span className="block text-kmt-ink">{row.title}</span>
+          <span className="block text-xs">{row.caseType}</span>
+        </>
+      }
+      badges={
+        <>
+          <Badge tone={caseStatusTone(row.status)}>{labelFrom(caseStatusLabels, row.status)}</Badge>
+          <Badge tone={priorityTone(row.priority)}>{labelFrom(priorityLabels, row.priority)}</Badge>
+        </>
+      }
+      fields={[
+        {
+          label: "العميل",
+          value: (
+            <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/clients/${row.client.id}`}>
+              {row.client.fullName}
+            </Link>
+          )
+        },
+        { label: "هاتف العميل", value: row.client.phone, dir: "ltr" },
+        { label: "المحامي", value: row.assignedLawyer.name },
+        { label: "الجلسة القادمة", value: formatDateTime(row.nextSessionAt) },
+        {
+          label: "الارتباطات",
+          value: `${row._count.sessions} جلسة · ${row._count.appointments} موعد · ${row._count.tasks} مهمة`
+        },
+        { label: "آخر تحديث", value: formatDateTime(row.updatedAt) }
+      ]}
+      action={
+        <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={`/admin/cases/${row.id}`}>
+          فتح
+        </Link>
+      }
+    />
+  );
+}
+
 export default async function AdminCasesPage({ searchParams = {} }: { searchParams?: SearchParams }) {
   const guard = await requireAdminPage("/admin/cases");
   if (guard.status === "forbidden") {
@@ -232,7 +279,7 @@ export default async function AdminCasesPage({ searchParams = {} }: { searchPara
           </p>
         </div>
 
-        <DataTable columns={columns} rows={result.items} empty="لا توجد قضايا مطابقة للفلاتر الحالية." />
+        <DataTable columns={columns} rows={result.items} empty="لا توجد قضايا مطابقة للفلاتر الحالية." mobileRender={(row) => <CaseMobileCard row={row} />} />
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/cases">

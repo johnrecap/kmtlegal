@@ -24,3 +24,12 @@
 - Lint: `npm run lint`
 - Generate Stitch clone: `npm run stitch:generate`
 - Stitch screenshots: `npm run stitch:screenshots`
+- Server commands and push handoff: `docs/SERVER_COMMANDS.md`
+
+## Push Handoff Rule
+
+- After any successful `git push` to `origin/main`, include the matching server pull/deploy commands in the final response.
+- Default current deployment target is aaPanel + PM2. Unless a different target is explicitly requested, hand off:
+  - `cd /www/wwwroot/kmtlegal`
+  - `bash deploy/install/aapanel-pm2-update.sh`
+- Do not recommend `npm run dev` for production server operation.

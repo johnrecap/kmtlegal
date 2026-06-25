@@ -2,17 +2,24 @@ import type { Metadata } from "next";
 import { PublicShell } from "@/components/layout";
 import { Badge } from "@/components/ui";
 import { mediaItems, navForPath } from "@/content/public-content";
-import { PublicSection } from "@/features/public-site/public-components";
+import { PageHero, PublicSection } from "@/features/public-site/public-components";
 
 export const metadata: Metadata = {
   title: "الإعلام والمحتوى | KMT Legal",
-  description: "حائط إعلامي read-only للمحتوى التوعوي والندوات والمنشورات.",
+  description: "حائط إعلامي للقراءة فقط للمحتوى التوعوي والندوات والمنشورات.",
   alternates: { canonical: "/media" }
 };
 
 export default function MediaPage() {
   return (
     <PublicShell navItems={navForPath("/media")}>
+      <PageHero
+        eyebrow="الإعلام"
+        image="/stitch-assets/f9addb2d07ebf63d.png"
+        size="compact"
+        title="محتوى توعوي للقراءة فقط"
+        description="متابعة منظمة للندوات والمنشورات العامة بدون تكامل نشر خارجي في هذه المرحلة."
+      />
       <PublicSection eyebrow="الإعلام" title="محتوى توعوي منظم" description="صفحة قراءة فقط للمحتوى الإعلامي العام، بدون نشر خارجي أو تكامل اجتماعي في هذه المرحلة.">
         <div className="grid gap-4 md:grid-cols-3">
           {mediaItems.map((item) => (

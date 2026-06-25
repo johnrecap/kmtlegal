@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PublicShell } from "@/components/layout";
 import { lawyers, navForPath } from "@/content/public-content";
 import { DirectoryFilter } from "@/features/public-site/directory-filter";
-import { PublicSection } from "@/features/public-site/public-components";
+import { PageHero, PublicSection } from "@/features/public-site/public-components";
 
 export const metadata: Metadata = {
   title: "فريق KMT Legal",
@@ -13,6 +13,13 @@ export const metadata: Metadata = {
 export default function TeamPage() {
   return (
     <PublicShell navItems={navForPath("/team")}>
+      <PageHero
+        eyebrow="الفريق"
+        image="/stitch-assets/bd64f8e89da8f4f6.png"
+        size="compact"
+        title="فريق قانوني بتخصصات واضحة"
+        description="راجع الاختصاصات قبل الحجز حتى يصل طلبك للمحامي الأنسب من البداية."
+      />
       <PublicSection eyebrow="الفريق" title="اختصاصات واضحة قبل الحجز" description="اختر محاميًا بحسب مجال الطلب أو راجع كل التخصصات المتاحة.">
         <DirectoryFilter
           emptyTitle="لا توجد ملفات مطابقة"

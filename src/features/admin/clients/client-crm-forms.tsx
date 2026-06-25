@@ -116,7 +116,10 @@ export function ClientCreateForm({ lawyers }: { lawyers: LawyerOption[] }) {
           <TextInput label="البريد الإلكتروني" name="email" type="email" />
           <div className="grid gap-4 sm:grid-cols-2">
             <TextInput label="المدينة" name="city" />
-            <TextInput defaultValue="manual" label="المصدر" name="source" />
+            <div>
+              <input name="source" type="hidden" value="manual" />
+              <TextInput defaultValue="يدوي" disabled label="المصدر" name="sourceDisplay" />
+            </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Select defaultValue="LEAD" label="الحالة" name="status">

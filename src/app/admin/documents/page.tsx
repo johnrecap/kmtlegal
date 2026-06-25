@@ -337,15 +337,8 @@ export default async function AdminDocumentsPage({ searchParams = {} }: { search
             ]}
             empty={<StateBlock title="لا توجد مستندات" description="غير الفلاتر أو ارفع مستندًا جديدًا داخل نطاق صلاحياتك." />}
             rows={result.items}
+            mobileRender={(document) => <DocumentCard document={document} options={options} />}
           />
-
-          {result.items.length ? (
-            <div className="space-y-3 lg:hidden">
-              {result.items.map((document) => (
-                <DocumentCard key={document.id} document={document} options={options} />
-              ))}
-            </div>
-          ) : null}
 
           <div className="hidden space-y-3 lg:block">
             {result.items.map((document) => (

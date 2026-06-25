@@ -12,19 +12,21 @@ export function DataTable<Row extends { id: string }>({
   columns,
   rows,
   empty,
-  className
+  className,
+  mobileRender
 }: {
   columns: Array<DataTableColumn<Row>>;
   rows: Row[];
   empty?: ReactNode;
   className?: string;
+  mobileRender?: (row: Row) => ReactNode;
 }) {
   if (rows.length === 0) {
     return <div className="rounded-lg border border-kmt-border bg-white p-6 text-sm text-kmt-muted">{empty || "لا توجد بيانات."}</div>;
   }
 
-  return (
-    <div className={cn("max-w-full min-w-0 overflow-x-auto rounded-lg border border-kmt-border bg-white", className)}>
+  const table = (
+    <div className={cn("max-w-full min-w-0 overflow-x-auto rounded-lg border border-kmt-border bg-white", mobileRender ? "hidden md:block" : undefined, className)}>
       <table className="min-w-full border-collapse text-sm">
         <thead className="bg-slate-50 text-kmt-muted">
           <tr>
@@ -48,5 +50,20 @@ export function DataTable<Row extends { id: string }>({
         </tbody>
       </table>
     </div>
+  );
+
+  if (!mobileRender) {
+    return table;
+  }
+
+  return (
+    <>
+      <div className="space-y-3 md:hidden">
+        {rows.map((row) => (
+          <div key={row.id}>{mobileRender(row)}</div>
+        ))}
+      </div>
+      {table}
+    </>
   );
 }

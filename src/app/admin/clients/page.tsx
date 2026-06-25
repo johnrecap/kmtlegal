@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
-import { Badge, Button, DataTable, FilterBar, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
+import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { ClientCreateForm } from "@/features/admin/clients/client-crm-forms";
 import { clientStatusLabels, formatDateTime, labelFrom } from "@/lib/legal-format";
@@ -40,6 +40,16 @@ function clientStatusTone(status: string) {
     return "closed" as const;
   }
   return "neutral" as const;
+}
+
+function sourceLabel(source?: string | null) {
+  if (!source) {
+    return "غير محدد";
+  }
+  if (source === "manual") {
+    return "يدوي";
+  }
+  return source;
 }
 
 function listHref(filters: {
@@ -82,7 +92,7 @@ const columns: Array<DataTableColumn<ClientRow>> = [
   {
     key: "source",
     header: "المصدر",
-    render: (row) => row.source ?? "غير محدد"
+    render: (row) => sourceLabel(row.source)
   },
   {
     key: "lawyer",
@@ -114,6 +124,34 @@ const columns: Array<DataTableColumn<ClientRow>> = [
   }
 ];
 
+function ClientMobileCard({ row }: { row: ClientRow }) {
+  return (
+    <DataRecordCard
+      title={
+        <Link className="text-kmt-navy hover:underline" href={`/admin/clients/${row.id}`}>
+          {row.fullName}
+        </Link>
+      }
+      description={<span dir="ltr">{row.phone}</span>}
+      badges={<Badge tone={clientStatusTone(row.status)}>{labelFrom(clientStatusLabels, row.status)}</Badge>}
+      fields={[
+        { label: "المصدر", value: sourceLabel(row.source) },
+        { label: "المحامي المسؤول", value: row.assignedLawyer?.name ?? "غير معين" },
+        {
+          label: "الارتباطات",
+          value: `${row._count.cases} قضية · ${row._count.consultationRequests} استشارة · ${row._count.documents} مستند`
+        },
+        { label: "آخر تحديث", value: formatDateTime(row.updatedAt) }
+      ]}
+      action={
+        <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={`/admin/clients/${row.id}`}>
+          فتح
+        </Link>
+      }
+    />
+  );
+}
+
 export default async function AdminClientsPage({ searchParams = {} }: { searchParams?: SearchParams }) {
   const guard = await requireAdminPage("/admin/clients");
   if (guard.status === "forbidden") {
@@ -139,11 +177,18 @@ export default async function AdminClientsPage({ searchParams = {} }: { searchPa
       title="CRM العملاء"
       userLabel={guard.context.user.name}
     >
+      {options.canManage ? (
+        <div className="mb-4 md:hidden">
+          <Link className={buttonClasses({ className: "min-h-11 w-full" })} href="#client-create">
+            إضافة عميل
+          </Link>
+        </div>
+      ) : null}
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
         <div className="space-y-5">
           <form action="/admin/clients" method="get">
             <FilterBar>
-              <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="Name or Phone أو البريد" />
+              <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالاسم أو الهاتف أو البريد" />
               <Select className="min-w-40" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
                 <option value="">كل الحالات</option>
                 {Object.entries(clientStatusLabels).map(([value, label]) => (
@@ -156,7 +201,7 @@ export default async function AdminClientsPage({ searchParams = {} }: { searchPa
                 <option value="">كل المصادر</option>
                 {options.sources.map((source) => (
                   <option key={source} value={source}>
-                    {source}
+                    {sourceLabel(source)}
                   </option>
                 ))}
               </Select>
@@ -193,7 +238,12 @@ export default async function AdminClientsPage({ searchParams = {} }: { searchPa
             </p>
           </div>
 
-          <DataTable columns={columns} rows={result.items} empty="لا توجد ملفات عملاء مطابقة للفلاتر الحالية." />
+          <DataTable
+            columns={columns}
+            rows={result.items}
+            empty="لا توجد ملفات عملاء مطابقة للفلاتر الحالية."
+            mobileRender={(row) => <ClientMobileCard row={row} />}
+          />
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/clients">
@@ -215,7 +265,9 @@ export default async function AdminClientsPage({ searchParams = {} }: { searchPa
         </div>
 
         {options.canManage ? (
-          <ClientCreateForm lawyers={options.lawyers} />
+          <div id="client-create" className="scroll-mt-24">
+            <ClientCreateForm lawyers={options.lawyers} />
+          </div>
         ) : (
           <StateBlock
             tone="permission"
