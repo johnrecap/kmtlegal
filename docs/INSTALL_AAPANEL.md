@@ -33,6 +33,38 @@ bash deploy/install/panel-install.sh --panel=aapanel
 
 The `/install` UI must render even when database/bootstrap values are incomplete. Missing server values should appear as installer preflight failures, not as a generic 500 page.
 
+## Updating An Existing aaPanel + PM2 Site
+
+Use this path for the current `kmtlegal.saeeddev.com` style deployment, where aaPanel owns the domain/reverse proxy and PM2 runs the Node app.
+
+From the server checkout:
+
+```bash
+cd /www/wwwroot/kmtlegal
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+Defaults:
+
+- App directory: `/www/wwwroot/kmtlegal`
+- Git branch: `main`
+- PM2 process name: `kmtlegal`
+- Internal port: `3000`
+
+Override them only if the server uses different names:
+
+```bash
+APP_DIR=/www/wwwroot/kmtlegal \
+BRANCH=main \
+PM2_APP=kmtlegal \
+PORT=3000 \
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+This script pulls the latest GitHub commit, installs dependencies with build-time packages included, removes the old `.next` output, builds a fresh Next.js release, runs production migrations, restarts or starts the PM2 process, saves PM2 state, and checks the local app response.
+
+Do not stop the install/build with `Ctrl+C`. If `npm` is interrupted, the source code may be up to date while the live app still serves the old compiled build.
+
 ## Hard Rules
 
 - Do not run the root Terminal VPS installer unless you intentionally bypass aaPanel service management.

@@ -82,6 +82,8 @@ Nginx must not serve this directory. Downloads must go through `/api/files/[docu
 
 ## Build And Start
 
+This section is only for the Terminal VPS/systemd deployment path. For aaPanel + PM2 deployments, use `docs/INSTALL_AAPANEL.md` and `deploy/install/aapanel-pm2-update.sh` instead.
+
 On the VPS release directory:
 
 ```bash
