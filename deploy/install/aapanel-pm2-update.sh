@@ -8,6 +8,8 @@ PORT="${PORT:-3000}"
 HEALTH_PATH="${HEALTH_PATH:-/api/health}"
 ENV_FILE="${ENV_FILE:-${APP_DIR}/.env.production.local}"
 STATIC_BACKUP_DIR="${STATIC_BACKUP_DIR:-${APP_DIR}/.next-static-previous}"
+PM2_START_TIMEOUT_SECONDS="${PM2_START_TIMEOUT_SECONDS:-30}"
+PM2_STABILITY_SECONDS="${PM2_STABILITY_SECONDS:-8}"
 
 log() {
   printf "\n==> %s\n" "$*"
@@ -28,6 +30,7 @@ require_command git
 require_command node
 require_command npm
 require_command pm2
+require_command curl
 
 if [[ ! -d "${APP_DIR}/.git" ]]; then
   fail "APP_DIR must point to the Git checkout. Current APP_DIR=${APP_DIR}"
@@ -53,6 +56,63 @@ node -e '
   const url = new URL(process.env.DATABASE_URL);
   console.log(`Database target: ${url.username}@${url.hostname}:${url.port || "5432"}${url.pathname}`);
 '
+
+pm2_app_status() {
+  pm2 jlist | node -e '
+    let input = "";
+    process.stdin.on("data", (chunk) => { input += chunk; });
+    process.stdin.on("end", () => {
+      const appName = process.argv[1];
+      const apps = JSON.parse(input || "[]");
+      const app = apps.find((entry) => entry.name === appName);
+      process.stdout.write(app?.pm2_env?.status || "missing");
+    });
+  ' "${PM2_APP}"
+}
+
+print_pm2_diagnostics() {
+  pm2 describe "${PM2_APP}" || true
+  pm2 logs "${PM2_APP}" --lines 80 --nostream || true
+}
+
+wait_for_pm2_online() {
+  local waited=0
+  local status=""
+
+  while (( waited < PM2_START_TIMEOUT_SECONDS )); do
+    status="$(pm2_app_status)"
+    if [[ "${status}" == "online" ]]; then
+      return 0
+    fi
+
+    sleep 2
+    waited=$((waited + 2))
+  done
+
+  print_pm2_diagnostics
+  fail "PM2 process ${PM2_APP} did not stay online. Last status: ${status:-unknown}"
+}
+
+check_local_response() {
+  curl -fsSI "http://127.0.0.1:${PORT}${HEALTH_PATH}" >/dev/null 2>&1 ||
+    curl -fsSI "http://127.0.0.1:${PORT}/" >/dev/null 2>&1
+}
+
+wait_for_local_response() {
+  local waited=0
+
+  while (( waited < PM2_START_TIMEOUT_SECONDS )); do
+    if check_local_response; then
+      return 0
+    fi
+
+    sleep 2
+    waited=$((waited + 2))
+  done
+
+  print_pm2_diagnostics
+  fail "Local app did not respond on http://127.0.0.1:${PORT}${HEALTH_PATH} or /"
+}
 
 log "Fetching ${BRANCH} from GitHub"
 git fetch origin "${BRANCH}"
@@ -103,12 +163,18 @@ else
   PORT="${PORT}" pm2 start npm --name "${PM2_APP}" -- start
 fi
 
-pm2 save
+log "Waiting for PM2 process ${PM2_APP} to stay online"
+wait_for_pm2_online
 
 log "Checking local app response"
-if ! curl -fsSI "http://127.0.0.1:${PORT}${HEALTH_PATH}" >/dev/null 2>&1; then
-  curl -fsSI "http://127.0.0.1:${PORT}/" >/dev/null
-fi
+wait_for_local_response
+
+log "Confirming process stability"
+sleep "${PM2_STABILITY_SECONDS}"
+wait_for_pm2_online
+wait_for_local_response
+
+pm2 save
 
 log "Deploy finished"
 git log -1 --oneline

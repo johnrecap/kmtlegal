@@ -82,7 +82,8 @@ The script:
 - Runs `npm run build`.
 - Runs `npm run db:migrate`.
 - Restarts or starts the `kmtlegal` PM2 process.
-- Saves PM2 state and checks the local app response.
+- Waits for PM2 to stay `online`, checks the local app response, and prints recent PM2 logs if the process exits.
+- Saves PM2 state only after the process passes the stability checks.
 
 Only override defaults when the server uses different names:
 
@@ -114,8 +115,11 @@ npm run build
 if [ -d "$STATIC_BACKUP_DIR" ]; then mkdir -p .next/static && cp -a "$STATIC_BACKUP_DIR/." .next/static/ && rm -rf "$STATIC_BACKUP_DIR"; fi
 npm run db:migrate
 PORT=3000 pm2 restart kmtlegal --update-env
-pm2 save
+sleep 8
+pm2 status kmtlegal
+pm2 logs kmtlegal --lines 80 --nostream
 curl -fsSI http://127.0.0.1:3000/api/health || curl -fsSI http://127.0.0.1:3000/
+pm2 save
 pm2 list
 ```
 
@@ -133,6 +137,20 @@ npm run db:migrate
 For the current aaPanel database shown in the panel, the visible target should be the `kmtlegal` database/user, not the local development default `kmt_legal`.
 
 If a deployed page shows `ChunkLoadError`, `Refused to execute script`, or a `_next/static/...js` request returns `400`, `404`, or `text/html`, it usually means the browser has old HTML/runtime state while the server has a newer build. Run the update script again after this static-preservation fix, then hard refresh the browser tab. If a CDN/proxy cached bad asset responses, purge `/_next/static/*` from the proxy.
+
+If PM2 shows `kmtlegal` as `stopped` after deployment, inspect the runtime crash before running another build:
+
+```bash
+cd /www/wwwroot/kmtlegal
+pm2 describe kmtlegal
+pm2 logs kmtlegal --lines 120 --nostream
+set -a
+. ./.env.production.local
+set +a
+PORT=3000 npm run start -- --hostname 127.0.0.1 --port 3000
+```
+
+Stop the foreground command with `Ctrl+C` after copying the error. Common causes are a missing production environment variable, a port conflict, or a runtime exception that only appears after `next start`.
 
 If the PM2 process does not exist yet:
 
