@@ -65,7 +65,7 @@ PORT=3000 \
 bash deploy/install/aapanel-pm2-update.sh
 ```
 
-This script pulls the latest GitHub commit, installs dependencies with build-time packages included, preserves the previous `.next/static` assets for open browser tabs and cached HTML, builds a fresh Next.js release, runs production migrations, restarts or starts the PM2 process, waits for PM2 to stay `online`, checks the local app response, prints recent PM2 logs on failure, and saves PM2 state only after the stability checks pass.
+This script pulls the latest GitHub commit, installs dependencies with build-time packages included, preserves the previous `.next/static` assets for open browser tabs and cached HTML, builds a fresh Next.js release, verifies the Next.js static manifest, runs production migrations, recreates the PM2 process from `/www/wwwroot/kmtlegal`, waits for PM2 to stay `online`, checks the local app response, prints recent PM2 logs on failure, and saves PM2 state only after the stability checks pass.
 
 If a browser tab was open during deployment, it may still hold HTML or runtime state from the previous build. Preserving old static assets prevents most `ChunkLoadError` failures while the user refreshes into the new build.
 

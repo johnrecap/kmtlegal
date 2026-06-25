@@ -114,6 +114,39 @@ wait_for_local_response() {
   fail "Local app did not respond on http://127.0.0.1:${PORT}${HEALTH_PATH} or /"
 }
 
+verify_next_static_manifest() {
+  node <<'NODE'
+const fs = require("node:fs");
+const path = require("node:path");
+
+const manifestPath = path.join(".next", "app-build-manifest.json");
+if (!fs.existsSync(manifestPath)) {
+  process.exit(0);
+}
+
+const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+const missing = new Set();
+
+for (const files of Object.values(manifest.pages || {})) {
+  for (const file of files) {
+    if (file.startsWith("static/") && !fs.existsSync(path.join(".next", file))) {
+      missing.add(file);
+    }
+  }
+}
+
+if (missing.size > 0) {
+  console.error("Missing Next.js static files referenced by app-build-manifest.json:");
+  for (const file of missing) {
+    console.error(`- ${file}`);
+  }
+  process.exit(1);
+}
+
+console.log("Next.js static manifest references are present.");
+NODE
+}
+
 log "Fetching ${BRANCH} from GitHub"
 git fetch origin "${BRANCH}"
 
@@ -152,16 +185,19 @@ if [[ -d "${STATIC_BACKUP_DIR}" ]]; then
   rm -rf "${STATIC_BACKUP_DIR}"
 fi
 
+log "Verifying Next.js static assets"
+verify_next_static_manifest
+
 log "Applying database migrations"
 npm run db:migrate
 
 if pm2 describe "${PM2_APP}" >/dev/null 2>&1; then
-  log "Restarting PM2 process ${PM2_APP}"
-  PORT="${PORT}" pm2 restart "${PM2_APP}" --update-env
+  log "Recreating PM2 process ${PM2_APP} from ${APP_DIR}"
+  pm2 delete "${PM2_APP}"
 else
-  log "Starting PM2 process ${PM2_APP} on port ${PORT}"
-  PORT="${PORT}" pm2 start npm --name "${PM2_APP}" -- start
+  log "Starting PM2 process ${PM2_APP} from ${APP_DIR}"
 fi
+PORT="${PORT}" pm2 start npm --name "${PM2_APP}" --cwd "${APP_DIR}" -- start
 
 log "Waiting for PM2 process ${PM2_APP} to stay online"
 wait_for_pm2_online

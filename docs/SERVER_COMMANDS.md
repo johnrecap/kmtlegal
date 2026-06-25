@@ -80,8 +80,9 @@ The script:
 - Installs dependencies with build-time packages using `npm ci --include=dev`.
 - Preserves the previous `.next/static` assets for open browser tabs and cached HTML.
 - Runs `npm run build`.
+- Verifies that Next.js static files referenced by the build manifest exist.
 - Runs `npm run db:migrate`.
-- Restarts or starts the `kmtlegal` PM2 process.
+- Recreates the `kmtlegal` PM2 process with `--cwd /www/wwwroot/kmtlegal` so PM2 cannot keep running an old checkout or stale working directory.
 - Waits for PM2 to stay `online`, checks the local app response, and prints recent PM2 logs if the process exits.
 - Saves PM2 state only after the process passes the stability checks.
 
@@ -113,8 +114,10 @@ rm -rf "$STATIC_BACKUP_DIR"
 if [ -d .next/static ]; then mkdir -p "$STATIC_BACKUP_DIR" && cp -a .next/static/. "$STATIC_BACKUP_DIR/"; fi
 npm run build
 if [ -d "$STATIC_BACKUP_DIR" ]; then mkdir -p .next/static && cp -a "$STATIC_BACKUP_DIR/." .next/static/ && rm -rf "$STATIC_BACKUP_DIR"; fi
+node -e 'const fs=require("fs"),path=require("path"); const p=".next/app-build-manifest.json"; if(!fs.existsSync(p)) process.exit(0); const m=JSON.parse(fs.readFileSync(p,"utf8")); const missing=[]; for (const files of Object.values(m.pages||{})) for (const file of files) if (file.startsWith("static/") && !fs.existsSync(path.join(".next",file))) missing.push(file); if(missing.length){ console.error(missing.join("\n")); process.exit(1); }'
 npm run db:migrate
-PORT=3000 pm2 restart kmtlegal --update-env
+pm2 delete kmtlegal || true
+PORT=3000 pm2 start npm --name kmtlegal --cwd /www/wwwroot/kmtlegal -- start
 sleep 8
 pm2 status kmtlegal
 pm2 logs kmtlegal --lines 80 --nostream
@@ -137,6 +140,14 @@ npm run db:migrate
 For the current aaPanel database shown in the panel, the visible target should be the `kmtlegal` database/user, not the local development default `kmt_legal`.
 
 If a deployed page shows `ChunkLoadError`, `Refused to execute script`, or a `_next/static/...js` request returns `400`, `404`, or `text/html`, it usually means the browser has old HTML/runtime state while the server has a newer build. Run the update script again after this static-preservation fix, then hard refresh the browser tab. If a CDN/proxy cached bad asset responses, purge `/_next/static/*` from the proxy.
+
+If public HTML still shows old copy after a successful build, check that PM2 is running from the current checkout:
+
+```bash
+pm2 describe kmtlegal | grep -E 'cwd|script|args|status'
+```
+
+The update script recreates the process with `--cwd /www/wwwroot/kmtlegal` to avoid this stale-process problem.
 
 If PM2 shows `kmtlegal` as `stopped` after deployment, inspect the runtime crash before running another build:
 
