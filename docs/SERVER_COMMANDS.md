@@ -83,7 +83,8 @@ The script:
 - Runs `npm run build`.
 - Verifies that Next.js static files referenced by the build manifest exist.
 - Runs `npm run db:migrate`.
-- Recreates the `kmtlegal` PM2 process with `--cwd /www/wwwroot/kmtlegal` so PM2 cannot keep running an old checkout or stale working directory.
+- Recreates the `kmtlegal` PM2 process with `--cwd /www/wwwroot/kmtlegal` and starts the Next.js CLI directly, not through `npm`, so PM2 does not leave an old child process serving port `3000`.
+- Stops any stale process still listening on port `3000` before starting the new PM2 process.
 - Waits for PM2 to stay `online`, checks the local app response, and prints recent PM2 logs if the process exits.
 - When `APP_ORIGIN` is set, compares public pages against the local app build and verifies public `_next/static` assets return JavaScript/CSS instead of HTML errors.
 - Saves PM2 state only after the process passes the stability checks.
@@ -120,7 +121,8 @@ if [ -d "$STATIC_BACKUP_DIR" ]; then mkdir -p .next/static && cp -a "$STATIC_BAC
 node -e 'const fs=require("fs"),path=require("path"); const p=".next/app-build-manifest.json"; if(!fs.existsSync(p)) process.exit(0); const m=JSON.parse(fs.readFileSync(p,"utf8")); const missing=[]; for (const files of Object.values(m.pages||{})) for (const file of files) if (file.startsWith("static/") && !fs.existsSync(path.join(".next",file))) missing.push(file); if(missing.length){ console.error(missing.join("\n")); process.exit(1); }'
 npm run db:migrate
 pm2 delete kmtlegal || true
-PORT=3000 pm2 start npm --name kmtlegal --cwd /www/wwwroot/kmtlegal -- start
+fuser -k 3000/tcp || true
+PORT=3000 pm2 start /www/wwwroot/kmtlegal/node_modules/next/dist/bin/next --name kmtlegal --cwd /www/wwwroot/kmtlegal -- start --hostname 127.0.0.1 --port 3000
 sleep 8
 pm2 status kmtlegal
 pm2 logs kmtlegal --lines 80 --nostream
@@ -148,11 +150,12 @@ If public HTML still shows old copy after a successful build, check that PM2 is 
 
 ```bash
 pm2 describe kmtlegal | grep -E 'cwd|script|args|status'
+ss -ltnp 'sport = :3000'
 curl -s http://127.0.0.1:3000/media | grep -E 'read-only|للقراءة فقط'
 curl -s https://kmtlegal.saeeddev.com/media | grep -E 'read-only|للقراءة فقط'
 ```
 
-If the local URL is current but the public domain is old, the issue is outside the PM2 process: aaPanel reverse proxy, Nginx cache, or Cloudflare cache/routing. The update script recreates the process with `--cwd /www/wwwroot/kmtlegal` and then compares public `APP_ORIGIN` pages against the local app so this mismatch is caught during deploy.
+If the local URL is current but the public domain is old, the issue is outside the PM2 process: aaPanel reverse proxy, Nginx cache, or Cloudflare cache/routing. If both local and public are old while the source is current, check for a stale orphan process on port `3000`; the update script now kills that listener and starts Next directly under PM2 so this mismatch is caught during deploy.
 
 If PM2 shows `kmtlegal` as `stopped` after deployment, inspect the runtime crash before running another build:
 

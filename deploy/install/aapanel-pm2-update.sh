@@ -12,6 +12,7 @@ PM2_START_TIMEOUT_SECONDS="${PM2_START_TIMEOUT_SECONDS:-30}"
 PM2_STABILITY_SECONDS="${PM2_STABILITY_SECONDS:-8}"
 PUBLIC_VERIFY_ENABLED="${PUBLIC_VERIFY_ENABLED:-true}"
 PUBLIC_VERIFY_PATHS="${PUBLIC_VERIFY_PATHS:-/media /contact}"
+NEXT_BIN="${NEXT_BIN:-${APP_DIR}/node_modules/next/dist/bin/next}"
 
 log() {
   printf "\n==> %s\n" "$*"
@@ -75,6 +76,22 @@ pm2_app_status() {
 print_pm2_diagnostics() {
   pm2 describe "${PM2_APP}" || true
   pm2 logs "${PM2_APP}" --lines 80 --nostream || true
+}
+
+print_port_diagnostics() {
+  if command -v ss >/dev/null 2>&1; then
+    ss -ltnp "sport = :${PORT}" || true
+  elif command -v lsof >/dev/null 2>&1; then
+    lsof -nP -iTCP:"${PORT}" -sTCP:LISTEN || true
+  fi
+}
+
+stop_stale_port_listener() {
+  if command -v fuser >/dev/null 2>&1 && fuser "${PORT}/tcp" >/dev/null 2>&1; then
+    log "Stopping stale process still listening on port ${PORT}"
+    fuser -k "${PORT}/tcp" || true
+    sleep 2
+  fi
 }
 
 wait_for_pm2_online() {
@@ -239,6 +256,10 @@ fi
 log "Installing dependencies including build-time packages"
 npm ci --include=dev
 
+if [[ ! -f "${NEXT_BIN}" ]]; then
+  fail "Next.js CLI was not found at ${NEXT_BIN}"
+fi
+
 log "Backing up existing Next.js static assets"
 rm -rf "${STATIC_BACKUP_DIR}"
 if [[ -d ".next/static" ]]; then
@@ -271,7 +292,10 @@ if pm2 describe "${PM2_APP}" >/dev/null 2>&1; then
 else
   log "Starting PM2 process ${PM2_APP} from ${APP_DIR}"
 fi
-PORT="${PORT}" pm2 start npm --name "${PM2_APP}" --cwd "${APP_DIR}" -- start
+
+stop_stale_port_listener
+print_port_diagnostics
+PORT="${PORT}" pm2 start "${NEXT_BIN}" --name "${PM2_APP}" --cwd "${APP_DIR}" -- start --hostname 127.0.0.1 --port "${PORT}"
 
 log "Waiting for PM2 process ${PM2_APP} to stay online"
 wait_for_pm2_online
