@@ -179,4 +179,14 @@ describe("product UI primitives", () => {
     expect(source).toContain("form.reset()");
     expect(source).not.toContain("event.currentTarget.reset()");
   });
+
+  it("keeps the admin audit log page on client-friendly DTO fields", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/admin/audit-log/page.tsx"), "utf8");
+
+    expect(source).toContain("row.event.label");
+    expect(source).toContain("row.summary");
+    expect(source).toContain("TechnicalDetails");
+    expect(source).not.toContain("JSON.stringify(metadata)");
+    expect(source).not.toContain("shortMetadata");
+  });
 });

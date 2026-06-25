@@ -33,9 +33,18 @@ const sessionColumns: Array<DataTableColumn<SessionRow>> = [
 ];
 
 const auditColumns: Array<DataTableColumn<AuditRow>> = [
-  { key: "action", header: "الإجراء", render: (row) => row.action },
-  { key: "resource", header: "المورد", render: (row) => `${row.resourceType}${row.resourceId ? ` · ${row.resourceId}` : ""}` },
-  { key: "created", header: "الوقت", render: (row) => formatDateTime(row.createdAt) }
+  {
+    key: "event",
+    header: "الإجراء",
+    render: (row) => (
+      <div>
+        <p className="font-semibold text-kmt-ink">{row.event.label}</p>
+        <p className="mt-1 text-xs text-kmt-muted">{row.summary}</p>
+      </div>
+    )
+  },
+  { key: "resource", header: "المورد", render: (row) => row.resource.label },
+  { key: "created", header: "الوقت", render: (row) => formatDateTime(row.occurredAt) }
 ];
 
 function SessionMobileCard({ row }: { row: SessionRow }) {
@@ -55,10 +64,11 @@ function SessionMobileCard({ row }: { row: SessionRow }) {
 function AuditMobileCard({ row }: { row: AuditRow }) {
   return (
     <DataRecordCard
-      title={row.action}
+      title={row.event.label}
+      description={row.summary}
       fields={[
-        { label: "المورد", value: `${row.resourceType}${row.resourceId ? ` · ${row.resourceId}` : ""}` },
-        { label: "الوقت", value: formatDateTime(row.createdAt) }
+        { label: "المورد", value: row.resource.label },
+        { label: "الوقت", value: formatDateTime(row.occurredAt) }
       ]}
     />
   );

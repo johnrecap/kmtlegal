@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { appendAuditLog } from "@/server/audit/audit-service";
+import { auditActionOptionLabel, auditFilterOption, auditResourceLabel, toAdminAuditLogDto, type AuditFilterOption } from "@/server/audit/audit-event-catalog";
 import { hashPassword } from "@/server/auth/password";
 import { hasPermission, ROLES, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
@@ -370,6 +371,8 @@ export async function getAdminUserDetail(input: { actor: Principal; userId: stri
           action: true,
           resourceType: true,
           resourceId: true,
+          metadata: true,
+          actor: { select: { name: true, role: { select: { name: true } } } },
           createdAt: true
         }
       },
@@ -383,7 +386,10 @@ export async function getAdminUserDetail(input: { actor: Principal; userId: stri
     throw new ApiError(404, "NOT_FOUND", "User was not found.");
   }
 
-  return user;
+  return {
+    ...user,
+    auditLogs: user.auditLogs.map(toAdminAuditLogDto)
+  };
 }
 
 async function assertAssignableRole(roleId: string) {
@@ -587,7 +593,7 @@ export async function listAdminAuditLogs(input: { actor: Principal; query: unkno
   const [items, total, filterOptions] = await Promise.all([
     prisma.auditLog.findMany({
       where,
-      include: { actor: { select: { id: true, name: true, email: true, role: { select: { name: true } } } } },
+      include: { actor: { select: { name: true, role: { select: { name: true } } } } },
       orderBy: [{ [filters.sortBy]: filters.sortDirection }, { createdAt: "desc" }],
       skip: pagination.skip,
       take: pagination.take
@@ -596,13 +602,13 @@ export async function listAdminAuditLogs(input: { actor: Principal; query: unkno
     getAuditFilterOptions()
   ]);
 
-  return { items, total, filters, page: pagination.page, pageSize: pagination.pageSize, filterOptions };
+  return { items: items.map(toAdminAuditLogDto), total, filters, page: pagination.page, pageSize: pagination.pageSize, filterOptions };
 }
 
 type AuditFilterOptions = {
-  actions: string[];
-  resourceTypes: string[];
-  actors: Array<{ id: string; name: string; email: string }>;
+  actions: AuditFilterOption[];
+  resourceTypes: AuditFilterOption[];
+  actors: Array<{ id: string; name: string }>;
 };
 
 async function getAuditFilterOptions(): Promise<AuditFilterOptions> {
@@ -616,15 +622,15 @@ async function getAuditFilterOptions(): Promise<AuditFilterOptions> {
     }),
     prisma.user.findMany({
       where: { auditLogs: { some: {} } },
-      select: { id: true, name: true, email: true },
+      select: { id: true, name: true },
       orderBy: { name: "asc" },
       take: 100
     })
   ]);
 
   return {
-    actions: actions.map((item) => item.action),
-    resourceTypes: resourceTypes.map((item) => item.resourceType),
+    actions: actions.map((item) => auditFilterOption(item.action, auditActionOptionLabel(item.action))),
+    resourceTypes: resourceTypes.map((item) => auditFilterOption(item.resourceType, auditResourceLabel(item.resourceType))),
     actors
   };
 }

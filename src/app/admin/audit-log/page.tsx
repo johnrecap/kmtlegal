@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
-import { Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, TextInput, type DataTableColumn } from "@/components/ui";
+import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, TextInput, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { formatDateTime } from "@/lib/legal-format";
 import { canReadAdminAuditLog, listAdminAuditLogs } from "@/server/admin/governance-service";
@@ -17,7 +17,8 @@ export const metadata: Metadata = {
 
 type SearchParams = Record<string, string | string[] | undefined>;
 type AuditRow = Awaited<ReturnType<typeof listAdminAuditLogs>>["items"][number];
-type AuditFilterActor = { id: string; name: string; email?: string };
+type AuditFilterActor = { id: string; name: string };
+type AuditFilterOption = { value: string; label: string };
 
 function flattenSearchParams(searchParams: SearchParams) {
   return Object.fromEntries(
@@ -25,16 +26,61 @@ function flattenSearchParams(searchParams: SearchParams) {
   );
 }
 
-function shortMetadata(metadata: unknown) {
-  if (!metadata) {
-    return "لا يوجد";
-  }
-  const value = JSON.stringify(metadata);
-  return value.length > 160 ? `${value.slice(0, 160)}...` : value;
+function actorLabel(row: AuditRow) {
+  return row.actor ? `${row.actor.name} · ${row.actor.role}` : "النظام";
 }
 
-function actorLabel(row: AuditRow) {
-  return row.actor ? `${row.actor.name} · ${row.actor.role.name}` : "النظام";
+function severityTone(severity: string) {
+  if (severity === "حساس") return "danger" as const;
+  if (severity === "مهم") return "pending" as const;
+  return "neutral" as const;
+}
+
+function categoryTone(category: string) {
+  if (category === "الأمان" || category === "المالية") return "active" as const;
+  if (category === "الإدارة" || category === "النظام") return "pending" as const;
+  return "neutral" as const;
+}
+
+function DetailList({ row }: { row: AuditRow }) {
+  if (!row.details.length) {
+    return <p className="text-sm text-kmt-muted">لا توجد تفاصيل إضافية للعرض.</p>;
+  }
+
+  return (
+    <dl className="grid gap-2 text-sm">
+      {row.details.slice(0, 4).map((detail) => (
+        <div key={`${detail.label}-${detail.value}`} className="flex flex-wrap gap-x-2 gap-y-1">
+          <dt className="font-semibold text-kmt-muted">{detail.label}:</dt>
+          <dd className="text-kmt-ink">{detail.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+function TechnicalDetails({ row }: { row: AuditRow }) {
+  return (
+    <details className="mt-3 text-xs text-kmt-muted">
+      <summary className="cursor-pointer font-semibold text-kmt-navy">تفاصيل تقنية</summary>
+      <dl className="mt-2 grid gap-1 rounded border border-kmt-border bg-slate-50 p-2" dir="ltr">
+        <div>
+          <dt className="inline font-semibold">action: </dt>
+          <dd className="inline break-all">{row.technical.action}</dd>
+        </div>
+        <div>
+          <dt className="inline font-semibold">resourceType: </dt>
+          <dd className="inline break-all">{row.technical.resourceType}</dd>
+        </div>
+        {row.technical.resourceId ? (
+          <div>
+            <dt className="inline font-semibold">resourceId: </dt>
+            <dd className="inline break-all">{row.technical.resourceId}</dd>
+          </div>
+        ) : null}
+      </dl>
+    </details>
+  );
 }
 
 function listHref(filters: {
@@ -62,8 +108,13 @@ const columns: Array<DataTableColumn<AuditRow>> = [
     header: "الحدث",
     render: (row) => (
       <div>
-        <p className="font-semibold text-kmt-ink">{row.action}</p>
-        <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(row.createdAt)}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="font-semibold text-kmt-ink">{row.event.label}</p>
+          <Badge tone={categoryTone(row.event.category)}>{row.event.category}</Badge>
+          <Badge tone={severityTone(row.event.severity)}>{row.event.severity}</Badge>
+        </div>
+        <p className="mt-1 text-sm leading-6 text-kmt-muted">{row.summary}</p>
+        <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(row.occurredAt)}</p>
       </div>
     )
   },
@@ -77,34 +128,41 @@ const columns: Array<DataTableColumn<AuditRow>> = [
     header: "المورد",
     render: (row) => (
       <div>
-        <p>{row.resourceType}</p>
-        {row.resourceId ? <p className="mt-1 max-w-56 truncate text-xs text-kmt-muted">{row.resourceId}</p> : null}
+        <p>{row.resource.label}</p>
+        <p className="mt-1 text-xs text-kmt-muted">المرجع الداخلي محفوظ للتدقيق</p>
       </div>
     )
   },
   {
-    key: "metadata",
-    header: "البيانات المرافقة",
+    key: "details",
+    header: "التفاصيل",
     className: "min-w-72",
-    render: (row) => <code className="whitespace-pre-wrap break-words text-xs text-kmt-muted">{shortMetadata(row.metadata)}</code>
-  },
-  { key: "ip", header: "IP", render: (row) => row.ipAddress ?? "غير مسجل" }
+    render: (row) => (
+      <div>
+        <DetailList row={row} />
+        <TechnicalDetails row={row} />
+      </div>
+    )
+  }
 ];
 
 function AuditMobileCard({ row }: { row: AuditRow }) {
   return (
     <DataRecordCard
-      title={row.action}
-      description={formatDateTime(row.createdAt)}
+      title={row.event.label}
+      description={row.summary}
+      badges={
+        <>
+          <Badge tone={categoryTone(row.event.category)}>{row.event.category}</Badge>
+          <Badge tone={severityTone(row.event.severity)}>{row.event.severity}</Badge>
+        </>
+      }
+      meta={formatDateTime(row.occurredAt)}
       fields={[
         { label: "المنفذ", value: actorLabel(row) },
-        { label: "المورد", value: row.resourceId ? `${row.resourceType} · ${row.resourceId}` : row.resourceType },
-        {
-          label: "البيانات المرافقة",
-          value: <code className="whitespace-pre-wrap break-words text-xs text-kmt-muted">{shortMetadata(row.metadata)}</code>,
-          className: "sm:col-span-2"
-        },
-        { label: "IP", value: row.ipAddress ?? "غير مسجل", dir: "ltr" }
+        { label: "المورد", value: row.resource.label },
+        { label: "التفاصيل", value: <DetailList row={row} />, className: "sm:col-span-2" },
+        { label: "المراجعة التقنية", value: <TechnicalDetails row={row} />, className: "sm:col-span-2" }
       ]}
     />
   );
@@ -146,17 +204,17 @@ export default async function AdminAuditLogPage({ searchParams = {} }: { searchP
             </Select>
             <Select className="min-w-48" defaultValue={result.filters.action ?? ""} label="الإجراء" name="action">
               <option value="">كل الإجراءات</option>
-              {result.filterOptions.actions.map((action: string) => (
-                <option key={action} value={action}>
-                  {action}
+              {result.filterOptions.actions.map((action: AuditFilterOption) => (
+                <option key={action.value} value={action.value}>
+                  {action.label}
                 </option>
               ))}
             </Select>
             <Select className="min-w-44" defaultValue={result.filters.resourceType ?? ""} label="المورد" name="resourceType">
               <option value="">كل الموارد</option>
-              {result.filterOptions.resourceTypes.map((resourceType: string) => (
-                <option key={resourceType} value={resourceType}>
-                  {resourceType}
+              {result.filterOptions.resourceTypes.map((resourceType: AuditFilterOption) => (
+                <option key={resourceType.value} value={resourceType.value}>
+                  {resourceType.label}
                 </option>
               ))}
             </Select>

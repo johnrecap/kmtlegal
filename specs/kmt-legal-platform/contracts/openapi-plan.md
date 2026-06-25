@@ -175,7 +175,7 @@ Portal MVP is server-rendered except implemented JSON routes. Current portal pag
 | PATCH | `/api/admin/roles/{id}/permissions` | Update role permissions | Super Admin | role.manage.any |
 | GET | `/api/admin/settings` | Settings | Super Admin | settings.manage.any |
 | PATCH | `/api/admin/settings/{key}` | Update setting | Super Admin | settings.manage.any |
-| GET | `/api/admin/audit-log` | Audit search | Super Admin | audit.read.any |
+| GET | `/api/admin/audit-log` | Audit search with client-friendly presentation DTO | Super Admin | audit.read.any |
 
 ### Finance and Reports
 | Method | Path | Purpose | Auth | Permission |

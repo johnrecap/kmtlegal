@@ -33,7 +33,8 @@ PLAN-18 adds the Super Admin governance surfaces for staff/user administration, 
   - Settings are non-secret operational policy values. Production secrets remain environment variables.
 - `/admin/audit-log`
   - Audit search and filters for actor, action, resource type, date range, sort order, and pagination.
-  - Metadata is shown from the redacted audit service output.
+  - Audit rows are shown through a client-friendly DTO with Arabic event labels, summaries, categories, severity badges, and allowlisted detail fields.
+  - Raw action/resource identifiers remain available only inside a small technical disclosure for governance review; raw metadata JSON is not the default display.
 
 ### Server Contracts
 
@@ -48,6 +49,7 @@ PLAN-18 adds the Super Admin governance surfaces for staff/user administration, 
 - `GET /api/admin/audit-log`
 
 All new PLAN-18 contracts use the existing request validation, error response, request id, session, RBAC, and audit primitives.
+The audit log read contract maps stored `AuditLog` records to a presentation DTO instead of returning raw Prisma rows.
 
 ### Permissions
 
@@ -80,6 +82,7 @@ No new Prisma migration was required. PLAN-18 reuses existing tables:
 - Super Admin password changes append `user.password.update`.
 - Setting updates append `settings.update`.
 - Staff 2FA reset uses the existing reset audit event from the auth service.
+- Audit read DTOs translate these event codes for non-technical administrators while preserving the raw database audit trail.
 
 ## Guardrails
 
