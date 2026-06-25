@@ -45,11 +45,13 @@ export function PageHero({
   size?: "full" | "compact";
 }) {
   const isCompact = size === "compact";
+  const imageOpacity = isCompact ? "opacity-60" : "opacity-50";
+  const overlay = isCompact ? "from-kmt-navy/75 via-kmt-navy/40 to-kmt-navy/5" : "from-kmt-navy/80 via-kmt-navy/60 to-kmt-navy/10";
 
   return (
     <section className={cn("relative isolate overflow-hidden bg-kmt-navy text-white", isCompact ? "min-h-[340px]" : "min-h-[520px]")}>
-      <img alt="" aria-hidden="true" className={cn("absolute inset-0 h-full w-full object-cover", isCompact ? "opacity-30" : "opacity-35")} src={image} />
-      <div className="absolute inset-0 bg-gradient-to-l from-kmt-navy via-kmt-navy/80 to-kmt-navy/20" />
+      <img alt="" aria-hidden="true" className={cn("absolute inset-0 h-full w-full object-cover", imageOpacity)} src={image} />
+      <div className={cn("absolute inset-0 bg-gradient-to-l", overlay)} />
       <div className={cn("relative mx-auto flex max-w-[1200px] items-center px-4 sm:px-6 lg:px-10", isCompact ? "min-h-[340px] py-12" : "min-h-[520px] py-16")}>
         <div className="max-w-3xl">
           <p className="text-sm font-semibold text-amber-100">{eyebrow}</p>

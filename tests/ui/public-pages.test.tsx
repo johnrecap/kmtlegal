@@ -41,6 +41,8 @@ describe("public website UI", () => {
     expect(html).toContain("استشارات قانونية منظمة");
     expect(html).toContain("مراجعة بشرية");
     expect(html).toContain("object-cover");
+    expect(html).toContain("opacity-50");
+    expect(html).toContain("via-kmt-navy/60");
   });
 
   it("renders compact public heroes for inner pages", () => {
@@ -55,6 +57,8 @@ describe("public website UI", () => {
     );
 
     expect(html).toContain("min-h-[340px]");
+    expect(html).toContain("opacity-60");
+    expect(html).toContain("via-kmt-navy/40");
     expect(html).toContain("خدمات قانونية قابلة للفرز");
     expect(html).not.toContain("secondary-container");
   });

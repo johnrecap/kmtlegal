@@ -288,6 +288,7 @@ Implemented locally on 2026-06-25:
 - Full design responsive pass added shared `DataRecordCard` mobile table rendering across admin and portal list surfaces, grouped admin navigation, KMT-token active/hover states, compact public `PageHero` variants, improved public directory filters, and safer no-DB fallbacks for article/case-study list pages.
 - Full design responsive pass verification passed for `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e:smoke`, `npx playwright test tests/e2e/live-admin-smoke.spec.ts` with required env vars absent/skipped, and `git diff --check`.
 - aaPanel PM2 deploy script now loads the production env file before build/migrations and preserves previous `.next/static` assets across builds so open tabs and cached HTML do not request deleted route chunks after deployment.
+- Public `PageHero` image treatment was lightened by raising image opacity and reducing the navy gradient overlay while preserving text contrast on Arabic hero copy.
 
 ## Release Gate
 
