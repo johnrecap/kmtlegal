@@ -2,6 +2,78 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-display: block;
+  font-weight: 300;
+  src: url("../../node_modules/@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-300-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-display: block;
+  font-weight: 400;
+  src: url("../../node_modules/@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-display: block;
+  font-weight: 500;
+  src: url("../../node_modules/@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-display: block;
+  font-weight: 600;
+  src: url("../../node_modules/@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-600-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  font-style: normal;
+  font-display: block;
+  font-weight: 700;
+  src: url("../../node_modules/@fontsource/ibm-plex-sans-arabic/files/ibm-plex-sans-arabic-arabic-700-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: block;
+  font-weight: 400;
+  src: url("../../node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: block;
+  font-weight: 500;
+  src: url("../../node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-display: block;
+  font-weight: 600;
+  src: url("../../node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Material Symbols Outlined";
+  font-style: normal;
+  font-display: block;
+  font-weight: 100 700;
+  src: url("../../node_modules/material-symbols/material-symbols-outlined.woff2") format("woff2");
+}
+
 :root {
   color-scheme: light;
   --kmt-navy: #0f172a;
@@ -18,7 +90,7 @@ body {
   margin: 0;
   background: #f7f9fb;
   color: #191c1e;
-  font-family: "IBM Plex Sans Arabic", sans-serif;
+  font-family: "IBM Plex Sans Arabic", "Inter", Arial, sans-serif;
 }
 
 button,

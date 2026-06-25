@@ -5,6 +5,7 @@ Status: implemented as a frontend foundation.
 ## Scope Completed
 
 - Product tokens extended in `tailwind.config.ts` without changing Stitch source routes.
+- Product font loading is defined in `src/app/globals.css` with blocking local font faces to avoid first-paint fallback font flashes on Arabic public pages.
 - Shared utility `cn()` added in `src/lib/cn.ts`.
 - Product token map added in `src/lib/design-system/tokens.ts`.
 - UI primitives added under `src/components/ui/`:

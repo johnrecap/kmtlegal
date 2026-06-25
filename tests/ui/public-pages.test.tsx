@@ -1,4 +1,6 @@
 import React from "react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { PublicShell } from "@/components/layout";
@@ -55,5 +57,16 @@ describe("public website UI", () => {
     expect(html).toContain("min-h-[340px]");
     expect(html).toContain("خدمات قانونية قابلة للفرز");
     expect(html).not.toContain("secondary-container");
+  });
+
+  it("keeps product font loading local and blocks fallback font flashes", () => {
+    const layoutSource = readFileSync(join(process.cwd(), "src/app/layout.tsx"), "utf8");
+    const globalsSource = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
+
+    expect(layoutSource).not.toContain("@fontsource/ibm-plex-sans-arabic");
+    expect(layoutSource).not.toContain("material-symbols/outlined.css");
+    expect(globalsSource).toContain('font-family: "IBM Plex Sans Arabic"');
+    expect(globalsSource).toContain('font-family: "Material Symbols Outlined"');
+    expect(globalsSource).toContain("font-display: block");
   });
 });
