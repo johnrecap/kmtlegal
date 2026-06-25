@@ -10,6 +10,8 @@ ENV_FILE="${ENV_FILE:-${APP_DIR}/.env.production.local}"
 STATIC_BACKUP_DIR="${STATIC_BACKUP_DIR:-${APP_DIR}/.next-static-previous}"
 PM2_START_TIMEOUT_SECONDS="${PM2_START_TIMEOUT_SECONDS:-30}"
 PM2_STABILITY_SECONDS="${PM2_STABILITY_SECONDS:-8}"
+PUBLIC_VERIFY_ENABLED="${PUBLIC_VERIFY_ENABLED:-true}"
+PUBLIC_VERIFY_PATHS="${PUBLIC_VERIFY_PATHS:-/media /contact}"
 
 log() {
   printf "\n==> %s\n" "$*"
@@ -147,6 +149,75 @@ console.log("Next.js static manifest references are present.");
 NODE
 }
 
+verify_public_origin_matches_local() {
+  if [[ "${PUBLIC_VERIFY_ENABLED}" != "true" || -z "${APP_ORIGIN:-}" ]]; then
+    return 0
+  fi
+
+  log "Checking public origin matches local app"
+  APP_ORIGIN="${APP_ORIGIN}" PORT="${PORT}" PUBLIC_VERIFY_PATHS="${PUBLIC_VERIFY_PATHS}" node <<'NODE'
+const origin = process.env.APP_ORIGIN.replace(/\/+$/, "");
+const port = process.env.PORT || "3000";
+const paths = (process.env.PUBLIC_VERIFY_PATHS || "/media /contact").split(/\s+/).filter(Boolean);
+
+function extractBuildId(html) {
+  return html.match(/\\"buildId\\":\\"([^\\"]+)/)?.[1] || html.match(/"buildId":"([^"]+)/)?.[1] || null;
+}
+
+function staticAssetUrls(html) {
+  return [...new Set([...html.matchAll(/["'](\/_next\/static\/[^"']+\.(?:js|css))["']/g)].map((match) => match[1]))];
+}
+
+async function getText(url) {
+  const response = await fetch(url, { headers: { "Cache-Control": "no-cache", Pragma: "no-cache" } });
+  if (!response.ok) {
+    throw new Error(`${url} returned ${response.status}`);
+  }
+  return response.text();
+}
+
+async function assertStaticAsset(url) {
+  const response = await fetch(url, { method: "HEAD", headers: { "Cache-Control": "no-cache", Pragma: "no-cache" } });
+  const contentType = response.headers.get("content-type") || "";
+  const isJavaScript = url.endsWith(".js");
+  const isCss = url.endsWith(".css");
+
+  if (!response.ok) {
+    throw new Error(`${url} returned ${response.status}`);
+  }
+
+  if (isJavaScript && !/javascript|ecmascript/.test(contentType)) {
+    throw new Error(`${url} returned non-JavaScript content-type: ${contentType || "(missing)"}`);
+  }
+
+  if (isCss && !/text\/css/.test(contentType)) {
+    throw new Error(`${url} returned non-CSS content-type: ${contentType || "(missing)"}`);
+  }
+}
+
+(async () => {
+  for (const path of paths) {
+    const localUrl = `http://127.0.0.1:${port}${path}`;
+    const publicUrl = `${origin}${path}`;
+    const [localHtml, publicHtml] = await Promise.all([getText(localUrl), getText(publicUrl)]);
+    const localBuildId = extractBuildId(localHtml);
+    const publicBuildId = extractBuildId(publicHtml);
+
+    if (localBuildId && publicBuildId && localBuildId !== publicBuildId) {
+      throw new Error(`${publicUrl} is serving build ${publicBuildId}, but local ${localUrl} is serving build ${localBuildId}`);
+    }
+
+    const publicAssets = staticAssetUrls(publicHtml);
+    await Promise.all(publicAssets.map((assetUrl) => assertStaticAsset(`${origin}${assetUrl}`)));
+    console.log(`${path}: public origin matches local build ${localBuildId || publicBuildId || "(build id unavailable)"}`);
+  }
+})().catch((error) => {
+  console.error(error.message);
+  process.exit(1);
+});
+NODE
+}
+
 log "Fetching ${BRANCH} from GitHub"
 git fetch origin "${BRANCH}"
 
@@ -212,6 +283,8 @@ log "Confirming process stability"
 sleep "${PM2_STABILITY_SECONDS}"
 wait_for_pm2_online
 wait_for_local_response
+
+verify_public_origin_matches_local
 
 pm2 save
 

@@ -85,6 +85,7 @@ The script:
 - Runs `npm run db:migrate`.
 - Recreates the `kmtlegal` PM2 process with `--cwd /www/wwwroot/kmtlegal` so PM2 cannot keep running an old checkout or stale working directory.
 - Waits for PM2 to stay `online`, checks the local app response, and prints recent PM2 logs if the process exits.
+- When `APP_ORIGIN` is set, compares public pages against the local app build and verifies public `_next/static` assets return JavaScript/CSS instead of HTML errors.
 - Saves PM2 state only after the process passes the stability checks.
 
 Only override defaults when the server uses different names:
@@ -147,9 +148,11 @@ If public HTML still shows old copy after a successful build, check that PM2 is 
 
 ```bash
 pm2 describe kmtlegal | grep -E 'cwd|script|args|status'
+curl -s http://127.0.0.1:3000/media | grep -E 'read-only|للقراءة فقط'
+curl -s https://kmtlegal.saeeddev.com/media | grep -E 'read-only|للقراءة فقط'
 ```
 
-The update script recreates the process with `--cwd /www/wwwroot/kmtlegal` to avoid this stale-process problem.
+If the local URL is current but the public domain is old, the issue is outside the PM2 process: aaPanel reverse proxy, Nginx cache, or Cloudflare cache/routing. The update script recreates the process with `--cwd /www/wwwroot/kmtlegal` and then compares public `APP_ORIGIN` pages against the local app so this mismatch is caught during deploy.
 
 If PM2 shows `kmtlegal` as `stopped` after deployment, inspect the runtime crash before running another build:
 
