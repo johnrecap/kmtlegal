@@ -6,7 +6,9 @@ import {
   canManageAdminFinance,
   canReadAdminFinance,
   canReadAdminReports,
-  financeReportDateRange
+  financeReportDateRange,
+  formatAdminInvoiceNumber,
+  nextAdminInvoiceNumberFromExisting
 } from "@/server/admin/finance-report-service";
 import { ROLES, type Principal } from "@/server/auth/policy";
 import { ApiError } from "@/server/http/errors";
@@ -52,9 +54,8 @@ describe("admin finance and reports contract", () => {
     expect(canReadAdminReports(lawyer)).toBe(false);
   });
 
-  it("validates manual invoice fields and rejects non-MVP accounting fields", () => {
-    const payload = adminPaymentWriteSchema.parse({
-      invoiceNumber: "INV-2026-0002",
+  it("validates invoice fields and rejects non-MVP accounting fields", () => {
+    const input = {
       clientId: "55555555-5555-4555-8555-555555555555",
       caseId: "",
       issueDate: "2026-06-24",
@@ -66,11 +67,14 @@ describe("admin finance and reports contract", () => {
       receiptNumber: "",
       paidAt: "",
       notes: "Manual MVP invoice"
-    });
+    };
+    const payload = adminPaymentWriteSchema.parse(input);
 
+    expect(payload.invoiceNumber).toBe("");
     expect(payload.amount).toBe(4500.26);
     expect(payload.status).toBe("ISSUED");
     expect(payload.caseId).toBe("");
+    expect(adminPaymentWriteSchema.parse({ ...input, invoiceNumber: "INV-2026-0002" }).invoiceNumber).toBe("INV-2026-0002");
 
     expect(() =>
       adminPaymentWriteSchema.parse({
@@ -79,9 +83,17 @@ describe("admin finance and reports contract", () => {
         lineItems: [{ label: "Legal services", amount: 4500 }]
       })
     ).toThrow();
-    expect(() => adminPaymentWriteSchema.parse({ ...payload, invoiceNumber: "INV 2026 0002" })).toThrow();
-    expect(() => adminPaymentWriteSchema.parse({ ...payload, currency: "GBP" })).toThrow();
-    expect(() => adminPaymentWriteSchema.parse({ ...payload, amount: "0" })).toThrow();
+    expect(() => adminPaymentWriteSchema.parse({ ...input, invoiceNumber: "INV 2026 0002" })).toThrow();
+    expect(() => adminPaymentWriteSchema.parse({ ...input, currency: "GBP" })).toThrow();
+    expect(() => adminPaymentWriteSchema.parse({ ...input, amount: "0" })).toThrow();
+  });
+
+  it("formats generated invoice numbers from the issue-date year", () => {
+    expect(formatAdminInvoiceNumber(2026, 1)).toBe("INV-2026-0001");
+    expect(formatAdminInvoiceNumber(2026, 12)).toBe("INV-2026-0012");
+    expect(nextAdminInvoiceNumberFromExisting(2026, ["INV-2026-0001", "INV-2026-0012", "INV-2025-9999", "MANUAL-7"])).toBe(
+      "INV-2026-0013"
+    );
   });
 
   it("bounds finance list and report filters", () => {

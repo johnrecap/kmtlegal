@@ -177,14 +177,25 @@ export function PaymentForm({
 
   return (
     <form className="grid gap-4" onSubmit={submit}>
-      <TextInput
-        defaultValue={payment?.invoiceNumber ?? ""}
-        disabled={isBusy}
-        label="رقم الفاتورة"
-        name="invoiceNumber"
-        placeholder="INV-2026-0002"
-        required
-      />
+      {isEdit ? (
+        <TextInput
+          defaultValue={payment?.invoiceNumber ?? ""}
+          disabled={isBusy}
+          label="رقم الفاتورة"
+          name="invoiceNumber"
+          placeholder="INV-2026-0002"
+          required
+        />
+      ) : (
+        <div className="space-y-2">
+          <span className="block text-sm font-semibold text-kmt-ink">رقم الفاتورة</span>
+          <input name="invoiceNumber" type="hidden" value="" />
+          <div className="flex min-h-11 items-center rounded border border-slate-300 bg-slate-50 px-3 py-2.5 text-base text-kmt-muted">
+            سيتم توليده تلقائيًا عند إنشاء الفاتورة
+          </div>
+          <p className="text-sm leading-6 text-kmt-muted">يستخدم تاريخ الإصدار لترقيم الفاتورة بصيغة INV-YYYY-0001.</p>
+        </div>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <Select defaultValue={payment?.clientId ?? ""} disabled={isBusy} label="العميل" name="clientId" required>
           <option value="">اختر العميل</option>

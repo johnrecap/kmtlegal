@@ -11,6 +11,7 @@ Status: Done
   - Filters for status, currency, client, case, issue date range, sorting, and pagination.
   - Summary cards for total, paid, open, and overdue invoices.
   - Create and edit form for the agreed MVP invoice fields.
+  - New invoices generate `INV-YYYY-0001` style invoice numbers automatically from the issue-date year; edit mode keeps the number visible for correction when needed.
 - Added `/admin/reports` for basic operational reporting:
   - Date range and currency filters.
   - Finance snapshot by payment status.
@@ -33,7 +34,7 @@ All contracts reuse the existing session lookup, RBAC policy helpers, Zod valida
 
 No Prisma migration was required. PLAN-19 reuses the existing `Payment` model from PLAN-04:
 
-- `invoiceNumber`
+- `invoiceNumber` (auto-generated on create when omitted)
 - `clientId`
 - `caseId?`
 - `issueDate`
@@ -67,6 +68,7 @@ The service validates that selected cases belong to the selected client before w
 ## Guardrails
 
 - Write schemas are strict and reject non-MVP accounting fields such as tax, line items, gateway payloads, settlement, refunds, and ledger details.
+- Invoice numbers are generated server-side when create requests omit `invoiceNumber`; manual API values are still validated for backward-compatible corrections.
 - `paidAt` can only be saved when status is `PAID`; if status is `PAID` and no paid date is provided, the server records the current time.
 - Aggregated amount cards warn when the view mixes currencies. Use the currency filter for comparable financial totals.
 - Reports are operational dashboards, not accounting, tax, or legally binding financial statements.

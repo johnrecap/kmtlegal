@@ -13,6 +13,15 @@ const currencySchema = z.enum(currencyValues);
 const paymentSortBySchema = z.enum(["issueDate", "dueDate", "createdAt", "amount", "status"]);
 const optionalDateStringSchema = z.string().trim().max(60).optional().or(z.literal(""));
 const requiredDateStringSchema = z.string().trim().min(1).max(60);
+const invoiceNumberSchema = z
+  .string()
+  .trim()
+  .max(80)
+  .refine((value) => value === "" || value.length >= 3, "Invoice number must be at least 3 characters.")
+  .refine((value) => value === "" || /^[A-Za-z0-9._/-]+$/.test(value), "Invoice number has invalid characters.")
+  .default("");
+const generatedInvoiceNumberPattern = /^INV-(\d{4})-(\d+)$/;
+const invoiceGenerationRetryLimit = 5;
 
 export const adminPaymentListQuerySchema = z.object({
   q: z.string().trim().max(120).optional().or(z.literal("")),
@@ -30,7 +39,7 @@ export const adminPaymentListQuerySchema = z.object({
 
 export const adminPaymentWriteSchema = z
   .object({
-    invoiceNumber: z.string().trim().min(3).max(80).regex(/^[A-Za-z0-9._/-]+$/, "Invoice number has invalid characters."),
+    invoiceNumber: invoiceNumberSchema,
     clientId: uuidSchema,
     caseId: uuidSchema.optional().or(z.literal("")),
     issueDate: requiredDateStringSchema,
@@ -273,6 +282,54 @@ function parseRequiredDate(value: string, field: string) {
   return date;
 }
 
+export function formatAdminInvoiceNumber(year: number, sequence: number) {
+  if (!Number.isInteger(year) || year < 1) {
+    throw new Error("Invoice year is invalid.");
+  }
+  if (!Number.isInteger(sequence) || sequence < 1) {
+    throw new Error("Invoice sequence is invalid.");
+  }
+
+  return `INV-${year}-${String(sequence).padStart(4, "0")}`;
+}
+
+export function nextAdminInvoiceNumberFromExisting(year: number, invoiceNumbers: readonly string[]) {
+  const invoiceYear = String(year);
+  let maxSequence = 0;
+
+  for (const invoiceNumber of invoiceNumbers) {
+    const match = generatedInvoiceNumberPattern.exec(invoiceNumber);
+    if (!match || match[1] !== invoiceYear) {
+      continue;
+    }
+
+    const sequence = Number(match[2]);
+    if (Number.isInteger(sequence) && sequence > maxSequence) {
+      maxSequence = sequence;
+    }
+  }
+
+  return formatAdminInvoiceNumber(year, maxSequence + 1);
+}
+
+async function generateAdminInvoiceNumber(issueDate: Date) {
+  const year = issueDate.getUTCFullYear();
+  const prefix = `INV-${year}-`;
+  const existing = await prisma.payment.findMany({
+    where: { invoiceNumber: { startsWith: prefix } },
+    select: { invoiceNumber: true }
+  });
+
+  return nextAdminInvoiceNumberFromExisting(
+    year,
+    existing.map((payment) => payment.invoiceNumber)
+  );
+}
+
+function isInvoiceNumberConflict(error: unknown) {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
+}
+
 function paidAtForWrite(body: AdminPaymentWriteInput) {
   const paidAt = parseDateInput(body.paidAt, "paidAt");
   if (paidAt && body.status !== "PAID") {
@@ -286,12 +343,12 @@ function paidAtForWrite(body: AdminPaymentWriteInput) {
   return null;
 }
 
-function paymentMutationData(body: AdminPaymentWriteInput) {
+function paymentMutationData(body: AdminPaymentWriteInput, invoiceNumber: string, issueDate = parseRequiredDate(body.issueDate, "issueDate")) {
   return {
-    invoiceNumber: body.invoiceNumber,
+    invoiceNumber,
     clientId: body.clientId,
     caseId: body.caseId || null,
-    issueDate: parseRequiredDate(body.issueDate, "issueDate"),
+    issueDate,
     dueDate: parseDateInput(body.dueDate, "dueDate") ?? null,
     amount: new Prisma.Decimal(body.amount.toFixed(2)),
     currency: body.currency,
@@ -383,40 +440,51 @@ export async function createAdminPayment(input: { actor: Principal; body: unknow
   assertFinanceManage(input.actor);
   const body = parseWithSchema(adminPaymentWriteSchema, input.body, "Payment payload is invalid.");
   await assertClientAndCase(body);
+  const issueDate = parseRequiredDate(body.issueDate, "issueDate");
+  const requestedInvoiceNumber = body.invoiceNumber.trim();
 
-  try {
-    const payment = await prisma.payment.create({
-      data: {
-        ...paymentMutationData(body),
-        createdById: input.actor.id
-      },
-      include: {
-        client: { select: { id: true, fullName: true, phone: true, email: true } },
-        case: { select: { id: true, internalFileNumber: true, title: true } },
-        createdBy: { select: { id: true, name: true, email: true } }
+  for (let attempt = 0; attempt < invoiceGenerationRetryLimit; attempt += 1) {
+    const invoiceNumber = requestedInvoiceNumber || (await generateAdminInvoiceNumber(issueDate));
+
+    try {
+      const payment = await prisma.payment.create({
+        data: {
+          ...paymentMutationData(body, invoiceNumber, issueDate),
+          createdById: input.actor.id
+        },
+        include: {
+          client: { select: { id: true, fullName: true, phone: true, email: true } },
+          case: { select: { id: true, internalFileNumber: true, title: true } },
+          createdBy: { select: { id: true, name: true, email: true } }
+        }
+      });
+
+      await appendAuditLog({
+        actorId: input.actor.id,
+        action: "finance.payment_create",
+        resourceType: "Payment",
+        resourceId: payment.id,
+        metadata: {
+          invoiceNumber: payment.invoiceNumber,
+          clientId: payment.clientId,
+          caseId: payment.caseId,
+          amount: payment.amount.toString(),
+          currency: payment.currency,
+          status: payment.status
+        },
+        request: input.request
+      });
+
+      return payment;
+    } catch (error) {
+      if (!requestedInvoiceNumber && isInvoiceNumberConflict(error) && attempt < invoiceGenerationRetryLimit - 1) {
+        continue;
       }
-    });
-
-    await appendAuditLog({
-      actorId: input.actor.id,
-      action: "finance.payment_create",
-      resourceType: "Payment",
-      resourceId: payment.id,
-      metadata: {
-        invoiceNumber: payment.invoiceNumber,
-        clientId: payment.clientId,
-        caseId: payment.caseId,
-        amount: payment.amount.toString(),
-        currency: payment.currency,
-        status: payment.status
-      },
-      request: input.request
-    });
-
-    return payment;
-  } catch (error) {
-    handlePaymentWriteError(error);
+      handlePaymentWriteError(error);
+    }
   }
+
+  throw new ApiError(409, "CONFLICT", "Could not generate a unique invoice number. Try again.");
 }
 
 export async function updateAdminPayment(input: { actor: Principal; paymentId: string; body: unknown; request?: Request }) {
@@ -437,7 +505,7 @@ export async function updateAdminPayment(input: { actor: Principal; paymentId: s
   try {
     const payment = await prisma.payment.update({
       where: { id: paymentId },
-      data: paymentMutationData(body),
+      data: paymentMutationData(body, body.invoiceNumber || existing.invoiceNumber),
       include: {
         client: { select: { id: true, fullName: true, phone: true, email: true } },
         case: { select: { id: true, internalFileNumber: true, title: true } },
