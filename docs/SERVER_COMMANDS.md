@@ -77,8 +77,8 @@ The script:
 - Pulls with `git pull --ff-only origin main` when the server checkout is behind.
 - Fails if tracked files on the server are modified.
 - Loads the production environment file and fails if `DATABASE_URL` is missing.
-- Installs dependencies with build-time packages.
-- Removes the old `.next` build output.
+- Installs dependencies with build-time packages using `npm ci --include=dev`.
+- Preserves the previous `.next/static` assets for open browser tabs and cached HTML.
 - Runs `npm run build`.
 - Runs `npm run db:migrate`.
 - Restarts or starts the `kmtlegal` PM2 process.
@@ -106,9 +106,12 @@ set -a
 set +a
 git fetch origin main
 git pull --ff-only origin main
-npm install --include=dev
-rm -rf .next
+npm ci --include=dev
+STATIC_BACKUP_DIR=.next-static-previous
+rm -rf "$STATIC_BACKUP_DIR"
+if [ -d .next/static ]; then mkdir -p "$STATIC_BACKUP_DIR" && cp -a .next/static/. "$STATIC_BACKUP_DIR/"; fi
 npm run build
+if [ -d "$STATIC_BACKUP_DIR" ]; then mkdir -p .next/static && cp -a "$STATIC_BACKUP_DIR/." .next/static/ && rm -rf "$STATIC_BACKUP_DIR"; fi
 npm run db:migrate
 PORT=3000 pm2 restart kmtlegal --update-env
 pm2 save
@@ -128,6 +131,8 @@ npm run db:migrate
 ```
 
 For the current aaPanel database shown in the panel, the visible target should be the `kmtlegal` database/user, not the local development default `kmt_legal`.
+
+If a deployed page shows `ChunkLoadError`, `Refused to execute script`, or a `_next/static/...js` request returns `400`, `404`, or `text/html`, it usually means the browser has old HTML/runtime state while the server has a newer build. Run the update script again after this static-preservation fix, then hard refresh the browser tab. If a CDN/proxy cached bad asset responses, purge `/_next/static/*` from the proxy.
 
 If the PM2 process does not exist yet:
 

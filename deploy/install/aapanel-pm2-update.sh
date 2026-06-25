@@ -7,6 +7,7 @@ PM2_APP="${PM2_APP:-kmtlegal}"
 PORT="${PORT:-3000}"
 HEALTH_PATH="${HEALTH_PATH:-/api/health}"
 ENV_FILE="${ENV_FILE:-${APP_DIR}/.env.production.local}"
+STATIC_BACKUP_DIR="${STATIC_BACKUP_DIR:-${APP_DIR}/.next-static-previous}"
 
 log() {
   printf "\n==> %s\n" "$*"
@@ -72,12 +73,24 @@ if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
 fi
 
 log "Installing dependencies including build-time packages"
-export NPM_CONFIG_PRODUCTION=false
-npm install --include=dev
+npm ci --include=dev
+
+log "Backing up existing Next.js static assets"
+rm -rf "${STATIC_BACKUP_DIR}"
+if [[ -d ".next/static" ]]; then
+  mkdir -p "${STATIC_BACKUP_DIR}"
+  cp -a .next/static/. "${STATIC_BACKUP_DIR}/"
+fi
 
 log "Building a fresh Next.js release"
-rm -rf .next
 npm run build
+
+if [[ -d "${STATIC_BACKUP_DIR}" ]]; then
+  log "Restoring previous static assets for open browser tabs and cached HTML"
+  mkdir -p .next/static
+  cp -a "${STATIC_BACKUP_DIR}/." .next/static/
+  rm -rf "${STATIC_BACKUP_DIR}"
+fi
 
 log "Applying database migrations"
 npm run db:migrate
