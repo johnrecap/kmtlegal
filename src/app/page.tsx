@@ -47,6 +47,7 @@ function shouldLoadDatabaseContent() {
 
 export default async function HomePage() {
   const featuredContent = await loadFeaturedContent();
+  const hasFeaturedContent = featuredContent.articles.length > 0 || featuredContent.caseStudies.length > 0;
 
   return (
     <PublicShell navItems={navForPath("/")}>
@@ -101,8 +102,9 @@ export default async function HomePage() {
         </div>
       </PublicSection>
 
-      <PublicSection eyebrow="محتوى قانوني" title="توعية بدون وعود قانونية" description="مقالات ودراسات حالة مجهولة تساعدك على تجهيز الأسئلة والمستندات قبل التواصل.">
-        <div className="grid gap-4 lg:grid-cols-2">
+      {hasFeaturedContent ? (
+        <PublicSection eyebrow="محتوى قانوني" title="توعية بدون وعود قانونية" description="مقالات ودراسات حالة مجهولة تساعدك على تجهيز الأسئلة والمستندات قبل التواصل.">
+          <div className="grid gap-4 lg:grid-cols-2">
           {featuredContent.articles.map((article) => (
             <Link key={article.slug} className="rounded-lg border border-kmt-border bg-white p-5 hover:border-kmt-gold" href={`/articles/${article.slug}`}>
               <p className="text-sm font-semibold text-kmt-gold">{article.readTime}</p>
@@ -117,22 +119,9 @@ export default async function HomePage() {
               <p className="mt-3 text-sm leading-7 text-kmt-muted">{study.summary}</p>
             </Link>
           ))}
-          {featuredContent.articles.length === 0 && featuredContent.caseStudies.length === 0 ? (
-            <>
-              <Link className="rounded-lg border border-kmt-border bg-white p-5 hover:border-kmt-gold" href="/articles">
-                <p className="text-sm font-semibold text-kmt-gold">مقالات قانونية</p>
-                <h3 className="mt-2 text-xl font-semibold text-kmt-ink">استعرض أحدث المقالات المنشورة</h3>
-                <p className="mt-3 text-sm leading-7 text-kmt-muted">سيظهر المحتوى المنشور هنا بعد اعتماده من لوحة المكتب.</p>
-              </Link>
-              <Link className="rounded-lg border border-amber-200 bg-amber-50 p-5 hover:border-kmt-gold" href="/case-studies">
-                <p className="text-sm font-semibold text-amber-800">دراسات حالة مجهولة</p>
-                <h3 className="mt-2 text-xl font-semibold text-kmt-ink">دراسات حالة بلا بيانات عملاء</h3>
-                <p className="mt-3 text-sm leading-7 text-kmt-muted">لا تعرض الصفحة روابط تفاصيل إلا بعد وجود دراسة حالة منشورة ومجهولة المصدر.</p>
-              </Link>
-            </>
-          ) : null}
-        </div>
-      </PublicSection>
+          </div>
+        </PublicSection>
+      ) : null}
     </PublicShell>
   );
 }

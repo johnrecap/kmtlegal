@@ -210,10 +210,21 @@ function assertNoStalePublicContentLinks(path, localHtml, publicHtml) {
     "/articles/prepare-consultation-file",
     "/case-studies/anonymous-commercial-dispute"
   ];
+  const staleContentMarkers = [
+    "أساسيات تقليل مخاطر العقود",
+    "كيف تجهز ملف استشارة قانونية",
+    "تنظيم نزاع تجاري مجهول الأطراف"
+  ];
 
   for (const link of staleDetailLinks) {
     if (!localHtml.includes(link) && publicHtml.includes(link)) {
       throw new Error(`${path}: public HTML still contains stale content link ${link}, but the local app no longer renders it.`);
+    }
+  }
+
+  for (const marker of staleContentMarkers) {
+    if (!localHtml.includes(marker) && publicHtml.includes(marker)) {
+      throw new Error(`${path}: public HTML still contains stale content marker "${marker}", but the local app no longer renders it.`);
     }
   }
 }

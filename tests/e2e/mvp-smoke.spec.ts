@@ -94,6 +94,9 @@ test.describe("MVP smoke without database", () => {
     await expect(page.locator('a[href="/articles/contract-risk-basics"]')).toHaveCount(0);
     await expect(page.locator('a[href="/articles/prepare-consultation-file"]')).toHaveCount(0);
     await expect(page.locator('a[href="/case-studies/anonymous-commercial-dispute"]')).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "أساسيات تقليل مخاطر العقود" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "كيف تجهز ملف استشارة قانونية" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "تنظيم نزاع تجاري مجهول الأطراف" })).toHaveCount(0);
   });
 
   test("login page does not expose local development setup copy", async ({ page }) => {

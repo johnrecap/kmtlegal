@@ -86,7 +86,7 @@ The script:
 - Recreates the `kmtlegal` PM2 process with `--cwd /www/wwwroot/kmtlegal` and starts the Next.js CLI directly, not through `npm`, so PM2 does not leave an old child process serving port `3000`.
 - Stops any stale process still listening on port `3000` before starting the new PM2 process.
 - Waits for PM2 to stay `online`, checks the local app response, and prints recent PM2 logs if the process exits.
-- When `APP_ORIGIN` is set, compares `/`, `/articles`, `/case-studies`, `/media`, and `/contact` against the local app build, verifies public `_next/static` assets return JavaScript/CSS instead of HTML errors, and fails if the public domain still serves stale homepage article/case-study detail links.
+- When `APP_ORIGIN` is set, compares `/`, `/articles`, `/case-studies`, `/media`, and `/contact` against the local app build, verifies public `_next/static` assets return JavaScript/CSS instead of HTML errors, and fails if the public domain still serves stale homepage article/case-study detail links or stale demo content cards.
 - Saves PM2 state only after the process passes the stability checks.
 
 Only override defaults when the server uses different names:
@@ -153,8 +153,8 @@ pm2 describe kmtlegal | grep -E 'cwd|script|args|status'
 ss -ltnp 'sport = :3000'
 curl -I -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' http://127.0.0.1:3000/
 curl -I -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' https://kmtlegal.saeeddev.com/
-curl -s -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' http://127.0.0.1:3000/ | grep -E 'contract-risk-basics|prepare-consultation-file|anonymous-commercial-dispute' || echo 'LOCAL OK'
-curl -s -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' https://kmtlegal.saeeddev.com/ | grep -E 'contract-risk-basics|prepare-consultation-file|anonymous-commercial-dispute' || echo 'PUBLIC OK'
+curl -s -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' http://127.0.0.1:3000/ | grep -E 'contract-risk-basics|prepare-consultation-file|anonymous-commercial-dispute|أساسيات تقليل مخاطر العقود|كيف تجهز ملف استشارة قانونية|تنظيم نزاع تجاري مجهول الأطراف' || echo 'LOCAL OK'
+curl -s -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' https://kmtlegal.saeeddev.com/ | grep -E 'contract-risk-basics|prepare-consultation-file|anonymous-commercial-dispute|أساسيات تقليل مخاطر العقود|كيف تجهز ملف استشارة قانونية|تنظيم نزاع تجاري مجهول الأطراف' || echo 'PUBLIC OK'
 curl -s http://127.0.0.1:3000/media | grep -E 'read-only|للقراءة فقط'
 curl -s https://kmtlegal.saeeddev.com/media | grep -E 'read-only|للقراءة فقط'
 ```
