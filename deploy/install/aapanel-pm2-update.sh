@@ -11,7 +11,7 @@ STATIC_BACKUP_DIR="${STATIC_BACKUP_DIR:-${APP_DIR}/.next-static-previous}"
 PM2_START_TIMEOUT_SECONDS="${PM2_START_TIMEOUT_SECONDS:-30}"
 PM2_STABILITY_SECONDS="${PM2_STABILITY_SECONDS:-8}"
 PUBLIC_VERIFY_ENABLED="${PUBLIC_VERIFY_ENABLED:-true}"
-PUBLIC_VERIFY_PATHS="${PUBLIC_VERIFY_PATHS:-/media /contact}"
+PUBLIC_VERIFY_PATHS="${PUBLIC_VERIFY_PATHS:-/ /articles /case-studies /media /contact}"
 NEXT_BIN="${NEXT_BIN:-${APP_DIR}/node_modules/next/dist/bin/next}"
 
 log() {
@@ -185,6 +185,39 @@ function staticAssetUrls(html) {
   return [...new Set([...html.matchAll(/["'](\/_next\/static\/[^"']+\.(?:js|css))["']/g)].map((match) => match[1]))];
 }
 
+function sortedUnique(values) {
+  return [...new Set(values)].sort();
+}
+
+function assertSamePageAssets(path, localHtml, publicHtml) {
+  const localAssets = sortedUnique(staticAssetUrls(localHtml));
+  const publicAssets = sortedUnique(staticAssetUrls(publicHtml));
+
+  if (localAssets.length === 0 || publicAssets.length === 0) {
+    return;
+  }
+
+  const localKey = localAssets.join("\n");
+  const publicKey = publicAssets.join("\n");
+  if (localKey !== publicKey) {
+    throw new Error(`${path}: public HTML references a different Next.js asset set than the local app. This usually means stale HTML/cache is being served.`);
+  }
+}
+
+function assertNoStalePublicContentLinks(path, localHtml, publicHtml) {
+  const staleDetailLinks = [
+    "/articles/contract-risk-basics",
+    "/articles/prepare-consultation-file",
+    "/case-studies/anonymous-commercial-dispute"
+  ];
+
+  for (const link of staleDetailLinks) {
+    if (!localHtml.includes(link) && publicHtml.includes(link)) {
+      throw new Error(`${path}: public HTML still contains stale content link ${link}, but the local app no longer renders it.`);
+    }
+  }
+}
+
 async function getText(url) {
   const response = await fetch(url, { headers: { "Cache-Control": "no-cache", Pragma: "no-cache" } });
   if (!response.ok) {
@@ -223,6 +256,9 @@ async function assertStaticAsset(url) {
     if (localBuildId && publicBuildId && localBuildId !== publicBuildId) {
       throw new Error(`${publicUrl} is serving build ${publicBuildId}, but local ${localUrl} is serving build ${localBuildId}`);
     }
+
+    assertSamePageAssets(path, localHtml, publicHtml);
+    assertNoStalePublicContentLinks(path, localHtml, publicHtml);
 
     const publicAssets = staticAssetUrls(publicHtml);
     await Promise.all(publicAssets.map((assetUrl) => assertStaticAsset(`${origin}${assetUrl}`)));

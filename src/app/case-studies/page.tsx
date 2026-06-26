@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 import { PublicShell } from "@/components/layout";
 import { navForPath } from "@/content/public-content";
 import { DirectoryFilter } from "@/features/public-site/directory-filter";
@@ -6,6 +7,8 @@ import { PageHero, PublicSection } from "@/features/public-site/public-component
 import { listPublishedCaseStudies } from "@/server/public/content-service";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 export const metadata: Metadata = {
   title: "دراسات حالة مجهولة | KMT Legal",
@@ -14,6 +17,8 @@ export const metadata: Metadata = {
 };
 
 async function loadCaseStudies() {
+  noStore();
+
   if (!shouldLoadDatabaseContent()) {
     return [];
   }

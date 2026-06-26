@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 import { notFound } from "next/navigation";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink } from "@/components/ui";
@@ -7,10 +8,13 @@ import { DetailCta, PublicSection } from "@/features/public-site/public-componen
 import { getPublishedCaseStudyBySlug } from "@/server/public/content-service";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 type CaseStudyDetailPageProps = { params: { slug: string } };
 
 export async function generateMetadata({ params }: CaseStudyDetailPageProps): Promise<Metadata> {
+  noStore();
   const study = await getPublishedCaseStudyBySlug(params.slug);
   if (!study) return {};
   return {
@@ -21,6 +25,7 @@ export async function generateMetadata({ params }: CaseStudyDetailPageProps): Pr
 }
 
 export default async function CaseStudyDetailPage({ params }: CaseStudyDetailPageProps) {
+  noStore();
   const study = await getPublishedCaseStudyBySlug(params.slug);
   if (!study) notFound();
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 import { notFound } from "next/navigation";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink } from "@/components/ui";
@@ -7,10 +8,13 @@ import { DetailCta, PublicSection } from "@/features/public-site/public-componen
 import { getPublishedArticleBySlug } from "@/server/public/content-service";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 type ArticleDetailPageProps = { params: { slug: string } };
 
 export async function generateMetadata({ params }: ArticleDetailPageProps): Promise<Metadata> {
+  noStore();
   const article = await getPublishedArticleBySlug(params.slug);
   if (!article) return {};
   return {
@@ -21,6 +25,7 @@ export async function generateMetadata({ params }: ArticleDetailPageProps): Prom
 }
 
 export default async function ArticleDetailPage({ params }: ArticleDetailPageProps) {
+  noStore();
   const article = await getPublishedArticleBySlug(params.slug);
   if (!article) notFound();
 

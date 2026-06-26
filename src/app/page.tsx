@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { unstable_noStore as noStore } from "next/cache";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
 import { legalServices, lawyers, navForPath } from "@/content/public-content";
@@ -13,6 +14,8 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 type FeaturedArticle = Awaited<ReturnType<typeof listPublishedArticles>>[number];
 type FeaturedCaseStudy = Awaited<ReturnType<typeof listPublishedCaseStudies>>[number];
@@ -21,6 +24,8 @@ async function loadFeaturedContent(): Promise<{
   articles: FeaturedArticle[];
   caseStudies: FeaturedCaseStudy[];
 }> {
+  noStore();
+
   if (!shouldLoadDatabaseContent()) {
     return { articles: [], caseStudies: [] };
   }

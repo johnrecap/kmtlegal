@@ -86,7 +86,7 @@ The script:
 - Recreates the `kmtlegal` PM2 process with `--cwd /www/wwwroot/kmtlegal` and starts the Next.js CLI directly, not through `npm`, so PM2 does not leave an old child process serving port `3000`.
 - Stops any stale process still listening on port `3000` before starting the new PM2 process.
 - Waits for PM2 to stay `online`, checks the local app response, and prints recent PM2 logs if the process exits.
-- When `APP_ORIGIN` is set, compares public pages against the local app build and verifies public `_next/static` assets return JavaScript/CSS instead of HTML errors.
+- When `APP_ORIGIN` is set, compares `/`, `/articles`, `/case-studies`, `/media`, and `/contact` against the local app build, verifies public `_next/static` assets return JavaScript/CSS instead of HTML errors, and fails if the public domain still serves stale homepage article/case-study detail links.
 - Saves PM2 state only after the process passes the stability checks.
 
 Only override defaults when the server uses different names:
@@ -146,16 +146,20 @@ For the current aaPanel database shown in the panel, the visible target should b
 
 If a deployed page shows `ChunkLoadError`, `Refused to execute script`, or a `_next/static/...js` request returns `400`, `404`, or `text/html`, it usually means the browser has old HTML/runtime state while the server has a newer build. Run the update script again after this static-preservation fix, then hard refresh the browser tab. If a CDN/proxy cached bad asset responses, purge `/_next/static/*` from the proxy.
 
-If public HTML still shows old copy after a successful build, check that PM2 is running from the current checkout:
+If public HTML still shows old copy or stale detail links after a successful build, first compare the local PM2 response with the public domain. A public page returning `X-Nextjs-Cache: HIT` plus stale links usually means old HTML is still being served from the Next.js route cache or an upstream proxy/cache:
 
 ```bash
 pm2 describe kmtlegal | grep -E 'cwd|script|args|status'
 ss -ltnp 'sport = :3000'
+curl -I -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' http://127.0.0.1:3000/
+curl -I -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' https://kmtlegal.saeeddev.com/
+curl -s -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' http://127.0.0.1:3000/ | grep -E 'contract-risk-basics|prepare-consultation-file|anonymous-commercial-dispute' || echo 'LOCAL OK'
+curl -s -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' https://kmtlegal.saeeddev.com/ | grep -E 'contract-risk-basics|prepare-consultation-file|anonymous-commercial-dispute' || echo 'PUBLIC OK'
 curl -s http://127.0.0.1:3000/media | grep -E 'read-only|للقراءة فقط'
 curl -s https://kmtlegal.saeeddev.com/media | grep -E 'read-only|للقراءة فقط'
 ```
 
-If the local URL is current but the public domain is old, the issue is outside the PM2 process: aaPanel reverse proxy, Nginx cache, or Cloudflare cache/routing. If both local and public are old while the source is current, check for a stale orphan process on port `3000`; the update script now kills that listener and starts Next directly under PM2 so this mismatch is caught during deploy.
+If the local URL is current but the public domain is old, the issue is outside the PM2 process: aaPanel reverse proxy, Nginx cache, or Cloudflare cache/routing. Purge the affected public HTML paths (`/`, `/articles`, `/case-studies`) and rerun the update script. If both local and public are old while the source is current, check for a stale orphan process on port `3000`; the update script now kills that listener and starts Next directly under PM2 so this mismatch is caught during deploy.
 
 If PM2 shows `kmtlegal` as `stopped` after deployment, inspect the runtime crash before running another build:
 

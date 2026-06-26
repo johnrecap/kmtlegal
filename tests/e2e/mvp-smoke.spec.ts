@@ -88,6 +88,14 @@ test.describe("MVP smoke without database", () => {
     }
   });
 
+  test("homepage does not render stale article or case-study detail links without DB content", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator('a[href="/articles/contract-risk-basics"]')).toHaveCount(0);
+    await expect(page.locator('a[href="/articles/prepare-consultation-file"]')).toHaveCount(0);
+    await expect(page.locator('a[href="/case-studies/anonymous-commercial-dispute"]')).toHaveCount(0);
+  });
+
   test("login page does not expose local development setup copy", async ({ page }) => {
     await page.goto("/login", { waitUntil: "domcontentloaded" });
 
