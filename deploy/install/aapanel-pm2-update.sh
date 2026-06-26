@@ -229,6 +229,14 @@ function assertNoStalePublicContentLinks(path, localHtml, publicHtml) {
   }
 }
 
+async function getJson(url) {
+  const response = await fetch(url, { headers: { "Cache-Control": "no-cache", Pragma: "no-cache" } });
+  if (!response.ok) {
+    throw new Error(`${url} returned ${response.status}`);
+  }
+  return response.json();
+}
+
 async function getText(url) {
   const response = await fetch(url, { headers: { "Cache-Control": "no-cache", Pragma: "no-cache" } });
   if (!response.ok) {
@@ -257,6 +265,25 @@ async function assertStaticAsset(url) {
 }
 
 (async () => {
+  const expectedRelease = process.env.APP_RELEASE || null;
+  if (expectedRelease) {
+    const localHealthUrl = `http://127.0.0.1:${port}/api/health`;
+    const publicHealthUrl = `${origin}/api/health`;
+    const [localHealth, publicHealth] = await Promise.all([getJson(localHealthUrl), getJson(publicHealthUrl)]);
+    const localRelease = localHealth?.data?.deployment?.release || null;
+    const publicRelease = publicHealth?.data?.deployment?.release || null;
+
+    if (localRelease !== expectedRelease) {
+      throw new Error(`${localHealthUrl} is serving release ${localRelease || "(missing)"}, expected ${expectedRelease}`);
+    }
+
+    if (publicRelease !== expectedRelease) {
+      throw new Error(`${publicHealthUrl} is serving release ${publicRelease || "(missing)"}, expected ${expectedRelease}`);
+    }
+
+    console.log(`/api/health: public origin and local app are serving release ${expectedRelease}`);
+  }
+
   for (const path of paths) {
     const localUrl = `http://127.0.0.1:${port}${path}`;
     const publicUrl = `${origin}${path}`;
@@ -299,6 +326,10 @@ if [[ -n "$(git status --porcelain --untracked-files=no)" ]]; then
   git status --short --untracked-files=no
   fail "Tracked files are modified. Commit, stash, or reset them before deploying."
 fi
+
+deployed_commit="$(git rev-parse HEAD)"
+export APP_RELEASE="${deployed_commit}"
+log "Deploying release ${APP_RELEASE}"
 
 log "Installing dependencies including build-time packages"
 npm ci --include=dev
