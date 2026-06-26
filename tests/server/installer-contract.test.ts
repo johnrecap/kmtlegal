@@ -42,8 +42,8 @@ describe("PLAN-25 installer contract", () => {
   it("does not expose TOTP setup in the install wizard", () => {
     const source = fs.readFileSync(path.join(process.cwd(), "src", "features", "install", "install-wizard.tsx"), "utf8");
 
-    expect(source).toContain("No TOTP setup is required");
-    expect(source).toContain("Terminal VPS");
+    expect(source).toContain("لا توجد خطوة TOTP في هذه النسخة");
+    expect(source).toContain("خادم VPS عبر الطرفية");
     expect(source).toContain("aaPanel");
     expect(source).toContain("cPanel");
     expect(source).not.toContain('name="totp"');

@@ -5,6 +5,7 @@ import { toPagination } from "@/server/http/pagination";
 import { MemoryRateLimiter, enforceRateLimit } from "@/server/rate-limit/memory-rate-limit";
 import { redactMetadata } from "@/server/audit/redaction";
 import { parseWithSchema } from "@/server/validation/schemas";
+import { localizeApiMessage, roleDisplayLabel, sourceTypeDisplayLabel, technicalValueDisplayLabel } from "@/lib/ui-copy";
 
 describe("server contract foundation", () => {
   it("returns the shared error response shape with requestId and details", async () => {
@@ -17,7 +18,7 @@ describe("server contract foundation", () => {
     expect(body).toEqual({
       error: {
         code: "VALIDATION_ERROR",
-        message: "Invalid request.",
+        message: "الطلب غير صحيح.",
         details: [{ path: "email", message: "Invalid email", code: "invalid_string" }],
         requestId: "req_test"
       }
@@ -67,5 +68,16 @@ describe("server contract foundation", () => {
     const limiter = new MemoryRateLimiter({ windowMs: 60_000, max: 1 });
     expect(enforceRateLimit(limiter, "user-1").allowed).toBe(true);
     expect(() => enforceRateLimit(limiter, "user-1")).toThrow(RateLimitApiError);
+  });
+
+  it("localizes user-facing API and product labels while preserving technical values", () => {
+    expect(localizeApiMessage("Authentication required.")).toBe("يجب تسجيل الدخول للمتابعة.");
+    expect(localizeApiMessage("Payment payload is invalid.")).toBe("الفاتورة غير مكتملة أو غير صحيحة.");
+    expect(localizeApiMessage("Article was not found.")).toBe("لم يتم العثور على المقال.");
+    expect(localizeApiMessage("Only Super Admin can change user passwords.")).toBe("تغيير كلمات مرور المستخدمين متاح لمدير النظام فقط.");
+    expect(roleDisplayLabel("Super Admin")).toBe("مدير النظام");
+    expect(roleDisplayLabel("Office Admin")).toBe("مدير المكتب");
+    expect(sourceTypeDisplayLabel("manual")).toBe("يدوي");
+    expect(technicalValueDisplayLabel("read-only")).toBe("للقراءة فقط");
   });
 });

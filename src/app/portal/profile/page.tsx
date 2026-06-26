@@ -41,7 +41,7 @@ export default async function PortalProfilePage() {
         <Card>
           <CardHeader>
             <CardTitle>بيانات الحساب</CardTitle>
-            <CardDescription>هذه البيانات للقراءة فقط في MVP، وتحديث البريد يتم عبر إجراءات أمان لاحقة.</CardDescription>
+            <CardDescription>هذه البيانات للقراءة فقط الآن، وتحديث البريد يتم من خلال إجراءات أمان منفصلة عبر المكتب.</CardDescription>
           </CardHeader>
           <CardContent>
             <dl className="space-y-4 text-sm">

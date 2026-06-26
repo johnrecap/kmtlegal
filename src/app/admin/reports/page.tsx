@@ -37,7 +37,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "التقارير | KMT Legal",
-  description: "تقارير مالية وتشغيلية أساسية للـMVP داخل لوحة المكتب."
+  description: "تقارير مالية وتشغيلية أساسية داخل لوحة المكتب."
 };
 
 type SearchParams = Record<string, string | string[] | undefined>;

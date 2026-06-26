@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { localizeApiMessage } from "@/lib/ui-copy";
 import { safeLog } from "@/server/observability/safe-log";
 
 export type ApiErrorCode =
@@ -47,14 +48,14 @@ export class ApiError extends Error {
 }
 
 export class ValidationApiError extends ApiError {
-  constructor(message = "Request validation failed.", details?: ApiErrorDetails) {
+  constructor(message = "البيانات المرسلة غير مكتملة أو غير صحيحة.", details?: ApiErrorDetails) {
     super(400, "VALIDATION_ERROR", message, details);
     this.name = "ValidationApiError";
   }
 }
 
 export class RateLimitApiError extends ApiError {
-  constructor(message = "Too many requests.") {
+  constructor(message = "تم إرسال طلبات كثيرة. حاول مرة أخرى بعد قليل.") {
     super(429, "RATE_LIMITED", message);
     this.name = "RateLimitApiError";
   }
@@ -71,7 +72,7 @@ export function jsonError(
     {
       error: {
         code,
-        message,
+        message: localizeApiMessage(message),
         details: details ?? [],
         requestId
       }
@@ -113,7 +114,7 @@ export function errorToResponse(
     errorName: error instanceof Error ? error.name : typeof error
   });
 
-  return jsonError(500, "INTERNAL_ERROR", "An unexpected server error occurred.", requestId);
+  return jsonError(500, "INTERNAL_ERROR", "حدث خطأ غير متوقع في الخادم. حاول مرة أخرى لاحقًا.", requestId);
 }
 
 export function getRequestId(request: Request) {

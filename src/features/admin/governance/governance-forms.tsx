@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Select, StateBlock, TextInput, Textarea } from "@/components/ui";
+import { roleDisplayLabel, technicalValueDisplayLabel } from "@/lib/ui-copy";
 
 type ApiMessage = {
   error?: {
@@ -90,7 +91,7 @@ export function AdminUserCreateForm({ roles }: { roles: RoleOption[] }) {
       }
 
       form.reset();
-      setMessage("تم إنشاء الحساب. لا يتم إرسال بريد تلقائيًا لأن SMTP مؤجل ومعطل.");
+      setMessage("تم إنشاء الحساب. لا يتم إرسال بريد تلقائيًا لأن SMTP غير مفعل في هذه النسخة.");
       router.refresh();
     } catch {
       setMessage("لا يمكن الوصول إلى الخادم الآن.");
@@ -103,7 +104,7 @@ export function AdminUserCreateForm({ roles }: { roles: RoleOption[] }) {
     <Card>
       <CardHeader>
         <CardTitle>إنشاء حساب جديد</CardTitle>
-        <CardDescription>متاح لحساب Super Admin فقط. يتم إنشاء البريد وكلمة المرور يدويًا بدون إرسال SMTP.</CardDescription>
+        <CardDescription>متاح لمدير النظام فقط. يتم إنشاء البريد وكلمة المرور يدويًا بدون إرسال SMTP.</CardDescription>
       </CardHeader>
       <CardContent>
         <form className="grid gap-4" onSubmit={createUser}>
@@ -116,7 +117,7 @@ export function AdminUserCreateForm({ roles }: { roles: RoleOption[] }) {
             <Select disabled={isBusy} label="الدور" name="roleId" required>
               {roles.map((role) => (
                 <option key={role.id} value={role.id}>
-                  {role.name}
+                  {roleDisplayLabel(role.name)}
                 </option>
               ))}
             </Select>
@@ -196,7 +197,7 @@ export function AdminUserActionPanel({ canChangePassword, user, roles }: { canCh
       <Card>
         <CardHeader>
           <CardTitle>إدارة المستخدم</CardTitle>
-          <CardDescription>تغيير الاسم والدور والحالة. لا يتم تعديل كلمة المرور أو البريد من هذه الشاشة في MVP.</CardDescription>
+          <CardDescription>تغيير الاسم والدور والحالة. لا يتم تعديل كلمة المرور أو البريد من هذه الشاشة.</CardDescription>
         </CardHeader>
         <CardContent>
           <form className="grid gap-4" onSubmit={saveUser}>
@@ -207,7 +208,7 @@ export function AdminUserActionPanel({ canChangePassword, user, roles }: { canCh
               <Select defaultValue={user.roleId} disabled={isBusy} label="الدور" name="roleId">
                 {roles.map((role) => (
                   <option key={role.id} value={role.id}>
-                    {role.name}
+                    {roleDisplayLabel(role.name)}
                   </option>
                 ))}
               </Select>
@@ -294,7 +295,7 @@ function AdminUserPasswordForm({ userId }: { userId: string }) {
     <Card>
       <CardHeader>
         <CardTitle>تغيير كلمة المرور</CardTitle>
-        <CardDescription>متاح لـ Super Admin فقط. لا يتم إرسال كلمة المرور بالبريد لأن SMTP مؤجل ومعطل.</CardDescription>
+        <CardDescription>متاح لمدير النظام فقط. لا يتم إرسال كلمة المرور بالبريد لأن SMTP غير مفعل في هذه النسخة.</CardDescription>
       </CardHeader>
       <CardContent>
         <form className="grid gap-4" onSubmit={changePassword}>
@@ -374,7 +375,7 @@ export function SecurityStaff2faSettingForm({ value }: { value: SettingValue }) 
     <StateBlock
       tone="permission"
       title="التحقق الثنائي للموظفين مؤجل"
-      description={`التحقق الثنائي للموظفين مؤجل في هذا الإصدار. الوضع الحالي: ${currentMode}. إعدادات TOTP والمطالبة بالكود وإعادة الضبط تظل معطلة حتى خطة Staff 2FA Rework القادمة.`}
+      description={`التحقق الثنائي للموظفين غير مفعل في هذا الإصدار. الوضع الحالي: ${currentMode}. إعدادات TOTP والمطالبة بالكود وإعادة الضبط تظل معطلة حتى خطة التحقق الثنائي للموظفين لاحقًا.`}
     />
   );
 }
@@ -434,8 +435,8 @@ export function EmailPolicySettingForm({ value }: { value: SettingValue }) {
   return (
     <StateBlock
       tone="permission"
-      title="SMTP مؤجل ومعطل"
-      description={`إعدادات SMTP موجودة في الخطة والمتغيرات، لكنها غير مفعلة في هذه النسخة. الوضع الحالي: ${String(value.mode ?? "disabled")}. لا توجد واجهة حفظ ولا إرسال بريد فعلي حتى يتم فتح خطة تفعيل SMTP لاحقًا.`}
+      title="SMTP غير مفعل"
+      description={`إعدادات SMTP موجودة في الخطة والمتغيرات، لكنها غير مفعلة في هذه النسخة. الوضع الحالي: ${technicalValueDisplayLabel(String(value.mode ?? "disabled"))}. لا توجد واجهة حفظ ولا إرسال بريد فعلي حتى يتم فتح خطة تفعيل SMTP لاحقًا.`}
     />
   );
 }

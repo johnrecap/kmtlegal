@@ -4,6 +4,7 @@ import { DashboardShell } from "@/components/layout";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
 import { AdminUserActionPanel } from "@/features/admin/governance/governance-forms";
 import { formatDateTime } from "@/lib/legal-format";
+import { roleDisplayLabel } from "@/lib/ui-copy";
 import { canChangeAdminUserPassword, canManageAdminUsers, getAdminUserDetail, getAdminUserOptions } from "@/server/admin/governance-service";
 import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../../admin-navigation";
@@ -25,8 +26,16 @@ function statusTone(status: string) {
   return "pending" as const;
 }
 
+function userStatusLabel(status: string) {
+  return { INVITED: "مدعو", ACTIVE: "نشط", SUSPENDED: "موقوف", DELETED: "محذوف" }[status] ?? status;
+}
+
+function sessionStatusLabel(status: string) {
+  return { ACTIVE: "نشطة", REVOKED: "منتهية يدويًا", EXPIRED: "منتهية" }[status] ?? status;
+}
+
 const sessionColumns: Array<DataTableColumn<SessionRow>> = [
-  { key: "status", header: "الحالة", render: (row) => <Badge tone={statusTone(row.status)}>{row.status}</Badge> },
+  { key: "status", header: "الحالة", render: (row) => <Badge tone={statusTone(row.status)}>{sessionStatusLabel(row.status)}</Badge> },
   { key: "created", header: "بدأت", render: (row) => formatDateTime(row.createdAt) },
   { key: "expires", header: "تنتهي", render: (row) => formatDateTime(row.expiresAt) },
   { key: "ip", header: "IP", render: (row) => row.ipAddress ?? "غير مسجل" }
@@ -51,7 +60,7 @@ function SessionMobileCard({ row }: { row: SessionRow }) {
   return (
     <DataRecordCard
       title="جلسة دخول"
-      badges={<Badge tone={statusTone(row.status)}>{row.status}</Badge>}
+      badges={<Badge tone={statusTone(row.status)}>{sessionStatusLabel(row.status)}</Badge>}
       fields={[
         { label: "بدأت", value: formatDateTime(row.createdAt) },
         { label: "تنتهي", value: formatDateTime(row.expiresAt) },
@@ -110,14 +119,14 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
             <Card>
               <CardHeader>
                 <CardTitle>الدور</CardTitle>
-                <CardDescription>{user.role.name}</CardDescription>
+                <CardDescription>{roleDisplayLabel(user.role.name)}</CardDescription>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader>
                 <CardTitle>الحالة</CardTitle>
                 <CardDescription>
-                  <Badge tone={statusTone(user.status)}>{user.status}</Badge>
+                  <Badge tone={statusTone(user.status)}>{userStatusLabel(user.status)}</Badge>
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -134,7 +143,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
           <Card>
             <CardHeader>
               <CardTitle>الصلاحيات</CardTitle>
-              <CardDescription>الصلاحيات الحالية موروثة من الدور، ولا يتم تعديلها فرديًا في MVP.</CardDescription>
+              <CardDescription>الصلاحيات الحالية موروثة من الدور، ولا يتم تعديلها فرديًا من هذه الشاشة.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">

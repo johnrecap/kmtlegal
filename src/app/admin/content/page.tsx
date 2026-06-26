@@ -15,6 +15,7 @@ import {
   socialPlatformValues
 } from "@/lib/legal-content";
 import { formatDateTime, labelFrom } from "@/lib/legal-format";
+import { sourceTypeDisplayLabel } from "@/lib/ui-copy";
 import {
   canAccessContentHub,
   canApproveArticles,
@@ -101,13 +102,6 @@ function typeLabel(type: ContentRow["type"]) {
   return "سوشيال";
 }
 
-function sourceTypeLabel(value?: string | null) {
-  if (!value || value === "manual") {
-    return "يدوي";
-  }
-  return value;
-}
-
 function statusLabel(type: ContentRow["type"], status: string) {
   if (type === "article") return labelFrom(articleStatusLabels, status);
   if (type === "caseStudy") return labelFrom(caseStudyStatusLabels, status);
@@ -147,7 +141,7 @@ function rowsFor(result: HubResult, query: Record<string, string>): ContentRow[]
       type: "social",
       title: draft.title,
       status: draft.status,
-      meta: `${labelFrom(socialPlatformLabels, draft.platform)} · ${sourceTypeLabel(draft.sourceType)}`,
+      meta: `${labelFrom(socialPlatformLabels, draft.platform)} · ${sourceTypeDisplayLabel(draft.sourceType)}`,
       owner: draft.approvedBy?.name ?? draft.createdBy.name,
       updatedAt: draft.updatedAt,
       href: editHref("social", "social", draft.id, query)
@@ -446,7 +440,7 @@ export default async function AdminContentPage({ searchParams = {} }: { searchPa
                 <CardTitle>
                   {editArticle || editCaseStudy || editSocialDraft ? "تعديل المحتوى" : activeTab === "case-studies" ? "دراسة حالة جديدة" : activeTab === "social" ? "مسودة سوشيال جديدة" : "مقال جديد"}
                 </CardTitle>
-                <CardDescription>النشر والاعتماد داخليان فقط. لا يوجد نشر خارجي تلقائي على منصات السوشيال في MVP.</CardDescription>
+                <CardDescription>النشر والاعتماد داخليان فقط. لا يوجد نشر خارجي تلقائي على منصات السوشيال في هذه النسخة.</CardDescription>
               </CardHeader>
               <CardContent>
                 {activeTab === "case-studies" || editCaseStudy ? (

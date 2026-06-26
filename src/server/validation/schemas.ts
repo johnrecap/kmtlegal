@@ -23,7 +23,7 @@ export function validationDetailsFromIssues(issues: z.ZodIssue[]): ApiErrorDetai
 export function parseWithSchema<TSchema extends z.ZodTypeAny>(
   schema: TSchema,
   value: unknown,
-  message = "Request validation failed."
+  message = "البيانات المرسلة غير مكتملة أو غير صحيحة."
 ): z.infer<TSchema> {
   const result = schema.safeParse(value);
   if (!result.success) {
@@ -36,7 +36,7 @@ export function parseWithSchema<TSchema extends z.ZodTypeAny>(
 export async function parseJsonRequest<TSchema extends z.ZodTypeAny>(
   request: Request,
   schema: TSchema,
-  message = "Request body validation failed."
+  message = "بيانات الطلب غير مكتملة أو غير صحيحة."
 ): Promise<z.infer<TSchema>> {
   const body = await request.json().catch(() => null);
   return parseWithSchema(schema, body, message);
@@ -45,7 +45,7 @@ export async function parseJsonRequest<TSchema extends z.ZodTypeAny>(
 export function parseQueryParams<TSchema extends z.ZodTypeAny>(
   request: Request,
   schema: TSchema,
-  message = "Query validation failed."
+  message = "فلاتر الطلب غير صحيحة."
 ): z.infer<TSchema> {
   const url = new URL(request.url);
   const params = Object.fromEntries(url.searchParams.entries());

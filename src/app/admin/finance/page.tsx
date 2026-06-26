@@ -364,7 +364,7 @@ export default async function AdminFinancePage({ searchParams = {} }: { searchPa
             <CardHeader>
               <CardTitle>{editPayment ? "تعديل فاتورة" : "فاتورة يدوية جديدة"}</CardTitle>
               <CardDescription>
-                سجلات مالية يدوية فقط للـMVP. لا يوجد payment gateway أو ضرائب أو line items في هذه المرحلة.
+                سجلات مالية يدوية للمتابعة الداخلية. لا توجد بوابة دفع أو ضرائب أو بنود تفصيلية في هذه المرحلة.
               </CardDescription>
             </CardHeader>
             <CardContent>

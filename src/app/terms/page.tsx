@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <PublicShell navItems={navForPath("/terms")}>
-      <PublicSection eyebrow="الشروط" title="تنبيهات استخدام الموقع" description="هذه الصفحة توضح حدود المحتوى العام ونماذج التواصل في مرحلة MVP.">
+      <PublicSection eyebrow="الشروط" title="تنبيهات استخدام الموقع" description="هذه الصفحة توضح حدود المحتوى العام ونماذج التواصل، وما يمكن الاعتماد عليه قبل مراجعة فريق المكتب.">
         <div className="rounded-lg border border-kmt-border bg-white p-6 text-sm leading-8 text-kmt-muted">
           <h2 className="text-xl font-semibold text-kmt-ink">لا توجد استشارة نهائية عبر الموقع</h2>
           <p className="mt-3">المحتوى العام ونماذج الطلب لا تمثل استشارة قانونية نهائية ولا تنشئ علاقة محاماة قبل قبول المكتب للملف.</p>

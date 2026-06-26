@@ -187,7 +187,7 @@ describe("admin governance contract", () => {
 
     expect(dto.event.label).toBe("تم إنشاء فاتورة");
     expect(dto.event.category).toBe("المالية");
-    expect(dto.actor).toEqual({ name: "ahmed", role: "Super Admin" });
+    expect(dto.actor).toEqual({ name: "ahmed", role: "مدير النظام" });
     expect(dto.summary).toContain("تم إنشاء فاتورة");
     expect(dto.details).toContainEqual({ label: "رقم الفاتورة", value: "INV-2026-0004" });
     expect(JSON.stringify(dto.details)).not.toContain("clientId");

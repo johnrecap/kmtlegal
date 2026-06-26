@@ -5,6 +5,7 @@ import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Selec
 import { buttonClasses } from "@/components/ui/button";
 import { AdminUserCreateForm } from "@/features/admin/governance/governance-forms";
 import { formatDateTime } from "@/lib/legal-format";
+import { roleDisplayLabel } from "@/lib/ui-copy";
 import { canCreateAdminUsers, canManageAdminUsers, getAdminUserOptions, listAdminUsers } from "@/server/admin/governance-service";
 import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../admin-navigation";
@@ -64,7 +65,7 @@ const columns: Array<DataTableColumn<UserRow>> = [
       </div>
     )
   },
-  { key: "role", header: "الدور", render: (row) => row.role.name },
+  { key: "role", header: "الدور", render: (row) => roleDisplayLabel(row.role.name) },
   { key: "status", header: "الحالة", render: (row) => <Badge tone={statusTone(row.status)}>{userStatusLabel(row.status)}</Badge> },
   {
     key: "counts",
@@ -98,7 +99,7 @@ function UserMobileCard({ row }: { row: UserRow }) {
       description={row.email}
       badges={<Badge tone={statusTone(row.status)}>{userStatusLabel(row.status)}</Badge>}
       fields={[
-        { label: "الدور", value: row.role.name },
+        { label: "الدور", value: roleDisplayLabel(row.role.name) },
         {
           label: "النشاط",
           value: `${row._count.sessions} جلسة · ${row._count.auditLogs} حدث تدقيق · ${row._count.assignedTasks} مهمة`
@@ -121,7 +122,7 @@ export default async function AdminUsersPage({ searchParams = {} }: { searchPara
   }
 
   if (!canManageAdminUsers(guard.context.principal)) {
-    return <PermissionBlocked title="غير مسموح بإدارة المستخدمين" description="هذا المسار مخصص لحسابات Super Admin أو أي دور يملك صلاحية user.manage.any." />;
+    return <PermissionBlocked title="غير مسموح بإدارة المستخدمين" description="هذا المسار مخصص لمدير النظام أو أي دور يملك صلاحية إدارة المستخدمين." />;
   }
 
   const query = flattenSearchParams(searchParams);
@@ -149,7 +150,7 @@ export default async function AdminUsersPage({ searchParams = {} }: { searchPara
               <option value="">كل الأدوار</option>
               {options.roles.map((role) => (
                 <option key={role.id} value={role.id}>
-                  {role.name}
+                  {roleDisplayLabel(role.name)}
                 </option>
               ))}
             </Select>

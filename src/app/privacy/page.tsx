@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <PublicShell navItems={navForPath("/privacy")}>
-      <PublicSection eyebrow="الخصوصية" title="كيف نتعامل مع بياناتك" description="هذه صياغة MVP واضحة لشرح حدود استخدام البيانات، ويجب مراجعتها قانونيًا قبل الإطلاق النهائي.">
+      <PublicSection eyebrow="الخصوصية" title="كيف نتعامل مع بياناتك" description="هذه الصفحة توضح حدود استخدام البيانات داخل خدمات التواصل والاستشارة، وتحتاج مراجعة قانونية دورية حسب سياسات المكتب.">
         <div className="rounded-lg border border-kmt-border bg-white p-6 text-sm leading-8 text-kmt-muted">
           <h2 className="text-xl font-semibold text-kmt-ink">البيانات التي نستقبلها</h2>
           <p className="mt-3">قد نستقبل الاسم، رقم الهاتف، البريد الإلكتروني، المدينة، ملخص الطلب، وطريقة التواصل المفضلة عند إرسال نموذج استشارة أو تواصل.</p>

@@ -26,11 +26,11 @@ import { AIOrganizerPanel, DocumentCard, ServiceCard, TaskCard } from "@/compone
 export type ProductSystemScreen = "dashboard" | "clients" | "cases" | "documents" | "settings";
 
 const screenMeta: Record<ProductSystemScreen, { eyebrow: string; title: string }> = {
-  dashboard: { eyebrow: "Product System", title: "نظام واجهة KMT Legal" },
-  clients: { eyebrow: "Clients CRM", title: "إدارة العملاء" },
-  cases: { eyebrow: "Cases Operations", title: "إدارة القضايا والجلسات" },
-  documents: { eyebrow: "Documents", title: "إدارة المستندات" },
-  settings: { eyebrow: "Governance", title: "الإعدادات والحوكمة" }
+  dashboard: { eyebrow: "نظام الواجهة", title: "نظام واجهة KMT Legal" },
+  clients: { eyebrow: "CRM العملاء", title: "إدارة العملاء" },
+  cases: { eyebrow: "تشغيل القضايا", title: "إدارة القضايا والجلسات" },
+  documents: { eyebrow: "المستندات", title: "إدارة المستندات" },
+  settings: { eyebrow: "الحوكمة", title: "الإعدادات والحوكمة" }
 };
 
 const navConfig = [
@@ -133,8 +133,8 @@ const documentRows = [
 
 const auditRows = [
   { id: "audit-001", action: "تغيير صلاحية", actor: "سارة - مدير المكتب", target: "مستخدم التسويق", time: "اليوم 12:05 م" },
-  { id: "audit-002", action: "تأكيد تأجيل 2FA", actor: "Super Admin", target: "تسجيل دخول الموظفين", time: "أمس 05:42 م" },
-  { id: "audit-003", action: "مراجعة تعطيل SMTP", actor: "Super Admin", target: "إشعارات البريد مؤجلة", time: "18 يونيو" }
+  { id: "audit-002", action: "تأكيد تأجيل 2FA", actor: "مدير النظام", target: "تسجيل دخول الموظفين", time: "أمس 05:42 م" },
+  { id: "audit-003", action: "مراجعة تعطيل SMTP", actor: "مدير النظام", target: "إشعارات البريد مؤجلة", time: "18 يونيو" }
 ];
 
 function statusBadge(status: string) {
@@ -388,7 +388,7 @@ function DocumentsScreen() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className="text-kmt-title text-kmt-ink">مكتبة المستندات</h2>
-              <p className="mt-1 text-sm leading-6 text-kmt-muted">تمثيل للـdocument management قبل تنفيذ upload/download authorization في PLAN-07.</p>
+              <p className="mt-1 text-sm leading-6 text-kmt-muted">تمثيل لإدارة المستندات قبل تنفيذ صلاحيات الرفع والتنزيل في PLAN-07.</p>
             </div>
             <Button leadingIcon={<MaterialSymbol className="text-[18px]" name="upload_file" />}>رفع مستند</Button>
           </div>
@@ -459,7 +459,7 @@ function SettingsScreen() {
               <option value="openai-compatible">OpenAI-compatible</option>
               <option value="local">Local / Custom Adapter</option>
             </Select>
-            <TextInput hint="يستخدم داخل السيرفر فقط ولا يظهر للعميل." label="AI Model" name="aiModel" placeholder="provider/model-name" />
+            <TextInput hint="يستخدم داخل السيرفر فقط ولا يظهر للعميل." label="نموذج الذكاء الاصطناعي" name="aiModel" placeholder="provider/model-name" />
             <StateBlock
               description="خاصية SMTP موجودة في متغيرات البيئة والخطط فقط، لكنها مؤجلة ومعطلة بدون واجهة حفظ أو إرسال فعلي في هذه النسخة."
               title="SMTP مؤجل ومعطل"
@@ -474,7 +474,7 @@ function SettingsScreen() {
         </Card>
 
         <div className="space-y-4">
-          <Toast description="TOTP مؤجل في PLAN-25، وتسجيل دخول الموظفين يتم بكلمة مرور فقط حتى خطة Staff 2FA Rework." title="حكم أمني" tone="warning" />
+          <Toast description="TOTP مؤجل في PLAN-25، وتسجيل دخول الموظفين يتم بكلمة مرور فقط حتى خطة إعادة تفعيل التحقق الثنائي للموظفين." title="حكم أمني" tone="warning" />
           <StateBlock description="هذه الصفحة تعرض شكل الحوكمة فقط. تنفيذ الصلاحيات الحقيقي يبدأ في PLAN-05 وPLAN-18." title="لا توجد صلاحيات متصلة بعد" tone="permission" />
         </div>
       </section>

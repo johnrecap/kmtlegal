@@ -2,6 +2,7 @@
 
 import { type FormEvent, useEffect, useState } from "react";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, TextInput } from "@/components/ui";
+import { booleanDisplayLabel, localizeApiMessage } from "@/lib/ui-copy";
 
 type InstallerStatus = {
   enabled: boolean;
@@ -39,18 +40,18 @@ const hostingModes: Array<{
 }> = [
   {
     value: "terminal-vps",
-    title: "Terminal VPS",
-    description: "Fresh Ubuntu/Debian VPS with sudo/root. Uses the full server installer."
+    title: "خادم VPS عبر الطرفية",
+    description: "خادم Ubuntu/Debian جديد بصلاحية sudo أو root، ويستخدم سكربت التثبيت الكامل."
   },
   {
     value: "aapanel",
     title: "aaPanel",
-    description: "Panel-managed VPS. Domain, SSL, database, and reverse proxy stay in aaPanel."
+    description: "خادم VPS مُدار من اللوحة. النطاق وSSL وقاعدة البيانات والـreverse proxy تظل داخل aaPanel."
   },
   {
     value: "cpanel",
     title: "cPanel",
-    description: "Only compatible accounts with Node.js App, PostgreSQL, command runner, and private storage."
+    description: "يصلح فقط للحسابات التي توفر Node.js App وPostgreSQL ومشغل أوامر وتخزين خاص."
   }
 ];
 
@@ -88,7 +89,7 @@ export function InstallWizard({ initialToken }: InstallWizardProps) {
     });
     const payload = (await response.json().catch(() => ({}))) as ApiResponse<T>;
     if (!response.ok) {
-      throw new Error(payload.error?.message ?? "Installer request failed.");
+      throw new Error(localizeApiMessage(payload.error?.message ?? "Installer request failed."));
     }
     return payload.data as T;
   }
@@ -103,9 +104,9 @@ export function InstallWizard({ initialToken }: InstallWizardProps) {
       });
       setChecks(result.checks);
       setStatus(result.status);
-      setMessage(result.ready ? "Preflight passed. Create the first Super Admin." : "Preflight found items that must be fixed for this hosting mode.");
+      setMessage(result.ready ? "فحص الجاهزية سليم. يمكنك إنشاء حساب مدير النظام الأول." : "فحص الجاهزية وجد عناصر يجب إصلاحها قبل المتابعة.");
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Preflight failed.");
+      setError(caught instanceof Error ? caught.message : "تعذر تشغيل فحص الجاهزية.");
     } finally {
       setIsBusy(false);
     }
@@ -123,13 +124,13 @@ export function InstallWizard({ initialToken }: InstallWizardProps) {
     const confirmPassword = textValue(formData, "confirmPassword");
 
     if (password.length < MIN_PASSWORD_LENGTH) {
-      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      setError(`كلمة المرور يجب ألا تقل عن ${MIN_PASSWORD_LENGTH} أحرف.`);
       setIsBusy(false);
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("Password confirmation does not match.");
+      setError("تأكيد كلمة المرور غير مطابق.");
       setIsBusy(false);
       return;
     }
@@ -151,11 +152,11 @@ export function InstallWizard({ initialToken }: InstallWizardProps) {
       });
 
       setSuperAdminEmail(result.user.email);
-      setMessage("First Super Admin was created. Close the installer now.");
+      setMessage("تم إنشاء حساب مدير النظام الأول. اقفل معالج التثبيت الآن.");
       form.reset();
       await refreshStatus();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Bootstrap failed.");
+      setError(caught instanceof Error ? caught.message : "تعذر إنشاء حساب المدير الأول.");
     } finally {
       setIsBusy(false);
     }
@@ -168,10 +169,10 @@ export function InstallWizard({ initialToken }: InstallWizardProps) {
     try {
       await apiPost("/api/install/finish");
       setIsFinished(true);
-      setMessage("Installer is locked. Disable INSTALLER_ENABLED on the VPS and sign in.");
+      setMessage("تم قفل معالج التثبيت. عطّل INSTALLER_ENABLED على الخادم ثم سجل الدخول.");
       await refreshStatus();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Could not lock the installer.");
+      setError(caught instanceof Error ? caught.message : "تعذر قفل معالج التثبيت.");
     } finally {
       setIsBusy(false);
     }
@@ -183,9 +184,9 @@ export function InstallWizard({ initialToken }: InstallWizardProps) {
     <div className="mx-auto min-h-screen max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-8 max-w-3xl">
         <p className="text-sm font-semibold uppercase tracking-wide text-kmt-gold">KMT Legal Installer</p>
-        <h1 className="mt-3 text-3xl font-semibold text-kmt-ink">Hosting setup wizard</h1>
+        <h1 className="mt-3 text-3xl font-semibold text-kmt-ink">معالج تهيئة الاستضافة</h1>
         <p className="mt-3 text-base leading-8 text-kmt-muted">
-          Choose the hosting panel first, then run preflight before creating the first Super Admin. TOTP and SMTP are disabled in this release.
+          اختر نوع الاستضافة أولًا، ثم شغّل فحص الجاهزية قبل إنشاء حساب مدير النظام الأول. التحقق الثنائي وSMTP غير مفعلين في هذه النسخة.
         </p>
       </div>
 
@@ -193,8 +194,8 @@ export function InstallWizard({ initialToken }: InstallWizardProps) {
         <div className="space-y-5">
           <Card>
             <CardHeader>
-              <CardTitle>1. Hosting mode</CardTitle>
-              <CardDescription>Select the panel or terminal path that matches this server.</CardDescription>
+              <CardTitle>1. نوع الاستضافة</CardTitle>
+              <CardDescription>اختر المسار الذي يطابق طريقة تشغيل هذا الخادم.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-3">
@@ -227,46 +228,46 @@ export function InstallWizard({ initialToken }: InstallWizardProps) {
 
           <Card>
             <CardHeader>
-              <CardTitle>2. Setup token</CardTitle>
-              <CardDescription>The install script prints this token once. Keep it private.</CardDescription>
+              <CardTitle>2. رمز التثبيت</CardTitle>
+              <CardDescription>سكربت التثبيت يعرض هذا الرمز مرة واحدة فقط. احتفظ به بشكل خاص.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <TextInput
                 autoComplete="off"
-                label="Installer setup token"
+                label="رمز إعداد التثبيت"
                 name="token"
                 onChange={(event) => setToken(event.target.value)}
-                placeholder="Paste setup token"
+                placeholder="الصق رمز التثبيت"
                 value={token}
               />
               <Button disabled={!token || isBusy} loading={isBusy} onClick={runPreflight} type="button">
-                Run preflight
+                تشغيل فحص الجاهزية
               </Button>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
-              <CardTitle>3. Office and first Super Admin</CardTitle>
-              <CardDescription>Create the first account only once. No TOTP setup is required.</CardDescription>
+              <CardTitle>3. بيانات المكتب ومدير النظام الأول</CardTitle>
+              <CardDescription>يتم إنشاء الحساب الأول مرة واحدة فقط. لا توجد خطوة TOTP في هذه النسخة.</CardDescription>
             </CardHeader>
             <CardContent>
               <form className="grid gap-4" onSubmit={bootstrap}>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <TextInput disabled={isBusy || Boolean(blockedReason)} label="Office name" name="firmName" required />
-                  <TextInput disabled={isBusy || Boolean(blockedReason)} label="Public office email" name="publicEmail" type="email" />
+                  <TextInput disabled={isBusy || Boolean(blockedReason)} label="اسم المكتب" name="firmName" required />
+                  <TextInput disabled={isBusy || Boolean(blockedReason)} label="البريد العام للمكتب" name="publicEmail" type="email" />
                 </div>
-                <TextInput disabled={isBusy || Boolean(blockedReason)} label="Public phone" name="publicPhone" />
+                <TextInput disabled={isBusy || Boolean(blockedReason)} label="الهاتف العام" name="publicPhone" />
                 <div className="grid gap-4 md:grid-cols-2">
-                  <TextInput disabled={isBusy || Boolean(blockedReason)} label="Super Admin name" name="adminName" required />
-                  <TextInput disabled={isBusy || Boolean(blockedReason)} label="Super Admin email" name="adminEmail" required type="email" />
+                  <TextInput disabled={isBusy || Boolean(blockedReason)} label="اسم مدير النظام" name="adminName" required />
+                  <TextInput disabled={isBusy || Boolean(blockedReason)} label="بريد مدير النظام" name="adminEmail" required type="email" />
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <TextInput autoComplete="new-password" disabled={isBusy || Boolean(blockedReason)} label="Password" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
-                  <TextInput autoComplete="new-password" disabled={isBusy || Boolean(blockedReason)} label="Confirm password" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
+                  <TextInput autoComplete="new-password" disabled={isBusy || Boolean(blockedReason)} label="كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
+                  <TextInput autoComplete="new-password" disabled={isBusy || Boolean(blockedReason)} label="تأكيد كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
                 </div>
                 <Button disabled={isBusy || Boolean(blockedReason)} loading={isBusy} type="submit">
-                  Create first Super Admin
+                  إنشاء مدير النظام الأول
                 </Button>
               </form>
             </CardContent>
@@ -274,14 +275,14 @@ export function InstallWizard({ initialToken }: InstallWizardProps) {
 
           <Card>
             <CardHeader>
-              <CardTitle>4. Lock installer</CardTitle>
-              <CardDescription>After the Super Admin is created, lock the installer before using the dashboard.</CardDescription>
+              <CardTitle>4. قفل معالج التثبيت</CardTitle>
+              <CardDescription>بعد إنشاء مدير النظام، اقفل معالج التثبيت قبل استخدام لوحة المكتب.</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-wrap items-center gap-3">
               <Button disabled={isBusy || (!superAdminEmail && !status?.hasActiveSuperAdmin) || isFinished} loading={isBusy} onClick={finish} type="button" variant="secondary">
-                Lock installer
+                قفل معالج التثبيت
               </Button>
-              {superAdminEmail ? <span className="text-sm text-kmt-muted">Created: {superAdminEmail}</span> : null}
+              {superAdminEmail ? <span className="text-sm text-kmt-muted">تم إنشاء الحساب: <span className="ltr inline-block">{superAdminEmail}</span></span> : null}
             </CardContent>
           </Card>
         </div>
@@ -303,12 +304,12 @@ function ModePanel({ hostingMode }: { hostingMode: HostingMode }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Selected path</CardTitle>
+        <CardTitle>المسار المحدد</CardTitle>
         <CardDescription>{mode.title}</CardDescription>
       </CardHeader>
       <CardContent className="text-sm leading-6 text-kmt-muted">
         {hostingMode === "cpanel"
-          ? "cPanel must pass every hard requirement before setup: Node.js App, PostgreSQL, command runner, env vars, persistent process, and private uploads outside public_html."
+          ? "يجب أن ينجح cPanel في كل متطلبات التشغيل قبل الإعداد: Node.js App وPostgreSQL ومشغل الأوامر ومتغيرات البيئة وتشغيل دائم وتخزين خاص خارج public_html."
           : mode.description}
       </CardContent>
     </Card>
@@ -319,13 +320,13 @@ function StatusPanel({ blockedReason, status }: { blockedReason: string | null; 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Installer status</CardTitle>
-        <CardDescription>{blockedReason ?? "Ready for setup when preflight passes."}</CardDescription>
+        <CardTitle>حالة معالج التثبيت</CardTitle>
+        <CardDescription>{blockedReason ? localizeApiMessage(blockedReason) : "جاهز للإعداد بعد نجاح فحص الجاهزية."}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-2 text-sm text-kmt-muted">
-        <StatusRow label="Enabled" value={status?.enabled} />
-        <StatusRow label="Locked" value={status?.locked} />
-        <StatusRow label="Active Super Admin" value={status?.hasActiveSuperAdmin} />
+        <StatusRow label="مفعل" value={status?.enabled} />
+        <StatusRow label="مغلق" value={status?.locked} />
+        <StatusRow label="يوجد مدير نظام نشط" value={status?.hasActiveSuperAdmin} />
       </CardContent>
     </Card>
   );
@@ -335,15 +336,15 @@ function ChecksPanel({ checks }: { checks: PreflightCheck[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Preflight checks</CardTitle>
-        <CardDescription>Fix failed checks in the selected hosting environment, then run preflight again.</CardDescription>
+        <CardTitle>فحوصات الجاهزية</CardTitle>
+        <CardDescription>أصلح الفحوصات غير الناجحة في بيئة الاستضافة المحددة، ثم شغّل الفحص مرة أخرى.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-2">
-        {checks.length === 0 ? <p className="text-sm text-kmt-muted">No checks have run yet.</p> : null}
+        {checks.length === 0 ? <p className="text-sm text-kmt-muted">لم يتم تشغيل أي فحص بعد.</p> : null}
         {checks.map((check) => (
           <div key={check.id} className="flex items-center justify-between gap-3 rounded border border-kmt-border px-3 py-2 text-sm">
-            <span>{check.label}</span>
-            <span className={check.ok ? "font-semibold text-emerald-700" : "font-semibold text-kmt-danger"}>{check.ok ? "OK" : "Fix"}</span>
+            <span>{localizeApiMessage(check.label)}</span>
+            <span className={check.ok ? "font-semibold text-emerald-700" : "font-semibold text-kmt-danger"}>{check.ok ? "سليم" : "يحتاج إصلاح"}</span>
           </div>
         ))}
       </CardContent>
@@ -355,7 +356,7 @@ function StatusRow({ label, value }: { label: string; value?: boolean }) {
   return (
     <div className="flex items-center justify-between gap-3">
       <span>{label}</span>
-      <span className="font-semibold text-kmt-ink">{value === undefined ? "Unknown" : value ? "Yes" : "No"}</span>
+      <span className="font-semibold text-kmt-ink">{booleanDisplayLabel(value)}</span>
     </div>
   );
 }

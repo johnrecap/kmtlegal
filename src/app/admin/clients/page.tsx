@@ -5,6 +5,7 @@ import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Selec
 import { buttonClasses } from "@/components/ui/button";
 import { ClientCreateForm } from "@/features/admin/clients/client-crm-forms";
 import { clientStatusLabels, formatDateTime, labelFrom } from "@/lib/legal-format";
+import { commonUiCopy, sourceTypeDisplayLabel } from "@/lib/ui-copy";
 import {
   canListAdminClients,
   getAdminClientFilterOptions,
@@ -44,12 +45,9 @@ function clientStatusTone(status: string) {
 
 function sourceLabel(source?: string | null) {
   if (!source) {
-    return "غير محدد";
+    return commonUiCopy.unknown;
   }
-  if (source === "manual") {
-    return "يدوي";
-  }
-  return source;
+  return sourceTypeDisplayLabel(source);
 }
 
 function listHref(filters: {

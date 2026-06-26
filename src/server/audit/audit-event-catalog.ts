@@ -12,6 +12,7 @@ import {
   taskStatusLabels
 } from "@/lib/legal-format";
 import { articleStatusLabels, caseStudyStatusLabels, socialDraftStatusLabels, socialPlatformLabels } from "@/lib/legal-content";
+import { roleDisplayLabel } from "@/lib/ui-copy";
 
 export type AuditSeverity = "عادي" | "مهم" | "حساس";
 export type AuditCategory = "الأمان" | "العملاء" | "القضايا" | "المواعيد" | "المستندات" | "المهام" | "المالية" | "المحتوى" | "الإدارة" | "النظام";
@@ -185,7 +186,7 @@ export function toAdminAuditLogDto(row: AuditLogPresentationRow): AdminAuditLogD
   return {
     id: row.id,
     occurredAt: new Date(row.createdAt).toISOString(),
-    actor: row.actor ? { name: row.actor.name, role: row.actor.role.name } : null,
+    actor: row.actor ? { name: row.actor.name, role: roleDisplayLabel(row.actor.role.name) } : null,
     event: {
       code: row.action,
       label: definition.label,
@@ -242,7 +243,7 @@ function auditDetails(resourceType: string, metadata: Record<string, unknown>) {
   addDetail(details, "الإعداد", settingValue(metadata.key));
   addDetail(details, "طريقة التحقق", methodValue(metadata.method));
   addDetail(details, "طريقة التسليم", deliveryValue(metadata.delivery));
-  addDetail(details, "الدور", stringValue(metadata.role ?? metadata.targetRole));
+  addDetail(details, "الدور", roleValue(metadata.role ?? metadata.targetRole));
   addDetail(details, "نوع الموعد", labelValue(appointmentTypeLabels, metadata.type));
   addDetail(details, "طريقة الموعد", labelValue(modeLabels, metadata.mode));
   addDetail(details, "المنصة", labelValue(socialPlatformLabels, metadata.platform));
@@ -380,6 +381,11 @@ function settingValue(value: unknown) {
 function settingLabel(value: unknown) {
   const key = stringValue(value);
   return key ? settingLabels[key] ?? key : "إعدادات النظام";
+}
+
+function roleValue(value: unknown) {
+  const role = stringValue(value);
+  return role ? roleDisplayLabel(role) : null;
 }
 
 function moneyValue(amount: unknown, currency: unknown) {

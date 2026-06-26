@@ -49,7 +49,7 @@ export class MemoryRateLimiter {
 export function enforceRateLimit(limiter: MemoryRateLimiter, key: string) {
   const result = limiter.check(key);
   if (!result.allowed) {
-    throw new RateLimitApiError("Too many requests. Try again later.");
+    throw new RateLimitApiError("تم إرسال طلبات كثيرة. حاول مرة أخرى بعد قليل.");
   }
   return result;
 }

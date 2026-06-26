@@ -14,6 +14,7 @@ import {
   socialPlatformValues
 } from "@/lib/legal-content";
 import { labelFrom } from "@/lib/legal-format";
+import { sourceTypeDisplayLabel } from "@/lib/ui-copy";
 
 type ApiMessage = {
   error?: {
@@ -404,7 +405,7 @@ export function AiSocialDraftForm() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <input name="sourceType" type="hidden" value="manual" />
-        <TextInput defaultValue="يدوي" disabled label="نوع المصدر" name="sourceTypeDisplay" />
+        <TextInput defaultValue={sourceTypeDisplayLabel("manual")} disabled label="نوع المصدر" name="sourceTypeDisplay" />
         <TextInput disabled={isBusy} label="معرف المصدر" name="sourceId" />
       </div>
       <Textarea className="min-h-32" disabled={isBusy} label="المادة الخام للمسودة" name="sourceText" required />

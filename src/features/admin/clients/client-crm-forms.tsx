@@ -14,6 +14,7 @@ import {
   TextInput,
   Textarea
 } from "@/components/ui";
+import { sourceTypeDisplayLabel } from "@/lib/ui-copy";
 
 type LawyerOption = {
   id: string;
@@ -118,7 +119,7 @@ export function ClientCreateForm({ lawyers }: { lawyers: LawyerOption[] }) {
             <TextInput label="المدينة" name="city" />
             <div>
               <input name="source" type="hidden" value="manual" />
-              <TextInput defaultValue="يدوي" disabled label="المصدر" name="sourceDisplay" />
+              <TextInput defaultValue={sourceTypeDisplayLabel("manual")} disabled label="المصدر" name="sourceDisplay" />
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -237,7 +238,14 @@ export function ClientActionPanel({
             <TextInput defaultValue={client.phone} disabled={isBusy} label="الهاتف" name="phone" required />
             <TextInput defaultValue={client.email ?? ""} disabled={isBusy} label="البريد الإلكتروني" name="email" type="email" />
             <TextInput defaultValue={client.city ?? ""} disabled={isBusy} label="المدينة" name="city" />
-            <TextInput defaultValue={client.source ?? ""} disabled={isBusy} label="المصدر" name="source" />
+            {client.source === "manual" ? (
+              <div>
+                <input name="source" type="hidden" value="manual" />
+                <TextInput defaultValue={sourceTypeDisplayLabel(client.source)} disabled label="المصدر" name="sourceDisplay" />
+              </div>
+            ) : (
+              <TextInput defaultValue={client.source ?? ""} disabled={isBusy} label="المصدر" name="source" />
+            )}
             <Select defaultValue={client.status} disabled={isBusy} label="الحالة" name="status">
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
