@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { appendAuditLog } from "@/server/audit/audit-service";
+import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { canReadCase, hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
@@ -423,7 +423,7 @@ export async function updateAdminCaseStatus(input: { actor: Principal; caseId: s
     }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "case.status_update",
     resourceType: "LegalCase",
@@ -482,7 +482,7 @@ export async function createAdminCaseSession(input: { actor: Principal; caseId: 
     });
   }
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "case.session_create",
     resourceType: "CaseSession",
@@ -542,7 +542,7 @@ export async function createAdminCalendarAppointment(input: { actor: Principal; 
     }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "calendar.appointment_create",
     resourceType: "Appointment",
@@ -601,7 +601,7 @@ export async function rescheduleAdminCalendarAppointment(input: {
     }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "calendar.appointment_reschedule",
     resourceType: "Appointment",

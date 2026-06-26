@@ -80,6 +80,7 @@ const resourceLabels: Record<string, string> = {
   CaseSession: "جلسة قضية",
   CaseStudy: "دراسة حالة",
   Client: "عميل",
+  ContactMessage: "رسالة تواصل",
   ConsultationRequest: "طلب استشارة",
   Document: "مستند",
   LegalCase: "قضية",
@@ -96,6 +97,19 @@ const settingLabels: Record<string, string> = {
   "office.profile": "بيانات المكتب",
   "security.staff2fa": "حوكمة التحقق الثنائي",
   "storage.policy": "سياسة التخزين"
+};
+
+const contactMessageStatusLabels: Record<string, string> = {
+  NEW: "جديدة",
+  REVIEWED: "تمت مراجعتها",
+  ARCHIVED: "مؤرشفة"
+};
+
+const contactTopicLabels: Record<string, string> = {
+  consultation: "استشارة",
+  documents: "مستندات",
+  media: "إعلام",
+  other: "أخرى"
 };
 
 const auditEventDefinitions: Record<string, AuditEventDefinition> = {
@@ -124,6 +138,9 @@ const auditEventDefinitions: Record<string, AuditEventDefinition> = {
   "client.assign": { label: "تم تغيير المحامي المسؤول", category: "العملاء", severity: "مهم", summary: () => "تم تحديث التكليف المسؤول عن ملف عميل." },
   "client.create": { label: "تم إنشاء عميل", category: "العملاء", severity: "عادي", summary: () => "تم إنشاء ملف عميل جديد." },
   "client.update": { label: "تم تعديل عميل", category: "العملاء", severity: "عادي", summary: ({ metadata }) => statusSummary("تم تعديل ملف عميل", "Client", metadata) },
+
+  "contact.message_create": { label: "تم استقبال رسالة تواصل", category: "العملاء", severity: "عادي", summary: () => "تم استقبال رسالة تواصل من الموقع." },
+  "contact.message_update": { label: "تم تحديث رسالة تواصل", category: "الإدارة", severity: "عادي", summary: ({ metadata }) => statusSummary("تم تحديث حالة رسالة تواصل", "ContactMessage", metadata) },
 
   "consultation.assign": { label: "تم إسناد استشارة", category: "العملاء", severity: "عادي", summary: () => "تم إسناد طلب استشارة إلى مسؤول." },
   "consultation.convert_to_case": { label: "تم تحويل استشارة إلى قضية", category: "القضايا", severity: "مهم", summary: () => "تم تحويل طلب استشارة إلى ملف قضية." },
@@ -221,6 +238,7 @@ function auditDetails(resourceType: string, metadata: Record<string, unknown>) {
   addDetail(details, "القيمة", moneyValue(metadata.amount, metadata.currency));
   addStatusDetail(details, resourceType, metadata);
   addDetail(details, "المصدر", stringValue(metadata.source));
+  addDetail(details, "الموضوع", contactTopicValue(metadata.topic));
   addDetail(details, "الإعداد", settingValue(metadata.key));
   addDetail(details, "طريقة التحقق", methodValue(metadata.method));
   addDetail(details, "طريقة التسليم", deliveryValue(metadata.delivery));
@@ -305,6 +323,8 @@ function statusLabelsForResource(resourceType: string): Record<string, string> |
       return caseStudyStatusLabels;
     case "Client":
       return clientStatusLabels;
+    case "ContactMessage":
+      return contactMessageStatusLabels;
     case "Document":
       return documentStatusLabels;
     case "LegalCase":
@@ -323,6 +343,11 @@ function statusLabelsForResource(resourceType: string): Record<string, string> |
 function labelValue(labels: Record<string, string>, value: unknown) {
   const raw = stringValue(value);
   return raw ? labelFrom(labels, raw) : null;
+}
+
+function contactTopicValue(value: unknown) {
+  const raw = stringValue(value);
+  return raw ? labelFrom(contactTopicLabels, raw) : null;
 }
 
 function methodValue(value: unknown) {

@@ -31,7 +31,7 @@
 
 - Public content exposes only published/anonymized static data.
 - Case studies include disclaimers and no client identifiers.
-- Contact submissions are validated and rate-limited. Email delivery is deferred; the email helper returns disabled metadata without sending.
+- Contact submissions are validated, rate-limited, persisted as `ContactMessage`, and return a safe reference. SMTP/email delivery remains deferred.
 - Public GET APIs use cache-friendly headers.
 
 ## Tests
@@ -42,4 +42,4 @@
 ## Still Open
 
 - Legal/privacy copy should receive final legal review before production release.
-- Contact submissions are email-only because the MVP schema has no ContactMessage model.
+- Admin UI for reviewing `ContactMessage` entries can be added on top of the implemented admin read/status API.

@@ -255,6 +255,14 @@ describe("security, privacy, upload, and observability hardening", () => {
 
   it("does not fall back to a dev database URL at production runtime", () => {
     expect(() => getDatabaseUrl({ APP_ENV: "production", NODE_ENV: "production" })).toThrow("DATABASE_URL");
-    expect(getDatabaseUrl({ APP_ENV: "production", NODE_ENV: "production", npm_lifecycle_event: "build" })).toContain("localhost");
+    expect(() => getDatabaseUrl({ APP_ENV: "production", NODE_ENV: "production", npm_lifecycle_event: "build" })).toThrow("DATABASE_URL");
+    expect(
+      getDatabaseUrl({
+        APP_ENV: "production",
+        NODE_ENV: "production",
+        npm_lifecycle_event: "build",
+        ALLOW_BUILD_WITHOUT_DATABASE_URL: "true"
+      })
+    ).toContain("localhost");
   });
 });

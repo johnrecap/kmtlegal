@@ -234,6 +234,12 @@ enum AnalyticsEventOutcome {
   FAILURE
 }
 
+enum ContactMessageStatus {
+  NEW
+  REVIEWED
+  ARCHIVED
+}
+
 model Role {
   id          String           @id @default(uuid()) @db.Uuid
   name        String           @unique
@@ -270,42 +276,43 @@ model RolePermission {
 }
 
 model User {
-  id                     String                    @id @default(uuid()) @db.Uuid
-  name                   String
-  email                  String                    @unique
-  phone                  String?
-  passwordHash           String?
-  roleId                 String                    @db.Uuid
-  role                   Role                      @relation(fields: [roleId], references: [id])
-  status                 UserStatus                @default(INVITED)
-  locale                 String                    @default("ar")
-  clientProfile          Client?                   @relation("ClientUser")
-  lawyerProfile          LawyerProfile?
-  sessions               Session[]                 @relation("UserSessions")
-  assignedClients        Client[]                  @relation("AssignedLawyerClients")
-  assignedConsultations  ConsultationRequest[]     @relation("AssignedLawyerConsultations")
-  lawyerAppointments     Appointment[]             @relation("AppointmentLawyer")
-  assignedCases          LegalCase[]               @relation("AssignedCaseLawyer")
-  createdCaseSessions    CaseSession[]             @relation("CaseSessionCreator")
-  uploadedDocuments      Document[]                @relation("DocumentUploader")
-  assignedTasks          Task[]                    @relation("TaskAssignee")
-  createdTasks           Task[]                    @relation("TaskCreator")
-  internalNotes          InternalNote[]            @relation("InternalNoteAuthor")
-  createdPayments        Payment[]                 @relation("PaymentCreator")
-  twoFactorCredential    StaffTwoFactorCredential?
-  emailOtpChallenges     EmailOtpChallenge[]
-  emailMessages          EmailMessage[]
-  aiProviderRuns         AiProviderRun[]
-  articles               Article[]                 @relation("ArticleAuthor")
-  approvedCaseStudies    CaseStudy[]               @relation("CaseStudyApprover")
-  createdSocialDrafts    SocialPostDraft[]         @relation("SocialDraftCreator")
-  approvedSocialDrafts   SocialPostDraft[]         @relation("SocialDraftApprover")
-  notifications          Notification[]
-  auditLogs              AuditLog[]                @relation("AuditActor")
-  updatedSettings        SystemSetting[]           @relation("SystemSettingUpdater")
-  createdAt              DateTime                  @default(now())
-  updatedAt              DateTime                  @updatedAt
-  deletedAt              DateTime?
+  id                      String                    @id @default(uuid()) @db.Uuid
+  name                    String
+  email                   String                    @unique
+  phone                   String?
+  passwordHash            String?
+  roleId                  String                    @db.Uuid
+  role                    Role                      @relation(fields: [roleId], references: [id])
+  status                  UserStatus                @default(INVITED)
+  locale                  String                    @default("ar")
+  clientProfile           Client?                   @relation("ClientUser")
+  lawyerProfile           LawyerProfile?
+  sessions                Session[]                 @relation("UserSessions")
+  assignedClients         Client[]                  @relation("AssignedLawyerClients")
+  assignedConsultations   ConsultationRequest[]     @relation("AssignedLawyerConsultations")
+  lawyerAppointments      Appointment[]             @relation("AppointmentLawyer")
+  assignedCases           LegalCase[]               @relation("AssignedCaseLawyer")
+  createdCaseSessions     CaseSession[]             @relation("CaseSessionCreator")
+  uploadedDocuments       Document[]                @relation("DocumentUploader")
+  assignedTasks           Task[]                    @relation("TaskAssignee")
+  createdTasks            Task[]                    @relation("TaskCreator")
+  internalNotes           InternalNote[]            @relation("InternalNoteAuthor")
+  createdPayments         Payment[]                 @relation("PaymentCreator")
+  twoFactorCredential     StaffTwoFactorCredential?
+  emailOtpChallenges      EmailOtpChallenge[]
+  emailMessages           EmailMessage[]
+  aiProviderRuns          AiProviderRun[]
+  articles                Article[]                 @relation("ArticleAuthor")
+  approvedCaseStudies     CaseStudy[]               @relation("CaseStudyApprover")
+  createdSocialDrafts     SocialPostDraft[]         @relation("SocialDraftCreator")
+  approvedSocialDrafts    SocialPostDraft[]         @relation("SocialDraftApprover")
+  notifications           Notification[]
+  auditLogs               AuditLog[]                @relation("AuditActor")
+  updatedSettings         SystemSetting[]           @relation("SystemSettingUpdater")
+  reviewedContactMessages ContactMessage[]          @relation("ContactMessageReviewer")
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  deletedAt               DateTime?
 
   @@index([phone])
   @@index([roleId])
@@ -314,21 +321,21 @@ model User {
 }
 
 model Session {
-  id                  String        @id @default(uuid()) @db.Uuid
-  userId              String        @db.Uuid
-  user                User          @relation("UserSessions", fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash           String        @unique
-  status              SessionStatus @default(PENDING_2FA)
-  twoFactorVerifiedAt DateTime?
-  twoFactorAttemptCount Int         @default(0)
+  id                    String        @id @default(uuid()) @db.Uuid
+  userId                String        @db.Uuid
+  user                  User          @relation("UserSessions", fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash             String        @unique
+  status                SessionStatus @default(PENDING_2FA)
+  twoFactorVerifiedAt   DateTime?
+  twoFactorAttemptCount Int           @default(0)
   twoFactorLockedUntil  DateTime?
   lastTwoFactorFailedAt DateTime?
-  expiresAt           DateTime
-  revokedAt           DateTime?
-  ipAddress           String?
-  userAgent           String?
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  expiresAt             DateTime
+  revokedAt             DateTime?
+  ipAddress             String?
+  userAgent             String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
 
   @@index([userId, status])
   @@index([expiresAt])
@@ -342,6 +349,7 @@ model Client {
   user                 User?                 @relation("ClientUser", fields: [userId], references: [id], onDelete: SetNull)
   fullName             String
   phone                String
+  phoneCanonical       String?
   email                String?
   city                 String?
   source               String?
@@ -402,27 +410,28 @@ model LegalService {
 }
 
 model ConsultationRequest {
-  id                 String             @id @default(uuid()) @db.Uuid
-  clientId           String?            @db.Uuid
-  client             Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  fullName           String
-  phone              String
-  email              String?
-  city               String?
-  serviceCategory    String
-  summary            String
-  opposingPartyName  String?
-  urgency            Urgency            @default(NORMAL)
-  preferredMode      ConsultationMode
-  status             ConsultationStatus @default(NEW)
-  aiClassification   Json?
-  aiSummary          String?
-  assignedLawyerId   String?            @db.Uuid
-  assignedLawyer     User?              @relation("AssignedLawyerConsultations", fields: [assignedLawyerId], references: [id], onDelete: SetNull)
-  convertedCase      LegalCase?
-  appointments       Appointment[]
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
+  id                String             @id @default(uuid()) @db.Uuid
+  clientId          String?            @db.Uuid
+  client            Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  fullName          String
+  phone             String
+  phoneCanonical    String?
+  email             String?
+  city              String?
+  serviceCategory   String
+  summary           String
+  opposingPartyName String?
+  urgency           Urgency            @default(NORMAL)
+  preferredMode     ConsultationMode
+  status            ConsultationStatus @default(NEW)
+  aiClassification  Json?
+  aiSummary         String?
+  assignedLawyerId  String?            @db.Uuid
+  assignedLawyer    User?              @relation("AssignedLawyerConsultations", fields: [assignedLawyerId], references: [id], onDelete: SetNull)
+  convertedCase     LegalCase?
+  appointments      Appointment[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
   @@index([phone])
   @@index([status])
@@ -590,16 +599,16 @@ model Task {
 }
 
 model InternalNote {
-  id        String    @id @default(uuid()) @db.Uuid
-  caseId    String    @db.Uuid
-  case      LegalCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  authorId  String    @db.Uuid
-  author    User      @relation("InternalNoteAuthor", fields: [authorId], references: [id])
-  content   String
-  visibility String   @default("internal_only")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id         String    @id @default(uuid()) @db.Uuid
+  caseId     String    @db.Uuid
+  case       LegalCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  authorId   String    @db.Uuid
+  author     User      @relation("InternalNoteAuthor", fields: [authorId], references: [id])
+  content    String
+  visibility String    @default("internal_only")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
 
   @@index([caseId])
   @@index([authorId])
@@ -798,6 +807,30 @@ model Notification {
   @@index([createdAt])
   @@index([type])
   @@map("notifications")
+}
+
+model ContactMessage {
+  id             String               @id @default(uuid()) @db.Uuid
+  fullName       String
+  email          String
+  phone          String?
+  phoneCanonical String?
+  topic          String
+  message        String
+  status         ContactMessageStatus @default(NEW)
+  reviewedAt     DateTime?
+  reviewedById   String?              @db.Uuid
+  reviewedBy     User?                @relation("ContactMessageReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@index([status])
+  @@index([topic])
+  @@index([email])
+  @@index([phoneCanonical])
+  @@index([createdAt])
+  @@index([reviewedById])
+  @@map("contact_messages")
 }
 
 model AuditLog {

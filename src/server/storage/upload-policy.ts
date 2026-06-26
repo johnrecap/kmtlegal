@@ -1,6 +1,7 @@
 import { ApiError } from "@/server/http/errors";
 
 export const DEFAULT_MAX_UPLOAD_MB = 5;
+export const MULTIPART_CONTENT_LENGTH_OVERHEAD_BYTES = 512 * 1024;
 export const DEFAULT_ALLOWED_UPLOAD_TYPES = [
   "application/pdf",
   "application/msword",
@@ -57,7 +58,7 @@ export function assertMultipartContentLengthAllowed(contentLength: string | null
     throw new UploadValidationError(400, "VALIDATION_ERROR", "Invalid Content-Length header.");
   }
 
-  if (parsed > policy.maxBytes) {
+  if (parsed > policy.maxBytes + MULTIPART_CONTENT_LENGTH_OVERHEAD_BYTES) {
     throw new UploadValidationError(413, "FILE_TOO_LARGE", "Uploaded request exceeds the 5MB limit.");
   }
 }

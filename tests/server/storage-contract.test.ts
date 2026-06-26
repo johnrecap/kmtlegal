@@ -3,7 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { documentDownloadHeaders } from "@/server/storage/download-headers";
 import { generateDocumentFileKey } from "@/server/storage/file-keys";
-import { assertMultipartContentLengthAllowed, assertUploadAllowed } from "@/server/storage/upload-policy";
+import { assertMultipartContentLengthAllowed, assertUploadAllowed, MULTIPART_CONTENT_LENGTH_OVERHEAD_BYTES } from "@/server/storage/upload-policy";
 import { resolvePrivateFilePath, resolveUploadsRoot, StorageConfigError, StoragePathError } from "@/server/storage/vps-storage";
 import { canReadDocument } from "@/server/storage/document-service";
 
@@ -50,7 +50,8 @@ describe("document storage and upload contract", () => {
 
   it("rejects oversized multipart requests before reading form data", () => {
     expect(() => assertMultipartContentLengthAllowed(String(5 * 1024 * 1024))).not.toThrow();
-    expect(() => assertMultipartContentLengthAllowed(String(5 * 1024 * 1024 + 1))).toThrow("5MB");
+    expect(() => assertMultipartContentLengthAllowed(String(5 * 1024 * 1024 + 128 * 1024))).not.toThrow();
+    expect(() => assertMultipartContentLengthAllowed(String(5 * 1024 * 1024 + MULTIPART_CONTENT_LENGTH_OVERHEAD_BYTES + 1))).toThrow("5MB");
     expect(() => assertMultipartContentLengthAllowed("not-a-number")).toThrow("Content-Length");
   });
 

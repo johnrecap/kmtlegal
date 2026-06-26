@@ -1,49 +1,37 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { getIpAddress } from "@/server/auth/session-store";
-import { sendTemplatedEmail } from "@/server/email";
+import { createPublicContactMessage, publicContactMessageSchema } from "@/server/contact/contact-message-service";
 import { errorToResponse, getRequestId } from "@/server/http/errors";
+import { canonicalPhone } from "@/server/phone/phone-normalization";
 import { enforceRateLimit, rateLimiters } from "@/server/rate-limit/memory-rate-limit";
-import { emailSchema, parseJsonRequest } from "@/server/validation/schemas";
+import { parseJsonRequest } from "@/server/validation/schemas";
 
 export const dynamic = "force-dynamic";
-
-const contactRequestSchema = z.object({
-  fullName: z.string().trim().min(2).max(120),
-  email: emailSchema,
-  phone: z.string().trim().max(40).optional().or(z.literal("")),
-  topic: z.enum(["consultation", "documents", "media", "other"]),
-  message: z.string().trim().min(10).max(2000),
-  consent: z.literal(true)
-});
 
 export async function POST(request: Request) {
   const requestId = getRequestId(request);
 
   try {
-    const body = await parseJsonRequest(request, contactRequestSchema, "بيانات نموذج التواصل غير مكتملة.");
-    enforceRateLimit(rateLimiters.contact, `${body.email}:${getIpAddress(request) ?? "unknown"}`);
+    const body = await parseJsonRequest(request, publicContactMessageSchema, "بيانات نموذج التواصل غير مكتملة.");
+    enforceRateLimit(rateLimiters.contact, `${body.email}:${canonicalPhone(body.phone) ?? "no-phone"}:${getIpAddress(request) ?? "unknown"}`);
 
-    await sendTemplatedEmail({
-      to: { email: process.env.SMTP_FROM || "contact@kmtlegal.com" },
-      templateKey: "staff_notification",
-      data: {
-        title: `رسالة تواصل جديدة من ${body.fullName}`,
-        summary: `الموضوع: ${body.topic}\nالبريد: ${body.email}\nالهاتف: ${body.phone || "غير مذكور"}\n\n${body.message}`
-      }
+    const message = await createPublicContactMessage({
+      body,
+      request,
+      requestId
     });
 
     return NextResponse.json(
       {
-        status: "received",
+        data: message,
         requestId
       },
       {
-        status: 202,
+        status: 201,
         headers: { "Cache-Control": "no-store" }
       }
     );
   } catch (error) {
-    return errorToResponse(error, requestId);
+    return errorToResponse(error, requestId, { routeGroup: "public.contact", method: "POST" });
   }
 }

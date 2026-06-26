@@ -1,12 +1,12 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { appendAuditLog } from "@/server/audit/audit-service";
-import { getIpAddress, getUserAgent } from "@/server/auth/session-store";
+import { appendAuditLog, appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
 import { captureAnalyticsEventBestEffort } from "@/server/observability/analytics-service";
 import { toPagination } from "@/server/http/pagination";
+import { canonicalPhone } from "@/server/phone/phone-normalization";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
 
 const consultationStatusSchema = z.enum(["NEW", "REVIEWING", "SCHEDULED", "REJECTED", "CONVERTED"]);
@@ -222,7 +222,7 @@ export async function assignConsultation(input: { actor: Principal; consultation
     }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "consultation.assign",
     resourceType: "ConsultationRequest",
@@ -257,7 +257,7 @@ export async function rejectConsultation(input: { actor: Principal; consultation
     data: { status: "REJECTED" }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "consultation.reject",
     resourceType: "ConsultationRequest",
@@ -310,6 +310,7 @@ export async function convertConsultationToCase(input: { actor: Principal; consu
             data: {
               fullName: consultation.fullName,
               phone: consultation.phone,
+              phoneCanonical: canonicalPhone(consultation.phone),
               email: consultation.email,
               city: consultation.city,
               status: "ACTIVE",
@@ -360,21 +361,20 @@ export async function convertConsultationToCase(input: { actor: Principal; consu
       }
     });
 
-    await tx.auditLog.create({
-      data: {
-        actorId: input.actor.id,
-        action: "consultation.convert_to_case",
-        resourceType: "ConsultationRequest",
-        resourceId: consultation.id,
-        metadata: {
-          clientId: client.id,
-          caseId: legalCase.id,
-          appointmentId: appointment?.id ?? null,
-          assignedLawyerId
-        },
-        ipAddress: input.request ? getIpAddress(input.request) : null,
-        userAgent: input.request ? getUserAgent(input.request) : null
-      }
+    await appendAuditLog({
+      client: tx,
+      actorId: input.actor.id,
+      action: "consultation.convert_to_case",
+      resourceType: "ConsultationRequest",
+      resourceId: consultation.id,
+      metadata: {
+        clientId: client.id,
+        caseId: legalCase.id,
+        appointmentId: appointment?.id ?? null,
+        assignedLawyerId
+      },
+      request: input.request,
+      requestId: input.requestId
     });
 
     return { client, legalCase, appointment, consultation: updatedConsultation };
@@ -408,12 +408,18 @@ async function upsertClientFromConsultation(
   },
   assignedLawyerId: string
 ) {
+  const phoneCanonical = canonicalPhone(consultation.phone);
+  const matchConditions: Prisma.ClientWhereInput[] = [{ phone: consultation.phone }];
+  if (phoneCanonical) {
+    matchConditions.unshift({ phoneCanonical });
+  }
+  if (consultation.email) {
+    matchConditions.push({ email: consultation.email });
+  }
+
   const existing = await tx.client.findFirst({
     where: {
-      OR: [
-        { phone: consultation.phone },
-        ...(consultation.email ? [{ email: consultation.email }] : [])
-      ]
+      OR: matchConditions
     }
   });
 
@@ -423,6 +429,7 @@ async function upsertClientFromConsultation(
       data: {
         fullName: consultation.fullName,
         phone: consultation.phone,
+        phoneCanonical,
         email: consultation.email,
         city: consultation.city,
         status: "ACTIVE",
@@ -435,6 +442,7 @@ async function upsertClientFromConsultation(
     data: {
       fullName: consultation.fullName,
       phone: consultation.phone,
+      phoneCanonical,
       email: consultation.email,
       city: consultation.city,
       source: "consultation",

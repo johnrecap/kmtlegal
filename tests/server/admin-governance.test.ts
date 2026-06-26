@@ -196,5 +196,7 @@ describe("admin governance contract", () => {
     expect(dto).not.toHaveProperty("metadata");
     expect(auditActionOptionLabel("finance.payment_create")).toBe("تم إنشاء فاتورة");
     expect(auditResourceLabel("Payment")).toBe("فاتورة");
+    expect(auditActionOptionLabel("contact.message_create")).toBe("تم استقبال رسالة تواصل");
+    expect(auditResourceLabel("ContactMessage")).toBe("رسالة تواصل");
   });
 });

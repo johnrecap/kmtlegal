@@ -4,7 +4,7 @@ import { articleStatusValues, caseStudyStatusValues, socialDraftStatusValues, so
 import { AI_REVIEW_DISCLAIMER } from "@/server/ai/copy";
 import { generateStructured } from "@/server/ai/gateway";
 import { socialPostDraftOutputSchema } from "@/server/ai/schemas";
-import { appendAuditLog } from "@/server/audit/audit-service";
+import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
@@ -622,7 +622,7 @@ export async function createAdminArticle(input: { actor: Principal; body: unknow
       include: { author: { select: { id: true, name: true, email: true } } }
     });
 
-    await appendAuditLog({
+    await appendAuditLogBestEffort({
       actorId: input.actor.id,
       action: "content.article_create",
       resourceType: "Article",
@@ -653,7 +653,7 @@ export async function updateAdminArticle(input: { actor: Principal; articleId: s
       include: { author: { select: { id: true, name: true, email: true } } }
     });
 
-    await appendAuditLog({
+    await appendAuditLogBestEffort({
       actorId: input.actor.id,
       action: "content.article_update",
       resourceType: "Article",
@@ -678,7 +678,7 @@ export async function createAdminCaseStudy(input: { actor: Principal; body: unkn
       include: { approvedBy: { select: { id: true, name: true, email: true } } }
     });
 
-    await appendAuditLog({
+    await appendAuditLogBestEffort({
       actorId: input.actor.id,
       action: "content.case_study_create",
       resourceType: "CaseStudy",
@@ -709,7 +709,7 @@ export async function updateAdminCaseStudy(input: { actor: Principal; caseStudyI
       include: { approvedBy: { select: { id: true, name: true, email: true } } }
     });
 
-    await appendAuditLog({
+    await appendAuditLogBestEffort({
       actorId: input.actor.id,
       action: "content.case_study_update",
       resourceType: "CaseStudy",
@@ -736,7 +736,7 @@ export async function createAdminSocialDraft(input: { actor: Principal; body: un
     }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "content.social_draft_create",
     resourceType: "SocialPostDraft",
@@ -766,7 +766,7 @@ export async function updateAdminSocialDraft(input: { actor: Principal; draftId:
     }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "content.social_draft_update",
     resourceType: "SocialPostDraft",
@@ -821,7 +821,7 @@ export async function createAiSocialDraft(input: { actor: Principal; body: unkno
     }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "content.social_draft_ai_create",
     resourceType: "SocialPostDraft",

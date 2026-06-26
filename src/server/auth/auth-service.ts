@@ -1,10 +1,11 @@
 import { prisma } from "@/server/db/prisma";
 import { sendTemplatedEmail } from "@/server/email/email-service";
+import { appendAuditLog, auditLogCreateData } from "@/server/audit/audit-service";
 import { verifyPassword } from "./password";
 import { hasPermission } from "./policy";
 import { openSealedSecret } from "./secret";
 import { hashSessionToken, SESSION_COOKIE_NAME } from "./session";
-import { safeUser, createSessionForUser, getAuthContextFromRequest, getIpAddress, getUserAgent, type AuthContext } from "./session-store";
+import { safeUser, createSessionForUser, getAuthContextFromRequest, type AuthContext } from "./session-store";
 import {
   EMAIL_OTP_MAX_ATTEMPTS,
   EMAIL_OTP_PURPOSE,
@@ -55,31 +56,25 @@ export async function loginWithPassword({
   });
 
   if (!user || user.status !== "ACTIVE" || !verifyPassword(password, user.passwordHash)) {
-    await prisma.auditLog.create({
-      data: {
-        actorId: user?.id,
-        action: "auth.login_failed",
-        resourceType: "User",
-        resourceId: user?.id,
-        metadata: { reason: "invalid_credentials" },
-        ipAddress: getIpAddress(request),
-        userAgent: getUserAgent(request)
-      }
+    await appendAuditLog({
+      actorId: user?.id,
+      action: "auth.login_failed",
+      resourceType: "User",
+      resourceId: user?.id,
+      metadata: { reason: "invalid_credentials" },
+      request
     });
     return null;
   }
 
   const { token, session } = await createSessionForUser(user, request);
-  await prisma.auditLog.create({
-    data: {
-      actorId: user.id,
-      action: session.status === "PENDING_2FA" ? "auth.login_password_verified_pending_2fa" : "auth.login_success",
-      resourceType: "Session",
-      resourceId: session.id,
-      metadata: { role: user.role.name },
-      ipAddress: getIpAddress(request),
-      userAgent: getUserAgent(request)
-    }
+  await appendAuditLog({
+    actorId: user.id,
+    action: session.status === "PENDING_2FA" ? "auth.login_password_verified_pending_2fa" : "auth.login_success",
+    resourceType: "Session",
+    resourceId: session.id,
+    metadata: { role: user.role.name },
+    request
   });
 
   if (session.status === "PENDING_2FA") {
@@ -152,15 +147,14 @@ export async function verifyPendingTotp(request: Request, code: string) {
       data: { lastVerifiedAt: now }
     }),
     prisma.auditLog.create({
-      data: {
+      data: auditLogCreateData({
         actorId: context.user.id,
         action: "auth.2fa_totp_verified",
         resourceType: "Session",
         resourceId: context.sessionId,
         metadata: { method: "totp" },
-        ipAddress: getIpAddress(request),
-        userAgent: getUserAgent(request)
-      }
+        request
+      })
     })
   ]);
 
@@ -206,16 +200,13 @@ export async function sendEmailOtpForPendingSession(request: Request) {
     }
   });
 
-  await prisma.auditLog.create({
-    data: {
-      actorId: context.user.id,
-      action: "auth.2fa_email_otp_created",
-      resourceType: "Session",
-      resourceId: context.sessionId,
-      metadata: { delivery: "queued" },
-      ipAddress: getIpAddress(request),
-      userAgent: getUserAgent(request)
-    }
+  await appendAuditLog({
+    actorId: context.user.id,
+    action: "auth.2fa_email_otp_created",
+    resourceType: "Session",
+    resourceId: context.sessionId,
+    metadata: { delivery: "queued" },
+    request
   });
 
   return {
@@ -283,15 +274,14 @@ export async function verifyEmailOtpForPendingSession(request: Request, otp: str
       }
     }),
     prisma.auditLog.create({
-      data: {
+      data: auditLogCreateData({
         actorId: context.user.id,
         action: "auth.2fa_email_otp_verified",
         resourceType: "Session",
         resourceId: context.sessionId,
         metadata: { method: "email_otp" },
-        ipAddress: getIpAddress(request),
-        userAgent: getUserAgent(request)
-      }
+        request
+      })
     })
   ]);
 
@@ -326,7 +316,7 @@ function recordTwoFactorFailureOperation(
       }
     }),
     prisma.auditLog.create({
-      data: {
+      data: auditLogCreateData({
         actorId: context.user.id,
         action: method === "totp" ? "auth.2fa_totp_failed" : "auth.2fa_email_otp_failed",
         resourceType: "Session",
@@ -337,9 +327,8 @@ function recordTwoFactorFailureOperation(
           attemptCount: nextAttemptCount,
           locked: Boolean(lockedUntil)
         },
-        ipAddress: getIpAddress(request),
-        userAgent: getUserAgent(request)
-      }
+        request
+      })
     })
   ]);
 }
@@ -350,16 +339,13 @@ async function auditTwoFactorFailure(
   method: "totp" | "email_otp",
   reason: string
 ) {
-  await prisma.auditLog.create({
-    data: {
-      actorId: context.user.id,
-      action: method === "totp" ? "auth.2fa_totp_failed" : "auth.2fa_email_otp_failed",
-      resourceType: "Session",
-      resourceId: context.sessionId,
-      metadata: { method, reason, locked: true },
-      ipAddress: getIpAddress(request),
-      userAgent: getUserAgent(request)
-    }
+  await appendAuditLog({
+    actorId: context.user.id,
+    action: method === "totp" ? "auth.2fa_totp_failed" : "auth.2fa_email_otp_failed",
+    resourceType: "Session",
+    resourceId: context.sessionId,
+    metadata: { method, reason, locked: true },
+    request
   });
 }
 
@@ -394,16 +380,13 @@ export async function resetStaffTwoFactor(request: Request, targetUserId: string
     }
   });
 
-  await prisma.auditLog.create({
-    data: {
-      actorId: context.user.id,
-      action: "auth.2fa_reset",
-      resourceType: "User",
-      resourceId: target.id,
-      metadata: { targetRole: target.role.name, credentialId: credential.id },
-      ipAddress: getIpAddress(request),
-      userAgent: getUserAgent(request)
-    }
+  await appendAuditLog({
+    actorId: context.user.id,
+    action: "auth.2fa_reset",
+    resourceType: "User",
+    resourceId: target.id,
+    metadata: { targetRole: target.role.name, credentialId: credential.id },
+    request
   });
 
   return { targetUserId: target.id, recoveryState: credential.recoveryState };

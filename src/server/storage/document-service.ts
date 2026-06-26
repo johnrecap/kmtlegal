@@ -2,13 +2,13 @@ import { z } from "zod";
 import { prisma } from "@/server/db/prisma";
 import { hasPermission, type Principal } from "@/server/auth/policy";
 import { ApiError } from "@/server/http/errors";
-import { appendAuditLog } from "@/server/audit/audit-service";
+import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
 import { captureAnalyticsEventBestEffort, fileSizeBucket, safeFileType } from "@/server/observability/analytics-service";
 import { generateDocumentFileKey } from "./file-keys";
 import { documentDownloadHeaders } from "./download-headers";
 import { assertUploadAllowed } from "./upload-policy";
-import { readPrivateFile, savePrivateFile } from "./vps-storage";
+import { deletePrivateFileBestEffort, readPrivateFile, savePrivateFile } from "./vps-storage";
 
 export const documentCategorySchema = z.enum(["CONTRACT", "COURT_FILE", "IDENTITY", "EVIDENCE", "PAYMENT", "OTHER"]);
 export const documentVisibilitySchema = z.enum(["CLIENT_VISIBLE", "STAFF_ONLY", "INTERNAL_ONLY"]);
@@ -54,21 +54,26 @@ export async function uploadDocument(input: {
 
   await savePrivateFile({ fileKey, bytes: input.file.bytes });
 
-  const document = await prisma.document.create({
-    data: {
-      ownerClientId,
-      caseId: fields.caseId ?? null,
-      uploadedById: input.actor.id,
-      fileName: input.file.fileName,
-      fileKey,
-      fileType: input.file.mimeType,
-      fileSize: input.file.sizeBytes,
-      category: fields.category,
-      visibility: fields.visibility ?? (ownerClientId ? "CLIENT_VISIBLE" : "STAFF_ONLY")
-    }
-  });
+  const document = await prisma.document
+    .create({
+      data: {
+        ownerClientId,
+        caseId: fields.caseId ?? null,
+        uploadedById: input.actor.id,
+        fileName: input.file.fileName,
+        fileKey,
+        fileType: input.file.mimeType,
+        fileSize: input.file.sizeBytes,
+        category: fields.category,
+        visibility: fields.visibility ?? (ownerClientId ? "CLIENT_VISIBLE" : "STAFF_ONLY")
+      }
+    })
+    .catch(async (error: unknown) => {
+      await deletePrivateFileBestEffort({ fileKey, requestId: input.requestId });
+      throw error;
+    });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "document.upload",
     resourceType: "Document",
@@ -82,7 +87,8 @@ export async function uploadDocument(input: {
       ownerClientId: document.ownerClientId,
       caseId: document.caseId
     },
-    request: input.request
+    request: input.request,
+    requestId: input.requestId
   });
 
   captureAnalyticsEventBestEffort({
@@ -191,7 +197,7 @@ export async function getAuthorizedDocumentDownload(input: { actor: Principal; d
 
   const bytes = await readPrivateFile({ fileKey: document.fileKey });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "document.download",
     resourceType: "Document",

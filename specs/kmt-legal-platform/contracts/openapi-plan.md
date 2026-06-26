@@ -91,7 +91,7 @@ PLAN-26 installer preflight must reject unsupported panel environments before bu
 | GET | `/api/public/articles/{slug}` | Article detail | Guest | public |
 | GET | `/api/public/case-studies` | Published anonymized studies | Guest | public |
 | GET | `/api/public/case-studies/{slug}` | Case study detail | Guest | public |
-| POST | `/api/public/contact` | Contact form submission | Guest | contact.create.public |
+| POST | `/api/public/contact` | Persist contact form submission and return `201 { data: { id, reference, status }, requestId }` | Guest | contact.create.public |
 | POST | `/api/public/consultations` | Create consultation request | Guest | consultation.create.public |
 
 ### Email
@@ -176,6 +176,8 @@ Portal MVP is server-rendered except implemented JSON routes. Current portal pag
 | GET | `/api/admin/settings` | Settings | Super Admin | settings.manage.any |
 | PATCH | `/api/admin/settings/{key}` | Update setting | Super Admin | settings.manage.any |
 | GET | `/api/admin/audit-log` | Audit search with client-friendly presentation DTO | Super Admin | audit.read.any |
+| GET | `/api/admin/contact-messages` | Contact message review queue | Staff | contact.read.any |
+| PATCH | `/api/admin/contact-messages/{messageId}` | Mark contact message reviewed or archived | Staff | contact.manage.any |
 
 ### Finance and Reports
 | Method | Path | Purpose | Auth | Permission |

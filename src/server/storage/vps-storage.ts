@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { ApiError } from "@/server/http/errors";
+import { safeLog } from "@/server/observability/safe-log";
 
 export class StorageConfigError extends ApiError {
   constructor(message: string) {
@@ -63,4 +64,16 @@ export async function savePrivateFile(input: { fileKey: string; bytes: Buffer; u
 export async function readPrivateFile(input: { fileKey: string; uploadRoot?: string }) {
   const targetPath = resolvePrivateFilePath(input.fileKey, input.uploadRoot);
   return fs.readFile(targetPath);
+}
+
+export async function deletePrivateFileBestEffort(input: { fileKey: string; uploadRoot?: string; requestId?: string }) {
+  try {
+    const targetPath = resolvePrivateFilePath(input.fileKey, input.uploadRoot);
+    await fs.rm(targetPath, { force: true });
+  } catch {
+    safeLog("warn", "storage.delete_failed", {
+      requestId: input.requestId ?? null,
+      fileKey: input.fileKey
+    });
+  }
 }

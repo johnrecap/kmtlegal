@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { appendAuditLog } from "@/server/audit/audit-service";
+import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
@@ -376,7 +376,7 @@ export async function createAdminTask(input: { actor: Principal; body: unknown; 
     }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "task.create",
     resourceType: "Task",
@@ -427,7 +427,7 @@ export async function updateAdminTask(input: { actor: Principal; taskId: string;
     }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "task.update",
     resourceType: "Task",
@@ -555,7 +555,7 @@ export async function updateAdminDocument(input: { actor: Principal; documentId:
     }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: body.status === "DELETED" ? "document.delete" : "document.update",
     resourceType: "Document",
@@ -588,7 +588,7 @@ export async function deleteAdminDocument(input: { actor: Principal; documentId:
     data: { status: "DELETED", deletedAt: new Date() }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "document.delete",
     resourceType: "Document",

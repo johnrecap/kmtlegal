@@ -14,6 +14,8 @@ Date: 2026-06-25
 - [ ] `npm run test:e2e:smoke`
 - [ ] `npm run security:secrets`
 
+If local build runs without a real `DATABASE_URL`, use `ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build` for local-only validation. Production/server builds must load the real production `DATABASE_URL` instead.
+
 Equivalent local shortcut:
 
 ```bash
@@ -62,6 +64,7 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 - [ ] Installer preflight/bootstrap/finish require setup token and lock after first Super Admin.
 - [ ] Finance invoice/payment basics create/update and client own payment view.
 - [ ] Content/case-study approval gate prevents premature publishing.
+- [ ] Public contact submission persists a `ContactMessage`, returns a safe reference, and can be read/marked reviewed through admin API.
 
 ## PLAN-27 Live Site QA Gates
 
@@ -77,6 +80,7 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 - [ ] Login required-field and invalid-credential errors are visible, accessible, Arabic, and generic.
 - [ ] Booking success shows reference and safe next steps only; no internal AI/mock placeholder or raw enum labels render publicly.
 - [ ] Contact success cannot be accidentally submitted again without a deliberate reset/new-message action.
+- [ ] Contact form still succeeds while `SMTP_ENABLED=false`; no raw message, email, or phone appears in audit metadata.
 - [ ] Mobile smoke passes for `/`, `/services`, `/contact`, and `/book-consultation`.
 - [ ] PLAN-27 live screenshots, console logs, and network evidence are archived.
 
@@ -130,6 +134,7 @@ npx playwright test tests/e2e/live-admin-smoke.spec.ts
 - [ ] VPS service runs in production mode, not `next dev`.
 - [ ] Nginx proxies to the app and TLS works.
 - [ ] PostgreSQL backup exists before migration.
+- [ ] Backup is taken before applying the `ContactMessage` and `phoneCanonical` migration.
 - [ ] Upload directory backup exists before release.
 - [ ] Rollback target is known.
 - [ ] Post-deploy smoke passes.

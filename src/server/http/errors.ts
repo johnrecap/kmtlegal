@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { safeLog } from "@/server/observability/safe-log";
 
 export type ApiErrorCode =
   | "BAD_REQUEST"
@@ -94,10 +95,23 @@ export function jsonOk<T>(data: T, init?: ResponseInit) {
   );
 }
 
-export function errorToResponse(error: unknown, requestId: string) {
+export function errorToResponse(
+  error: unknown,
+  requestId: string,
+  context: { routeGroup?: string; method?: string } = {}
+) {
   if (error instanceof ApiError) {
     return jsonError(error.status, error.code, error.message, requestId, error.details);
   }
+
+  safeLog("error", "api.unexpected_error", {
+    requestId,
+    routeGroup: context.routeGroup ?? null,
+    method: context.method ?? null,
+    status: 500,
+    code: "INTERNAL_ERROR",
+    errorName: error instanceof Error ? error.name : typeof error
+  });
 
   return jsonError(500, "INTERNAL_ERROR", "An unexpected server error occurred.", requestId);
 }

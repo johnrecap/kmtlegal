@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getIpAddress } from "@/server/auth/session-store";
 import { createPublicConsultation, publicConsultationRequestSchema } from "@/server/consultations/consultation-service";
 import { ApiError, errorToResponse, getRequestId } from "@/server/http/errors";
+import { canonicalPhone } from "@/server/phone/phone-normalization";
 import { enforceRateLimit, rateLimiters } from "@/server/rate-limit/memory-rate-limit";
 import { parseJsonRequest } from "@/server/validation/schemas";
 
@@ -12,7 +13,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await parseJsonRequest(request, publicConsultationRequestSchema, "بيانات طلب الاستشارة غير مكتملة.");
-    enforceRateLimit(rateLimiters.booking, `${body.phone}:${body.email || "no-email"}:${getIpAddress(request) ?? "unknown"}`);
+    enforceRateLimit(rateLimiters.booking, `${canonicalPhone(body.phone) ?? body.phone}:${body.email || "no-email"}:${getIpAddress(request) ?? "unknown"}`);
 
     try {
       const consultation = await createPublicConsultation({ body, request, requestId });
@@ -33,6 +34,6 @@ export async function POST(request: Request) {
       throw new ApiError(503, "SERVICE_UNAVAILABLE", "تعذر حفظ طلب الاستشارة الآن. تأكد من تشغيل قاعدة البيانات وحاول مرة أخرى.");
     }
   } catch (error) {
-    return errorToResponse(error, requestId);
+    return errorToResponse(error, requestId, { routeGroup: "public.consultations", method: "POST" });
   }
 }

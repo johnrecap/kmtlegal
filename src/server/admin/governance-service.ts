@@ -311,22 +311,23 @@ export async function createAdminUser(input: { actor: Principal; body: unknown; 
       }
     });
 
-    return created;
-  });
+    await appendAuditLog({
+      client: tx,
+      actorId: input.actor.id,
+      action: "user.create",
+      resourceType: "User",
+      resourceId: created.id,
+      metadata: {
+        role: created.role.name,
+        status: created.status,
+        locale: created.locale,
+        passwordSetBySuperAdmin: true,
+        emailDelivery: "disabled"
+      },
+      request: input.request
+    });
 
-  await appendAuditLog({
-    actorId: input.actor.id,
-    action: "user.create",
-    resourceType: "User",
-    resourceId: user.id,
-    metadata: {
-      role: user.role.name,
-      status: user.status,
-      locale: user.locale,
-      passwordSetBySuperAdmin: true,
-      emailDelivery: "disabled"
-    },
-    request: input.request
+    return created;
   });
 
   return user;
@@ -462,22 +463,23 @@ export async function updateAdminUser(input: { actor: Principal; userId: string;
       }
     });
 
-    return updated;
-  });
+    await appendAuditLog({
+      client: tx,
+      actorId: input.actor.id,
+      action: "user.update",
+      resourceType: "User",
+      resourceId: updated.id,
+      metadata: {
+        previousRole: existing.role.name,
+        role: updated.role.name,
+        previousStatus: existing.status,
+        status: updated.status,
+        locale: updated.locale
+      },
+      request: input.request
+    });
 
-  await appendAuditLog({
-    actorId: input.actor.id,
-    action: "user.update",
-    resourceType: "User",
-    resourceId: user.id,
-    metadata: {
-      previousRole: existing.role.name,
-      role: user.role.name,
-      previousStatus: existing.status,
-      status: user.status,
-      locale: user.locale
-    },
-    request: input.request
+    return updated;
   });
 
   return user;
@@ -504,38 +506,38 @@ export async function updateAdminUserPassword(input: {
   }
 
   const now = new Date();
-  await prisma.$transaction([
-    prisma.user.update({
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
       where: { id: existing.id },
       data: { passwordHash: hashPassword(body.password) }
-    }),
-    ...(body.revokeSessions
-      ? [
-          prisma.session.updateMany({
-            where: {
-              userId: existing.id,
-              revokedAt: null,
-              ...(input.actor.id === existing.id && input.actorSessionId ? { id: { not: input.actorSessionId } } : {})
-            },
-            data: {
-              status: "REVOKED",
-              revokedAt: now
-            }
-          })
-        ]
-      : [])
-  ]);
+    });
 
-  await appendAuditLog({
-    actorId: input.actor.id,
-    action: "user.password.update",
-    resourceType: "User",
-    resourceId: existing.id,
-    metadata: {
-      role: existing.role.name,
-      revokeSessions: body.revokeSessions
-    },
-    request: input.request
+    if (body.revokeSessions) {
+      await tx.session.updateMany({
+        where: {
+          userId: existing.id,
+          revokedAt: null,
+          ...(input.actor.id === existing.id && input.actorSessionId ? { id: { not: input.actorSessionId } } : {})
+        },
+        data: {
+          status: "REVOKED",
+          revokedAt: now
+        }
+      });
+    }
+
+    await appendAuditLog({
+      client: tx,
+      actorId: input.actor.id,
+      action: "user.password.update",
+      resourceType: "User",
+      resourceId: existing.id,
+      metadata: {
+        role: existing.role.name,
+        revokeSessions: body.revokeSessions
+      },
+      request: input.request
+    });
   });
 
   return { id: existing.id, passwordUpdated: true, sessionsRevoked: body.revokeSessions };
@@ -686,27 +688,32 @@ export async function updateAdminSetting(input: { actor: Principal; key: string;
   const body = parseWithSchema(adminSettingUpdateSchema, { ...bodyObject, key }, "Setting payload is invalid.");
   const value = normalizeSettingValue(key, body);
 
-  const setting = await prisma.systemSetting.upsert({
-    where: { key },
-    create: {
-      key,
-      value: value as Prisma.InputJsonValue,
-      updatedById: input.actor.id
-    },
-    update: {
-      value: value as Prisma.InputJsonValue,
-      updatedById: input.actor.id
-    },
-    include: { updatedBy: { select: { id: true, name: true, email: true } } }
-  });
+  const setting = await prisma.$transaction(async (tx) => {
+    const updated = await tx.systemSetting.upsert({
+      where: { key },
+      create: {
+        key,
+        value: value as Prisma.InputJsonValue,
+        updatedById: input.actor.id
+      },
+      update: {
+        value: value as Prisma.InputJsonValue,
+        updatedById: input.actor.id
+      },
+      include: { updatedBy: { select: { id: true, name: true, email: true } } }
+    });
 
-  await appendAuditLog({
-    actorId: input.actor.id,
-    action: "settings.update",
-    resourceType: "SystemSetting",
-    resourceId: setting.id,
-    metadata: { key: setting.key },
-    request: input.request
+    await appendAuditLog({
+      client: tx,
+      actorId: input.actor.id,
+      action: "settings.update",
+      resourceType: "SystemSetting",
+      resourceId: updated.id,
+      metadata: { key: updated.key },
+      request: input.request
+    });
+
+    return updated;
   });
 
   return setting;

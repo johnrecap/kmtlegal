@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { appendAuditLog } from "@/server/audit/audit-service";
+import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
@@ -459,7 +459,7 @@ export async function createAdminPayment(input: { actor: Principal; body: unknow
         }
       });
 
-      await appendAuditLog({
+      await appendAuditLogBestEffort({
         actorId: input.actor.id,
         action: "finance.payment_create",
         resourceType: "Payment",
@@ -513,7 +513,7 @@ export async function updateAdminPayment(input: { actor: Principal; paymentId: s
       }
     });
 
-    await appendAuditLog({
+    await appendAuditLogBestEffort({
       actorId: input.actor.id,
       action: "finance.payment_update",
       resourceType: "Payment",

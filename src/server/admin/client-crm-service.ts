@@ -1,10 +1,11 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { appendAuditLog } from "@/server/audit/audit-service";
+import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { canReadClient, hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
 import { toPagination } from "@/server/http/pagination";
+import { canonicalPhone } from "@/server/phone/phone-normalization";
 import { emailSchema, parseWithSchema, uuidSchema } from "@/server/validation/schemas";
 
 const clientStatusSchema = z.enum(["LEAD", "ACTIVE", "INACTIVE", "ARCHIVED", "DELETED"]);
@@ -274,6 +275,7 @@ function writeData(body: AdminClientWriteInput) {
   return {
     fullName: body.fullName,
     phone: body.phone,
+    phoneCanonical: canonicalPhone(body.phone),
     email: body.email || null,
     city: body.city || null,
     source: body.source || null,
@@ -294,7 +296,7 @@ export async function createAdminClient(input: { actor: Principal; body: unknown
     }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "client.create",
     resourceType: "Client",
@@ -333,7 +335,7 @@ export async function updateAdminClient(input: { actor: Principal; clientId: str
     }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "client.update",
     resourceType: "Client",
@@ -373,7 +375,7 @@ export async function assignAdminClient(input: { actor: Principal; clientId: str
     }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "client.assign",
     resourceType: "Client",
@@ -410,7 +412,7 @@ export async function archiveAdminClient(input: { actor: Principal; clientId: st
     data: { status: "ARCHIVED" }
   });
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "client.archive",
     resourceType: "Client",

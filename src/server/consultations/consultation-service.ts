@@ -1,12 +1,13 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { AI_REVIEW_DISCLAIMER, consultationClassificationOutputSchema, generateStructured, intakeSummaryOutputSchema } from "@/server/ai";
-import { appendAuditLog } from "@/server/audit/audit-service";
+import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { getIpAddress } from "@/server/auth/session-store";
 import { prisma } from "@/server/db/prisma";
 import { sendTemplatedEmail } from "@/server/email";
 import { ApiError } from "@/server/http/errors";
 import { captureAnalyticsEventBestEffort } from "@/server/observability/analytics-service";
+import { canonicalPhone } from "@/server/phone/phone-normalization";
 import { enforceRateLimit, rateLimiters } from "@/server/rate-limit/memory-rate-limit";
 import { emailSchema } from "@/server/validation/schemas";
 
@@ -37,9 +38,13 @@ export type ConsultationOrganizerResult = {
 };
 
 export async function createPublicConsultation(input: { body: PublicConsultationRequestInput; request: Request; requestId: string }) {
+  const phoneCanonical = canonicalPhone(input.body.phone);
+  const phoneWhere: Prisma.ConsultationRequestWhereInput = phoneCanonical
+    ? { OR: [{ phoneCanonical }, { phone: input.body.phone }] }
+    : { phone: input.body.phone };
   const duplicate = await prisma.consultationRequest.findFirst({
     where: {
-      phone: input.body.phone,
+      ...phoneWhere,
       serviceCategory: input.body.serviceCategory,
       status: { in: ["NEW", "REVIEWING", "SCHEDULED"] },
       createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
@@ -51,12 +56,13 @@ export async function createPublicConsultation(input: { body: PublicConsultation
     throw new ApiError(409, "CONFLICT", "يوجد طلب استشارة قريب بنفس رقم الهاتف ونفس المجال. انتظر مراجعة الفريق أو تواصل معنا.");
   }
 
-  const organizer = await organizeConsultation(input.body, input.requestId, getIpAddress(input.request) ?? input.body.phone);
+  const organizer = await organizeConsultation(input.body, input.requestId, getIpAddress(input.request) ?? phoneCanonical ?? input.body.phone);
 
   const consultation = await prisma.consultationRequest.create({
     data: {
       fullName: input.body.fullName,
       phone: input.body.phone,
+      phoneCanonical,
       email: input.body.email || null,
       city: input.body.city || null,
       serviceCategory: input.body.serviceCategory,
@@ -73,7 +79,7 @@ export async function createPublicConsultation(input: { body: PublicConsultation
   const reference = publicConsultationReference(consultation.id);
   const emailDelivery = await sendConsultationEmails(input.body, reference);
 
-  await appendAuditLog({
+  await appendAuditLogBestEffort({
     actorId: null,
     action: "consultation.create_public",
     resourceType: "ConsultationRequest",
@@ -85,7 +91,8 @@ export async function createPublicConsultation(input: { body: PublicConsultation
       organizerStatus: organizer.status,
       emailDelivery
     },
-    request: input.request
+    request: input.request,
+    requestId: input.requestId
   });
 
   captureAnalyticsEventBestEffort({

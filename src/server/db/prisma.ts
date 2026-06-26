@@ -23,7 +23,7 @@ export function getDatabaseUrl(env: NodeJS.ProcessEnv = process.env) {
   }
 
   if (env.APP_ENV === "production" || env.NODE_ENV === "production") {
-    if (isNextBuildPhase(env)) {
+    if (isNextBuildPhase(env) && env.ALLOW_BUILD_WITHOUT_DATABASE_URL === "true") {
       return LOCAL_DATABASE_URL;
     }
 

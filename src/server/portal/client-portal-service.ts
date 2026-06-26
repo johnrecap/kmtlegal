@@ -3,6 +3,7 @@ import { z } from "zod";
 import { hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
+import { canonicalPhone } from "@/server/phone/phone-normalization";
 import { parseWithSchema, uuidSchema, emailSchema } from "@/server/validation/schemas";
 
 export const portalProfileUpdateSchema = z.object({
@@ -208,6 +209,7 @@ export async function updatePortalProfile(input: { actor: Principal; body: unkno
       data: {
         fullName: body.fullName,
         phone: body.phone,
+        phoneCanonical: canonicalPhone(body.phone),
         email: body.email || null,
         city: body.city || null
       }
