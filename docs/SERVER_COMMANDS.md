@@ -88,6 +88,7 @@ The script:
 - Stops any stale process still listening on port `3000` before starting the new PM2 process.
 - Waits for PM2 to stay `online`, checks the local app response, and prints recent PM2 logs if the process exits.
 - When `APP_ORIGIN` is set, verifies public `/api/health` reports the same `APP_RELEASE` as the local PM2 app, compares `/`, `/articles`, `/case-studies`, `/media`, and `/contact` against the local app build, verifies public `_next/static` assets return JavaScript/CSS instead of HTML errors, and fails if the public domain still serves stale homepage article/case-study detail links or stale demo content cards.
+- If public `/api/health` reaches the new release but public HTML still serves an old Next.js build, purges the aaPanel/Nginx proxy cache directory derived from `APP_ORIGIN` (`/www/wwwroot/<host>/proxy_cache_dir`), reloads Nginx when available, waits briefly, and retries public verification once.
 - Saves PM2 state only after the process passes the stability checks.
 
 Only override defaults when the server uses different names:
@@ -100,6 +101,15 @@ PM2_APP=kmtlegal \
 PORT=3000 \
 bash deploy/install/aapanel-pm2-update.sh
 ```
+
+For a non-standard aaPanel cache path, override the derived cache directory. Keep this limited to aaPanel/Nginx proxy cache directories:
+
+```bash
+PUBLIC_PROXY_CACHE_DIRS=/www/wwwroot/kmtlegal.saeeddev.com/proxy_cache_dir \
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+Set `PUBLIC_CACHE_PURGE_ENABLED=false` only when the public domain is not behind aaPanel/Nginx proxy cache and the deploy should fail immediately on public/local build mismatch.
 
 ## Manual aaPanel + PM2 Fallback
 
@@ -162,7 +172,7 @@ curl -s http://127.0.0.1:3000/media | grep -E 'read-only|للقراءة فقط'
 curl -s https://kmtlegal.saeeddev.com/media | grep -E 'read-only|للقراءة فقط'
 ```
 
-If local `/api/health` reports the new release but public `/api/health` reports a different or missing release, the public domain is not reaching the PM2 process that was just restarted. Check aaPanel/Nginx reverse proxy routing and stale listeners. If both health URLs report the new release but public HTML is old, the issue is an HTML cache outside the app process: aaPanel reverse proxy, Nginx cache, or Cloudflare cache/routing. Purge the affected public HTML paths (`/`, `/articles`, `/case-studies`) and rerun the update script. If both local and public are old while the source is current, check for a stale orphan process on port `3000`; the update script now kills that listener and starts Next directly under PM2 so this mismatch is caught during deploy.
+If local `/api/health` reports the new release but public `/api/health` reports a different or missing release, the public domain is not reaching the PM2 process that was just restarted. Check aaPanel/Nginx reverse proxy routing and stale listeners. If both health URLs report the new release but public HTML is old, the issue is an HTML cache outside the app process: aaPanel reverse proxy, Nginx cache, or Cloudflare cache/routing. The update script now purges the derived aaPanel/Nginx `proxy_cache_dir` and retries once automatically when this mismatch is detected. If the retry still fails, purge any external CDN/Cloudflare cache for the affected public HTML paths (`/`, `/articles`, `/case-studies`) and recheck aaPanel reverse proxy routing. If both local and public are old while the source is current, check for a stale orphan process on port `3000`; the update script now kills that listener and starts Next directly under PM2 so this mismatch is caught during deploy.
 
 If PM2 shows `kmtlegal` as `stopped` after deployment, inspect the runtime crash before running another build:
 

@@ -12,6 +12,10 @@ PM2_START_TIMEOUT_SECONDS="${PM2_START_TIMEOUT_SECONDS:-30}"
 PM2_STABILITY_SECONDS="${PM2_STABILITY_SECONDS:-8}"
 PUBLIC_VERIFY_ENABLED="${PUBLIC_VERIFY_ENABLED:-true}"
 PUBLIC_VERIFY_PATHS="${PUBLIC_VERIFY_PATHS:-/ /articles /case-studies /media /contact}"
+PUBLIC_VERIFY_RETRY_DELAY_SECONDS="${PUBLIC_VERIFY_RETRY_DELAY_SECONDS:-3}"
+PUBLIC_CACHE_PURGE_ENABLED="${PUBLIC_CACHE_PURGE_ENABLED:-true}"
+PUBLIC_PROXY_CACHE_DIRS="${PUBLIC_PROXY_CACHE_DIRS:-}"
+NGINX_RELOAD_AFTER_CACHE_PURGE="${NGINX_RELOAD_AFTER_CACHE_PURGE:-true}"
 NEXT_BIN="${NEXT_BIN:-${APP_DIR}/node_modules/next/dist/bin/next}"
 
 log() {
@@ -166,12 +170,95 @@ console.log("Next.js static manifest references are present.");
 NODE
 }
 
-verify_public_origin_matches_local() {
-  if [[ "${PUBLIC_VERIFY_ENABLED}" != "true" || -z "${APP_ORIGIN:-}" ]]; then
+public_origin_host() {
+  APP_ORIGIN="${APP_ORIGIN:-}" node <<'NODE'
+const origin = process.env.APP_ORIGIN || "";
+try {
+  process.stdout.write(new URL(origin).hostname);
+} catch {
+  process.exit(1);
+}
+NODE
+}
+
+public_proxy_cache_dirs() {
+  if [[ -n "${PUBLIC_PROXY_CACHE_DIRS:-}" ]]; then
+    local configured_dir=""
+    for configured_dir in ${PUBLIC_PROXY_CACHE_DIRS}; do
+      printf '%s\n' "${configured_dir}"
+    done
     return 0
   fi
 
-  log "Checking public origin matches local app"
+  if [[ -n "${APP_ORIGIN:-}" ]]; then
+    local host=""
+    if host="$(public_origin_host 2>/dev/null)" && [[ -n "${host}" ]]; then
+      printf '/www/wwwroot/%s/proxy_cache_dir\n' "${host}"
+    fi
+  fi
+}
+
+is_safe_proxy_cache_dir() {
+  local cache_dir="${1%/}"
+  [[ "${cache_dir}" == /www/wwwroot/*/proxy_cache_dir ]]
+}
+
+purge_public_proxy_cache() {
+  if [[ "${PUBLIC_CACHE_PURGE_ENABLED}" != "true" ]]; then
+    log "Public proxy cache purge is disabled"
+    return 0
+  fi
+
+  local cache_dir=""
+  local purged=0
+
+  while IFS= read -r cache_dir; do
+    [[ -n "${cache_dir}" ]] || continue
+    cache_dir="${cache_dir%/}"
+
+    if ! is_safe_proxy_cache_dir "${cache_dir}"; then
+      log "Skipping unsafe proxy cache path: ${cache_dir}"
+      continue
+    fi
+
+    if [[ ! -d "${cache_dir}" ]]; then
+      log "Proxy cache directory was not found: ${cache_dir}"
+      continue
+    fi
+
+    if [[ -L "${cache_dir}" ]]; then
+      log "Skipping symlinked proxy cache path: ${cache_dir}"
+      continue
+    fi
+
+    log "Purging public proxy cache: ${cache_dir}"
+    find "${cache_dir}" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +
+    purged=1
+  done < <(public_proxy_cache_dirs)
+
+  if [[ "${purged}" != "1" ]]; then
+    log "No public proxy cache directory was purged"
+  fi
+}
+
+reload_nginx_after_cache_purge() {
+  if [[ "${NGINX_RELOAD_AFTER_CACHE_PURGE}" != "true" ]]; then
+    return 0
+  fi
+
+  if command -v nginx >/dev/null 2>&1; then
+    log "Reloading Nginx after proxy cache purge"
+    nginx -t && nginx -s reload || true
+    return 0
+  fi
+
+  if [[ -x "/www/server/nginx/sbin/nginx" ]]; then
+    log "Reloading aaPanel Nginx after proxy cache purge"
+    /www/server/nginx/sbin/nginx -t && /www/server/nginx/sbin/nginx -s reload || true
+  fi
+}
+
+run_public_origin_verify_once() {
   APP_ORIGIN="${APP_ORIGIN}" PORT="${PORT}" PUBLIC_VERIFY_PATHS="${PUBLIC_VERIFY_PATHS}" node <<'NODE'
 const origin = process.env.APP_ORIGIN.replace(/\/+$/, "");
 const port = process.env.PORT || "3000";
@@ -307,6 +394,25 @@ async function assertStaticAsset(url) {
   process.exit(1);
 });
 NODE
+}
+
+verify_public_origin_matches_local() {
+  if [[ "${PUBLIC_VERIFY_ENABLED}" != "true" || -z "${APP_ORIGIN:-}" ]]; then
+    return 0
+  fi
+
+  log "Checking public origin matches local app"
+  if run_public_origin_verify_once; then
+    return 0
+  fi
+
+  log "Public origin did not match local app. Purging public proxy cache and retrying once"
+  purge_public_proxy_cache
+  reload_nginx_after_cache_purge
+  sleep "${PUBLIC_VERIFY_RETRY_DELAY_SECONDS}"
+
+  log "Rechecking public origin after proxy cache purge"
+  run_public_origin_verify_once
 }
 
 log "Fetching ${BRANCH} from GitHub"

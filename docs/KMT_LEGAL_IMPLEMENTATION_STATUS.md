@@ -95,3 +95,4 @@ Total plans: 30
 - PLAN-18 browser smoke was completed with a controlled local dev process and Super Admin credentials. Long-running VPS/process-manager behavior remains part of PLAN-23 deployment handoff.
 - `npm run security:audit` currently reports dependency vulnerabilities; this blocks production release.
 - PLAN-23 ran `npm run security:audit`; it failed and is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
+- The aaPanel PM2 update script now handles the known stale-public-HTML case by purging the derived aaPanel/Nginx `proxy_cache_dir` and retrying public/local build verification once before failing.
