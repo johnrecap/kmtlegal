@@ -10,8 +10,8 @@ Total plans: 29
 
 | Status | Count |
 | --- | ---: |
-| Done | 22 |
-| In progress / partial / planned | 7 |
+| Done | 23 |
+| In progress / partial / planned | 6 |
 | Not started | 0 |
 
 ## Current Execution State
@@ -46,13 +46,13 @@ Total plans: 29
 | PLAN-25 No-Code VPS Installer & First Admin Bootstrap | In progress / partial | Added PLAN-25 Spec Kit/docs, disabled active TOTP flow and `/login/2fa`, disabled TOTP/Email OTP/reset routes, staff password login with `STAFF_2FA_MODE=disabled`, token-protected installer APIs, `/install` wizard, first Super Admin bootstrap without TOTP, installer lock, VPS install script, env/systemd updates, and contract tests. | Remaining: run on real VPS/staging target, complete installer browser smoke, run `sudo kmt-legal-disable-installer`, run `qa:release`, and archive production evidence. |
 | PLAN-26 Panel-Aware Installer Compatibility | In progress / partial | Added Spec Kit plan for Terminal VPS, aaPanel, and conditional cPanel setup modes; implemented `/install` hosting selector, `hostingMode` preflight contract, Node/PostgreSQL/private uploads/SMTP/TOTP/token checks, DB connectivity/schema/seed preflight, cPanel hard-requirement checks, `deploy/install/panel-install.sh`, `existing` vs `auto` database setup choice, panel install docs, harness team spec, env names, tasks, quality gates, and contract/static tests. | Remaining: test real aaPanel and compatible cPanel targets, run hosting smoke evidence, and archive panel screenshots/logs. |
 | PLAN-27 Live Site QA Remediation | In progress / partial | Live QA evidence from `https://kmtlegal.saeeddev.com/` was converted into `docs/PLAN_27_LIVE_SITE_QA_REMEDIATION.md`, Spec Kit tasks T181-T204, and Gate 6B. Local remediation now fixes the homepage static-vs-DB featured content split, favicon, Cloudflare Insights CSP allowlist, production login copy, Arabic login validation/bad-credential copy, booking success AI/mock placeholder leakage, contact duplicate-submit UX, admin shell/settings English copy, legacy mock AI display in admin consultation review, admin page-level overflow constraints, grouped admin nav, mobile table cards via `DataRecordCard`, public compact heroes, localized content hub copy, and `/admin/clients` mobile usability with compact nav, stacked filters, mobile result cards, and a create-client jump link. Smoke coverage now checks homepage rendered article/case-study detail links, `/favicon.ico`, login copy, anonymous `/admin`/`/portal` redirects without console chunk errors, public pages at 390px without horizontal scroll, and opt-in authenticated live admin smoke for route chunks, CSP, API status, static MIME, 390px overflow, and admin list mobile surfaces. Local re-verification passed after the full design responsive pass with typecheck, lint, full tests, build, smoke E2E, skipped live-admin smoke syntax check, and diff hygiene. | Remaining: add the broader nav/footer/static MIME crawl, add or document approved production content bootstrap, run DB-backed staging verification, atomically deploy the latest build, run live deployed public/admin smoke, and archive evidence before claiming production readiness. |
-| PLAN-28 Public Luxury Redesign | In progress / planned | Added `specs/kmt-legal-platform/public-luxury-redesign-plan.md`, tasks T205-T228, Gate 6C, frontend/test-plan references, and implementation milestone coverage for the public-only dark luxury legal redesign. The plan freezes the boundary to public routes/components, documents each planned change and impact, defines Arabic-first labels, no visible EN toggle before full localization, booking/contact contract preservation, public link crawl, desktop/mobile screenshots, and protected-surface drift controls. | Remaining: implement the scoped public visual contract, redesign public shell/components/homepage/routes, update public content/metadata/assets, run full public QA, archive evidence, commit, push, and hand off aaPanel PM2 update commands. |
+| PLAN-28 Public Luxury Redesign | Done | Implemented the public-only dark luxury legal redesign: expanded the practice-area matrix and privacy-safe representative matters, redesigned `PublicShell`, public header/footer, public hero/sections/trust/CTA components, homepage composition, services/team/editorial/media/contact/booking/privacy/terms surfaces, dark public filters/forms, Arabic-first labels, route-stable `/services` links, no visible EN toggle, and focused PLAN-28 UI/e2e coverage. Verification passed: typecheck, lint, full Vitest, production build with a local placeholder `DATABASE_URL`, MVP smoke, focused public desktop/mobile visual screenshots, and public internal link crawl. | Nothing blocking for PLAN-28. Production deployment still follows the normal aaPanel PM2 handoff after push. |
 
 ## Remaining Count
 
 - Fully not started: 0 plans.
-- Partially open/planned: 7 plans.
-- Done: 22 plans.
+- Partially open/planned: 6 plans.
+- Done: 23 plans.
 
 ## Immediate Next Steps
 
@@ -62,8 +62,7 @@ Total plans: 29
 4. Run VPS smoke for `/api/health`, Nginx/TLS/systemd/private uploads/backups before closing PLAN-23/24. SMTP smoke is deferred until the future SMTP activation plan.
 5. For aaPanel/cPanel deployment, complete PLAN-26 preflight and smoke before claiming panel compatibility.
 6. Complete the remaining PLAN-27 gates before any production-ready claim: broader public/static/mobile smoke, approved production content bootstrap, DB-backed staging verification, atomic live deploy, live public/admin smoke, and evidence archive.
-7. Execute PLAN-28 in public-only slices: visual contract, shell/components, homepage, route rollout, content/SEO, public link crawl, mobile/desktop screenshots, and protected-surface drift checks.
-8. Keep `/stitch-clone/*` frozen and disabled in production unless `ENABLE_STITCH_CLONE=true` is explicitly set for visual QA.
+7. Keep `/stitch-clone/*` frozen and disabled in production unless `ENABLE_STITCH_CLONE=true` is explicitly set for visual QA.
 
 ## Verification Already Passing
 
@@ -81,6 +80,7 @@ Total plans: 29
 - PLAN-27 admin extension verification on 2026-06-25: `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e:smoke`, `npx playwright test tests/e2e/live-admin-smoke.spec.ts` with env absent/skipped, and `git diff --check`
 - PLAN-27 responsive CRM follow-up verification on 2026-06-25: `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npx playwright test tests/e2e/live-admin-smoke.spec.ts` with env absent/skipped, and `git diff --check`
 - PLAN-27 full design responsive pass verification on 2026-06-25: `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e:smoke`, `npx playwright test tests/e2e/live-admin-smoke.spec.ts` with env absent/skipped, and `git diff --check`
+- PLAN-28 public luxury redesign verification on 2026-06-27: `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `cmd /c npm run build` with a local placeholder `DATABASE_URL`, `cmd /c npm run test:e2e:smoke`, and `cmd /c node scripts/run-playwright-with-server.mjs tests/e2e/public-luxury-visual.spec.ts`.
 
 ## Important Notes
 

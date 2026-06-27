@@ -1,7 +1,23 @@
 # PLAN-28 Public Luxury Redesign
 
 ## Status
-Planned. Implementation has not started.
+Implemented on 2026-06-27. Public routes now use the scoped dark luxury legal visual language. Admin, portal, product-system, shared UI primitive defaults, and Stitch clone remain outside the redesign scope.
+
+Implementation commits:
+- `e97ec31 feat: expand public practice content`
+- `db0ca7e feat: add public luxury shell components`
+- `36fc5a3 feat: darken public forms and filters`
+- Final public route rollout commit in this delivery.
+
+Verification summary:
+- Passed `cmd /c npm run typecheck`.
+- Passed `cmd /c npm run lint`.
+- Passed `cmd /c npm run test`.
+- Passed `cmd /c npm run build` with a local placeholder `DATABASE_URL`; the first no-env run failed by the existing production readiness guard (`DATABASE_URL is required in production`), and one immediate rerun hit a transient Windows `.next` manifest race before passing cleanly.
+- Passed `cmd /c npm run test:e2e:smoke`.
+- Passed `cmd /c node scripts/run-playwright-with-server.mjs tests/e2e/public-luxury-visual.spec.ts`.
+- The focused visual smoke captured desktop `1440x900` and mobile `390x844` screenshots for `/`, `/services`, `/contact`, and `/book-consultation` in Playwright test output artifacts.
+- The focused public link crawl verified redesigned public entry-point links, including service and team detail links, return status `< 400`.
 
 ## Goal
 Redesign the public KMT Legal website to match the uploaded dark luxury legal reference direction while keeping the dashboard, admin, portal, product system, and Stitch clone untouched.
@@ -283,4 +299,3 @@ PLAN-28 is done only when:
 - All verification checks in the matrix pass or are explicitly documented as blocked.
 - Screenshot/link-crawl evidence is archived.
 - Docs, tasks, status, commit, push, and aaPanel PM2 handoff are complete.
-

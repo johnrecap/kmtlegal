@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
 import { findBySlug, lawyers, navForPath } from "@/content/public-content";
-import { PublicSection } from "@/features/public-site/public-components";
+import { PublicSection, publicMutedText, publicPanel } from "@/features/public-site/public-components";
+import { cn } from "@/lib/cn";
 
 type LawyerProfilePageProps = { params: { slug: string } };
 
@@ -29,23 +30,30 @@ export default function LawyerProfilePage({ params }: LawyerProfilePageProps) {
     <PublicShell navItems={navForPath("/team")}>
       <PublicSection eyebrow={lawyer.title} title={lawyer.name} description={lawyer.bio}>
         <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-          <img alt={lawyer.name} className="h-[460px] w-full rounded-lg border border-kmt-border object-cover" src={lawyer.image} />
-          <div className="rounded-lg border border-kmt-border bg-white p-6">
-            <h2 className="text-2xl font-semibold text-kmt-ink">التخصصات</h2>
+          <img alt={lawyer.name} className="h-[460px] w-full rounded-lg border border-kmt-gold/25 object-cover opacity-90" src={lawyer.image} />
+          <div className={cn(publicPanel, "p-6")}>
+            <h2 className="text-2xl font-semibold text-white">التخصصات</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {lawyer.specialties.map((specialty) => (
-                <Badge key={specialty}>{specialty}</Badge>
+                <Badge key={specialty} className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100">
+                  {specialty}
+                </Badge>
               ))}
             </div>
-            <h2 className="mt-8 text-2xl font-semibold text-kmt-ink">اللغات</h2>
+            <h2 className="mt-8 text-2xl font-semibold text-white">اللغات</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {lawyer.languages.map((language) => (
-                <Badge key={language}>{language}</Badge>
+                <Badge key={language} className="border-white/15 bg-white/5 text-slate-200">
+                  {language}
+                </Badge>
               ))}
             </div>
-            <div className="mt-8 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-900">
-              يتم تأكيد المحامي والموعد بعد مراجعة الطلب، ولا يمثل الحجز قبولًا نهائيًا للملف.
+            <div className="mt-8 rounded-lg border border-amber-300/35 bg-amber-950/35 p-4 text-sm leading-7 text-amber-100">
+              يتم تأكيد المحامي والموعد بعد مراجعة الطلب، ولا يمثل الحجز قبولا نهائيا للملف.
             </div>
+            <p className={cn("mt-5 text-sm leading-7", publicMutedText)}>
+              بيانات الفريق هنا للتعريف بالتخصصات فقط، ولا تنشئ علاقة محاماة قبل قبول المكتب للملف.
+            </p>
             <ButtonLink
               className="mt-6"
               href={`/book-consultation?lawyer=${encodeURIComponent(lawyer.name)}`}

@@ -3,13 +3,35 @@ import Link from "next/link";
 import { unstable_noStore as noStore } from "next/cache";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
-import { legalServices, lawyers, navForPath } from "@/content/public-content";
-import { PageHero, PublicSection, TrustStrip } from "@/features/public-site/public-components";
+import {
+  legalServices,
+  lawyers,
+  navForPath,
+  practiceAreaMatrix,
+  publicIndustries,
+  representativeMatters
+} from "@/content/public-content";
+import {
+  FinalCtaBand,
+  IndustryGrid,
+  LuxuryFeaturePanel,
+  PageHero,
+  PracticeAreaCard,
+  ProcessSteps,
+  PublicSection,
+  RepresentativeMatterCard,
+  TrustStrip,
+  publicGoldText,
+  publicMutedText,
+  publicPanel,
+  publicPanelHover
+} from "@/features/public-site/public-components";
+import { cn } from "@/lib/cn";
 import { listPublishedArticles, listPublishedCaseStudies } from "@/server/public/content-service";
 
 export const metadata: Metadata = {
-  title: "KMT Legal | مكتب محاماة عربي منظم",
-  description: "موقع KMT Legal للاستشارات القانونية المنظمة، خدمات الشركات والعقود والعقارات، وطلب استشارة آمن.",
+  title: "KMT Legal | خبرة قانونية شاملة للقطاعات الحرجة",
+  description: "موقع KMT Legal للاستشارات القانونية المنظمة وخدمات الشركات والعقود والعقارات والمنازعات وحجز الاستشارات بأمان.",
   alternates: { canonical: "/" }
 };
 
@@ -19,6 +41,33 @@ export const fetchCache = "force-no-store";
 
 type FeaturedArticle = Awaited<ReturnType<typeof listPublishedArticles>>[number];
 type FeaturedCaseStudy = Awaited<ReturnType<typeof listPublishedCaseStudies>>[number];
+
+const approachSteps = [
+  {
+    number: "01",
+    title: "استشارة",
+    summary: "نستمع للوقائع ونحدد الهدف والبيانات المطلوبة قبل أي توصية.",
+    icon: "groups"
+  },
+  {
+    number: "02",
+    title: "استراتيجية",
+    summary: "نرتب الخيارات القانونية في مسار عملي يتناسب مع أهداف العمل.",
+    icon: "strategy"
+  },
+  {
+    number: "03",
+    title: "تنفيذ",
+    summary: "نراجع المستندات والخطوات مع تقليل المخاطر وسد النواقص.",
+    icon: "contract_edit"
+  },
+  {
+    number: "04",
+    title: "حل",
+    summary: "نقود الملف نحو نتيجة عملية مع متابعة واضحة للخطوات التالية.",
+    icon: "target"
+  }
+];
 
 async function loadFeaturedContent(): Promise<{
   articles: FeaturedArticle[];
@@ -48,54 +97,85 @@ function shouldLoadDatabaseContent() {
 export default async function HomePage() {
   const featuredContent = await loadFeaturedContent();
   const hasFeaturedContent = featuredContent.articles.length > 0 || featuredContent.caseStudies.length > 0;
+  const focusService = legalServices.find((service) => service.slug === "corporate-law") ?? legalServices[0];
 
   return (
     <PublicShell navItems={navForPath("/")}>
       <PageHero
-        eyebrow="KMT Legal"
-        image="/stitch-assets/bd64f8e89da8f4f6.png"
-        title="استشارات قانونية منظمة من أول رسالة"
-        description="نساعدك على تحويل الوقائع والمستندات إلى طلب واضح يمكن مراجعته من فريق قانوني، مع حماية البيانات وعدم تقديم وعود بنتائج."
+        eyebrow="مجالات الخبرة"
+        image="/stitch-assets/b8b47a1dd8d5ce08.png"
+        title="خبرة قانونية شاملة للقطاعات الحرجة"
+        description="نقدم دعما قانونيا استراتيجيا وعمليا للشركات والمستثمرين والأفراد، من تنظيم الوقائع والمستندات إلى وضع مسار واضح للمراجعة القانونية."
         actions={
           <>
             <ButtonLink href="/book-consultation" size="lg" trailingIcon={<MaterialSymbol className="rtl:rotate-180" name="arrow_forward" />}>
               احجز استشارة
             </ButtonLink>
-            <ButtonLink href="/services" size="lg" variant="secondary">
-              تصفح الخدمات
+            <ButtonLink className="!border-white/35 !text-white hover:!bg-white hover:!text-kmt-navy" href="/services" size="lg" variant="secondary">
+              تصفح مجالات الخبرة
             </ButtonLink>
           </>
         }
       />
       <TrustStrip />
 
-      <PublicSection
-        eyebrow="خدمات أساسية"
-        title="مسارات قانونية واضحة قبل اتخاذ القرار"
-        description="الخدمات العامة لا تعرض بيانات خاصة ولا تستبدل مراجعة المحامي. كل طلب يبدأ بتنظيم الوقائع والمستندات."
-      >
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {legalServices.slice(0, 4).map((service) => (
-            <Link key={service.slug} className="rounded-lg border border-kmt-border bg-white p-5 transition-colors hover:border-kmt-gold" href={`/services/${service.slug}`}>
-              <MaterialSymbol className="text-3xl text-kmt-gold" name={service.icon} />
-              <h3 className="mt-4 text-xl font-semibold text-kmt-ink">{service.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-kmt-muted">{service.description}</p>
-            </Link>
+      <PublicSection align="center" eyebrow="Our Practice Areas" title="مجالات الخبرة القانونية" description="هيكل خدمات واضح يساعدك على اختيار المسار الأقرب لطلبك، مع الحفاظ على الخصوصية وعدم نشر بيانات العملاء.">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {practiceAreaMatrix.map((area) => (
+            <PracticeAreaCard key={area.key} href={area.href} icon={area.icon} summary={area.summary} title={area.title} />
           ))}
         </div>
       </PublicSection>
 
-      <PublicSection className="bg-white" eyebrow="الفريق" title="محامون بتخصصات عملية" description="تعرف على مسارات الخبرة المتاحة للحجز أو المراجعة الأولية.">
+      <PublicSection surface="muted" eyebrow="Focus Area" title={focusService.title} description={focusService.description}>
+        <LuxuryFeaturePanel
+          image="/stitch-assets/2484f68d86633ca8.png"
+          eyebrow={focusService.category}
+          title={focusService.title}
+          description={focusService.content}
+        >
+          <div className="grid gap-3 md:grid-cols-2">
+            {focusService.outcomes.concat(focusService.requiredDocuments).slice(0, 8).map((item) => (
+              <div key={item} className="flex gap-2 text-sm leading-7 text-slate-300">
+                <MaterialSymbol className={cn("mt-1 text-base", publicGoldText)} name="check_circle" />
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        </LuxuryFeaturePanel>
+      </PublicSection>
+
+      <PublicSection align="center" eyebrow="Our Approach" title="منهج العمل من أول طلب حتى الحل" description="الموقع لا يقدم وعدا بنتيجة، لكنه ينظم البداية ويجعل التواصل مع الفريق أكثر وضوحا.">
+        <ProcessSteps steps={approachSteps} />
+      </PublicSection>
+
+      <PublicSection surface="muted" align="center" eyebrow="Representative Matters" title="أمثلة تمثيلية حديثة" description="نماذج مجهولة ومبسطة توضح نوع الملفات التي يتعامل معها المكتب دون كشف بيانات عملاء أو نتائج مضمونة.">
+        <div className="grid gap-4 md:grid-cols-3">
+          {representativeMatters.map((matter) => (
+            <RepresentativeMatterCard key={matter.title} {...matter} />
+          ))}
+        </div>
+      </PublicSection>
+
+      <PublicSection eyebrow="Industries" title="قطاعات نخدمها" description="لغة التصميم الداكنة هنا لا تغير طبيعة المنتج: المحتوى يظل قانونيا، واضحا، وموجها لقرارات عمل عملية.">
+        <IndustryGrid industries={publicIndustries} />
+      </PublicSection>
+
+      <PublicSection surface="muted" eyebrow="Team" title="فريق قانوني بتخصصات عملية" description="تعرف على مسارات الخبرة المتاحة للحجز أو المراجعة الأولية.">
         <div className="grid gap-4 md:grid-cols-3">
           {lawyers.map((lawyer) => (
-            <Link key={lawyer.slug} className="rounded-lg border border-kmt-border bg-kmt-canvas p-5 hover:border-kmt-gold" href={`/team/${lawyer.slug}`}>
-              <img alt={lawyer.name} className="h-48 w-full rounded-lg object-cover" src={lawyer.image} />
-              <h3 className="mt-4 text-xl font-semibold text-kmt-ink">{lawyer.name}</h3>
-              <p className="mt-1 text-sm text-kmt-muted">{lawyer.title}</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {lawyer.specialties.slice(0, 2).map((specialty) => (
-                  <Badge key={specialty}>{specialty}</Badge>
-                ))}
+            <Link key={lawyer.slug} className={cn(publicPanel, publicPanelHover, "block overflow-hidden")} href={`/team/${lawyer.slug}`}>
+              <img alt={lawyer.name} className="h-56 w-full object-cover opacity-90" src={lawyer.image} />
+              <div className="p-5">
+                <h3 className="text-xl font-semibold text-white">{lawyer.name}</h3>
+                <p className={cn("mt-1 text-sm", publicMutedText)}>{lawyer.title}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {lawyer.specialties.slice(0, 2).map((specialty) => (
+                    <Badge key={specialty} className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100">
+                      {specialty}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </Link>
           ))}
@@ -103,25 +183,27 @@ export default async function HomePage() {
       </PublicSection>
 
       {hasFeaturedContent ? (
-        <PublicSection eyebrow="محتوى قانوني" title="توعية بدون وعود قانونية" description="مقالات ودراسات حالة مجهولة تساعدك على تجهيز الأسئلة والمستندات قبل التواصل.">
+        <PublicSection eyebrow="Insights" title="توعية قانونية بدون وعود" description="محتوى منشور من النظام الإداري فقط، ولا يظهر كرابط تفصيلي ثابت إذا لم يكن منشورا في قاعدة البيانات.">
           <div className="grid gap-4 lg:grid-cols-2">
-          {featuredContent.articles.map((article) => (
-            <Link key={article.slug} className="rounded-lg border border-kmt-border bg-white p-5 hover:border-kmt-gold" href={`/articles/${article.slug}`}>
-              <p className="text-sm font-semibold text-kmt-gold">{article.readTime}</p>
-              <h3 className="mt-2 text-xl font-semibold text-kmt-ink">{article.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-kmt-muted">{article.excerpt}</p>
-            </Link>
-          ))}
-          {featuredContent.caseStudies.map((study) => (
-            <Link key={study.slug} className="rounded-lg border border-amber-200 bg-amber-50 p-5 hover:border-kmt-gold" href={`/case-studies/${study.slug}`}>
-              <p className="text-sm font-semibold text-amber-800">دراسة حالة مجهولة</p>
-              <h3 className="mt-2 text-xl font-semibold text-kmt-ink">{study.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-kmt-muted">{study.summary}</p>
-            </Link>
-          ))}
+            {featuredContent.articles.map((article) => (
+              <Link key={article.slug} className={cn(publicPanel, publicPanelHover, "block p-5")} href={`/articles/${article.slug}`}>
+                <p className={cn("text-sm font-semibold", publicGoldText)}>{article.readTime}</p>
+                <h3 className="mt-2 text-xl font-semibold text-white">{article.title}</h3>
+                <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{article.excerpt}</p>
+              </Link>
+            ))}
+            {featuredContent.caseStudies.map((study) => (
+              <Link key={study.slug} className={cn(publicPanel, publicPanelHover, "block p-5")} href={`/case-studies/${study.slug}`}>
+                <p className={cn("text-sm font-semibold", publicGoldText)}>دراسة حالة مجهولة</p>
+                <h3 className="mt-2 text-xl font-semibold text-white">{study.title}</h3>
+                <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{study.summary}</p>
+              </Link>
+            ))}
           </div>
         </PublicSection>
       ) : null}
+
+      <FinalCtaBand title="هل تحتاج إلى دعم قانوني لعملك؟" description="فريقنا جاهز لاستلام طلب منظم ومراجعة البيانات الأولية قبل تحديد الموعد أو الخطوة التالية." />
     </PublicShell>
   );
 }

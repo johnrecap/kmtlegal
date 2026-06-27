@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { PublicShell } from "@/components/layout";
 import { Badge } from "@/components/ui";
 import { mediaItems, navForPath } from "@/content/public-content";
-import { PageHero, PublicSection } from "@/features/public-site/public-components";
+import { PageHero, PublicSection, publicMutedText, publicPanel, publicPanelHover } from "@/features/public-site/public-components";
+import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = {
   title: "الإعلام والمحتوى | KMT Legal",
@@ -23,13 +24,13 @@ export default function MediaPage() {
       <PublicSection eyebrow="الإعلام" title="محتوى توعوي منظم" description="صفحة قراءة فقط للمحتوى الإعلامي العام، بدون نشر خارجي أو تكامل اجتماعي في هذه المرحلة.">
         <div className="grid gap-4 md:grid-cols-3">
           {mediaItems.map((item) => (
-            <article key={item.title} className="rounded-lg border border-kmt-border bg-white p-5">
+            <article key={item.title} className={cn(publicPanel, publicPanelHover, "p-5")}>
               <div className="flex items-center justify-between gap-3">
-                <Badge>{item.type}</Badge>
-                <span className="text-xs text-kmt-muted">{item.date}</span>
+                <Badge className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100">{item.type}</Badge>
+                <span className="text-xs text-slate-400">{item.date}</span>
               </div>
-              <h2 className="mt-4 text-xl font-semibold text-kmt-ink">{item.title}</h2>
-              <p className="mt-3 text-sm leading-7 text-kmt-muted">{item.description}</p>
+              <h2 className="mt-4 text-xl font-semibold text-white">{item.title}</h2>
+              <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{item.description}</p>
             </article>
           ))}
         </div>

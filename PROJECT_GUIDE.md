@@ -11,7 +11,7 @@ Use this file as the first handoff map. The detailed plan tracker is `docs/KMT_L
 - `PLAN-00` through `PLAN-28` are implemented as code, tests, plans, or handoff artifacts where local infrastructure allows.
 - `PLAN-04` still needs a real PostgreSQL runtime check: run migrations and seed against a running `DATABASE_URL`, then rerun seed to verify idempotency.
 - DB-backed E2E flows need PostgreSQL plus seed data before they can run end to end.
-- PLAN-25 adds a no-code VPS installer. PLAN-26 adds panel-aware setup planning for Terminal VPS, aaPanel, and conditional cPanel support. PLAN-27 local remediation covers public 404 link prevention, content-source consistency, CSP/favicon, login copy, localized auth errors, booking/contact UX, admin Arabic copy cleanup, safe admin AI display, and admin overflow constraints; broader static/mobile/live smoke plus atomic deploy evidence still needs to be run before production release. PLAN-28 plans the public-only dark luxury legal redesign and must not redesign admin, portal, product-system, shared UI primitives, or Stitch clone.
+- PLAN-25 adds a no-code VPS installer. PLAN-26 adds panel-aware setup planning for Terminal VPS, aaPanel, and conditional cPanel support. PLAN-27 local remediation covers public 404 link prevention, content-source consistency, CSP/favicon, login copy, localized auth errors, booking/contact UX, admin Arabic copy cleanup, safe admin AI display, and admin overflow constraints; broader static/mobile/live smoke plus atomic deploy evidence still needs to be run before production release. PLAN-28 implements the public-only dark luxury legal redesign and intentionally leaves admin, portal, product-system, shared UI primitives, and Stitch clone outside the redesign scope.
 
 ## Install
 
