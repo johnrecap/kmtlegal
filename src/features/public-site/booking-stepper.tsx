@@ -5,6 +5,15 @@ import { AI_REVIEW_DISCLAIMER } from "@/server/ai/copy";
 import { Button, MaterialSymbol, Select, Textarea, TextInput } from "@/components/ui";
 import { trackClientAnalyticsEvent } from "@/lib/analytics-client";
 import { getPublicContent, type PublicContent } from "@/content/public-content";
+import {
+  publicMotionButton,
+  publicMotionControl,
+  publicMotionForm,
+  publicMotionStatus,
+  publicMotionStep,
+  publicMotionStepPanel
+} from "@/features/public-site/public-motion";
+import { cn } from "@/lib/cn";
 import type { PublicLocale } from "@/lib/public-locale";
 
 type BookingValues = {
@@ -57,24 +66,30 @@ const initialValues: BookingValues = {
 const bookingStepKeys = ["contact", "details", "review"] as const;
 
 const darkFormClasses =
-  "relative overflow-hidden rounded-lg border border-kmt-gold/25 bg-[linear-gradient(145deg,#17110a_0%,#0b0c0e_50%,#050505_100%)] p-5 shadow-[0_28px_90px_-56px_rgba(0,0,0,0.95)] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-l before:from-transparent before:via-kmt-gold/70 before:to-transparent [&_label]:text-amber-100 [&_p[id$='-hint']]:text-slate-300 [&_p[id$='-error']]:text-red-200 [&_select+span]:text-kmt-gold";
+  cn(
+    publicMotionForm,
+    "relative overflow-hidden rounded-lg border border-kmt-gold/25 bg-[linear-gradient(145deg,#17110a_0%,#0b0c0e_50%,#050505_100%)] p-5 shadow-[0_28px_90px_-56px_rgba(0,0,0,0.95)] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-l before:from-transparent before:via-kmt-gold/70 before:to-transparent [&_label]:text-amber-100 [&_p[id$='-hint']]:text-slate-300 [&_p[id$='-error']]:text-red-200 [&_select+span]:text-kmt-gold"
+  );
 
 const darkControlClasses =
-  "!border-kmt-gold/25 !bg-black/30 !text-white placeholder:!text-amber-100/45 focus:!border-kmt-gold focus:!ring-kmt-gold/25 disabled:!border-white/10 disabled:!bg-black/40 disabled:!text-slate-500";
+  cn(
+    publicMotionControl,
+    "!border-kmt-gold/25 !bg-black/30 !text-white placeholder:!text-amber-100/45 focus:!border-kmt-gold focus:!ring-kmt-gold/25 disabled:!border-white/10 disabled:!bg-black/40 disabled:!text-slate-500"
+  );
 
 const darkSecondaryButtonClasses =
-  "!border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white";
+  cn(publicMotionButton, "!border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white");
 
 const stepItemClasses = (index: number, currentStep: number) => {
   if (index === currentStep) {
-    return "rounded border border-kmt-gold bg-kmt-gold px-3 py-2 text-sm font-semibold text-white shadow-[0_12px_32px_-20px_rgba(153,123,68,0.95)]";
+    return cn(publicMotionStep, "rounded border border-kmt-gold bg-kmt-gold px-3 py-2 text-sm font-semibold text-white shadow-[0_12px_32px_-20px_rgba(153,123,68,0.95)]");
   }
 
   if (index < currentStep) {
-    return "rounded border border-kmt-gold/35 bg-kmt-gold/10 px-3 py-2 text-sm font-semibold text-amber-100";
+    return cn(publicMotionStep, "rounded border border-kmt-gold/35 bg-kmt-gold/10 px-3 py-2 text-sm font-semibold text-amber-100");
   }
 
-  return "rounded border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-slate-300";
+  return cn(publicMotionStep, "rounded border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-slate-300");
 };
 
 export function BookingStepper({ initialService, locale = "en" }: { initialService?: string; locale?: PublicLocale }) {
@@ -176,12 +191,12 @@ export function BookingStepper({ initialService, locale = "en" }: { initialServi
   if (state.type === "success") {
     return (
       <section
-        className="rounded-lg border border-emerald-300/35 bg-[linear-gradient(145deg,#142016_0%,#08100b_48%,#050505_100%)] p-6 shadow-[0_28px_90px_-56px_rgba(0,0,0,0.95)]"
+        className={cn("rounded-lg border border-emerald-300/35 bg-[linear-gradient(145deg,#142016_0%,#08100b_48%,#050505_100%)] p-6 shadow-[0_28px_90px_-56px_rgba(0,0,0,0.95)]", publicMotionStatus)}
         data-testid="booking-stepper-success"
         role="status"
       >
         <div className="flex items-center gap-3">
-          <MaterialSymbol className="text-3xl text-emerald-300" name="check_circle" />
+          <MaterialSymbol className="kmt-motion-success-icon text-3xl text-emerald-300" name="check_circle" />
           <div>
             <h2 className="text-2xl font-semibold text-white">{copy.successTitle}</h2>
             <p className="mt-1 text-sm text-emerald-100">
@@ -219,7 +234,7 @@ export function BookingStepper({ initialService, locale = "en" }: { initialServi
       </ol>
 
       {step === 0 ? (
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <div className={cn("mt-6 grid gap-4 md:grid-cols-2", publicMotionStepPanel)}>
           <TextInput className={darkControlClasses} error={errors.fullName} label={copy.fullName} name="fullName" required value={values.fullName} onChange={(event) => updateValue("fullName", event.target.value)} />
           <TextInput className={darkControlClasses} error={errors.phone} label={copy.phone} name="phone" required value={values.phone} onChange={(event) => updateValue("phone", event.target.value)} />
           <TextInput className={darkControlClasses} error={errors.email} label={copy.email} name="email" type="email" value={values.email} onChange={(event) => updateValue("email", event.target.value)} />
@@ -228,7 +243,7 @@ export function BookingStepper({ initialService, locale = "en" }: { initialServi
       ) : null}
 
       {step === 1 ? (
-        <div className="mt-6 grid gap-4">
+        <div className={cn("mt-6 grid gap-4", publicMotionStepPanel)}>
           <div className="grid gap-4 md:grid-cols-3">
             <Select className={darkControlClasses} label={copy.serviceCategory} name="serviceCategory" value={values.serviceCategory} onChange={(event) => updateValue("serviceCategory", event.target.value)}>
               <option value="corporate">{copy.categories.corporate}</option>
@@ -268,7 +283,7 @@ export function BookingStepper({ initialService, locale = "en" }: { initialServi
       ) : null}
 
       {step === 2 ? (
-        <div className="mt-6 grid gap-4">
+        <div className={cn("mt-6 grid gap-4", publicMotionStepPanel)}>
           <div className="rounded-lg border border-kmt-gold/20 bg-black/25 p-4 text-sm leading-7 text-slate-300">
             <p>
               <strong className="text-amber-100">{copy.reviewLabels.name}:</strong> {values.fullName || copy.missing}
@@ -304,7 +319,7 @@ export function BookingStepper({ initialService, locale = "en" }: { initialServi
             {copy.consent}
           </label>
           {errors.consent ? (
-            <p id="booking-consent-error" className="text-sm leading-6 text-kmt-danger">
+            <p id="booking-consent-error" className={cn("text-sm leading-6 text-kmt-danger", publicMotionStatus)}>
               {errors.consent}
             </p>
           ) : null}
@@ -312,7 +327,7 @@ export function BookingStepper({ initialService, locale = "en" }: { initialServi
       ) : null}
 
       {state.type === "error" ? (
-        <p className="mt-5 rounded border border-red-300/35 bg-red-950/50 p-3 text-sm leading-6 text-red-100" role="alert">
+        <p className={cn("mt-5 rounded border border-red-300/35 bg-red-950/50 p-3 text-sm leading-6 text-red-100", publicMotionStatus)} role="alert">
           {state.message} {state.requestId ? <span className="ltr inline-block">({state.requestId})</span> : null}
         </p>
       ) : null}
@@ -323,7 +338,7 @@ export function BookingStepper({ initialService, locale = "en" }: { initialServi
             {copy.back}
           </Button>
         ) : null}
-        <Button disabled={state.type === "submitting"} loading={state.type === "submitting"} type="submit">
+        <Button className={publicMotionButton} disabled={state.type === "submitting"} loading={state.type === "submitting"} type="submit">
           {step === 2 ? copy.submit : copy.continue}
         </Button>
       </div>

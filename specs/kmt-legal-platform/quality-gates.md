@@ -153,6 +153,19 @@ Pass only if:
 - Public link crawl covers English and Arabic entry points and returns status `< 400`.
 - `npm run typecheck`, `npm run lint`, `npm run test`, production build, MVP smoke, focused public visual/link crawl, and RTL/Arabic booking validation pass or any blocker is documented.
 
+## Gate 6E: PLAN-30 Public Motion Ready
+Pass only if:
+- PLAN-30 is tracked in `specs/kmt-legal-platform/public-motion-plan.md` and `tasks.md`.
+- Public motion is scoped to public-site helpers/components and does not affect admin, portal, install, login, product-system, or Stitch clone routes.
+- No Framer Motion, GSAP, Lottie, Rive, or other animation dependency is added.
+- Motion uses the Judicial Precision/Gold Legal Thread language: nav underline reveal, restrained CTA/card lift, icon glow, image-card zoom, filter/form state transitions, and booking step transitions.
+- Directional arrow motion is inline-forward in English and Arabic, with static RTL mirroring preserved.
+- Reduced-motion mode disables reveal, lift, zoom, and shift movement.
+- Disabled/loading controls do not lift on hover.
+- Focus states remain visible on dark public surfaces.
+- Public desktop and mobile smoke checks prove no page-level horizontal overflow after hover/focus motion.
+- `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e:smoke`, and focused public visual smoke pass or any blocker is documented.
+
 ## Gate 7: Legal Data Protection Ready
 Pass only if:
 - Internal notes cannot be exposed to clients.

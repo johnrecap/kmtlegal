@@ -6,7 +6,9 @@ const publicVisualPages = [
   { path: "/contact", name: "contact", expectedDir: "ltr" },
   { path: "/book-consultation", name: "book-consultation", expectedDir: "ltr" },
   { path: "/ar", name: "home-ar", expectedDir: "rtl" },
-  { path: "/ar/services", name: "services-ar", expectedDir: "rtl" }
+  { path: "/ar/services", name: "services-ar", expectedDir: "rtl" },
+  { path: "/ar/contact", name: "contact-ar", expectedDir: "rtl" },
+  { path: "/ar/book-consultation", name: "book-consultation-ar", expectedDir: "rtl" }
 ];
 
 const publicVisualViewports = [
@@ -41,6 +43,14 @@ async function stubAnalytics(page: import("@playwright/test").Page) {
   });
 }
 
+async function expectNoHorizontalOverflow(page: import("@playwright/test").Page, label: string) {
+  const { clientWidth, scrollWidth } = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth
+  }));
+  expect(scrollWidth, `${label} should not create page-level horizontal overflow`).toBeLessThanOrEqual(clientWidth + 1);
+}
+
 test.describe("PLAN-28 public luxury visual smoke", () => {
   for (const viewport of publicVisualViewports) {
     for (const pageTarget of publicVisualPages) {
@@ -53,11 +63,7 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
         await expect(page.locator("html")).toHaveAttribute("dir", pageTarget.expectedDir);
         await expect(page.getByRole("heading").first()).toBeVisible();
 
-        const { clientWidth, scrollWidth } = await page.evaluate(() => ({
-          clientWidth: document.documentElement.clientWidth,
-          scrollWidth: document.documentElement.scrollWidth
-        }));
-        expect(scrollWidth, `${pageTarget.path} should not overflow ${viewport.width}px`).toBeLessThanOrEqual(clientWidth + 1);
+        await expectNoHorizontalOverflow(page, `${pageTarget.path} ${viewport.width}px`);
 
         await page.screenshot({
           fullPage: true,
@@ -93,6 +99,51 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
     for (const href of hrefs) {
       const response = await request.get(href);
       expect(response.status(), `${href} should resolve from redesigned public links`).toBeLessThan(400);
+    }
+  });
+
+  test("PLAN-30 public motion respects reduced-motion preferences", async ({ page }) => {
+    await stubAnalytics(page);
+    await page.emulateMedia({ reducedMotion: "reduce" });
+
+    for (const pageTarget of publicVisualPages) {
+      const response = await page.goto(pageTarget.path, { waitUntil: "domcontentloaded" });
+
+      expect(response?.status(), `${pageTarget.path} should render with reduced motion`).toBeLessThan(400);
+      await expect(page.locator("html")).toHaveAttribute("dir", pageTarget.expectedDir);
+
+      const reveal = page.locator(".kmt-motion-reveal").first();
+      await expect(reveal, `${pageTarget.path} should include the public hero reveal target`).toBeVisible();
+      await expect(reveal).toHaveCSS("animation-name", "none");
+
+      const arrow = page.locator(".kmt-motion-arrow").first();
+      if ((await arrow.count()) > 0) {
+        const transformBeforeHover = await arrow.evaluate((node) => getComputedStyle(node).transform);
+        await arrow.hover();
+        await expect.poll(() => arrow.evaluate((node) => getComputedStyle(node).transform)).toBe(transformBeforeHover);
+      }
+    }
+  });
+
+  test("PLAN-30 hover and focus motion do not introduce horizontal overflow", async ({ page }) => {
+    await stubAnalytics(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    for (const pageTarget of publicVisualPages) {
+      const response = await page.goto(pageTarget.path, { waitUntil: "domcontentloaded" });
+      expect(response?.status(), `${pageTarget.path} should render before motion interaction`).toBeLessThan(400);
+
+      const firstButton = page.locator(".kmt-motion-button").first();
+      if ((await firstButton.count()) > 0) {
+        await firstButton.focus();
+        await expectNoHorizontalOverflow(page, `${pageTarget.path} focused motion button`);
+      }
+
+      const firstCard = page.locator(".kmt-motion-card").first();
+      if ((await firstCard.count()) > 0) {
+        await firstCard.hover();
+        await expectNoHorizontalOverflow(page, `${pageTarget.path} hovered motion card`);
+      }
     }
   });
 });

@@ -8,6 +8,7 @@ import { getPublicContent, navForPath } from "@/content/public-content";
 import { BookingStepper } from "@/features/public-site/booking-stepper";
 import { ContactForm } from "@/features/public-site/contact-form";
 import { DirectoryFilter } from "@/features/public-site/directory-filter";
+import { publicMotionArrow, publicMotionButton, publicMotionIcon, publicMotionImage, publicMotionImageCard } from "@/features/public-site/public-motion";
 import {
   DetailCta,
   FinalCtaBand,
@@ -193,10 +194,10 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
         description={copy.heroDescription}
         actions={
           <>
-            <ButtonLink href={localizedPublicHref("/book-consultation", locale)} size="lg" trailingIcon={<MaterialSymbol className="rtl:rotate-180" name="arrow_forward" />}>
+            <ButtonLink className={publicMotionButton} href={localizedPublicHref("/book-consultation", locale)} size="lg" trailingIcon={<MaterialSymbol className={publicMotionArrow} name="arrow_forward" />}>
               {content.shared.bookConsultation}
             </ButtonLink>
-            <ButtonLink className="!border-white/35 !text-white hover:!bg-white hover:!text-kmt-navy" href={localizedPublicHref("/services", locale)} size="lg" variant="secondary">
+            <ButtonLink className={cn(publicMotionButton, "!border-white/35 !text-white hover:!bg-white hover:!text-kmt-navy")} href={localizedPublicHref("/services", locale)} size="lg" variant="secondary">
               {content.shared.browsePracticeAreas}
             </ButtonLink>
           </>
@@ -222,7 +223,7 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
           <div className="grid gap-3 md:grid-cols-2">
             {[...focusService.outcomes, ...focusService.requiredDocuments].slice(0, 8).map((item) => (
               <div key={item} className="flex gap-2 text-sm leading-7 text-slate-300">
-                <MaterialSymbol className={cn("mt-1 text-base", publicGoldText)} name="check_circle" />
+                <MaterialSymbol className={cn("mt-1 text-base", publicGoldText, publicMotionIcon)} name="check_circle" />
                 <span>{item}</span>
               </div>
             ))}
@@ -249,8 +250,8 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
       <PublicSection surface="muted" eyebrow={copy.teamEyebrow} title={copy.teamTitle} description={copy.teamDescription}>
         <div className="grid gap-4 md:grid-cols-3">
           {content.lawyers.map((lawyer) => (
-            <Link key={lawyer.slug} className={cn(publicPanel, publicPanelHover, "block overflow-hidden")} href={localizedPublicHref(`/team/${lawyer.slug}`, locale)}>
-              <img alt={lawyer.name} className="h-56 w-full object-cover opacity-90" src={lawyer.image} />
+            <Link key={lawyer.slug} className={cn(publicPanel, publicPanelHover, publicMotionImageCard, "block overflow-hidden")} href={localizedPublicHref(`/team/${lawyer.slug}`, locale)}>
+              <img alt={lawyer.name} className={cn("h-56 w-full object-cover opacity-90", publicMotionImage)} src={lawyer.image} />
               <div className="p-5">
                 <h3 className="text-xl font-semibold text-white">{lawyer.name}</h3>
                 <p className={cn("mt-1 text-sm", publicMutedText)}>{lawyer.title}</p>
@@ -347,12 +348,12 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
             <ul className={cn("mt-4 space-y-3", publicMutedText)}>
               {service.outcomes.map((outcome) => (
                 <li key={outcome} className="flex gap-2">
-                  <MaterialSymbol className={cn("mt-1 text-base", publicGoldText)} name="check_circle" />
+                  <MaterialSymbol className={cn("mt-1 text-base", publicGoldText, publicMotionIcon)} name="check_circle" />
                   <span>{outcome}</span>
                 </li>
               ))}
             </ul>
-            <ButtonLink className="mt-8 !border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white" href={localizedPublicHref("/services", locale)} variant="secondary">
+            <ButtonLink className={cn(publicMotionButton, "mt-8 !border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white")} href={localizedPublicHref("/services", locale)} variant="secondary">
               {copy.backToServices}
             </ButtonLink>
           </article>
@@ -420,9 +421,9 @@ export function TeamDetailPageView({ locale, slug }: { locale: PublicLocale; slu
             <div className="mt-8 rounded-lg border border-amber-300/35 bg-amber-950/35 p-4 text-sm leading-7 text-amber-100">{copy.bookingNotice}</div>
             <p className={cn("mt-5 text-sm leading-7", publicMutedText)}>{copy.relationshipNotice}</p>
             <ButtonLink
-              className="mt-6"
+              className={cn(publicMotionButton, "mt-6")}
               href={localizedPublicHref(`/book-consultation?lawyer=${encodeURIComponent(lawyer.name)}`, locale)}
-              trailingIcon={<MaterialSymbol className="text-base rtl:rotate-180" name="arrow_forward" />}
+              trailingIcon={<MaterialSymbol className={cn("text-base", publicMotionArrow)} name="arrow_forward" />}
             >
               {copy.requestConsultation}
             </ButtonLink>
@@ -478,7 +479,7 @@ export async function ArticleDetailPageView({ locale, slug }: { locale: PublicLo
             </div>
             <p className="text-lg leading-9 text-white">{article.content}</p>
             <div className="mt-8 rounded-lg border border-amber-300/35 bg-amber-950/35 p-4 text-sm leading-7 text-amber-100">{copy.disclaimer}</div>
-            <ButtonLink className="mt-6 !border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white" href={localizedPublicHref("/articles", locale)} variant="secondary">
+            <ButtonLink className={cn(publicMotionButton, "mt-6 !border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white")} href={localizedPublicHref("/articles", locale)} variant="secondary">
               {copy.backToArticles}
             </ButtonLink>
           </div>
@@ -536,7 +537,7 @@ export async function CaseStudyDetailPageView({ locale, slug }: { locale: Public
               <CaseStudyBlock title={copy.lessons} body={study.lessons} />
             </div>
             <div className="mt-8 rounded-lg border border-amber-300/35 bg-amber-950/35 p-4 text-sm leading-7 text-amber-100">{study.disclaimer}</div>
-            <ButtonLink className="mt-6 !border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white" href={localizedPublicHref("/case-studies", locale)} variant="secondary">
+            <ButtonLink className={cn(publicMotionButton, "mt-6 !border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white")} href={localizedPublicHref("/case-studies", locale)} variant="secondary">
               {copy.backToCaseStudies}
             </ButtonLink>
           </article>
@@ -587,7 +588,7 @@ export function ContactPageView({ locale }: { locale: PublicLocale }) {
               <section key={branch.name} className={cn(publicPanel, "p-5")}>
                 <h2 className="text-xl font-semibold text-white">{branch.name}</h2>
                 <p className={cn("mt-3 flex gap-2 text-sm leading-7", publicMutedText)}>
-                  <MaterialSymbol className={cn("mt-1 text-base", publicGoldText)} name="location_on" />
+                  <MaterialSymbol className={cn("mt-1 text-base", publicGoldText, publicMotionIcon)} name="location_on" />
                   {branch.address}
                 </p>
                 <p className={cn("mt-2 text-sm", publicMutedText)}>{branch.phone}</p>

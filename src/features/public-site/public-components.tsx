@@ -4,13 +4,20 @@ import { ButtonLink, MaterialSymbol } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
 import { cn } from "@/lib/cn";
 import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
+import {
+  publicMotionArrow,
+  publicMotionButton,
+  publicMotionIcon,
+  publicMotionImage,
+  publicMotionImageCard
+} from "@/features/public-site/public-motion";
 
 export const publicSectionSurface = "bg-[#07090b] text-white";
 export const publicSectionMutedSurface = "bg-[#0c1116] text-white";
 export const publicBorder = "border-white/10";
 export const publicPanel =
   "rounded-lg border border-white/10 bg-white/[0.035] text-white shadow-[0_24px_80px_rgba(0,0,0,0.28)]";
-export const publicPanelHover = "transition-colors hover:border-kmt-gold/70 hover:bg-white/[0.055]";
+export const publicPanelHover = "kmt-motion-card transition-colors hover:border-kmt-gold/70 hover:bg-white/[0.055]";
 export const publicMutedText = "text-slate-300";
 export const publicGoldText = "text-[#c79a52]";
 
@@ -74,15 +81,15 @@ export function PageHero({
 
   return (
     <section className={cn("relative isolate overflow-hidden bg-kmt-navy text-white", isCompact ? "min-h-[340px]" : "min-h-[560px]")}>
-      <img alt="" aria-hidden="true" className={cn("absolute inset-0 h-full w-full object-cover", imageOpacity)} src={image} />
+      <img alt="" aria-hidden="true" className={cn("kmt-motion-hero-image absolute inset-0 h-full w-full object-cover", imageOpacity)} src={image} />
       <div className={cn("absolute inset-0 bg-gradient-to-l", overlay)} />
       <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-[#07090b]" />
       <div className={cn("relative mx-auto flex max-w-[1200px] items-center px-4 sm:px-6 lg:px-10", isCompact ? "min-h-[340px] py-12" : "min-h-[560px] py-16")}>
-        <div className="max-w-3xl">
+        <div className="kmt-motion-reveal max-w-3xl">
           <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p>
           <h1 className={cn("mt-4 max-w-3xl font-semibold leading-tight", isCompact ? "text-3xl md:text-5xl" : "text-4xl md:text-6xl")}>{title}</h1>
           <p className={cn("mt-5 max-w-2xl leading-9 text-slate-100", isCompact ? "text-base md:text-lg" : "text-lg")}>{description}</p>
-          {actions ? <div className="mt-8 flex flex-wrap gap-3">{actions}</div> : null}
+          {actions ? <div className="kmt-motion-reveal kmt-motion-reveal-delay mt-8 flex flex-wrap gap-3">{actions}</div> : null}
         </div>
       </div>
     </section>
@@ -95,7 +102,7 @@ export function TrustStrip({ items }: { items: ReadonlyArray<{ icon: string; lab
       <div className="mx-auto grid max-w-[1200px] gap-4 px-4 py-5 text-sm text-slate-300 sm:px-6 md:grid-cols-3 lg:px-10">
         {items.map((item) => (
           <div key={item.label} className="flex items-center gap-2">
-            <MaterialSymbol className={publicGoldText} name={item.icon} />
+            <MaterialSymbol className={cn(publicMotionIcon, publicGoldText)} name={item.icon} />
             {item.label}
           </div>
         ))}
@@ -114,7 +121,7 @@ export function DetailCta({ serviceTitle, locale = "en" }: { serviceTitle?: stri
     <div className={cn(publicPanel, "p-6")}>
       <h2 className="text-2xl font-semibold text-white">{content.bookingPage.sectionTitle}</h2>
       <p className={cn("mt-3 leading-7", publicMutedText)}>{content.bookingPage.sectionDescription}</p>
-      <ButtonLink className="mt-5" href={href} trailingIcon={<MaterialSymbol className="text-base rtl:rotate-180" name="arrow_forward" />}>
+      <ButtonLink className={cn(publicMotionButton, "mt-5")} href={href} trailingIcon={<MaterialSymbol className={cn("text-base", publicMotionArrow)} name="arrow_forward" />}>
         {content.shared.bookConsultation}
       </ButtonLink>
     </div>
@@ -136,10 +143,10 @@ export function PracticeAreaCard({
 }) {
   return (
     <Link className={cn(publicPanel, publicPanelHover, "group flex min-h-[190px] flex-col p-5")} href={localizedPublicHref(href, locale)}>
-      <MaterialSymbol className={cn("text-4xl", publicGoldText)} name={icon} />
+      <MaterialSymbol className={cn("text-4xl", publicGoldText, publicMotionIcon)} name={icon} />
       <h3 className="mt-4 text-xl font-semibold text-white">{title}</h3>
       <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{summary}</p>
-      <MaterialSymbol className={cn("mt-auto pt-4 text-xl transition-transform group-hover:-translate-x-1", publicGoldText, "rtl:rotate-180")} name="arrow_forward" />
+      <MaterialSymbol className={cn("mt-auto pt-4 text-xl", publicGoldText, publicMotionArrow)} name="arrow_forward" />
     </Link>
   );
 }
@@ -150,7 +157,7 @@ export function ProcessSteps({ steps }: { steps: ReadonlyArray<{ number: string;
       {steps.map((step) => (
         <li key={step.number} className="relative rounded-lg border border-white/10 bg-white/[0.025] p-5">
           <div className="flex items-center justify-between gap-4">
-            <MaterialSymbol className={cn("text-3xl", publicGoldText)} name={step.icon} />
+            <MaterialSymbol className={cn("text-3xl", publicGoldText, publicMotionIcon)} name={step.icon} />
             <span className={cn("text-sm font-semibold", publicGoldText)}>{step.number}</span>
           </div>
           <h3 className="mt-4 text-lg font-semibold text-white">{step.title}</h3>
@@ -221,7 +228,9 @@ export function LuxuryFeaturePanel({
 }) {
   return (
     <div className={cn(publicPanel, "grid overflow-hidden lg:grid-cols-[0.8fr_1.2fr]")}>
-      <img alt="" className="h-full min-h-[320px] w-full object-cover opacity-80" src={image} />
+      <div className={cn("h-full overflow-hidden", publicMotionImageCard)}>
+        <img alt="" className={cn("h-full min-h-[320px] w-full object-cover opacity-80", publicMotionImage)} src={image} />
+      </div>
       <div className="p-6 lg:p-8">
         <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p>
         <h3 className="mt-3 text-3xl font-semibold leading-tight text-white">{title}</h3>
@@ -252,7 +261,7 @@ export function FinalCtaBand({
           <h2 className="text-3xl font-semibold leading-tight">{title}</h2>
           <p className={cn("mt-3 max-w-2xl leading-8", publicMutedText)}>{description}</p>
         </div>
-        <ButtonLink href={localizedPublicHref(href, locale)} size="lg" trailingIcon={<MaterialSymbol className="text-base rtl:rotate-180" name="arrow_forward" />}>
+        <ButtonLink className={publicMotionButton} href={localizedPublicHref(href, locale)} size="lg" trailingIcon={<MaterialSymbol className={cn("text-base", publicMotionArrow)} name="arrow_forward" />}>
           {content.shared.bookConsultation}
         </ButtonLink>
       </div>

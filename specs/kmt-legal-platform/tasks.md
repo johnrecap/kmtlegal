@@ -418,3 +418,20 @@ Acceptance:
 - Article and CaseStudy have explicit locale-aware storage and queries.
 - Existing slug strings remain unchanged across locales.
 - Public metadata, language alternates, canonical URLs, accessibility labels, and route links are locale-aware.
+
+## Milestone 23 - PLAN-30 KMT Signature Motion System
+- [x] T241 Create PLAN-30 Spec Kit plan artifact at `specs/kmt-legal-platform/public-motion-plan.md`.
+- [x] T242 Freeze PLAN-30 boundary: public website only; exclude admin, portal, install, login, product-system, and Stitch clone surfaces.
+- [x] T243 Add CSS/Tailwind-first public motion utilities without adding a new animation dependency.
+- [x] T244 Apply Gold Legal Thread motion to public navigation, footer links, consultation CTAs, hero reveal, public cards, icons, image cards, filters, contact form, and booking stepper.
+- [x] T245 Preserve RTL arrow direction and reduced-motion fallbacks while preventing disabled/loading controls from lifting on hover.
+- [x] T246 Add focused Playwright coverage for reduced motion and no horizontal overflow after hover/focus interactions.
+- [x] T247 Run verification: `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e:smoke`, and focused public visual smoke.
+- [x] T248 Update PLAN-30 status/docs, commit, push to `origin/main`, and hand off aaPanel PM2 update commands.
+
+Acceptance:
+- Public motion uses the Judicial Precision direction and Gold Legal Thread pattern.
+- No new animation library or runtime dependency is introduced.
+- Public motion is opt-in through public-site classes and does not restyle protected/admin/product/stitch surfaces.
+- Reduced-motion users get no reveal/lift/zoom/shift motion while static RTL direction remains correct.
+- Public pages have no page-level horizontal overflow after hover/focus motion at mobile width.

@@ -3,6 +3,8 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Button, Select, Textarea, TextInput } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
+import { publicMotionButton, publicMotionControl, publicMotionForm, publicMotionStatus } from "@/features/public-site/public-motion";
+import { cn } from "@/lib/cn";
 import type { PublicLocale } from "@/lib/public-locale";
 
 type ContactStatus =
@@ -21,13 +23,19 @@ const initialValues = {
 };
 
 const darkFormClasses =
-  "relative overflow-hidden rounded-lg border border-kmt-gold/25 bg-[linear-gradient(145deg,#17110a_0%,#0b0c0e_50%,#050505_100%)] p-5 shadow-[0_28px_90px_-56px_rgba(0,0,0,0.95)] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-l before:from-transparent before:via-kmt-gold/70 before:to-transparent [&_label]:text-amber-100 [&_p[id$='-hint']]:text-slate-300 [&_p[id$='-error']]:text-red-200 [&_select+span]:text-kmt-gold";
+  cn(
+    publicMotionForm,
+    "relative overflow-hidden rounded-lg border border-kmt-gold/25 bg-[linear-gradient(145deg,#17110a_0%,#0b0c0e_50%,#050505_100%)] p-5 shadow-[0_28px_90px_-56px_rgba(0,0,0,0.95)] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-l before:from-transparent before:via-kmt-gold/70 before:to-transparent [&_label]:text-amber-100 [&_p[id$='-hint']]:text-slate-300 [&_p[id$='-error']]:text-red-200 [&_select+span]:text-kmt-gold"
+  );
 
 const darkControlClasses =
-  "!border-kmt-gold/25 !bg-black/30 !text-white placeholder:!text-amber-100/45 focus:!border-kmt-gold focus:!ring-kmt-gold/25 disabled:!border-white/10 disabled:!bg-black/40 disabled:!text-slate-500";
+  cn(
+    publicMotionControl,
+    "!border-kmt-gold/25 !bg-black/30 !text-white placeholder:!text-amber-100/45 focus:!border-kmt-gold focus:!ring-kmt-gold/25 disabled:!border-white/10 disabled:!bg-black/40 disabled:!text-slate-500"
+  );
 
 const darkSecondaryButtonClasses =
-  "!border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white";
+  cn(publicMotionButton, "!border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white");
 
 export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
   const copy = getPublicContent(locale).contactForm;
@@ -116,17 +124,17 @@ export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
         {copy.consent}
       </label>
       {status.type === "success" ? (
-        <p className="mt-4 rounded border border-emerald-300/35 bg-emerald-950/45 p-3 text-sm leading-6 text-emerald-100" role="status">
+        <p className={cn("mt-4 rounded border border-emerald-300/35 bg-emerald-950/45 p-3 text-sm leading-6 text-emerald-100", publicMotionStatus)} role="status">
           {status.message}
         </p>
       ) : null}
       {status.type === "error" ? (
-        <p className="mt-4 rounded border border-red-300/35 bg-red-950/50 p-3 text-sm leading-6 text-red-100" role="alert">
+        <p className={cn("mt-4 rounded border border-red-300/35 bg-red-950/50 p-3 text-sm leading-6 text-red-100", publicMotionStatus)} role="alert">
           {status.message} {status.requestId ? <span className="ltr inline-block">({status.requestId})</span> : null}
         </p>
       ) : null}
       <div className="mt-5 flex flex-wrap gap-3">
-        <Button disabled={isLockedAfterSuccess} loading={isSubmitting} type="submit">
+        <Button className={publicMotionButton} disabled={isLockedAfterSuccess} loading={isSubmitting} type="submit">
           {copy.submit}
         </Button>
         {isLockedAfterSuccess ? (

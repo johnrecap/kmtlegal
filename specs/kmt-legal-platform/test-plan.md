@@ -114,11 +114,21 @@
 - No framework creep: no `next-intl` dependency, config, or import appears in package, source, tests, or Prisma files.
 - Form flow guard: contact and booking validation/error/success states work in both English default and Arabic `/ar` pages, including the booking AI review disclaimer.
 
+## PLAN-30 KMT Signature Motion Tests
+- Public scope guard: verify public motion helpers are applied only to public website surfaces and do not restyle `/admin`, `/portal`, `/install`, `/login`, `/product-system`, or `/stitch-clone/*`.
+- Dependency guard: verify no new animation runtime dependency is added.
+- Reduced-motion guard: with `prefers-reduced-motion: reduce`, hero reveal, card lift, button lift, image zoom, result fade, status fade, and arrow shift do not animate.
+- RTL direction guard: public arrows keep correct static direction in Arabic and hover movement is inline-forward when motion is allowed.
+- Interaction overflow guard: hover/focus states for public buttons and cards do not create page-level horizontal overflow at `390px`.
+- Form state guard: contact and booking success/error/validation states remain readable and accessible after motion classes are applied.
+- Visual smoke: `/`, `/services`, `/contact`, `/book-consultation`, `/ar`, `/ar/services`, `/ar/contact`, and `/ar/book-consultation` render with expected direction and screenshot evidence.
+
 ## Visual Regression Tests
 - Stitch clone at `390x844` and `1440x900` where references exist.
 - Stitch clone requires `_workspace/stitch-clone/{screen-name}/04_visual-diff-report.md` and `06_acceptance.md` for each screen.
 - Product public shell mobile/desktop.
 - PLAN-28 public luxury screenshots for `/`, `/services`, `/contact`, and `/book-consultation`.
+- PLAN-30 public motion screenshots and reduced-motion checks for English and Arabic public pages.
 - Portal dashboard mobile/desktop.
 - Admin dashboard desktop.
 - Critical forms/dialogs.
