@@ -120,6 +120,24 @@ Pass only if:
 - Mobile smoke passes for `/`, `/services`, `/contact`, and `/book-consultation`.
 - PLAN-27 staging/live screenshots, console logs, and network evidence are archived before any production-ready claim.
 
+## Gate 6C: PLAN-28 Public Luxury Redesign Ready
+Pass only if:
+- PLAN-28 is tracked in `specs/kmt-legal-platform/public-luxury-redesign-plan.md` and `tasks.md`.
+- The redesign is scoped to public routes and public-site components only.
+- `/admin`, `/portal`, `/product-system`, shared `src/components/ui/*` defaults, and `/stitch-clone/*` do not inherit PLAN-28 styling through global mutations.
+- Public labels are Arabic-first; `/services` may remain the route while the public label uses `مجالات الخبرة`.
+- No visible `EN` toggle is shown until complete English localization exists.
+- Public header, footer, hero, section, CTA, listing, booking, and contact surfaces follow one dark luxury legal visual language.
+- Public practice-area content covers corporate, litigation, arbitration, real estate, tax advisory, criminal defense, labor law, commercial contracts, foreign investment, and debt recovery, or any omitted item is explicitly deferred with reason.
+- All public route metadata, headings, CTAs, filters, empty states, form labels, errors, success states, and image alt text are reviewed as user-facing text.
+- Public copy does not promise legal outcomes and does not expose client-identifying details.
+- Booking and contact flows preserve existing API contracts, analytics events, validation, requestId, loading, disabled, error, and success behavior.
+- Public internal link crawl proves rendered links from homepage, nav, footer, services, team, articles, case studies, contact, booking, privacy, and terms return status `< 400`.
+- Desktop `1440x900` and mobile `390x844` screenshots are archived for `/`, `/services`, `/contact`, and `/book-consultation`.
+- Mobile public pages have no page-level horizontal overflow at `390px`.
+- Keyboard focus, contrast, RTL icon direction, touch targets, and reduced-motion behavior are checked on dark surfaces.
+- `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, and relevant Playwright smoke pass or blocked checks are documented before PLAN-28 is marked done.
+
 ## Gate 7: Legal Data Protection Ready
 Pass only if:
 - Internal notes cannot be exposed to clients.

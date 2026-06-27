@@ -89,10 +89,24 @@
 - Route manifest contract checks implemented finance/calendar/files/portal route families against `contracts/openapi-plan.md`.
 - DB-backed E2E entrypoint covers staff login -> admin without TOTP and client login -> portal.
 
+## PLAN-28 Public Luxury Redesign Tests
+- Public scope guard: verify `/admin`, `/portal`, `/product-system`, and `/stitch-clone/*` do not inherit PLAN-28 public-only dark styling through global token/body/shared primitive mutations.
+- Public route render smoke: `/`, `/services`, `/services/[slug]`, `/team`, `/team/[slug]`, `/articles`, `/articles/[slug]`, `/case-studies`, `/case-studies/[slug]`, `/media`, `/contact`, `/book-consultation`, `/privacy`, and `/terms`.
+- Public internal link crawl: homepage cards, nav links, footer links, service detail links, team detail links, article links, case-study links, CTA links, privacy, and terms all return status `< 400`.
+- Public visual screenshots: `/`, `/services`, `/contact`, and `/book-consultation` at desktop `1440x900` and mobile `390x844`.
+- RTL/mobile overflow: public pages must have no page-level horizontal scroll at `390px`; internal scroll is allowed only for explicit controls where documented.
+- Dark surface accessibility: focus states, contrast, touch targets, button labels, filter `aria-pressed`, form labels, error text, and status messages remain visible.
+- Booking flow regression: required-field validation, step navigation, service/category prefill, analytics event preservation, API submission, error state, loading state, disabled state, and success reference output.
+- Contact form regression: validation, API submission, duplicate-submit protection after success, reset/new-message action, error state, and requestId display.
+- DB-empty content behavior: homepage insights, articles, and case studies render empty-safe content without dead links when no published DB content exists.
+- Legal-copy guard: public copy, representative matters, case studies, and CTAs do not promise legal outcomes or expose client-identifying details.
+- Localization guard: no visible `EN` toggle until full English public localization exists; Arabic labels and category display names are user-facing and stable.
+
 ## Visual Regression Tests
 - Stitch clone at `390x844` and `1440x900` where references exist.
 - Stitch clone requires `_workspace/stitch-clone/{screen-name}/04_visual-diff-report.md` and `06_acceptance.md` for each screen.
 - Product public shell mobile/desktop.
+- PLAN-28 public luxury screenshots for `/`, `/services`, `/contact`, and `/book-consultation`.
 - Portal dashboard mobile/desktop.
 - Admin dashboard desktop.
 - Critical forms/dialogs.
@@ -182,6 +196,9 @@ npm run security:audit
 11. AI Gateway mock/provider -> normalized output -> schema validation -> no raw prompt/provider logs.
 12. Invoice basics create/update -> client own payment view -> admin finance permission enforced.
 13. Hosting selector -> compatible panel preflight -> `/install` bootstrap -> installer lock for the selected setup mode.
+14. PLAN-28 public visitor flow: homepage -> `مجالات الخبرة` -> service detail -> book consultation -> validation/success.
+15. PLAN-28 public inquiry flow: homepage/contact CTA -> contact form -> success -> deliberate new-message reset.
+16. PLAN-28 public editorial flow: homepage insights -> article/case-study detail -> final consultation CTA without broken links.
 
 ## Test Matrix
 | Test type | Scope | Tool | Runs on PR? | Runs on merge? | Runs before release? | Blocking release? | Owner |

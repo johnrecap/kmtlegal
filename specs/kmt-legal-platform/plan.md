@@ -275,3 +275,11 @@ Prefer Server Actions for form mutations where suitable and Route Handlers for f
 - Output: `docs/PLAN_27_LIVE_SITE_QA_REMEDIATION.md`, tasks T181-T204, Gate 6B, release checklist updates, automated smoke coverage, and live deployed evidence.
 - Tests: typecheck, unit/contract tests, build, public link-crawl Playwright smoke, authenticated admin live smoke, DB-backed public content smoke, static asset/CSP/favicon smoke, mobile smoke, and deployed live smoke.
 - Acceptance: no rendered public link returns 404, no `ChunkLoadError`, no blocked CSP beacon error, favicon resolves, production login/admin copy is clean/localized, booking/contact success states are user-safe, admin mock AI/overflow findings are cleared, and evidence is archived before production-ready status is claimed.
+
+### Milestone 13 - PLAN-28 Public Luxury Redesign
+- Goal: Redesign the public website into a dark luxury legal experience inspired by the uploaded reference while preserving all protected product surfaces.
+- Tasks: freeze public-only boundary, define scoped public visual contract, select approved imagery, redesign public shell/components, rebuild homepage hierarchy, roll out to services/team/articles/case-studies/media/contact/booking/privacy/terms, update Arabic public labels and metadata, preserve booking/contact contracts, add public link crawl and desktop/mobile screenshots, run design polish, and archive evidence.
+- Dependencies: PLAN-09, PLAN-10, PLAN-11, PLAN-20, PLAN-27 public link/content remediation.
+- Output: `specs/kmt-legal-platform/public-luxury-redesign-plan.md`, tasks T205-T228, Gate 6C, updated public UI, public QA evidence, and deployment handoff.
+- Tests: typecheck, lint, unit/component tests, build, public smoke, public link crawl, booking/contact regression, desktop `1440x900` screenshots, mobile `390x844` screenshots, RTL/accessibility checks, and protected-surface drift spot checks.
+- Acceptance: every public route follows the new dark luxury visual language; no admin/portal/product-system/Stitch/shared UI primitive drift; public Arabic copy is safe and outcome-neutral; no visible `EN` toggle exists before full localization; public internal links, booking/contact flows, contrast, focus states, and mobile overflow all pass.

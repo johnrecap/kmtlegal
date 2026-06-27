@@ -52,6 +52,30 @@ Use Stitch `DESIGN.md` as the source for initial palette: calm light surfaces, m
 ### Dark Mode
 N/A for MVP unless explicitly requested; legal platform prioritizes calm light-mode readability.
 
+### PLAN-28 Public Luxury Redesign
+PLAN-28 changes the public website only. It introduces a dark luxury legal visual language inspired by the uploaded reference image without changing admin, portal, product-system, Stitch clone, or shared UI primitive defaults.
+
+Public redesign rules:
+- Scope all dark/gold styling to the public shell, public components, public route files, or additive public-only tokens.
+- Do not mutate existing `kmt` token meanings when protected product surfaces depend on them.
+- Keep Arabic as the primary public locale and hide any `EN` toggle until full English localization exists.
+- Keep `/services` as the route while using `مجالات الخبرة` as the public label.
+- Use dark executive legal-office imagery, gold outline accents, thin borders, sharp-to-moderate radius, and editorial Arabic hierarchy.
+- Do not copy the reference logo, client data, or legal-outcome claims.
+- Public forms remain highly readable inside the dark theme and preserve labels, errors, disabled/loading states, request IDs, and recovery actions.
+
+Required public component treatment:
+- `PublicShell`: dark sticky header, Arabic nav, active underline, clear consultation CTA, rich dark footer.
+- `PageHero`: cinematic full-width image with safe dark overlay and accessible heading hierarchy.
+- `PublicSection`: dark section rhythm with optional centered editorial headings and no nested-card layout.
+- `TrustStrip`: proof/privacy/human-review strip adapted to dark public surfaces.
+- `DetailCta`: premium consultation panel that preserves booking deep links.
+- `DirectoryFilter`: dark search/filter/cards with accessible pressed states and empty-safe states.
+- `BookingStepper` and `ContactForm`: dark surrounding surface with readable fields, errors, success, and loading.
+
+Protected-surface guard:
+- `/admin`, `/portal`, `/product-system`, and `/stitch-clone/*` must not visually inherit PLAN-28 public styling.
+
 ## Component Inventory
 
 ### Foundations

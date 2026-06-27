@@ -357,3 +357,41 @@ Acceptance:
 - Contact success avoids accidental duplicate sends.
 - Authenticated admin pages do not expose English shell/settings copy, raw legacy mock AI text, or page-level horizontal overflow.
 - PLAN-27 evidence is archived before any production-ready claim.
+
+## Milestone 21 - PLAN-28 Public Luxury Redesign
+- [x] T205 Create PLAN-28 Spec Kit plan artifact at `specs/kmt-legal-platform/public-luxury-redesign-plan.md`.
+- [ ] T206 Freeze PLAN-28 boundary: public routes only; exclude admin, portal, product-system, Stitch clone, and shared UI primitive restyling.
+- [ ] T207 Inventory current public routes, public components, content arrays, local assets, public tests, and screenshot commands before implementation.
+- [ ] T208 Define public-only dark luxury visual contract with scoped colors, typography, border, depth, image, motion, RTL, and accessibility rules.
+- [ ] T209 Choose or add approved public imagery for hero, focus area, representative matters, articles, team, and footer without real client data.
+- [ ] T210 Redesign `PublicShell` header with dark transparent treatment, Arabic-first navigation labels, active underline, mobile nav, and primary consultation CTA.
+- [ ] T211 Redesign `PublicShell` footer with KMT brand block, practice areas, offices, contact, newsletter/lead capture if approved, privacy/terms links, and responsive layout.
+- [ ] T212 Redesign `PageHero`, `PublicSection`, `TrustStrip`, and `DetailCta` as public-only luxury components without changing shared `src/components/ui/*` defaults.
+- [ ] T213 Recompose homepage into hero, trust strip, practice-area matrix, featured focus area, process, industries, representative matters, insights, and final CTA.
+- [ ] T214 Expand public practice-area content to the full matrix: corporate, litigation, arbitration, real estate, tax advisory, criminal defense, labor law, commercial contracts, foreign investment, and debt recovery.
+- [ ] T215 Add Arabic display labels and stable category mappings so public labels do not expose raw DB/category values.
+- [ ] T216 Redesign `/services` and `/services/[slug]` with the new practice-area listing/detail language while preserving existing slugs and booking entry points.
+- [ ] T217 Redesign `/team` and `/team/[slug]` with premium portrait cards, specialties, booking availability, and accessible image alt text.
+- [ ] T218 Redesign `/articles`, `/articles/[slug]`, `/case-studies`, `/case-studies/[slug]`, and `/media` as editorial legal insight surfaces with DB-empty safe states.
+- [ ] T219 Redesign `/book-consultation` and `BookingStepper` surfaces while preserving API payload, validation, analytics events, loading, disabled, error, and success states.
+- [ ] T220 Redesign `/contact` and `ContactForm` surfaces while preserving contact API payload, duplicate-submit protection, errors, success reset, and branch data.
+- [ ] T221 Restyle `/privacy` and `/terms` to match the public visual language without changing legal meaning unless approved.
+- [ ] T222 Remove or hide any visible English language toggle from the public shell until full English localization exists.
+- [ ] T223 Update Arabic public metadata, CTAs, headings, labels, alt text, and no-outcome legal disclaimers for all redesigned public surfaces.
+- [ ] T224 Add or update public render/link tests for redesigned public pages, including homepage links, nav links, footer links, service/team detail links, and DB-empty article/case-study states.
+- [ ] T225 Add focused Playwright public visual smoke for `/`, `/services`, `/contact`, and `/book-consultation` at desktop `1440x900` and mobile `390x844`.
+- [ ] T226 Run design polish review and fix public UI issues: contrast, hierarchy, text overflow, RTL icon direction, focus states, touch targets, and non-generic legal brand feel.
+- [ ] T227 Run verification: `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e:smoke`, public link crawl, and screenshot review.
+- [ ] T228 Update PLAN-28 status/docs, commit, push to `origin/main`, and hand off aaPanel PM2 update commands.
+
+Acceptance:
+- Every in-scope public route uses the new dark luxury legal visual language.
+- Dashboard, admin, portal, product-system, shared UI primitives, and Stitch clone are not redesigned by PLAN-28.
+- Public header/footer/navigation are Arabic-first and route-stable.
+- `/services` may keep its route path but public labels use `مجالات الخبرة`.
+- No visible `EN` toggle exists until complete English localization is delivered.
+- Booking and contact forms preserve existing API contracts, validation, analytics, requestId, loading, disabled, error, and success behavior.
+- Public copy remains privacy-safe, does not expose client data, and does not promise legal outcomes.
+- All public internal links return status `< 400`.
+- Desktop and mobile screenshots show no page-level horizontal overflow, unreadable text, clipped CTAs, or broken dark-surface focus states.
+- Verification results and screenshot/link-crawl evidence are archived before marking PLAN-28 done.
