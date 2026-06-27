@@ -1,27 +1,49 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { ButtonLink, MaterialSymbol } from "@/components/ui";
 import { cn } from "@/lib/cn";
+
+export const publicSectionSurface = "bg-[#07090b] text-white";
+export const publicSectionMutedSurface = "bg-[#0c1116] text-white";
+export const publicBorder = "border-white/10";
+export const publicPanel =
+  "rounded-lg border border-white/10 bg-white/[0.035] text-white shadow-[0_24px_80px_rgba(0,0,0,0.28)]";
+export const publicPanelHover = "transition-colors hover:border-kmt-gold/70 hover:bg-white/[0.055]";
+export const publicMutedText = "text-slate-300";
+export const publicGoldText = "text-[#c79a52]";
 
 export function PublicSection({
   eyebrow,
   title,
   description,
   children,
-  className
+  className,
+  align = "start",
+  surface = "default"
 }: {
   eyebrow?: string;
   title: string;
   description?: string;
   children: ReactNode;
   className?: string;
+  align?: "start" | "center";
+  surface?: "default" | "muted" | "transparent";
 }) {
+  const surfaceClass =
+    surface === "transparent"
+      ? "text-white"
+      : surface === "muted"
+        ? publicSectionMutedSurface
+        : publicSectionSurface;
+  const isCentered = align === "center";
+
   return (
-    <section className={className}>
+    <section className={cn(surfaceClass, className)}>
       <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:px-10 lg:py-16">
-        <div className="max-w-3xl">
-          {eyebrow ? <p className="text-sm font-semibold text-kmt-gold">{eyebrow}</p> : null}
-          <h2 className="mt-2 text-3xl font-semibold leading-tight text-kmt-ink md:text-4xl">{title}</h2>
-          {description ? <p className="mt-4 text-base leading-8 text-kmt-muted">{description}</p> : null}
+        <div className={cn("max-w-3xl", isCentered ? "mx-auto text-center" : undefined)}>
+          {eyebrow ? <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p> : null}
+          <h2 className="mt-2 text-3xl font-semibold leading-tight text-white md:text-4xl">{title}</h2>
+          {description ? <p className={cn("mt-4 text-base leading-8", publicMutedText)}>{description}</p> : null}
         </div>
         <div className="mt-8">{children}</div>
       </div>
@@ -46,16 +68,17 @@ export function PageHero({
 }) {
   const isCompact = size === "compact";
   const imageOpacity = isCompact ? "opacity-60" : "opacity-50";
-  const overlay = isCompact ? "from-kmt-navy/75 via-kmt-navy/40 to-kmt-navy/5" : "from-kmt-navy/80 via-kmt-navy/60 to-kmt-navy/10";
+  const overlay = isCompact ? "from-kmt-navy/85 via-kmt-navy/40 to-[#07090b]/30" : "from-[#050607]/95 via-kmt-navy/60 to-[#07090b]/25";
 
   return (
-    <section className={cn("relative isolate overflow-hidden bg-kmt-navy text-white", isCompact ? "min-h-[340px]" : "min-h-[520px]")}>
+    <section className={cn("relative isolate overflow-hidden bg-kmt-navy text-white", isCompact ? "min-h-[340px]" : "min-h-[560px]")}>
       <img alt="" aria-hidden="true" className={cn("absolute inset-0 h-full w-full object-cover", imageOpacity)} src={image} />
       <div className={cn("absolute inset-0 bg-gradient-to-l", overlay)} />
-      <div className={cn("relative mx-auto flex max-w-[1200px] items-center px-4 sm:px-6 lg:px-10", isCompact ? "min-h-[340px] py-12" : "min-h-[520px] py-16")}>
+      <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-[#07090b]" />
+      <div className={cn("relative mx-auto flex max-w-[1200px] items-center px-4 sm:px-6 lg:px-10", isCompact ? "min-h-[340px] py-12" : "min-h-[560px] py-16")}>
         <div className="max-w-3xl">
-          <p className="text-sm font-semibold text-amber-100">{eyebrow}</p>
-          <h1 className={cn("mt-4 font-semibold leading-tight", isCompact ? "text-3xl md:text-5xl" : "text-4xl md:text-6xl")}>{title}</h1>
+          <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p>
+          <h1 className={cn("mt-4 max-w-3xl font-semibold leading-tight", isCompact ? "text-3xl md:text-5xl" : "text-4xl md:text-6xl")}>{title}</h1>
           <p className={cn("mt-5 max-w-2xl leading-9 text-slate-100", isCompact ? "text-base md:text-lg" : "text-lg")}>{description}</p>
           {actions ? <div className="mt-8 flex flex-wrap gap-3">{actions}</div> : null}
         </div>
@@ -66,18 +89,18 @@ export function PageHero({
 
 export function TrustStrip() {
   return (
-    <div className="border-y border-kmt-border bg-white">
-      <div className="mx-auto grid max-w-[1200px] gap-4 px-4 py-5 text-sm text-kmt-muted sm:px-6 md:grid-cols-3 lg:px-10">
+    <div className="border-y border-white/10 bg-[#090d11]">
+      <div className="mx-auto grid max-w-[1200px] gap-4 px-4 py-5 text-sm text-slate-300 sm:px-6 md:grid-cols-3 lg:px-10">
         <div className="flex items-center gap-2">
-          <MaterialSymbol className="text-kmt-gold" name="verified_user" />
+          <MaterialSymbol className={publicGoldText} name="verified_user" />
           مراجعة بشرية قبل أي قرار قانوني
         </div>
         <div className="flex items-center gap-2">
-          <MaterialSymbol className="text-kmt-gold" name="lock" />
+          <MaterialSymbol className={publicGoldText} name="lock" />
           لا ننشر بيانات العملاء أو المستندات
         </div>
         <div className="flex items-center gap-2">
-          <MaterialSymbol className="text-kmt-gold" name="schedule" />
+          <MaterialSymbol className={publicGoldText} name="schedule" />
           متابعة منظمة من الطلب حتى الموعد
         </div>
       </div>
@@ -89,14 +112,135 @@ export function DetailCta({ serviceTitle }: { serviceTitle?: string }) {
   const href = serviceTitle ? `/book-consultation?service=${encodeURIComponent(serviceTitle)}` : "/book-consultation";
 
   return (
-    <div className="rounded-lg border border-kmt-border bg-white p-6">
-      <h2 className="text-2xl font-semibold text-kmt-ink">ابدأ بطلب استشارة منظم</h2>
-      <p className="mt-3 leading-7 text-kmt-muted">
-        اكتب ملخصًا واضحًا، وسنرتب البيانات مبدئيًا للمراجعة البشرية. لا يتم تقديم استشارة قانونية نهائية عبر النموذج.
+    <div className={cn(publicPanel, "p-6")}>
+      <h2 className="text-2xl font-semibold text-white">ابدأ بطلب استشارة منظم</h2>
+      <p className={cn("mt-3 leading-7", publicMutedText)}>
+        اكتب ملخصا واضحا، وسنرتب البيانات مبدئيا للمراجعة البشرية. لا يتم تقديم استشارة قانونية نهائية عبر النموذج.
       </p>
       <ButtonLink className="mt-5" href={href} trailingIcon={<MaterialSymbol className="text-base rtl:rotate-180" name="arrow_forward" />}>
         احجز استشارة
       </ButtonLink>
     </div>
+  );
+}
+
+export function PracticeAreaCard({ icon, title, summary, href }: { icon: string; title: string; summary: string; href: string }) {
+  return (
+    <Link className={cn(publicPanel, publicPanelHover, "group flex min-h-[190px] flex-col p-5")} href={href}>
+      <MaterialSymbol className={cn("text-4xl", publicGoldText)} name={icon} />
+      <h3 className="mt-4 text-xl font-semibold text-white">{title}</h3>
+      <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{summary}</p>
+      <MaterialSymbol className={cn("mt-auto pt-4 text-xl transition-transform group-hover:-translate-x-1", publicGoldText, "rtl:rotate-180")} name="arrow_forward" />
+    </Link>
+  );
+}
+
+export function ProcessSteps({ steps }: { steps: Array<{ number: string; title: string; summary: string; icon: string }> }) {
+  return (
+    <ol className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {steps.map((step) => (
+        <li key={step.number} className="relative rounded-lg border border-white/10 bg-white/[0.025] p-5">
+          <div className="flex items-center justify-between gap-4">
+            <MaterialSymbol className={cn("text-3xl", publicGoldText)} name={step.icon} />
+            <span className={cn("text-sm font-semibold", publicGoldText)}>{step.number}</span>
+          </div>
+          <h3 className="mt-4 text-lg font-semibold text-white">{step.title}</h3>
+          <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{step.summary}</p>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+export function IndustryGrid({ industries }: { industries: Array<{ title: string; summary: string }> }) {
+  return (
+    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+      {industries.map((industry) => (
+        <article key={industry.title} className="rounded-lg border border-white/10 bg-white/[0.025] p-5">
+          <h3 className="text-lg font-semibold text-white">{industry.title}</h3>
+          <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{industry.summary}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+export function RepresentativeMatterCard({
+  label,
+  title,
+  region,
+  year,
+  summary,
+  href,
+  privacyNote
+}: {
+  label: string;
+  title: string;
+  region: string;
+  year: string;
+  summary: string;
+  href: string;
+  privacyNote: string;
+}) {
+  return (
+    <Link className={cn(publicPanel, publicPanelHover, "block p-5")} href={href}>
+      <p className={cn("text-xs font-semibold", publicGoldText)}>{label}</p>
+      <h3 className="mt-3 text-xl font-semibold leading-8 text-white">{title}</h3>
+      <p className="mt-1 text-xs text-slate-400">
+        {region} · {year}
+      </p>
+      <p className={cn("mt-4 text-sm leading-7", publicMutedText)}>{summary}</p>
+      <p className="mt-4 border-t border-white/10 pt-3 text-xs leading-6 text-slate-400">{privacyNote}</p>
+    </Link>
+  );
+}
+
+export function LuxuryFeaturePanel({
+  image,
+  eyebrow,
+  title,
+  description,
+  children
+}: {
+  image: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className={cn(publicPanel, "grid overflow-hidden lg:grid-cols-[0.8fr_1.2fr]")}>
+      <img alt="" className="h-full min-h-[320px] w-full object-cover opacity-80" src={image} />
+      <div className="p-6 lg:p-8">
+        <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p>
+        <h3 className="mt-3 text-3xl font-semibold leading-tight text-white">{title}</h3>
+        <p className={cn("mt-4 leading-8", publicMutedText)}>{description}</p>
+        <div className="mt-6">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+export function FinalCtaBand({
+  title,
+  description,
+  href = "/book-consultation"
+}: {
+  title: string;
+  description: string;
+  href?: string;
+}) {
+  return (
+    <section className="border-y border-white/10 bg-[#0f1112] text-white">
+      <div className="mx-auto grid max-w-[1200px] gap-5 px-4 py-8 sm:px-6 md:grid-cols-[1fr_auto] md:items-center lg:px-10">
+        <div>
+          <h2 className="text-3xl font-semibold leading-tight">{title}</h2>
+          <p className={cn("mt-3 max-w-2xl leading-8", publicMutedText)}>{description}</p>
+        </div>
+        <ButtonLink href={href} size="lg" trailingIcon={<MaterialSymbol className="text-base rtl:rotate-180" name="arrow_forward" />}>
+          احجز استشارة
+        </ButtonLink>
+      </div>
+    </section>
   );
 }
