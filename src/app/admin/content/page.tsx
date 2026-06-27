@@ -128,7 +128,7 @@ function rowsFor(result: HubResult, query: Record<string, string>): ContentRow[]
       type: "caseStudy",
       title: study.title,
       status: study.status,
-      meta: `${study.category} · ${study.isAnonymized ? "مجهولة" : "تحتاج إخفاء هوية"}`,
+      meta: `${study.locale === "ar" ? "العربية" : "English"} · ${study.category} · ${study.isAnonymized ? "مجهولة" : "تحتاج إخفاء هوية"}`,
       owner: study.approvedBy?.name ?? "بدون اعتماد",
       updatedAt: study.updatedAt,
       href: editHref("case-studies", "caseStudy", study.id, query)
@@ -153,7 +153,7 @@ function rowsFor(result: HubResult, query: Record<string, string>): ContentRow[]
     type: "article",
     title: article.title,
     status: article.status,
-    meta: article.category,
+    meta: `${article.locale === "ar" ? "العربية" : "English"} · ${article.category}`,
     owner: article.author.name,
     updatedAt: article.updatedAt,
     href: editHref("articles", "article", article.id, query)

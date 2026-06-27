@@ -10,8 +10,8 @@ Total plans: 29
 
 | Status | Count |
 | --- | ---: |
-| Done | 23 |
-| In progress / partial / planned | 6 |
+| Done | 24 |
+| In progress / partial / planned | 5 |
 | Not started | 0 |
 
 ## Current Execution State
@@ -47,12 +47,13 @@ Total plans: 29
 | PLAN-26 Panel-Aware Installer Compatibility | In progress / partial | Added Spec Kit plan for Terminal VPS, aaPanel, and conditional cPanel setup modes; implemented `/install` hosting selector, `hostingMode` preflight contract, Node/PostgreSQL/private uploads/SMTP/TOTP/token checks, DB connectivity/schema/seed preflight, cPanel hard-requirement checks, `deploy/install/panel-install.sh`, `existing` vs `auto` database setup choice, panel install docs, harness team spec, env names, tasks, quality gates, and contract/static tests. | Remaining: test real aaPanel and compatible cPanel targets, run hosting smoke evidence, and archive panel screenshots/logs. |
 | PLAN-27 Live Site QA Remediation | In progress / partial | Live QA evidence from `https://kmtlegal.saeeddev.com/` was converted into `docs/PLAN_27_LIVE_SITE_QA_REMEDIATION.md`, Spec Kit tasks T181-T204, and Gate 6B. Local remediation now fixes the homepage static-vs-DB featured content split, favicon, Cloudflare Insights CSP allowlist, production login copy, Arabic login validation/bad-credential copy, booking success AI/mock placeholder leakage, contact duplicate-submit UX, admin shell/settings English copy, legacy mock AI display in admin consultation review, admin page-level overflow constraints, grouped admin nav, mobile table cards via `DataRecordCard`, public compact heroes, localized content hub copy, and `/admin/clients` mobile usability with compact nav, stacked filters, mobile result cards, and a create-client jump link. Smoke coverage now checks homepage rendered article/case-study detail links, `/favicon.ico`, login copy, anonymous `/admin`/`/portal` redirects without console chunk errors, public pages at 390px without horizontal scroll, and opt-in authenticated live admin smoke for route chunks, CSP, API status, static MIME, 390px overflow, and admin list mobile surfaces. Local re-verification passed after the full design responsive pass with typecheck, lint, full tests, build, smoke E2E, skipped live-admin smoke syntax check, and diff hygiene. | Remaining: add the broader nav/footer/static MIME crawl, add or document approved production content bootstrap, run DB-backed staging verification, atomically deploy the latest build, run live deployed public/admin smoke, and archive evidence before claiming production readiness. |
 | PLAN-28 Public Luxury Redesign | Done | Implemented the public-only dark luxury legal redesign: expanded the practice-area matrix and privacy-safe representative matters, redesigned `PublicShell`, public header/footer, public hero/sections/trust/CTA components, homepage composition, services/team/editorial/media/contact/booking/privacy/terms surfaces, dark public filters/forms, Arabic-first labels, route-stable `/services` links, no visible EN toggle, and focused PLAN-28 UI/e2e coverage. Verification passed: typecheck, lint, full Vitest, production build with a local placeholder `DATABASE_URL`, MVP smoke, focused public desktop/mobile visual screenshots, and public internal link crawl. | Nothing blocking for PLAN-28. Production deployment still follows the normal aaPanel PM2 handoff after push. |
+| PLAN-29 Public English-Primary Localization | Done | Implemented public English-default localization with Arabic under `/ar`: locale helper, document `lang`/`dir`, direction-aware globals, English/Arabic typed dictionaries, shared public route renderers, `/ar` wrappers, localized shell/cards/forms/metadata/links, public API `locale` handling, contact/booking locale payloads, booking AI disclaimers, localized API errors, admin Article/CaseStudy locale fields, Article/CaseStudy Prisma `locale` plus `(locale, slug)` uniqueness, locale-filtered public content services, sitemap alternates, and focused locale tests. Verification passed: typecheck, lint, full Vitest, local production build with `ALLOW_BUILD_WITHOUT_DATABASE_URL=true`, MVP smoke, public visual/link crawl, Arabic booking validation, and no `next-intl` package/source/test usage. | Nothing blocking for PLAN-29. Production database still needs migrated Article/CaseStudy English records for English DB-backed detail pages; existing records are backfilled as `ar` by migration. |
 
 ## Remaining Count
 
 - Fully not started: 0 plans.
-- Partially open/planned: 6 plans.
-- Done: 23 plans.
+- Partially open/planned: 5 plans.
+- Done: 24 plans.
 
 ## Immediate Next Steps
 
@@ -81,6 +82,7 @@ Total plans: 29
 - PLAN-27 responsive CRM follow-up verification on 2026-06-25: `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npx playwright test tests/e2e/live-admin-smoke.spec.ts` with env absent/skipped, and `git diff --check`
 - PLAN-27 full design responsive pass verification on 2026-06-25: `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e:smoke`, `npx playwright test tests/e2e/live-admin-smoke.spec.ts` with env absent/skipped, and `git diff --check`
 - PLAN-28 public luxury redesign verification on 2026-06-27: `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `cmd /c npm run build` with a local placeholder `DATABASE_URL`, `cmd /c npm run test:e2e:smoke`, and `cmd /c node scripts/run-playwright-with-server.mjs tests/e2e/public-luxury-visual.spec.ts`.
+- PLAN-29 public localization verification on 2026-06-27: `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, `cmd /c npm run test:e2e:smoke`, `cmd /c node scripts/run-playwright-with-server.mjs tests/e2e/public-luxury-visual.spec.ts`, `cmd /c node scripts/run-playwright-with-server.mjs tests/e2e/booking-stepper-validation.spec.ts`, and `rg -n "next-intl" package.json package-lock.json src tests prisma`.
 
 ## Important Notes
 

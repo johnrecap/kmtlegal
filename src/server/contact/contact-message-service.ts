@@ -9,6 +9,7 @@ export const contactTopicSchema = z.enum(["consultation", "documents", "media", 
 
 export const publicContactMessageSchema = z
   .object({
+    locale: z.enum(["en", "ar"]).default("en"),
     fullName: z.string().trim().min(2).max(120),
     email: emailSchema,
     phone: z.string().trim().max(40).optional().or(z.literal("")),
@@ -64,6 +65,7 @@ export async function createPublicContactMessage(input: {
     metadata: {
       topic: message.topic,
       status: message.status,
+      locale: input.body.locale,
       hasPhone: Boolean(phone)
     },
     request: input.request,

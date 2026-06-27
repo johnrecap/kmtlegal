@@ -125,8 +125,8 @@ Pass only if:
 - PLAN-28 is tracked in `specs/kmt-legal-platform/public-luxury-redesign-plan.md` and `tasks.md`.
 - The redesign is scoped to public routes and public-site components only.
 - `/admin`, `/portal`, `/product-system`, shared `src/components/ui/*` defaults, and `/stitch-clone/*` do not inherit PLAN-28 styling through global mutations.
-- Public labels are Arabic-first; `/services` may remain the route while the public label uses `مجالات الخبرة`.
-- No visible `EN` toggle is shown until complete English localization exists.
+- Public labels follow the active public locale; after PLAN-29, `/services` remains the route while the label is `Practice Areas` in English and `مجالات الخبرة` in Arabic.
+- No incomplete language toggle is shown; after PLAN-29, the public shell may show a complete English/Arabic switch.
 - Public header, footer, hero, section, CTA, listing, booking, and contact surfaces follow one dark luxury legal visual language.
 - Public practice-area content covers corporate, litigation, arbitration, real estate, tax advisory, criminal defense, labor law, commercial contracts, foreign investment, and debt recovery, or any omitted item is explicitly deferred with reason.
 - All public route metadata, headings, CTAs, filters, empty states, form labels, errors, success states, and image alt text are reviewed as user-facing text.
@@ -137,6 +137,21 @@ Pass only if:
 - Mobile public pages have no page-level horizontal overflow at `390px`.
 - Keyboard focus, contrast, RTL icon direction, touch targets, and reduced-motion behavior are checked on dark surfaces.
 - `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, and relevant Playwright smoke pass or blocked checks are documented before PLAN-28 is marked done.
+
+## Gate 6D: PLAN-29 Public Localization Ready
+Pass only if:
+- PLAN-29 is tracked in `specs/kmt-legal-platform/public-localization-plan.md` and `tasks.md`.
+- English is the default public locale on existing public routes such as `/`, `/services`, `/contact`, and `/book-consultation`.
+- Arabic public pages render under `/ar` equivalents and keep `lang="ar"` plus `dir="rtl"`.
+- Protected routes (`/admin`, `/portal`, `/install`, `/login`, `/product-system`, and `/stitch-clone/*`) remain Arabic/RTL and are not localized by PLAN-29.
+- Public links, nav, footer, cards, forms, CTAs, empty states, error/success states, metadata, canonical URLs, and alternate language URLs are locale-aware.
+- Article and CaseStudy rows have explicit locale storage, composite `(locale, slug)` uniqueness, and locale-filtered public list/detail queries.
+- Existing slug strings and route segments are preserved across locales.
+- No `next-intl` or other new i18n framework is added.
+- Public APIs accept the public locale safely and keep the existing response shape.
+- Booking/contact public form validation, errors, success messages, and AI review disclaimers match the active public locale.
+- Public link crawl covers English and Arabic entry points and returns status `< 400`.
+- `npm run typecheck`, `npm run lint`, `npm run test`, production build, MVP smoke, focused public visual/link crawl, and RTL/Arabic booking validation pass or any blocker is documented.
 
 ## Gate 7: Legal Data Protection Ready
 Pass only if:

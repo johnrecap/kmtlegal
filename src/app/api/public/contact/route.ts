@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { localeFromSearchParams } from "@/lib/public-locale";
 import { getIpAddress } from "@/server/auth/session-store";
 import { createPublicContactMessage, publicContactMessageSchema } from "@/server/contact/contact-message-service";
 import { errorToResponse, getRequestId } from "@/server/http/errors";
@@ -10,9 +11,14 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   const requestId = getRequestId(request);
+  const locale = localeFromSearchParams(new URL(request.url).searchParams);
 
   try {
-    const body = await parseJsonRequest(request, publicContactMessageSchema, "بيانات نموذج التواصل غير مكتملة.");
+    const body = await parseJsonRequest(
+      request,
+      publicContactMessageSchema,
+      locale === "ar" ? "بيانات نموذج التواصل غير مكتملة." : "Contact form data is incomplete."
+    );
     enforceRateLimit(rateLimiters.contact, `${body.email}:${canonicalPhone(body.phone) ?? "no-phone"}:${getIpAddress(request) ?? "unknown"}`);
 
     const message = await createPublicContactMessage({
@@ -32,6 +38,6 @@ export async function POST(request: Request) {
       }
     );
   } catch (error) {
-    return errorToResponse(error, requestId, { routeGroup: "public.contact", method: "POST" });
+    return errorToResponse(error, requestId, { routeGroup: "public.contact", method: "POST", locale });
   }
 }

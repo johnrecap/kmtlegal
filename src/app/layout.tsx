@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { documentLocaleForPath, publicLocaleDirection } from "@/lib/public-locale";
 import { shouldBypassReadinessGate } from "@/lib/readiness-routing";
 import { getApplicationReadiness } from "@/server/health/runtime-readiness";
 import "./globals.css";
@@ -19,11 +20,12 @@ export default async function RootLayout({
 }>) {
   const requestHeaders = headers();
   const pathname = requestHeaders.get("x-kmt-pathname") ?? "/";
+  const locale = documentLocaleForPath(pathname);
   const readiness = shouldBypassReadinessGate(pathname) ? null : await getApplicationReadiness();
   const page = readiness && !readiness.ready ? <ReadinessBlockedPage checks={readiness.checks} /> : children;
 
   return (
-    <html lang="ar" dir="rtl">
+    <html lang={locale} dir={publicLocaleDirection(locale)}>
       <body>{page}</body>
     </html>
   );

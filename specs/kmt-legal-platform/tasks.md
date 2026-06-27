@@ -395,3 +395,26 @@ Acceptance:
 - All public internal links return status `< 400`.
 - Desktop and mobile screenshots show no page-level horizontal overflow, unreadable text, clipped CTAs, or broken dark-surface focus states.
 - Verification results and screenshot/link-crawl evidence are archived before marking PLAN-28 done.
+
+## Milestone 22 - PLAN-29 Public Localization
+- [x] T229 Create PLAN-29 Spec Kit plan artifact at `specs/kmt-legal-platform/public-localization-plan.md`.
+- [x] T230 Update PLAN-29 tracking in `tasks.md`, `frontend-plan.md`, `quality-gates.md`, `test-plan.md`, and implementation status.
+- [x] T231 Freeze PLAN-29 boundary: public website routes only; exclude admin, portal, install, login, product-system, Stitch clone, emails, notifications, AI, invoices, PDFs, and protected staff/client workflows.
+- [x] T232 Make English the default public locale on existing public routes and keep Arabic optional under `/ar`.
+- [x] T233 Preserve all existing public slug strings; do not translate route segments or Article/CaseStudy slugs.
+- [x] T234 Reuse or narrowly extend the lightweight public locale helper pattern; do not add `next-intl` or another i18n framework.
+- [x] T235 Add required `locale` support for `Article` and `CaseStudy`, backfill existing Arabic rows as `ar`, and allow `(locale, slug)` uniqueness.
+- [x] T236 Filter public Article/CaseStudy list and detail queries by locale while preserving published/anonymized safety rules.
+- [x] T237 Localize public navigation, footer, CTAs, labels, form states, metadata, alt text, and empty/error/success states for English default and approved `/ar` content.
+- [x] T238 Add public locale tests for English default routes, `/ar` routes, slug stability, Article/CaseStudy locale filtering, missing localized content, and protected-surface drift.
+- [x] T239 Verify no `next-intl` dependency/config/import exists and run typecheck, lint, tests, build, public link crawl, and accessibility/RTL checks.
+- [x] T240 Update PLAN-29 status/docs after implementation and archive verification evidence before marking done.
+
+Acceptance:
+- English is the primary public experience at the existing public routes.
+- Arabic public pages are optional and live under `/ar`.
+- PLAN-29 does not localize admin, portal, install, login, product-system, Stitch clone, or internal workflows.
+- No `next-intl` or new i18n framework is introduced.
+- Article and CaseStudy have explicit locale-aware storage and queries.
+- Existing slug strings remain unchanged across locales.
+- Public metadata, language alternates, canonical URLs, accessibility labels, and route links are locale-aware.

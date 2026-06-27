@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
-import { lawyers } from "@/content/public-content";
+import { getPublicContent } from "@/content/public-content";
+import { localeFromSearchParams } from "@/lib/public-locale";
 
-export function GET() {
-  return NextResponse.json({ data: lawyers }, { headers: { "Cache-Control": "public, max-age=60, s-maxage=300" } });
+export function GET(request: Request) {
+  const locale = localeFromSearchParams(new URL(request.url).searchParams);
+  return NextResponse.json({ data: getPublicContent(locale).lawyers }, { headers: { "Cache-Control": "public, max-age=60, s-maxage=300" } });
 }

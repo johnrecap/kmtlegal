@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { localizeApiMessage } from "@/lib/ui-copy";
+import type { PublicLocale } from "@/lib/public-locale";
 import { safeLog } from "@/server/observability/safe-log";
 
 export type ApiErrorCode =
@@ -66,13 +67,14 @@ export function jsonError(
   code: ApiErrorCode,
   message: string,
   requestId?: string,
-  details?: ApiErrorDetails
+  details?: ApiErrorDetails,
+  options: { locale?: PublicLocale } = {}
 ) {
   return NextResponse.json(
     {
       error: {
         code,
-        message: localizeApiMessage(message),
+        message: localizeApiMessage(message, options.locale),
         details: details ?? [],
         requestId
       }
@@ -99,10 +101,10 @@ export function jsonOk<T>(data: T, init?: ResponseInit) {
 export function errorToResponse(
   error: unknown,
   requestId: string,
-  context: { routeGroup?: string; method?: string } = {}
+  context: { routeGroup?: string; method?: string; locale?: PublicLocale } = {}
 ) {
   if (error instanceof ApiError) {
-    return jsonError(error.status, error.code, error.message, requestId, error.details);
+    return jsonError(error.status, error.code, error.message, requestId, error.details, { locale: context.locale });
   }
 
   safeLog("error", "api.unexpected_error", {
@@ -114,7 +116,7 @@ export function errorToResponse(
     errorName: error instanceof Error ? error.name : typeof error
   });
 
-  return jsonError(500, "INTERNAL_ERROR", "حدث خطأ غير متوقع في الخادم. حاول مرة أخرى لاحقًا.", requestId);
+  return jsonError(500, "INTERNAL_ERROR", "حدث خطأ غير متوقع في الخادم. حاول مرة أخرى لاحقًا.", requestId, undefined, { locale: context.locale });
 }
 
 export function getRequestId(request: Request) {

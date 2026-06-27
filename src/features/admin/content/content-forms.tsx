@@ -26,6 +26,7 @@ type ArticleValue = {
   id?: string;
   title?: string;
   slug?: string;
+  locale?: string;
   excerpt?: string;
   content?: string;
   category?: string;
@@ -37,6 +38,7 @@ type CaseStudyValue = {
   id?: string;
   title?: string;
   slug?: string;
+  locale?: string;
   category?: string;
   challenge?: string;
   approach?: string;
@@ -157,6 +159,7 @@ export function ArticleForm({ article, canApprove }: { article?: ArticleValue; c
       const response = await sendJson(isEdit ? `/api/admin/content/articles/${article?.id}` : "/api/admin/content/articles", isEdit ? "PATCH" : "POST", {
         title: textValue(formData, "title"),
         slug: textValue(formData, "slug"),
+        locale: textValue(formData, "locale") || "en",
         excerpt: textValue(formData, "excerpt"),
         content: textValue(formData, "content"),
         category: textValue(formData, "category"),
@@ -185,7 +188,13 @@ export function ArticleForm({ article, canApprove }: { article?: ArticleValue; c
     <form className="grid gap-4" onSubmit={submit}>
       <TextInput defaultValue={article?.title ?? ""} disabled={isBusy} label="عنوان المقال" name="title" required />
       <TextInput defaultValue={article?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case مثل contract-risk-basics." label="معرّف الرابط (Slug)" name="slug" required />
-      <TextInput defaultValue={article?.category ?? ""} disabled={isBusy} label="التصنيف" name="category" required />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Select defaultValue={article?.locale ?? "en"} disabled={isBusy} label="لغة المحتوى" name="locale">
+          <option value="en">English</option>
+          <option value="ar">العربية</option>
+        </Select>
+        <TextInput defaultValue={article?.category ?? ""} disabled={isBusy} label="التصنيف" name="category" required />
+      </div>
       <Textarea defaultValue={article?.excerpt ?? ""} disabled={isBusy} label="الملخص" name="excerpt" required />
       <Textarea className="min-h-48" defaultValue={article?.content ?? ""} disabled={isBusy} label="المحتوى" name="content" required />
       <div className="grid gap-4 sm:grid-cols-2">
@@ -222,6 +231,7 @@ export function CaseStudyForm({ study, canApprove }: { study?: CaseStudyValue; c
       const response = await sendJson(isEdit ? `/api/admin/content/case-studies/${study?.id}` : "/api/admin/content/case-studies", isEdit ? "PATCH" : "POST", {
         title: textValue(formData, "title"),
         slug: textValue(formData, "slug"),
+        locale: textValue(formData, "locale") || "en",
         category: textValue(formData, "category"),
         challenge: textValue(formData, "challenge"),
         approach: textValue(formData, "approach"),
@@ -253,7 +263,13 @@ export function CaseStudyForm({ study, canApprove }: { study?: CaseStudyValue; c
     <form className="grid gap-4" onSubmit={submit}>
       <TextInput defaultValue={study?.title ?? ""} disabled={isBusy} label="عنوان دراسة الحالة" name="title" required />
       <TextInput defaultValue={study?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case." label="معرّف الرابط (Slug)" name="slug" required />
-      <TextInput defaultValue={study?.category ?? ""} disabled={isBusy} label="التصنيف" name="category" required />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Select defaultValue={study?.locale ?? "en"} disabled={isBusy} label="لغة المحتوى" name="locale">
+          <option value="en">English</option>
+          <option value="ar">العربية</option>
+        </Select>
+        <TextInput defaultValue={study?.category ?? ""} disabled={isBusy} label="التصنيف" name="category" required />
+      </div>
       <Textarea defaultValue={study?.challenge ?? ""} disabled={isBusy} label="التحدي" name="challenge" required />
       <Textarea defaultValue={study?.approach ?? ""} disabled={isBusy} label="طريقة التعامل" name="approach" required />
       <Textarea defaultValue={study?.generalOutcome ?? ""} disabled={isBusy} label="النتيجة العامة" name="generalOutcome" required />

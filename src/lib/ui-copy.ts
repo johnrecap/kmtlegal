@@ -33,7 +33,11 @@ const apiExactMessages: Record<string, string> = {
   "Request validation failed.": "البيانات المرسلة غير مكتملة أو غير صحيحة.",
   "Too many requests.": "تم إرسال طلبات كثيرة. حاول مرة أخرى بعد قليل.",
   "Too many requests. Try again later.": "تم إرسال طلبات كثيرة. حاول مرة أخرى بعد قليل.",
+  "Contact form data is incomplete.": "بيانات نموذج التواصل غير مكتملة.",
+  "Consultation request data is incomplete.": "بيانات طلب الاستشارة غير مكتملة.",
   "An unexpected server error occurred.": "حدث خطأ غير متوقع في الخادم. حاول مرة أخرى لاحقًا.",
+  "A recent consultation request already exists for the same phone number and area. Please wait for the team review or contact us.":
+    "يوجد طلب استشارة قريب بنفس رقم الهاتف ونفس المجال. انتظر مراجعة الفريق أو تواصل معنا.",
   "Email OTP fallback is disabled for this release.": "التحقق عبر البريد غير متاح في هذه النسخة.",
   "TOTP is deferred and disabled in this release.": "التحقق الثنائي غير متاح في هذه النسخة.",
   "Staff 2FA reset is deferred and disabled in this release.": "إعادة ضبط التحقق الثنائي للموظفين غير متاحة في هذه النسخة.",
@@ -130,7 +134,26 @@ export function booleanDisplayLabel(value: boolean | null | undefined) {
   return value ? technicalValueDisplayLabels.true : technicalValueDisplayLabels.false;
 }
 
-export function localizeApiMessage(message: string) {
+type UiLocale = "ar" | "en";
+
+const apiEnglishMessages: Record<string, string> = {
+  "يجب تسجيل الدخول للمتابعة.": "Authentication required.",
+  "الطلب غير صحيح.": "Invalid request.",
+  "البيانات المرسلة غير مكتملة أو غير صحيحة.": "Submitted data is incomplete or invalid.",
+  "بيانات الطلب غير مكتملة أو غير صحيحة.": "Request data is incomplete or invalid.",
+  "فلاتر الطلب غير صحيحة.": "Request filters are invalid.",
+  "تم إرسال طلبات كثيرة. حاول مرة أخرى بعد قليل.": "Too many requests. Try again later.",
+  "حدث خطأ غير متوقع في الخادم. حاول مرة أخرى لاحقًا.": "An unexpected server error occurred. Try again later.",
+  "تعذر حفظ طلب الاستشارة الآن. تأكد من تشغيل قاعدة البيانات وحاول مرة أخرى.": "The consultation request could not be saved right now. Try again later.",
+  "يوجد طلب استشارة قريب بنفس رقم الهاتف ونفس المجال. انتظر مراجعة الفريق أو تواصل معنا.":
+    "A recent consultation request already exists for the same phone number and area. Please wait for the team review or contact us."
+};
+
+export function localizeApiMessage(message: string, locale: UiLocale = "ar") {
+  if (locale === "en") {
+    return apiEnglishMessages[message] ?? message;
+  }
+
   if (apiExactMessages[message]) {
     return apiExactMessages[message];
   }

@@ -18,11 +18,15 @@ const publicSmokePages = [
 ];
 
 const publicResponsivePages = ["/", "/services", "/team", "/articles", "/case-studies", "/media", "/contact", "/book-consultation"];
+const arabicResponsivePages = ["/ar", "/ar/services", "/ar/contact", "/ar/book-consultation"];
 
 const publicLuxurySurfacePages = [
-  { path: "/services", testIds: ["public-directory-filter", "public-directory-card"] },
-  { path: "/contact", testIds: ["contact-form"] },
-  { path: "/book-consultation", testIds: ["booking-stepper"] }
+  { path: "/services", expectedDir: "ltr", testIds: ["public-directory-filter", "public-directory-card"] },
+  { path: "/contact", expectedDir: "ltr", testIds: ["contact-form"] },
+  { path: "/book-consultation", expectedDir: "ltr", testIds: ["booking-stepper"] },
+  { path: "/ar/services", expectedDir: "rtl", testIds: ["public-directory-filter", "public-directory-card"] },
+  { path: "/ar/contact", expectedDir: "rtl", testIds: ["contact-form"] },
+  { path: "/ar/book-consultation", expectedDir: "rtl", testIds: ["booking-stepper"] }
 ];
 
 async function expectNoHorizontalScroll(page: Page, path: string) {
@@ -85,7 +89,7 @@ async function collectAnalyticsEvents(page: Page) {
 
 test.describe("MVP smoke without database", () => {
   for (const path of publicSmokePages) {
-    test(`${path} renders with RTL shell and no console errors`, async ({ page }) => {
+    test(`${path} renders with the expected document direction and no console errors`, async ({ page }) => {
       const consoleErrors: string[] = [];
       page.on("console", (message) => {
         if (message.type() === "error") {
@@ -97,8 +101,19 @@ test.describe("MVP smoke without database", () => {
 
       expect(response?.status(), `${path} should not fail before DB-backed actions`).toBeLessThan(400);
       await expect(page.locator("body")).toBeVisible();
-      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+      await expect(page.locator("html")).toHaveAttribute("dir", expectedDocumentDir(path));
+      await expect(page.locator("html")).toHaveAttribute("lang", expectedDocumentLang(path));
       expect(consoleErrors).toEqual([]);
+    });
+  }
+
+  for (const path of ["/ar", "/ar/services", "/ar/contact", "/ar/book-consultation"]) {
+    test(`${path} renders the optional Arabic public route`, async ({ page }) => {
+      const response = await page.goto(path, { waitUntil: "domcontentloaded" });
+
+      expect(response?.status(), `${path} should render`).toBeLessThan(400);
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+      await expect(page.locator("html")).toHaveAttribute("lang", "ar");
     });
   }
 
@@ -117,7 +132,7 @@ test.describe("MVP smoke without database", () => {
     test.use({ viewport: { width: 390, height: 844 } });
 
     for (const path of publicResponsivePages) {
-      test(`${path} fits a 390px viewport without page-level horizontal scroll`, async ({ page }) => {
+      test(`${path} fits a 390px LTR viewport without page-level horizontal scroll`, async ({ page }) => {
         const response = await page.goto(path, { waitUntil: "domcontentloaded" });
 
         expect(response?.status(), `${path} should render on mobile`).toBeLessThan(400);
@@ -131,6 +146,18 @@ test.describe("MVP smoke without database", () => {
         expect(scrollWidth, `${path} should not create page-level horizontal scroll at 390px`).toBeLessThanOrEqual(clientWidth + 1);
       });
     }
+
+    for (const path of arabicResponsivePages) {
+      test(`${path} fits a 390px RTL viewport without page-level horizontal scroll`, async ({ page }) => {
+        const response = await page.goto(path, { waitUntil: "domcontentloaded" });
+
+        expect(response?.status(), `${path} should render on mobile`).toBeLessThan(400);
+        await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+        await expect(page.locator("body")).toBeVisible();
+        await expect(page.getByRole("heading").first()).toBeVisible();
+        await expectNoHorizontalScroll(page, path);
+      });
+    }
   });
 
   test.describe("PLAN-28 public luxury surfaces", () => {
@@ -141,10 +168,10 @@ test.describe("MVP smoke without database", () => {
       test(`${viewport.name} listing and form surfaces use dark luxury treatment without overflow`, async ({ page }) => {
         await page.setViewportSize({ width: viewport.width, height: viewport.height });
 
-        for (const { path, testIds } of publicLuxurySurfacePages) {
+        for (const { path, expectedDir, testIds } of publicLuxurySurfacePages) {
           await gotoUntilSurfaceVisible(page, path, testIds[0]);
 
-          await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+          await expect(page.locator("html")).toHaveAttribute("dir", expectedDir);
           await expectNoHorizontalScroll(page, `${viewport.name} ${path}`);
 
           for (const testId of testIds) {
@@ -158,7 +185,7 @@ test.describe("MVP smoke without database", () => {
   });
 
   test("contact form preserves requestId error output on the dark surface", async ({ page }) => {
-    await page.route("**/api/public/contact", async (route) => {
+    await page.route("**/api/public/contact**", async (route) => {
       await route.fulfill({
         status: 500,
         contentType: "application/json",
@@ -188,7 +215,7 @@ test.describe("MVP smoke without database", () => {
   test("booking form preserves validation, analytics events, and requestId error output", async ({ page }) => {
     const analyticsEvents = await collectAnalyticsEvents(page);
 
-    await page.route("**/api/public/consultations", async (route) => {
+    await page.route("**/api/public/consultations**", async (route) => {
       await route.fulfill({
         status: 503,
         contentType: "application/json",
@@ -253,9 +280,9 @@ test.describe("MVP smoke without database", () => {
     await expect(page.locator('a[href="/articles/contract-risk-basics"]')).toHaveCount(0);
     await expect(page.locator('a[href="/articles/prepare-consultation-file"]')).toHaveCount(0);
     await expect(page.locator('a[href="/case-studies/anonymous-commercial-dispute"]')).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "أساسيات تقليل مخاطر العقود" })).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "كيف تجهز ملف استشارة قانونية" })).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "تنظيم نزاع تجاري مجهول الأطراف" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Contract Risk Basics" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "How To Prepare A Legal Consultation File" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Organizing An Anonymous Commercial Dispute" })).toHaveCount(0);
   });
 
   test("login page does not expose local development setup copy", async ({ page }) => {
@@ -301,3 +328,17 @@ test.describe("MVP smoke without database", () => {
     expect(body.error.code).toBe("FORBIDDEN");
   });
 });
+
+function expectedDocumentDir(path: string) {
+  return path === "/ar" ||
+    path.startsWith("/ar/") ||
+    path.startsWith("/login") ||
+    path.startsWith("/product-system") ||
+    path.startsWith("/stitch-clone")
+    ? "rtl"
+    : "ltr";
+}
+
+function expectedDocumentLang(path: string) {
+  return expectedDocumentDir(path) === "rtl" ? "ar" : "en";
+}

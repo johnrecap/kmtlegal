@@ -22,8 +22,8 @@
 Use Stitch `DESIGN.md` as the source for initial palette: calm light surfaces, midnight/navy authority, restrained gold accent, semantic statuses, low-shadow depth.
 
 ### Typography Scale
-- Arabic primary: IBM Plex Sans Arabic or Cairo.
-- Latin/numbers: Inter.
+- Arabic text: IBM Plex Sans Arabic or Cairo.
+- English/Latin/numbers: Inter.
 - Display: public hero and dashboard overview only.
 - Headline: page titles and major sections.
 - Body: dense legal content.
@@ -42,12 +42,13 @@ Use Stitch `DESIGN.md` as the source for initial palette: calm light surfaces, m
 - Tablet: two-column where useful.
 - Desktop: dashboard shell with sidebar, dense tables, filters, metrics.
 
-### RTL Rules
-- Arabic is `dir="rtl"` by default.
-- Sidebar appears on the right in Arabic.
+### Locale And Direction Rules
+- Public routes without a locale prefix are English-first with `lang="en"` and `dir="ltr"`.
+- Arabic public routes live under `/ar` and render with `lang="ar"` and `dir="rtl"`.
+- Protected product surfaces (`/admin`, `/portal`, `/install`, `/login`, `/product-system`, and `/stitch-clone/*`) remain Arabic/RTL for this stage.
+- Sidebar appears on the right in Arabic protected shells.
 - Directional icons mirror when meaning direction.
-- Tables keep numeric columns readable.
-- English route structure remains LTR-ready through locale layout.
+- Tables keep numeric columns readable in both directions.
 
 ### Dark Mode
 N/A for MVP unless explicitly requested; legal platform prioritizes calm light-mode readability.
@@ -58,14 +59,14 @@ PLAN-28 changes the public website only. It introduces a dark luxury legal visua
 Public redesign rules:
 - Scope all dark/gold styling to the public shell, public components, public route files, or additive public-only tokens.
 - Do not mutate existing `kmt` token meanings when protected product surfaces depend on them.
-- Keep Arabic as the primary public locale and hide any `EN` toggle until full English localization exists.
-- Keep `/services` as the route while using `مجالات الخبرة` as the public label.
-- Use dark executive legal-office imagery, gold outline accents, thin borders, sharp-to-moderate radius, and editorial Arabic hierarchy.
+- PLAN-29 supersedes the temporary Arabic-primary public rule: English is now the default public locale and Arabic is optional under `/ar`.
+- Keep `/services` as the route while using locale-specific labels (`Practice Areas` in English, `مجالات الخبرة` in Arabic).
+- Use dark executive legal-office imagery, gold outline accents, thin borders, sharp-to-moderate radius, and editorial hierarchy appropriate to the active locale.
 - Do not copy the reference logo, client data, or legal-outcome claims.
 - Public forms remain highly readable inside the dark theme and preserve labels, errors, disabled/loading states, request IDs, and recovery actions.
 
 Required public component treatment:
-- `PublicShell`: dark sticky header, Arabic nav, active underline, clear consultation CTA, rich dark footer.
+- `PublicShell`: dark sticky header, localized nav, active underline, clear consultation CTA, language switch, rich dark footer.
 - `PageHero`: cinematic full-width image with safe dark overlay and accessible heading hierarchy.
 - `PublicSection`: dark section rhythm with optional centered editorial headings and no nested-card layout.
 - `TrustStrip`: proof/privacy/human-review strip adapted to dark public surfaces.

@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { Badge, ButtonLink, MaterialSymbol, TextInput } from "@/components/ui";
+import { getPublicContent, type PublicContent } from "@/content/public-content";
 import { cn } from "@/lib/cn";
+import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 
 export type DirectoryItem = {
   title: string;
@@ -19,7 +21,21 @@ const darkFieldScopeClasses =
 const darkControlClasses =
   "!border-kmt-gold/25 !bg-black/30 !text-white placeholder:!text-amber-100/45 focus:!border-kmt-gold focus:!ring-kmt-gold/25 disabled:!border-white/10 disabled:!bg-black/40 disabled:!text-slate-500";
 
-export function DirectoryFilter({ items, searchLabel = "ابحث", emptyTitle }: { items: DirectoryItem[]; searchLabel?: string; emptyTitle: string }) {
+export function DirectoryFilter({
+  items,
+  searchLabel,
+  emptyTitle,
+  locale = "en",
+  copy
+}: {
+  items: DirectoryItem[];
+  searchLabel?: string;
+  emptyTitle: string;
+  locale?: PublicLocale;
+  copy?: PublicContent["directoryFilter"];
+}) {
+  const content = getPublicContent(locale);
+  const dictionary = copy ?? content.directoryFilter;
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const categories = useMemo(() => {
@@ -59,10 +75,10 @@ export function DirectoryFilter({ items, searchLabel = "ابحث", emptyTitle }:
       >
         <TextInput
           className={darkControlClasses}
-          label={searchLabel}
+          label={searchLabel ?? dictionary.defaultSearchLabel}
           name="public-search"
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="اكتب كلمة بحث"
+          placeholder={dictionary.placeholder}
           value={query}
         />
         <div className="flex flex-wrap items-end gap-2">
@@ -72,7 +88,7 @@ export function DirectoryFilter({ items, searchLabel = "ابحث", emptyTitle }:
             type="button"
             onClick={() => setCategory("all")}
           >
-            الكل
+            {dictionary.all}
           </button>
           {categories.map(([key, label]) => (
             <button
@@ -91,7 +107,7 @@ export function DirectoryFilter({ items, searchLabel = "ابحث", emptyTitle }:
               type="button"
               onClick={clearFilters}
             >
-              مسح الفلاتر
+              {content.shared.clearFilters}
             </button>
           ) : null}
         </div>
@@ -113,12 +129,12 @@ export function DirectoryFilter({ items, searchLabel = "ابحث", emptyTitle }:
               <p className="mt-3 text-sm leading-7 text-slate-300">{item.description}</p>
               <ButtonLink
                 className="mt-5 !border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white"
-                href={item.href}
+                href={localizedPublicHref(item.href, locale)}
                 size="sm"
                 variant="secondary"
                 trailingIcon={<MaterialSymbol className="text-base rtl:rotate-180" name="arrow_forward" />}
               >
-                عرض التفاصيل
+                {content.shared.viewDetails}
               </ButtonLink>
             </article>
           ))}
@@ -126,14 +142,14 @@ export function DirectoryFilter({ items, searchLabel = "ابحث", emptyTitle }:
       ) : (
         <div className="mt-6 rounded-lg border border-kmt-gold/20 bg-[linear-gradient(150deg,#15100a_0%,#080808_100%)] p-6 text-slate-300" role="status">
           <h3 className="text-lg font-semibold text-white">{emptyTitle}</h3>
-          <p className="mt-2 text-sm leading-6 text-slate-300">لا توجد نتائج ضمن البحث أو التصنيف الحالي. امسح الفلاتر للعودة إلى كل العناصر.</p>
+          <p className="mt-2 text-sm leading-6 text-slate-300">{dictionary.emptyDescription}</p>
           {hasActiveFilters ? (
             <button
               className="mt-4 min-h-11 rounded border border-kmt-gold/40 px-4 py-2 text-sm font-semibold text-amber-100 transition-colors hover:bg-kmt-gold hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
               type="button"
               onClick={clearFilters}
             >
-              مسح الفلاتر
+              {content.shared.clearFilters}
             </button>
           ) : null}
         </div>

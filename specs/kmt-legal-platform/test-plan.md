@@ -100,7 +100,19 @@
 - Contact form regression: validation, API submission, duplicate-submit protection after success, reset/new-message action, error state, and requestId display.
 - DB-empty content behavior: homepage insights, articles, and case studies render empty-safe content without dead links when no published DB content exists.
 - Legal-copy guard: public copy, representative matters, case studies, and CTAs do not promise legal outcomes or expose client-identifying details.
-- Localization guard: no visible `EN` toggle until full English public localization exists; Arabic labels and category display names are user-facing and stable.
+- Localization guard: PLAN-29 makes English the default public locale, Arabic lives under `/ar`, and both locale switches must point to existing routes with stable slugs.
+
+## PLAN-29 Public English-Primary Localization Tests
+- Public document direction: `/`, `/services`, `/contact`, and `/book-consultation` render `lang="en"` and `dir="ltr"`.
+- Arabic public document direction: `/ar`, `/ar/services`, `/ar/contact`, and `/ar/book-consultation` render `lang="ar"` and `dir="rtl"`.
+- Protected-surface guard: `/admin`, `/portal`, `/install`, `/login`, `/product-system`, and `/stitch-clone/*` remain Arabic/RTL for this stage.
+- Route and slug stability: English and Arabic public links keep the same slugs and only add/remove the `/ar` prefix.
+- Public copy guard: nav, footer, CTAs, form labels, validation, errors, success states, empty states, metadata, and image alt text match the active public locale.
+- Public API locale guard: public list/detail APIs accept `?locale=en|ar`, default to English, and keep response shape stable.
+- DB locale guard: Article and CaseStudy allow the same slug once per locale and public queries never leak Arabic DB records into English pages or English records into Arabic pages.
+- SEO guard: public metadata includes canonical and alternate language URLs for `en`, `ar`, and `x-default`.
+- No framework creep: no `next-intl` dependency, config, or import appears in package, source, tests, or Prisma files.
+- Form flow guard: contact and booking validation/error/success states work in both English default and Arabic `/ar` pages, including the booking AI review disclaimer.
 
 ## Visual Regression Tests
 - Stitch clone at `390x844` and `1440x900` where references exist.
@@ -174,7 +186,8 @@ npm run security:audit
 `qa:db` requires `DATABASE_URL` and runs migrate + seed + seed + DB-backed E2E. `qa:release` adds E2E smoke, DB gate, dependency audit, and secret scan.
 
 ## UAT Checklist
-- Arabic public site reads naturally.
+- English public site reads naturally on default routes.
+- Arabic public site reads naturally under `/ar`.
 - Booking copy does not promise outcomes.
 - AI organizer output is clearly preliminary and review-required.
 - Client portal hides internal notes.
@@ -196,9 +209,10 @@ npm run security:audit
 11. AI Gateway mock/provider -> normalized output -> schema validation -> no raw prompt/provider logs.
 12. Invoice basics create/update -> client own payment view -> admin finance permission enforced.
 13. Hosting selector -> compatible panel preflight -> `/install` bootstrap -> installer lock for the selected setup mode.
-14. PLAN-28 public visitor flow: homepage -> `مجالات الخبرة` -> service detail -> book consultation -> validation/success.
-15. PLAN-28 public inquiry flow: homepage/contact CTA -> contact form -> success -> deliberate new-message reset.
-16. PLAN-28 public editorial flow: homepage insights -> article/case-study detail -> final consultation CTA without broken links.
+14. PLAN-28/29 English public visitor flow: homepage -> `Practice Areas` -> service detail -> book consultation -> validation/success.
+15. PLAN-28/29 Arabic public visitor flow: `/ar` homepage -> `مجالات الخبرة` -> Arabic service detail -> Arabic booking validation.
+16. PLAN-28/29 public inquiry flow: homepage/contact CTA -> contact form -> success -> deliberate new-message reset in the active locale.
+17. PLAN-28/29 public editorial flow: homepage insights -> article/case-study detail -> final consultation CTA without broken links or cross-locale DB leakage.
 
 ## Test Matrix
 | Test type | Scope | Tool | Runs on PR? | Runs on merge? | Runs before release? | Blocking release? | Owner |

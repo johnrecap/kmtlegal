@@ -82,14 +82,14 @@
   --kmt-focus: 0 0 0 3px rgb(153 123 68 / 18%);
 }
 
-html {
-  direction: rtl;
-}
-
 body {
   margin: 0;
   background: #f7f9fb;
   color: #191c1e;
+  font-family: "Inter", "IBM Plex Sans Arabic", Arial, sans-serif;
+}
+
+html[dir="rtl"] body {
   font-family: "IBM Plex Sans Arabic", "Inter", Arial, sans-serif;
 }
 

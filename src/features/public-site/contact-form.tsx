@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { Button, Select, Textarea, TextInput } from "@/components/ui";
+import { getPublicContent } from "@/content/public-content";
+import type { PublicLocale } from "@/lib/public-locale";
 
 type ContactStatus =
   | { type: "idle" }
@@ -27,7 +29,8 @@ const darkControlClasses =
 const darkSecondaryButtonClasses =
   "!border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white";
 
-export function ContactForm() {
+export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
+  const copy = getPublicContent(locale).contactForm;
   const [isHydrated, setIsHydrated] = useState(false);
   const [values, setValues] = useState(initialValues);
   const [status, setStatus] = useState<ContactStatus>({ type: "idle" });
@@ -56,49 +59,49 @@ export function ContactForm() {
 
     setStatus({ type: "submitting" });
 
-    const response = await fetch("/api/public/contact", {
+    const response = await fetch(`/api/public/contact?locale=${locale}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values)
+      body: JSON.stringify({ ...values, locale })
     });
     const body = await response.json().catch(() => null);
 
     if (!response.ok) {
       setStatus({
         type: "error",
-        message: body?.error?.message ?? "تعذر إرسال الرسالة. راجع البيانات وحاول مرة أخرى.",
+        message: body?.error?.message ?? copy.fallbackError,
         requestId: body?.error?.requestId
       });
       return;
     }
 
-    setStatus({ type: "success", message: "تم استلام رسالتك. سيتواصل الفريق معك بعد المراجعة.", requestId: body?.requestId });
+    setStatus({ type: "success", message: copy.success, requestId: body?.requestId });
     setValues(initialValues);
   }
 
   return (
     <form aria-busy={isSubmitting} className={darkFormClasses} data-hydrated={isHydrated ? "true" : "false"} data-testid="contact-form" method="post" onSubmit={submit}>
       <div className="grid gap-4 md:grid-cols-2">
-        <TextInput className={darkControlClasses} disabled={fieldsDisabled} label="الاسم الكامل" name="fullName" required value={values.fullName} onChange={(event) => updateValue("fullName", event.target.value)} />
-        <TextInput className={darkControlClasses} disabled={fieldsDisabled} label="البريد الإلكتروني" name="email" required type="email" value={values.email} onChange={(event) => updateValue("email", event.target.value)} />
-        <TextInput className={darkControlClasses} disabled={fieldsDisabled} label="رقم الهاتف" name="phone" value={values.phone} onChange={(event) => updateValue("phone", event.target.value)} />
-        <Select className={darkControlClasses} disabled={fieldsDisabled} label="الموضوع" name="topic" value={values.topic} onChange={(event) => updateValue("topic", event.target.value)}>
-          <option value="consultation">طلب استشارة</option>
-          <option value="documents">استفسار عن مستندات</option>
-          <option value="media">إعلام أو محتوى</option>
-          <option value="other">موضوع آخر</option>
+        <TextInput className={darkControlClasses} disabled={fieldsDisabled} label={copy.fullName} name="fullName" required value={values.fullName} onChange={(event) => updateValue("fullName", event.target.value)} />
+        <TextInput className={darkControlClasses} disabled={fieldsDisabled} label={copy.email} name="email" required type="email" value={values.email} onChange={(event) => updateValue("email", event.target.value)} />
+        <TextInput className={darkControlClasses} disabled={fieldsDisabled} label={copy.phone} name="phone" value={values.phone} onChange={(event) => updateValue("phone", event.target.value)} />
+        <Select className={darkControlClasses} disabled={fieldsDisabled} label={copy.topic} name="topic" value={values.topic} onChange={(event) => updateValue("topic", event.target.value)}>
+          <option value="consultation">{copy.topics.consultation}</option>
+          <option value="documents">{copy.topics.documents}</option>
+          <option value="media">{copy.topics.media}</option>
+          <option value="other">{copy.topics.other}</option>
         </Select>
       </div>
       <div className="mt-4">
         <Textarea
           className={darkControlClasses}
-          label="الرسالة"
+          label={copy.message}
           name="message"
           required
           disabled={fieldsDisabled}
           value={values.message}
           onChange={(event) => updateValue("message", event.target.value)}
-          hint="لا ترسل مستندات أو بيانات حساسة عبر نموذج التواصل العام."
+          hint={copy.hint}
         />
       </div>
       <label className="mt-4 flex items-start gap-3 text-sm leading-7 !text-slate-300">
@@ -110,7 +113,7 @@ export function ContactForm() {
           type="checkbox"
           onChange={(event) => updateValue("consent", event.target.checked)}
         />
-        أوافق على استخدام البيانات للتواصل بخصوص الرسالة وفق سياسة الخصوصية.
+        {copy.consent}
       </label>
       {status.type === "success" ? (
         <p className="mt-4 rounded border border-emerald-300/35 bg-emerald-950/45 p-3 text-sm leading-6 text-emerald-100" role="status">
@@ -124,7 +127,7 @@ export function ContactForm() {
       ) : null}
       <div className="mt-5 flex flex-wrap gap-3">
         <Button disabled={isLockedAfterSuccess} loading={isSubmitting} type="submit">
-          إرسال الرسالة
+          {copy.submit}
         </Button>
         {isLockedAfterSuccess ? (
           <Button
@@ -136,7 +139,7 @@ export function ContactForm() {
               setStatus({ type: "idle" });
             }}
           >
-            رسالة جديدة
+            {copy.newMessage}
           </Button>
         ) : null}
       </div>

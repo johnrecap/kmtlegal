@@ -15,6 +15,7 @@ type EmailDeliveryMode = "disabled" | "dev" | "smtp";
 type EmailDeliveryOutcome = "sent" | "queued" | "failed" | "skipped";
 
 export const publicConsultationRequestSchema = z.object({
+  locale: z.enum(["en", "ar"]).default("en"),
   fullName: z.string().trim().min(2).max(120),
   phone: z.string().trim().min(6).max(40),
   email: emailSchema.optional().or(z.literal("")),
@@ -53,7 +54,11 @@ export async function createPublicConsultation(input: { body: PublicConsultation
   });
 
   if (duplicate) {
-    throw new ApiError(409, "CONFLICT", "يوجد طلب استشارة قريب بنفس رقم الهاتف ونفس المجال. انتظر مراجعة الفريق أو تواصل معنا.");
+    throw new ApiError(
+      409,
+      "CONFLICT",
+      "A recent consultation request already exists for the same phone number and area. Please wait for the team review or contact us."
+    );
   }
 
   const organizer = await organizeConsultation(input.body, input.requestId, getIpAddress(input.request) ?? phoneCanonical ?? input.body.phone);
@@ -86,6 +91,7 @@ export async function createPublicConsultation(input: { body: PublicConsultation
     resourceId: consultation.id,
     metadata: {
       serviceCategory: consultation.serviceCategory,
+      locale: input.body.locale,
       urgency: consultation.urgency,
       preferredMode: consultation.preferredMode,
       organizerStatus: organizer.status,
@@ -102,6 +108,7 @@ export async function createPublicConsultation(input: { body: PublicConsultation
     requestId: input.requestId,
     properties: {
       serviceCategory: consultation.serviceCategory,
+      locale: input.body.locale,
       urgency: consultation.urgency,
       preferredMode: consultation.preferredMode,
       organizerStatus: organizer.status,
@@ -128,7 +135,7 @@ export async function organizeConsultation(body: PublicConsultationRequestInput,
     const [classification, intakeSummary] = await Promise.all([
       generateStructured({
         task: "consultation_classification",
-        locale: "ar",
+        locale: body.locale,
         input: {
           serviceCategory: body.serviceCategory,
           summary: body.summary,
@@ -140,7 +147,7 @@ export async function organizeConsultation(body: PublicConsultationRequestInput,
       }),
       generateStructured({
         task: "intake_summary",
-        locale: "ar",
+        locale: body.locale,
         input: {
           summary: body.summary,
           serviceCategory: body.serviceCategory
@@ -155,7 +162,7 @@ export async function organizeConsultation(body: PublicConsultationRequestInput,
       classification: classification.output,
       intakeSummary: intakeSummary.output,
       reviewRequired: true,
-      disclaimer: AI_REVIEW_DISCLAIMER.ar
+      disclaimer: AI_REVIEW_DISCLAIMER[body.locale]
     };
   } catch {
     return {
@@ -163,7 +170,7 @@ export async function organizeConsultation(body: PublicConsultationRequestInput,
       classification: null,
       intakeSummary: null,
       reviewRequired: true,
-      disclaimer: AI_REVIEW_DISCLAIMER.ar
+      disclaimer: AI_REVIEW_DISCLAIMER[body.locale]
     };
   }
 }

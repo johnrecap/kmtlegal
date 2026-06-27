@@ -4,7 +4,8 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { AI_REVIEW_DISCLAIMER } from "@/server/ai/copy";
 import { Button, MaterialSymbol, Select, Textarea, TextInput } from "@/components/ui";
 import { trackClientAnalyticsEvent } from "@/lib/analytics-client";
-import { legalServices } from "@/content/public-content";
+import { getPublicContent, type PublicContent } from "@/content/public-content";
+import type { PublicLocale } from "@/lib/public-locale";
 
 type BookingValues = {
   fullName: string;
@@ -36,6 +37,7 @@ type BookingSuccess = {
 };
 
 type FieldErrors = Partial<Record<keyof BookingValues, string>>;
+type BookingFormCopy = PublicContent["bookingForm"];
 
 const MIN_SUMMARY_LENGTH = 20;
 
@@ -50,26 +52,6 @@ const initialValues: BookingValues = {
   urgency: "NORMAL",
   preferredMode: "PHONE",
   consent: false
-};
-
-const serviceCategoryLabels: Record<string, string> = {
-  corporate: "الشركات والعقود",
-  "real-estate": "العقارات",
-  employment: "العمل",
-  disputes: "المنازعات"
-};
-
-const urgencyLabels: Record<string, string> = {
-  LOW: "منخفضة",
-  NORMAL: "عادية",
-  HIGH: "مرتفعة",
-  URGENT: "عاجلة"
-};
-
-const preferredModeLabels: Record<BookingValues["preferredMode"], string> = {
-  PHONE: "هاتف",
-  ONLINE: "أونلاين",
-  OFFICE: "في المكتب"
 };
 
 const bookingStepKeys = ["contact", "details", "review"] as const;
@@ -95,17 +77,19 @@ const stepItemClasses = (index: number, currentStep: number) => {
   return "rounded border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-slate-300";
 };
 
-export function BookingStepper({ initialService }: { initialService?: string }) {
+export function BookingStepper({ initialService, locale = "en" }: { initialService?: string; locale?: PublicLocale }) {
+  const content = getPublicContent(locale);
+  const copy = content.bookingForm;
   const [isHydrated, setIsHydrated] = useState(false);
   const [step, setStep] = useState(0);
   const trackedSteps = useRef(new Set<number>());
   const [values, setValues] = useState<BookingValues>({
     ...initialValues,
-    serviceCategory: categoryFromInitialService(initialService)
+    serviceCategory: categoryFromInitialService(initialService, locale)
   });
   const [state, setState] = useState<SubmitState>({ type: "idle" });
   const [errors, setErrors] = useState<FieldErrors>({});
-  const steps = ["بيانات التواصل", "تفاصيل الطلب", "مراجعة وإرسال"];
+  const steps = copy.steps;
   const summaryLength = values.summary.trim().length;
   const summaryRemaining = Math.max(MIN_SUMMARY_LENGTH - summaryLength, 0);
 
@@ -144,7 +128,7 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const nextErrors = validateStep(step, values);
+    const nextErrors = validateStep(step, values, copy);
 
     if (Object.keys(nextErrors).length > 0) {
       setErrors(nextErrors);
@@ -165,10 +149,10 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
       preferredMode: values.preferredMode
     });
 
-    const response = await fetch("/api/public/consultations", {
+    const response = await fetch(`/api/public/consultations?locale=${locale}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values)
+      body: JSON.stringify({ ...values, locale })
     });
     const body = await response.json().catch(() => null);
 
@@ -180,7 +164,7 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
       });
       setState({
         type: "error",
-        message: body?.error?.message ?? "تعذر إرسال طلب الاستشارة. راجع البيانات وحاول مرة أخرى.",
+        message: body?.error?.message ?? copy.fallbackError,
         requestId: body?.error?.requestId
       });
       return;
@@ -199,24 +183,24 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
         <div className="flex items-center gap-3">
           <MaterialSymbol className="text-3xl text-emerald-300" name="check_circle" />
           <div>
-            <h2 className="text-2xl font-semibold text-white">تم إرسال طلب الاستشارة</h2>
+            <h2 className="text-2xl font-semibold text-white">{copy.successTitle}</h2>
             <p className="mt-1 text-sm text-emerald-100">
-              رقم المتابعة: <span className="ltr inline-block font-semibold">{state.data.reference}</span>
+              {copy.reference}: <span className="ltr inline-block font-semibold">{state.data.reference}</span>
             </p>
           </div>
         </div>
         <div className="mt-6 rounded-lg border border-emerald-300/25 bg-black/25 p-4">
-          <h3 className="font-semibold text-white">تنظيم مبدئي للطلب</h3>
+          <h3 className="font-semibold text-white">{copy.organizerTitle}</h3>
           {state.data.organizer.status === "ready" ? (
             <div className="mt-3 grid gap-3 text-sm leading-7 text-slate-300">
-              <p>تم حفظ ملخص الطلب وتنظيمه لمساعدة فريق المكتب على المراجعة والتواصل معك.</p>
+              <p>{copy.organizerReady}</p>
               <p>
-                المجال المبدئي: {labelForServiceCategory(state.data.organizer.classification?.category)} · درجة الاستعجال:{" "}
-                {labelForUrgency(state.data.organizer.classification?.urgency)}
+                {copy.categoryLabel}: {labelForServiceCategory(state.data.organizer.classification?.category, copy)} · {copy.urgencyLabel}:{" "}
+                {labelForUrgency(state.data.organizer.classification?.urgency, copy)}
               </p>
             </div>
           ) : (
-            <p className="mt-3 text-sm leading-7 text-slate-300">تم حفظ الطلب، وسيتم تنظيمه يدويًا إذا تعذر تشغيل المساعد الآن.</p>
+            <p className="mt-3 text-sm leading-7 text-slate-300">{copy.organizerUnavailable}</p>
           )}
           <p className="mt-4 rounded border border-amber-300/35 bg-amber-950/35 p-3 text-sm leading-7 text-amber-100">{state.data.organizer.disclaimer}</p>
         </div>
@@ -236,39 +220,39 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
 
       {step === 0 ? (
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <TextInput className={darkControlClasses} error={errors.fullName} label="الاسم الكامل" name="fullName" required value={values.fullName} onChange={(event) => updateValue("fullName", event.target.value)} />
-          <TextInput className={darkControlClasses} error={errors.phone} label="رقم الهاتف" name="phone" required value={values.phone} onChange={(event) => updateValue("phone", event.target.value)} />
-          <TextInput className={darkControlClasses} error={errors.email} label="البريد الإلكتروني" name="email" type="email" value={values.email} onChange={(event) => updateValue("email", event.target.value)} />
-          <TextInput className={darkControlClasses} label="المدينة" name="city" value={values.city} onChange={(event) => updateValue("city", event.target.value)} />
+          <TextInput className={darkControlClasses} error={errors.fullName} label={copy.fullName} name="fullName" required value={values.fullName} onChange={(event) => updateValue("fullName", event.target.value)} />
+          <TextInput className={darkControlClasses} error={errors.phone} label={copy.phone} name="phone" required value={values.phone} onChange={(event) => updateValue("phone", event.target.value)} />
+          <TextInput className={darkControlClasses} error={errors.email} label={copy.email} name="email" type="email" value={values.email} onChange={(event) => updateValue("email", event.target.value)} />
+          <TextInput className={darkControlClasses} label={copy.city} name="city" value={values.city} onChange={(event) => updateValue("city", event.target.value)} />
         </div>
       ) : null}
 
       {step === 1 ? (
         <div className="mt-6 grid gap-4">
           <div className="grid gap-4 md:grid-cols-3">
-            <Select className={darkControlClasses} label="مجال الطلب" name="serviceCategory" value={values.serviceCategory} onChange={(event) => updateValue("serviceCategory", event.target.value)}>
-              <option value="corporate">الشركات والعقود</option>
-              <option value="real-estate">العقارات</option>
-              <option value="employment">العمل</option>
-              <option value="disputes">المنازعات</option>
+            <Select className={darkControlClasses} label={copy.serviceCategory} name="serviceCategory" value={values.serviceCategory} onChange={(event) => updateValue("serviceCategory", event.target.value)}>
+              <option value="corporate">{copy.categories.corporate}</option>
+              <option value="real-estate">{copy.categories["real-estate"]}</option>
+              <option value="employment">{copy.categories.employment}</option>
+              <option value="disputes">{copy.categories.disputes}</option>
             </Select>
-            <Select className={darkControlClasses} label="درجة الاستعجال" name="urgency" value={values.urgency} onChange={(event) => updateValue("urgency", event.target.value as BookingValues["urgency"])}>
-              <option value="LOW">منخفضة</option>
-              <option value="NORMAL">عادية</option>
-              <option value="HIGH">مرتفعة</option>
-              <option value="URGENT">عاجلة</option>
+            <Select className={darkControlClasses} label={copy.urgency} name="urgency" value={values.urgency} onChange={(event) => updateValue("urgency", event.target.value as BookingValues["urgency"])}>
+              <option value="LOW">{copy.urgencyLabels.LOW}</option>
+              <option value="NORMAL">{copy.urgencyLabels.NORMAL}</option>
+              <option value="HIGH">{copy.urgencyLabels.HIGH}</option>
+              <option value="URGENT">{copy.urgencyLabels.URGENT}</option>
             </Select>
-            <Select className={darkControlClasses} label="طريقة التواصل" name="preferredMode" value={values.preferredMode} onChange={(event) => updateValue("preferredMode", event.target.value as BookingValues["preferredMode"])}>
-              <option value="PHONE">هاتف</option>
-              <option value="ONLINE">أونلاين</option>
-              <option value="OFFICE">في المكتب</option>
+            <Select className={darkControlClasses} label={copy.preferredMode} name="preferredMode" value={values.preferredMode} onChange={(event) => updateValue("preferredMode", event.target.value as BookingValues["preferredMode"])}>
+              <option value="PHONE">{copy.preferredModeLabels.PHONE}</option>
+              <option value="ONLINE">{copy.preferredModeLabels.ONLINE}</option>
+              <option value="OFFICE">{copy.preferredModeLabels.OFFICE}</option>
             </Select>
           </div>
-          <TextInput className={darkControlClasses} label="اسم الطرف الآخر إن وجد" name="opposingPartyName" value={values.opposingPartyName} onChange={(event) => updateValue("opposingPartyName", event.target.value)} />
+          <TextInput className={darkControlClasses} label={copy.opposingPartyName} name="opposingPartyName" value={values.opposingPartyName} onChange={(event) => updateValue("opposingPartyName", event.target.value)} />
           <Textarea
             className={darkControlClasses}
             error={errors.summary}
-            label="ملخص الطلب"
+            label={copy.summary}
             minLength={MIN_SUMMARY_LENGTH}
             name="summary"
             required
@@ -276,8 +260,8 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
             onChange={(event) => updateValue("summary", event.target.value)}
             hint={
               summaryRemaining > 0
-                ? `اكتب ${summaryRemaining} حرفًا إضافيًا على الأقل. اذكر الواقعة الأساسية والتاريخ أو المطلوب من المكتب بدون إرفاق مستندات.`
-                : "الملخص كافٍ للانتقال. لا ترسل مستندات أو بيانات شديدة الحساسية في هذه المرحلة."
+                ? copy.summaryHintShort.replace("{count}", String(summaryRemaining))
+                : copy.summaryHintReady
             }
           />
         </div>
@@ -287,25 +271,25 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
         <div className="mt-6 grid gap-4">
           <div className="rounded-lg border border-kmt-gold/20 bg-black/25 p-4 text-sm leading-7 text-slate-300">
             <p>
-              <strong className="text-amber-100">الاسم:</strong> {values.fullName || "غير مكتمل"}
+              <strong className="text-amber-100">{copy.reviewLabels.name}:</strong> {values.fullName || copy.missing}
             </p>
             <p>
-              <strong className="text-amber-100">الهاتف:</strong> {values.phone || "غير مكتمل"}
+              <strong className="text-amber-100">{copy.reviewLabels.phone}:</strong> {values.phone || copy.missing}
             </p>
             <p>
-              <strong className="text-amber-100">المجال:</strong> {labelForServiceCategory(values.serviceCategory)}
+              <strong className="text-amber-100">{copy.reviewLabels.category}:</strong> {labelForServiceCategory(values.serviceCategory, copy)}
             </p>
             <p>
-              <strong className="text-amber-100">درجة الاستعجال:</strong> {labelForUrgency(values.urgency)}
+              <strong className="text-amber-100">{copy.reviewLabels.urgency}:</strong> {labelForUrgency(values.urgency, copy)}
             </p>
             <p>
-              <strong className="text-amber-100">طريقة التواصل:</strong> {preferredModeLabels[values.preferredMode]}
+              <strong className="text-amber-100">{copy.reviewLabels.mode}:</strong> {copy.preferredModeLabels[values.preferredMode]}
             </p>
             <p>
-              <strong className="text-amber-100">الملخص:</strong> {values.summary || "غير مكتمل"}
+              <strong className="text-amber-100">{copy.reviewLabels.summary}:</strong> {values.summary || copy.missing}
             </p>
           </div>
-          <p className="rounded border border-amber-300/35 bg-amber-950/35 p-3 text-sm leading-7 text-amber-100">{AI_REVIEW_DISCLAIMER.ar}</p>
+          <p className="rounded border border-amber-300/35 bg-amber-950/35 p-3 text-sm leading-7 text-amber-100">{AI_REVIEW_DISCLAIMER[locale]}</p>
           <label className="flex items-start gap-3 text-sm leading-7 !text-slate-300" htmlFor="booking-consent">
             <input
               aria-describedby={errors.consent ? "booking-consent-error" : undefined}
@@ -317,7 +301,7 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
               type="checkbox"
               onChange={(event) => updateValue("consent", event.target.checked)}
             />
-            أوافق على استخدام البيانات لمراجعة الطلب والتواصل بخصوصه، وأفهم أن النموذج لا يقدم استشارة قانونية نهائية.
+            {copy.consent}
           </label>
           {errors.consent ? (
             <p id="booking-consent-error" className="text-sm leading-6 text-kmt-danger">
@@ -336,31 +320,31 @@ export function BookingStepper({ initialService }: { initialService?: string }) 
       <div className="mt-6 flex flex-wrap gap-3">
         {step > 0 ? (
           <Button className={darkSecondaryButtonClasses} disabled={state.type === "submitting"} type="button" variant="secondary" onClick={() => setStep((current) => current - 1)}>
-            رجوع
+            {copy.back}
           </Button>
         ) : null}
         <Button disabled={state.type === "submitting"} loading={state.type === "submitting"} type="submit">
-          {step === 2 ? "إرسال الطلب" : "متابعة"}
+          {step === 2 ? copy.submit : copy.continue}
         </Button>
       </div>
     </form>
   );
 }
 
-function validateStep(step: number, values: BookingValues): FieldErrors {
+function validateStep(step: number, values: BookingValues, copy: BookingFormCopy): FieldErrors {
   if (step === 0) {
     const errors: FieldErrors = {};
 
     if (values.fullName.trim().length < 2) {
-      errors.fullName = "اكتب الاسم الكامل حتى نعرف صاحب الطلب.";
+      errors.fullName = copy.validation.fullName;
     }
 
     if (values.phone.trim().length < 6) {
-      errors.phone = "اكتب رقم هاتف صحيح للتواصل معك.";
+      errors.phone = copy.validation.phone;
     }
 
     if (values.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email.trim())) {
-      errors.email = "اكتب بريدًا إلكترونيًا صحيحًا أو اترك الحقل فارغًا.";
+      errors.email = copy.validation.email;
     }
 
     return errors;
@@ -368,31 +352,33 @@ function validateStep(step: number, values: BookingValues): FieldErrors {
 
   if (step === 1 && values.summary.trim().length < MIN_SUMMARY_LENGTH) {
     return {
-      summary: `الملخص قصير. اكتب ${MIN_SUMMARY_LENGTH} حرفًا على الأقل حتى يقدر الفريق مراجعة الطلب.`
+      summary: copy.validation.summary.replace("{min}", String(MIN_SUMMARY_LENGTH))
     };
   }
 
   if (step === 2 && !values.consent) {
     return {
-      consent: "يجب الموافقة على استخدام البيانات قبل إرسال الطلب."
+      consent: copy.validation.consent
     };
   }
 
   return {};
 }
 
-function labelForServiceCategory(category?: string | null) {
-  if (!category) return "غير محدد";
-  return serviceCategoryLabels[category] ?? category;
+function labelForServiceCategory(category: string | null | undefined, copy: BookingFormCopy) {
+  if (!category) return copy.unknown;
+  return copy.categories[category as keyof typeof copy.categories] ?? category;
 }
 
-function labelForUrgency(urgency?: string | null) {
-  if (!urgency) return "غير محددة";
-  return urgencyLabels[urgency.toUpperCase()] ?? urgency;
+function labelForUrgency(urgency: string | null | undefined, copy: BookingFormCopy) {
+  if (!urgency) return copy.unknownFeminine;
+  const key = urgency.toUpperCase() as keyof typeof copy.urgencyLabels;
+  return copy.urgencyLabels[key] ?? urgency;
 }
 
-function categoryFromInitialService(initialService?: string) {
+function categoryFromInitialService(initialService: string | undefined, locale: PublicLocale) {
   if (!initialService) return initialValues.serviceCategory;
+  const legalServices = getPublicContent(locale).legalServices;
   const service = legalServices.find((item) => item.title === initialService || item.slug === initialService);
   return service?.category ?? initialValues.serviceCategory;
 }

@@ -1,10 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 const publicVisualPages = [
-  { path: "/", name: "home" },
-  { path: "/services", name: "services" },
-  { path: "/contact", name: "contact" },
-  { path: "/book-consultation", name: "book-consultation" }
+  { path: "/", name: "home", expectedDir: "ltr" },
+  { path: "/services", name: "services", expectedDir: "ltr" },
+  { path: "/contact", name: "contact", expectedDir: "ltr" },
+  { path: "/book-consultation", name: "book-consultation", expectedDir: "ltr" },
+  { path: "/ar", name: "home-ar", expectedDir: "rtl" },
+  { path: "/ar/services", name: "services-ar", expectedDir: "rtl" }
 ];
 
 const publicVisualViewports = [
@@ -22,7 +24,11 @@ const publicCrawlSeedPages = [
   "/contact",
   "/book-consultation",
   "/privacy",
-  "/terms"
+  "/terms",
+  "/ar",
+  "/ar/services",
+  "/ar/contact",
+  "/ar/book-consultation"
 ];
 
 async function stubAnalytics(page: import("@playwright/test").Page) {
@@ -44,7 +50,7 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
         const response = await page.goto(pageTarget.path, { waitUntil: "domcontentloaded" });
 
         expect(response?.status(), `${pageTarget.path} should render`).toBeLessThan(400);
-        await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+        await expect(page.locator("html")).toHaveAttribute("dir", pageTarget.expectedDir);
         await expect(page.getByRole("heading").first()).toBeVisible();
 
         const { clientWidth, scrollWidth } = await page.evaluate(() => ({

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   articles,
   caseStudies,
+  getPublicContent,
   legalServices,
   lawyers,
   navForPath,
@@ -23,9 +24,19 @@ describe("public content contracts", () => {
   it("marks active navigation without duplicating destinations", () => {
     const nav = navForPath("/services/contract-drafting");
     const servicesItem = nav.find((item) => item.href === "/services");
-    expect(servicesItem?.label).toBe("مجالات الخبرة");
+    expect(servicesItem?.label).toBe("Practice Areas");
     expect(servicesItem?.active).toBe(true);
     expect(new Set(nav.map((item) => item.href)).size).toBe(nav.length);
+  });
+
+  it("keeps English primary content and Arabic optional content on the same slugs", () => {
+    const english = getPublicContent("en");
+    const arabic = getPublicContent("ar");
+
+    expect(english.navItems[0].label).toBe("Home");
+    expect(arabic.navItems[0].label).toBe("الرئيسية");
+    expect(english.legalServices.map((service) => service.slug)).toEqual(arabic.legalServices.map((service) => service.slug));
+    expect(english.caseStudies.map((study) => study.slug)).toEqual(arabic.caseStudies.map((study) => study.slug));
   });
 
   it("covers the dark luxury practice-area matrix with stable service links", () => {
@@ -61,11 +72,11 @@ describe("public content contracts", () => {
   });
 
   it("requires public case studies to carry disclaimers", () => {
-    expect(caseStudies.every((study) => study.disclaimer.includes("لا") || study.disclaimer.includes("مجهولة"))).toBe(true);
+    expect(caseStudies.every((study) => study.disclaimer.includes("not") || study.disclaimer.includes("anonymous"))).toBe(true);
   });
 
   it("keeps representative and footer content privacy-safe", () => {
-    expect(representativeMatters.every((matter) => matter.privacyNote.includes("مجهول") || matter.privacyNote.includes("لا يتضمن"))).toBe(true);
+    expect(representativeMatters.every((matter) => matter.privacyNote.toLowerCase().includes("anonymized") || matter.privacyNote.includes("No party"))).toBe(true);
     expect(publicFooterContent.practiceLinks.map((link) => link.href)).toContain("/services/contract-drafting");
     expect(publicIndustries.length).toBeGreaterThanOrEqual(6);
   });

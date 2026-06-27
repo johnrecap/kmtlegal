@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ButtonLink, MaterialSymbol } from "@/components/ui";
+import { getPublicContent } from "@/content/public-content";
 import { cn } from "@/lib/cn";
+import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 
 export const publicSectionSurface = "bg-[#07090b] text-white";
 export const publicSectionMutedSurface = "bg-[#0c1116] text-white";
@@ -87,46 +89,53 @@ export function PageHero({
   );
 }
 
-export function TrustStrip() {
+export function TrustStrip({ items }: { items: ReadonlyArray<{ icon: string; label: string }> }) {
   return (
     <div className="border-y border-white/10 bg-[#090d11]">
       <div className="mx-auto grid max-w-[1200px] gap-4 px-4 py-5 text-sm text-slate-300 sm:px-6 md:grid-cols-3 lg:px-10">
-        <div className="flex items-center gap-2">
-          <MaterialSymbol className={publicGoldText} name="verified_user" />
-          مراجعة بشرية قبل أي قرار قانوني
-        </div>
-        <div className="flex items-center gap-2">
-          <MaterialSymbol className={publicGoldText} name="lock" />
-          لا ننشر بيانات العملاء أو المستندات
-        </div>
-        <div className="flex items-center gap-2">
-          <MaterialSymbol className={publicGoldText} name="schedule" />
-          متابعة منظمة من الطلب حتى الموعد
-        </div>
+        {items.map((item) => (
+          <div key={item.label} className="flex items-center gap-2">
+            <MaterialSymbol className={publicGoldText} name={item.icon} />
+            {item.label}
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-export function DetailCta({ serviceTitle }: { serviceTitle?: string }) {
-  const href = serviceTitle ? `/book-consultation?service=${encodeURIComponent(serviceTitle)}` : "/book-consultation";
+export function DetailCta({ serviceTitle, locale = "en" }: { serviceTitle?: string; locale?: PublicLocale }) {
+  const content = getPublicContent(locale);
+  const href = serviceTitle
+    ? localizedPublicHref(`/book-consultation?service=${encodeURIComponent(serviceTitle)}`, locale)
+    : localizedPublicHref("/book-consultation", locale);
 
   return (
     <div className={cn(publicPanel, "p-6")}>
-      <h2 className="text-2xl font-semibold text-white">ابدأ بطلب استشارة منظم</h2>
-      <p className={cn("mt-3 leading-7", publicMutedText)}>
-        اكتب ملخصا واضحا، وسنرتب البيانات مبدئيا للمراجعة البشرية. لا يتم تقديم استشارة قانونية نهائية عبر النموذج.
-      </p>
+      <h2 className="text-2xl font-semibold text-white">{content.bookingPage.sectionTitle}</h2>
+      <p className={cn("mt-3 leading-7", publicMutedText)}>{content.bookingPage.sectionDescription}</p>
       <ButtonLink className="mt-5" href={href} trailingIcon={<MaterialSymbol className="text-base rtl:rotate-180" name="arrow_forward" />}>
-        احجز استشارة
+        {content.shared.bookConsultation}
       </ButtonLink>
     </div>
   );
 }
 
-export function PracticeAreaCard({ icon, title, summary, href }: { icon: string; title: string; summary: string; href: string }) {
+export function PracticeAreaCard({
+  icon,
+  title,
+  summary,
+  href,
+  locale = "en"
+}: {
+  icon: string;
+  title: string;
+  summary: string;
+  href: string;
+  locale?: PublicLocale;
+}) {
   return (
-    <Link className={cn(publicPanel, publicPanelHover, "group flex min-h-[190px] flex-col p-5")} href={href}>
+    <Link className={cn(publicPanel, publicPanelHover, "group flex min-h-[190px] flex-col p-5")} href={localizedPublicHref(href, locale)}>
       <MaterialSymbol className={cn("text-4xl", publicGoldText)} name={icon} />
       <h3 className="mt-4 text-xl font-semibold text-white">{title}</h3>
       <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{summary}</p>
@@ -135,7 +144,7 @@ export function PracticeAreaCard({ icon, title, summary, href }: { icon: string;
   );
 }
 
-export function ProcessSteps({ steps }: { steps: Array<{ number: string; title: string; summary: string; icon: string }> }) {
+export function ProcessSteps({ steps }: { steps: ReadonlyArray<{ number: string; title: string; summary: string; icon: string }> }) {
   return (
     <ol className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       {steps.map((step) => (
@@ -152,7 +161,7 @@ export function ProcessSteps({ steps }: { steps: Array<{ number: string; title: 
   );
 }
 
-export function IndustryGrid({ industries }: { industries: Array<{ title: string; summary: string }> }) {
+export function IndustryGrid({ industries }: { industries: ReadonlyArray<{ title: string; summary: string }> }) {
   return (
     <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
       {industries.map((industry) => (
@@ -172,7 +181,8 @@ export function RepresentativeMatterCard({
   year,
   summary,
   href,
-  privacyNote
+  privacyNote,
+  locale = "en"
 }: {
   label: string;
   title: string;
@@ -181,9 +191,10 @@ export function RepresentativeMatterCard({
   summary: string;
   href: string;
   privacyNote: string;
+  locale?: PublicLocale;
 }) {
   return (
-    <Link className={cn(publicPanel, publicPanelHover, "block p-5")} href={href}>
+    <Link className={cn(publicPanel, publicPanelHover, "block p-5")} href={localizedPublicHref(href, locale)}>
       <p className={cn("text-xs font-semibold", publicGoldText)}>{label}</p>
       <h3 className="mt-3 text-xl font-semibold leading-8 text-white">{title}</h3>
       <p className="mt-1 text-xs text-slate-400">
@@ -224,12 +235,16 @@ export function LuxuryFeaturePanel({
 export function FinalCtaBand({
   title,
   description,
-  href = "/book-consultation"
+  href = "/book-consultation",
+  locale = "en"
 }: {
   title: string;
   description: string;
   href?: string;
+  locale?: PublicLocale;
 }) {
+  const content = getPublicContent(locale);
+
   return (
     <section className="border-y border-white/10 bg-[#0f1112] text-white">
       <div className="mx-auto grid max-w-[1200px] gap-5 px-4 py-8 sm:px-6 md:grid-cols-[1fr_auto] md:items-center lg:px-10">
@@ -237,8 +252,8 @@ export function FinalCtaBand({
           <h2 className="text-3xl font-semibold leading-tight">{title}</h2>
           <p className={cn("mt-3 max-w-2xl leading-8", publicMutedText)}>{description}</p>
         </div>
-        <ButtonLink href={href} size="lg" trailingIcon={<MaterialSymbol className="text-base rtl:rotate-180" name="arrow_forward" />}>
-          احجز استشارة
+        <ButtonLink href={localizedPublicHref(href, locale)} size="lg" trailingIcon={<MaterialSymbol className="text-base rtl:rotate-180" name="arrow_forward" />}>
+          {content.shared.bookConsultation}
         </ButtonLink>
       </div>
     </section>

@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("consultation booking validation", () => {
-  test("shows recoverable Arabic validation before advancing from details", async ({ page }) => {
+  test("shows recoverable Arabic validation before advancing from details on /ar", async ({ page }) => {
     const consoleErrors: string[] = [];
     page.on("console", (message) => {
       if (message.type() === "error") {
@@ -9,12 +9,12 @@ test.describe("consultation booking validation", () => {
       }
     });
 
-    await page.goto("/book-consultation", { waitUntil: "domcontentloaded" });
+    await page.goto("/ar/book-consultation", { waitUntil: "domcontentloaded" });
 
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.locator("nextjs-portal")).toHaveCount(0);
 
-    const headerIconBox = await page.locator('header a[href="/book-consultation"] .material-symbols-outlined').boundingBox();
+    const headerIconBox = await page.locator('header a[href="/ar/book-consultation"] .material-symbols-outlined').boundingBox();
     expect(headerIconBox?.width ?? 0).toBeLessThanOrEqual(24);
 
     await page.getByLabel("الاسم الكامل").fill("أحمد سعيد");

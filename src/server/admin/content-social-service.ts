@@ -36,6 +36,7 @@ export const adminArticleWriteSchema = z
   .object({
     title: z.string().trim().min(3).max(180),
     slug: slugSchema,
+    locale: z.enum(["en", "ar"]).default("en"),
     excerpt: z.string().trim().min(20).max(500),
     content: z.string().trim().min(30).max(20_000),
     category: z.string().trim().min(2).max(80),
@@ -48,6 +49,7 @@ export const adminCaseStudyWriteSchema = z
   .object({
     title: z.string().trim().min(3).max(180),
     slug: slugSchema,
+    locale: z.enum(["en", "ar"]).default("en"),
     category: z.string().trim().min(2).max(80),
     challenge: z.string().trim().min(20).max(5000),
     approach: z.string().trim().min(20).max(5000),
@@ -572,6 +574,7 @@ function articleData(actor: Principal, body: AdminArticleWriteInput) {
   return {
     title: body.title,
     slug: body.slug,
+    locale: body.locale,
     excerpt: body.excerpt,
     content: body.content,
     category: body.category,
@@ -586,6 +589,7 @@ function caseStudyData(actor: Principal, body: z.infer<typeof adminCaseStudyWrit
   return {
     title: body.title,
     slug: body.slug,
+    locale: body.locale,
     category: body.category,
     challenge: body.challenge,
     approach: body.approach,
@@ -627,7 +631,7 @@ export async function createAdminArticle(input: { actor: Principal; body: unknow
       action: "content.article_create",
       resourceType: "Article",
       resourceId: article.id,
-      metadata: { status: article.status, slug: article.slug, category: article.category },
+      metadata: { status: article.status, slug: article.slug, locale: article.locale, category: article.category },
       request: input.request
     });
 
@@ -641,7 +645,7 @@ export async function updateAdminArticle(input: { actor: Principal; articleId: s
   assertCreateArticle(input.actor);
   const articleId = parseWithSchema(uuidSchema, input.articleId, "Article id is invalid.");
   const body = parseWithSchema(adminArticleWriteSchema, input.body, "Article payload is invalid.");
-  const existing = await prisma.article.findUnique({ where: { id: articleId }, select: { id: true, status: true, slug: true } });
+  const existing = await prisma.article.findUnique({ where: { id: articleId }, select: { id: true, status: true, slug: true, locale: true } });
   if (!existing) {
     throw new ApiError(404, "NOT_FOUND", "Article was not found.");
   }
@@ -658,7 +662,7 @@ export async function updateAdminArticle(input: { actor: Principal; articleId: s
       action: "content.article_update",
       resourceType: "Article",
       resourceId: article.id,
-      metadata: { previousStatus: existing.status, status: article.status, previousSlug: existing.slug, slug: article.slug },
+      metadata: { previousStatus: existing.status, status: article.status, previousSlug: existing.slug, slug: article.slug, previousLocale: existing.locale, locale: article.locale },
       request: input.request
     });
 
@@ -683,7 +687,7 @@ export async function createAdminCaseStudy(input: { actor: Principal; body: unkn
       action: "content.case_study_create",
       resourceType: "CaseStudy",
       resourceId: study.id,
-      metadata: { status: study.status, slug: study.slug, isAnonymized: study.isAnonymized },
+      metadata: { status: study.status, slug: study.slug, locale: study.locale, isAnonymized: study.isAnonymized },
       request: input.request
     });
 
@@ -697,7 +701,7 @@ export async function updateAdminCaseStudy(input: { actor: Principal; caseStudyI
   assertCreateCaseStudy(input.actor);
   const caseStudyId = parseWithSchema(uuidSchema, input.caseStudyId, "Case study id is invalid.");
   const body = parseWithSchema(adminCaseStudyWriteSchema, input.body, "Case study payload is invalid.");
-  const existing = await prisma.caseStudy.findUnique({ where: { id: caseStudyId }, select: { id: true, status: true, slug: true } });
+  const existing = await prisma.caseStudy.findUnique({ where: { id: caseStudyId }, select: { id: true, status: true, slug: true, locale: true } });
   if (!existing) {
     throw new ApiError(404, "NOT_FOUND", "Case study was not found.");
   }
@@ -714,7 +718,7 @@ export async function updateAdminCaseStudy(input: { actor: Principal; caseStudyI
       action: "content.case_study_update",
       resourceType: "CaseStudy",
       resourceId: study.id,
-      metadata: { previousStatus: existing.status, status: study.status, previousSlug: existing.slug, slug: study.slug },
+      metadata: { previousStatus: existing.status, status: study.status, previousSlug: existing.slug, slug: study.slug, previousLocale: existing.locale, locale: study.locale },
       request: input.request
     });
 
