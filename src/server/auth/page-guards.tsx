@@ -2,8 +2,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ButtonLink, StateBlock } from "@/components/ui";
 import { signedInRedirectPath } from "@/lib/auth-routing";
+import { clientPortalGuardIssue } from "./client-portal-guard";
 import { getAuthContextFromCookieHeader, type AuthContext } from "./session-store";
-import { isStaffRole, ROLES } from "./policy";
+import { isStaffRole } from "./policy";
 
 export type ProtectedPageResult =
   | { status: "authorized"; context: AuthContext }
@@ -59,12 +60,13 @@ export async function requireAdminPage(nextPath = "/admin"): Promise<ProtectedPa
 
 export async function requirePortalPage(nextPath = "/portal"): Promise<ProtectedPageResult> {
   const context = await requireProtectedPageContext(nextPath);
-  if (context.principal.roleName !== ROLES.client) {
+  const issue = clientPortalGuardIssue(context);
+  if (issue) {
     return {
       status: "forbidden",
       context,
-      title: "غير مسموح بالدخول إلى بوابة العميل",
-      description: "هذا المسار مخصص لحسابات العملاء فقط. فريق العمل يستخدم لوحة المكتب."
+      title: issue.title,
+      description: issue.description
     };
   }
 

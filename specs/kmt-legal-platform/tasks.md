@@ -463,10 +463,12 @@ Acceptance:
 - [x] T262 Add public booking assistant panel to `/book-consultation`.
 - [x] T263 Update route/auth/localization/server tests and run verification: `db:generate`, `typecheck`, `lint`, `test`, local `build`, `db:validate`, and smoke E2E.
 - [x] T264 Add a public website header entry point for client login that opens `/login?next=/client`.
+- [x] T265 Add a recoverable portal guard for Client-role accounts that are not linked to a CRM client profile.
 
 Acceptance:
 - Client users default to `/client`; `/portal` remains accessible for compatibility.
 - Public website visitors can reach the client login from the header without knowing the `/client` URL.
+- Client-role accounts without a linked CRM profile see a clear activation message instead of a server application error.
 - Secretary can operate clients/cases/appointments/documents/payments/tasks/reports but cannot manage users, roles, permissions, or settings.
 - CRM account creation creates or links only `Client` role accounts.
 - Public AI assistant can book consultation appointments only after server-side field, consent, office-hours, duplicate, and conflict checks.

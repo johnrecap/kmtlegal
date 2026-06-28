@@ -6,6 +6,8 @@ import {
   ownClientWhere,
   portalProfileUpdateSchema
 } from "@/server/portal/client-portal-service";
+import { clientPortalGuardIssue } from "@/server/auth/client-portal-guard";
+import type { AuthContext } from "@/server/auth/session-store";
 import { ROLES, type Principal } from "@/server/auth/policy";
 import { ApiError } from "@/server/http/errors";
 
@@ -22,6 +24,56 @@ const staffPrincipal: Principal = {
   permissions: ["client.read.any"]
 };
 
+function authContextForPrincipal(principal: Principal): AuthContext {
+  return {
+    sessionId: "44444444-4444-4444-8444-444444444444",
+    sessionStatus: "ACTIVE",
+    twoFactorAttemptCount: 0,
+    twoFactorLockedUntil: null,
+    principal,
+    user: {
+      id: principal.id,
+      name: "Portal Test",
+      email: "portal@example.com",
+      phone: null,
+      passwordHash: "hash",
+      locale: "ar",
+      status: "ACTIVE",
+      roleId: "55555555-5555-4555-8555-555555555555",
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+      deletedAt: null,
+      role: {
+        id: "55555555-5555-4555-8555-555555555555",
+        name: principal.roleName,
+        description: null,
+        status: "ACTIVE",
+        createdAt: new Date("2026-01-01T00:00:00.000Z"),
+        updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+        permissions: []
+      },
+      clientProfile: principal.clientId
+        ? {
+            id: principal.clientId,
+            userId: principal.id,
+            fullName: "Portal Test",
+            phone: "+201000000000",
+            phoneCanonical: "201000000000",
+            email: "portal@example.com",
+            city: null,
+            source: "MANUAL",
+            status: "ACTIVE",
+            assignedLawyerId: null,
+            createdAt: new Date("2026-01-01T00:00:00.000Z"),
+            updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+            deletedAt: null
+          }
+        : null,
+      twoFactorCredential: null
+    }
+  };
+}
+
 describe("client portal access contract", () => {
   it("requires client self permission and a linked client profile", () => {
     expect(assertClientPortalAccess(clientPrincipal)).toBe(clientPrincipal.clientId);
@@ -33,6 +85,22 @@ describe("client portal access contract", () => {
       expect(error).toBeInstanceOf(ApiError);
       expect((error as ApiError).status).toBe(403);
     }
+  });
+
+  it("returns a recoverable portal guard issue for unlinked client accounts", () => {
+    expect(clientPortalGuardIssue(authContextForPrincipal(clientPrincipal))).toBeNull();
+
+    const unlinkedClient = authContextForPrincipal({
+      ...clientPrincipal,
+      clientId: null
+    });
+    expect(clientPortalGuardIssue(unlinkedClient)).toEqual({
+      title: "حساب العميل غير مكتمل",
+      description: "حساب الدخول غير مرتبط بملف عميل داخل المكتب. تواصل مع السكرتارية لتفعيل ربط الحساب بملفك قبل فتح البوابة."
+    });
+
+    const staffIssue = clientPortalGuardIssue(authContextForPrincipal(staffPrincipal));
+    expect(staffIssue?.title).toBe("غير مسموح بالدخول إلى بوابة العميل");
   });
 
   it("builds ownership filters for client profile and cases", () => {
