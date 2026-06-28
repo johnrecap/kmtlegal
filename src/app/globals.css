@@ -143,6 +143,26 @@ a {
     }
   }
 
+  @keyframes kmt-motion-thread-draw {
+    from {
+      opacity: 0.45;
+      transform: scaleX(0.18);
+    }
+    to {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+  }
+
+  @keyframes kmt-motion-thread-sweep {
+    from {
+      transform: translateX(-110%);
+    }
+    to {
+      transform: translateX(110%);
+    }
+  }
+
   .kmt-motion-reveal {
     animation: kmt-motion-reveal 420ms var(--kmt-motion-ease) both;
   }
@@ -157,15 +177,50 @@ a {
   }
 
   .kmt-motion-card {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     transition-property: border-color, background-color, box-shadow, transform;
     transition-duration: 220ms;
     transition-timing-function: var(--kmt-motion-ease);
   }
 
+  .kmt-motion-card::before {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border: 1px solid rgb(199 154 82 / 0%);
+    background:
+      linear-gradient(110deg, transparent 0%, rgb(199 154 82 / 10%) 42%, transparent 72%),
+      radial-gradient(circle at 18% 0%, rgb(199 154 82 / 12%), transparent 34%);
+    content: "";
+    opacity: 0;
+    transform: scale(0.985);
+    pointer-events: none;
+    transition: opacity 220ms var(--kmt-motion-ease), transform 220ms var(--kmt-motion-ease), border-color 220ms var(--kmt-motion-ease);
+  }
+
   .kmt-motion-button {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     transition-property: border-color, background-color, color, box-shadow, transform;
     transition-duration: 180ms;
     transition-timing-function: var(--kmt-motion-ease);
+  }
+
+  .kmt-motion-button::after {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: -42%;
+    z-index: 0;
+    width: 36%;
+    background: linear-gradient(90deg, transparent, rgb(255 236 188 / 34%), transparent);
+    content: "";
+    opacity: 0;
+    transform: skewX(-16deg) translateX(-120%);
+    pointer-events: none;
+    transition: opacity 220ms var(--kmt-motion-ease), transform 520ms var(--kmt-motion-ease);
   }
 
   .kmt-motion-button:active:not(:disabled) {
@@ -232,6 +287,61 @@ a {
     transform-origin: center;
   }
 
+  .kmt-motion-thread {
+    position: relative;
+    display: block;
+    width: clamp(7rem, 14vw, 12.5rem);
+    height: 2px;
+    margin-top: 0.85rem;
+    overflow: visible;
+    background: linear-gradient(90deg, rgb(199 154 82 / 0%), rgb(199 154 82 / 88%) 24%, rgb(244 207 136 / 95%) 50%, rgb(199 154 82 / 88%) 76%, rgb(199 154 82 / 0%));
+    box-shadow: 0 0 28px rgb(199 154 82 / 42%);
+    transform-origin: left center;
+    animation: kmt-motion-thread-draw 680ms var(--kmt-motion-ease) both;
+  }
+
+  .kmt-motion-thread::before {
+    position: absolute;
+    inset-block: -4px;
+    inset-inline-start: 0;
+    width: 42%;
+    background: linear-gradient(90deg, transparent, rgb(255 236 188 / 75%), transparent);
+    content: "";
+    filter: blur(1px);
+    animation: kmt-motion-thread-sweep 820ms 120ms var(--kmt-motion-ease) both;
+  }
+
+  .kmt-motion-thread::after {
+    position: absolute;
+    inset-block-start: -3px;
+    inset-inline-end: 8%;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgb(244 207 136 / 95%);
+    box-shadow: 0 0 18px rgb(199 154 82 / 72%);
+    content: "";
+  }
+
+  html[dir="rtl"] .kmt-motion-thread {
+    transform-origin: right center;
+  }
+
+  .kmt-motion-trust-strip {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kmt-motion-trust-strip::before {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgb(199 154 82 / 75%), transparent);
+    content: "";
+    animation: kmt-motion-thread-draw 760ms var(--kmt-motion-ease) both;
+  }
+
   .kmt-motion-form {
     transition: border-color 180ms var(--kmt-motion-ease), box-shadow 180ms var(--kmt-motion-ease);
   }
@@ -269,9 +379,23 @@ a {
       box-shadow: 0 32px 92px -54px rgb(153 123 68 / 55%);
     }
 
+    .kmt-motion-card:hover::before,
+    .kmt-motion-card:focus-visible::before,
+    .kmt-motion-card:focus-within::before {
+      border-color: rgb(199 154 82 / 28%);
+      opacity: 1;
+      transform: scale(1);
+    }
+
     .kmt-motion-button:hover:not(:disabled):not([aria-disabled="true"]) {
       transform: translateY(-1px);
       box-shadow: 0 14px 32px -20px rgb(199 154 82 / 92%);
+    }
+
+    .kmt-motion-button:hover:not(:disabled):not([aria-disabled="true"])::after,
+    .kmt-motion-button:focus-visible:not(:disabled):not([aria-disabled="true"])::after {
+      opacity: 1;
+      transform: skewX(-16deg) translateX(420%);
     }
 
     :where(a, button, .group):is(:hover, :focus-visible) .kmt-motion-icon {
@@ -315,9 +439,17 @@ a {
   .kmt-motion-status,
   .kmt-motion-step-panel,
   .kmt-motion-filter-results,
-  .kmt-motion-success-icon {
+  .kmt-motion-success-icon,
+  .kmt-motion-thread,
+  .kmt-motion-trust-strip::before {
     animation: none !important;
     transform: none !important;
+  }
+
+  .kmt-motion-card::before,
+  .kmt-motion-button::after,
+  .kmt-motion-thread::before {
+    display: none !important;
   }
 
   .kmt-motion-arrow {

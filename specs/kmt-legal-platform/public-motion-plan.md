@@ -9,13 +9,14 @@
 ## Implementation Contract
 - Motion helpers live under `src/features/public-site/` and are opt-in through `kmt-motion-*` classes.
 - Public motion uses short durations: 160-220ms for hover/focus/state, 420-560ms only for one-time hero/image settle.
+- The Gold Legal Thread must be visible as a static brand accent after animation completes, not only as an invisible hover behavior.
 - Directional arrows keep semantic RTL mirroring and move inline-forward only when motion is allowed.
 - Reduced motion disables reveal, lift, zoom, and shift motion while preserving static RTL direction.
 - Interactions use `opacity`, `transform`, `border-color`, `background-color`, `color`, and controlled shadow only.
 
 ## In-Scope Surfaces
 - `PublicShell`: nav underline reveal, footer link underline, consultation CTA lift, brand/contact icon glow.
-- Public components: hero reveal/settle, clickable card lift, image-card zoom, practice-area icon/arrow motion, final CTA motion.
+- Public components: hero reveal/settle, visible Gold Legal Thread accents under hero/section labels, clickable card lift, image-card zoom, practice-area icon/arrow motion, final CTA motion.
 - Directory filters: focus-within glow, category button state transitions, result/empty-state fade.
 - Public forms: contact and booking focus glow, status fade, booking step panel transition, success check reveal.
 

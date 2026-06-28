@@ -9,7 +9,9 @@ import {
   publicMotionButton,
   publicMotionIcon,
   publicMotionImage,
-  publicMotionImageCard
+  publicMotionImageCard,
+  publicMotionThread,
+  publicMotionTrustStrip
 } from "@/features/public-site/public-motion";
 
 export const publicSectionSurface = "bg-[#07090b] text-white";
@@ -50,7 +52,12 @@ export function PublicSection({
     <section className={cn(surfaceClass, className)}>
       <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:px-10 lg:py-16">
         <div className={cn("max-w-3xl", isCentered ? "mx-auto text-center" : undefined)}>
-          {eyebrow ? <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p> : null}
+          {eyebrow ? (
+            <>
+              <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p>
+              <span aria-hidden="true" className={cn(publicMotionThread, isCentered ? "mx-auto" : undefined)} />
+            </>
+          ) : null}
           <h2 className="mt-2 text-3xl font-semibold leading-tight text-white md:text-4xl">{title}</h2>
           {description ? <p className={cn("mt-4 text-base leading-8", publicMutedText)}>{description}</p> : null}
         </div>
@@ -87,6 +94,7 @@ export function PageHero({
       <div className={cn("relative mx-auto flex max-w-[1200px] items-center px-4 sm:px-6 lg:px-10", isCompact ? "min-h-[340px] py-12" : "min-h-[560px] py-16")}>
         <div className="kmt-motion-reveal max-w-3xl">
           <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p>
+          <span aria-hidden="true" className={publicMotionThread} />
           <h1 className={cn("mt-4 max-w-3xl font-semibold leading-tight", isCompact ? "text-3xl md:text-5xl" : "text-4xl md:text-6xl")}>{title}</h1>
           <p className={cn("mt-5 max-w-2xl leading-9 text-slate-100", isCompact ? "text-base md:text-lg" : "text-lg")}>{description}</p>
           {actions ? <div className="kmt-motion-reveal kmt-motion-reveal-delay mt-8 flex flex-wrap gap-3">{actions}</div> : null}
@@ -98,7 +106,7 @@ export function PageHero({
 
 export function TrustStrip({ items }: { items: ReadonlyArray<{ icon: string; label: string }> }) {
   return (
-    <div className="border-y border-white/10 bg-[#090d11]">
+    <div className={cn("border-y border-white/10 bg-[#090d11]", publicMotionTrustStrip)}>
       <div className="mx-auto grid max-w-[1200px] gap-4 px-4 py-5 text-sm text-slate-300 sm:px-6 md:grid-cols-3 lg:px-10">
         {items.map((item) => (
           <div key={item.label} className="flex items-center gap-2">

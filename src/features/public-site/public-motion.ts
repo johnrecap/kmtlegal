@@ -11,3 +11,5 @@ export const publicMotionStatus = "kmt-motion-status";
 export const publicMotionStep = "kmt-motion-step";
 export const publicMotionStepPanel = "kmt-motion-step-panel";
 export const publicMotionFilterResults = "kmt-motion-filter-results";
+export const publicMotionThread = "kmt-motion-thread";
+export const publicMotionTrustStrip = "kmt-motion-trust-strip";

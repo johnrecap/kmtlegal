@@ -158,7 +158,7 @@ Pass only if:
 - PLAN-30 is tracked in `specs/kmt-legal-platform/public-motion-plan.md` and `tasks.md`.
 - Public motion is scoped to public-site helpers/components and does not affect admin, portal, install, login, product-system, or Stitch clone routes.
 - No Framer Motion, GSAP, Lottie, Rive, or other animation dependency is added.
-- Motion uses the Judicial Precision/Gold Legal Thread language: nav underline reveal, restrained CTA/card lift, icon glow, image-card zoom, filter/form state transitions, and booking step transitions.
+- Motion uses the Judicial Precision/Gold Legal Thread language: visible thread accents, nav underline reveal, restrained CTA sheen/lift, card edge glow/lift, icon glow, image-card zoom, filter/form state transitions, and booking step transitions.
 - Directional arrow motion is inline-forward in English and Arabic, with static RTL mirroring preserved.
 - Reduced-motion mode disables reveal, lift, zoom, and shift movement.
 - Disabled/loading controls do not lift on hover.

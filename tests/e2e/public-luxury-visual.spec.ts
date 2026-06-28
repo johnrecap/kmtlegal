@@ -116,6 +116,10 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
       await expect(reveal, `${pageTarget.path} should include the public hero reveal target`).toBeVisible();
       await expect(reveal).toHaveCSS("animation-name", "none");
 
+      const thread = page.locator(".kmt-motion-thread").first();
+      await expect(thread, `${pageTarget.path} should render the Gold Legal Thread accent`).toBeVisible();
+      await expect(thread).toHaveCSS("animation-name", "none");
+
       const arrow = page.locator(".kmt-motion-arrow").first();
       if ((await arrow.count()) > 0) {
         const transformBeforeHover = await arrow.evaluate((node) => getComputedStyle(node).transform);

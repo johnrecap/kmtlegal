@@ -79,7 +79,7 @@ PLAN-30 extends the public luxury redesign with scoped, opt-in motion only for p
 
 Public motion rules:
 - Use `kmt-motion-*` utilities from `src/features/public-site/public-motion.ts` instead of adding a new animation library.
-- Keep hover/focus motion short and restrained: nav underline reveal, CTA lift, card lift, icon glow, image-card zoom, form focus glow, status fade, and booking step transitions.
+- Keep hover/focus motion short and restrained: visible Gold Legal Thread accents, nav underline reveal, CTA sheen/lift, card edge glow/lift, icon glow, image-card zoom, form focus glow, status fade, and booking step transitions.
 - Preserve RTL direction with semantic arrow mirroring; hover movement must go inline-forward for both English and Arabic.
 - Reduced-motion mode disables reveal, lift, zoom, and shift motion while preserving static RTL icon direction.
 - Disabled or loading controls do not lift on hover.
