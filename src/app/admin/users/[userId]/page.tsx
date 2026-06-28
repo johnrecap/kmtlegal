@@ -5,6 +5,7 @@ import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, DataR
 import { AdminUserActionPanel } from "@/features/admin/governance/governance-forms";
 import { formatDateTime } from "@/lib/legal-format";
 import { roleDisplayLabel } from "@/lib/ui-copy";
+import { canManageClientAccounts } from "@/server/admin/client-crm-service";
 import { canChangeAdminUserPassword, canManageAdminUsers, getAdminUserDetail, getAdminUserOptions } from "@/server/admin/governance-service";
 import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../../admin-navigation";
@@ -192,6 +193,8 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
 
         <AdminUserActionPanel
           canChangePassword={canChangeAdminUserPassword(guard.context.principal)}
+          canManageClientAccount={canManageClientAccounts(guard.context.principal)}
+          clientProfile={user.clientProfile}
           roles={options.roles}
           user={{
             id: user.id,

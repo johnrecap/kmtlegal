@@ -182,6 +182,7 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 | POST | `/api/admin/users` | Create user email account with Super Admin-set password | Exact Super Admin | user.manage.any |
 | PATCH | `/api/admin/users/{id}` | Update user/status/role | Super Admin | user.manage.any |
 | POST | `/api/admin/users/{id}/password` | Change any user password | Exact Super Admin | user.manage.any |
+| POST | `/api/admin/users/{id}/client-profile` | Create or link a CRM client profile for an unlinked Client-role account | Staff | client.account.manage |
 | POST | `/api/admin/users/{id}/2fa/reset` | Disabled staff 2FA reset placeholder | Super Admin | N/A |
 | GET | `/api/admin/roles` | Roles and permissions | Super Admin | role.manage.any |
 | PATCH | `/api/admin/roles/{id}/permissions` | Update role permissions | Super Admin | role.manage.any |

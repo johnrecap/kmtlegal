@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Select, StateBlock, TextInput, Textarea } from "@/components/ui";
+import { Button, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, Select, StateBlock, TextInput, Textarea } from "@/components/ui";
 import { roleDisplayLabel, technicalValueDisplayLabel } from "@/lib/ui-copy";
 
 type ApiMessage = {
@@ -26,6 +26,18 @@ type UserFormValue = {
   roleName: string;
   status: string;
   locale: string;
+};
+
+type ClientProfileValue = {
+  id: string;
+  fullName: string;
+  status: string;
+} | null;
+
+type ClientProfileCreateResponse = ApiMessage & {
+  data?: {
+    id?: string;
+  };
 };
 
 type SettingValue = Record<string, unknown>;
@@ -145,7 +157,19 @@ export function AdminUserCreateForm({ roles }: { roles: RoleOption[] }) {
   );
 }
 
-export function AdminUserActionPanel({ canChangePassword, user, roles }: { canChangePassword: boolean; user: UserFormValue; roles: RoleOption[] }) {
+export function AdminUserActionPanel({
+  canChangePassword,
+  canManageClientAccount,
+  clientProfile,
+  user,
+  roles
+}: {
+  canChangePassword: boolean;
+  canManageClientAccount: boolean;
+  clientProfile: ClientProfileValue;
+  user: UserFormValue;
+  roles: RoleOption[];
+}) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
@@ -192,6 +216,35 @@ export function AdminUserActionPanel({ canChangePassword, user, roles }: { canCh
     );
   }
 
+  async function createLinkedClientProfile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    setIsBusy(true);
+
+    try {
+      const response = await fetch(`/api/admin/users/${user.id}/client-profile`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (!response.ok) {
+        setMessage(await readMessage(response));
+        return;
+      }
+
+      const body = (await response.json().catch(() => ({}))) as ClientProfileCreateResponse;
+      setMessage("تم إنشاء ملف العميل وربطه بحساب الدخول.");
+      router.refresh();
+      if (body.data?.id) {
+        router.push(`/admin/clients/${body.data.id}`);
+      }
+    } catch {
+      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <Card>
@@ -229,6 +282,43 @@ export function AdminUserActionPanel({ canChangePassword, user, roles }: { canCh
           </form>
         </CardContent>
       </Card>
+
+      {user.roleName === "Client" ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>ملف العميل في CRM</CardTitle>
+            <CardDescription>حسابات العملاء تحتاج ملف عميل مربوط حتى تظهر في صفحة العملاء وبوابة العميل.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {clientProfile ? (
+              <>
+                <div className="rounded border border-kmt-border bg-slate-50 p-3 text-sm leading-6">
+                  <p className="font-semibold text-kmt-ink">{clientProfile.fullName}</p>
+                  <p className="text-kmt-muted">الحالة: {clientProfile.status}</p>
+                </div>
+                <ButtonLink className="w-full" href={`/admin/clients/${clientProfile.id}`} variant="secondary">
+                  فتح ملف العميل
+                </ButtonLink>
+              </>
+            ) : canManageClientAccount ? (
+              <form className="grid gap-3" onSubmit={createLinkedClientProfile}>
+                <p className="text-sm leading-6 text-kmt-muted">
+                  هذا الحساب غير ظاهر في CRM لأنه لا يملك ملف عميل مربوط. سيتم إنشاء ملف عميل بنفس الاسم والبريد والهاتف وربطه بهذا الحساب.
+                </p>
+                <Button loading={isBusy} type="submit" variant="secondary">
+                  إنشاء ملف عميل وربطه
+                </Button>
+              </form>
+            ) : (
+              <StateBlock
+                tone="permission"
+                title="حساب عميل غير مربوط"
+                description="هذا الحساب يحتاج صلاحية إدارة حسابات العملاء لإنشاء ملف CRM وربطه."
+              />
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
 
       {canChangePassword ? <AdminUserPasswordForm userId={user.id} /> : null}
 

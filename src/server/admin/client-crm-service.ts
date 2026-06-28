@@ -56,6 +56,13 @@ export const clientAccountPasswordSchema = z.object({
 export type AdminClientListQuery = z.infer<typeof adminClientListQuerySchema>;
 export type AdminClientWriteInput = z.infer<typeof adminClientWriteSchema>;
 
+type ClientProfileUserProbe = {
+  role: { name: string };
+  status: string;
+  phone?: string | null;
+  clientProfile?: { id: string } | null;
+};
+
 export function canListAdminClients(actor: Principal) {
   return hasPermission(actor, "client.read.any") || hasPermission(actor, "client.read.assigned");
 }
@@ -290,6 +297,21 @@ function assertClientManagePermission(actor: Principal) {
 function assertClientAccountManagePermission(actor: Principal) {
   if (!canManageClientAccounts(actor)) {
     throw new ApiError(403, "PERMISSION_DENIED", "Client account management permission is required.");
+  }
+}
+
+export function assertClientProfileCanBeCreatedForUser(user: ClientProfileUserProbe) {
+  if (user.role.name !== ROLES.client) {
+    throw new ApiError(409, "CONFLICT", "Only Client role accounts can be linked to client CRM profiles.");
+  }
+  if (user.status === "DELETED") {
+    throw new ApiError(409, "CONFLICT", "Deleted user accounts cannot be linked to client CRM profiles.");
+  }
+  if (user.clientProfile) {
+    throw new ApiError(409, "CONFLICT", "User already has a linked client CRM profile.");
+  }
+  if (!user.phone?.trim()) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Client phone is required before creating a CRM profile.");
   }
 }
 
@@ -557,6 +579,99 @@ export async function createOrLinkClientPortalAccount(input: { actor: Principal;
   });
 
   return result.client;
+}
+
+export async function createClientProfileForPortalUser(input: { actor: Principal; userId: string; request?: Request }) {
+  assertClientAccountManagePermission(input.actor);
+  const userId = parseWithSchema(uuidSchema, input.userId, "User id is invalid.");
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      role: { select: { name: true } },
+      clientProfile: { select: { id: true } }
+    }
+  });
+
+  if (!user) {
+    throw new ApiError(404, "NOT_FOUND", "User was not found.");
+  }
+
+  assertClientProfileCanBeCreatedForUser(user);
+
+  const phoneCanonical = canonicalPhone(user.phone!);
+  const matchConditions: Prisma.ClientWhereInput[] = [{ email: user.email }];
+  if (phoneCanonical) {
+    matchConditions.push({ phoneCanonical });
+  }
+
+  const matches = await prisma.client.findMany({
+    where: {
+      deletedAt: null,
+      OR: matchConditions
+    },
+    select: { id: true, userId: true, email: true, phoneCanonical: true },
+    take: 3
+  });
+
+  const linkedMatch = matches.find((client) => client.userId && client.userId !== user.id);
+  if (linkedMatch) {
+    throw new ApiError(409, "CONFLICT", "A matching client CRM profile is already linked to another account.");
+  }
+
+  const unlinkedMatches = matches.filter((client) => !client.userId);
+  if (unlinkedMatches.length > 1) {
+    throw new ApiError(409, "CONFLICT", "Multiple matching client CRM profiles were found. Open the correct client profile and link the account there.");
+  }
+
+  const client = unlinkedMatches[0]
+    ? await prisma.client.update({
+        where: { id: unlinkedMatches[0].id },
+        data: {
+          userId: user.id,
+          fullName: user.name,
+          phone: user.phone!,
+          phoneCanonical,
+          email: user.email,
+          status: "ACTIVE"
+        },
+        include: {
+          user: { select: { id: true, email: true, phone: true, status: true, locale: true } },
+          assignedLawyer: { select: { id: true, name: true, email: true } }
+        }
+      })
+    : await prisma.client.create({
+        data: {
+          userId: user.id,
+          fullName: user.name,
+          phone: user.phone!,
+          phoneCanonical,
+          email: user.email,
+          source: "user-account",
+          status: "ACTIVE"
+        },
+        include: {
+          user: { select: { id: true, email: true, phone: true, status: true, locale: true } },
+          assignedLawyer: { select: { id: true, name: true, email: true } }
+        }
+      });
+
+  await appendAuditLogBestEffort({
+    actorId: input.actor.id,
+    action: "client.account.link_profile",
+    resourceType: "Client",
+    resourceId: client.id,
+    clientId: client.id,
+    metadata: {
+      userId: user.id,
+      email: user.email,
+      linkedExistingClient: Boolean(unlinkedMatches[0]),
+      source: "admin-user-detail"
+    },
+    request: input.request
+  });
+
+  return client;
 }
 
 export async function resetClientPortalAccountPassword(input: { actor: Principal; clientId: string; body: unknown; request?: Request }) {

@@ -37,6 +37,7 @@ describe("route manifest contract", () => {
       ["/api/admin/calendar", "/api/admin/calendar"],
       ["/api/admin/documents/[documentId]/delete", "/api/admin/documents/{documentId}/delete"],
       ["/api/admin/users/[userId]/password", "/api/admin/users/{id}/password"],
+      ["/api/admin/users/[userId]/client-profile", "/api/admin/users/{id}/client-profile"],
       ["/api/admin/contact-messages", "/api/admin/contact-messages"],
       ["/api/admin/contact-messages/[messageId]", "/api/admin/contact-messages/{messageId}"],
       ["/api/health", "/api/health"],

@@ -150,6 +150,7 @@ const auditEventDefinitions: Record<string, AuditEventDefinition> = {
   "client.archive": { label: "تم أرشفة عميل", category: "العملاء", severity: "مهم", summary: () => "تمت أرشفة ملف عميل." },
   "client.assign": { label: "تم تغيير المحامي المسؤول", category: "العملاء", severity: "مهم", summary: () => "تم تحديث التكليف المسؤول عن ملف عميل." },
   "client.account.create": { label: "تم إنشاء حساب بوابة عميل", category: "الأمان", severity: "حساس", summary: () => "تم إنشاء حساب دخول مربوط بملف عميل." },
+  "client.account.link_profile": { label: "تم ربط حساب بملف عميل", category: "الأمان", severity: "حساس", summary: () => "تم ربط حساب دخول عميل بملف CRM." },
   "client.account.password_reset": { label: "تمت إعادة ضبط كلمة مرور عميل", category: "الأمان", severity: "حساس", summary: () => "تم تحديث كلمة مرور حساب بوابة عميل." },
   "client.create": { label: "تم إنشاء عميل", category: "العملاء", severity: "عادي", summary: () => "تم إنشاء ملف عميل جديد." },
   "client.update": { label: "تم تعديل عميل", category: "العملاء", severity: "عادي", summary: ({ metadata }) => statusSummary("تم تعديل ملف عميل", "Client", metadata) },

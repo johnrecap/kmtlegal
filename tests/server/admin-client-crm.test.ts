@@ -4,6 +4,7 @@ import {
   adminClientWriteSchema,
   archiveClientSchema,
   assignClientSchema,
+  assertClientProfileCanBeCreatedForUser,
   canManageClientAccounts,
   canListAdminClients,
   canManageAdminClients,
@@ -119,5 +120,43 @@ describe("admin client CRM contract", () => {
     expect(() => clientAccountCreateSchema.parse({ email: "bad", password: "short" })).toThrow();
 
     expect(clientAccountPasswordSchema.parse({ password: "AnotherLongPassword1", revokeSessions: "true" }).revokeSessions).toBe(true);
+  });
+
+  it("allows CRM profile creation only for unlinked Client role accounts", () => {
+    expect(() =>
+      assertClientProfileCanBeCreatedForUser({
+        role: { name: ROLES.client },
+        status: "ACTIVE",
+        phone: "+201000000000",
+        clientProfile: null
+      })
+    ).not.toThrow();
+
+    expect(() =>
+      assertClientProfileCanBeCreatedForUser({
+        role: { name: ROLES.officeAdmin },
+        status: "ACTIVE",
+        phone: "+201000000000",
+        clientProfile: null
+      })
+    ).toThrow(ApiError);
+
+    expect(() =>
+      assertClientProfileCanBeCreatedForUser({
+        role: { name: ROLES.client },
+        status: "ACTIVE",
+        phone: "+201000000000",
+        clientProfile: { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }
+      })
+    ).toThrow(ApiError);
+
+    expect(() =>
+      assertClientProfileCanBeCreatedForUser({
+        role: { name: ROLES.client },
+        status: "ACTIVE",
+        phone: "",
+        clientProfile: null
+      })
+    ).toThrow(ApiError);
   });
 });
