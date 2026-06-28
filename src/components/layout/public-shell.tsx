@@ -4,7 +4,7 @@ import { MaterialSymbol } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
 import { publicMotionButton, publicMotionCta, publicMotionIcon, publicMotionIconHalo, publicMotionNavLink, publicMotionTextLink } from "@/features/public-site/public-motion";
 import { cn } from "@/lib/cn";
-import { localizedPublicHref, publicLocalePrefix, stripPublicLocalePrefix, type PublicLocale } from "@/lib/public-locale";
+import { localizedPublicHref, publicLocaleDirection, publicLocalePrefix, stripPublicLocalePrefix, type PublicLocale } from "@/lib/public-locale";
 
 export type PublicNavItem = {
   label: string;
@@ -65,10 +65,16 @@ export function PublicShell({
 }) {
   const content = getPublicContent(locale);
   const shell = content.shell;
+  const direction = publicLocaleDirection(locale);
   const languageHref = locale === "ar" ? stripPublicLocalePrefix(currentPath) : `${publicLocalePrefix("ar")}${stripPublicLocalePrefix(currentPath) === "/" ? "" : stripPublicLocalePrefix(currentPath)}`;
 
   return (
-    <div className={cn("min-h-screen bg-[#060504] text-[#f8f3ea] selection:bg-kmt-gold/30 selection:text-white", className)}>
+    <div
+      className={cn("min-h-screen bg-[#060504] text-[#f8f3ea] selection:bg-kmt-gold/30 selection:text-white", className)}
+      data-testid="public-shell"
+      dir={direction}
+      lang={locale}
+    >
       <header className="sticky top-0 z-50 border-b border-kmt-gold/20 bg-[#070604]/95 shadow-[0_12px_40px_rgba(0,0,0,0.34)] backdrop-blur-xl">
         <div className="mx-auto flex min-h-[76px] max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
           <PublicBrand locale={locale} />
@@ -89,13 +95,14 @@ export function PublicShell({
             ))}
           </nav>
           <div className="flex shrink-0 items-center gap-2">
-            <Link
+            <a
               className={cn("hidden min-h-10 items-center border border-white/15 px-3 text-xs font-semibold text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold sm:inline-flex", publicMotionButton, publicMotionCta)}
+              data-testid="public-language-switch"
               href={languageHref}
               hrefLang={locale === "ar" ? "en" : "ar"}
             >
               {shell.languageSwitchLabel}
-            </Link>
+            </a>
             <ConsultationLink className="px-3 sm:px-4" label={shell.consultationCta} locale={locale} />
           </div>
         </div>

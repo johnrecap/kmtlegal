@@ -61,6 +61,7 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
 
         expect(response?.status(), `${pageTarget.path} should render`).toBeLessThan(400);
         await expect(page.locator("html")).toHaveAttribute("dir", pageTarget.expectedDir);
+        await expect(page.getByTestId("public-shell")).toHaveAttribute("dir", pageTarget.expectedDir);
         await expect(page.getByRole("heading").first()).toBeVisible();
 
         await expectNoHorizontalOverflow(page, `${pageTarget.path} ${viewport.width}px`);
@@ -111,6 +112,7 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
 
       expect(response?.status(), `${pageTarget.path} should render with reduced motion`).toBeLessThan(400);
       await expect(page.locator("html")).toHaveAttribute("dir", pageTarget.expectedDir);
+      await expect(page.getByTestId("public-shell")).toHaveAttribute("dir", pageTarget.expectedDir);
 
       const reveal = page.locator(".kmt-motion-reveal").first();
       await expect(reveal, `${pageTarget.path} should include the public hero reveal target`).toBeVisible();
@@ -166,5 +168,21 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
     await expect(arabicArrow).toBeVisible();
     await arabicArrow.hover();
     await expect.poll(() => arabicArrow.evaluate((node) => getComputedStyle(node).getPropertyValue("--kmt-arrow-shift").trim())).toBe("-6px");
+  });
+
+  test("English public shell stays LTR after switching from Arabic", async ({ page }) => {
+    await stubAnalytics(page);
+    await page.goto("/ar", { waitUntil: "domcontentloaded" });
+
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.getByTestId("public-shell")).toHaveAttribute("dir", "rtl");
+
+    await page.getByTestId("public-language-switch").click();
+    await page.waitForURL("/");
+
+    await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await expect(page.getByTestId("public-shell")).toHaveAttribute("dir", "ltr");
+    await expect(page.getByTestId("public-shell")).toHaveAttribute("lang", "en");
   });
 });

@@ -17,6 +17,10 @@ describe("public website UI", () => {
     );
 
     expect(html).toContain("Main navigation");
+    expect(html).toContain("data-testid=\"public-shell\"");
+    expect(html).toContain("dir=\"ltr\"");
+    expect(html).toContain("lang=\"en\"");
+    expect(html).toContain("data-testid=\"public-language-switch\"");
     expect(html).toContain("href=\"/services\"");
     expect(html).toContain("aria-current=\"page\"");
     expect(html).toContain("Practice Areas");
@@ -26,6 +30,21 @@ describe("public website UI", () => {
     expect(html).toContain("event_available");
     expect(html).toContain("bg-kmt-gold/15");
     expect(html).not.toContain("secondary-container");
+  });
+
+  it("renders Arabic public shell with explicit RTL direction", () => {
+    const html = renderToStaticMarkup(
+      <PublicShell locale="ar" currentPath="/ar/services" navItems={navForPath("/services", "ar")}>
+        <div>content</div>
+      </PublicShell>
+    );
+
+    expect(html).toContain("data-testid=\"public-shell\"");
+    expect(html).toContain("dir=\"rtl\"");
+    expect(html).toContain("lang=\"ar\"");
+    expect(html).toContain("data-testid=\"public-language-switch\"");
+    expect(html).toContain("href=\"/services\"");
+    expect(html).toContain("English");
   });
 
   it("renders cinematic hero and trust strip without relying on cards inside hero", () => {
