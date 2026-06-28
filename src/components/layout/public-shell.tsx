@@ -38,15 +38,16 @@ function ClientLoginLink({ className, label }: { className?: string; label: stri
     <Link
       aria-label={label}
       className={cn(
-        "inline-flex min-h-11 min-w-11 items-center justify-center gap-2 border border-white/15 px-3 text-sm font-semibold text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold",
+        "inline-flex h-11 w-11 shrink-0 items-center justify-center border border-white/15 text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold",
         publicMotionButton,
         publicMotionCta,
         className
       )}
       href="/login?next=/client"
+      title={label}
     >
       <MaterialSymbol className={cn("text-lg", publicMotionIcon, publicMotionIconHalo)} name="account_circle" />
-      <span className="hidden sm:inline">{label}</span>
+      <span className="sr-only">{label}</span>
     </Link>
   );
 }
