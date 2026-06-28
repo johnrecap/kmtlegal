@@ -311,6 +311,7 @@ export const publicContentAr = {
   footerContent,
   shell: {
     consultationCta: "احجز استشارة",
+    clientLoginCta: "دخول العميل",
     mainNavLabel: "التنقل الرئيسي",
     compactNavLabel: "التنقل المختصر",
     footerCtaTitle: "هل تحتاج إلى دعم قانوني واضح؟",

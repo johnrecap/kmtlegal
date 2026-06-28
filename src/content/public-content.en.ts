@@ -346,6 +346,7 @@ export const publicContentEn = {
   footerContent,
   shell: {
     consultationCta: "Book a Consultation",
+    clientLoginCta: "Client Login",
     mainNavLabel: "Main navigation",
     compactNavLabel: "Compact navigation",
     footerCtaTitle: "Need clear legal support?",

@@ -128,6 +128,22 @@ test.describe("MVP smoke without database", () => {
     expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
   });
 
+  test("public header exposes client login entry point", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+
+    const clientLogin = page.getByRole("link", { name: "Client Login" }).first();
+    await expect(clientLogin).toBeVisible();
+    await expect(clientLogin).toHaveAttribute("href", "/login?next=/client");
+
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === "/login" && url.searchParams.get("next") === "/client"),
+      clientLogin.click()
+    ]);
+    const url = new URL(page.url());
+    expect(url.pathname).toBe("/login");
+    expect(url.searchParams.get("next")).toBe("/client");
+  });
+
   test.describe("public mobile responsiveness", () => {
     test.use({ viewport: { width: 390, height: 844 } });
 

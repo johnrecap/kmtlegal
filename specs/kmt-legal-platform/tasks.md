@@ -462,9 +462,11 @@ Acceptance:
 - [x] T261 Add `/client` protected portal routes for files, court dates, payments/dues, cases, assistant, and profile while keeping `/portal` compatible.
 - [x] T262 Add public booking assistant panel to `/book-consultation`.
 - [x] T263 Update route/auth/localization/server tests and run verification: `db:generate`, `typecheck`, `lint`, `test`, local `build`, `db:validate`, and smoke E2E.
+- [x] T264 Add a public website header entry point for client login that opens `/login?next=/client`.
 
 Acceptance:
 - Client users default to `/client`; `/portal` remains accessible for compatibility.
+- Public website visitors can reach the client login from the header without knowing the `/client` URL.
 - Secretary can operate clients/cases/appointments/documents/payments/tasks/reports but cannot manage users, roles, permissions, or settings.
 - CRM account creation creates or links only `Client` role accounts.
 - Public AI assistant can book consultation appointments only after server-side field, consent, office-hours, duplicate, and conflict checks.

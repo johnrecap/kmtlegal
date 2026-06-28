@@ -25,9 +25,12 @@ describe("public website UI", () => {
     expect(html).toContain("aria-current=\"page\"");
     expect(html).toContain("Practice Areas");
     expect(html).toContain("Book a Consultation");
+    expect(html).toContain("Client Login");
+    expect(html).toContain("href=\"/login?next=/client\"");
     expect(html).toContain("العربية");
     expect(html).toContain("bg-[#070604]/95");
     expect(html).toContain("event_available");
+    expect(html).toContain("account_circle");
     expect(html).toContain("bg-kmt-gold/15");
     expect(html).not.toContain("secondary-container");
   });
@@ -45,6 +48,8 @@ describe("public website UI", () => {
     expect(html).toContain("data-testid=\"public-language-switch\"");
     expect(html).toContain("href=\"/services\"");
     expect(html).toContain("English");
+    expect(html).toContain("دخول العميل");
+    expect(html).toContain("href=\"/login?next=/client\"");
   });
 
   it("renders cinematic hero and trust strip without relying on cards inside hero", () => {
