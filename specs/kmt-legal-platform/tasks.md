@@ -465,12 +465,14 @@ Acceptance:
 - [x] T264 Add a public website header entry point for client login that opens `/login?next=/client`.
 - [x] T265 Add a recoverable portal guard for Client-role accounts that are not linked to a CRM client profile.
 - [x] T266 Add an admin user-detail repair action that creates or links a CRM client profile for an unlinked Client-role account.
+- [x] T267 Treat exact Super Admin as a full-permission actor even if persisted role permissions are stale.
 
 Acceptance:
 - Client users default to `/client`; `/portal` remains accessible for compatibility.
 - Public website visitors can reach the client login from the header without knowing the `/client` URL.
 - Client-role accounts without a linked CRM profile see a clear activation message instead of a server application error.
 - Client-role accounts created from user governance can be repaired from the user detail screen so they appear in CRM clients.
+- Super Admin can see and use client account linking actions even when older database role permissions are missing `client.account.manage`.
 - Secretary can operate clients/cases/appointments/documents/payments/tasks/reports but cannot manage users, roles, permissions, or settings.
 - CRM account creation creates or links only `Client` role accounts.
 - Public AI assistant can book consultation appointments only after server-side field, consent, office-hours, duplicate, and conflict checks.

@@ -23,6 +23,10 @@ export function permissionsForRole(roleName: string) {
 }
 
 export function hasPermission(principal: Pick<Principal, "roleName" | "permissions">, permission: string) {
+  if (principal.roleName === ROLES.superAdmin) {
+    return true;
+  }
+
   const effectivePermissions = principal.permissions ?? permissionsForRole(principal.roleName);
   return effectivePermissions.includes("*") || effectivePermissions.includes(permission);
 }

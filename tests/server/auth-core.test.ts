@@ -37,6 +37,7 @@ describe("auth role and permission policy", () => {
     expect(permissionsForRole(ROLES.client)).toContain("case.read.own");
     expect(hasPermission({ roleName: ROLES.client }, "case.read.any")).toBe(false);
     expect(hasPermission({ roleName: ROLES.superAdmin }, "settings.manage.any")).toBe(true);
+    expect(hasPermission({ roleName: ROLES.superAdmin, permissions: ["user.manage.any"] }, "client.account.manage")).toBe(true);
   });
 });
 
