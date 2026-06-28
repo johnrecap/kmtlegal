@@ -9,6 +9,12 @@ export type AuditEventInput = {
   action: string;
   resourceType: string;
   resourceId?: string | null;
+  clientId?: string | null;
+  caseId?: string | null;
+  lawyerId?: string | null;
+  appointmentId?: string | null;
+  documentId?: string | null;
+  paymentId?: string | null;
   metadata?: unknown;
   request?: Request;
   requestId?: string;
@@ -41,6 +47,12 @@ export function auditLogCreateData(input: AuditEventInput): Prisma.AuditLogUnche
     action: input.action,
     resourceType: input.resourceType,
     resourceId: input.resourceId ?? null,
+    clientId: input.clientId ?? null,
+    caseId: input.caseId ?? null,
+    lawyerId: input.lawyerId ?? null,
+    appointmentId: input.appointmentId ?? null,
+    documentId: input.documentId ?? null,
+    paymentId: input.paymentId ?? null,
     metadata: redactMetadata(input.metadata) as Prisma.InputJsonValue,
     ipAddress: input.request ? getIpAddress(input.request) : null,
     userAgent: input.request ? getUserAgent(input.request) : null

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { ApiError } from "@/server/http/errors";
 import { AI_REVIEW_DISCLAIMER } from "@/server/ai/copy";
 import { generateStructured } from "@/server/ai/gateway";
-import { consultationClassificationOutputSchema, intakeSummaryOutputSchema } from "@/server/ai/schemas";
+import { consultationAssistantOutputSchema, consultationClassificationOutputSchema, intakeSummaryOutputSchema } from "@/server/ai/schemas";
 import { createOpenAICompatibleProvider } from "@/server/ai/providers/openai-compatible";
 
 describe("AI Provider Gateway", () => {
@@ -39,6 +39,23 @@ describe("AI Provider Gateway", () => {
       })
     ).rejects.toMatchObject({ code: "AI_OUTPUT_INVALID" });
   });
+
+  it("supports the consultation assistant task through the gateway", async () => {
+    process.env.AI_PROVIDER = "mock";
+
+    const result = await generateStructured({
+      task: "consultation_assistant",
+      locale: "ar",
+      input: { message: "أريد حجز استشارة" },
+      schema: consultationAssistantOutputSchema,
+      requestId: "req_ai_assistant",
+      recordRun: false
+    });
+
+    expect(result.task).toBe("consultation_assistant");
+    expect(["answer_general", "collect_booking_fields", "book_consultation_appointment", "appointment_inquiry", "handoff_to_human"]).toContain(result.output.action);
+  });
+
 
   it("provides review-gated copy and rejects final legal-advice phrasing", async () => {
     process.env.AI_PROVIDER = "openai-compatible";

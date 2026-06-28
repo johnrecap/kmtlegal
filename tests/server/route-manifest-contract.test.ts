@@ -46,7 +46,11 @@ describe("route manifest contract", () => {
       ["/api/install/finish", "/api/install/finish"],
       ["/api/files/upload", "/api/files/upload"],
       ["/api/portal/profile", "/api/portal/profile"],
-      ["/api/public/consultations", "/api/public/consultations"]
+      ["/api/public/consultations", "/api/public/consultations"],
+      ["/api/public/consultations/assistant", "/api/public/consultations/assistant"],
+      ["/api/client/assistant", "/api/client/assistant"],
+      ["/api/admin/clients/[clientId]/account", "/api/admin/clients/{id}/account"],
+      ["/api/admin/clients/[clientId]/account/password", "/api/admin/clients/{id}/account/password"]
     ]) {
       expect(routes).toContain(route);
       expect(contract).toContain(contractRoute);

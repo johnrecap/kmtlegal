@@ -13,14 +13,14 @@ import { isStaffRole, ROLES } from "@/server/auth/policy";
 
 describe("auth route protection contract", () => {
   it("keeps client and staff redirects inside their own surfaces", () => {
-    expect(defaultSignedInPath(ROLES.client)).toBe("/portal");
+    expect(defaultSignedInPath(ROLES.client)).toBe("/client");
     expect(defaultSignedInPath(ROLES.lawyer)).toBe("/admin");
-    expect(signedInRedirectPath(ROLES.client, null)).toBe("/portal");
+    expect(signedInRedirectPath(ROLES.client, null)).toBe("/client");
     expect(signedInRedirectPath(ROLES.officeAdmin, undefined)).toBe("/admin");
-    expect(signedInRedirectPath(ROLES.client, "/")).toBe("/portal");
+    expect(signedInRedirectPath(ROLES.client, "/")).toBe("/client");
     expect(signedInRedirectPath(ROLES.officeAdmin, "/")).toBe("/admin");
     expect(signedInRedirectPath(ROLES.officeAdmin, "/login")).toBe("/admin");
-    expect(signedInRedirectPath(ROLES.client, "/admin")).toBe("/portal");
+    expect(signedInRedirectPath(ROLES.client, "/admin")).toBe("/client");
     expect(signedInRedirectPath(ROLES.lawyer, "/portal")).toBe("/admin");
     expect(signedInRedirectPath(ROLES.superAdmin, "/admin/cases")).toBe("/admin/cases");
   });
@@ -35,6 +35,8 @@ describe("auth route protection contract", () => {
   it("detects protected app prefixes for middleware", () => {
     expect(isProtectedAppPath("/admin")).toBe(true);
     expect(isProtectedAppPath("/admin/clients")).toBe(true);
+    expect(isProtectedAppPath("/client")).toBe(true);
+    expect(isProtectedAppPath("/client/files")).toBe(true);
     expect(isProtectedAppPath("/portal")).toBe(true);
     expect(isProtectedAppPath("/portal/documents")).toBe(true);
     expect(isProtectedAppPath("/services")).toBe(false);
@@ -48,6 +50,7 @@ describe("auth route protection contract", () => {
 
   it("matches role policy staff roles", () => {
     expect(staffRoleNames.every((role) => isStaffRole(role))).toBe(true);
+    expect(canRoleOpenPath(ROLES.client, "/client/files")).toBe(true);
     expect(canRoleOpenPath(ROLES.client, "/portal/documents")).toBe(true);
     expect(canRoleOpenPath(ROLES.client, "/admin")).toBe(false);
     expect(canRoleOpenPath(ROLES.officeAdmin, "/admin/consultations")).toBe(true);

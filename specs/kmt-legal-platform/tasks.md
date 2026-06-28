@@ -453,3 +453,22 @@ Acceptance:
 - Public motion remains opt-in and does not restyle admin, portal, install, login, product-system, or Stitch clone surfaces.
 - Reduced-motion users get no sweep/beam/lift/zoom/tilt/shift motion.
 - English and Arabic public pages preserve correct direction and no page-level horizontal overflow after hover/focus motion.
+
+## Milestone 25 - PLAN-32 AI Booking, Secretary Role & Client Portal
+- [x] T257 Add `Secretary` role and `client.account.manage` without granting user/role/permission/settings management.
+- [x] T258 Add client-only portal account create/password-reset APIs under `/api/admin/clients/{id}/account`.
+- [x] T259 Add indexed audit context fields for client/case/lawyer/appointment/document/payment and wire operational audit filters.
+- [x] T260 Add AI consultation assistant schema/task, public booking/inquiry endpoint, authenticated client assistant endpoint, and mock gateway coverage.
+- [x] T261 Add `/client` protected portal routes for files, court dates, payments/dues, cases, assistant, and profile while keeping `/portal` compatible.
+- [x] T262 Add public booking assistant panel to `/book-consultation`.
+- [x] T263 Update route/auth/localization/server tests and run verification: `db:generate`, `typecheck`, `lint`, `test`, local `build`, `db:validate`, and smoke E2E.
+
+Acceptance:
+- Client users default to `/client`; `/portal` remains accessible for compatibility.
+- Secretary can operate clients/cases/appointments/documents/payments/tasks/reports but cannot manage users, roles, permissions, or settings.
+- CRM account creation creates or links only `Client` role accounts.
+- Public AI assistant can book consultation appointments only after server-side field, consent, office-hours, duplicate, and conflict checks.
+- Visitor appointment inquiry requires reference plus matching phone or email.
+- Client assistant reads appointments from authenticated `clientId` only.
+- Client portal pages reuse scoped portal services and do not issue unscoped client data queries.
+- DB-backed secretary/client login and AI booking smoke remains required on a migrated PostgreSQL target before release sign-off.

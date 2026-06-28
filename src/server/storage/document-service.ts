@@ -78,6 +78,9 @@ export async function uploadDocument(input: {
     action: "document.upload",
     resourceType: "Document",
     resourceId: document.id,
+    clientId: document.ownerClientId,
+    caseId: document.caseId,
+    documentId: document.id,
     metadata: {
       documentId: document.id,
       fileType: document.fileType,
@@ -202,6 +205,9 @@ export async function getAuthorizedDocumentDownload(input: { actor: Principal; d
     action: "document.download",
     resourceType: "Document",
     resourceId: document.id,
+    clientId: document.ownerClientId,
+    caseId: document.caseId,
+    documentId: document.id,
     metadata: {
       documentId: document.id,
       fileType: document.fileType,

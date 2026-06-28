@@ -15,13 +15,13 @@ test.describe("DB-backed MVP readiness", () => {
   });
 
   test("client login does not require 2FA and opens the portal", async ({ page }) => {
-    await page.goto("/login?next=/portal", { waitUntil: "domcontentloaded" });
+    await page.goto("/login?next=/client", { waitUntil: "domcontentloaded" });
 
     await page.locator('input[name="email"]').fill("client@kmt.local");
     await page.locator('input[name="password"]').fill("KmtLocalDev!2026");
     await page.locator('button[type="submit"]').click();
 
-    await expect(page).toHaveURL(/\/portal/);
+    await expect(page).toHaveURL(/\/client/);
     await expect(page.locator("body")).toContainText(/KMT|بوابة|القضايا|المستندات/);
   });
 });

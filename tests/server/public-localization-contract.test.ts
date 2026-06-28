@@ -15,6 +15,7 @@ describe("public localization contract", () => {
     expect(documentLocaleForPath("/ar/services")).toBe("ar");
     expect(publicLocaleDirection(documentLocaleForPath("/ar/services"))).toBe("rtl");
     expect(documentLocaleForPath("/admin")).toBe("ar");
+    expect(documentLocaleForPath("/client/files")).toBe("ar");
     expect(documentLocaleForPath("/portal/cases")).toBe("ar");
   });
 

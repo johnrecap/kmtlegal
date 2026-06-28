@@ -31,6 +31,13 @@ type ClientFormValue = {
   source?: string | null;
   status: string;
   assignedLawyerId?: string | null;
+  user?: {
+    id: string;
+    email: string;
+    phone: string | null;
+    status: string;
+    locale: string;
+  } | null;
 };
 
 type ApiErrorBody = {
@@ -156,11 +163,13 @@ export function ClientCreateForm({ lawyers }: { lawyers: LawyerOption[] }) {
 export function ClientActionPanel({
   client,
   lawyers,
-  canManage
+  canManage,
+  canManageAccount
 }: {
   client: ClientFormValue;
   lawyers: LawyerOption[];
   canManage: boolean;
+  canManageAccount: boolean;
 }) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
@@ -223,6 +232,35 @@ export function ClientActionPanel({
     send(`/api/admin/clients/${client.id}/archive`, "POST", { reason: formData.get("reason") }, "تمت أرشفة العميل.");
   }
 
+  function createClientAccount(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    send(
+      `/api/admin/clients/${client.id}/account`,
+      "POST",
+      {
+        email: formData.get("email"),
+        password: formData.get("password"),
+        locale: formData.get("locale")
+      },
+      "تم إنشاء حساب بوابة العميل."
+    );
+  }
+
+  function resetClientAccountPassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    send(
+      `/api/admin/clients/${client.id}/account/password`,
+      "POST",
+      {
+        password: formData.get("password"),
+        revokeSessions: formData.get("revokeSessions") === "on"
+      },
+      "تم تحديث كلمة مرور حساب العميل."
+    );
+  }
+
   const isArchived = client.status === "ARCHIVED";
 
   return (
@@ -282,6 +320,47 @@ export function ClientActionPanel({
           </form>
         </CardContent>
       </Card>
+
+      {canManageAccount ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>حساب بوابة العميل</CardTitle>
+            <CardDescription>إنشاء أو تحديث حساب دخول للعميل فقط. لا يمكن استخدام هذا المسار لإنشاء حساب موظف.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {client.user ? (
+              <div className="space-y-4">
+                <div className="rounded border border-kmt-border bg-slate-50 p-3 text-sm leading-6">
+                  <p className="font-semibold text-kmt-ink">{client.user.email}</p>
+                  <p className="text-kmt-muted">الحالة: {client.user.status}</p>
+                </div>
+                <form className="grid gap-3" onSubmit={resetClientAccountPassword}>
+                  <TextInput disabled={isBusy} label="كلمة مرور جديدة" minLength={10} name="password" required type="password" />
+                  <label className="flex items-center gap-2 text-sm text-kmt-muted">
+                    <input className="h-4 w-4 rounded border-kmt-border" defaultChecked name="revokeSessions" type="checkbox" />
+                    إنهاء جلسات العميل الحالية
+                  </label>
+                  <Button loading={isBusy} type="submit" variant="secondary">
+                    تحديث كلمة المرور
+                  </Button>
+                </form>
+              </div>
+            ) : (
+              <form className="grid gap-3" onSubmit={createClientAccount}>
+                <TextInput defaultValue={client.email ?? ""} disabled={isBusy} label="البريد الإلكتروني" name="email" required type="email" />
+                <TextInput disabled={isBusy} label="كلمة المرور" minLength={10} name="password" required type="password" />
+                <Select defaultValue="ar" disabled={isBusy} label="لغة الحساب" name="locale">
+                  <option value="ar">العربية</option>
+                  <option value="en">English</option>
+                </Select>
+                <Button loading={isBusy} type="submit" variant="secondary">
+                  إنشاء حساب عميل
+                </Button>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader>

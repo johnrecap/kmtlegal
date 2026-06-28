@@ -119,7 +119,7 @@ Open:
 - Services: `http://localhost:3000/services`
 - Booking: `http://localhost:3000/book-consultation`
 - Contact: `http://localhost:3000/contact`
-- Client portal: `http://localhost:3000/portal`
+- Client portal: `http://localhost:3000/client` (`/portal` remains a compatibility alias)
 - Admin: `http://localhost:3000/admin`
 - Stitch clone routes: `http://localhost:3000/stitch-clone/...`
 

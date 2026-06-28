@@ -4,6 +4,7 @@ export type AIProviderName = "mock" | "openrouter" | "openai-compatible" | "loca
 
 export type AITask =
   | "consultation_classification"
+  | "consultation_assistant"
   | "intake_summary"
   | "document_checklist_suggestion"
   | "anonymous_case_study_draft"

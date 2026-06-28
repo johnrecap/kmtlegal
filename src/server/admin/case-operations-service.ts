@@ -428,6 +428,9 @@ export async function updateAdminCaseStatus(input: { actor: Principal; caseId: s
     action: "case.status_update",
     resourceType: "LegalCase",
     resourceId: caseId,
+    clientId: updated.clientId,
+    caseId,
+    lawyerId: updated.assignedLawyerId,
     metadata: {
       previousStatus: existing.status,
       status: updated.status,
@@ -487,6 +490,9 @@ export async function createAdminCaseSession(input: { actor: Principal; caseId: 
     action: "case.session_create",
     resourceType: "CaseSession",
     resourceId: session.id,
+    clientId: legalCase.clientId,
+    caseId: legalCase.id,
+    lawyerId: legalCase.assignedLawyerId,
     metadata: {
       caseId: legalCase.id,
       sessionDate: session.sessionDate.toISOString(),
@@ -547,6 +553,10 @@ export async function createAdminCalendarAppointment(input: { actor: Principal; 
     action: "calendar.appointment_create",
     resourceType: "Appointment",
     resourceId: appointment.id,
+    clientId: appointment.clientId,
+    caseId: legalCase.id,
+    lawyerId: appointment.lawyerId,
+    appointmentId: appointment.id,
     metadata: {
       caseId: legalCase.id,
       startsAt: appointment.startsAt.toISOString(),
@@ -606,6 +616,10 @@ export async function rescheduleAdminCalendarAppointment(input: {
     action: "calendar.appointment_reschedule",
     resourceType: "Appointment",
     resourceId: appointmentId,
+    clientId: updated.clientId,
+    caseId: existing.caseId,
+    lawyerId: updated.lawyerId,
+    appointmentId,
     metadata: {
       caseId: existing.caseId,
       previousStartsAt: existing.startsAt.toISOString(),

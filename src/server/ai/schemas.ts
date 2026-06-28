@@ -8,6 +8,23 @@ export const consultationClassificationOutputSchema = z.object({
   reviewNote: z.string().min(1)
 });
 
+export const consultationAssistantOutputSchema = z.object({
+  action: z.enum([
+    "answer_general",
+    "collect_booking_fields",
+    "book_consultation_appointment",
+    "appointment_inquiry",
+    "handoff_to_human"
+  ]),
+  message: z.string().min(1).max(1200),
+  missingFields: z.array(z.string().min(1).max(80)).max(10).default([]),
+  serviceCategory: z.string().trim().max(80).optional().nullable(),
+  urgency: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).optional().nullable(),
+  preferredMode: z.enum(["PHONE", "ONLINE", "OFFICE"]).optional().nullable(),
+  startsAt: z.string().trim().max(80).optional().nullable(),
+  reviewNote: z.string().min(1)
+});
+
 export const intakeSummaryOutputSchema = z.object({
   summary: z.string().min(1),
   keyFacts: z.array(z.string()).max(10),

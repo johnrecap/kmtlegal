@@ -10,6 +10,7 @@ export const commonUiCopy = {
 export const roleDisplayLabels: Record<string, string> = {
   "Super Admin": "مدير النظام",
   "Office Admin": "مدير المكتب",
+  Secretary: "سكرتيرة المكتب",
   "Marketing Staff": "مسؤول التسويق",
   Lawyer: "محام",
   Client: "عميل",

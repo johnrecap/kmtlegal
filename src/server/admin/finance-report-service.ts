@@ -464,6 +464,9 @@ export async function createAdminPayment(input: { actor: Principal; body: unknow
         action: "finance.payment_create",
         resourceType: "Payment",
         resourceId: payment.id,
+        clientId: payment.clientId,
+        caseId: payment.caseId,
+        paymentId: payment.id,
         metadata: {
           invoiceNumber: payment.invoiceNumber,
           clientId: payment.clientId,
@@ -518,6 +521,9 @@ export async function updateAdminPayment(input: { actor: Principal; paymentId: s
       action: "finance.payment_update",
       resourceType: "Payment",
       resourceId: payment.id,
+      clientId: payment.clientId,
+      caseId: payment.caseId,
+      paymentId: payment.id,
       metadata: {
         previousInvoiceNumber: existing.invoiceNumber,
         invoiceNumber: payment.invoiceNumber,

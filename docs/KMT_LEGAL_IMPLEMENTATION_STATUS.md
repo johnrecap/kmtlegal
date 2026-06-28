@@ -2,15 +2,15 @@
 
 Last updated: 2026-06-28
 
-This is the main tracking file for the 31 Spec Kit implementation plans.
+This is the main tracking file for the 32 Spec Kit implementation plans.
 
 ## Summary
 
-Total plans: 31
+Total plans: 32
 
 | Status | Count |
 | --- | ---: |
-| Done | 26 |
+| Done | 27 |
 | In progress / partial / planned | 5 |
 | Not started | 0 |
 
@@ -50,12 +50,13 @@ Total plans: 31
 | PLAN-29 Public English-Primary Localization | Done | Implemented public English-default localization with Arabic under `/ar`: locale helper, document `lang`/`dir`, direction-aware globals, English/Arabic typed dictionaries, shared public route renderers, `/ar` wrappers, localized shell/cards/forms/metadata/links, public shell-level `dir/lang` hardening, document-reloading language switch, public API `locale` handling, contact/booking locale payloads, booking AI disclaimers, localized API errors, admin Article/CaseStudy locale fields, Article/CaseStudy Prisma `locale` plus `(locale, slug)` uniqueness, locale-filtered public content services, sitemap alternates, and focused locale tests. Verification passed: typecheck, lint, full Vitest, local production build with `ALLOW_BUILD_WITHOUT_DATABASE_URL=true`, MVP smoke, public visual/link crawl, Arabic booking validation, and no `next-intl` package/source/test usage. | Nothing blocking for PLAN-29. Production database still needs migrated Article/CaseStudy English records for English DB-backed detail pages; existing records are backfilled as `ar` by migration. |
 | PLAN-30 KMT Signature Motion System | Done / superseded by PLAN-31 V2 | Implemented the first public-only Judicial Precision motion pass with scoped `kmt-motion-*` utilities, nav/footer underline reveal, CTA sheen/lift, hero reveal/image settle, clickable card edge glow/lift, image-card zoom, icon glow, RTL-safe inline-forward arrows, directory filter transitions, contact/booking form focus glow, booking step/status transitions, and reduced-motion fallbacks. | PLAN-31 intentionally removes the visible thread accent from PLAN-30 and replaces it with the Cinematic Legal V2 motion contract. |
 | PLAN-31 Public Motion V2 - Cinematic Legal | Done | Removed `kmt-motion-thread` and `kmt-motion-trust-strip` from runtime source and CSS; added CSS-only V2 utilities for CTA shine/inner glow/active press, masked card border beams, icon halo/tilt, inline-forward arrow trails, panel enter transitions, stronger hero image settle, and hero CTA spotlight. Applied V2 hooks to public shell CTAs/icons/nav, hero actions, trust strip icons, practice cards, directory cards, public focus/cards, contact branch cards, booking panels, contact form, and booking stepper while preserving RTL and reduced-motion behavior. Verification passed: `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, `cmd /c node scripts/run-playwright-with-server.mjs tests/e2e/public-luxury-visual.spec.ts`, `cmd /c npm run test:e2e:smoke`, `git diff --check`, runtime `src` thread scan, and exact animation dependency scan. | Nothing blocking for PLAN-31. No new animation runtime dependency was added, and protected/admin/product/Stitch surfaces remain out of scope. |
+| PLAN-32 AI Booking, Secretary Role & Client Portal | Done | Added `Secretary` role and `client.account.manage`, client-only account create/password-reset APIs in CRM, indexed audit context columns and filters, AI assistant task/schema/routes for public booking and verified inquiry, authenticated client assistant, `/client` protected website-style portal routes with `/portal` compatibility, public booking assistant panel, route/auth/localization contracts, and audit metadata propagation across operations. Verification passed: `npm run db:generate`, `npm run typecheck`, `npm run lint`, `npm run test`, `DATABASE_URL=local npm run build`, `npm run db:validate`, and `DATABASE_URL=local npm run test:e2e:smoke`. | DB-backed authenticated smoke for secretary-create-account and client login waits for a migrated PostgreSQL runtime. Public AI booking runtime smoke also needs migrated DB availability. |
 
 ## Remaining Count
 
 - Fully not started: 0 plans.
 - Partially open/planned: 5 plans.
-- Done: 26 plans.
+- Done: 27 plans.
 
 ## Immediate Next Steps
 

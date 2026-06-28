@@ -34,6 +34,12 @@ const governanceDelegate: Principal = {
   permissions: ["user.manage.any", "settings.manage.any", "audit.read.any"]
 };
 
+const secretary: Principal = {
+  id: "55555555-5555-4555-8555-555555555555",
+  roleName: ROLES.secretary,
+  permissions: ["client.read.any", "client.update.any", "client.account.manage", "appointment.manage.any"]
+};
+
 describe("admin governance contract", () => {
   it("keeps users, settings, and audit governance behind explicit permissions", () => {
     expect(canManageAdminUsers(superAdmin)).toBe(true);
@@ -53,6 +59,11 @@ describe("admin governance contract", () => {
     expect(canChangeAdminUserPassword(officeAdmin)).toBe(false);
     expect(canManageAdminSettings(officeAdmin)).toBe(false);
     expect(canReadAdminAuditLog(officeAdmin)).toBe(false);
+
+    expect(canManageAdminUsers(secretary)).toBe(false);
+    expect(canCreateAdminUsers(secretary)).toBe(false);
+    expect(canChangeAdminUserPassword(secretary)).toBe(false);
+    expect(canManageAdminSettings(secretary)).toBe(false);
   });
 
   it("validates user list filters and role assignment payloads", () => {
@@ -155,6 +166,12 @@ describe("admin governance contract", () => {
       actorId: "",
       action: "auth.2fa_reset",
       resourceType: "User",
+      clientId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      caseId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      lawyerId: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      appointmentId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+      documentId: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee",
+      paymentId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
       dateFrom: "2026-06-01",
       dateTo: "2026-06-23",
       sortBy: "createdAt",
@@ -163,7 +180,10 @@ describe("admin governance contract", () => {
     });
 
     expect(query.action).toBe("auth.2fa_reset");
+    expect(query.clientId).toBe("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
+    expect(query.paymentId).toBe("ffffffff-ffff-4fff-8fff-ffffffffffff");
     expect(query.pageSize).toBe(80);
+    expect(() => adminAuditLogQuerySchema.parse({ clientId: "not-a-uuid" })).toThrow();
     expect(() => adminAuditLogQuerySchema.parse({ pageSize: "500" })).toThrow();
   });
 
@@ -173,6 +193,8 @@ describe("admin governance contract", () => {
       action: "finance.payment_create",
       resourceType: "Payment",
       resourceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      clientId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      paymentId: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
       createdAt: new Date("2026-06-25T12:00:00.000Z"),
       actor: { name: "ahmed", role: { name: "Super Admin" } },
       metadata: {
@@ -193,6 +215,8 @@ describe("admin governance contract", () => {
     expect(JSON.stringify(dto.details)).not.toContain("clientId");
     expect(JSON.stringify(dto.details)).not.toContain("bbbbbbbb");
     expect(JSON.stringify(dto.details)).not.toContain("password");
+    expect(dto.technical.clientId).toBe("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+    expect(dto.technical.paymentId).toBe("dddddddd-dddd-4ddd-8ddd-dddddddddddd");
     expect(dto).not.toHaveProperty("metadata");
     expect(auditActionOptionLabel("finance.payment_create")).toBe("تم إنشاء فاتورة");
     expect(auditResourceLabel("Payment")).toBe("فاتورة");

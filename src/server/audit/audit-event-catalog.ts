@@ -29,6 +29,12 @@ export type AuditLogPresentationRow = {
   action: string;
   resourceType: string;
   resourceId?: string | null;
+  clientId?: string | null;
+  caseId?: string | null;
+  lawyerId?: string | null;
+  appointmentId?: string | null;
+  documentId?: string | null;
+  paymentId?: string | null;
   metadata?: unknown;
   createdAt: Date | string;
   actor?: AuditActor;
@@ -55,6 +61,12 @@ export type AdminAuditLogDto = {
     action: string;
     resourceType: string;
     resourceId?: string | null;
+    clientId?: string | null;
+    caseId?: string | null;
+    lawyerId?: string | null;
+    appointmentId?: string | null;
+    documentId?: string | null;
+    paymentId?: string | null;
   };
 };
 
@@ -137,6 +149,8 @@ const auditEventDefinitions: Record<string, AuditEventDefinition> = {
 
   "client.archive": { label: "تم أرشفة عميل", category: "العملاء", severity: "مهم", summary: () => "تمت أرشفة ملف عميل." },
   "client.assign": { label: "تم تغيير المحامي المسؤول", category: "العملاء", severity: "مهم", summary: () => "تم تحديث التكليف المسؤول عن ملف عميل." },
+  "client.account.create": { label: "تم إنشاء حساب بوابة عميل", category: "الأمان", severity: "حساس", summary: () => "تم إنشاء حساب دخول مربوط بملف عميل." },
+  "client.account.password_reset": { label: "تمت إعادة ضبط كلمة مرور عميل", category: "الأمان", severity: "حساس", summary: () => "تم تحديث كلمة مرور حساب بوابة عميل." },
   "client.create": { label: "تم إنشاء عميل", category: "العملاء", severity: "عادي", summary: () => "تم إنشاء ملف عميل جديد." },
   "client.update": { label: "تم تعديل عميل", category: "العملاء", severity: "عادي", summary: ({ metadata }) => statusSummary("تم تعديل ملف عميل", "Client", metadata) },
 
@@ -146,6 +160,7 @@ const auditEventDefinitions: Record<string, AuditEventDefinition> = {
   "consultation.assign": { label: "تم إسناد استشارة", category: "العملاء", severity: "عادي", summary: () => "تم إسناد طلب استشارة إلى مسؤول." },
   "consultation.convert_to_case": { label: "تم تحويل استشارة إلى قضية", category: "القضايا", severity: "مهم", summary: () => "تم تحويل طلب استشارة إلى ملف قضية." },
   "consultation.create_public": { label: "تم استقبال طلب استشارة", category: "العملاء", severity: "عادي", summary: () => "تم استقبال طلب استشارة من الموقع." },
+  "consultation.assistant_book": { label: "تم حجز استشارة عبر المساعد", category: "المواعيد", severity: "مهم", summary: ({ metadata }) => withDateSummary("تم حجز موعد استشارة عبر المساعد", metadata.startsAt) },
   "consultation.reject": { label: "تم رفض استشارة", category: "العملاء", severity: "مهم", summary: () => "تم رفض طلب استشارة بعد المراجعة." },
 
   "content.article_create": { label: "تم إنشاء مقال", category: "المحتوى", severity: "عادي", summary: () => "تم إنشاء مقال جديد." },
@@ -203,7 +218,13 @@ export function toAdminAuditLogDto(row: AuditLogPresentationRow): AdminAuditLogD
     technical: {
       action: row.action,
       resourceType: row.resourceType,
-      resourceId: row.resourceId ?? null
+      resourceId: row.resourceId ?? null,
+      clientId: row.clientId ?? null,
+      caseId: row.caseId ?? null,
+      lawyerId: row.lawyerId ?? null,
+      appointmentId: row.appointmentId ?? null,
+      documentId: row.documentId ?? null,
+      paymentId: row.paymentId ?? null
     }
   };
 }

@@ -93,6 +93,7 @@ PLAN-26 installer preflight must reject unsupported panel environments before bu
 | GET | `/api/public/case-studies/{slug}` | Case study detail | Guest | public |
 | POST | `/api/public/contact` | Persist contact form submission and return `201 { data: { id, reference, status }, requestId }` | Guest | contact.create.public |
 | POST | `/api/public/consultations` | Create consultation request | Guest | consultation.create.public |
+| POST | `/api/public/consultations/assistant` | AI-assisted consultation booking and verified appointment inquiry | Guest | consultation.create.public |
 
 ### Email
 | Method | Path/Action | Purpose | Auth | Permission |
@@ -111,10 +112,19 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 | POST | `/api/admin/consultations/{id}/convert` | Convert to client/case | Admin | consultation.convert.any |
 
 ### Client Portal
-Portal MVP is server-rendered except implemented JSON routes. Current portal pages read data server-side through authenticated service helpers. JSON routes are added only when the product needs client-side mutation or async refresh.
+`/client` is the primary protected client surface. `/portal` remains as a compatible legacy surface. Portal MVP is server-rendered except implemented JSON routes. Current portal pages read data server-side through authenticated service helpers. JSON routes are added only when the product needs client-side mutation or async refresh.
 
 | Method | Path | Purpose | Auth | Permission |
 | --- | --- | --- | --- | --- |
+| Server-rendered | `/client` | Client summary | Client | client.read.self |
+| Server-rendered | `/client/cases` | Own cases list | Client | case.read.own |
+| Server-rendered | `/client/cases/{id}` | Own case detail | Client | case.read.own |
+| Server-rendered | `/client/files` | Own visible files | Client | document.read.own |
+| Server-rendered | `/client/court-dates` | Own case and consultation appointments | Client | appointment.read.own |
+| Server-rendered | `/client/payments` | Own payment records and dues | Client | payment.read.own |
+| Server-rendered | `/client/assistant` | Client assistant appointment inquiry | Client | appointment.read.own |
+| Server-rendered | `/client/profile` | Client profile | Client | client.read.self |
+| POST | `/api/client/assistant` | Authenticated client appointment assistant | Client | appointment.read.own |
 | Server-rendered | `/portal` | Client summary | Client | portal.read.self |
 | Server-rendered | `/portal/cases` | Own cases list | Client | case.read.own |
 | Server-rendered | `/portal/cases/{id}` | Own case detail | Client | case.read.own |
@@ -131,6 +141,8 @@ Portal MVP is server-rendered except implemented JSON routes. Current portal pag
 | POST | `/api/admin/clients` | Create client | Admin | client.create.any |
 | GET | `/api/admin/clients/{id}` | Client detail | Staff | client.read.any / assigned |
 | PATCH | `/api/admin/clients/{id}` | Update client | Admin | client.update.any |
+| POST | `/api/admin/clients/{id}/account` | Create or link a Client role portal account | Secretary/Admin | client.account.manage |
+| POST | `/api/admin/clients/{id}/account/password` | Reset linked Client role account password | Secretary/Admin | client.account.manage |
 | GET | `/api/admin/cases` | Cases list | Staff | case.read.any / assigned |
 | POST | `/api/admin/cases` | Create case | Admin | case.create.any |
 | GET | `/api/admin/cases/{id}` | Case detail | Staff | case.read.any / assigned |

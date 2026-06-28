@@ -846,6 +846,12 @@ model AuditLog {
   action       String
   resourceType String
   resourceId   String?
+  clientId     String?  @db.Uuid
+  caseId       String?  @db.Uuid
+  lawyerId     String?  @db.Uuid
+  appointmentId String? @db.Uuid
+  documentId   String? @db.Uuid
+  paymentId    String? @db.Uuid
   metadata     Json?
   ipAddress    String?
   userAgent    String?
@@ -855,6 +861,12 @@ model AuditLog {
   @@index([action])
   @@index([resourceType])
   @@index([resourceId])
+  @@index([clientId])
+  @@index([caseId])
+  @@index([lawyerId])
+  @@index([appointmentId])
+  @@index([documentId])
+  @@index([paymentId])
   @@index([createdAt])
   @@map("audit_logs")
 }

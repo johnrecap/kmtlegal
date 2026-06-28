@@ -260,7 +260,7 @@ async function assertAssignableTaskUser(actor: Principal, assignedToId: string) 
     where: {
       id: assignedToId,
       status: "ACTIVE",
-      role: { name: { in: ["Lawyer", "Office Admin", "Super Admin"] } }
+      role: { name: { in: ["Lawyer", "Secretary", "Office Admin", "Super Admin"] } }
     },
     select: { id: true, name: true, email: true }
   });
@@ -381,6 +381,7 @@ export async function createAdminTask(input: { actor: Principal; body: unknown; 
     action: "task.create",
     resourceType: "Task",
     resourceId: task.id,
+    caseId: task.caseId,
     metadata: {
       assignedToId: task.assignedToId,
       caseId: task.caseId,
@@ -432,6 +433,7 @@ export async function updateAdminTask(input: { actor: Principal; taskId: string;
     action: "task.update",
     resourceType: "Task",
     resourceId: task.id,
+    caseId: task.caseId,
     metadata: {
       previousStatus: existing.status,
       status: task.status,
@@ -453,7 +455,7 @@ export async function getAdminTaskOptions(actor: Principal) {
       ? prisma.user.findMany({
           where: {
             status: "ACTIVE",
-            role: { name: { in: ["Lawyer", "Office Admin", "Super Admin"] } }
+            role: { name: { in: ["Lawyer", "Secretary", "Office Admin", "Super Admin"] } }
           },
           select: { id: true, name: true, email: true },
           orderBy: { name: "asc" }
@@ -560,6 +562,10 @@ export async function updateAdminDocument(input: { actor: Principal; documentId:
     action: body.status === "DELETED" ? "document.delete" : "document.update",
     resourceType: "Document",
     resourceId: document.id,
+    clientId: document.ownerClientId,
+    caseId: document.caseId,
+    lawyerId: document.case?.assignedLawyerId ?? document.ownerClient?.assignedLawyerId ?? null,
+    documentId: document.id,
     metadata: {
       previousStatus: existing.status,
       status: document.status,
@@ -593,6 +599,9 @@ export async function deleteAdminDocument(input: { actor: Principal; documentId:
     action: "document.delete",
     resourceType: "Document",
     resourceId: document.id,
+    clientId: existing.ownerClientId,
+    caseId: existing.caseId,
+    documentId: document.id,
     metadata: {
       reason: body.reason || null,
       previousStatus: existing.status,

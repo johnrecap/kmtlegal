@@ -1,7 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
-import { canReadClient, hasPermission, type Principal } from "@/server/auth/policy";
+import { hashPassword } from "@/server/auth/password";
+import { canReadClient, hasPermission, ROLES, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
 import { toPagination } from "@/server/http/pagination";
@@ -41,6 +42,17 @@ export const archiveClientSchema = z.object({
   reason: z.string().trim().max(500).optional().or(z.literal(""))
 });
 
+export const clientAccountCreateSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(10).max(256),
+  locale: z.enum(["ar", "en"]).default("ar")
+});
+
+export const clientAccountPasswordSchema = z.object({
+  password: z.string().min(10).max(256),
+  revokeSessions: z.coerce.boolean().default(true)
+});
+
 export type AdminClientListQuery = z.infer<typeof adminClientListQuerySchema>;
 export type AdminClientWriteInput = z.infer<typeof adminClientWriteSchema>;
 
@@ -50,6 +62,10 @@ export function canListAdminClients(actor: Principal) {
 
 export function canManageAdminClients(actor: Principal) {
   return hasPermission(actor, "client.update.any");
+}
+
+export function canManageClientAccounts(actor: Principal) {
+  return hasPermission(actor, "client.account.manage");
 }
 
 export function clientScopeWhereForPrincipal(actor: Principal): Prisma.ClientWhereInput {
@@ -271,6 +287,12 @@ function assertClientManagePermission(actor: Principal) {
   }
 }
 
+function assertClientAccountManagePermission(actor: Principal) {
+  if (!canManageClientAccounts(actor)) {
+    throw new ApiError(403, "PERMISSION_DENIED", "Client account management permission is required.");
+  }
+}
+
 function writeData(body: AdminClientWriteInput) {
   return {
     fullName: body.fullName,
@@ -301,6 +323,8 @@ export async function createAdminClient(input: { actor: Principal; body: unknown
     action: "client.create",
     resourceType: "Client",
     resourceId: client.id,
+    clientId: client.id,
+    lawyerId: client.assignedLawyerId,
     metadata: {
       status: client.status,
       source: client.source,
@@ -340,6 +364,8 @@ export async function updateAdminClient(input: { actor: Principal; clientId: str
     action: "client.update",
     resourceType: "Client",
     resourceId: clientId,
+    clientId,
+    lawyerId: client.assignedLawyerId,
     metadata: {
       previousStatus: existing.status,
       status: client.status,
@@ -380,6 +406,8 @@ export async function assignAdminClient(input: { actor: Principal; clientId: str
     action: "client.assign",
     resourceType: "Client",
     resourceId: clientId,
+    clientId,
+    lawyerId: client.assignedLawyerId,
     metadata: {
       previousAssignedLawyerId: existing.assignedLawyerId,
       assignedLawyerId: client.assignedLawyerId
@@ -417,6 +445,7 @@ export async function archiveAdminClient(input: { actor: Principal; clientId: st
     action: "client.archive",
     resourceType: "Client",
     resourceId: clientId,
+    clientId,
     metadata: {
       previousStatus: existing.status,
       status: client.status,
@@ -426,4 +455,160 @@ export async function archiveAdminClient(input: { actor: Principal; clientId: st
   });
 
   return client;
+}
+
+export async function createOrLinkClientPortalAccount(input: { actor: Principal; clientId: string; body: unknown; request?: Request }) {
+  assertClientAccountManagePermission(input.actor);
+  const clientId = parseWithSchema(uuidSchema, input.clientId, "Client id is invalid.");
+  const body = parseWithSchema(clientAccountCreateSchema, input.body, "Client account payload is invalid.");
+
+  const existingClient = await prisma.client.findUnique({
+    where: { id: clientId },
+    include: {
+      user: { select: { id: true, email: true, role: { select: { name: true } } } }
+    }
+  });
+
+  if (!existingClient || existingClient.deletedAt) {
+    throw new ApiError(404, "NOT_FOUND", "Client was not found.");
+  }
+  if (existingClient.userId) {
+    throw new ApiError(409, "CONFLICT", "Client already has a portal account.");
+  }
+
+  const clientRole = await prisma.role.findUnique({
+    where: { name: ROLES.client },
+    select: { id: true }
+  });
+
+  if (!clientRole) {
+    throw new ApiError(500, "INTERNAL_ERROR", "Client role is missing. Run production seed first.");
+  }
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email: body.email },
+    include: {
+      role: { select: { name: true } },
+      clientProfile: { select: { id: true } }
+    }
+  });
+
+  if (existingUser && existingUser.role.name !== ROLES.client) {
+    throw new ApiError(409, "CONFLICT", "Email is already used by a staff account.");
+  }
+  if (existingUser?.clientProfile && existingUser.clientProfile.id !== clientId) {
+    throw new ApiError(409, "CONFLICT", "Email is already linked to another client.");
+  }
+
+  const passwordHash = hashPassword(body.password);
+  const result = await prisma.$transaction(async (tx) => {
+    const user = existingUser
+      ? await tx.user.update({
+          where: { id: existingUser.id },
+          data: {
+            name: existingClient.fullName,
+            phone: existingClient.phone,
+            passwordHash,
+            status: "ACTIVE",
+            locale: body.locale
+          }
+        })
+      : await tx.user.create({
+          data: {
+            email: body.email,
+            name: existingClient.fullName,
+            phone: existingClient.phone,
+            passwordHash,
+            roleId: clientRole.id,
+            status: "ACTIVE",
+            locale: body.locale
+          }
+        });
+
+    const client = await tx.client.update({
+      where: { id: clientId },
+      data: {
+        userId: user.id,
+        email: body.email,
+        status: existingClient.status === "ARCHIVED" ? "ARCHIVED" : "ACTIVE"
+      },
+      include: {
+        user: { select: { id: true, email: true, phone: true, status: true, locale: true } },
+        assignedLawyer: { select: { id: true, name: true, email: true } }
+      }
+    });
+
+    return { client, user, linkedExistingUser: Boolean(existingUser) };
+  });
+
+  await appendAuditLogBestEffort({
+    actorId: input.actor.id,
+    action: "client.account.create",
+    resourceType: "Client",
+    resourceId: clientId,
+    clientId,
+    metadata: {
+      userId: result.user.id,
+      email: result.user.email,
+      linkedExistingUser: result.linkedExistingUser,
+      targetRole: ROLES.client
+    },
+    request: input.request
+  });
+
+  return result.client;
+}
+
+export async function resetClientPortalAccountPassword(input: { actor: Principal; clientId: string; body: unknown; request?: Request }) {
+  assertClientAccountManagePermission(input.actor);
+  const clientId = parseWithSchema(uuidSchema, input.clientId, "Client id is invalid.");
+  const body = parseWithSchema(clientAccountPasswordSchema, input.body, "Client account password payload is invalid.");
+
+  const client = await prisma.client.findUnique({
+    where: { id: clientId },
+    include: {
+      user: { include: { role: { select: { name: true } } } }
+    }
+  });
+
+  if (!client || client.deletedAt) {
+    throw new ApiError(404, "NOT_FOUND", "Client was not found.");
+  }
+  if (!client.user) {
+    throw new ApiError(404, "NOT_FOUND", "Client has no portal account.");
+  }
+  if (client.user.role.name !== ROLES.client) {
+    throw new ApiError(409, "CONFLICT", "Linked account is not a client account.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: client.user!.id },
+      data: { passwordHash: hashPassword(body.password), status: "ACTIVE" }
+    });
+
+    if (body.revokeSessions) {
+      await tx.session.updateMany({
+        where: { userId: client.user!.id, revokedAt: null },
+        data: { revokedAt: new Date() }
+      });
+    }
+  });
+
+  await appendAuditLogBestEffort({
+    actorId: input.actor.id,
+    action: "client.account.password_reset",
+    resourceType: "Client",
+    resourceId: clientId,
+    clientId,
+    metadata: {
+      userId: client.user.id,
+      email: client.user.email,
+      sessionsRevoked: body.revokeSessions,
+      targetRole: ROLES.client
+    },
+    request: input.request
+  });
+
+  return { id: clientId, passwordUpdated: true, sessionsRevoked: body.revokeSessions };
 }

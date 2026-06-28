@@ -18,6 +18,7 @@ import {
 } from "@/lib/legal-format";
 import {
   canManageAdminClients,
+  canManageClientAccounts,
   getAdminClientDetail,
   listAssignableClientLawyers
 } from "@/server/admin/client-crm-service";
@@ -196,6 +197,7 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
 
         <ClientActionPanel
           canManage={canManageAdminClients(guard.context.principal)}
+          canManageAccount={canManageClientAccounts(guard.context.principal)}
           client={{
             id: client.id,
             fullName: client.fullName,
@@ -204,7 +206,8 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
             city: client.city,
             source: client.source,
             status: client.status,
-            assignedLawyerId: client.assignedLawyerId
+            assignedLawyerId: client.assignedLawyerId,
+            user: client.user
           }}
           lawyers={lawyers}
         />

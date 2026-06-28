@@ -6,6 +6,7 @@ import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
 import { getPublicContent, navForPath } from "@/content/public-content";
 import { BookingStepper } from "@/features/public-site/booking-stepper";
+import { ConsultationAssistantPanel } from "@/features/public-site/consultation-assistant-panel";
 import { ContactForm } from "@/features/public-site/contact-form";
 import { DirectoryFilter } from "@/features/public-site/directory-filter";
 import {
@@ -622,20 +623,23 @@ export function BookConsultationPageView({ locale, searchParams }: { locale: Pub
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <BookingStepper initialService={searchParams.service} locale={locale} />
-          <aside className={cn(publicPanel, publicMotionCardBeam, "p-5")}>
-            <h2 className="text-xl font-semibold text-white">{copy.afterSubmitTitle}</h2>
-            <ol className={cn("mt-4 space-y-4 text-sm leading-7", publicMutedText)}>
-              {copy.afterSubmitSteps.map((step, index) => (
-                <li key={step}>
-                  {index + 1}. {step}
-                </li>
-              ))}
-            </ol>
-            {searchParams.lawyer ? (
-              <p className="mt-5 rounded border border-kmt-gold/25 bg-kmt-gold/10 p-3 text-sm text-amber-100">
-                {copy.requestedLawyer}: {searchParams.lawyer}
-              </p>
-            ) : null}
+          <aside className="space-y-5">
+            <ConsultationAssistantPanel locale={locale} />
+            <section className={cn(publicPanel, publicMotionCardBeam, "p-5")}>
+              <h2 className="text-xl font-semibold text-white">{copy.afterSubmitTitle}</h2>
+              <ol className={cn("mt-4 space-y-4 text-sm leading-7", publicMutedText)}>
+                {copy.afterSubmitSteps.map((step, index) => (
+                  <li key={step}>
+                    {index + 1}. {step}
+                  </li>
+                ))}
+              </ol>
+              {searchParams.lawyer ? (
+                <p className="mt-5 rounded border border-kmt-gold/25 bg-kmt-gold/10 p-3 text-sm text-amber-100">
+                  {copy.requestedLawyer}: {searchParams.lawyer}
+                </p>
+              ) : null}
+            </section>
           </aside>
         </div>
       </PublicSection>

@@ -300,7 +300,7 @@ test.describe("MVP smoke without database", () => {
     expect(url.searchParams.get("next")).toBe("/admin");
   });
 
-  test("protected portal route redirects anonymous users without chunk errors", async ({ page }) => {
+  test("protected client and portal routes redirect anonymous users without chunk errors", async ({ page }) => {
     const consoleErrors: string[] = [];
     page.on("console", (message) => {
       if (message.type() === "error") {
@@ -308,9 +308,14 @@ test.describe("MVP smoke without database", () => {
       }
     });
 
+    await page.goto("/client", { waitUntil: "domcontentloaded" });
+    let url = new URL(page.url());
+    expect(url.pathname).toBe("/login");
+    expect(url.searchParams.get("next")).toBe("/client");
+
     await page.goto("/portal", { waitUntil: "domcontentloaded" });
 
-    const url = new URL(page.url());
+    url = new URL(page.url());
     expect(url.pathname).toBe("/login");
     expect(url.searchParams.get("next")).toBe("/portal");
     expect(consoleErrors).toEqual([]);

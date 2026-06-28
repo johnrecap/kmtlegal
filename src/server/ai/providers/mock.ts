@@ -31,6 +31,17 @@ function mockOutputForTask(task: AITask) {
         reasons: ["تصنيف تجريبي مبني على حقول طلب الاستشارة المنظمة."],
         reviewNote: REVIEW_NOTE
       };
+    case "consultation_assistant":
+      return {
+        action: "answer_general",
+        message: "أقدر أساعدك في حجز موعد استشارة أو الاستعلام عن موعد استشارة برقم المرجع بعد التحقق من الهاتف أو البريد.",
+        missingFields: [],
+        serviceCategory: null,
+        urgency: "NORMAL",
+        preferredMode: "ONLINE",
+        startsAt: null,
+        reviewNote: REVIEW_NOTE
+      };
     case "intake_summary":
       return {
         summary: "تم استلام طلب قانوني منظم يحتاج إلى مراجعة فريق المكتب قبل التواصل.",

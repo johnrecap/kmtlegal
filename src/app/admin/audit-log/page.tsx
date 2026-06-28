@@ -78,6 +78,14 @@ function TechnicalDetails({ row }: { row: AuditRow }) {
             <dd className="inline break-all">{row.technical.resourceId}</dd>
           </div>
         ) : null}
+        {(["clientId", "caseId", "lawyerId", "appointmentId", "documentId", "paymentId"] as const).map((key) =>
+          row.technical[key] ? (
+            <div key={key}>
+              <dt className="inline font-semibold">{key}: </dt>
+              <dd className="inline break-all">{row.technical[key]}</dd>
+            </div>
+          ) : null
+        )}
       </dl>
     </details>
   );
@@ -88,6 +96,12 @@ function listHref(filters: {
   actorId?: string;
   action?: string;
   resourceType?: string;
+  clientId?: string;
+  caseId?: string;
+  lawyerId?: string;
+  appointmentId?: string;
+  documentId?: string;
+  paymentId?: string;
   dateFrom?: string;
   dateTo?: string;
   sortBy?: string;
@@ -218,6 +232,12 @@ export default async function AdminAuditLogPage({ searchParams = {} }: { searchP
                 </option>
               ))}
             </Select>
+            <TextInput className="min-w-56" defaultValue={result.filters.clientId ?? ""} label="معرف العميل" name="clientId" dir="ltr" />
+            <TextInput className="min-w-56" defaultValue={result.filters.caseId ?? ""} label="معرف القضية" name="caseId" dir="ltr" />
+            <TextInput className="min-w-56" defaultValue={result.filters.lawyerId ?? ""} label="معرف المحامي" name="lawyerId" dir="ltr" />
+            <TextInput className="min-w-56" defaultValue={result.filters.appointmentId ?? ""} label="معرف الموعد" name="appointmentId" dir="ltr" />
+            <TextInput className="min-w-56" defaultValue={result.filters.documentId ?? ""} label="معرف المستند" name="documentId" dir="ltr" />
+            <TextInput className="min-w-56" defaultValue={result.filters.paymentId ?? ""} label="معرف الدفعة" name="paymentId" dir="ltr" />
             <TextInput className="min-w-36" defaultValue={result.filters.dateFrom ?? ""} label="من" name="dateFrom" type="date" />
             <TextInput className="min-w-36" defaultValue={result.filters.dateTo ?? ""} label="إلى" name="dateTo" type="date" />
             <Select className="min-w-40" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">

@@ -1,4 +1,4 @@
-export const staffRoleNames = ["Lawyer", "Office Admin", "Marketing Staff", "Super Admin"] as const;
+export const staffRoleNames = ["Lawyer", "Secretary", "Office Admin", "Marketing Staff", "Super Admin"] as const;
 
 export function isSafeInternalPath(path: string | null | undefined): path is string {
   if (!path || !path.startsWith("/") || path.startsWith("//")) {
@@ -18,7 +18,7 @@ export function isStaffRoleName(roleName: string): boolean {
 
 export function defaultSignedInPath(roleName: string): string {
   if (roleName === "Client") {
-    return "/portal";
+    return "/client";
   }
 
   if (isStaffRoleName(roleName)) {
@@ -38,7 +38,7 @@ export function canRoleOpenPath(roleName: string, path: string): boolean {
   }
 
   if (roleName === "Client") {
-    return path === "/portal" || path.startsWith("/portal/");
+    return path === "/client" || path.startsWith("/client/") || path === "/portal" || path.startsWith("/portal/");
   }
 
   if (isStaffRoleName(roleName)) {
@@ -59,7 +59,14 @@ export function signedInRedirectPath(roleName: string, requestedPath: string | n
 }
 
 export function isProtectedAppPath(pathname: string): boolean {
-  return pathname === "/admin" || pathname.startsWith("/admin/") || pathname === "/portal" || pathname.startsWith("/portal/");
+  return (
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/") ||
+    pathname === "/client" ||
+    pathname.startsWith("/client/") ||
+    pathname === "/portal" ||
+    pathname.startsWith("/portal/")
+  );
 }
 
 export function loginUrlForProtectedPath(origin: string, pathname: string, search = ""): URL {

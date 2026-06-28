@@ -227,6 +227,7 @@ export async function assignConsultation(input: { actor: Principal; consultation
     action: "consultation.assign",
     resourceType: "ConsultationRequest",
     resourceId: consultationId,
+    lawyerId: body.assignedLawyerId,
     metadata: { assignedLawyerId: body.assignedLawyerId, previousAssignedLawyerId: consultation.assignedLawyerId },
     request: input.request
   });
@@ -262,6 +263,7 @@ export async function rejectConsultation(input: { actor: Principal; consultation
     action: "consultation.reject",
     resourceType: "ConsultationRequest",
     resourceId: consultationId,
+    lawyerId: consultation.assignedLawyerId,
     metadata: { reason: body.reason || null },
     request: input.request
   });
@@ -367,6 +369,10 @@ export async function convertConsultationToCase(input: { actor: Principal; consu
       action: "consultation.convert_to_case",
       resourceType: "ConsultationRequest",
       resourceId: consultation.id,
+      clientId: client.id,
+      caseId: legalCase.id,
+      lawyerId: assignedLawyerId,
+      appointmentId: appointment?.id ?? null,
       metadata: {
         clientId: client.id,
         caseId: legalCase.id,

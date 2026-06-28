@@ -4,9 +4,12 @@ import {
   adminClientWriteSchema,
   archiveClientSchema,
   assignClientSchema,
+  canManageClientAccounts,
   canListAdminClients,
   canManageAdminClients,
   canReadAdminClient,
+  clientAccountCreateSchema,
+  clientAccountPasswordSchema,
   clientScopeWhereForPrincipal
 } from "@/server/admin/client-crm-service";
 import { ROLES, type Principal } from "@/server/auth/policy";
@@ -30,6 +33,12 @@ const marketing: Principal = {
   permissions: ["content.create.any"]
 };
 
+const secretary: Principal = {
+  id: "55555555-5555-4555-8555-555555555555",
+  roleName: ROLES.secretary,
+  permissions: ["client.read.any", "client.update.any", "client.account.manage"]
+};
+
 describe("admin client CRM contract", () => {
   it("scopes CRM reads by any or assigned-client permission", () => {
     expect(clientScopeWhereForPrincipal(officeAdmin)).toEqual({ deletedAt: null });
@@ -50,6 +59,10 @@ describe("admin client CRM contract", () => {
     expect(canListAdminClients(lawyer)).toBe(true);
     expect(canManageAdminClients(lawyer)).toBe(false);
     expect(canListAdminClients(marketing)).toBe(false);
+    expect(canListAdminClients(secretary)).toBe(true);
+    expect(canManageAdminClients(secretary)).toBe(true);
+    expect(canManageClientAccounts(secretary)).toBe(true);
+    expect(canManageClientAccounts(lawyer)).toBe(false);
   });
 
   it("checks single-client read ownership before rendering detail", () => {
@@ -93,5 +106,18 @@ describe("admin client CRM contract", () => {
       assignClientSchema.parse({ assignedLawyerId: "44444444-4444-4444-8444-444444444444" }).assignedLawyerId
     ).toBe("44444444-4444-4444-8444-444444444444");
     expect(archiveClientSchema.parse({ reason: "duplicate record" }).reason).toBe("duplicate record");
+  });
+
+  it("validates client portal account payloads separately from staff user creation", () => {
+    const account = clientAccountCreateSchema.parse({
+      email: "client.portal@example.com",
+      password: "LongEnoughPassword1",
+      locale: "ar"
+    });
+    expect(account.email).toBe("client.portal@example.com");
+    expect(account.locale).toBe("ar");
+    expect(() => clientAccountCreateSchema.parse({ email: "bad", password: "short" })).toThrow();
+
+    expect(clientAccountPasswordSchema.parse({ password: "AnotherLongPassword1", revokeSessions: "true" }).revokeSessions).toBe(true);
   });
 });
