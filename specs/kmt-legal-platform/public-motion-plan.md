@@ -2,14 +2,15 @@
 
 ## Summary
 - Goal: add a restrained public-only motion layer for the English-first public website and optional Arabic `/ar` pages.
-- Direction: Judicial Precision, using the Gold Legal Thread pattern across nav underlines, CTAs, cards, icons, filters, and forms.
+- Direction: Judicial Precision, originally using the Gold Legal Thread pattern across nav underlines, CTAs, cards, icons, filters, and forms.
+- PLAN-31 supersedes the visible thread accent with Cinematic Legal V2. Do not reintroduce `kmt-motion-thread` or `kmt-motion-trust-strip`.
 - Scope: public website only. Admin, portal, install, product-system, login, and Stitch clone surfaces must not inherit public motion styling.
 - Technical decision: CSS/Tailwind-first motion utilities only. No Framer Motion, GSAP, Lottie, Rive, or new runtime dependency.
 
 ## Implementation Contract
 - Motion helpers live under `src/features/public-site/` and are opt-in through `kmt-motion-*` classes.
 - Public motion uses short durations: 160-220ms for hover/focus/state, 420-560ms only for one-time hero/image settle.
-- The Gold Legal Thread must be visible as a static brand accent after animation completes, not only as an invisible hover behavior.
+- PLAN-31 removes the visible Gold Legal Thread static accent; current public motion must use V2 CTA, beam, halo, trail, panel, and hero spotlight classes.
 - Directional arrows keep semantic RTL mirroring and move inline-forward only when motion is allowed.
 - Reduced motion disables reveal, lift, zoom, and shift motion while preserving static RTL direction.
 - Interactions use `opacity`, `transform`, `border-color`, `background-color`, `color`, and controlled shadow only.

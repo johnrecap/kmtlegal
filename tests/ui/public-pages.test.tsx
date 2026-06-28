@@ -49,6 +49,8 @@ describe("public website UI", () => {
     expect(html).toContain("opacity-50");
     expect(html).toContain("via-kmt-navy/60");
     expect(html).toContain("bg-[#090d11]");
+    expect(html).not.toContain("kmt-motion-thread");
+    expect(html).toContain("kmt-motion-icon-halo");
   });
 
   it("renders compact public heroes for inner pages", () => {
@@ -93,5 +95,24 @@ describe("public website UI", () => {
     expect(globalsSource).toContain('font-family: "IBM Plex Sans Arabic"');
     expect(globalsSource).toContain('font-family: "Material Symbols Outlined"');
     expect(globalsSource).toContain("font-display: block");
+  });
+
+  it("keeps PLAN-31 motion contract free of removed thread utilities", () => {
+    const globalsSource = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
+    const motionSource = readFileSync(join(process.cwd(), "src/features/public-site/public-motion.ts"), "utf8");
+    const componentsSource = readFileSync(join(process.cwd(), "src/features/public-site/public-components.tsx"), "utf8");
+    const packageSource = readFileSync(join(process.cwd(), "package.json"), "utf8");
+    const runtimeSources = [globalsSource, motionSource, componentsSource].join("\n");
+
+    expect(runtimeSources).not.toContain("kmt-motion-thread");
+    expect(runtimeSources).not.toContain("kmt-motion-trust-strip");
+    expect(runtimeSources).not.toContain("publicMotionThread");
+    expect(runtimeSources).not.toContain("publicMotionTrustStrip");
+    expect(runtimeSources).toContain("kmt-motion-cta");
+    expect(runtimeSources).toContain("kmt-motion-card-beam");
+    expect(runtimeSources).toContain("kmt-motion-icon-halo");
+    expect(runtimeSources).toContain("kmt-motion-arrow-trail");
+    expect(runtimeSources).toContain("kmt-motion-panel-enter");
+    expect(packageSource).not.toContain("\"motion\"");
   });
 });

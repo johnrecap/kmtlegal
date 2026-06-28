@@ -125,17 +125,32 @@ a {
 
   @keyframes kmt-motion-hero-settle {
     from {
-      transform: scale(1.018);
+      opacity: 0.82;
+      filter: saturate(0.86) contrast(1.04);
+      transform: scale(1.045) translateY(10px);
     }
     to {
+      opacity: 1;
+      filter: saturate(1) contrast(1);
       transform: scale(1);
+    }
+  }
+
+  @keyframes kmt-motion-panel-enter {
+    from {
+      opacity: 0;
+      transform: translateY(14px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
   }
 
   @keyframes kmt-motion-status-in {
     from {
       opacity: 0;
-      transform: translateY(-3px);
+      transform: translateY(8px);
     }
     to {
       opacity: 1;
@@ -143,23 +158,23 @@ a {
     }
   }
 
-  @keyframes kmt-motion-thread-draw {
+  @keyframes kmt-motion-beam-spin {
     from {
-      opacity: 0.45;
-      transform: scaleX(0.18);
+      transform: rotate(0deg);
     }
     to {
-      opacity: 1;
-      transform: scaleX(1);
+      transform: rotate(1turn);
     }
   }
 
-  @keyframes kmt-motion-thread-sweep {
+  @keyframes kmt-motion-spotlight-rise {
     from {
-      transform: translateX(-110%);
+      opacity: 0;
+      transform: translateY(8px) scale(0.96);
     }
     to {
-      transform: translateX(110%);
+      opacity: 0.72;
+      transform: translateY(0) scale(1);
     }
   }
 
@@ -172,16 +187,17 @@ a {
   }
 
   .kmt-motion-hero-image {
-    animation: kmt-motion-hero-settle 560ms var(--kmt-motion-ease) both;
+    animation: kmt-motion-hero-settle 780ms var(--kmt-motion-ease) both;
     transform-origin: center;
   }
 
-  .kmt-motion-card {
+  .kmt-motion-card,
+  .kmt-motion-card-beam {
     position: relative;
     isolation: isolate;
     overflow: hidden;
     transition-property: border-color, background-color, box-shadow, transform;
-    transition-duration: 220ms;
+    transition-duration: 260ms;
     transition-timing-function: var(--kmt-motion-ease);
   }
 
@@ -200,37 +216,103 @@ a {
     transition: opacity 220ms var(--kmt-motion-ease), transform 220ms var(--kmt-motion-ease), border-color 220ms var(--kmt-motion-ease);
   }
 
-  .kmt-motion-button {
+  .kmt-motion-card-beam::after {
+    position: absolute;
+    inset: -1px;
+    z-index: 1;
+    border-radius: inherit;
+    padding: 1px;
+    background:
+      conic-gradient(
+        from 0deg,
+        rgb(199 154 82 / 0%) 0deg,
+        rgb(199 154 82 / 0%) 218deg,
+        rgb(244 207 136 / 94%) 252deg,
+        rgb(153 123 68 / 82%) 284deg,
+        rgb(199 154 82 / 0%) 326deg,
+        rgb(199 154 82 / 0%) 360deg
+      );
+    content: "";
+    opacity: 0;
+    pointer-events: none;
+    transform-origin: center;
+    animation: kmt-motion-beam-spin 1.9s linear infinite;
+    animation-play-state: paused;
+    transition: opacity 180ms var(--kmt-motion-ease);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+  }
+
+  .kmt-motion-button,
+  .kmt-motion-cta {
     position: relative;
     isolation: isolate;
     overflow: hidden;
     transition-property: border-color, background-color, color, box-shadow, transform;
-    transition-duration: 180ms;
+    transition-duration: 190ms;
     transition-timing-function: var(--kmt-motion-ease);
   }
 
-  .kmt-motion-button::after {
+  .kmt-motion-cta::before {
+    position: absolute;
+    inset: 1px;
+    z-index: 0;
+    border-radius: inherit;
+    background:
+      radial-gradient(circle at 22% 16%, rgb(255 236 188 / 26%), transparent 34%),
+      linear-gradient(135deg, rgb(244 207 136 / 18%), transparent 42%, rgb(153 123 68 / 18%));
+    content: "";
+    opacity: 0.46;
+    pointer-events: none;
+    transition: opacity 190ms var(--kmt-motion-ease);
+  }
+
+  .kmt-motion-button::after,
+  .kmt-motion-cta::after {
     position: absolute;
     inset-block: 0;
-    inset-inline-start: -42%;
-    z-index: 0;
-    width: 36%;
-    background: linear-gradient(90deg, transparent, rgb(255 236 188 / 34%), transparent);
+    inset-inline-start: -58%;
+    z-index: 1;
+    width: 44%;
+    background: linear-gradient(90deg, transparent, rgb(255 246 216 / 58%), transparent);
     content: "";
     opacity: 0;
     transform: skewX(-16deg) translateX(-120%);
     pointer-events: none;
-    transition: opacity 220ms var(--kmt-motion-ease), transform 520ms var(--kmt-motion-ease);
+    transition: opacity 180ms var(--kmt-motion-ease), transform 640ms var(--kmt-motion-ease);
   }
 
-  .kmt-motion-button:active:not(:disabled) {
-    transform: scale(0.99);
+  .kmt-motion-button:disabled::after,
+  .kmt-motion-button[aria-disabled="true"]::after,
+  .kmt-motion-cta:disabled::before,
+  .kmt-motion-cta:disabled::after,
+  .kmt-motion-cta[aria-disabled="true"]::before,
+  .kmt-motion-cta[aria-disabled="true"]::after {
+    display: none;
+  }
+
+  .kmt-motion-button:active:not(:disabled):not([aria-disabled="true"]),
+  .kmt-motion-cta:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: translateY(1px) scale(0.985);
   }
 
   .kmt-motion-icon {
     transition-property: color, text-shadow, transform;
     transition-duration: 180ms;
     transition-timing-function: var(--kmt-motion-ease);
+  }
+
+  .kmt-motion-icon-halo {
+    border-radius: 999px;
+    transform-origin: center;
+    filter: drop-shadow(0 0 0 rgb(199 154 82 / 0%));
+    transition: color 190ms var(--kmt-motion-ease), filter 190ms var(--kmt-motion-ease), text-shadow 190ms var(--kmt-motion-ease), transform 190ms var(--kmt-motion-ease);
   }
 
   .kmt-motion-arrow {
@@ -240,8 +322,35 @@ a {
     transition: transform 180ms var(--kmt-motion-ease), color 180ms var(--kmt-motion-ease);
   }
 
+  .kmt-motion-arrow-trail {
+    position: relative;
+    overflow: visible;
+  }
+
+  .kmt-motion-arrow-trail::after {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: -0.75rem;
+    width: 0.68rem;
+    height: 1px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, rgb(255 236 188 / 82%));
+    content: "";
+    opacity: 0;
+    transform: translateY(-50%) scaleX(0.35);
+    transform-origin: right center;
+    transition: opacity 180ms var(--kmt-motion-ease), transform 190ms var(--kmt-motion-ease);
+  }
+
   html[dir="rtl"] .kmt-motion-arrow {
     --kmt-arrow-rotate: 180deg;
+  }
+
+  html[dir="rtl"] .kmt-motion-arrow-trail::after {
+    inset-inline-start: auto;
+    inset-inline-end: -0.75rem;
+    background: linear-gradient(270deg, transparent, rgb(255 236 188 / 82%));
+    transform-origin: left center;
   }
 
   .kmt-motion-nav-link,
@@ -255,18 +364,19 @@ a {
     position: absolute;
     inset-inline: 0;
     bottom: 0;
-    height: 1px;
+    height: 2px;
     content: "";
     opacity: 0;
-    background: linear-gradient(90deg, transparent, rgb(199 154 82 / 90%), transparent);
+    background: linear-gradient(90deg, transparent, rgb(244 207 136 / 96%) 42%, rgb(153 123 68 / 92%), transparent);
+    box-shadow: 0 0 18px rgb(199 154 82 / 42%);
     transform: scaleX(0);
-    transform-origin: center;
-    transition: opacity 180ms var(--kmt-motion-ease), transform 180ms var(--kmt-motion-ease);
+    transform-origin: left center;
+    transition: opacity 150ms var(--kmt-motion-ease), transform 190ms var(--kmt-motion-ease);
   }
 
   .kmt-motion-nav-link::after {
     inset-inline: 0.75rem;
-    height: 2px;
+    height: 3px;
   }
 
   .kmt-motion-text-link::after {
@@ -282,73 +392,55 @@ a {
     transform: scaleX(1);
   }
 
+  html[dir="rtl"] .kmt-motion-nav-link::after,
+  html[dir="rtl"] .kmt-motion-text-link::after {
+    transform-origin: right center;
+  }
+
   .kmt-motion-image {
     transition: opacity 480ms var(--kmt-motion-ease), transform 480ms var(--kmt-motion-ease);
     transform-origin: center;
   }
 
-  .kmt-motion-thread {
+  .kmt-motion-hero-spotlight {
     position: relative;
-    display: block;
-    width: clamp(7rem, 14vw, 12.5rem);
-    height: 2px;
-    margin-top: 0.85rem;
-    overflow: visible;
-    background: linear-gradient(90deg, rgb(199 154 82 / 0%), rgb(199 154 82 / 88%) 24%, rgb(244 207 136 / 95%) 50%, rgb(199 154 82 / 88%) 76%, rgb(199 154 82 / 0%));
-    box-shadow: 0 0 28px rgb(199 154 82 / 42%);
-    transform-origin: left center;
-    animation: kmt-motion-thread-draw 680ms var(--kmt-motion-ease) both;
+    isolation: isolate;
   }
 
-  .kmt-motion-thread::before {
+  .kmt-motion-hero-spotlight::before {
     position: absolute;
-    inset-block: -4px;
-    inset-inline-start: 0;
-    width: 42%;
-    background: linear-gradient(90deg, transparent, rgb(255 236 188 / 75%), transparent);
-    content: "";
-    filter: blur(1px);
-    animation: kmt-motion-thread-sweep 820ms 120ms var(--kmt-motion-ease) both;
-  }
-
-  .kmt-motion-thread::after {
-    position: absolute;
-    inset-block-start: -3px;
-    inset-inline-end: 8%;
-    width: 8px;
-    height: 8px;
+    inset: -1.15rem -1.35rem;
+    z-index: -1;
     border-radius: 999px;
-    background: rgb(244 207 136 / 95%);
-    box-shadow: 0 0 18px rgb(199 154 82 / 72%);
+    background:
+      radial-gradient(ellipse at 32% 50%, rgb(199 154 82 / 28%), transparent 62%),
+      linear-gradient(90deg, rgb(199 154 82 / 14%), transparent 72%);
     content: "";
+    opacity: 0.72;
+    filter: blur(9px);
+    pointer-events: none;
+    animation: kmt-motion-spotlight-rise 620ms 90ms var(--kmt-motion-ease) both;
   }
 
-  html[dir="rtl"] .kmt-motion-thread {
-    transform-origin: right center;
+  html[dir="rtl"] .kmt-motion-hero-spotlight::before {
+    background:
+      radial-gradient(ellipse at 68% 50%, rgb(199 154 82 / 28%), transparent 62%),
+      linear-gradient(270deg, rgb(199 154 82 / 14%), transparent 72%);
   }
 
-  .kmt-motion-trust-strip {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .kmt-motion-trust-strip::before {
-    position: absolute;
-    inset-inline: 0;
-    top: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgb(199 154 82 / 75%), transparent);
-    content: "";
-    animation: kmt-motion-thread-draw 760ms var(--kmt-motion-ease) both;
+  .kmt-motion-panel-enter {
+    animation: kmt-motion-panel-enter 360ms var(--kmt-motion-ease) both;
   }
 
   .kmt-motion-form {
-    transition: border-color 180ms var(--kmt-motion-ease), box-shadow 180ms var(--kmt-motion-ease);
+    transition: border-color 190ms var(--kmt-motion-ease), box-shadow 190ms var(--kmt-motion-ease), transform 190ms var(--kmt-motion-ease);
   }
 
   .kmt-motion-form:focus-within {
     border-color: rgb(153 123 68 / 55%);
-    box-shadow: 0 30px 100px -58px rgb(153 123 68 / 58%);
+    box-shadow:
+      0 0 0 1px rgb(244 207 136 / 20%),
+      0 30px 100px -58px rgb(153 123 68 / 64%);
   }
 
   .kmt-motion-control {
@@ -358,9 +450,12 @@ a {
   }
 
   .kmt-motion-status,
-  .kmt-motion-step-panel,
   .kmt-motion-filter-results {
-    animation: kmt-motion-status-in 180ms var(--kmt-motion-ease) both;
+    animation: kmt-motion-status-in 220ms var(--kmt-motion-ease) both;
+  }
+
+  .kmt-motion-step-panel {
+    animation: kmt-motion-panel-enter 280ms var(--kmt-motion-ease) both;
   }
 
   .kmt-motion-step {
@@ -374,9 +469,14 @@ a {
   @media (hover: hover) {
     .kmt-motion-card:hover,
     .kmt-motion-card:focus-visible,
-    .kmt-motion-card:focus-within {
-      transform: translateY(-2px);
-      box-shadow: 0 32px 92px -54px rgb(153 123 68 / 55%);
+    .kmt-motion-card:focus-within,
+    .kmt-motion-card-beam:hover,
+    .kmt-motion-card-beam:focus-visible,
+    .kmt-motion-card-beam:focus-within {
+      transform: translateY(-3px);
+      box-shadow:
+        0 0 0 1px rgb(244 207 136 / 18%),
+        0 34px 96px -52px rgb(153 123 68 / 62%);
     }
 
     .kmt-motion-card:hover::before,
@@ -387,28 +487,67 @@ a {
       transform: scale(1);
     }
 
-    .kmt-motion-button:hover:not(:disabled):not([aria-disabled="true"]) {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 32px -20px rgb(199 154 82 / 92%);
+    .kmt-motion-card-beam:hover::after,
+    .kmt-motion-card-beam:focus-visible::after,
+    .kmt-motion-card-beam:focus-within::after {
+      opacity: 1;
+      animation-play-state: running;
+    }
+
+    .kmt-motion-button:hover:not(:disabled):not([aria-disabled="true"]),
+    .kmt-motion-cta:hover:not(:disabled):not([aria-disabled="true"]),
+    .kmt-motion-button:focus-visible:not(:disabled):not([aria-disabled="true"]),
+    .kmt-motion-cta:focus-visible:not(:disabled):not([aria-disabled="true"]) {
+      transform: translateY(-2px);
+      box-shadow:
+        inset 0 0 0 1px rgb(255 236 188 / 18%),
+        inset 0 1px 16px rgb(255 236 188 / 13%),
+        0 18px 42px -24px rgb(199 154 82 / 96%);
+    }
+
+    .kmt-motion-cta:hover:not(:disabled):not([aria-disabled="true"])::before,
+    .kmt-motion-cta:focus-visible:not(:disabled):not([aria-disabled="true"])::before {
+      opacity: 0.82;
     }
 
     .kmt-motion-button:hover:not(:disabled):not([aria-disabled="true"])::after,
-    .kmt-motion-button:focus-visible:not(:disabled):not([aria-disabled="true"])::after {
+    .kmt-motion-button:focus-visible:not(:disabled):not([aria-disabled="true"])::after,
+    .kmt-motion-cta:hover:not(:disabled):not([aria-disabled="true"])::after,
+    .kmt-motion-cta:focus-visible:not(:disabled):not([aria-disabled="true"])::after {
       opacity: 1;
-      transform: skewX(-16deg) translateX(420%);
+      transform: skewX(-16deg) translateX(520%);
     }
 
     :where(a, button, .group):is(:hover, :focus-visible) .kmt-motion-icon {
-      transform: translateY(-1px);
+      transform: translateY(-2px);
       text-shadow: 0 0 18px rgb(199 154 82 / 42%);
     }
 
+    :where(a, button, .group):is(:hover, :focus-visible) .kmt-motion-icon-halo {
+      transform: translateY(-2px) scale(1.1) rotate(-4deg);
+      filter:
+        drop-shadow(0 0 8px rgb(244 207 136 / 34%))
+        drop-shadow(0 0 18px rgb(153 123 68 / 24%));
+      text-shadow:
+        0 0 10px rgb(244 207 136 / 34%),
+        0 0 24px rgb(153 123 68 / 26%);
+    }
+
+    html[dir="rtl"] :where(a, button, .group):is(:hover, :focus-visible) .kmt-motion-icon-halo {
+      transform: translateY(-2px) scale(1.1) rotate(4deg);
+    }
+
     :where(a, button, .group):is(:hover, :focus-visible) .kmt-motion-arrow {
-      --kmt-arrow-shift: 2px;
+      --kmt-arrow-shift: 6px;
     }
 
     html[dir="rtl"] :where(a, button, .group):is(:hover, :focus-visible) .kmt-motion-arrow {
-      --kmt-arrow-shift: -2px;
+      --kmt-arrow-shift: -6px;
+    }
+
+    :where(a, button, .group):is(:hover, :focus-visible) .kmt-motion-arrow-trail::after {
+      opacity: 1;
+      transform: translateY(-50%) scaleX(1);
     }
 
     .kmt-motion-image-card:hover .kmt-motion-image,
@@ -433,22 +572,28 @@ a {
   .kmt-motion-reveal,
   .kmt-motion-hero-image,
   .kmt-motion-card,
+  .kmt-motion-card-beam,
   .kmt-motion-button,
+  .kmt-motion-cta,
   .kmt-motion-icon,
+  .kmt-motion-icon-halo,
   .kmt-motion-image,
+  .kmt-motion-panel-enter,
   .kmt-motion-status,
   .kmt-motion-step-panel,
   .kmt-motion-filter-results,
-  .kmt-motion-success-icon,
-  .kmt-motion-thread,
-  .kmt-motion-trust-strip::before {
+  .kmt-motion-success-icon {
     animation: none !important;
     transform: none !important;
   }
 
   .kmt-motion-card::before,
+  .kmt-motion-card-beam::after,
+  .kmt-motion-cta::before,
+  .kmt-motion-cta::after,
   .kmt-motion-button::after,
-  .kmt-motion-thread::before {
+  .kmt-motion-hero-spotlight::before,
+  .kmt-motion-arrow-trail::after {
     display: none !important;
   }
 

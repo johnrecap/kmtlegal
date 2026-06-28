@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Button, Select, Textarea, TextInput } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
-import { publicMotionButton, publicMotionControl, publicMotionForm, publicMotionStatus } from "@/features/public-site/public-motion";
+import { publicMotionButton, publicMotionControl, publicMotionCta, publicMotionForm, publicMotionStatus } from "@/features/public-site/public-motion";
 import { cn } from "@/lib/cn";
 import type { PublicLocale } from "@/lib/public-locale";
 
@@ -35,7 +35,7 @@ const darkControlClasses =
   );
 
 const darkSecondaryButtonClasses =
-  cn(publicMotionButton, "!border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white");
+  cn(publicMotionButton, publicMotionCta, "!border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white");
 
 export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
   const copy = getPublicContent(locale).contactForm;
@@ -134,7 +134,7 @@ export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
         </p>
       ) : null}
       <div className="mt-5 flex flex-wrap gap-3">
-        <Button className={publicMotionButton} disabled={isLockedAfterSuccess} loading={isSubmitting} type="submit">
+        <Button className={cn(publicMotionButton, publicMotionCta)} disabled={isLockedAfterSuccess} loading={isSubmitting} type="submit">
           {copy.submit}
         </Button>
         {isLockedAfterSuccess ? (

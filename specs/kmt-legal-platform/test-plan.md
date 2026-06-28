@@ -123,12 +123,21 @@
 - Form state guard: contact and booking success/error/validation states remain readable and accessible after motion classes are applied.
 - Visual smoke: `/`, `/services`, `/contact`, `/book-consultation`, `/ar`, `/ar/services`, `/ar/contact`, and `/ar/book-consultation` render with expected direction and screenshot evidence.
 
+## PLAN-31 Public Motion V2 Tests
+- Removed-thread guard: no `kmt-motion-thread`, `kmt-motion-trust-strip`, `publicMotionThread`, or `publicMotionTrustStrip` remains in runtime source, CSS, or public DOM.
+- V2 class guard: public pages include `kmt-motion-cta`, `kmt-motion-card-beam`, `kmt-motion-icon-halo`, `kmt-motion-arrow-trail`, `kmt-motion-panel-enter`, and `kmt-motion-hero-spotlight` where relevant.
+- Dependency guard: `package.json` does not add the `motion` package or another animation runtime.
+- Reduced-motion guard: `prefers-reduced-motion: reduce` disables reveal, CTA shine, border beam, icon tilt, image zoom, spotlight, panel enter, status fade, and arrow shift.
+- RTL direction guard: English arrow trail shifts inline-forward to the right, Arabic arrow trail shifts inline-forward to the left.
+- Interaction overflow guard: hover/focus states for V2 CTAs and card beams do not create page-level horizontal overflow at `390px`.
+- Visual smoke: `/`, `/services`, `/contact`, `/book-consultation`, `/ar`, `/ar/services`, `/ar/contact`, and `/ar/book-consultation` show visibly stronger cinematic public motion hooks without decorative lines under headings.
+
 ## Visual Regression Tests
 - Stitch clone at `390x844` and `1440x900` where references exist.
 - Stitch clone requires `_workspace/stitch-clone/{screen-name}/04_visual-diff-report.md` and `06_acceptance.md` for each screen.
 - Product public shell mobile/desktop.
 - PLAN-28 public luxury screenshots for `/`, `/services`, `/contact`, and `/book-consultation`.
-- PLAN-30 public motion screenshots and reduced-motion checks for English and Arabic public pages.
+- PLAN-30/31 public motion screenshots and reduced-motion checks for English and Arabic public pages.
 - Portal dashboard mobile/desktop.
 - Admin dashboard desktop.
 - Critical forms/dialogs.

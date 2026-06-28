@@ -8,6 +8,7 @@ import { getPublicContent, type PublicContent } from "@/content/public-content";
 import {
   publicMotionButton,
   publicMotionControl,
+  publicMotionCta,
   publicMotionForm,
   publicMotionStatus,
   publicMotionStep,
@@ -78,7 +79,7 @@ const darkControlClasses =
   );
 
 const darkSecondaryButtonClasses =
-  cn(publicMotionButton, "!border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white");
+  cn(publicMotionButton, publicMotionCta, "!border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white");
 
 const stepItemClasses = (index: number, currentStep: number) => {
   if (index === currentStep) {
@@ -338,7 +339,7 @@ export function BookingStepper({ initialService, locale = "en" }: { initialServi
             {copy.back}
           </Button>
         ) : null}
-        <Button className={publicMotionButton} disabled={state.type === "submitting"} loading={state.type === "submitting"} type="submit">
+        <Button className={cn(publicMotionButton, publicMotionCta)} disabled={state.type === "submitting"} loading={state.type === "submitting"} type="submit">
           {step === 2 ? copy.submit : copy.continue}
         </Button>
       </div>

@@ -158,13 +158,28 @@ Pass only if:
 - PLAN-30 is tracked in `specs/kmt-legal-platform/public-motion-plan.md` and `tasks.md`.
 - Public motion is scoped to public-site helpers/components and does not affect admin, portal, install, login, product-system, or Stitch clone routes.
 - No Framer Motion, GSAP, Lottie, Rive, or other animation dependency is added.
-- Motion uses the Judicial Precision/Gold Legal Thread language: visible thread accents, nav underline reveal, restrained CTA sheen/lift, card edge glow/lift, icon glow, image-card zoom, filter/form state transitions, and booking step transitions.
+- PLAN-31 supersedes the visible thread accent; PLAN-30 thread utilities must not be reintroduced.
+- Motion uses the public legal motion language: nav underline reveal, restrained CTA sheen/lift, card edge glow/lift, icon glow, image-card zoom, filter/form state transitions, and booking step transitions.
 - Directional arrow motion is inline-forward in English and Arabic, with static RTL mirroring preserved.
 - Reduced-motion mode disables reveal, lift, zoom, and shift movement.
 - Disabled/loading controls do not lift on hover.
 - Focus states remain visible on dark public surfaces.
 - Public desktop and mobile smoke checks prove no page-level horizontal overflow after hover/focus motion.
 - `npm run typecheck`, `npm run lint`, `npm run test`, `npm run build`, `npm run test:e2e:smoke`, and focused public visual smoke pass or any blocker is documented.
+
+## Gate 6F: PLAN-31 Public Motion V2 Ready
+Pass only if:
+- PLAN-31 is tracked in `specs/kmt-legal-platform/public-motion-v2-plan.md` and `tasks.md`.
+- No `kmt-motion-thread`, `kmt-motion-trust-strip`, `publicMotionThread`, or `publicMotionTrustStrip` appears in runtime source, CSS, or rendered public DOM.
+- Public motion is scoped to public-site helpers/components and does not affect admin, portal, install, login, product-system, or Stitch clone routes.
+- No new animation runtime dependency is added, including the `motion` package.
+- Cinematic Legal V2 classes are present and used: `kmt-motion-cta`, `kmt-motion-card-beam`, `kmt-motion-icon-halo`, `kmt-motion-arrow-trail`, `kmt-motion-panel-enter`, and `kmt-motion-hero-spotlight`.
+- Buttons have visible CTA shine/inner glow/active press while disabled/loading controls do not lift or shine.
+- Cards use controlled border beam/lift without layout shift or page-level horizontal overflow.
+- Practice/trust/brand/contact icons use halo motion only on interactive or grouped surfaces.
+- Hero uses image settle and CTA spotlight without text underline, parallax, or scroll-jacking.
+- RTL arrow movement is inline-forward in Arabic, and reduced-motion disables sweep, beam, lift, zoom, tilt, spotlight, and arrow shift.
+- `npm run typecheck`, `npm run lint`, `npm run test`, `ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build`, and focused public visual smoke pass or any blocker is documented.
 
 ## Gate 7: Legal Data Protection Ready
 Pass only if:

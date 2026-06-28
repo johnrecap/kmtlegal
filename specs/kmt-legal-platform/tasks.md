@@ -435,3 +435,21 @@ Acceptance:
 - Public motion is opt-in through public-site classes and does not restyle protected/admin/product/stitch surfaces.
 - Reduced-motion users get no reveal/lift/zoom/shift motion while static RTL direction remains correct.
 - Public pages have no page-level horizontal overflow after hover/focus motion at mobile width.
+
+## Milestone 24 - PLAN-31 Public Motion V2 - Cinematic Legal
+- [x] T249 Create PLAN-31 Spec Kit plan artifact at `specs/kmt-legal-platform/public-motion-v2-plan.md`.
+- [x] T250 Remove `kmt-motion-thread`, `kmt-motion-trust-strip`, `publicMotionThread`, and `publicMotionTrustStrip` from runtime source and CSS.
+- [x] T251 Add CSS-only Cinematic Legal motion utilities for CTA shine, card border beams, icon halo, arrow trail, panel enter, and hero spotlight.
+- [x] T252 Apply V2 motion hooks to public shell CTAs/icons/nav, hero actions, trust icons, practice cards, directory cards, contact cards, booking panels, and public forms.
+- [x] T253 Preserve RTL inline-forward arrow movement, reduced-motion fallbacks, and disabled/loading no-lift behavior.
+- [x] T254 Add contract and Playwright coverage for no thread DOM/CSS, V2 classes, reduced motion, RTL arrow direction, and hover/focus overflow at 390px.
+- [x] T255 Run verification: `npm run typecheck`, `npm run lint`, `npm run test`, `ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build`, and focused public visual smoke.
+- [x] T256 Update PLAN-31 status/docs, commit, push to `origin/main`, and hand off aaPanel PM2 update commands.
+
+Acceptance:
+- No `kmt-motion-thread` or `kmt-motion-trust-strip` runtime CSS/DOM remains.
+- Public motion follows the Cinematic Legal direction with visible CTA shine, card beams, icon halos, arrow trails, and hero spotlight.
+- No new animation dependency is introduced.
+- Public motion remains opt-in and does not restyle admin, portal, install, login, product-system, or Stitch clone surfaces.
+- Reduced-motion users get no sweep/beam/lift/zoom/tilt/shift motion.
+- English and Arabic public pages preserve correct direction and no page-level horizontal overflow after hover/focus motion.

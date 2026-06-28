@@ -102,7 +102,7 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
     }
   });
 
-  test("PLAN-30 public motion respects reduced-motion preferences", async ({ page }) => {
+  test("PLAN-31 public cinematic motion respects reduced-motion preferences", async ({ page }) => {
     await stubAnalytics(page);
     await page.emulateMedia({ reducedMotion: "reduce" });
 
@@ -116,9 +116,10 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
       await expect(reveal, `${pageTarget.path} should include the public hero reveal target`).toBeVisible();
       await expect(reveal).toHaveCSS("animation-name", "none");
 
-      const thread = page.locator(".kmt-motion-thread").first();
-      await expect(thread, `${pageTarget.path} should render the Gold Legal Thread accent`).toBeVisible();
-      await expect(thread).toHaveCSS("animation-name", "none");
+      await expect(page.locator(".kmt-motion-thread"), `${pageTarget.path} should not render the removed Gold Legal Thread`).toHaveCount(0);
+      await expect(page.locator(".kmt-motion-cta").first(), `${pageTarget.path} should include cinematic CTA motion hooks`).toBeVisible();
+      await expect(page.locator(".kmt-motion-card-beam").first(), `${pageTarget.path} should include animated border beam hooks`).toBeVisible();
+      await expect(page.locator(".kmt-motion-icon-halo").first(), `${pageTarget.path} should include icon halo hooks`).toBeVisible();
 
       const arrow = page.locator(".kmt-motion-arrow").first();
       if ((await arrow.count()) > 0) {
@@ -129,7 +130,7 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
     }
   });
 
-  test("PLAN-30 hover and focus motion do not introduce horizontal overflow", async ({ page }) => {
+  test("PLAN-31 hover and focus motion do not introduce horizontal overflow", async ({ page }) => {
     await stubAnalytics(page);
     await page.setViewportSize({ width: 390, height: 844 });
 
@@ -143,11 +144,27 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
         await expectNoHorizontalOverflow(page, `${pageTarget.path} focused motion button`);
       }
 
-      const firstCard = page.locator(".kmt-motion-card").first();
+      const firstCard = page.locator(".kmt-motion-card-beam").first();
       if ((await firstCard.count()) > 0) {
         await firstCard.hover();
         await expectNoHorizontalOverflow(page, `${pageTarget.path} hovered motion card`);
       }
     }
+  });
+
+  test("PLAN-31 RTL arrow trail moves inline-forward", async ({ page }) => {
+    await stubAnalytics(page);
+
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    const englishArrow = page.locator(".kmt-motion-arrow-trail").first();
+    await expect(englishArrow).toBeVisible();
+    await englishArrow.hover();
+    await expect.poll(() => englishArrow.evaluate((node) => getComputedStyle(node).getPropertyValue("--kmt-arrow-shift").trim())).toBe("6px");
+
+    await page.goto("/ar", { waitUntil: "domcontentloaded" });
+    const arabicArrow = page.locator(".kmt-motion-arrow-trail").first();
+    await expect(arabicArrow).toBeVisible();
+    await arabicArrow.hover();
+    await expect.poll(() => arabicArrow.evaluate((node) => getComputedStyle(node).getPropertyValue("--kmt-arrow-shift").trim())).toBe("-6px");
   });
 });

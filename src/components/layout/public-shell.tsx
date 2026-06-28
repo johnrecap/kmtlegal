@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { MaterialSymbol } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
-import { publicMotionButton, publicMotionIcon, publicMotionNavLink, publicMotionTextLink } from "@/features/public-site/public-motion";
+import { publicMotionButton, publicMotionCta, publicMotionIcon, publicMotionIconHalo, publicMotionNavLink, publicMotionTextLink } from "@/features/public-site/public-motion";
 import { cn } from "@/lib/cn";
 import { localizedPublicHref, publicLocalePrefix, stripPublicLocalePrefix, type PublicLocale } from "@/lib/public-locale";
 
@@ -22,12 +22,13 @@ function ConsultationLink({ className, locale, label }: { className?: string; lo
       className={cn(
         "inline-flex min-h-11 items-center justify-center gap-2 border border-kmt-gold bg-kmt-gold px-4 text-sm font-semibold text-[#120d07] shadow-[0_10px_24px_rgba(153,123,68,0.22)] transition-colors hover:border-[#c7a363] hover:bg-[#c7a363] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold",
         publicMotionButton,
+        publicMotionCta,
         className
       )}
       href={localizedPublicHref("/book-consultation", locale)}
     >
       <span>{label}</span>
-      <MaterialSymbol className={cn("text-lg", publicMotionIcon)} name="event_available" />
+      <MaterialSymbol className={cn("text-lg", publicMotionIcon, publicMotionIconHalo)} name="event_available" />
     </Link>
   );
 }
@@ -39,7 +40,7 @@ function PublicBrand({ condensed = false, locale }: { condensed?: boolean; local
       href={localizedPublicHref("/", locale)}
     >
       <span className={cn("grid place-items-center border border-kmt-gold/70 bg-kmt-gold/10 text-kmt-gold", condensed ? "h-10 w-10" : "h-11 w-11")}>
-        <MaterialSymbol className={cn(condensed ? "text-xl" : "text-2xl", publicMotionIcon)} name="balance" />
+        <MaterialSymbol className={cn(condensed ? "text-xl" : "text-2xl", publicMotionIcon, publicMotionIconHalo)} name="balance" />
       </span>
       <span className="min-w-0">
         <span className="block font-label-sm text-[11px] font-semibold uppercase leading-none tracking-[0.22em] text-kmt-gold">KMT</span>
@@ -89,7 +90,7 @@ export function PublicShell({
           </nav>
           <div className="flex shrink-0 items-center gap-2">
             <Link
-              className={cn("hidden min-h-10 items-center border border-white/15 px-3 text-xs font-semibold text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold sm:inline-flex", publicMotionButton)}
+              className={cn("hidden min-h-10 items-center border border-white/15 px-3 text-xs font-semibold text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold sm:inline-flex", publicMotionButton, publicMotionCta)}
               href={languageHref}
               hrefLang={locale === "ar" ? "en" : "ar"}
             >
@@ -172,15 +173,15 @@ export function PublicShell({
             <h2 className="font-semibold text-[#f8f3ea]">{shell.contactTitle}</h2>
             <ul className="mt-4 space-y-3">
               <li className="flex gap-2">
-                <MaterialSymbol className={cn("mt-0.5 text-kmt-gold", publicMotionIcon)} name="mail" />
+                <MaterialSymbol className={cn("mt-0.5 text-kmt-gold", publicMotionIcon, publicMotionIconHalo)} name="mail" />
                 <span>contact@kmtlegal.com</span>
               </li>
               <li className="flex gap-2">
-                <MaterialSymbol className={cn("mt-0.5 text-kmt-gold", publicMotionIcon)} name="call" />
+                <MaterialSymbol className={cn("mt-0.5 text-kmt-gold", publicMotionIcon, publicMotionIconHalo)} name="call" />
                 <span dir="ltr">+20 100 000 0001</span>
               </li>
               <li className="flex gap-2">
-                <MaterialSymbol className={cn("mt-0.5 text-kmt-gold", publicMotionIcon)} name="schedule" />
+                <MaterialSymbol className={cn("mt-0.5 text-kmt-gold", publicMotionIcon, publicMotionIconHalo)} name="schedule" />
                 <span>{shell.hours}</span>
               </li>
             </ul>

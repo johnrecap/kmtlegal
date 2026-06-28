@@ -35,7 +35,7 @@ Use Stitch `DESIGN.md` as the source for initial palette: calm light surfaces, m
 - Container max around 1200px for public content.
 - Radius: 4px controls, 8px cards, pill only for status badges.
 - Shadows: subtle; prefer borders and tonal layering.
-- Motion: subtle, fast, reduced-motion safe; no distracting legal dashboard animation. PLAN-30 adds a public-only Gold Legal Thread motion layer without a runtime animation library.
+- Motion: subtle but visible, fast, reduced-motion safe; no distracting legal dashboard animation. PLAN-31 supersedes the PLAN-30 thread accent with a public-only Cinematic Legal motion layer without a runtime animation library.
 
 ### Breakpoints
 - Mobile: single column, thumb-friendly controls, 44px targets.
@@ -79,11 +79,25 @@ PLAN-30 extends the public luxury redesign with scoped, opt-in motion only for p
 
 Public motion rules:
 - Use `kmt-motion-*` utilities from `src/features/public-site/public-motion.ts` instead of adding a new animation library.
-- Keep hover/focus motion short and restrained: visible Gold Legal Thread accents, nav underline reveal, CTA sheen/lift, card edge glow/lift, icon glow, image-card zoom, form focus glow, status fade, and booking step transitions.
+- PLAN-31 supersedes the visible thread accent. Do not use `kmt-motion-thread` or `kmt-motion-trust-strip`.
+- Keep hover/focus motion short and controlled: nav underline reveal, CTA sheen/lift, card edge glow/lift, icon glow, image-card zoom, form focus glow, status fade, and booking step transitions.
 - Preserve RTL direction with semantic arrow mirroring; hover movement must go inline-forward for both English and Arabic.
 - Reduced-motion mode disables reveal, lift, zoom, and shift motion while preserving static RTL icon direction.
 - Disabled or loading controls do not lift on hover.
 - Do not apply public motion helpers to `/admin`, `/portal`, `/install`, `/login`, `/product-system`, or `/stitch-clone/*`.
+
+### PLAN-31 Public Motion V2 - Cinematic Legal
+PLAN-31 is the current public motion contract. It removes the weak decorative line under copy and replaces it with clearer CSS-only motion.
+
+Public motion V2 rules:
+- `kmt-motion-cta`: CTA shine sweep, gold inner glow, hover lift, and active press.
+- `kmt-motion-card-beam`: animated masked border beam on hover/focus for clickable or emphasis cards.
+- `kmt-motion-icon-halo`: gold halo/tilt on interactive icons such as practice, trust, brand, and contact icons.
+- `kmt-motion-arrow-trail`: inline-forward arrow trail, rightward in English and leftward in Arabic.
+- `kmt-motion-panel-enter`: short fade/slide for panel, step, result, and status transitions.
+- `kmt-motion-hero-spotlight`: soft hero CTA depth without scroll-jacking or text-underlines.
+- Reduced motion must hide sweep/beam/trail/spotlight effects and reset transforms.
+- No Framer Motion, GSAP, Lottie, Rive, Magic UI install, or `motion` package is allowed for PLAN-31.
 
 Protected-surface guard:
 - `/admin`, `/portal`, `/product-system`, and `/stitch-clone/*` must not visually inherit PLAN-28 public styling.
