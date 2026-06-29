@@ -3,6 +3,7 @@ import { consultationAssistantOutputSchema } from "@/server/ai/schemas";
 import { adminConsultationListQuerySchema } from "@/server/admin/consultation-review-service";
 import {
   clientOrganizerIntentFromMessage,
+  handlePublicConsultationAssistant,
   inferPublicConsultationServiceCategory,
   isCrossClientDataRequest,
   isLegalAdviceRequest,
@@ -125,6 +126,43 @@ describe("public consultation contract", () => {
   it("infers dispute consultations from Arabic trust receipt language", () => {
     expect(inferPublicConsultationServiceCategory("وصل أمانة موقع عليا وعايز استشارة عاجلة")).toBe("disputes");
     expect(inferPublicConsultationServiceCategory("I signed a promissory note and need urgent consultation")).toBe("disputes");
+  });
+
+  it("does not treat booking quick actions as the client name", async () => {
+    const request = new Request("https://example.test/api/public/consultations/assistant", {
+      headers: { "x-forwarded-for": "203.0.113.10" }
+    });
+
+    const start = await handlePublicConsultationAssistant({
+      body: { locale: "en", message: "Book consultation" },
+      request,
+      requestId: "test-booking-start"
+    });
+
+    expect((start as unknown as { draft: { fullName: string } }).draft.fullName).toBe("");
+
+    const confirm = await handlePublicConsultationAssistant({
+      body: {
+        locale: "en",
+        message: "Book appointment",
+        confirmBooking: true,
+        selectedSlot: "2026-07-05T10:00:00.000Z",
+        draft: {
+          fullName: "Book consultation",
+          phone: "01036887871",
+          serviceCategory: "disputes",
+          summary: "Signed trust receipt dispute requiring urgent office review.",
+          preferredMode: "ONLINE",
+          startsAt: "2026-07-05T10:00:00.000Z"
+        }
+      },
+      request,
+      requestId: "test-booking-confirm"
+    });
+
+    const confirmResult = confirm as unknown as { missingFields: string[]; draft: { fullName: string } };
+    expect(confirmResult.missingFields).toContain("fullName");
+    expect(confirmResult.draft.fullName).toBe("");
   });
 
   it("canonicalizes phone numbers for duplicate and rate-limit checks", () => {

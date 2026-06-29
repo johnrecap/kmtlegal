@@ -336,8 +336,9 @@ function normalizeBookingDraft(draft: {
   availabilityPreference?: Partial<z.infer<typeof availabilityPreferenceSchema>>;
 }) {
   const availabilityPreference = normalizeAvailabilityPreference(draft.availabilityPreference);
+  const fullName = draft.fullName?.trim() ?? "";
   return {
-    fullName: draft.fullName?.trim() ?? "",
+    fullName: isInvalidBookingFullName(fullName) ? "" : fullName,
     phone: draft.phone?.trim() ?? "",
     email: draft.email?.trim() ?? "",
     city: draft.city?.trim() ?? "",
@@ -401,7 +402,7 @@ function extractBookingDetails(
   const name = nameFromMessage(text);
   if (name && !current.fullName) {
     next.fullName = name;
-  } else if (!current.fullName && likelyNameOnly(text)) {
+  } else if (!current.fullName && likelyNameOnly(text) && !isInvalidBookingFullName(text)) {
     next.fullName = text;
   }
 
@@ -518,6 +519,30 @@ function likelyNameOnly(text: string) {
     return false;
   }
   return value.split(/\s+/).length <= 5;
+}
+
+function isInvalidBookingFullName(value: string) {
+  const normalized = normalizedAssistantText(value);
+  if (!normalized) {
+    return false;
+  }
+  if (
+    containsAny(normalized, [
+      "book consultation",
+      "book appointment",
+      "check reference",
+      "corporate law",
+      "litigation",
+      "حجز استشارة",
+      "حجز الموعد",
+      "استعلام عن مرجع",
+      "قانون الشركات",
+      "التقاضي"
+    ])
+  ) {
+    return true;
+  }
+  return Boolean(serviceCategoryFromMessage(normalized));
 }
 
 function normalizeAvailabilityPreference(value?: Partial<AvailabilityPreference>): AvailabilityPreference {
@@ -1169,7 +1194,7 @@ async function findConsultationByReference(suffix: string) {
 
 function requiredBookingFields(body: PublicConsultationAssistantInput) {
   const missing: string[] = [];
-  if (!body.fullName) missing.push("fullName");
+  if (!body.fullName || isInvalidBookingFullName(body.fullName)) missing.push("fullName");
   if (!body.phone) missing.push("phone");
   if (!body.serviceCategory) missing.push("serviceCategory");
   if (!body.summary || body.summary.trim().length < 20) missing.push("summary");
