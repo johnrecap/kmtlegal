@@ -1,8 +1,8 @@
 "use client";
 
-import { type FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { KmtBrandLogo } from "@/components/brand";
-import { Button, MaterialSymbol, Select, Textarea, TextInput } from "@/components/ui";
+import { Button, MaterialSymbol, TextInput } from "@/components/ui";
 import { getPublicContent, type PublicContent } from "@/content/public-content";
 import { trackClientAnalyticsEvent } from "@/lib/analytics-client";
 import { cn } from "@/lib/cn";
@@ -11,8 +11,7 @@ import {
   publicMotionButton,
   publicMotionControl,
   publicMotionCta,
-  publicMotionForm,
-  publicMotionStatus
+  publicMotionForm
 } from "@/features/public-site/public-motion";
 
 type BookingDraft = {
@@ -24,14 +23,14 @@ type BookingDraft = {
   urgency: "LOW" | "NORMAL" | "HIGH" | "URGENT";
   preferredMode: "PHONE" | "ONLINE" | "OFFICE";
   summary: string;
-  preferredSlot: string;
-  consent: boolean;
+  startsAt: string;
 };
 
-type InquiryDraft = {
-  reference: string;
-  phone: string;
-  email: string;
+type PublicSlot = {
+  id: string;
+  startsAt: string;
+  endsAt: string;
+  mode: BookingDraft["preferredMode"];
 };
 
 type ChatMessage = {
@@ -41,15 +40,15 @@ type ChatMessage = {
   tone?: "default" | "error" | "success";
 };
 
-type ChatMode = "idle" | "booking" | "inquiry";
-type BookingStep = "contact" | "details" | "review";
-type BookingFormCopy = PublicContent["bookingForm"];
-type BookingChatCopy = PublicContent["bookingChat"];
-
-type ApiBody = {
+type AssistantApiBody = {
   data?: {
-    reference?: string;
+    action?: string;
     message?: string;
+    draft?: Partial<BookingDraft>;
+    missingFields?: string[];
+    availableSlots?: PublicSlot[];
+    readyToConfirm?: boolean;
+    reference?: string;
     appointment?: { title: string; startsAt: string; status: string };
     appointments?: Array<{ title: string; startsAt: string; status: string }>;
   };
@@ -59,7 +58,7 @@ type ApiBody = {
   };
 };
 
-const MIN_SUMMARY_LENGTH = 20;
+type BookingChatCopy = PublicContent["bookingChat"];
 
 const darkSurfaceClasses = cn(
   publicMotionForm,
@@ -76,43 +75,31 @@ const chipButtonClasses = cn(
   "min-h-11 rounded-full !border-kmt-gold/45 !bg-black/30 !px-4 !text-sm !text-amber-100 shadow-[0_12px_35px_-28px_rgba(183,134,64,0.9)] hover:!bg-kmt-gold hover:!text-[#120d07]"
 );
 
-const secondaryButtonClasses = cn(
-  publicMotionButton,
-  "!border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-[#120d07]"
-);
-
 const initialDraft: BookingDraft = {
   fullName: "",
   phone: "",
   email: "",
   city: "",
-  serviceCategory: "corporate",
+  serviceCategory: "",
   urgency: "NORMAL",
-  preferredMode: "PHONE",
+  preferredMode: "ONLINE",
   summary: "",
-  preferredSlot: "",
-  consent: false
-};
-
-const initialInquiry: InquiryDraft = {
-  reference: "",
-  phone: "",
-  email: ""
+  startsAt: ""
 };
 
 export function ConsultationBookingChat({ initialService, locale = "en" }: { initialService?: string; locale?: PublicLocale }) {
   const content = getPublicContent(locale);
   const copy = content.bookingChat;
-  const bookingCopy = content.bookingForm;
   const logEndRef = useRef<HTMLDivElement | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>(() => [{ id: "greeting", role: "assistant", text: copy.greeting }]);
-  const [mode, setMode] = useState<ChatMode>("idle");
-  const [bookingStep, setBookingStep] = useState<BookingStep>("contact");
-  const [draft, setDraft] = useState<BookingDraft>(() => ({ ...initialDraft, serviceCategory: initialService || initialDraft.serviceCategory }));
-  const [inquiry, setInquiry] = useState<InquiryDraft>(initialInquiry);
+  const [draft, setDraft] = useState<BookingDraft>(() => ({ ...initialDraft, serviceCategory: initialService || "" }));
   const [freeMessage, setFreeMessage] = useState("");
   const [isBusy, setIsBusy] = useState(false);
+  const [flow, setFlow] = useState<"booking" | "inquiry" | null>(null);
+  const [availableSlots, setAvailableSlots] = useState<PublicSlot[]>([]);
+  const [selectedSlot, setSelectedSlot] = useState("");
+  const [readyToConfirm, setReadyToConfirm] = useState(false);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -120,169 +107,57 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ block: "end" });
-  }, [messages, mode, bookingStep, isBusy]);
-
-  const categoryOptions = useMemo(() => Object.entries(bookingCopy.categories), [bookingCopy.categories]);
+  }, [messages, availableSlots, readyToConfirm, isBusy]);
 
   function append(role: ChatMessage["role"], text: string, tone: ChatMessage["tone"] = "default") {
     setMessages((current) => [...current, { id: `${role}-${Date.now()}-${current.length}`, role, text, tone }]);
   }
 
-  function appendAssistantError(message: string) {
-    append("assistant", message, "error");
-  }
-
   function startBooking() {
-    setMode("booking");
-    setBookingStep("contact");
-    append("user", copy.book);
-    append("assistant", copy.contactPrompt);
-    trackClientAnalyticsEvent("booking.step_viewed", { step: "chat_contact", locale });
+    void sendBookingMessage(copy.book, { userText: copy.book, flow: "booking" });
   }
 
   function startBookingWithCategory(label: string, category: string) {
-    setDraft((current) => ({ ...current, serviceCategory: category }));
-    setMode("booking");
-    setBookingStep("contact");
-    append("user", label);
-    append("assistant", copy.contactPrompt);
-    trackClientAnalyticsEvent("booking.step_viewed", { step: "chat_contact", locale, category });
+    void sendBookingMessage(label, { userText: label, flow: "booking", draftPatch: { serviceCategory: category } });
   }
 
   function startInquiry() {
-    setMode("inquiry");
+    setFlow("inquiry");
+    setAvailableSlots([]);
+    setReadyToConfirm(false);
     append("user", copy.inquire);
     append("assistant", copy.inquiryPrompt);
   }
 
-  function submitFreeMessage(event: FormEvent<HTMLFormElement>) {
+  async function submitMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const text = freeMessage.trim();
-    if (!text) return;
-    append("user", text);
+    if (!text || isBusy) return;
     setFreeMessage("");
 
     if (looksLikeLegalAdvice(text)) {
+      append("user", text);
       append("assistant", copy.legalRefusal);
       return;
     }
-    if (looksLikeInquiry(text)) {
-      setMode("inquiry");
+
+    if (flow === "inquiry" || looksLikeInquiry(text)) {
+      await submitInquiryMessage(text);
+      return;
+    }
+
+    await sendBookingMessage(text, { userText: text, flow: "booking" });
+  }
+
+  async function submitInquiryMessage(text: string) {
+    append("user", text);
+    const inquiry = inquiryFromMessage(text);
+    if (!inquiry.reference || (!inquiry.phone && !inquiry.email)) {
+      setFlow("inquiry");
       append("assistant", copy.inquiryPrompt);
       return;
     }
-    if (looksLikeBooking(text)) {
-      setMode("booking");
-      setBookingStep("contact");
-      append("assistant", copy.contactPrompt);
-      trackClientAnalyticsEvent("booking.step_viewed", { step: "chat_contact", locale });
-      return;
-    }
 
-    append("assistant", copy.scopeReply);
-  }
-
-  function updateDraft<K extends keyof BookingDraft>(key: K, value: BookingDraft[K]) {
-    setDraft((current) => ({ ...current, [key]: value }));
-  }
-
-  function updateInquiry<K extends keyof InquiryDraft>(key: K, value: InquiryDraft[K]) {
-    setInquiry((current) => ({ ...current, [key]: value }));
-  }
-
-  function continueContact(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (draft.fullName.trim().length < 2 || draft.phone.trim().length < 6) {
-      appendAssistantError(copy.requiredContact);
-      return;
-    }
-    append("user", `${draft.fullName} · ${draft.phone}`);
-    append("assistant", copy.detailsPrompt);
-    setBookingStep("details");
-    trackClientAnalyticsEvent("booking.step_viewed", { step: "chat_details", locale });
-  }
-
-  function continueDetails(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!draft.serviceCategory || draft.summary.trim().length < MIN_SUMMARY_LENGTH) {
-      appendAssistantError(copy.requiredDetails);
-      return;
-    }
-    append("user", `${categoryLabel(bookingCopy, draft.serviceCategory)} · ${draft.summary}`);
-    append("assistant", copy.reviewPrompt);
-    setBookingStep("review");
-    trackClientAnalyticsEvent("booking.step_viewed", { step: "chat_review", locale });
-  }
-
-  async function submitBooking(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!draft.consent) {
-      appendAssistantError(copy.requiredConsent);
-      return;
-    }
-
-    setIsBusy(true);
-    trackClientAnalyticsEvent("booking.submit_attempted", { locale, source: draft.preferredSlot ? "chat_appointment" : "chat_request" });
-    try {
-      const hasSlot = Boolean(draft.preferredSlot);
-      const response = await fetch(hasSlot ? "/api/public/consultations/assistant" : `/api/public/consultations?locale=${locale}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          hasSlot
-            ? {
-                locale,
-                intent: "book_consultation_appointment",
-                message: draft.summary,
-                fullName: draft.fullName,
-                phone: draft.phone,
-                email: draft.email,
-                city: draft.city,
-                serviceCategory: draft.serviceCategory,
-                summary: draft.summary,
-                urgency: draft.urgency,
-                preferredMode: draft.preferredMode,
-                startsAt: `${draft.preferredSlot}:00+03:00`,
-                consent: true
-              }
-            : {
-                locale,
-                fullName: draft.fullName,
-                phone: draft.phone,
-                email: draft.email,
-                city: draft.city,
-                serviceCategory: draft.serviceCategory,
-                summary: draft.summary,
-                opposingPartyName: "",
-                urgency: draft.urgency,
-                preferredMode: draft.preferredMode,
-                consent: true
-              }
-        )
-      });
-      const body = (await response.json().catch(() => ({}))) as ApiBody;
-      if (!response.ok) {
-        trackClientAnalyticsEvent("booking.submit_failed", { locale, status: response.status });
-        appendAssistantError(errorMessage(body, copy));
-        return;
-      }
-      const reference = body.data?.reference ?? "";
-      append("assistant", `${copy.successTitle}${reference ? ` · ${copy.reference}: ${reference}` : ""}`, "success");
-      if (body.data?.appointment) {
-        append("assistant", `${body.data.appointment.title} · ${formatPublicDate(body.data.appointment.startsAt, locale)}`, "success");
-      }
-      setMode("idle");
-      setDraft({ ...initialDraft, serviceCategory: initialService || initialDraft.serviceCategory });
-    } catch {
-      trackClientAnalyticsEvent("booking.submit_failed", { locale, status: "network" });
-      appendAssistantError(copy.fallbackError);
-    } finally {
-      setIsBusy(false);
-    }
-  }
-
-  async function submitInquiry(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
     setIsBusy(true);
     try {
       const response = await fetch("/api/public/consultations/assistant", {
@@ -291,28 +166,127 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         body: JSON.stringify({
           locale,
           intent: "appointment_inquiry",
-          message: "appointment inquiry",
+          message: text,
           reference: inquiry.reference,
           phone: inquiry.phone,
           email: inquiry.email
         })
       });
-      const body = (await response.json().catch(() => ({}))) as ApiBody;
+      const body = (await response.json().catch(() => ({}))) as AssistantApiBody;
       if (!response.ok) {
-        appendAssistantError(errorMessage(body, copy));
+        append("assistant", errorMessage(body, copy), "error");
         return;
       }
       append("assistant", body.data?.message ?? copy.inquiryResult, "success");
       for (const appointment of body.data?.appointments ?? []) {
         append("assistant", `${appointment.title} · ${formatPublicDate(appointment.startsAt, locale)} · ${appointment.status}`, "success");
       }
-      setMode("idle");
-      setInquiry(initialInquiry);
+      setFlow(null);
     } catch {
-      appendAssistantError(copy.fallbackError);
+      append("assistant", copy.fallbackError, "error");
     } finally {
       setIsBusy(false);
     }
+  }
+
+  async function sendBookingMessage(
+    message: string,
+    options: {
+      userText?: string;
+      flow?: "booking";
+      draftPatch?: Partial<BookingDraft>;
+      selectedSlot?: string;
+      confirmBooking?: boolean;
+    } = {}
+  ) {
+    if (options.userText) {
+      append("user", options.userText);
+    }
+    setFlow(options.flow ?? "booking");
+    setIsBusy(true);
+    setReadyToConfirm(false);
+
+    const nextDraft = normalizeDraft({ ...draft, ...options.draftPatch });
+    const nextSlot = options.selectedSlot ?? selectedSlot ?? nextDraft.startsAt;
+
+    try {
+      const response = await fetch("/api/public/consultations/assistant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          locale,
+          message,
+          draft: nextDraft,
+          selectedSlot: nextSlot,
+          confirmBooking: options.confirmBooking
+        })
+      });
+      const body = (await response.json().catch(() => ({}))) as AssistantApiBody;
+      if (!response.ok) {
+        trackClientAnalyticsEvent("booking.submit_failed", { locale, status: response.status });
+        append("assistant", errorMessage(body, copy), "error");
+        return;
+      }
+
+      const data = body.data;
+      if (!data) {
+        append("assistant", copy.fallbackError, "error");
+        return;
+      }
+
+      const updatedDraft = normalizeDraft({ ...nextDraft, ...data.draft });
+      setDraft(updatedDraft);
+      setAvailableSlots(data.availableSlots ?? []);
+      setSelectedSlot(updatedDraft.startsAt || nextSlot || "");
+      setReadyToConfirm(Boolean(data.readyToConfirm));
+      append("assistant", data.message ?? copy.scopeReply, data.reference ? "success" : "default");
+
+      if (data.reference) {
+        append("assistant", `${copy.successTitle} · ${copy.reference}: ${data.reference}`, "success");
+        if (data.appointment) {
+          append("assistant", `${data.appointment.title} · ${formatPublicDate(data.appointment.startsAt, locale)}`, "success");
+        }
+        setFlow(null);
+        setAvailableSlots([]);
+        setSelectedSlot("");
+        setReadyToConfirm(false);
+        setDraft({ ...initialDraft, serviceCategory: initialService || "" });
+      }
+    } catch {
+      trackClientAnalyticsEvent("booking.submit_failed", { locale, status: "network" });
+      append("assistant", copy.fallbackError, "error");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  function chooseSlot(slot: PublicSlot) {
+    const label = formatPublicDate(slot.startsAt, locale);
+    setSelectedSlot(slot.startsAt);
+    setAvailableSlots([]);
+    void sendBookingMessage(label, {
+      userText: label,
+      flow: "booking",
+      selectedSlot: slot.startsAt,
+      draftPatch: { startsAt: slot.startsAt, preferredMode: slot.mode }
+    });
+  }
+
+  function confirmBooking() {
+    if (!selectedSlot || isBusy) return;
+    void sendBookingMessage(copy.submitBooking, {
+      userText: copy.submitBooking,
+      flow: "booking",
+      selectedSlot,
+      confirmBooking: true
+    });
+  }
+
+  function editDetails() {
+    setReadyToConfirm(false);
+    setSelectedSlot("");
+    setDraft((current) => ({ ...current, startsAt: "" }));
+    append("assistant", copy.scopeReply);
   }
 
   return (
@@ -355,45 +329,47 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
           {messages.map((message) => (
             <ChatBubble key={message.id} message={message} />
           ))}
-          {isBusy ? <TypingIndicator label={copy.typing} /> : null}
-          {mode !== "idle" ? (
-            <div className="flex justify-start">
-              <div className="w-full max-w-2xl">
-                {mode === "booking" && bookingStep === "contact" ? renderContactStep() : null}
-                {mode === "booking" && bookingStep === "details" ? renderDetailsStep() : null}
-                {mode === "booking" && bookingStep === "review" ? renderReviewStep() : null}
-                {mode === "inquiry" ? renderInquiryStep() : null}
-              </div>
+          {availableSlots.length ? <SlotChips locale={locale} slots={availableSlots} onChoose={chooseSlot} /> : null}
+          {readyToConfirm ? (
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button className={cn(publicMotionButton, publicMotionCta, "rounded-full")} data-testid="booking-confirm-booking" loading={isBusy} type="button" onClick={confirmBooking}>
+                <MaterialSymbol name="check_circle" />
+                {copy.submitBooking}
+              </Button>
+              <Button className={chipButtonClasses} disabled={isBusy} type="button" variant="secondary" onClick={editDetails}>
+                <MaterialSymbol name="edit" />
+                {copy.back}
+              </Button>
             </div>
           ) : null}
+          {isBusy ? <TypingIndicator label={copy.typing} /> : null}
           <div ref={logEndRef} />
         </div>
 
         <div className="px-5 pb-5 sm:px-8 sm:pb-8">
-          {mode === "idle" ? (
-            <div className="mb-5 flex flex-wrap gap-3">
-              <Button className={chipButtonClasses} data-testid="booking-quick-book" size="sm" type="button" variant="secondary" onClick={startBooking}>
-                <MaterialSymbol className="text-xl" name="event_available" />
-                {copy.book}
-              </Button>
-              <Button className={chipButtonClasses} data-testid="booking-quick-inquiry" size="sm" type="button" variant="secondary" onClick={startInquiry}>
-                <MaterialSymbol className="text-xl" name="search" />
-                {copy.inquire}
-              </Button>
-              <Button className={chipButtonClasses} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(copy.corporateLaw, "corporate")}>
-                <MaterialSymbol className="text-xl" name="account_balance" />
-                {copy.corporateLaw}
-              </Button>
-              <Button className={chipButtonClasses} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(copy.litigation, "disputes")}>
-                <MaterialSymbol className="text-xl" name="gavel" />
-                {copy.litigation}
-              </Button>
-            </div>
-          ) : null}
+          <div className="mb-5 flex flex-wrap gap-3">
+            <Button className={chipButtonClasses} data-testid="booking-quick-book" disabled={isBusy} size="sm" type="button" variant="secondary" onClick={startBooking}>
+              <MaterialSymbol className="text-xl" name="event_available" />
+              {copy.book}
+            </Button>
+            <Button className={chipButtonClasses} data-testid="booking-quick-inquiry" disabled={isBusy} size="sm" type="button" variant="secondary" onClick={startInquiry}>
+              <MaterialSymbol className="text-xl" name="search" />
+              {copy.inquire}
+            </Button>
+            <Button className={chipButtonClasses} disabled={isBusy} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(copy.corporateLaw, "corporate")}>
+              <MaterialSymbol className="text-xl" name="account_balance" />
+              {copy.corporateLaw}
+            </Button>
+            <Button className={chipButtonClasses} disabled={isBusy} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(copy.litigation, "disputes")}>
+              <MaterialSymbol className="text-xl" name="gavel" />
+              {copy.litigation}
+            </Button>
+          </div>
 
-          <form className="flex min-w-0 items-end gap-3" data-testid="booking-chat-composer" noValidate onSubmit={submitFreeMessage}>
+          <form className="flex min-w-0 items-end gap-3" data-testid="booking-chat-composer" noValidate onSubmit={submitMessage}>
             <div className="min-w-0 flex-1 [&_label]:sr-only">
               <TextInput
+                autoComplete="off"
                 className={cn(darkControlClasses, "!min-h-16 !rounded-full !border-kmt-gold/55 !bg-black/42 !px-6 !text-base")}
                 disabled={isBusy}
                 label={copy.messageLabel}
@@ -421,137 +397,6 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       </div>
     </section>
   );
-
-  function renderContactStep() {
-    return (
-      <StepCard icon="person" prompt={copy.contactPrompt} title={copy.contactTitle}>
-        <form className="grid gap-3 md:grid-cols-2" noValidate onSubmit={continueContact}>
-          <TextInput className={darkControlClasses} label={bookingCopy.fullName} name="fullName" value={draft.fullName} onChange={(event) => updateDraft("fullName", event.target.value)} required />
-          <TextInput className={darkControlClasses} label={bookingCopy.phone} name="phone" value={draft.phone} onChange={(event) => updateDraft("phone", event.target.value)} required />
-          <TextInput className={darkControlClasses} label={bookingCopy.email} name="email" type="email" value={draft.email} onChange={(event) => updateDraft("email", event.target.value)} />
-          <TextInput className={darkControlClasses} label={bookingCopy.city} name="city" value={draft.city} onChange={(event) => updateDraft("city", event.target.value)} />
-          <div className="md:col-span-2">
-            <Button className={cn(publicMotionButton, publicMotionCta)} disabled={isBusy} type="submit">
-              {copy.continue}
-            </Button>
-          </div>
-        </form>
-      </StepCard>
-    );
-  }
-
-  function renderDetailsStep() {
-    return (
-      <StepCard icon="edit_note" prompt={copy.detailsPrompt} title={copy.detailsTitle}>
-        <form className="grid gap-3" noValidate onSubmit={continueDetails}>
-          <div className="grid gap-3 md:grid-cols-3">
-            <Select className={darkControlClasses} label={bookingCopy.serviceCategory} name="serviceCategory" value={draft.serviceCategory} onChange={(event) => updateDraft("serviceCategory", event.target.value)}>
-              {categoryOptions.map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </Select>
-            <Select className={darkControlClasses} label={bookingCopy.urgency} name="urgency" value={draft.urgency} onChange={(event) => updateDraft("urgency", event.target.value as BookingDraft["urgency"])}>
-              {Object.entries(bookingCopy.urgencyLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </Select>
-            <Select className={darkControlClasses} label={bookingCopy.preferredMode} name="preferredMode" value={draft.preferredMode} onChange={(event) => updateDraft("preferredMode", event.target.value as BookingDraft["preferredMode"])}>
-              {Object.entries(bookingCopy.preferredModeLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <Textarea
-            className={darkControlClasses}
-            hint={draft.summary.length < MIN_SUMMARY_LENGTH ? bookingCopy.summaryHintShort.replace("{count}", String(Math.max(0, MIN_SUMMARY_LENGTH - draft.summary.length))) : bookingCopy.summaryHintReady}
-            label={bookingCopy.summary}
-            name="summary"
-            value={draft.summary}
-            onChange={(event) => updateDraft("summary", event.target.value)}
-            required
-          />
-          <TextInput
-            className={darkControlClasses}
-            hint={copy.preferredSlotHint}
-            label={copy.preferredSlot}
-            name="preferredSlot"
-            type="datetime-local"
-            value={draft.preferredSlot}
-            onChange={(event) => updateDraft("preferredSlot", event.target.value)}
-          />
-          <div className="flex flex-wrap gap-2">
-            <Button className={cn(publicMotionButton, publicMotionCta)} disabled={isBusy} type="submit">
-              {copy.continue}
-            </Button>
-            <Button className={secondaryButtonClasses} disabled={isBusy} type="button" variant="secondary" onClick={() => setBookingStep("contact")}>
-              {copy.back}
-            </Button>
-          </div>
-        </form>
-      </StepCard>
-    );
-  }
-
-  function renderReviewStep() {
-    return (
-      <StepCard icon="task_alt" prompt={copy.reviewPrompt} title={copy.reviewTitle}>
-        <form className="space-y-4" noValidate onSubmit={submitBooking}>
-          <div className="grid gap-2 rounded border border-white/10 bg-black/25 p-3 text-sm leading-7 text-slate-200 sm:grid-cols-2">
-            <ReviewRow label={bookingCopy.reviewLabels.name} value={draft.fullName} />
-            <ReviewRow label={bookingCopy.reviewLabels.phone} value={draft.phone} />
-            <ReviewRow label={bookingCopy.reviewLabels.category} value={categoryLabel(bookingCopy, draft.serviceCategory)} />
-            <ReviewRow label={bookingCopy.reviewLabels.mode} value={bookingCopy.preferredModeLabels[draft.preferredMode]} />
-            <ReviewRow label={copy.preferredSlot} value={draft.preferredSlot ? formatPublicDate(draft.preferredSlot, locale) : copy.noSlot} />
-            <ReviewRow label={bookingCopy.reviewLabels.summary} value={draft.summary} />
-          </div>
-          <label className="flex items-start gap-3 rounded border border-white/10 bg-white/[0.03] p-3 text-sm leading-7 text-slate-200">
-            <input
-              checked={draft.consent}
-              className="mt-2 h-4 w-4 rounded border-kmt-gold/40 bg-black text-kmt-gold focus:ring-kmt-gold"
-              id="booking-consent"
-              type="checkbox"
-              onChange={(event) => updateDraft("consent", event.target.checked)}
-            />
-            <span>{copy.consent}</span>
-          </label>
-          <div className="flex flex-wrap gap-2">
-            <Button className={cn(publicMotionButton, publicMotionCta)} loading={isBusy} type="submit">
-              {draft.preferredSlot ? copy.submitBooking : copy.submitRequest}
-            </Button>
-            <Button className={secondaryButtonClasses} disabled={isBusy} type="button" variant="secondary" onClick={() => setBookingStep("details")}>
-              {copy.back}
-            </Button>
-          </div>
-        </form>
-      </StepCard>
-    );
-  }
-
-  function renderInquiryStep() {
-    return (
-      <StepCard icon="manage_search" prompt={copy.inquiryPrompt} title={copy.inquiryTitle}>
-        <form className="grid gap-3 md:grid-cols-3" noValidate onSubmit={submitInquiry}>
-          <TextInput className={darkControlClasses} dir="ltr" label={copy.reference} name="reference" placeholder="CONS-XXXXXXXX" value={inquiry.reference} onChange={(event) => updateInquiry("reference", event.target.value)} required />
-          <TextInput className={darkControlClasses} label={bookingCopy.phone} name="phone" value={inquiry.phone} onChange={(event) => updateInquiry("phone", event.target.value)} />
-          <TextInput className={darkControlClasses} label={bookingCopy.email} name="email" type="email" value={inquiry.email} onChange={(event) => updateInquiry("email", event.target.value)} />
-          <div className="flex flex-wrap gap-2 md:col-span-3">
-            <Button className={cn(publicMotionButton, publicMotionCta)} loading={isBusy} type="submit">
-              {copy.submitInquiry}
-            </Button>
-            <Button className={secondaryButtonClasses} disabled={isBusy} type="button" variant="secondary" onClick={() => setMode("idle")}>
-              {copy.back}
-            </Button>
-          </div>
-        </form>
-      </StepCard>
-    );
-  }
 }
 
 function TrustRailItem({ icon, label }: { icon: string; label: string }) {
@@ -594,26 +439,16 @@ function ChatBubble({ message }: { message: ChatMessage }) {
   );
 }
 
-function StepCard({ children, icon, prompt, title }: { children: ReactNode; icon: string; prompt: string; title: string }) {
+function SlotChips({ locale, slots, onChoose }: { locale: PublicLocale; slots: PublicSlot[]; onChoose: (slot: PublicSlot) => void }) {
   return (
-    <section
-      className={cn(
-        publicMotionStatus,
-        "rounded-[1.35rem] rounded-es-md border border-kmt-gold/28 bg-[#090806]/92 p-5 shadow-[0_22px_70px_-46px_rgba(0,0,0,0.95)]"
-      )}
-      data-testid="booking-chat-step-card"
-    >
-      <div className="mb-4 flex items-start gap-3">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-kmt-gold/35 bg-kmt-gold/12 text-kmt-gold">
-          <MaterialSymbol className="text-xl" name={icon} />
-        </span>
-        <div>
-          <h3 className="text-base font-semibold text-white">{title}</h3>
-          <p className="mt-1 text-sm leading-7 text-slate-300">{prompt}</p>
-        </div>
-      </div>
-      {children}
-    </section>
+    <div className="flex flex-wrap justify-start gap-2 ps-14 max-sm:ps-0">
+      {slots.map((slot) => (
+        <Button key={slot.id} className={chipButtonClasses} data-testid="booking-slot-chip" type="button" variant="secondary" onClick={() => onChoose(slot)}>
+          <MaterialSymbol name="schedule" />
+          {formatPublicDate(slot.startsAt, locale)}
+        </Button>
+      ))}
+    </div>
   );
 }
 
@@ -633,21 +468,26 @@ function TypingIndicator({ label }: { label: string }) {
   );
 }
 
-function ReviewRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-xs font-semibold text-amber-100">{label}</p>
-      <p className="mt-1 break-words text-slate-100">{value}</p>
-    </div>
-  );
+function normalizeDraft(value: Partial<BookingDraft>): BookingDraft {
+  return {
+    fullName: value.fullName ?? "",
+    phone: value.phone ?? "",
+    email: value.email ?? "",
+    city: value.city ?? "",
+    serviceCategory: value.serviceCategory ?? "",
+    urgency: value.urgency ?? "NORMAL",
+    preferredMode: value.preferredMode ?? "ONLINE",
+    summary: value.summary ?? "",
+    startsAt: value.startsAt ?? ""
+  };
 }
 
-function categoryLabel(copy: BookingFormCopy, value: string) {
-  return copy.categories[value as keyof typeof copy.categories] ?? value;
-}
-
-function looksLikeBooking(value: string) {
-  return /book|consultation|appointment|حجز|احجز|استشارة|موعد/.test(normalizeText(value));
+function inquiryFromMessage(value: string) {
+  return {
+    reference: value.match(/CONS-[0-9A-F]{8}/i)?.[0] ?? "",
+    phone: value.match(/(?:\+|00)?\d[\d\s().-]{6,}\d/)?.[0]?.replace(/[^\d+]/g, "") ?? "",
+    email: value.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0]?.toLowerCase() ?? ""
+  };
 }
 
 function looksLikeInquiry(value: string) {
@@ -670,11 +510,12 @@ function normalizeText(value: string) {
 function formatPublicDate(value: string, locale: PublicLocale) {
   return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", {
     dateStyle: "medium",
-    timeStyle: "short"
+    timeStyle: "short",
+    timeZone: "Africa/Cairo"
   }).format(new Date(value));
 }
 
-function errorMessage(body: ApiBody, copy: BookingChatCopy) {
+function errorMessage(body: AssistantApiBody, copy: BookingChatCopy) {
   const message = body.error?.message ?? copy.fallbackError;
   return body.error?.requestId ? `${message} · ${copy.requestId}: ${body.error.requestId}` : message;
 }

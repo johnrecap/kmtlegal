@@ -54,6 +54,8 @@ Total plans: 32
 
 ## Latest PLAN-32 Follow-Up
 
+- Converted the public AI booking intake into a chat-only flow with no visible booking form/stepper fields: the assistant collects missing details through messages, shows secretary-configured appointment slots as chat chips, confirms booking inside the conversation, and stores only the final request/summary plus the scheduled consultation appointment.
+- Added secretary-managed weekly consultation availability through `/admin/consultation-availability`, public slot generation at `/api/public/consultations/slots`, and assignment propagation so assigning a lawyer to a consultation also updates the linked consultation appointment and client.
 - Redesigned the public booking assistant to match the premium KMT chat reference: large balance avatar, online state, human-review/no-legal-advice badges, trust rail, assistant/user bubbles, quick chips, and rounded composer. Public booking remains scoped to consultation booking and verified reference checks.
 - Added saved client-team live chat for authenticated clients only: new conversation thread/message schema, client APIs, admin APIs, RBAC permissions, authenticated throttling, `/admin/messages` inbox, and `/admin/messages/[threadId]` reply/assign/status screen. Human team messages are saved; public AI booking chat transcripts are not saved as conversation archives.
 - Updated `/client/assistant` with a `Talk to team` path that opens the saved team chat while preserving the organizational AI assistant's existing client-owned data scope and legal-advice refusal.

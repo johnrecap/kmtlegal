@@ -6,6 +6,12 @@ import {
   isLegalAdviceRequest,
   publicConsultationAssistantSchema
 } from "@/server/consultations/consultation-assistant-service";
+import {
+  canManageConsultationAvailability,
+  consultationAvailabilitySchema,
+  defaultConsultationAvailability,
+  generateConsultationSlots
+} from "@/server/consultations/consultation-availability-service";
 import { publicConsultationReference, publicConsultationRequestSchema } from "@/server/consultations/consultation-service";
 import { canonicalPhone } from "@/server/phone/phone-normalization";
 
@@ -65,6 +71,19 @@ describe("public consultation contract", () => {
     expect(booking.intent).toBe("book_consultation_appointment");
     expect(booking.locale).toBe("ar");
 
+    const conversational = publicConsultationAssistantSchema.parse({
+      locale: "en",
+      message: "My name is Sara, phone +201000000002, I need contract review",
+      draft: {
+        serviceCategory: "corporate",
+        preferredMode: "ONLINE"
+      },
+      selectedSlot: "2026-07-05T10:00:00+03:00",
+      confirmBooking: false
+    });
+    expect(conversational.draft?.serviceCategory).toBe("corporate");
+    expect(conversational.selectedSlot).toContain("2026-07-05");
+
     const inquiry = publicConsultationAssistantSchema.parse({
       message: "موعدي",
       intent: "appointment_inquiry",
@@ -112,5 +131,39 @@ describe("public consultation contract", () => {
     expect(clientOrganizerIntentFromMessage("ما هي المدفوعات الظاهرة؟")).toBe("payments");
     expect(clientOrganizerIntentFromMessage("ما هي القضايا المفتوحة؟")).toBe("cases");
     expect(clientOrganizerIntentFromMessage("مواعيدي القادمة")).toBe("appointments");
+  });
+  it("generates public consultation slots from secretary availability and skips booked times", () => {
+    const availability = consultationAvailabilitySchema.parse({
+      ...defaultConsultationAvailability,
+      minLeadHours: 0,
+      bookingWindowDays: 1,
+      slotDurationMinutes: 60,
+      days: defaultConsultationAvailability.days.map((day) => ({
+        ...day,
+        enabled: day.weekday === 0,
+        start: "10:00",
+        end: "12:00",
+        modes: ["ONLINE"]
+      }))
+    });
+
+    const slots = generateConsultationSlots({
+      availability,
+      mode: "ONLINE",
+      now: new Date("2026-07-05T05:00:00.000Z"),
+      appointments: [
+        {
+          startsAt: new Date("2026-07-05T07:00:00.000Z"),
+          endsAt: new Date("2026-07-05T08:00:00.000Z")
+        }
+      ]
+    });
+
+    expect(slots.map((slot) => slot.startsAt)).toEqual(["2026-07-05T08:00:00.000Z"]);
+  });
+
+  it("allows secretaries with appointment management permission to manage consultation availability", () => {
+    expect(canManageConsultationAvailability({ id: "staff-1", roleName: "Secretary", permissions: ["appointment.manage.any"] })).toBe(true);
+    expect(canManageConsultationAvailability({ id: "client-1", roleName: "Client", permissions: [] })).toBe(false);
   });
 });

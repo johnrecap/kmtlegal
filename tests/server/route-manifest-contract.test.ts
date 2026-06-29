@@ -49,6 +49,8 @@ describe("route manifest contract", () => {
       ["/api/portal/profile", "/api/portal/profile"],
       ["/api/public/consultations", "/api/public/consultations"],
       ["/api/public/consultations/assistant", "/api/public/consultations/assistant"],
+      ["/api/public/consultations/slots", "/api/public/consultations/slots"],
+      ["/api/admin/consultation-availability", "/api/admin/consultation-availability"],
       ["/api/client/assistant", "/api/client/assistant"],
       ["/api/client/messages", "/api/client/messages"],
       ["/api/client/messages/[threadId]", "/api/client/messages/{threadId}"],

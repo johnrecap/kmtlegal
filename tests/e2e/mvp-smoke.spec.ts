@@ -231,7 +231,7 @@ test.describe("MVP smoke without database", () => {
   test("booking chat preserves validation, analytics events, and requestId error output", async ({ page }) => {
     const analyticsEvents = await collectAnalyticsEvents(page);
 
-    await page.route("**/api/public/consultations**", async (route) => {
+    await page.route("**/api/public/consultations/assistant", async (route) => {
       await route.fulfill({
         status: 503,
         contentType: "application/json",
@@ -257,25 +257,13 @@ test.describe("MVP smoke without database", () => {
     await expect(form.getByText("I cannot provide a legal opinion")).toBeVisible();
 
     await page.getByTestId("booking-quick-book").click();
-    const stepCard = page.getByTestId("booking-chat-step-card");
-    await expect(stepCard).toBeVisible();
-    await stepCard.locator('button[type="submit"]').click();
-    await expect(form.getByText("Name and phone are required")).toBeVisible();
-
-    await form.locator('input[name="fullName"]').fill("PLAN 28 Visitor");
-    await form.locator('input[name="phone"]').fill("+201000000001");
-    await form.locator('input[name="email"]').fill("plan28@example.com");
-    await stepCard.locator('button[type="submit"]').click();
-
-    await form.locator('textarea[name="summary"]').fill("This is a sufficiently detailed public consultation summary for the PLAN 28 smoke test.");
-    await stepCard.locator('button[type="submit"]').click();
-
-    await page.locator("#booking-consent").check();
-    await stepCard.locator('button[type="submit"]').click();
+    await expect(form.getByText("req-booking-plan28")).toBeVisible();
+    await expect(page.getByTestId("booking-chat-step-card")).toHaveCount(0);
+    await expect(form.locator('input[name="fullName"]')).toHaveCount(0);
+    await expect(form.locator('textarea[name="summary"]')).toHaveCount(0);
+    await expect(form.locator("#booking-consent")).toHaveCount(0);
 
     await expect(form.getByText("req-booking-plan28")).toBeVisible();
-    await expect.poll(() => analyticsEvents).toContain("booking.step_viewed");
-    await expect.poll(() => analyticsEvents).toContain("booking.submit_attempted");
     await expect.poll(() => analyticsEvents).toContain("booking.submit_failed");
   });
 

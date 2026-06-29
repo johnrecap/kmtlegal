@@ -94,6 +94,7 @@ PLAN-26 installer preflight must reject unsupported panel environments before bu
 | POST | `/api/public/contact` | Persist contact form submission and return `201 { data: { id, reference, status }, requestId }` | Guest | contact.create.public |
 | POST | `/api/public/consultations` | Create consultation request | Guest | consultation.create.public |
 | POST | `/api/public/consultations/assistant` | AI-assisted consultation booking and verified appointment inquiry | Guest | consultation.create.public |
+| GET | `/api/public/consultations/slots` | Public consultation slots generated from secretary availability without exposing internal calendar data | Guest | public |
 
 ### Email
 | Method | Path/Action | Purpose | Auth | Permission |
@@ -110,6 +111,8 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 | PATCH | `/api/admin/consultations/{id}/assign` | Assign lawyer | Admin | consultation.assign.any |
 | PATCH | `/api/admin/consultations/{id}/reject` | Reject request | Admin | consultation.review.any |
 | POST | `/api/admin/consultations/{id}/convert` | Convert to client/case | Admin | consultation.convert.any |
+| GET | `/api/admin/consultation-availability` | Read weekly public consultation booking availability | Secretary/Admin | appointment.manage.any |
+| PATCH | `/api/admin/consultation-availability` | Update weekly public consultation booking availability | Secretary/Admin | appointment.manage.any |
 
 ### Client Portal
 `/client` is the primary protected client surface. `/portal` remains as a compatible legacy surface. Portal MVP is server-rendered except implemented JSON routes. Current portal pages read data server-side through authenticated service helpers. JSON routes are added only when the product needs client-side mutation or async refresh.

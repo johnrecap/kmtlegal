@@ -201,7 +201,7 @@ export async function assignConsultation(input: { actor: Principal; consultation
 
   const consultation = await prisma.consultationRequest.findUnique({
     where: { id: consultationId },
-    select: { id: true, status: true, assignedLawyerId: true }
+    select: { id: true, status: true, assignedLawyerId: true, clientId: true }
   });
 
   if (!consultation) {
@@ -211,15 +211,31 @@ export async function assignConsultation(input: { actor: Principal; consultation
     throw new ApiError(409, "CONFLICT", "Closed consultations cannot be assigned.");
   }
 
-  const updated = await prisma.consultationRequest.update({
-    where: { id: consultationId },
-    data: {
-      assignedLawyerId: body.assignedLawyerId,
-      status: consultation.status === "SCHEDULED" ? "SCHEDULED" : "REVIEWING"
-    },
-    include: {
-      assignedLawyer: { select: { id: true, name: true, email: true } }
+  const updated = await prisma.$transaction(async (tx) => {
+    const assignedConsultation = await tx.consultationRequest.update({
+      where: { id: consultationId },
+      data: {
+        assignedLawyerId: body.assignedLawyerId,
+        status: consultation.status === "SCHEDULED" ? "SCHEDULED" : "REVIEWING"
+      },
+      include: {
+        assignedLawyer: { select: { id: true, name: true, email: true } }
+      }
+    });
+
+    await tx.appointment.updateMany({
+      where: { consultationRequestId: consultationId, type: "CONSULTATION" },
+      data: { lawyerId: body.assignedLawyerId }
+    });
+
+    if (consultation.clientId) {
+      await tx.client.update({
+        where: { id: consultation.clientId },
+        data: { assignedLawyerId: body.assignedLawyerId }
+      });
     }
+
+    return assignedConsultation;
   });
 
   await appendAuditLogBestEffort({

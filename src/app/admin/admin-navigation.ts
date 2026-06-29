@@ -1,6 +1,7 @@
 import type { DashboardNavItem } from "@/components/layout";
 
 export const adminNavItems: DashboardNavItem[] = [
+  { label: "أوقات الاستشارات", href: "/admin/consultation-availability", icon: "event_available", group: "تشغيل المكتب" },
   { label: "الرئيسية", href: "/admin", icon: "dashboard", group: "تشغيل المكتب" },
   { label: "الاستشارات", href: "/admin/consultations", icon: "rate_review", group: "تشغيل المكتب" },
   { label: "العملاء", href: "/admin/clients", icon: "groups", group: "تشغيل المكتب" },

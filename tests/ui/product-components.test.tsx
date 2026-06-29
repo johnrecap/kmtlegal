@@ -236,6 +236,11 @@ describe("product UI primitives", () => {
     expect(publicChatSource).toContain("content.bookingChat");
     expect(publicChatSource).toContain('data-testid="booking-chat-shell"');
     expect(publicChatSource).toContain("KmtBrandLogo");
+    expect(publicChatSource).not.toContain("booking-chat-step-card");
+    expect(publicChatSource).not.toContain('name="fullName"');
+    expect(publicChatSource).not.toContain('name="phone"');
+    expect(publicChatSource).not.toContain('textarea[name="summary"]');
+    expect(publicChatSource).not.toContain('type="datetime-local"');
     expect(publicChatSource).not.toContain('name="balance"');
     expect(publicChatSource).not.toContain("const chatCopy");
     expect(publicContentEn).toContain("bookingChat");

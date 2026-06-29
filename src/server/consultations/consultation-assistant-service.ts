@@ -17,11 +17,17 @@ import {
 } from "@/server/portal/client-portal-service";
 import { enforceRateLimit, rateLimiters } from "@/server/rate-limit/memory-rate-limit";
 import { emailSchema, parseWithSchema } from "@/server/validation/schemas";
+import {
+  assertPublicConsultationSlotAvailable,
+  CONSULTATION_TIMEZONE,
+  listPublicConsultationSlots,
+  type ConsultationMode,
+  type PublicConsultationSlot
+} from "./consultation-availability-service";
 import { publicConsultationReference } from "./consultation-service";
 
 const DEFAULT_DURATION_MINUTES = 60;
-const OFFICE_TIMEZONE = "Africa/Cairo";
-const BOOKABLE_WEEKDAYS = new Set(["Sun", "Mon", "Tue", "Wed", "Thu"]);
+const OFFICE_TIMEZONE = CONSULTATION_TIMEZONE;
 
 const assistantActionSchema = z.enum([
   "answer_general",
@@ -31,10 +37,23 @@ const assistantActionSchema = z.enum([
   "handoff_to_human"
 ]);
 
+const publicAssistantDraftSchema = z.object({
+  fullName: z.string().trim().max(120).optional().or(z.literal("")),
+  phone: z.string().trim().max(40).optional().or(z.literal("")),
+  email: emailSchema.optional().or(z.literal("")),
+  city: z.string().trim().max(80).optional().or(z.literal("")),
+  serviceCategory: z.string().trim().max(80).optional().or(z.literal("")),
+  summary: z.string().trim().max(3000).optional().or(z.literal("")),
+  urgency: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).optional(),
+  preferredMode: z.enum(["PHONE", "ONLINE", "OFFICE"]).optional(),
+  startsAt: z.string().trim().max(80).optional().or(z.literal(""))
+});
+
 export const publicConsultationAssistantSchema = z.object({
   locale: z.enum(["ar", "en"]).default("ar"),
   message: z.string().trim().min(1).max(2000),
   intent: assistantActionSchema.optional(),
+  draft: publicAssistantDraftSchema.optional(),
   fullName: z.string().trim().min(2).max(120).optional().or(z.literal("")),
   phone: z.string().trim().min(6).max(40).optional().or(z.literal("")),
   email: emailSchema.optional().or(z.literal("")),
@@ -45,6 +64,8 @@ export const publicConsultationAssistantSchema = z.object({
   urgency: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).default("NORMAL"),
   preferredMode: z.enum(["PHONE", "ONLINE", "OFFICE"]).default("ONLINE"),
   startsAt: z.string().trim().max(80).optional().or(z.literal("")),
+  selectedSlot: z.string().trim().max(80).optional().or(z.literal("")),
+  confirmBooking: z.boolean().optional(),
   reference: z.string().trim().max(40).optional().or(z.literal("")),
   consent: z.boolean().optional()
 });
@@ -63,36 +84,86 @@ export async function handlePublicConsultationAssistant(input: { body: unknown; 
   const limitKey = getIpAddress(input.request) ?? canonicalPhone(body.phone || "") ?? "anonymous";
   enforceRateLimit(rateLimiters.ai, `public-consultation-assistant:${limitKey}`);
 
-  const publicAction = requestedPublicAction(body);
-  if (!publicAction) {
+  if (isLegalAdviceRequest(body.message)) {
     return scopedPublicAssistantReply(body.locale, isLegalAdviceRequest(body.message));
   }
 
-  const ai = await runAssistantAI({
-    locale: body.locale,
-    body,
-    actorId: null,
-    requestId: input.requestId
-  });
-
-  const action = publicAction;
-
-  if (action === "book_consultation_appointment") {
-    return bookConsultationAppointment({ body, ai, request: input.request, requestId: input.requestId });
-  }
-
-  if (action === "appointment_inquiry") {
+  if (body.intent === "appointment_inquiry" || body.reference) {
+    const ai = await runAssistantAI({
+      locale: body.locale,
+      body,
+      actorId: null,
+      requestId: input.requestId
+    });
     return publicAppointmentInquiry({ body, ai });
   }
 
-  return {
-    action,
-    message: ai.output.message,
-    missingFields: ai.output.missingFields,
-    reviewRequired: ai.reviewRequired,
-    disclaimer: AI_REVIEW_DISCLAIMER[body.locale],
-    ai: aiMetadata(ai)
-  };
+  return handlePublicBookingConversation({ body, request: input.request, requestId: input.requestId });
+}
+
+async function handlePublicBookingConversation(input: {
+  body: PublicConsultationAssistantInput;
+  request: Request;
+  requestId: string;
+}) {
+  const draft = mergeBookingDraft(input.body);
+  const selectedSlot = input.body.selectedSlot || draft.startsAt || input.body.startsAt || "";
+  const missingFields = requiredBookingFields({ ...input.body, ...draft, startsAt: selectedSlot });
+
+  if (input.body.confirmBooking || (input.body.intent === "book_consultation_appointment" && input.body.consent === true && selectedSlot)) {
+    const confirmMissing = requiredBookingFields({ ...input.body, ...draft, startsAt: selectedSlot });
+    if (confirmMissing.length) {
+      return bookingConversationResponse({
+        locale: input.body.locale,
+        draft,
+        missingFields: confirmMissing,
+        selectedSlot,
+        message: bookingQuestionMessage(input.body.locale, confirmMissing[0])
+      });
+    }
+
+    const bookingBody = {
+      ...input.body,
+      ...draft,
+      startsAt: selectedSlot,
+      consent: true
+    };
+    const ai = await runAssistantAI({
+      locale: input.body.locale,
+      body: bookingBody,
+      actorId: null,
+      requestId: input.requestId
+    });
+    return bookConsultationAppointment({ body: bookingBody, ai, request: input.request, requestId: input.requestId });
+  }
+
+  if (missingFields.length) {
+    const availableSlots = missingFields.includes("startsAt")
+      ? await listPublicConsultationSlots({ mode: draft.preferredMode })
+      : undefined;
+    return bookingConversationResponse({
+      locale: input.body.locale,
+      draft,
+      missingFields,
+      selectedSlot,
+      availableSlots,
+      message:
+        missingFields.includes("startsAt") && !availableSlots?.length
+          ? noSlotsMessage(input.body.locale)
+          : availableSlots?.length
+            ? slotSelectionMessage(input.body.locale)
+            : bookingQuestionMessage(input.body.locale, missingFields[0])
+    });
+  }
+
+  return bookingConversationResponse({
+    locale: input.body.locale,
+    draft,
+    selectedSlot,
+    missingFields: [],
+    readyToConfirm: true,
+    message: bookingConfirmMessage(input.body.locale, draft, selectedSlot)
+  });
 }
 
 export async function handleClientConsultationAssistant(input: { actor: Principal; body: unknown; requestId: string }) {
@@ -193,18 +264,268 @@ async function runAssistantAI(input: {
   });
 }
 
-function requestedPublicAction(body: PublicConsultationAssistantInput) {
-  if (body.intent === "book_consultation_appointment" || hasBookingFields(body)) {
-    return "book_consultation_appointment" as const;
-  }
-  if (body.intent === "appointment_inquiry" || body.reference) {
-    return "appointment_inquiry" as const;
-  }
-  return null;
+function mergeBookingDraft(body: PublicConsultationAssistantInput) {
+  const base = {
+    fullName: body.draft?.fullName || body.fullName || "",
+    phone: body.draft?.phone || body.phone || "",
+    email: body.draft?.email || body.email || "",
+    city: body.draft?.city || body.city || "",
+    serviceCategory: body.draft?.serviceCategory || body.serviceCategory || "",
+    summary: body.draft?.summary || body.summary || "",
+    urgency: body.draft?.urgency || body.urgency || "NORMAL",
+    preferredMode: body.draft?.preferredMode || body.preferredMode || "ONLINE",
+    startsAt: body.draft?.startsAt || body.startsAt || body.selectedSlot || ""
+  };
+  return normalizeBookingDraft({
+    ...base,
+    ...extractBookingDetails(body.message, base)
+  });
 }
 
-function hasBookingFields(body: PublicConsultationAssistantInput) {
-  return Boolean(body.fullName && body.phone && body.serviceCategory && body.summary && body.startsAt);
+function normalizeBookingDraft(draft: {
+  fullName?: string;
+  phone?: string;
+  email?: string;
+  city?: string;
+  serviceCategory?: string;
+  summary?: string;
+  urgency?: string;
+  preferredMode?: string;
+  startsAt?: string;
+}) {
+  return {
+    fullName: draft.fullName?.trim() ?? "",
+    phone: draft.phone?.trim() ?? "",
+    email: draft.email?.trim() ?? "",
+    city: draft.city?.trim() ?? "",
+    serviceCategory: draft.serviceCategory?.trim() ?? "",
+    summary: draft.summary?.trim() ?? "",
+    urgency: (["LOW", "NORMAL", "HIGH", "URGENT"].includes(draft.urgency ?? "") ? draft.urgency : "NORMAL") as PublicConsultationAssistantInput["urgency"],
+    preferredMode: (["PHONE", "ONLINE", "OFFICE"].includes(draft.preferredMode ?? "") ? draft.preferredMode : "ONLINE") as ConsultationMode,
+    startsAt: draft.startsAt?.trim() ?? ""
+  };
+}
+
+function extractBookingDetails(
+  message: string,
+  current: {
+    fullName?: string;
+    phone?: string;
+    email?: string;
+    city?: string;
+    serviceCategory?: string;
+    summary?: string;
+    preferredMode?: string;
+    urgency?: string;
+  }
+) {
+  const text = message.trim();
+  const normalized = normalizedAssistantText(text);
+  const next: Partial<ReturnType<typeof normalizeBookingDraft>> = {};
+  const email = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0];
+  const phone = text.match(/(?:\+|00)?\d[\d\s().-]{6,}\d/)?.[0];
+
+  if (email && !current.email) {
+    next.email = email.toLowerCase();
+  }
+  if (phone && !current.phone) {
+    next.phone = phone.replace(/[^\d+]/g, "");
+  }
+  if (!current.serviceCategory) {
+    const serviceCategory = serviceCategoryFromMessage(normalized);
+    if (serviceCategory) {
+      next.serviceCategory = serviceCategory;
+    }
+  }
+
+  const preferredMode = preferredModeFromMessage(normalized);
+  if (preferredMode) {
+    next.preferredMode = preferredMode;
+  }
+
+  const urgency = urgencyFromMessage(normalized);
+  if (urgency) {
+    next.urgency = urgency;
+  }
+
+  const name = nameFromMessage(text);
+  if (name && !current.fullName) {
+    next.fullName = name;
+  } else if (!current.fullName && likelyNameOnly(text)) {
+    next.fullName = text;
+  }
+
+  const summaryCandidate = text
+    .replace(email ?? "", "")
+    .replace(phone ?? "", "")
+    .trim();
+  if (!current.summary && summaryCandidate.length >= 20 && !likelyNameOnly(summaryCandidate)) {
+    next.summary = summaryCandidate;
+  }
+
+  if (!current.city) {
+    const city = cityFromMessage(text);
+    if (city) {
+      next.city = city;
+    }
+  }
+
+  return next;
+}
+
+function serviceCategoryFromMessage(text: string) {
+  if (containsAny(text, ["litigation", "dispute", "court", "case", "نزاع", "قضية", "محكمة", "تقاضي"])) {
+    return "disputes";
+  }
+  if (containsAny(text, ["real estate", "property", "عقار", "شقة", "أرض", "ارض"])) {
+    return "real-estate";
+  }
+  if (containsAny(text, ["employment", "employee", "work", "labor", "عمل", "موظف", "عامل"])) {
+    return "employment";
+  }
+  if (containsAny(text, ["contract", "company", "corporate", "shareholder", "شركة", "عقد", "شركات", "تأسيس"])) {
+    return "corporate";
+  }
+  return "";
+}
+
+function preferredModeFromMessage(text: string): ConsultationMode | "" {
+  if (containsAny(text, ["phone", "call", "هاتف", "تليفون", "مكالمة"])) {
+    return "PHONE";
+  }
+  if (containsAny(text, ["office", "visit", "مكتب", "زيارة"])) {
+    return "OFFICE";
+  }
+  if (containsAny(text, ["online", "zoom", "video", "أونلاين", "اونلاين", "فيديو"])) {
+    return "ONLINE";
+  }
+  return "";
+}
+
+function urgencyFromMessage(text: string) {
+  if (containsAny(text, ["urgent", "asap", "عاجل", "ضروري"])) {
+    return "URGENT";
+  }
+  if (containsAny(text, ["high", "important", "مهم"])) {
+    return "HIGH";
+  }
+  if (containsAny(text, ["low", "not urgent", "غير عاجل"])) {
+    return "LOW";
+  }
+  return "";
+}
+
+function nameFromMessage(text: string) {
+  const match = text.match(/(?:my name is|i am|انا اسمي|اسمي|الاسم)\s+([^,،\n]+)/i);
+  return match?.[1]?.trim().slice(0, 120) ?? "";
+}
+
+function cityFromMessage(text: string) {
+  const match = text.match(/(?:city|مدينة|من)\s+([^,،\n]+)/i);
+  return match?.[1]?.trim().slice(0, 80) ?? "";
+}
+
+function likelyNameOnly(text: string) {
+  const value = text.trim();
+  if (value.length < 2 || value.length > 80 || /[0-9@]/.test(value)) {
+    return false;
+  }
+  return value.split(/\s+/).length <= 5;
+}
+
+function bookingConversationResponse(input: {
+  locale: "ar" | "en";
+  draft: ReturnType<typeof mergeBookingDraft>;
+  message: string;
+  missingFields: string[];
+  selectedSlot?: string;
+  availableSlots?: PublicConsultationSlot[];
+  readyToConfirm?: boolean;
+}) {
+  return {
+    action: "collect_booking_fields" as const,
+    message: input.message,
+    draft: {
+      ...input.draft,
+      startsAt: input.selectedSlot || input.draft.startsAt || ""
+    },
+    missingFields: input.missingFields,
+    availableSlots: input.availableSlots,
+    readyToConfirm: input.readyToConfirm ?? false,
+    reviewRequired: true,
+    disclaimer: AI_REVIEW_DISCLAIMER[input.locale]
+  };
+}
+
+function bookingQuestionMessage(locale: "ar" | "en", field?: string) {
+  const messages = {
+    ar: {
+      fullName: "تمام. اكتب اسمك الكامل كما تحب أن يظهر في طلب الاستشارة.",
+      phone: "ما رقم الهاتف المناسب للتواصل معك؟",
+      serviceCategory: "ما مجال الاستشارة الأقرب لطلبك؟ يمكنك كتابة شركات، نزاعات، عقارات، أو عمل.",
+      summary: "اكتب ملخصًا قصيرًا لما تحتاجه من المكتب، بدون إرسال مستندات حساسة هنا.",
+      startsAt: "اختر موعدًا مناسبًا من المواعيد المتاحة داخل المحادثة.",
+      fallback: "أستطيع تنظيم حجز الاستشارة فقط. اكتب الاسم والهاتف ونوع الطلب وملخصًا قصيرًا."
+    },
+    en: {
+      fullName: "Great. Please write your full name for the consultation request.",
+      phone: "What phone number should the team use to contact you?",
+      serviceCategory: "Which consultation area is closest to your request? You can write corporate, disputes, real estate, or employment.",
+      summary: "Please write a short summary of what you need from the office. Do not send sensitive documents here.",
+      startsAt: "Choose a suitable time from the available slots inside the chat.",
+      fallback: "I can organize consultation booking only. Send your name, phone, request area, and a short summary."
+    }
+  };
+
+  return messages[locale][(field as keyof (typeof messages)["en"]) || "fallback"] ?? messages[locale].fallback;
+}
+
+function slotSelectionMessage(locale: "ar" | "en") {
+  return locale === "ar"
+    ? "هذه أقرب المواعيد المتاحة. اختر موعدًا مناسبًا، ثم سأعرض لك ملخص الحجز للتأكيد."
+    : "These are the nearest available slots. Choose a suitable time, then I will show the booking summary for confirmation.";
+}
+
+function noSlotsMessage(locale: "ar" | "en") {
+  return locale === "ar"
+    ? "لا توجد مواعيد متاحة ظاهرة حاليًا. يمكن لفريق المكتب مراجعة ساعات الاستشارات وإتاحة مواعيد جديدة."
+    : "No consultation slots are currently visible. The office team can review availability and open new times.";
+}
+
+function bookingConfirmMessage(locale: "ar" | "en", draft: ReturnType<typeof mergeBookingDraft>, selectedSlot: string) {
+  const when = formatAssistantDate(selectedSlot, locale);
+  if (locale === "ar") {
+    return `سأحجز الاستشارة بهذه البيانات: ${draft.fullName}، ${draft.phone}، ${serviceCategoryLabel(draft.serviceCategory, locale)}، ${modeLabel(draft.preferredMode, locale)}، ${when}. اضغط تأكيد الحجز لإرسال الطلب للسكرتيرة.`;
+  }
+  return `I will book the consultation with these details: ${draft.fullName}, ${draft.phone}, ${serviceCategoryLabel(draft.serviceCategory, locale)}, ${modeLabel(draft.preferredMode, locale)}, ${when}. Confirm the booking to send it to the team.`;
+}
+
+function formatAssistantDate(value: string, locale: "ar" | "en") {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: OFFICE_TIMEZONE
+  }).format(date);
+}
+
+function serviceCategoryLabel(value: string, locale: "ar" | "en") {
+  const labels = {
+    ar: { corporate: "شركات وعقود", disputes: "نزاعات وتقاضي", "real-estate": "عقارات", employment: "عمل وامتثال" },
+    en: { corporate: "corporate and contracts", disputes: "litigation and disputes", "real-estate": "real estate", employment: "employment" }
+  };
+  return labels[locale][value as keyof (typeof labels)["en"]] ?? value;
+}
+
+function modeLabel(value: string, locale: "ar" | "en") {
+  const labels = {
+    ar: { PHONE: "هاتف", ONLINE: "أونلاين", OFFICE: "في المكتب" },
+    en: { PHONE: "phone", ONLINE: "online", OFFICE: "office" }
+  };
+  return labels[locale][value as keyof (typeof labels)["en"]] ?? value;
 }
 
 function scopedPublicAssistantReply(locale: "ar" | "en", isLegalQuestion: boolean) {
@@ -358,8 +679,11 @@ async function bookConsultationAppointment(input: {
   }
 
   const startsAt = parseBookingDate(input.body.startsAt!);
-  const endsAt = new Date(startsAt.getTime() + DEFAULT_DURATION_MINUTES * 60 * 1000);
-  assertBookableOfficeSlot(startsAt, endsAt);
+  const slot = await assertPublicConsultationSlotAvailable({
+    startsAt,
+    mode: input.body.preferredMode
+  });
+  const endsAt = new Date(slot.endsAt);
   await assertNoBookingDuplicate(input.body);
   await assertNoSlotConflict(startsAt, endsAt);
 
@@ -514,20 +838,6 @@ function parseBookingDate(value: string) {
     throw new ApiError(400, "VALIDATION_ERROR", "Appointment date must be in the future.");
   }
   return parsed;
-}
-
-function assertBookableOfficeSlot(startsAt: Date, endsAt: Date) {
-  const start = cairoDateParts(startsAt);
-  const end = cairoDateParts(endsAt);
-  if (
-    !BOOKABLE_WEEKDAYS.has(start.weekday) ||
-    start.hour < 10 ||
-    start.hour >= 17 ||
-    end.hour > 17 ||
-    (end.hour === 17 && end.minute > 0)
-  ) {
-    throw new ApiError(409, "CONFLICT", "Consultation appointments are available Sunday-Thursday, 10:00-17:00 Africa/Cairo.");
-  }
 }
 
 async function assertNoSlotConflict(startsAt: Date, endsAt: Date) {
@@ -721,22 +1031,6 @@ function paymentDto(payment: {
     dueDate: payment.dueDate?.toISOString() ?? null,
     paidAt: payment.paidAt?.toISOString() ?? null,
     case: payment.case ?? null
-  };
-}
-
-function cairoDateParts(date: Date) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: OFFICE_TIMEZONE,
-    weekday: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23"
-  }).formatToParts(date);
-  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
-  return {
-    weekday: value("weekday"),
-    hour: Number(value("hour")),
-    minute: Number(value("minute"))
   };
 }
 
