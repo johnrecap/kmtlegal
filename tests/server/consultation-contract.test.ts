@@ -3,6 +3,7 @@ import { consultationAssistantOutputSchema } from "@/server/ai/schemas";
 import { adminConsultationListQuerySchema } from "@/server/admin/consultation-review-service";
 import {
   clientOrganizerIntentFromMessage,
+  inferPublicConsultationServiceCategory,
   isCrossClientDataRequest,
   isLegalAdviceRequest,
   publicConsultationAssistantSchema
@@ -119,6 +120,11 @@ describe("public consultation contract", () => {
         reviewNote: "review"
       })
     ).toThrow();
+  });
+
+  it("infers dispute consultations from Arabic trust receipt language", () => {
+    expect(inferPublicConsultationServiceCategory("وصل أمانة موقع عليا وعايز استشارة عاجلة")).toBe("disputes");
+    expect(inferPublicConsultationServiceCategory("I signed a promissory note and need urgent consultation")).toBe("disputes");
   });
 
   it("canonicalizes phone numbers for duplicate and rate-limit checks", () => {

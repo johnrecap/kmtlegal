@@ -192,7 +192,7 @@ async function handlePublicBookingConversation(input: {
       draft,
       missingFields,
       selectedSlot,
-      message: bookingQuestionMessage(input.body.locale, missingFields[0])
+      message: bookingFollowUpMessage(input.body.locale, missingFields[0], input.body.message)
     });
   }
 
@@ -423,8 +423,45 @@ function extractBookingDetails(
   return next;
 }
 
+export function inferPublicConsultationServiceCategory(message: string) {
+  return serviceCategoryFromMessage(normalizedAssistantText(message));
+}
+
 function serviceCategoryFromMessage(text: string) {
-  if (containsAny(text, ["litigation", "dispute", "court", "case", "نزاع", "قضية", "محكمة", "تقاضي"])) {
+  if (
+    containsAny(text, [
+      "litigation",
+      "dispute",
+      "court",
+      "case",
+      "claim",
+      "promissory note",
+      "trust receipt",
+      "receipt of trust",
+      "cheque",
+      "check",
+      "debt",
+      "criminal complaint",
+      "نزاع",
+      "قضية",
+      "محكمة",
+      "تقاضي",
+      "ايصال امانه",
+      "إيصال أمانة",
+      "وصل امانه",
+      "وصل أمانة",
+      "امانه",
+      "أمانة",
+      "شيك",
+      "دين",
+      "مديونية",
+      "مطالبة",
+      "محضر",
+      "بلاغ",
+      "جنحة",
+      "تبديد"
+    ])
+  ) {
     return "disputes";
   }
   if (containsAny(text, ["real estate", "property", "عقار", "شقة", "أرض", "ارض"])) {
@@ -724,6 +761,33 @@ function bookingQuestionMessage(locale: "ar" | "en", field?: string) {
   };
 
   return messages[locale][(field as keyof (typeof messages)["en"]) || "fallback"] ?? messages[locale].fallback;
+}
+
+function bookingFollowUpMessage(locale: "ar" | "en", field: string | undefined, latestMessage: string) {
+  if (shouldClarifyBookingField(field, latestMessage)) {
+    return unclearBookingFieldMessage(locale, field);
+  }
+  return bookingQuestionMessage(locale, field);
+}
+
+function shouldClarifyBookingField(field: string | undefined, latestMessage: string) {
+  const text = normalizedAssistantText(latestMessage);
+  if (!field || text.length < 2) {
+    return false;
+  }
+  if (containsAny(text, ["book consultation", "check reference", "حجز استشارة", "استعلام", "مرجع"])) {
+    return false;
+  }
+  return field === "serviceCategory";
+}
+
+function unclearBookingFieldMessage(locale: "ar" | "en", field: string | undefined) {
+  if (field === "serviceCategory") {
+    return locale === "ar"
+      ? "الإجابة مش واضحة بالنسبة لمجال الاستشارة. اكتب المجال الأقرب: نزاعات، شركات، عقارات، أو عمل. لو الموضوع إيصال أمانة أو شيك أو محضر، اختار نزاعات."
+      : "I could not identify the request area from that answer. Write the closest area: disputes, corporate, real estate, or employment. For trust receipts, checks, claims, or complaints, choose disputes.";
+  }
+  return locale === "ar" ? "الإجابة مش واضحة. من فضلك أعد كتابة المطلوب بشكل أبسط." : "That answer is not clear. Please write it again more simply.";
 }
 
 function availabilityQuestionMessage(locale: "ar" | "en") {
