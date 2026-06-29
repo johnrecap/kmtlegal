@@ -163,6 +163,30 @@ describe("public consultation contract", () => {
     const confirmResult = confirm as unknown as { missingFields: string[]; draft: { fullName: string } };
     expect(confirmResult.missingFields).toContain("fullName");
     expect(confirmResult.draft.fullName).toBe("");
+
+    const polluted = await handlePublicConsultationAssistant({
+      body: {
+        locale: "en",
+        message: "Book appointment",
+        confirmBooking: true,
+        selectedSlot: "2026-07-05T10:00:00.000Z",
+        draft: {
+          fullName: "01063887871",
+          phone: "tomorrow",
+          serviceCategory: "disputes",
+          summary: "Signed trust receipt dispute requiring urgent office review.",
+          preferredMode: "ONLINE",
+          startsAt: "2026-07-05T10:00:00.000Z"
+        }
+      },
+      request,
+      requestId: "test-booking-polluted"
+    });
+
+    const pollutedResult = polluted as unknown as { missingFields: string[]; draft: { fullName: string; phone: string } };
+    expect(pollutedResult.missingFields).toEqual(expect.arrayContaining(["fullName", "phone"]));
+    expect(pollutedResult.draft.fullName).toBe("");
+    expect(pollutedResult.draft.phone).toBe("");
   });
 
   it("canonicalizes phone numbers for duplicate and rate-limit checks", () => {

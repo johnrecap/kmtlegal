@@ -337,9 +337,10 @@ function normalizeBookingDraft(draft: {
 }) {
   const availabilityPreference = normalizeAvailabilityPreference(draft.availabilityPreference);
   const fullName = draft.fullName?.trim() ?? "";
+  const phone = draft.phone?.trim() ?? "";
   return {
     fullName: isInvalidBookingFullName(fullName) ? "" : fullName,
-    phone: draft.phone?.trim() ?? "",
+    phone: isValidBookingPhone(phone) ? phone : "",
     email: draft.email?.trim() ?? "",
     city: draft.city?.trim() ?? "",
     serviceCategory: draft.serviceCategory?.trim() ?? "",
@@ -402,7 +403,7 @@ function extractBookingDetails(
   const name = nameFromMessage(text);
   if (name && !current.fullName) {
     next.fullName = name;
-  } else if (!current.fullName && likelyNameOnly(text) && !isInvalidBookingFullName(text)) {
+  } else if (!current.fullName && likelyNameOnly(text) && !isInvalidBookingFullName(text) && !isAvailabilityOnlyMessage(text)) {
     next.fullName = text;
   }
 
@@ -526,6 +527,9 @@ function isInvalidBookingFullName(value: string) {
   if (!normalized) {
     return false;
   }
+  if (isValidBookingPhone(value)) {
+    return true;
+  }
   if (
     containsAny(normalized, [
       "book consultation",
@@ -543,6 +547,21 @@ function isInvalidBookingFullName(value: string) {
     return true;
   }
   return Boolean(serviceCategoryFromMessage(normalized));
+}
+
+function isValidBookingPhone(value: string | null | undefined) {
+  const phone = canonicalPhone(value);
+  return Boolean(phone && phone.length >= 6);
+}
+
+function isAvailabilityOnlyMessage(value: string) {
+  const text = value.trim();
+  if (!text || text.length > 80 || /[@]/.test(text)) {
+    return false;
+  }
+  const withoutDigits = toAsciiDigits(text).replace(/\d/g, "").trim();
+  const hasPreference = hasAvailabilityPreference(availabilityPreferenceFromMessage(text));
+  return hasPreference && withoutDigits.split(/\s+/).filter(Boolean).length <= 5;
 }
 
 function normalizeAvailabilityPreference(value?: Partial<AvailabilityPreference>): AvailabilityPreference {
@@ -1195,7 +1214,7 @@ async function findConsultationByReference(suffix: string) {
 function requiredBookingFields(body: PublicConsultationAssistantInput) {
   const missing: string[] = [];
   if (!body.fullName || isInvalidBookingFullName(body.fullName)) missing.push("fullName");
-  if (!body.phone) missing.push("phone");
+  if (!body.phone || !isValidBookingPhone(body.phone)) missing.push("phone");
   if (!body.serviceCategory) missing.push("serviceCategory");
   if (!body.summary || body.summary.trim().length < 20) missing.push("summary");
   if (!body.startsAt) missing.push("startsAt");
