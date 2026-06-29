@@ -172,6 +172,7 @@ describe("product UI primitives", () => {
     expect(html).toContain("الملفات");
     expect(html).toContain("aria-current=\"page\"");
     expect(html).toContain("bg-kmt-gold/15");
+    expect(html).toContain("/brand/kmt-logo-mark.webp");
     expect(html).toContain("action=\"/api/auth/logout\"");
     expect(html).toContain("تسجيل الخروج");
   });
@@ -202,6 +203,7 @@ describe("product UI primitives", () => {
     expect(html).toContain("data-testid=\"client-portal-shell\"");
     expect(html).toContain("dir=\"rtl\"");
     expect(html).toContain("bg-[#070604]/95");
+    expect(html).toContain("/brand/kmt-logo-mark.webp");
     expect(html).toContain("بوابة العميل");
     expect(html).toContain("href=\"/client/files\"");
     expect(html).toContain("client-portal-panel");
@@ -223,6 +225,8 @@ describe("product UI primitives", () => {
     const publicPageSource = readFileSync(join(process.cwd(), "src/features/public-site/public-pages.tsx"), "utf8");
     const publicChatSource = readFileSync(join(process.cwd(), "src/features/public-site/consultation-booking-chat.tsx"), "utf8");
     const clientChatSource = readFileSync(join(process.cwd(), "src/features/client/client-assistant-panel.tsx"), "utf8");
+    const teamChatSource = readFileSync(join(process.cwd(), "src/features/client/client-team-chat-panel.tsx"), "utf8");
+    const brandLogoSource = readFileSync(join(process.cwd(), "src/components/brand/kmt-brand-logo.tsx"), "utf8");
     const publicContentEn = readFileSync(join(process.cwd(), "src/content/public-content.en.ts"), "utf8");
     const publicContentAr = readFileSync(join(process.cwd(), "src/content/public-content.ar.ts"), "utf8");
 
@@ -231,15 +235,21 @@ describe("product UI primitives", () => {
     expect(publicPageSource).not.toContain("<ConsultationAssistantPanel");
     expect(publicChatSource).toContain("content.bookingChat");
     expect(publicChatSource).toContain('data-testid="booking-chat-shell"');
+    expect(publicChatSource).toContain("KmtBrandLogo");
+    expect(publicChatSource).not.toContain('name="balance"');
     expect(publicChatSource).not.toContain("const chatCopy");
     expect(publicContentEn).toContain("bookingChat");
     expect(publicContentEn).toContain("I cannot provide a legal opinion");
     expect(publicContentAr).toContain("bookingChat");
     expect(publicContentAr).toContain("لا أستطيع تقديم رأي قانوني");
     expect(clientChatSource).toContain("KMT Client Assistant");
+    expect(clientChatSource).toContain("KmtBrandLogo");
+    expect(teamChatSource).toContain("KmtBrandLogo");
+    expect(brandLogoSource).toContain("/brand/kmt-logo-mark.webp");
+    expect(brandLogoSource).toContain("/brand/kmt-logo-full.webp");
     expect(clientChatSource).toContain("لا أقدم رأيًا قانونيًا");
-    expect(`${publicChatSource}\n${clientChatSource}`).not.toContain("localStorage");
-    expect(`${publicChatSource}\n${clientChatSource}`).not.toContain("sessionStorage");
+    expect(`${publicChatSource}\n${clientChatSource}\n${teamChatSource}`).not.toContain("localStorage");
+    expect(`${publicChatSource}\n${clientChatSource}\n${teamChatSource}`).not.toContain("sessionStorage");
   });
 
   it("renders Tabs as a pressed button group, not incomplete ARIA tabs", () => {

@@ -283,7 +283,7 @@ test.describe("MVP smoke without database", () => {
     const response = await request.get("/favicon.ico");
 
     expect(response.status()).toBeLessThan(400);
-    expect(response.headers()["content-type"]).toContain("image/svg+xml");
+    expect(response.headers()["content-type"]).toContain("image/png");
   });
 
   test("homepage rendered article and case-study detail links resolve", async ({ page, request }) => {

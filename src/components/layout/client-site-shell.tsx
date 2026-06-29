@@ -1,24 +1,19 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { KmtBrandLogo } from "@/components/brand";
 import { MaterialSymbol } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import type { DashboardNavItem } from "./dashboard-shell";
 
 function ClientPortalBrand() {
   return (
-    <Link
-      className="group inline-flex min-w-0 items-center gap-3 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kmt-gold"
+    <KmtBrandLogo
       href="/client"
-    >
-      <span className="grid h-10 w-10 shrink-0 place-items-center border border-kmt-gold/70 bg-kmt-gold/10 text-kmt-gold sm:h-11 sm:w-11">
-        <MaterialSymbol className="text-2xl" name="balance" />
-      </span>
-      <span className="min-w-0">
-        <span className="block font-label-sm text-[11px] font-semibold uppercase leading-none tracking-[0.22em] text-kmt-gold">KMT</span>
-        <span className="block text-lg font-semibold leading-tight text-[#f8f3ea] sm:text-xl">Legal</span>
-        <span className="block truncate text-xs font-medium leading-5 text-stone-400">بوابة العميل</span>
-      </span>
-    </Link>
+      size="md"
+      sublabel="بوابة العميل"
+      surface="dark"
+      variant="lockup"
+    />
   );
 }
 

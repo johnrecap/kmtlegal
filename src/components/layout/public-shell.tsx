@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { KmtBrandLogo } from "@/components/brand";
 import { MaterialSymbol } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
 import { publicMotionButton, publicMotionCta, publicMotionIcon, publicMotionIconHalo, publicMotionNavLink, publicMotionTextLink } from "@/features/public-site/public-motion";
@@ -54,18 +55,12 @@ function ClientLoginLink({ className, label }: { className?: string; label: stri
 
 function PublicBrand({ condensed = false, locale }: { condensed?: boolean; locale: PublicLocale }) {
   return (
-    <Link
-      className="group inline-flex min-w-0 items-center gap-3 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kmt-gold"
+    <KmtBrandLogo
       href={localizedPublicHref("/", locale)}
-    >
-      <span className={cn("grid place-items-center border border-kmt-gold/70 bg-kmt-gold/10 text-kmt-gold", condensed ? "h-10 w-10" : "h-11 w-11")}>
-        <MaterialSymbol className={cn(condensed ? "text-xl" : "text-2xl", publicMotionIcon, publicMotionIconHalo)} name="balance" />
-      </span>
-      <span className="min-w-0">
-        <span className="block font-label-sm text-[11px] font-semibold uppercase leading-none tracking-[0.22em] text-kmt-gold">KMT</span>
-        <span className={cn("block font-semibold leading-tight text-[#f8f3ea]", condensed ? "text-base" : "text-xl")}>Legal</span>
-      </span>
-    </Link>
+      size={condensed ? "sm" : "md"}
+      surface="dark"
+      variant="lockup"
+    />
   );
 }
 
@@ -158,7 +153,12 @@ export function PublicShell({
 
         <div className="mx-auto grid max-w-[1200px] gap-8 px-4 py-12 text-sm sm:px-6 md:grid-cols-2 lg:grid-cols-[1.1fr_0.8fr_0.8fr_0.9fr] lg:px-10">
           <div className="max-w-sm">
-            <PublicBrand condensed locale={locale} />
+            <KmtBrandLogo
+              className="max-w-[13rem]"
+              href={localizedPublicHref("/", locale)}
+              size="sm"
+              variant="full"
+            />
             <p className="mt-5 leading-7 text-stone-300">{content.footerContent.brandSummary}</p>
             <div className="mt-5 flex flex-wrap gap-2 text-xs text-stone-400">
               <span className="border border-kmt-gold/30 px-3 py-2">{shell.confidentiality}</span>

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { KmtBrandLogo } from "@/components/brand";
 import { ClientPortalPanel, clientPortalPrimaryActionClass, clientPortalSecondaryActionClass } from "@/components/layout";
 import { Badge, Button, MaterialSymbol, Textarea } from "@/components/ui";
 import { cn } from "@/lib/cn";
@@ -178,9 +179,7 @@ export function ClientTeamChatPanel({ onBack }: { onBack: () => void }) {
       <div className="overflow-hidden rounded-[1.35rem] border border-kmt-gold/35 bg-[radial-gradient(circle_at_top_left,rgba(183,134,64,0.14),transparent_34%),linear-gradient(145deg,#17110a_0%,#090b0d_52%,#050505_100%)] shadow-[0_30px_100px_-58px_rgba(183,134,64,0.5)]">
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 bg-black/25 px-5 py-5">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-kmt-gold/45 bg-kmt-gold/15 text-kmt-gold">
-              <MaterialSymbol className="text-2xl" name="forum" />
-            </span>
+            <KmtBrandLogo label={teamCopy.assistantName} shape="circle" size="md" variant="mark" />
             <div className="min-w-0">
               <p className="truncate text-base font-semibold text-white">{teamCopy.assistantName}</p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-kmt-gold">{teamCopy.status}</p>
@@ -251,11 +250,7 @@ function TeamBubble({ item }: { item: TeamMessage }) {
   const isClient = item.senderType === "CLIENT";
   return (
     <div className={cn("flex items-end gap-3", isClient ? "justify-end" : "justify-start")}>
-      {!isClient ? (
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-kmt-gold">
-          <MaterialSymbol className="text-lg" name="support_agent" />
-        </span>
-      ) : null}
+      {!isClient ? <KmtBrandLogo label="" shape="circle" size="sm" variant="mark" /> : null}
       <div
         className={cn(
           "max-w-[86%] break-words rounded-2xl px-4 py-3 text-sm leading-7 shadow-[0_16px_42px_-34px_rgba(0,0,0,0.95)]",

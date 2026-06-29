@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import { KmtBrandLogo } from "@/components/brand";
 import { ClientPortalPanel, ClientPortalRow, clientPortalPrimaryActionClass, clientPortalSecondaryActionClass } from "@/components/layout";
 import { Badge, Button, MaterialSymbol, Textarea } from "@/components/ui";
 import {
@@ -211,9 +212,7 @@ export function ClientAssistantPanel() {
       >
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 bg-black/25 px-4 py-4">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-kmt-gold/35 bg-kmt-gold/15 text-kmt-gold">
-              <MaterialSymbol className="text-2xl" name="support_agent" />
-            </span>
+            <KmtBrandLogo label={assistantCopy.assistantName} shape="circle" size="md" variant="mark" />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-white">{assistantCopy.assistantName}</p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-kmt-gold">{assistantCopy.status}</p>
@@ -294,9 +293,13 @@ function ClientChatBubble({ item }: { item: ChatMessage }) {
   return (
     <div className={cn("flex items-end gap-2", isUser ? "justify-end" : "justify-start")}>
       {!isUser ? (
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-kmt-gold">
-          <MaterialSymbol className="text-lg" name={item.tone === "error" ? "error" : "support_agent"} />
-        </span>
+        item.tone === "error" ? (
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-kmt-gold">
+            <MaterialSymbol className="text-lg" name="error" />
+          </span>
+        ) : (
+          <KmtBrandLogo label="" shape="circle" size="sm" variant="mark" />
+        )
       ) : null}
       <div
         className={cn(
@@ -317,9 +320,7 @@ function ClientChatBubble({ item }: { item: ChatMessage }) {
 function TypingIndicator({ label }: { label: string }) {
   return (
     <div className="flex items-end gap-2 text-slate-300">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-kmt-gold">
-        <MaterialSymbol className="text-lg" name="support_agent" />
-      </span>
+      <KmtBrandLogo label="" shape="circle" size="sm" variant="mark" />
       <div className="flex items-center gap-2 rounded-2xl rounded-es-sm border border-white/10 bg-white/[0.05] px-4 py-3 text-xs">
         <span>{label}</span>
         <span className="flex gap-1" aria-hidden="true">

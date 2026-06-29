@@ -60,6 +60,12 @@ Total plans: 32
 - Set OpenRouter's default server-side model to `google/gemini-2.5-flash`, kept mock as the no-key development fallback, and documented the OpenRouter defaults in the API contract.
 - Verification passed: `cmd /c npm run db:validate`, `cmd /c npm run db:generate`, `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, and `cmd /c npm run test:e2e:smoke`.
 
+## Latest Brand Identity Follow-Up
+
+- Added the provided KMT Legal logo as the official product identity source under `public/brand/`, with optimized full, mark, and favicon/app-icon assets.
+- Added a reusable `KmtBrandLogo` component and wired it into the public shell, client portal shell, admin dashboard shell, login page, public booking chat, client assistant chat, team chat, and favicon metadata while leaving `stitch-clone` untouched.
+- The logo mark replaces previous brand-avatar Material Symbol placeholders; functional action icons such as send, search, case, and calendar icons remain unchanged.
+
 ## Remaining Count
 
 - Fully not started: 0 plans.

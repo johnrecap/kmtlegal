@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
+import { KmtBrandLogo } from "@/components/brand";
 import { LoginForm } from "@/features/auth/login-form";
 
 export const metadata: Metadata = {
@@ -13,9 +13,7 @@ export default function LoginPage() {
     <main className="min-h-screen bg-kmt-canvas">
       <div className="mx-auto grid min-h-screen max-w-6xl items-center gap-10 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_460px] lg:px-10">
         <section className="max-w-xl">
-          <Link className="text-xl font-semibold text-kmt-ink" href="/">
-            KMT Legal
-          </Link>
+          <KmtBrandLogo className="max-w-[13rem]" href="/" size="sm" variant="full" />
           <h1 className="mt-8 text-4xl font-semibold leading-tight text-kmt-ink">وصول آمن للعميل وفريق المكتب.</h1>
           <p className="mt-4 text-base leading-8 text-kmt-muted">
             جلسات العمل تعتمد على كوكي آمن، وحسابات فريق المكتب محمية بصلاحيات واضحة ومراجعة داخلية لإجراءات الدخول.

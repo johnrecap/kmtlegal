@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { KmtBrandLogo } from "@/components/brand";
 import { Button, MaterialSymbol, Select, Textarea, TextInput } from "@/components/ui";
 import { getPublicContent, type PublicContent } from "@/content/public-content";
 import { trackClientAnalyticsEvent } from "@/lib/analytics-client";
@@ -328,9 +329,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         <header className="px-5 pb-4 pt-5 sm:px-8 sm:pt-8">
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div className="flex min-w-0 items-center gap-4">
-              <span className="flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-full border border-kmt-gold/65 bg-[radial-gradient(circle_at_35%_25%,rgba(255,255,255,0.18),transparent_32%),linear-gradient(145deg,rgba(183,134,64,0.24),rgba(0,0,0,0.48))] text-kmt-gold shadow-[0_0_42px_rgba(183,134,64,0.24)] max-sm:h-14 max-sm:w-14">
-                <MaterialSymbol className="text-[2.25rem] max-sm:text-3xl" name="balance" />
-              </span>
+              <KmtBrandLogo label={copy.assistantName} shape="circle" size="lg" variant="mark" />
               <div className="min-w-0">
                 <p className="truncate font-serif text-[1.9rem] font-semibold leading-tight text-white max-sm:text-xl">{copy.assistantName}</p>
                 <p className="mt-2 flex items-center gap-2 text-sm font-medium text-[#7ad36a]">
@@ -581,9 +580,13 @@ function ChatBubble({ message }: { message: ChatMessage }) {
   return (
     <div className={cn("flex items-end gap-4", isUser ? "justify-end" : "justify-start")}>
       {!isUser ? (
-        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-kmt-gold/40 bg-[linear-gradient(145deg,rgba(183,134,64,0.18),rgba(0,0,0,0.35))] text-kmt-gold shadow-[0_14px_35px_-28px_rgba(183,134,64,1)] max-sm:h-9 max-sm:w-9">
-          <MaterialSymbol className="text-2xl max-sm:text-lg" name={message.tone === "error" ? "error" : message.tone === "success" ? "check_circle" : "balance"} />
-        </span>
+        message.tone === "error" || message.tone === "success" ? (
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-kmt-gold/40 bg-[linear-gradient(145deg,rgba(183,134,64,0.18),rgba(0,0,0,0.35))] text-kmt-gold shadow-[0_14px_35px_-28px_rgba(183,134,64,1)] max-sm:h-9 max-sm:w-9">
+            <MaterialSymbol className="text-2xl max-sm:text-lg" name={message.tone === "error" ? "error" : "check_circle"} />
+          </span>
+        ) : (
+          <KmtBrandLogo className="max-sm:[&_span]:h-9 max-sm:[&_span]:w-9" label="" shape="circle" size="md" variant="mark" />
+        )
       ) : null}
       <p
         className={cn(
@@ -628,9 +631,7 @@ function StepCard({ children, icon, prompt, title }: { children: ReactNode; icon
 function TypingIndicator({ label }: { label: string }) {
   return (
     <div className="flex items-end gap-2 text-slate-300">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-kmt-gold">
-        <MaterialSymbol className="text-lg" name="balance" />
-      </span>
+      <KmtBrandLogo label="" shape="circle" size="sm" variant="mark" />
       <div className="flex items-center gap-2 rounded-2xl rounded-es-sm border border-white/10 bg-white/[0.05] px-4 py-3 text-xs">
         <span>{label}</span>
         <span className="flex gap-1" aria-hidden="true">

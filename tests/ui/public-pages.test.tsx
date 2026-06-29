@@ -31,7 +31,10 @@ describe("public website UI", () => {
     expect(html).toContain("bg-[#070604]/95");
     expect(html).toContain("event_available");
     expect(html).toContain("account_circle");
+    expect(html).toContain("/brand/kmt-logo-mark.webp");
+    expect(html).toContain("/brand/kmt-logo-full.webp");
     expect(html).toContain("bg-kmt-gold/15");
+    expect(html).not.toContain(">balance</span>");
     expect(html).not.toContain("secondary-container");
   });
 

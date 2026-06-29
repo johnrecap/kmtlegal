@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { KmtBrandLogo } from "@/components/brand";
 import { Badge, MaterialSymbol, buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
 
@@ -40,14 +41,13 @@ export function DashboardShell({
     return groups;
   }, []);
 
+  const modeLabel = mode === "admin" ? "إدارة المكتب" : "بوابة العميل";
+
   return (
     <div className={cn("min-h-screen overflow-x-hidden bg-kmt-canvas text-kmt-ink lg:flex", className)}>
       <aside className="min-w-0 border-b border-kmt-border bg-white lg:min-h-screen lg:w-72 lg:shrink-0 lg:border-b-0 lg:border-l">
         <div className="flex min-h-16 items-center justify-between border-b border-kmt-border px-5">
-          <div className="min-w-0">
-            <p className="text-lg font-semibold">KMT Legal</p>
-            <p className="text-xs font-medium text-kmt-muted">{mode === "admin" ? "إدارة المكتب" : "بوابة العميل"}</p>
-          </div>
+          <KmtBrandLogo size="sm" sublabel={modeLabel} surface="light" variant="lockup" />
           <Badge tone={mode === "admin" ? "pending" : "active"}>{mode === "admin" ? "إدارة" : "عميل"}</Badge>
         </div>
         <nav
