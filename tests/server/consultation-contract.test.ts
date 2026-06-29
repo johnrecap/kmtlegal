@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { consultationAssistantOutputSchema } from "@/server/ai/schemas";
+import { adminConsultationListQuerySchema } from "@/server/admin/consultation-review-service";
 import {
   clientOrganizerIntentFromMessage,
   isCrossClientDataRequest,
@@ -76,12 +77,17 @@ describe("public consultation contract", () => {
       message: "My name is Sara, phone +201000000002, I need contract review",
       draft: {
         serviceCategory: "corporate",
-        preferredMode: "ONLINE"
+        preferredMode: "ONLINE",
+        availabilityPreference: {
+          date: "2026-07-06",
+          fromTime: "15:00"
+        }
       },
       selectedSlot: "2026-07-05T10:00:00+03:00",
       confirmBooking: false
     });
     expect(conversational.draft?.serviceCategory).toBe("corporate");
+    expect(conversational.draft?.availabilityPreference?.date).toBe("2026-07-06");
     expect(conversational.selectedSlot).toContain("2026-07-05");
 
     const inquiry = publicConsultationAssistantSchema.parse({
@@ -162,8 +168,40 @@ describe("public consultation contract", () => {
     expect(slots.map((slot) => slot.startsAt)).toEqual(["2026-07-05T08:00:00.000Z"]);
   });
 
+  it("filters public consultation slots by requested day and time window", () => {
+    const availability = consultationAvailabilitySchema.parse({
+      ...defaultConsultationAvailability,
+      minLeadHours: 0,
+      bookingWindowDays: 3,
+      slotDurationMinutes: 60,
+      days: defaultConsultationAvailability.days.map((day) => ({
+        ...day,
+        enabled: day.weekday === 1,
+        start: "10:00",
+        end: "17:00",
+        modes: ["ONLINE"]
+      }))
+    });
+
+    const slots = generateConsultationSlots({
+      availability,
+      mode: "ONLINE",
+      now: new Date("2026-07-05T05:00:00.000Z"),
+      date: "2026-07-06",
+      fromTime: "15:00",
+      appointments: []
+    });
+
+    expect(slots.map((slot) => slot.startsAt)).toEqual(["2026-07-06T12:00:00.000Z", "2026-07-06T13:00:00.000Z"]);
+  });
+
   it("allows secretaries with appointment management permission to manage consultation availability", () => {
     expect(canManageConsultationAvailability({ id: "staff-1", roleName: "Secretary", permissions: ["appointment.manage.any"] })).toBe(true);
     expect(canManageConsultationAvailability({ id: "client-1", roleName: "Client", permissions: [] })).toBe(false);
+  });
+
+  it("supports the unassigned consultation queue filter for admins", () => {
+    const filters = adminConsultationListQuerySchema.parse({ assigned: "unassigned", status: "SCHEDULED" });
+    expect(filters.assigned).toBe("unassigned");
   });
 });

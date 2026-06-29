@@ -60,7 +60,10 @@ Total plans: 32
 - Added saved client-team live chat for authenticated clients only: new conversation thread/message schema, client APIs, admin APIs, RBAC permissions, authenticated throttling, `/admin/messages` inbox, and `/admin/messages/[threadId]` reply/assign/status screen. Human team messages are saved; public AI booking chat transcripts are not saved as conversation archives.
 - Updated `/client/assistant` with a `Talk to team` path that opens the saved team chat while preserving the organizational AI assistant's existing client-owned data scope and legal-advice refusal.
 - Set OpenRouter's default server-side model to `google/gemini-2.5-flash`, kept mock as the no-key development fallback, and documented the OpenRouter defaults in the API contract.
+- Refined the public AI booking conversation so the assistant asks for the client's preferred day/time first, filters generated slots by Cairo date/time window, shows nearest alternatives when a requested window is unavailable, and keeps older messages scrolling inside the chat panel instead of growing the whole page.
+- Fixed the public consultation review path so every confirmed public booking remains visible in the admin consultation queue as an unassigned lawyer item, while the client portal labels unassigned consultation appointments as pending office review instead of treating them as completed case work.
 - Verification passed: `cmd /c npm run db:validate`, `cmd /c npm run db:generate`, `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, and `cmd /c npm run test:e2e:smoke`.
+- Latest follow-up verification passed: `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:DATABASE_URL='postgresql://postgres:postgres@localhost:5432/kmtlegal'; cmd /c npm run build`, and `$env:DATABASE_URL='postgresql://postgres:postgres@localhost:5432/kmtlegal'; cmd /c npm run test:e2e:smoke`.
 
 ## Latest Brand Identity Follow-Up
 

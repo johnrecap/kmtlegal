@@ -37,13 +37,16 @@ function badgeTone(status: string) {
   return "neutral" as const;
 }
 
-function listHref(filters: { q?: string; status?: string; pageSize?: number }, page: number) {
+function listHref(filters: { q?: string; status?: string; assigned?: string; pageSize?: number }, page: number) {
   const params = new URLSearchParams();
   if (filters.q) {
     params.set("q", filters.q);
   }
   if (filters.status) {
     params.set("status", filters.status);
+  }
+  if (filters.assigned) {
+    params.set("assigned", filters.assigned);
   }
   if (filters.pageSize) {
     params.set("pageSize", String(filters.pageSize));
@@ -168,6 +171,11 @@ export default async function AdminConsultationsPage({ searchParams = {} }: { se
                 </option>
               ))}
             </Select>
+            <Select className="min-w-44" defaultValue={result.filters.assigned ?? ""} label="التعيين" name="assigned">
+              <option value="">كل الطلبات</option>
+              <option value="unassigned">يحتاج تعيين محامي</option>
+              <option value="assigned">تم تعيين محامي</option>
+            </Select>
             <Button type="submit" variant="secondary">
               تطبيق
             </Button>
@@ -175,6 +183,9 @@ export default async function AdminConsultationsPage({ searchParams = {} }: { se
         </form>
 
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
+          <Link className={buttonClasses({ variant: result.filters.assigned === "unassigned" ? "primary" : "secondary", size: "sm" })} href="/admin/consultations?assigned=unassigned">
+            {result.unassignedTotal} يحتاج تعيين محامي
+          </Link>
           <p>{result.total} طلب استشارة</p>
           <p>
             صفحة {result.page} من {totalPages}

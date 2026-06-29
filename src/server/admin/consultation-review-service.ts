@@ -16,6 +16,7 @@ const appointmentModeSchema = z.enum(["PHONE", "ONLINE", "OFFICE"]).default("ONL
 export const adminConsultationListQuerySchema = z.object({
   q: z.string().trim().max(120).optional().or(z.literal("")),
   status: consultationStatusSchema.optional().or(z.literal("")),
+  assigned: z.enum(["", "assigned", "unassigned"]).default(""),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(50).default(20)
 });
@@ -95,11 +96,14 @@ function listWhere(actor: Principal, filters: AdminConsultationListQuery): Prism
   const scope = consultationScopeWhereForPrincipal(actor);
   const search = filters.q?.trim();
   const status = filters.status || undefined;
+  const assigned = filters.assigned || undefined;
 
   return {
     AND: [
       scope,
       status ? { status } : {},
+      assigned === "assigned" ? { assignedLawyerId: { not: null } } : {},
+      assigned === "unassigned" ? { assignedLawyerId: null } : {},
       search
         ? {
             OR: [
@@ -118,8 +122,15 @@ export async function listAdminConsultations(input: { actor: Principal; query: u
   const filters = normalizeListQuery(input.query);
   const pagination = toPagination(filters);
   const where = listWhere(input.actor, filters);
+  const unassignedWhere: Prisma.ConsultationRequestWhereInput = {
+    AND: [
+      consultationScopeWhereForPrincipal(input.actor),
+      { assignedLawyerId: null },
+      { status: { in: ["NEW", "REVIEWING", "SCHEDULED"] } }
+    ]
+  };
 
-  const [items, total] = await Promise.all([
+  const [items, total, unassignedTotal] = await Promise.all([
     prisma.consultationRequest.findMany({
       where,
       include: {
@@ -131,10 +142,11 @@ export async function listAdminConsultations(input: { actor: Principal; query: u
       skip: pagination.skip,
       take: pagination.take
     }),
-    prisma.consultationRequest.count({ where })
+    prisma.consultationRequest.count({ where }),
+    prisma.consultationRequest.count({ where: unassignedWhere })
   ]);
 
-  return { items, total, filters, page: pagination.page, pageSize: pagination.pageSize };
+  return { items, total, unassignedTotal, filters, page: pagination.page, pageSize: pagination.pageSize };
 }
 
 export async function getAdminConsultationDetail(input: { actor: Principal; consultationId: string }) {

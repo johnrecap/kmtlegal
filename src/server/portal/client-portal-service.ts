@@ -67,6 +67,11 @@ export async function getPortalDashboard(actor: Principal) {
         startsAt: { gte: new Date() },
         status: { in: ["SCHEDULED", "RESCHEDULED"] }
       },
+      include: {
+        consultationRequest: { select: { id: true, status: true, assignedLawyerId: true } },
+        lawyer: { select: { id: true, name: true } },
+        case: { select: { id: true, title: true, internalFileNumber: true } }
+      },
       orderBy: { startsAt: "asc" },
       take: 5
     }),
@@ -157,7 +162,8 @@ export async function listPortalAppointments(actor: Principal) {
     where: { clientId },
     include: {
       lawyer: { select: { id: true, name: true } },
-      case: { select: { id: true, title: true, internalFileNumber: true } }
+      case: { select: { id: true, title: true, internalFileNumber: true } },
+      consultationRequest: { select: { id: true, status: true, assignedLawyerId: true } }
     },
     orderBy: { startsAt: "asc" }
   });

@@ -16,6 +16,21 @@ export const metadata: Metadata = {
 
 type AppointmentRow = Awaited<ReturnType<typeof listPortalAppointments>>[number];
 
+function isPendingOfficeReview(row: AppointmentRow) {
+  return row.type === "CONSULTATION" && Boolean(row.consultationRequest) && !row.consultationRequest?.assignedLawyerId;
+}
+
+function appointmentDisplayStatus(row: AppointmentRow) {
+  return isPendingOfficeReview(row) ? "قيد مراجعة المكتب" : labelFrom(appointmentStatusLabels, row.status);
+}
+
+function appointmentStatusTone(row: AppointmentRow) {
+  if (isPendingOfficeReview(row)) {
+    return "neutral" as const;
+  }
+  return row.status === "COMPLETED" ? ("active" as const) : ("pending" as const);
+}
+
 const columns: Array<DataTableColumn<AppointmentRow>> = [
   {
     key: "appointment",
@@ -41,8 +56,8 @@ const columns: Array<DataTableColumn<AppointmentRow>> = [
   },
   { key: "time", header: "الوقت", render: (row) => formatDateTime(row.startsAt) },
   { key: "mode", header: "الطريقة", render: (row) => labelFrom(modeLabels, row.mode) },
-  { key: "lawyer", header: "المحامي", render: (row) => row.lawyer?.name ?? "غير محدد" },
-  { key: "status", header: "الحالة", render: (row) => <Badge tone={row.status === "COMPLETED" ? "active" : "pending"}>{labelFrom(appointmentStatusLabels, row.status)}</Badge> }
+  { key: "lawyer", header: "المحامي", render: (row) => row.lawyer?.name ?? (isPendingOfficeReview(row) ? "قيد التعيين" : "غير محدد") },
+  { key: "status", header: "الحالة", render: (row) => <Badge tone={appointmentStatusTone(row)}>{appointmentDisplayStatus(row)}</Badge> }
 ];
 
 function MobileCard({ row }: { row: AppointmentRow }) {
@@ -51,7 +66,7 @@ function MobileCard({ row }: { row: AppointmentRow }) {
       className={clientPortalRowClass}
       title={row.title}
       description={labelFrom(appointmentTypeLabels, row.type)}
-      badges={<Badge tone={row.status === "COMPLETED" ? "active" : "pending"}>{labelFrom(appointmentStatusLabels, row.status)}</Badge>}
+      badges={<Badge tone={appointmentStatusTone(row)}>{appointmentDisplayStatus(row)}</Badge>}
       fields={[
         {
           label: "القضية",
@@ -65,7 +80,7 @@ function MobileCard({ row }: { row: AppointmentRow }) {
         },
         { label: "الوقت", value: formatDateTime(row.startsAt) },
         { label: "الطريقة", value: labelFrom(modeLabels, row.mode) },
-        { label: "المحامي", value: row.lawyer?.name ?? "غير محدد" }
+        { label: "المحامي", value: row.lawyer?.name ?? (isPendingOfficeReview(row) ? "قيد التعيين" : "غير محدد") }
       ]}
       action={
         row.case ? (

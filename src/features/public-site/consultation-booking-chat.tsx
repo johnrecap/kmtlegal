@@ -24,7 +24,18 @@ type BookingDraft = {
   preferredMode: "PHONE" | "ONLINE" | "OFFICE";
   summary: string;
   startsAt: string;
+  availabilityPreference: AvailabilityPreference;
 };
+
+type AvailabilityPreference = {
+  date: string;
+  label: string;
+  timeWindow: "MORNING" | "AFTERNOON" | "EVENING" | "ANYTIME" | "";
+  fromTime: string;
+  toTime: string;
+};
+
+type SlotWindow = AvailabilityPreference & { alternatives?: boolean };
 
 type PublicSlot = {
   id: string;
@@ -47,6 +58,8 @@ type AssistantApiBody = {
     draft?: Partial<BookingDraft>;
     missingFields?: string[];
     availableSlots?: PublicSlot[];
+    needsAvailabilityPreference?: boolean;
+    slotWindow?: SlotWindow;
     readyToConfirm?: boolean;
     reference?: string;
     appointment?: { title: string; startsAt: string; status: string };
@@ -84,7 +97,14 @@ const initialDraft: BookingDraft = {
   urgency: "NORMAL",
   preferredMode: "ONLINE",
   summary: "",
-  startsAt: ""
+  startsAt: "",
+  availabilityPreference: {
+    date: "",
+    label: "",
+    timeWindow: "",
+    fromTime: "",
+    toTime: ""
+  }
 };
 
 export function ConsultationBookingChat({ initialService, locale = "en" }: { initialService?: string; locale?: PublicLocale }) {
@@ -98,6 +118,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   const [isBusy, setIsBusy] = useState(false);
   const [flow, setFlow] = useState<"booking" | "inquiry" | null>(null);
   const [availableSlots, setAvailableSlots] = useState<PublicSlot[]>([]);
+  const [slotWindow, setSlotWindow] = useState<SlotWindow | null>(null);
   const [selectedSlot, setSelectedSlot] = useState("");
   const [readyToConfirm, setReadyToConfirm] = useState(false);
 
@@ -124,6 +145,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   function startInquiry() {
     setFlow("inquiry");
     setAvailableSlots([]);
+    setSlotWindow(null);
     setReadyToConfirm(false);
     append("user", copy.inquire);
     append("assistant", copy.inquiryPrompt);
@@ -237,6 +259,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       const updatedDraft = normalizeDraft({ ...nextDraft, ...data.draft });
       setDraft(updatedDraft);
       setAvailableSlots(data.availableSlots ?? []);
+      setSlotWindow(data.slotWindow ?? null);
       setSelectedSlot(updatedDraft.startsAt || nextSlot || "");
       setReadyToConfirm(Boolean(data.readyToConfirm));
       append("assistant", data.message ?? copy.scopeReply, data.reference ? "success" : "default");
@@ -248,6 +271,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         }
         setFlow(null);
         setAvailableSlots([]);
+        setSlotWindow(null);
         setSelectedSlot("");
         setReadyToConfirm(false);
         setDraft({ ...initialDraft, serviceCategory: initialService || "" });
@@ -264,6 +288,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     const label = formatPublicDate(slot.startsAt, locale);
     setSelectedSlot(slot.startsAt);
     setAvailableSlots([]);
+    setSlotWindow(null);
     void sendBookingMessage(label, {
       userText: label,
       flow: "booking",
@@ -286,6 +311,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     setReadyToConfirm(false);
     setSelectedSlot("");
     setDraft((current) => ({ ...current, startsAt: "" }));
+    setSlotWindow(null);
     append("assistant", copy.scopeReply);
   }
 
@@ -296,8 +322,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       data-hydrated={isHydrated ? "true" : "false"}
       data-testid="booking-stepper"
     >
-      <div className="relative z-10 flex min-h-[42rem] flex-col" data-testid="booking-chat-shell">
-        <header className="px-5 pb-4 pt-5 sm:px-8 sm:pt-8">
+      <div className="relative z-10 flex h-[min(78vh,46rem)] min-h-[36rem] min-w-0 flex-col max-sm:h-[min(82svh,44rem)] max-sm:min-h-[34rem]" data-testid="booking-chat-shell">
+        <header className="shrink-0 px-5 pb-4 pt-5 sm:px-8 sm:pt-8">
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div className="flex min-w-0 items-center gap-4">
               <KmtBrandLogo label={copy.assistantName} shape="circle" size="lg" variant="mark" />
@@ -322,14 +348,14 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
         <div
           aria-busy={isBusy ? "true" : "false"}
-          className="flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-8"
+          className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8"
           data-testid="booking-chat-log"
           role="log"
         >
           {messages.map((message) => (
             <ChatBubble key={message.id} message={message} />
           ))}
-          {availableSlots.length ? <SlotChips locale={locale} slots={availableSlots} onChoose={chooseSlot} /> : null}
+          {availableSlots.length ? <SlotChoicePanel locale={locale} slotWindow={slotWindow ?? undefined} slots={availableSlots} onChoose={chooseSlot} /> : null}
           {readyToConfirm ? (
             <div className="flex flex-wrap justify-end gap-2">
               <Button className={cn(publicMotionButton, publicMotionCta, "rounded-full")} data-testid="booking-confirm-booking" loading={isBusy} type="button" onClick={confirmBooking}>
@@ -346,7 +372,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
           <div ref={logEndRef} />
         </div>
 
-        <div className="px-5 pb-5 sm:px-8 sm:pb-8">
+        <div className="shrink-0 px-5 pb-5 sm:px-8 sm:pb-8">
           <div className="mb-5 flex flex-wrap gap-3">
             <Button className={chipButtonClasses} data-testid="booking-quick-book" disabled={isBusy} size="sm" type="button" variant="secondary" onClick={startBooking}>
               <MaterialSymbol className="text-xl" name="event_available" />
@@ -439,14 +465,40 @@ function ChatBubble({ message }: { message: ChatMessage }) {
   );
 }
 
-function SlotChips({ locale, slots, onChoose }: { locale: PublicLocale; slots: PublicSlot[]; onChoose: (slot: PublicSlot) => void }) {
+function SlotChoicePanel({
+  locale,
+  slots,
+  slotWindow,
+  onChoose
+}: {
+  locale: PublicLocale;
+  slots: PublicSlot[];
+  slotWindow?: SlotWindow;
+  onChoose: (slot: PublicSlot) => void;
+}) {
+  const groups = groupSlotsByDay(slots, locale);
   return (
-    <div className="flex flex-wrap justify-start gap-2 ps-14 max-sm:ps-0">
-      {slots.map((slot) => (
-        <Button key={slot.id} className={chipButtonClasses} data-testid="booking-slot-chip" type="button" variant="secondary" onClick={() => onChoose(slot)}>
-          <MaterialSymbol name="schedule" />
-          {formatPublicDate(slot.startsAt, locale)}
-        </Button>
+    <div className="space-y-3 ps-14 max-sm:ps-0" data-testid="booking-slot-choice-panel">
+      {slotWindow?.alternatives ? (
+        <p className="max-w-[42rem] rounded-2xl border border-kmt-gold/20 bg-kmt-gold/10 px-4 py-3 text-sm leading-6 text-amber-50/85">
+          {locale === "ar" ? "أقرب بدائل متاحة الآن" : "Nearest visible alternatives"}
+        </p>
+      ) : null}
+      {groups.map((group) => (
+        <div key={group.key} className="max-w-[42rem] rounded-3xl border border-kmt-gold/20 bg-black/20 p-3 shadow-[0_18px_48px_-38px_rgba(183,134,64,0.85)]">
+          <div className="mb-3 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-[0.14em] text-amber-100/70">
+            <MaterialSymbol className="text-base text-kmt-gold" name="event" />
+            <span>{group.label}</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {group.slots.map((slot) => (
+              <Button key={slot.id} className={cn(chipButtonClasses, "!min-h-10 !px-3")} data-testid="booking-slot-chip" type="button" variant="secondary" onClick={() => onChoose(slot)}>
+                <MaterialSymbol name="schedule" />
+                {formatPublicTime(slot.startsAt, locale)}
+              </Button>
+            ))}
+          </div>
+        </div>
       ))}
     </div>
   );
@@ -478,7 +530,14 @@ function normalizeDraft(value: Partial<BookingDraft>): BookingDraft {
     urgency: value.urgency ?? "NORMAL",
     preferredMode: value.preferredMode ?? "ONLINE",
     summary: value.summary ?? "",
-    startsAt: value.startsAt ?? ""
+    startsAt: value.startsAt ?? "",
+    availabilityPreference: {
+      date: value.availabilityPreference?.date ?? "",
+      label: value.availabilityPreference?.label ?? "",
+      timeWindow: value.availabilityPreference?.timeWindow ?? "",
+      fromTime: value.availabilityPreference?.fromTime ?? "",
+      toTime: value.availabilityPreference?.toTime ?? ""
+    }
   };
 }
 
@@ -513,6 +572,47 @@ function formatPublicDate(value: string, locale: PublicLocale) {
     timeStyle: "short",
     timeZone: "Africa/Cairo"
   }).format(new Date(value));
+}
+
+function formatPublicDay(value: string, locale: PublicLocale) {
+  return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+    timeZone: "Africa/Cairo"
+  }).format(new Date(value));
+}
+
+function formatPublicTime(value: string, locale: PublicLocale) {
+  return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", {
+    timeStyle: "short",
+    timeZone: "Africa/Cairo"
+  }).format(new Date(value));
+}
+
+function groupSlotsByDay(slots: PublicSlot[], locale: PublicLocale) {
+  const groups = new Map<string, { key: string; label: string; slots: PublicSlot[] }>();
+  for (const slot of slots) {
+    const key = cairoDateKey(slot.startsAt);
+    const existing = groups.get(key);
+    if (existing) {
+      existing.slots.push(slot);
+    } else {
+      groups.set(key, { key, label: formatPublicDay(slot.startsAt, locale), slots: [slot] });
+    }
+  }
+  return Array.from(groups.values());
+}
+
+function cairoDateKey(value: string) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Cairo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date(value));
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
 function errorMessage(body: AssistantApiBody, copy: BookingChatCopy) {

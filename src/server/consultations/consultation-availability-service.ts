@@ -47,6 +47,12 @@ export type PublicConsultationSlot = {
   mode: ConsultationMode;
 };
 
+export type PublicConsultationSlotFilter = {
+  date?: string;
+  fromTime?: string;
+  toTime?: string;
+};
+
 type ExistingAppointment = {
   startsAt: Date;
   endsAt: Date;
@@ -138,6 +144,9 @@ export async function listPublicConsultationSlots(input: {
   mode?: ConsultationMode;
   now?: Date;
   limit?: number;
+  date?: string;
+  fromTime?: string;
+  toTime?: string;
 } = {}) {
   const availability = await getConsultationAvailability();
   const window = consultationSlotWindow(availability, input.now ?? new Date());
@@ -156,7 +165,10 @@ export async function listPublicConsultationSlots(input: {
     appointments,
     mode: input.mode,
     now: input.now ?? new Date(),
-    limit: input.limit ?? 12
+    limit: input.limit ?? 12,
+    date: input.date,
+    fromTime: input.fromTime,
+    toTime: input.toTime
   });
 }
 
@@ -180,16 +192,23 @@ export function generateConsultationSlots(input: {
   mode?: ConsultationMode;
   now?: Date;
   limit?: number;
+  date?: string;
+  fromTime?: string;
+  toTime?: string;
 }) {
   const now = input.now ?? new Date();
   const availableFrom = new Date(now.getTime() + input.availability.minLeadHours * 60 * 60_000);
+  const availableUntil = new Date(availableFrom.getTime() + input.availability.bookingWindowDays * 24 * 60 * 60_000);
   const slots: PublicConsultationSlot[] = [];
   const mode = input.mode ?? "ONLINE";
   const duration = input.availability.slotDurationMinutes;
   const limit = input.limit ?? 12;
-  const firstDate = cairoDateString(now);
+  const firstDate = normalizeSlotDate(input.date) || cairoDateString(now);
+  const daysToScan = input.date ? 1 : input.availability.bookingWindowDays;
+  const fromMinutes = input.fromTime ? minutesFromTime(input.fromTime) : null;
+  const toMinutes = input.toTime ? minutesFromTime(input.toTime) : null;
 
-  for (let offset = 0; offset < input.availability.bookingWindowDays && slots.length < limit; offset += 1) {
+  for (let offset = 0; offset < daysToScan && slots.length < limit; offset += 1) {
     const date = addCairoDays(firstDate, offset);
     const weekday = cairoWeekday(date);
     const day = input.availability.days.find((item) => item.weekday === weekday);
@@ -200,9 +219,18 @@ export function generateConsultationSlots(input: {
     const startMinutes = minutesFromTime(day.start);
     const endMinutes = minutesFromTime(day.end);
     for (let minute = startMinutes; minute + duration <= endMinutes && slots.length < limit; minute += duration) {
+      if (fromMinutes !== null && minute < fromMinutes) {
+        continue;
+      }
+      if (toMinutes !== null && minute + duration > toMinutes) {
+        continue;
+      }
       const startsAt = cairoDateTime(date, minute);
       const endsAt = new Date(startsAt.getTime() + duration * 60_000);
       if (startsAt < availableFrom) {
+        continue;
+      }
+      if (startsAt >= availableUntil) {
         continue;
       }
       if (input.appointments.some((appointment) => appointmentsOverlap(startsAt, endsAt, appointment.startsAt, appointment.endsAt))) {
@@ -218,6 +246,13 @@ export function generateConsultationSlots(input: {
   }
 
   return slots;
+}
+
+function normalizeSlotDate(value?: string) {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return "";
+  }
+  return value;
 }
 
 function assertCanManageAvailability(actor: Principal) {

@@ -6,6 +6,7 @@ import { ConsultationActionPanel } from "@/features/admin/consultations/consulta
 import { consultationStatusLabels, formatDateTime, labelFrom, modeLabels, serviceCategoryLabels, urgencyLabels } from "@/lib/legal-format";
 import { getAdminConsultationDetail, listAssignableLawyers } from "@/server/admin/consultation-review-service";
 import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { publicConsultationReference } from "@/server/consultations/consultation-service";
 import { adminNavForPath } from "../../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -183,6 +184,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
                 <DetailItem label="المدينة" value={consultation.city} />
                 <DetailItem label="نوع الخدمة" value={labelFrom(serviceCategoryLabels, consultation.serviceCategory)} />
                 <DetailItem label="طريقة التواصل" value={labelFrom(modeLabels, consultation.preferredMode)} />
+                <DetailItem label="رقم المرجع" value={<span dir="ltr">{publicConsultationReference(consultation.id)}</span>} />
                 <DetailItem label="تاريخ الطلب" value={formatDateTime(consultation.createdAt)} />
                 <DetailItem label="المحامي المسؤول" value={consultation.assignedLawyer?.name} />
                 <DetailItem label="العميل المرتبط" value={consultation.client?.fullName} />

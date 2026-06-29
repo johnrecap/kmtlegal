@@ -37,6 +37,15 @@ const assistantActionSchema = z.enum([
   "handoff_to_human"
 ]);
 
+const availabilityPreferenceSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
+  label: z.string().trim().max(80).optional().or(z.literal("")),
+  timeWindow: z.enum(["MORNING", "AFTERNOON", "EVENING", "ANYTIME"]).optional().or(z.literal("")),
+  fromTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
+  toTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal(""))
+});
+type AvailabilityPreference = z.infer<typeof availabilityPreferenceSchema>;
+
 const publicAssistantDraftSchema = z.object({
   fullName: z.string().trim().max(120).optional().or(z.literal("")),
   phone: z.string().trim().max(40).optional().or(z.literal("")),
@@ -46,7 +55,8 @@ const publicAssistantDraftSchema = z.object({
   summary: z.string().trim().max(3000).optional().or(z.literal("")),
   urgency: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).optional(),
   preferredMode: z.enum(["PHONE", "ONLINE", "OFFICE"]).optional(),
-  startsAt: z.string().trim().max(80).optional().or(z.literal(""))
+  startsAt: z.string().trim().max(80).optional().or(z.literal("")),
+  availabilityPreference: availabilityPreferenceSchema.optional()
 });
 
 export const publicConsultationAssistantSchema = z.object({
@@ -65,6 +75,7 @@ export const publicConsultationAssistantSchema = z.object({
   preferredMode: z.enum(["PHONE", "ONLINE", "OFFICE"]).default("ONLINE"),
   startsAt: z.string().trim().max(80).optional().or(z.literal("")),
   selectedSlot: z.string().trim().max(80).optional().or(z.literal("")),
+  availabilityPreference: availabilityPreferenceSchema.optional(),
   confirmBooking: z.boolean().optional(),
   reference: z.string().trim().max(40).optional().or(z.literal("")),
   consent: z.boolean().optional()
@@ -138,21 +149,50 @@ async function handlePublicBookingConversation(input: {
   }
 
   if (missingFields.length) {
-    const availableSlots = missingFields.includes("startsAt")
-      ? await listPublicConsultationSlots({ mode: draft.preferredMode })
-      : undefined;
+    if (missingFields.includes("startsAt")) {
+      const hasPreference = hasAvailabilityPreference(draft.availabilityPreference);
+      if (!hasPreference && !wantsAlternativeSlots(input.body.message)) {
+        return bookingConversationResponse({
+          locale: input.body.locale,
+          draft,
+          missingFields,
+          selectedSlot,
+          needsAvailabilityPreference: true,
+          slotWindow: availabilityWindowDto(draft.availabilityPreference),
+          message: availabilityQuestionMessage(input.body.locale)
+        });
+      }
+
+      const availableSlots = await listPublicConsultationSlots({
+        mode: draft.preferredMode,
+        limit: hasPreference ? 12 : 6,
+        date: draft.availabilityPreference.date || undefined,
+        fromTime: draft.availabilityPreference.fromTime || undefined,
+        toTime: draft.availabilityPreference.toTime || undefined
+      });
+
+      const fallbackSlots =
+        hasPreference && !availableSlots.length
+          ? await listPublicConsultationSlots({ mode: draft.preferredMode, limit: 6 })
+          : undefined;
+
+      return bookingConversationResponse({
+        locale: input.body.locale,
+        draft,
+        missingFields,
+        selectedSlot,
+        availableSlots: availableSlots.length ? availableSlots : fallbackSlots,
+        slotWindow: availabilityWindowDto(draft.availabilityPreference, !availableSlots.length && Boolean(fallbackSlots?.length)),
+        message: availableSlots.length ? slotSelectionMessage(input.body.locale, draft.availabilityPreference) : noSlotsForPreferenceMessage(input.body.locale)
+      });
+    }
+
     return bookingConversationResponse({
       locale: input.body.locale,
       draft,
       missingFields,
       selectedSlot,
-      availableSlots,
-      message:
-        missingFields.includes("startsAt") && !availableSlots?.length
-          ? noSlotsMessage(input.body.locale)
-          : availableSlots?.length
-            ? slotSelectionMessage(input.body.locale)
-            : bookingQuestionMessage(input.body.locale, missingFields[0])
+      message: bookingQuestionMessage(input.body.locale, missingFields[0])
     });
   }
 
@@ -274,7 +314,8 @@ function mergeBookingDraft(body: PublicConsultationAssistantInput) {
     summary: body.draft?.summary || body.summary || "",
     urgency: body.draft?.urgency || body.urgency || "NORMAL",
     preferredMode: body.draft?.preferredMode || body.preferredMode || "ONLINE",
-    startsAt: body.draft?.startsAt || body.startsAt || body.selectedSlot || ""
+    startsAt: body.draft?.startsAt || body.startsAt || body.selectedSlot || "",
+    availabilityPreference: body.draft?.availabilityPreference || body.availabilityPreference || {}
   };
   return normalizeBookingDraft({
     ...base,
@@ -292,7 +333,9 @@ function normalizeBookingDraft(draft: {
   urgency?: string;
   preferredMode?: string;
   startsAt?: string;
+  availabilityPreference?: Partial<z.infer<typeof availabilityPreferenceSchema>>;
 }) {
+  const availabilityPreference = normalizeAvailabilityPreference(draft.availabilityPreference);
   return {
     fullName: draft.fullName?.trim() ?? "",
     phone: draft.phone?.trim() ?? "",
@@ -302,7 +345,8 @@ function normalizeBookingDraft(draft: {
     summary: draft.summary?.trim() ?? "",
     urgency: (["LOW", "NORMAL", "HIGH", "URGENT"].includes(draft.urgency ?? "") ? draft.urgency : "NORMAL") as PublicConsultationAssistantInput["urgency"],
     preferredMode: (["PHONE", "ONLINE", "OFFICE"].includes(draft.preferredMode ?? "") ? draft.preferredMode : "ONLINE") as ConsultationMode,
-    startsAt: draft.startsAt?.trim() ?? ""
+    startsAt: draft.startsAt?.trim() ?? "",
+    availabilityPreference
   };
 }
 
@@ -317,6 +361,7 @@ function extractBookingDetails(
     summary?: string;
     preferredMode?: string;
     urgency?: string;
+    availabilityPreference?: Partial<z.infer<typeof availabilityPreferenceSchema>>;
   }
 ) {
   const text = message.trim();
@@ -346,6 +391,11 @@ function extractBookingDetails(
   const urgency = urgencyFromMessage(normalized);
   if (urgency) {
     next.urgency = urgency;
+  }
+
+  const availabilityPreference = availabilityPreferenceFromMessage(text, current.availabilityPreference);
+  if (hasAvailabilityPreference(availabilityPreference)) {
+    next.availabilityPreference = availabilityPreference;
   }
 
   const name = nameFromMessage(text);
@@ -433,6 +483,198 @@ function likelyNameOnly(text: string) {
   return value.split(/\s+/).length <= 5;
 }
 
+function normalizeAvailabilityPreference(value?: Partial<AvailabilityPreference>): AvailabilityPreference {
+  return {
+    date: value?.date || "",
+    label: value?.label || "",
+    timeWindow: value?.timeWindow || "",
+    fromTime: value?.fromTime || "",
+    toTime: value?.toTime || ""
+  };
+}
+
+function hasAvailabilityPreference(value?: Partial<AvailabilityPreference>) {
+  return Boolean(value?.date || value?.fromTime || value?.toTime || value?.timeWindow);
+}
+
+function availabilityPreferenceFromMessage(message: string, current?: Partial<AvailabilityPreference>): AvailabilityPreference {
+  const text = normalizedAssistantText(message);
+  const next = normalizeAvailabilityPreference(current);
+  const date = availabilityDateFromMessage(text);
+  const timeWindow = availabilityWindowFromMessage(text);
+  const explicitTime = availabilityTimeFromMessage(text);
+
+  if (date.date) {
+    next.date = date.date;
+    next.label = date.label;
+  }
+  if (timeWindow.timeWindow) {
+    next.timeWindow = timeWindow.timeWindow;
+    next.fromTime = timeWindow.fromTime;
+    next.toTime = timeWindow.toTime;
+  }
+  if (explicitTime.fromTime || explicitTime.toTime) {
+    next.fromTime = explicitTime.fromTime || next.fromTime;
+    next.toTime = explicitTime.toTime || next.toTime;
+    next.timeWindow = "ANYTIME";
+  }
+
+  return next;
+}
+
+function availabilityDateFromMessage(text: string) {
+  const today = cairoDateString(new Date());
+  const digitText = toAsciiDigits(text);
+  if (containsAny(text, ["today", "النهارده", "اليوم", "النهاردة"])) {
+    return { date: today, label: "today" };
+  }
+  if (containsAny(text, ["tomorrow", "بكره", "بكرة", "غدا", "غدًا"])) {
+    return { date: addCairoDays(today, 1), label: "tomorrow" };
+  }
+
+  const isoDate = digitText.match(/\b(20\d{2}-\d{2}-\d{2})\b/)?.[1];
+  if (isoDate) {
+    return { date: isoDate, label: isoDate };
+  }
+
+  const numericDate = numericDateFromMessage(digitText, today);
+  if (numericDate) {
+    return { date: numericDate, label: numericDate };
+  }
+
+  const weekday = weekdayFromMessage(text);
+  if (weekday !== null) {
+    const currentWeekday = cairoWeekday(today);
+    const offset = (weekday - currentWeekday + 7) % 7 || 7;
+    return { date: addCairoDays(today, offset), label: "weekday" };
+  }
+
+  return { date: "", label: "" };
+}
+
+function numericDateFromMessage(text: string, today: string) {
+  const match = text.match(/\b(\d{1,2})[\/.-](\d{1,2})(?:[\/.-](20\d{2}))?\b/);
+  if (!match) {
+    return "";
+  }
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const year = Number(match[3] || today.slice(0, 4));
+  const candidate = `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  const probe = new Date(`${candidate}T12:00:00+03:00`);
+  if (!Number.isFinite(probe.getTime()) || cairoDateString(probe) !== candidate) {
+    return "";
+  }
+  if (!match[3] && candidate < today) {
+    return `${String(year + 1).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+  }
+  return candidate;
+}
+
+function weekdayFromMessage(text: string) {
+  const weekdays = [
+    ["sunday", "sun", "الاحد", "الأحد"],
+    ["monday", "mon", "الاثنين", "الإثنين", "الاثنين"],
+    ["tuesday", "tue", "الثلاثاء"],
+    ["wednesday", "wed", "الاربعاء", "الأربعاء"],
+    ["thursday", "thu", "الخميس"],
+    ["friday", "fri", "الجمعه", "الجمعة"],
+    ["saturday", "sat", "السبت"]
+  ];
+  const index = weekdays.findIndex((tokens) => containsAny(text, tokens));
+  return index >= 0 ? index : null;
+}
+
+function availabilityWindowFromMessage(text: string): Pick<AvailabilityPreference, "timeWindow" | "fromTime" | "toTime"> {
+  if (containsAny(text, ["morning", "الصبح", "صباح", "صباحا", "صباحًا"])) {
+    return { timeWindow: "MORNING", fromTime: "09:00", toTime: "12:00" };
+  }
+  if (containsAny(text, ["afternoon", "بعد الضهر", "بعد الظهر", "الضهر", "الظهر"])) {
+    return { timeWindow: "AFTERNOON", fromTime: "12:00", toTime: "17:00" };
+  }
+  if (containsAny(text, ["evening", "night", "بالليل", "المساء", "مساء", "ليل"])) {
+    return { timeWindow: "EVENING", fromTime: "17:00", toTime: "21:00" };
+  }
+  return { timeWindow: "", fromTime: "", toTime: "" };
+}
+
+function availabilityTimeFromMessage(text: string): Pick<AvailabilityPreference, "fromTime" | "toTime"> {
+  const digitText = toAsciiDigits(text);
+  const after = digitText.match(/(?:after|بعد)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm|ص|م)?/i);
+  if (after) {
+    return { fromTime: normalizeClockTime(after[1], after[2], after[3]), toTime: "" };
+  }
+  const before = digitText.match(/(?:before|قبل)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm|ص|م)?/i);
+  if (before) {
+    return { fromTime: "", toTime: normalizeClockTime(before[1], before[2], before[3]) };
+  }
+  return { fromTime: "", toTime: "" };
+}
+
+function normalizeClockTime(hourValue = "0", minuteValue = "0", meridiemValue = "") {
+  let hour = Number(hourValue);
+  const minute = Number(minuteValue || "0");
+  const meridiem = meridiemValue.toLowerCase();
+  if ((meridiem === "pm" || meridiem === "م") && hour < 12) {
+    hour += 12;
+  }
+  if ((meridiem === "am" || meridiem === "ص") && hour === 12) {
+    hour = 0;
+  }
+  if (!meridiem && hour >= 1 && hour <= 7) {
+    hour += 12;
+  }
+  return `${String(Math.min(Math.max(hour, 0), 23)).padStart(2, "0")}:${String(Math.min(Math.max(minute, 0), 59)).padStart(2, "0")}`;
+}
+
+function wantsAlternativeSlots(message: string) {
+  const text = normalizedAssistantText(message);
+  return containsAny(text, ["alternative", "alternatives", "nearest", "another time", "بدائل", "اقرب", "أقرب", "مواعيد تانيه", "مواعيد تانية"]);
+}
+
+function availabilityWindowDto(value?: AvailabilityPreference, alternatives = false) {
+  return {
+    date: value?.date || "",
+    label: alternatives ? "nearest alternatives" : value?.label || "",
+    timeWindow: value?.timeWindow || "",
+    fromTime: value?.fromTime || "",
+    toTime: value?.toTime || "",
+    alternatives
+  };
+}
+
+function cairoDateString(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: OFFICE_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(date);
+  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${value("year")}-${value("month")}-${value("day")}`;
+}
+
+function addCairoDays(date: string, offset: number) {
+  const base = new Date(`${date}T12:00:00+03:00`);
+  base.setUTCDate(base.getUTCDate() + offset);
+  return cairoDateString(base);
+}
+
+function cairoWeekday(date: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: OFFICE_TIMEZONE,
+    weekday: "short"
+  }).formatToParts(new Date(`${date}T12:00:00+03:00`));
+  const day = parts.find((part) => part.type === "weekday")?.value ?? "Sun";
+  return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(day);
+}
+
+function toAsciiDigits(value: string) {
+  return value
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+    .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)));
+}
+
 function bookingConversationResponse(input: {
   locale: "ar" | "en";
   draft: ReturnType<typeof mergeBookingDraft>;
@@ -440,6 +682,8 @@ function bookingConversationResponse(input: {
   missingFields: string[];
   selectedSlot?: string;
   availableSlots?: PublicConsultationSlot[];
+  needsAvailabilityPreference?: boolean;
+  slotWindow?: ReturnType<typeof availabilityWindowDto>;
   readyToConfirm?: boolean;
 }) {
   return {
@@ -451,6 +695,8 @@ function bookingConversationResponse(input: {
     },
     missingFields: input.missingFields,
     availableSlots: input.availableSlots,
+    needsAvailabilityPreference: input.needsAvailabilityPreference ?? false,
+    slotWindow: input.slotWindow,
     readyToConfirm: input.readyToConfirm ?? false,
     reviewRequired: true,
     disclaimer: AI_REVIEW_DISCLAIMER[input.locale]
@@ -480,7 +726,19 @@ function bookingQuestionMessage(locale: "ar" | "en", field?: string) {
   return messages[locale][(field as keyof (typeof messages)["en"]) || "fallback"] ?? messages[locale].fallback;
 }
 
-function slotSelectionMessage(locale: "ar" | "en") {
+function availabilityQuestionMessage(locale: "ar" | "en") {
+  return locale === "ar"
+    ? "يناسبك أنهي يوم للاستشارة؟ اكتب النهارده، بكره، يوم معين، أو فترة مثل بعد 3 أو الصبح."
+    : "Which day works for the consultation: today, tomorrow, a specific day, or a time window like after 3 or morning?";
+}
+
+function slotSelectionMessage(locale: "ar" | "en", preference?: AvailabilityPreference) {
+  const windowText = preference ? availabilityWindowLabel(preference, locale) : "";
+  if (windowText) {
+    return locale === "ar"
+      ? `هذه المواعيد المتاحة لـ ${windowText}. اختر وقتًا مناسبًا، ثم سأعرض ملخص الحجز للتأكيد.`
+      : `These are the available slots for ${windowText}. Choose a suitable time, then I will show the booking summary for confirmation.`;
+  }
   return locale === "ar"
     ? "هذه أقرب المواعيد المتاحة. اختر موعدًا مناسبًا، ثم سأعرض لك ملخص الحجز للتأكيد."
     : "These are the nearest available slots. Choose a suitable time, then I will show the booking summary for confirmation.";
@@ -490,6 +748,32 @@ function noSlotsMessage(locale: "ar" | "en") {
   return locale === "ar"
     ? "لا توجد مواعيد متاحة ظاهرة حاليًا. يمكن لفريق المكتب مراجعة ساعات الاستشارات وإتاحة مواعيد جديدة."
     : "No consultation slots are currently visible. The office team can review availability and open new times.";
+}
+
+function noSlotsForPreferenceMessage(locale: "ar" | "en") {
+  return locale === "ar"
+    ? "لا توجد مواعيد متاحة في الوقت الذي اخترته. هذه أقرب بدائل ظاهرة الآن، ويمكنك اختيار وقت آخر أو كتابة يوم مختلف."
+    : "No slots are available for the time you chose. These are the nearest visible alternatives; you can choose another time or write a different day.";
+}
+
+function availabilityWindowLabel(preference: AvailabilityPreference, locale: "ar" | "en") {
+  const parts: string[] = [];
+  if (preference.date) {
+    parts.push(
+      new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", {
+        dateStyle: "medium",
+        timeZone: OFFICE_TIMEZONE
+      }).format(new Date(`${preference.date}T12:00:00+03:00`))
+    );
+  }
+  if (preference.fromTime && preference.toTime) {
+    parts.push(locale === "ar" ? `من ${preference.fromTime} إلى ${preference.toTime}` : `${preference.fromTime}-${preference.toTime}`);
+  } else if (preference.fromTime) {
+    parts.push(locale === "ar" ? `بعد ${preference.fromTime}` : `after ${preference.fromTime}`);
+  } else if (preference.toTime) {
+    parts.push(locale === "ar" ? `قبل ${preference.toTime}` : `before ${preference.toTime}`);
+  }
+  return parts.join(locale === "ar" ? " " : " ");
 }
 
 function bookingConfirmMessage(locale: "ar" | "en", draft: ReturnType<typeof mergeBookingDraft>, selectedSlot: string) {

@@ -27,6 +27,17 @@ function openBalance(payments: Awaited<ReturnType<typeof getPortalDashboard>>["p
     .reduce((total, payment) => total + Number(payment.amount.toString()), 0);
 }
 
+type DashboardAppointment = Awaited<ReturnType<typeof getPortalDashboard>>["appointments"][number];
+
+function dashboardAppointmentStatus(appointment: DashboardAppointment) {
+  const pendingReview = appointment.type === "CONSULTATION" && Boolean(appointment.consultationRequest) && !appointment.consultationRequest?.assignedLawyerId;
+  return pendingReview ? "قيد مراجعة المكتب" : labelFrom(appointmentStatusLabels, appointment.status);
+}
+
+function dashboardAppointmentTone(appointment: DashboardAppointment) {
+  return dashboardAppointmentStatus(appointment) === "قيد مراجعة المكتب" ? ("neutral" as const) : ("pending" as const);
+}
+
 export default async function ClientHomePage() {
   const guard = await requirePortalPage("/client");
   if (guard.status === "forbidden") {
@@ -88,7 +99,7 @@ export default async function ClientHomePage() {
                   <ClientPortalRow key={appointment.id}>
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="font-semibold text-white">{appointment.title}</p>
-                      <Badge tone="pending">{labelFrom(appointmentStatusLabels, appointment.status)}</Badge>
+                      <Badge tone={dashboardAppointmentTone(appointment)}>{dashboardAppointmentStatus(appointment)}</Badge>
                     </div>
                     <p className="mt-1 text-sm text-slate-300">{formatDateTime(appointment.startsAt)}</p>
                   </ClientPortalRow>

@@ -235,6 +235,10 @@ describe("product UI primitives", () => {
     expect(publicPageSource).not.toContain("<ConsultationAssistantPanel");
     expect(publicChatSource).toContain("content.bookingChat");
     expect(publicChatSource).toContain('data-testid="booking-chat-shell"');
+    expect(publicChatSource).toContain('data-testid="booking-chat-log"');
+    expect(publicChatSource).toContain("overscroll-contain");
+    expect(publicChatSource).toContain("SlotChoicePanel");
+    expect(publicChatSource).toContain("booking-slot-choice-panel");
     expect(publicChatSource).toContain("KmtBrandLogo");
     expect(publicChatSource).not.toContain("booking-chat-step-card");
     expect(publicChatSource).not.toContain('name="fullName"');
