@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ClientSiteShell } from "@/components/layout";
-import { Badge, DataRecordCard, DataTable, MetricCard, type DataTableColumn } from "@/components/ui";
+import { ClientPortalMetric, ClientSiteShell, clientPortalRowClass, clientPortalSecondaryActionClass, clientPortalTableClass } from "@/components/layout";
+import { Badge, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { formatDateTime, formatMoney, labelFrom, paymentStatusLabels } from "@/lib/legal-format";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
@@ -59,6 +59,7 @@ const columns: Array<DataTableColumn<PaymentRow>> = [
 function MobileCard({ row }: { row: PaymentRow }) {
   return (
     <DataRecordCard
+      className={clientPortalRowClass}
       title={row.invoiceNumber}
       description={row.receiptNumber ? `إيصال: ${row.receiptNumber}` : undefined}
       badges={<Badge tone={statusTone(row.status)}>{labelFrom(paymentStatusLabels, row.status)}</Badge>}
@@ -79,7 +80,7 @@ function MobileCard({ row }: { row: PaymentRow }) {
       ]}
       action={
         row.case ? (
-          <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={`/client/cases/${row.case.id}`}>
+          <Link className={buttonClasses({ variant: "secondary", size: "sm", className: `min-h-11 w-full ${clientPortalSecondaryActionClass}` })} href={`/client/cases/${row.case.id}`}>
             فتح القضية
           </Link>
         ) : null
@@ -102,11 +103,18 @@ export default async function ClientPaymentsPage() {
     <ClientSiteShell navItems={clientNavForPath("/client/payments")} title="المدفوعات والمستحقات" userLabel={guard.context.user.name}>
       <div className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-3">
-          <MetricCard label="المستحقات المفتوحة" value={String(duePayments.length)} meta="ليست مدفوعة أو ملغاة." />
-          <MetricCard label="إجمالي المستحق" value={formatMoney(dueBalance)} meta="حسب الفواتير الظاهرة لك." />
-          <MetricCard label="كل السجلات" value={String(payments.length)} meta="فواتير وإيصالات مرتبطة بحسابك." />
+          <ClientPortalMetric icon="pending_actions" label="المستحقات المفتوحة" tone={duePayments.length ? "due" : "default"} value={String(duePayments.length)} meta="ليست مدفوعة أو ملغاة." />
+          <ClientPortalMetric icon="account_balance_wallet" label="إجمالي المستحق" tone={dueBalance > 0 ? "due" : "default"} value={formatMoney(dueBalance)} meta="حسب الفواتير الظاهرة لك." />
+          <ClientPortalMetric icon="receipt_long" label="كل السجلات" value={String(payments.length)} meta="فواتير وإيصالات مرتبطة بحسابك." />
         </div>
-        <DataTable columns={columns} rows={payments} empty="لا توجد فواتير أو إيصالات مرتبطة بحسابك حتى الآن." mobileRender={(row) => <MobileCard row={row} />} />
+        <DataTable
+          className={clientPortalTableClass}
+          columns={columns}
+          empty="لا توجد فواتير أو إيصالات مرتبطة بحسابك حتى الآن."
+          emptyClassName="client-portal-table-empty"
+          mobileRender={(row) => <MobileCard row={row} />}
+          rows={payments}
+        />
       </div>
     </ClientSiteShell>
   );

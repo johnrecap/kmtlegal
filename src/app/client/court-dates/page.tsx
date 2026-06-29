@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ClientSiteShell } from "@/components/layout";
+import { ClientSiteShell, clientPortalRowClass, clientPortalSecondaryActionClass, clientPortalTableClass } from "@/components/layout";
 import { Badge, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { appointmentStatusLabels, appointmentTypeLabels, formatDateTime, labelFrom, modeLabels } from "@/lib/legal-format";
@@ -48,6 +48,7 @@ const columns: Array<DataTableColumn<AppointmentRow>> = [
 function MobileCard({ row }: { row: AppointmentRow }) {
   return (
     <DataRecordCard
+      className={clientPortalRowClass}
       title={row.title}
       description={labelFrom(appointmentTypeLabels, row.type)}
       badges={<Badge tone={row.status === "COMPLETED" ? "active" : "pending"}>{labelFrom(appointmentStatusLabels, row.status)}</Badge>}
@@ -68,7 +69,7 @@ function MobileCard({ row }: { row: AppointmentRow }) {
       ]}
       action={
         row.case ? (
-          <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={`/client/cases/${row.case.id}`}>
+          <Link className={buttonClasses({ variant: "secondary", size: "sm", className: `min-h-11 w-full ${clientPortalSecondaryActionClass}` })} href={`/client/cases/${row.case.id}`}>
             فتح القضية
           </Link>
         ) : null
@@ -87,7 +88,14 @@ export default async function ClientCourtDatesPage() {
 
   return (
     <ClientSiteShell navItems={clientNavForPath("/client/court-dates")} title="مواعيد القضايا والاستشارات" userLabel={guard.context.user.name}>
-      <DataTable columns={columns} rows={appointments} empty="لا توجد مواعيد مرتبطة بحسابك حتى الآن." mobileRender={(row) => <MobileCard row={row} />} />
+      <DataTable
+        className={clientPortalTableClass}
+        columns={columns}
+        empty="لا توجد مواعيد مرتبطة بحسابك حتى الآن."
+        emptyClassName="client-portal-table-empty"
+        mobileRender={(row) => <MobileCard row={row} />}
+        rows={appointments}
+      />
     </ClientSiteShell>
   );
 }

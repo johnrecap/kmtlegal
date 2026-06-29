@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { DashboardShell } from "@/components/layout";
+import { ClientPortalMetric, ClientPortalPanel, ClientSiteShell, DashboardShell, clientPortalTableClass } from "@/components/layout";
 import { Badge, Button, DataRecordCard, DataTable, Select, StateBlock, Tabs, TextInput } from "@/components/ui";
 
 describe("product UI primitives", () => {
@@ -60,10 +60,15 @@ describe("product UI primitives", () => {
 
   it("renders empty table state", () => {
     const html = renderToStaticMarkup(
-      <DataTable columns={[{ key: "name", header: "الاسم", render: (row: { id: string; name: string }) => row.name }]} rows={[]} />
+      <DataTable
+        columns={[{ key: "name", header: "الاسم", render: (row: { id: string; name: string }) => row.name }]}
+        emptyClassName="client-portal-table-empty"
+        rows={[]}
+      />
     );
 
     expect(html).toContain("لا توجد بيانات");
+    expect(html).toContain("client-portal-table-empty");
   });
 
   it("renders optional mobile cards while keeping the desktop table", () => {
@@ -140,6 +145,49 @@ describe("product UI primitives", () => {
     expect(html).toContain("bg-kmt-gold/15");
     expect(html).toContain("action=\"/api/auth/logout\"");
     expect(html).toContain("تسجيل الخروج");
+  });
+
+  it("renders the client portal shell with the public dark visual language and no card motion", () => {
+    const html = renderToStaticMarkup(
+      <ClientSiteShell
+        navItems={[
+          { label: "الرئيسية", href: "/client", icon: "home", active: true },
+          { label: "الملفات", href: "/client/files", icon: "folder" }
+        ]}
+        title="مرحبًا عميل"
+        userLabel="client@example.com"
+      >
+        <div className="space-y-4">
+          <ClientPortalMetric icon="gavel" label="القضايا" value="2" />
+          <ClientPortalPanel title="ملفاتي">
+            <DataTable
+              className={clientPortalTableClass}
+              columns={[{ key: "name", header: "الاسم", render: (row: { id: string; name: string }) => row.name }]}
+              rows={[{ id: "doc-1", name: "عقد" }]}
+            />
+          </ClientPortalPanel>
+        </div>
+      </ClientSiteShell>
+    );
+
+    expect(html).toContain("data-testid=\"client-portal-shell\"");
+    expect(html).toContain("dir=\"rtl\"");
+    expect(html).toContain("bg-[#070604]/95");
+    expect(html).toContain("بوابة العميل");
+    expect(html).toContain("href=\"/client/files\"");
+    expect(html).toContain("client-portal-panel");
+    expect(html).toContain("client-portal-table");
+    expect(html).not.toContain("kmt-motion-card");
+    expect(html).not.toContain("kmt-motion-card-beam");
+  });
+
+  it("keeps the client files page wired to the upload form after portal redirects", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/client/files/page.tsx"), "utf8");
+
+    expect(source).toContain("DocumentUploadForm");
+    expect(source).toContain("listPortalCases");
+    expect(source).toContain("listPortalDocuments");
+    expect(source).toContain("/api/files/");
   });
 
   it("renders Tabs as a pressed button group, not incomplete ARIA tabs", () => {

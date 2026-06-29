@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ClientSiteShell } from "@/components/layout";
+import { ClientSiteShell, clientPortalRowClass, clientPortalSecondaryActionClass, clientPortalTableClass } from "@/components/layout";
 import { Badge, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { caseStatusLabels, formatDateTime, labelFrom, priorityLabels } from "@/lib/legal-format";
@@ -42,6 +42,7 @@ const columns: Array<DataTableColumn<CaseRow>> = [
 function MobileCard({ row }: { row: CaseRow }) {
   return (
     <DataRecordCard
+      className={clientPortalRowClass}
       title={
         <Link className="text-kmt-navy hover:underline" href={`/client/cases/${row.id}`}>
           {row.title}
@@ -59,7 +60,7 @@ function MobileCard({ row }: { row: CaseRow }) {
         { label: "الموعد التالي", value: formatDateTime(row.nextSessionAt) }
       ]}
       action={
-        <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={`/client/cases/${row.id}`}>
+        <Link className={buttonClasses({ variant: "secondary", size: "sm", className: `min-h-11 w-full ${clientPortalSecondaryActionClass}` })} href={`/client/cases/${row.id}`}>
           فتح
         </Link>
       }
@@ -77,7 +78,14 @@ export default async function ClientCasesPage() {
 
   return (
     <ClientSiteShell navItems={clientNavForPath("/client/cases")} title="قضاياي" userLabel={guard.context.user.name}>
-      <DataTable columns={columns} rows={cases} empty="لا توجد قضايا مرتبطة بحسابك حتى الآن." mobileRender={(row) => <MobileCard row={row} />} />
+      <DataTable
+        className={clientPortalTableClass}
+        columns={columns}
+        empty="لا توجد قضايا مرتبطة بحسابك حتى الآن."
+        emptyClassName="client-portal-table-empty"
+        mobileRender={(row) => <MobileCard row={row} />}
+        rows={cases}
+      />
     </ClientSiteShell>
   );
 }

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { ClientSiteShell } from "@/components/layout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
+import { ClientPortalDetailItem, ClientPortalPanel, ClientSiteShell } from "@/components/layout";
 import { ProfileForm } from "@/features/portal/profile-form";
 import { formatDateTime } from "@/lib/legal-format";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
@@ -32,28 +31,13 @@ export default async function ClientProfilePage() {
             city: profile.city
           }}
         />
-        <Card>
-          <CardHeader>
-            <CardTitle>بيانات الحساب</CardTitle>
-            <CardDescription>البريد وكلمة المرور يتم تحديثهما من خلال المكتب.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <dl className="space-y-4 text-sm">
-              <div>
-                <dt className="font-semibold text-kmt-muted">بريد تسجيل الدخول</dt>
-                <dd className="mt-1 text-kmt-ink">{profile.user?.email ?? "غير محدد"}</dd>
-              </div>
-              <div>
-                <dt className="font-semibold text-kmt-muted">المحامي المسؤول</dt>
-                <dd className="mt-1 text-kmt-ink">{profile.assignedLawyer?.name ?? "غير معين"}</dd>
-              </div>
-              <div>
-                <dt className="font-semibold text-kmt-muted">تاريخ إنشاء الملف</dt>
-                <dd className="mt-1 text-kmt-ink">{formatDateTime(profile.createdAt)}</dd>
-              </div>
-            </dl>
-          </CardContent>
-        </Card>
+        <ClientPortalPanel description="البريد وكلمة المرور يتم تحديثهما من خلال المكتب." title="بيانات الحساب">
+          <div className="space-y-4 text-sm">
+            <ClientPortalDetailItem label="بريد تسجيل الدخول" value={profile.user?.email ?? "غير محدد"} />
+            <ClientPortalDetailItem label="المحامي المسؤول" value={profile.assignedLawyer?.name ?? "غير معين"} />
+            <ClientPortalDetailItem label="تاريخ إنشاء الملف" value={formatDateTime(profile.createdAt)} />
+          </div>
+        </ClientPortalPanel>
       </div>
     </ClientSiteShell>
   );

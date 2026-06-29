@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { ClientSiteShell } from "@/components/layout";
+import { ClientPortalPanel, ClientSiteShell, clientPortalRowClass, clientPortalSecondaryActionClass, clientPortalTableClass } from "@/components/layout";
 import { Badge, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
+import { DocumentUploadForm } from "@/features/portal/document-upload-form";
 import { documentCategoryLabels, documentStatusLabels, formatBytes, formatDateTime, labelFrom } from "@/lib/legal-format";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
-import { listPortalDocuments } from "@/server/portal/client-portal-service";
+import { listPortalCases, listPortalDocuments } from "@/server/portal/client-portal-service";
 import { clientNavForPath } from "../client-navigation";
 
 export const dynamic = "force-dynamic";
@@ -41,6 +42,7 @@ const columns: Array<DataTableColumn<DocumentRow>> = [
 function MobileCard({ row }: { row: DocumentRow }) {
   return (
     <DataRecordCard
+      className={clientPortalRowClass}
       title={
         <a className="text-kmt-navy hover:underline" href={`/api/files/${row.id}/download`}>
           {row.fileName}
@@ -54,7 +56,7 @@ function MobileCard({ row }: { row: DocumentRow }) {
         { label: "تاريخ الرفع", value: formatDateTime(row.createdAt), className: "sm:col-span-2" }
       ]}
       action={
-        <a className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={`/api/files/${row.id}/download`}>
+        <a className={buttonClasses({ variant: "secondary", size: "sm", className: `min-h-11 w-full ${clientPortalSecondaryActionClass}` })} href={`/api/files/${row.id}/download`}>
           تنزيل
         </a>
       }
@@ -68,11 +70,23 @@ export default async function ClientFilesPage() {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }
 
-  const documents = await listPortalDocuments(guard.context.principal);
+  const [documents, cases] = await Promise.all([listPortalDocuments(guard.context.principal), listPortalCases(guard.context.principal)]);
 
   return (
     <ClientSiteShell navItems={clientNavForPath("/client/files")} title="ملفاتي" userLabel={guard.context.user.name}>
-      <DataTable columns={columns} rows={documents} empty="لا توجد مستندات مرئية لحسابك حتى الآن." mobileRender={(row) => <MobileCard row={row} />} />
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <ClientPortalPanel description="كل المستندات التي سمح المكتب بظهورها لك أو رفعتها من حسابك." title="المستندات المرئية">
+          <DataTable
+            className={clientPortalTableClass}
+            columns={columns}
+            empty="لا توجد مستندات مرئية لحسابك حتى الآن."
+            emptyClassName="client-portal-table-empty"
+            mobileRender={(row) => <MobileCard row={row} />}
+            rows={documents}
+          />
+        </ClientPortalPanel>
+        <DocumentUploadForm cases={cases.map((legalCase) => ({ id: legalCase.id, title: legalCase.title, internalFileNumber: legalCase.internalFileNumber }))} />
+      </div>
     </ClientSiteShell>
   );
 }

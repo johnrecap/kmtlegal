@@ -111,6 +111,115 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
+@layer components {
+  .client-portal-shell {
+    color-scheme: dark;
+  }
+
+  .client-portal-shell .client-portal-table {
+    border-color: rgb(255 255 255 / 10%);
+    background: rgb(255 255 255 / 4.5%);
+    color: #f8f3ea;
+  }
+
+  .client-portal-shell .client-portal-row {
+    border-color: rgb(255 255 255 / 10%);
+    background: rgb(0 0 0 / 15%);
+    color: #f8f3ea;
+    box-shadow: none;
+  }
+
+  .client-portal-shell .client-portal-table table {
+    color: inherit;
+  }
+
+  .client-portal-shell .client-portal-table thead {
+    background: rgb(255 255 255 / 6%);
+    color: #cbd5e1;
+  }
+
+  .client-portal-shell .client-portal-table th,
+  .client-portal-shell .client-portal-table td {
+    border-color: rgb(255 255 255 / 10%);
+  }
+
+  .client-portal-shell .client-portal-table td {
+    color: #f8f3ea;
+  }
+
+  .client-portal-shell .client-portal-table tbody {
+    border-color: rgb(255 255 255 / 10%);
+  }
+
+  .client-portal-shell .client-portal-table tbody > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgb(255 255 255 / 10%);
+  }
+
+  .client-portal-shell .client-portal-table tbody tr:hover {
+    background: rgb(255 255 255 / 5.5%);
+  }
+
+  .client-portal-shell .client-portal-table a,
+  .client-portal-shell .client-portal-row a,
+  .client-portal-shell .client-portal-panel a {
+    color: #f0c36d;
+  }
+
+  .client-portal-shell :where(.client-portal-table, .client-portal-panel, .client-portal-row) .text-kmt-ink {
+    color: #f8f3ea;
+  }
+
+  .client-portal-shell :where(.client-portal-table, .client-portal-panel, .client-portal-row) .text-kmt-muted {
+    color: #cbd5e1;
+  }
+
+  .client-portal-shell :where(.client-portal-table, .client-portal-panel, .client-portal-row) .text-kmt-navy {
+    color: #f0c36d;
+  }
+
+  .client-portal-shell .client-portal-panel label {
+    color: #f8f3ea;
+  }
+
+  .client-portal-shell .client-portal-panel input,
+  .client-portal-shell .client-portal-panel textarea,
+  .client-portal-shell .client-portal-panel select {
+    border-color: rgb(255 255 255 / 16%);
+    background: rgb(0 0 0 / 22%);
+    color: #f8f3ea;
+  }
+
+  .client-portal-shell .client-portal-panel input::placeholder,
+  .client-portal-shell .client-portal-panel textarea::placeholder {
+    color: #94a3b8;
+  }
+
+  .client-portal-shell .client-portal-panel input:focus,
+  .client-portal-shell .client-portal-panel textarea:focus,
+  .client-portal-shell .client-portal-panel select:focus {
+    border-color: rgb(153 123 68 / 72%);
+    box-shadow: 0 0 0 3px rgb(153 123 68 / 18%);
+  }
+
+  .client-portal-shell .client-portal-table-empty {
+    border-color: rgb(153 123 68 / 34%);
+    background: rgb(153 123 68 / 10%);
+    color: #cbd5e1;
+  }
+
+  .client-portal-shell .kmt-motion-card,
+  .client-portal-shell .kmt-motion-card-beam {
+    animation: none !important;
+    transform: none !important;
+    transition-property: border-color, background-color, box-shadow !important;
+  }
+
+  .client-portal-shell .kmt-motion-card::before,
+  .client-portal-shell .kmt-motion-card-beam::after {
+    display: none !important;
+  }
+}
+
 @layer utilities {
   @keyframes kmt-motion-reveal {
     from {

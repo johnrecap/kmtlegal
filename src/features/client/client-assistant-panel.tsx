@@ -1,7 +1,8 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Textarea } from "@/components/ui";
+import { ClientPortalPanel, ClientPortalRow, clientPortalPrimaryActionClass } from "@/components/layout";
+import { Badge, Button, Textarea } from "@/components/ui";
 import { formatDateTime } from "@/lib/legal-format";
 
 type AssistantAppointment = {
@@ -70,53 +71,43 @@ export function ClientAssistantPanel() {
 
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
-      <Card>
-        <CardHeader>
-          <CardTitle>المساعد</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <ClientPortalPanel description="اسأل عن مواعيد الاستشارات القادمة المرتبطة بحسابك." title="المساعد">
           <form className="space-y-4" onSubmit={submit}>
             <Textarea label="رسالتك" name="message" value={message} onChange={(event) => setMessage(event.target.value)} required />
-            <Button loading={isBusy} type="submit">
+            <Button className={clientPortalPrimaryActionClass} loading={isBusy} type="submit">
               إرسال
             </Button>
           </form>
           {error ? (
-            <div className="mt-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm leading-6 text-red-900" role="alert">
+            <div className="mt-4 rounded border border-red-300/35 bg-red-950/50 px-3 py-2 text-sm leading-6 text-red-100" role="alert">
               {error}
             </div>
           ) : null}
-        </CardContent>
-      </Card>
+      </ClientPortalPanel>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>الرد</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <ClientPortalPanel title="الرد">
           {reply ? (
             <div className="space-y-3">
-              <p className="text-sm leading-7 text-kmt-ink">{reply.message}</p>
+              <p className="text-sm leading-7 text-slate-100">{reply.message}</p>
               {reply.appointments?.length ? (
                 <div className="space-y-2">
                   {reply.appointments.map((appointment) => (
-                    <div key={appointment.id} className="rounded border border-kmt-border p-3">
+                    <ClientPortalRow key={appointment.id}>
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="font-semibold text-kmt-ink">{appointment.title}</p>
+                        <p className="font-semibold text-white">{appointment.title}</p>
                         <Badge tone="pending">{appointment.status}</Badge>
                       </div>
-                      <p className="mt-1 text-sm text-kmt-muted">{formatDateTime(appointment.startsAt)}</p>
-                      <p className="mt-1 text-xs text-kmt-muted">{appointment.lawyer?.name ?? "غير محدد"}</p>
-                    </div>
+                      <p className="mt-1 text-sm text-slate-300">{formatDateTime(appointment.startsAt)}</p>
+                      <p className="mt-1 text-xs text-slate-400">{appointment.lawyer?.name ?? "غير محدد"}</p>
+                    </ClientPortalRow>
                   ))}
                 </div>
               ) : null}
             </div>
           ) : (
-            <p className="text-sm text-kmt-muted">لا يوجد رد بعد.</p>
+            <p className="text-sm text-slate-300">لا يوجد رد بعد.</p>
           )}
-        </CardContent>
-      </Card>
+      </ClientPortalPanel>
     </div>
   );
 }

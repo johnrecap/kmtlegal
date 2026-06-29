@@ -5,6 +5,7 @@ Status: Done
 ## Scope Delivered
 
 - Added `/portal/documents` with visible document list and client upload form using the PLAN-07 upload contract.
+- Follow-up: `/client/files` is now the primary client files surface and keeps the same visible document list plus client upload form; `/portal/documents` redirects there for compatibility.
 - Added authorized download links through `/api/files/[documentId]/download`.
 - Added `/portal/appointments` and `/portal/payments` read-only pages.
 - Added `/portal/profile` with editable client profile basics.
@@ -14,6 +15,7 @@ Status: Done
 ## Files
 
 - `src/app/portal/documents/page.tsx`
+- `src/app/client/files/page.tsx`
 - `src/app/portal/appointments/page.tsx`
 - `src/app/portal/payments/page.tsx`
 - `src/app/portal/profile/page.tsx`

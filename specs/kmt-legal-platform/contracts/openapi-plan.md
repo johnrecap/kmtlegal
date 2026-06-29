@@ -119,7 +119,7 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 | Server-rendered | `/client` | Client summary | Client | client.read.self |
 | Server-rendered | `/client/cases` | Own cases list | Client | case.read.own |
 | Server-rendered | `/client/cases/{id}` | Own case detail | Client | case.read.own |
-| Server-rendered | `/client/files` | Own visible files | Client | document.read.own |
+| Server-rendered | `/client/files` | Own visible files and upload form | Client | document.read.own / document.upload.self |
 | Server-rendered | `/client/court-dates` | Own case and consultation appointments | Client | appointment.read.own |
 | Server-rendered | `/client/payments` | Own payment records and dues | Client | payment.read.own |
 | Server-rendered | `/client/assistant` | Client assistant appointment inquiry | Client | appointment.read.own |
@@ -128,7 +128,7 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 | Server-rendered | `/portal` | Client summary | Client | portal.read.self |
 | Server-rendered | `/portal/cases` | Own cases list | Client | case.read.own |
 | Server-rendered | `/portal/cases/{id}` | Own case detail | Client | case.read.own |
-| Server-rendered | `/portal/documents` | Own documents and upload form | Client | document.read.own / document.upload.self |
+| Server-rendered | `/portal/documents` | Compatibility redirect to `/client/files` | Client | document.read.own / document.upload.self |
 | Server-rendered | `/portal/appointments` | Own appointments | Client | appointment.read.own |
 | Server-rendered | `/portal/payments` | Own payment records | Client | payment.read.own |
 | PATCH | `/api/portal/profile` | Update profile | Client | user.update.self |

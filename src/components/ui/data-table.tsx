@@ -13,16 +13,18 @@ export function DataTable<Row extends { id: string }>({
   rows,
   empty,
   className,
+  emptyClassName,
   mobileRender
 }: {
   columns: Array<DataTableColumn<Row>>;
   rows: Row[];
   empty?: ReactNode;
   className?: string;
+  emptyClassName?: string;
   mobileRender?: (row: Row) => ReactNode;
 }) {
   if (rows.length === 0) {
-    return <div className="rounded-lg border border-kmt-border bg-white p-6 text-sm text-kmt-muted">{empty || "لا توجد بيانات."}</div>;
+    return <div className={cn("rounded-lg border border-kmt-border bg-white p-6 text-sm text-kmt-muted", className, emptyClassName)}>{empty || "لا توجد بيانات."}</div>;
   }
 
   const table = (

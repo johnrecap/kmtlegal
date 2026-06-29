@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, TextInput } from "@/components/ui";
+import { ClientPortalPanel, clientPortalPrimaryActionClass } from "@/components/layout";
+import { Button, TextInput } from "@/components/ui";
 
 type ProfileFormValue = {
   fullName: string;
@@ -56,27 +57,21 @@ export function ProfileForm({ profile }: { profile: ProfileFormValue }) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>بيانات الملف الشخصي</CardTitle>
-        <CardDescription>هذه البيانات تستخدم للتواصل وتنظيم مواعيد القضية.</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <ClientPortalPanel description="هذه البيانات تستخدم للتواصل وتنظيم مواعيد القضية." title="بيانات الملف الشخصي">
         <form className="grid gap-4" onSubmit={save}>
           <TextInput defaultValue={profile.fullName} label="الاسم الكامل" name="fullName" required />
           <TextInput defaultValue={profile.phone} label="رقم الهاتف" name="phone" required />
           <TextInput defaultValue={profile.email ?? ""} label="البريد الإلكتروني" name="email" type="email" />
           <TextInput defaultValue={profile.city ?? ""} label="المدينة" name="city" />
-          <Button loading={isSaving} type="submit">
+          <Button className={clientPortalPrimaryActionClass} loading={isSaving} type="submit">
             حفظ البيانات
           </Button>
           {message ? (
-            <div className="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-sm leading-6 text-blue-900" role="status">
+            <div className="rounded border border-blue-300/35 bg-blue-950/45 px-3 py-2 text-sm leading-6 text-blue-100" role="status">
               {message}
             </div>
           ) : null}
         </form>
-      </CardContent>
-    </Card>
+    </ClientPortalPanel>
   );
 }
