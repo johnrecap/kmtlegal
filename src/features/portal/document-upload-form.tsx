@@ -3,7 +3,9 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { ClientPortalPanel, clientPortalPrimaryActionClass } from "@/components/layout";
-import { Button, Select } from "@/components/ui";
+import { ClientPortalSelect, type ClientPortalSelectOption } from "@/components/layout/client-portal-select";
+import { Button } from "@/components/ui";
+import { documentCategoryLabels, labelFrom } from "@/lib/legal-format";
 
 type CaseOption = {
   id: string;
@@ -17,10 +19,24 @@ type ApiErrorBody = {
   };
 };
 
+const documentCategoryValues = ["CONTRACT", "COURT_FILE", "IDENTITY", "EVIDENCE", "PAYMENT", "OTHER"] as const;
+
+const documentCategoryOptions: ClientPortalSelectOption[] = documentCategoryValues.map((category) => ({
+  value: category,
+  label: labelFrom(documentCategoryLabels, category)
+}));
+
 export function DocumentUploadForm({ cases }: { cases: CaseOption[] }) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const caseOptions: ClientPortalSelectOption[] = [
+    { value: "", label: "بدون قضية محددة" },
+    ...cases.map((legalCase) => ({
+      value: legalCase.id,
+      label: `${legalCase.internalFileNumber} - ${legalCase.title}`
+    }))
+  ];
 
   async function upload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -55,22 +71,8 @@ export function DocumentUploadForm({ cases }: { cases: CaseOption[] }) {
   return (
     <ClientPortalPanel description="الحد الأقصى 5MB. الأنواع المسموحة: PDF, DOC, DOCX, JPG, PNG." title="رفع مستند جديد">
       <form className="space-y-4" onSubmit={upload}>
-        <Select label="ربط المستند بقضية" name="caseId">
-          <option value="">بدون قضية محددة</option>
-          {cases.map((legalCase) => (
-            <option key={legalCase.id} value={legalCase.id}>
-              {legalCase.internalFileNumber} - {legalCase.title}
-            </option>
-          ))}
-        </Select>
-        <Select defaultValue="OTHER" label="تصنيف المستند" name="category">
-          <option value="CONTRACT">عقد</option>
-          <option value="COURT_FILE">ملف محكمة</option>
-          <option value="IDENTITY">هوية</option>
-          <option value="EVIDENCE">دليل</option>
-          <option value="PAYMENT">دفع</option>
-          <option value="OTHER">أخرى</option>
-        </Select>
+        <ClientPortalSelect label="ربط المستند بقضية" name="caseId" options={caseOptions} />
+        <ClientPortalSelect defaultValue="OTHER" label="تصنيف المستند" name="category" options={documentCategoryOptions} />
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-white" htmlFor="portal-document-file">
             الملف

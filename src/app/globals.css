@@ -187,6 +187,29 @@ a {
     border-color: rgb(255 255 255 / 16%);
     background: rgb(0 0 0 / 22%);
     color: #f8f3ea;
+    color-scheme: dark;
+  }
+
+  .client-portal-shell .client-portal-panel select + span {
+    color: #c79a52;
+  }
+
+  .client-portal-shell .client-portal-panel select:focus + span {
+    color: #f0c36d;
+  }
+
+  .client-portal-shell .client-portal-panel select option {
+    background: #090806;
+    color: #f8f3ea;
+  }
+
+  .client-portal-shell .client-portal-panel select option:checked {
+    background: #997b44;
+    color: #120d07;
+  }
+
+  .client-portal-shell .client-portal-panel select option:disabled {
+    color: #64748b;
   }
 
   .client-portal-shell .client-portal-panel input::placeholder,

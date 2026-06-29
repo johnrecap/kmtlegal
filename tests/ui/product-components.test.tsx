@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ClientPortalMetric, ClientPortalPanel, ClientSiteShell, DashboardShell, clientPortalTableClass } from "@/components/layout";
+import { ClientPortalSelect } from "@/components/layout/client-portal-select";
 import { Badge, Button, DataRecordCard, DataTable, Select, StateBlock, Tabs, TextInput } from "@/components/ui";
 
 describe("product UI primitives", () => {
@@ -40,6 +41,34 @@ describe("product UI primitives", () => {
     expect(html).toContain("z-10");
     expect(html).toContain("pointer-events-none");
     expect(html).toContain("aria-hidden=\"true\"");
+  });
+
+  it("renders client portal selects as dark custom listboxes with stable form values", () => {
+    const html = renderToStaticMarkup(
+      <ClientPortalSelect
+        defaultValue="OTHER"
+        label="تصنيف المستند"
+        name="category"
+        options={[
+          { value: "CONTRACT", label: "عقد" },
+          { value: "OTHER", label: "أخرى" }
+        ]}
+      />
+    );
+    const componentSource = readFileSync(join(process.cwd(), "src/components/layout/client-portal-select.tsx"), "utf8");
+    const globalStyles = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
+
+    expect(html).toContain("type=\"hidden\"");
+    expect(html).toContain("name=\"category\"");
+    expect(html).toContain("value=\"OTHER\"");
+    expect(html).toContain("aria-haspopup=\"listbox\"");
+    expect(html).toContain("bg-black/25");
+    expect(html).toContain("text-[#c79a52]");
+    expect(componentSource).toContain("role=\"listbox\"");
+    expect(componentSource).toContain("bg-[#090806]");
+    expect(componentSource).toContain("bg-kmt-gold text-[#120d07]");
+    expect(globalStyles).toContain(".client-portal-shell .client-portal-panel select option");
+    expect(globalStyles).toContain("background: #090806");
   });
 
   it("renders native date and time inputs with picker spacing in RTL layouts", () => {
