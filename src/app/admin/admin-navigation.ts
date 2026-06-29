@@ -4,6 +4,7 @@ export const adminNavItems: DashboardNavItem[] = [
   { label: "الرئيسية", href: "/admin", icon: "dashboard", group: "تشغيل المكتب" },
   { label: "الاستشارات", href: "/admin/consultations", icon: "rate_review", group: "تشغيل المكتب" },
   { label: "العملاء", href: "/admin/clients", icon: "groups", group: "تشغيل المكتب" },
+  { label: "رسائل العملاء", href: "/admin/messages", icon: "forum", group: "تشغيل المكتب" },
   { label: "القضايا", href: "/admin/cases", icon: "gavel", group: "تشغيل المكتب" },
   { label: "التقويم", href: "/admin/calendar", icon: "event", group: "تشغيل المكتب" },
   { label: "المهام", href: "/admin/tasks", icon: "task_alt", group: "تشغيل المكتب" },

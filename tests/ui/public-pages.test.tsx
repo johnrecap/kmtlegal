@@ -104,7 +104,7 @@ describe("public website UI", () => {
 
     expect(html).toContain("bg-[#0c1116]");
     expect(html).toContain("mx-auto text-center");
-    expect(html).toContain("Write Your Request In A Few Steps");
+    expect(html).toContain("Chat With The Booking Assistant");
     expect(html).toContain("Book a Consultation");
     expect(html).toContain("href=\"/book-consultation?service=Corporate%20Law\"");
   });

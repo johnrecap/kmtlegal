@@ -171,6 +171,14 @@ export const paymentStatusLabels: Record<string, string> = {
   CANCELLED: "ملغاة"
 };
 
+export const conversationStatusLabels: Record<string, string> = {
+  OPEN: "مفتوحة",
+  WAITING_STAFF: "بانتظار الفريق",
+  WAITING_CLIENT: "بانتظار العميل",
+  CLOSED: "مغلقة",
+  ARCHIVED: "مؤرشفة"
+};
+
 export function labelFrom(map: Record<string, string>, value?: string | null) {
   if (!value) {
     return "غير محدد";

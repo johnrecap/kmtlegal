@@ -59,6 +59,7 @@ export const rateLimiters = {
   twoFactor: new MemoryRateLimiter({ windowMs: 10 * 60 * 1000, max: 8 }),
   booking: new MemoryRateLimiter({ windowMs: 10 * 60 * 1000, max: 5 }),
   contact: new MemoryRateLimiter({ windowMs: 10 * 60 * 1000, max: 5 }),
+  conversation: new MemoryRateLimiter({ windowMs: 60 * 1000, max: 12 }),
   upload: new MemoryRateLimiter({ windowMs: 10 * 60 * 1000, max: 20 }),
   ai: new MemoryRateLimiter({ windowMs: 10 * 60 * 1000, max: 20 }),
   analytics: new MemoryRateLimiter({ windowMs: 60 * 1000, max: 60 })

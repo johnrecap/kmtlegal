@@ -46,5 +46,11 @@ function defaultBaseUrlForProvider(provider: AIProviderName) {
 }
 
 function defaultModelForProvider(provider: AIProviderName) {
-  return provider === "mock" ? "mock-kmt-legal-v1" : "configured-model";
+  if (provider === "mock") {
+    return "mock-kmt-legal-v1";
+  }
+  if (provider === "openrouter") {
+    return "google/gemini-2.5-flash";
+  }
+  return "configured-model";
 }

@@ -62,7 +62,7 @@ const MIN_SUMMARY_LENGTH = 20;
 
 const darkSurfaceClasses = cn(
   publicMotionForm,
-  "relative overflow-hidden rounded-lg border border-kmt-gold/25 bg-[linear-gradient(145deg,#17110a_0%,#0b0c0e_50%,#050505_100%)] shadow-[0_28px_90px_-56px_rgba(0,0,0,0.95)] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-l before:from-transparent before:via-kmt-gold/70 before:to-transparent"
+  "relative isolate overflow-hidden rounded-[1.75rem] border border-kmt-gold/45 bg-[linear-gradient(145deg,#17110a_0%,#090b0d_48%,#020202_100%),radial-gradient(circle_at_top_left,rgba(183,134,64,0.16),transparent_34%)] shadow-[0_34px_120px_-54px_rgba(183,134,64,0.42)] before:absolute before:inset-x-8 before:top-0 before:h-px before:bg-gradient-to-l before:from-transparent before:via-kmt-gold/80 before:to-transparent after:pointer-events-none after:absolute after:inset-0 after:rounded-[1.75rem] after:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_0_80px_rgba(183,134,64,0.04)]"
 );
 
 const darkControlClasses = cn(
@@ -72,7 +72,7 @@ const darkControlClasses = cn(
 
 const chipButtonClasses = cn(
   publicMotionButton,
-  "min-h-10 rounded-full !border-kmt-gold/30 !bg-white/[0.04] !px-3 !text-sm !text-amber-100 hover:!bg-kmt-gold hover:!text-[#120d07]"
+  "min-h-11 rounded-full !border-kmt-gold/45 !bg-black/30 !px-4 !text-sm !text-amber-100 shadow-[0_12px_35px_-28px_rgba(183,134,64,0.9)] hover:!bg-kmt-gold hover:!text-[#120d07]"
 );
 
 const secondaryButtonClasses = cn(
@@ -137,6 +137,15 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     append("user", copy.book);
     append("assistant", copy.contactPrompt);
     trackClientAnalyticsEvent("booking.step_viewed", { step: "chat_contact", locale });
+  }
+
+  function startBookingWithCategory(label: string, category: string) {
+    setDraft((current) => ({ ...current, serviceCategory: category }));
+    setMode("booking");
+    setBookingStep("contact");
+    append("user", label);
+    append("assistant", copy.contactPrompt);
+    trackClientAnalyticsEvent("booking.step_viewed", { step: "chat_contact", locale, category });
   }
 
   function startInquiry() {
@@ -312,23 +321,43 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       data-hydrated={isHydrated ? "true" : "false"}
       data-testid="booking-stepper"
     >
-      <div className="relative z-10 flex min-h-[38rem] flex-col" data-testid="booking-chat-shell">
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 bg-black/20 px-4 py-4 sm:px-5">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-kmt-gold/35 bg-kmt-gold/15 text-kmt-gold shadow-[0_0_32px_rgba(183,134,64,0.18)]">
-              <MaterialSymbol className="text-2xl" name="support_agent" />
-            </span>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-white">{copy.assistantName}</p>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-kmt-gold">{copy.status}</p>
+      <div className="relative z-10 flex min-h-[42rem] flex-col" data-testid="booking-chat-shell">
+        <header className="px-5 pb-4 pt-5 sm:px-8 sm:pt-8">
+          <div className="flex flex-wrap items-start justify-between gap-5">
+            <div className="flex min-w-0 items-center gap-4">
+              <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-kmt-gold/70 bg-[radial-gradient(circle_at_35%_25%,rgba(255,255,255,0.18),transparent_32%),linear-gradient(145deg,rgba(183,134,64,0.24),rgba(0,0,0,0.48))] text-kmt-gold shadow-[0_0_42px_rgba(183,134,64,0.24)] max-sm:h-14 max-sm:w-14">
+                <MaterialSymbol className="text-[2.5rem] max-sm:text-3xl" name="balance" />
+              </span>
+              <div className="min-w-0">
+                <p className="truncate font-serif text-3xl font-semibold text-white max-sm:text-xl">{copy.assistantName}</p>
+                <p className="mt-2 flex items-center gap-2 text-sm font-medium text-[#7ad36a]">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[#7ad36a] shadow-[0_0_16px_rgba(122,211,106,0.85)]" aria-hidden="true" />
+                  {copy.onlineNow}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex min-h-12 items-center gap-2 rounded-lg border border-white/12 bg-white/[0.05] px-4 text-sm text-amber-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                <MaterialSymbol className="text-xl text-kmt-gold" name="person_check" />
+                {copy.humanReviewOnly}
+              </span>
+              <span className="inline-flex min-h-12 items-center gap-2 rounded-lg border border-white/12 bg-white/[0.05] px-4 text-sm text-amber-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                <MaterialSymbol className="text-xl text-kmt-gold" name="shield" />
+                {copy.noLegalAdvice}
+              </span>
             </div>
           </div>
-          <p className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs leading-5 text-slate-300">{copy.scope}</p>
+
+          <div className="mt-6 grid gap-3 rounded-lg border border-kmt-gold/22 bg-black/22 px-4 py-4 text-sm text-amber-50 sm:grid-cols-3">
+            <TrustRailItem icon="lock" label={copy.secureConfidential} />
+            <TrustRailItem icon="supervisor_account" label={copy.humanReviewBadge} />
+            <TrustRailItem icon="bolt" label={copy.fastResponse} />
+          </div>
         </header>
 
         <div
           aria-busy={isBusy ? "true" : "false"}
-          className="flex-1 space-y-4 overflow-y-auto px-4 py-5 sm:px-5"
+          className="flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-8"
           data-testid="booking-chat-log"
           role="log"
         >
@@ -349,24 +378,32 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
           <div ref={logEndRef} />
         </div>
 
-        <div className="border-t border-white/10 bg-black/35 px-4 py-4 sm:px-5">
+        <div className="px-5 pb-5 sm:px-8 sm:pb-8">
           {mode === "idle" ? (
-            <div className="mb-3 flex flex-wrap gap-2">
+            <div className="mb-5 flex flex-wrap gap-3">
               <Button className={chipButtonClasses} data-testid="booking-quick-book" size="sm" type="button" variant="secondary" onClick={startBooking}>
-                <MaterialSymbol className="text-base" name="event_available" />
+                <MaterialSymbol className="text-xl" name="event_available" />
                 {copy.book}
               </Button>
               <Button className={chipButtonClasses} data-testid="booking-quick-inquiry" size="sm" type="button" variant="secondary" onClick={startInquiry}>
-                <MaterialSymbol className="text-base" name="search" />
+                <MaterialSymbol className="text-xl" name="search" />
                 {copy.inquire}
+              </Button>
+              <Button className={chipButtonClasses} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(copy.corporateLaw, "corporate")}>
+                <MaterialSymbol className="text-xl" name="account_balance" />
+                {copy.corporateLaw}
+              </Button>
+              <Button className={chipButtonClasses} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(copy.litigation, "disputes")}>
+                <MaterialSymbol className="text-xl" name="gavel" />
+                {copy.litigation}
               </Button>
             </div>
           ) : null}
 
-          <form className="flex min-w-0 items-end gap-2" data-testid="booking-chat-composer" noValidate onSubmit={submitFreeMessage}>
+          <form className="flex min-w-0 items-end gap-3" data-testid="booking-chat-composer" noValidate onSubmit={submitFreeMessage}>
             <div className="min-w-0 flex-1 [&_label]:sr-only">
               <TextInput
-                className={cn(darkControlClasses, "!rounded-full !py-3")}
+                className={cn(darkControlClasses, "!min-h-16 !rounded-full !border-kmt-gold/55 !bg-black/42 !px-6 !text-base")}
                 disabled={isBusy}
                 label={copy.messageLabel}
                 name="chatMessage"
@@ -377,7 +414,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
             </div>
             <Button
               aria-label={copy.send}
-              className={cn(publicMotionButton, publicMotionCta, "mb-0 h-12 w-12 shrink-0 rounded-full !px-0")}
+              className={cn(publicMotionButton, publicMotionCta, "mb-0 h-16 w-16 shrink-0 rounded-full !px-0 shadow-[0_16px_45px_-24px_rgba(183,134,64,1)]")}
               disabled={isBusy || !freeMessage.trim()}
               type="submit"
             >
@@ -385,6 +422,10 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
               <span className="sr-only">{copy.send}</span>
             </Button>
           </form>
+          <p className="mt-4 flex items-center justify-center gap-2 text-center text-sm text-amber-100/65">
+            <MaterialSymbol className="text-lg" name="lock" />
+            {copy.privacyNote}
+          </p>
         </div>
       </div>
     </section>
@@ -522,22 +563,33 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   }
 }
 
+function TrustRailItem({ icon, label }: { icon: string; label: string }) {
+  return (
+    <div className="flex min-w-0 items-center justify-center gap-3 border-kmt-gold/20 text-center sm:border-l sm:first:border-l-0">
+      <MaterialSymbol className="shrink-0 text-2xl text-kmt-gold" name={icon} />
+      <span className="min-w-0 break-words font-medium">{label}</span>
+    </div>
+  );
+}
+
 function ChatBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
 
   return (
-    <div className={cn("flex items-end gap-2", isUser ? "justify-end" : "justify-start")}>
+    <div className={cn("flex items-end gap-4", isUser ? "justify-end" : "justify-start")}>
       {!isUser ? (
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-kmt-gold">
-          <MaterialSymbol className="text-lg" name={message.tone === "error" ? "error" : message.tone === "success" ? "check_circle" : "support_agent"} />
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-kmt-gold/40 bg-[linear-gradient(145deg,rgba(183,134,64,0.18),rgba(0,0,0,0.35))] text-kmt-gold shadow-[0_14px_35px_-28px_rgba(183,134,64,1)] max-sm:h-9 max-sm:w-9">
+          <MaterialSymbol className="text-2xl max-sm:text-lg" name={message.tone === "error" ? "error" : message.tone === "success" ? "check_circle" : "balance"} />
         </span>
       ) : null}
       <p
         className={cn(
-          "max-w-[82%] break-words rounded-2xl px-4 py-3 text-sm leading-7 shadow-[0_16px_42px_-34px_rgba(0,0,0,0.95)]",
-          isUser ? "rounded-ee-sm bg-kmt-gold text-[#120d07]" : "rounded-es-sm border border-white/10 bg-white/[0.05] text-slate-100",
-          message.tone === "error" ? "border-red-300/35 bg-red-950/45 text-red-100" : undefined,
-          message.tone === "success" ? "border-emerald-300/35 bg-emerald-950/35 text-emerald-50" : undefined
+          "max-w-[78%] break-words rounded-[1.45rem] px-6 py-4 text-base leading-8 shadow-[0_22px_60px_-42px_rgba(0,0,0,0.95)] max-sm:max-w-[86%] max-sm:px-4 max-sm:py-3 max-sm:text-sm",
+          isUser
+            ? "rounded-ee-md border border-kmt-gold/45 bg-[linear-gradient(135deg,#c79a4b,#a87429)] text-white"
+            : "rounded-es-md border border-white/12 bg-white/[0.075] text-slate-100",
+          message.tone === "error" ? "border-red-300/35 bg-red-950/55 text-red-100" : undefined,
+          message.tone === "success" ? "border-emerald-300/35 bg-emerald-950/40 text-emerald-50" : undefined
         )}
         role={message.tone === "error" ? "alert" : undefined}
       >
@@ -552,12 +604,12 @@ function StepCard({ children, icon, prompt, title }: { children: ReactNode; icon
     <section
       className={cn(
         publicMotionStatus,
-        "rounded-2xl rounded-es-sm border border-kmt-gold/20 bg-[#090806]/92 p-4 shadow-[0_22px_70px_-46px_rgba(0,0,0,0.95)]"
+        "rounded-[1.35rem] rounded-es-md border border-kmt-gold/28 bg-[#090806]/92 p-5 shadow-[0_22px_70px_-46px_rgba(0,0,0,0.95)]"
       )}
       data-testid="booking-chat-step-card"
     >
       <div className="mb-4 flex items-start gap-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-kmt-gold/30 bg-kmt-gold/10 text-kmt-gold">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-kmt-gold/35 bg-kmt-gold/12 text-kmt-gold">
           <MaterialSymbol className="text-xl" name={icon} />
         </span>
         <div>
@@ -573,8 +625,8 @@ function StepCard({ children, icon, prompt, title }: { children: ReactNode; icon
 function TypingIndicator({ label }: { label: string }) {
   return (
     <div className="flex items-end gap-2 text-slate-300">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-kmt-gold">
-        <MaterialSymbol className="text-lg" name="support_agent" />
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-kmt-gold">
+        <MaterialSymbol className="text-lg" name="balance" />
       </span>
       <div className="flex items-center gap-2 rounded-2xl rounded-es-sm border border-white/10 bg-white/[0.05] px-4 py-3 text-xs">
         <span>{label}</span>

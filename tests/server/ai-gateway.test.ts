@@ -2,11 +2,26 @@ import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { ApiError } from "@/server/http/errors";
 import { AI_REVIEW_DISCLAIMER } from "@/server/ai/copy";
+import { getAIProviderConfig } from "@/server/ai/config";
 import { generateStructured } from "@/server/ai/gateway";
 import { consultationAssistantOutputSchema, consultationClassificationOutputSchema, intakeSummaryOutputSchema } from "@/server/ai/schemas";
 import { createOpenAICompatibleProvider } from "@/server/ai/providers/openai-compatible";
 
 describe("AI Provider Gateway", () => {
+  it("defaults OpenRouter to Gemini 2.5 Flash with the server-side OpenRouter base URL", () => {
+    process.env.AI_PROVIDER = "openrouter";
+    delete process.env.AI_BASE_URL;
+    delete process.env.AI_MODEL;
+
+    const config = getAIProviderConfig();
+
+    expect(config.provider).toBe("openrouter");
+    expect(config.baseUrl).toBe("https://openrouter.ai/api/v1");
+    expect(config.model).toBe("google/gemini-2.5-flash");
+
+    process.env.AI_PROVIDER = "mock";
+  });
+
   it("normalizes deterministic mock provider output and requires review", async () => {
     process.env.AI_PROVIDER = "mock";
 

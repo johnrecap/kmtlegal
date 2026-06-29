@@ -13,7 +13,7 @@ All API Route Handlers and Server Actions must follow these standards:
 - Response body: DTO, never raw Prisma record.
 - Status codes: explicit.
 - Error codes: from shared error enum.
-- Rate limits: login, booking, contact, upload, AI provider calls, expensive admin exports. 2FA/OTP routes are disabled placeholders in this release.
+- Rate limits: login, booking, contact, client-team conversation messages, upload, AI provider calls, expensive admin exports. 2FA/OTP routes are disabled placeholders in this release.
 - Pagination: cursor or page/limit with max limit.
 - Sorting: allowlisted fields only.
 - Filtering: allowlisted filters only.
@@ -125,6 +125,10 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 | Server-rendered | `/client/assistant` | Client assistant appointment inquiry | Client | appointment.read.own |
 | Server-rendered | `/client/profile` | Client profile | Client | client.read.self |
 | POST | `/api/client/assistant` | Authenticated client appointment assistant | Client | appointment.read.own |
+| GET | `/api/client/messages` | List current client's team conversations | Client | conversation.read.own |
+| POST | `/api/client/messages` | Create or continue current client's team conversation | Client | conversation.create.own / conversation.reply.own |
+| GET | `/api/client/messages/{threadId}` | Read one own team conversation | Client | conversation.read.own |
+| POST | `/api/client/messages/{threadId}/messages` | Add a client message to one own open conversation | Client | conversation.reply.own |
 | Server-rendered | `/portal` | Client summary | Client | portal.read.self |
 | Server-rendered | `/portal/cases` | Own cases list | Client | case.read.own |
 | Server-rendered | `/portal/cases/{id}` | Own case detail | Client | case.read.own |
@@ -191,6 +195,10 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 | GET | `/api/admin/audit-log` | Audit search with client-friendly presentation DTO | Super Admin | audit.read.any |
 | GET | `/api/admin/contact-messages` | Contact message review queue | Staff | contact.read.any |
 | PATCH | `/api/admin/contact-messages/{messageId}` | Mark contact message reviewed or archived | Staff | contact.manage.any |
+| GET | `/api/admin/messages` | Client team-message inbox | Secretary/Admin | conversation.read.any |
+| GET | `/api/admin/messages/{threadId}` | Client team-message detail | Secretary/Admin | conversation.read.any |
+| POST | `/api/admin/messages/{threadId}/messages` | Reply to a client team-message thread | Secretary/Admin | conversation.reply.any |
+| PATCH | `/api/admin/messages/{threadId}` | Assign, close, reopen, or archive a client team-message thread | Secretary/Admin | conversation.assign.any / conversation.manage.any |
 
 ### Finance and Reports
 | Method | Path | Purpose | Auth | Permission |
@@ -227,9 +235,9 @@ AI provider calls are server-side only. UI and feature services must call the in
 Config:
 ```text
 AI_PROVIDER=mock | openrouter | openai-compatible | local | custom
-AI_BASE_URL=
+AI_BASE_URL= # optional for openrouter; defaults to https://openrouter.ai/api/v1
 AI_API_KEY=
-AI_MODEL=
+AI_MODEL= # optional for openrouter; defaults to google/gemini-2.5-flash
 AI_TIMEOUT_MS=
 AI_MAX_TOKENS=
 AI_TEMPERATURE=
@@ -277,6 +285,7 @@ Supported tasks: consultation classification, intake summary, document checklist
 - Login: strict IP+identifier throttling.
 - Staff 2FA/TOTP/Email OTP routes return `FEATURE_DISABLED` in this release. Future activation must add strict user+IP throttling, max attempts, short expiry, and audit evidence before enabling.
 - Contact and consultation submit: IP+phone/email throttling.
+- Client team-message conversations: authenticated user throttling. Human messages are saved as part of live chat; public AI booking chat transcripts are not saved as conversation archives.
 - Upload: user+IP throttling, 5MB cap, allowlisted MIME/content validation.
 - AI provider calls: user+IP throttling, timeout, token cap, schema validation, provider error handling.
 - Admin exports/reports: admin-user throttling.

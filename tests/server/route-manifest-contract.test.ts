@@ -50,6 +50,12 @@ describe("route manifest contract", () => {
       ["/api/public/consultations", "/api/public/consultations"],
       ["/api/public/consultations/assistant", "/api/public/consultations/assistant"],
       ["/api/client/assistant", "/api/client/assistant"],
+      ["/api/client/messages", "/api/client/messages"],
+      ["/api/client/messages/[threadId]", "/api/client/messages/{threadId}"],
+      ["/api/client/messages/[threadId]/messages", "/api/client/messages/{threadId}/messages"],
+      ["/api/admin/messages", "/api/admin/messages"],
+      ["/api/admin/messages/[threadId]", "/api/admin/messages/{threadId}"],
+      ["/api/admin/messages/[threadId]/messages", "/api/admin/messages/{threadId}/messages"],
       ["/api/admin/clients/[clientId]/account", "/api/admin/clients/{id}/account"],
       ["/api/admin/clients/[clientId]/account/password", "/api/admin/clients/{id}/account/password"]
     ]) {

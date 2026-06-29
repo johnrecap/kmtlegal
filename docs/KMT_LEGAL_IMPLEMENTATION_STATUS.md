@@ -54,11 +54,11 @@ Total plans: 32
 
 ## Latest PLAN-32 Follow-Up
 
-- Redesigned the public booking assistant and `/client/assistant` as real chat surfaces with assistant/user bubbles, compact quick actions, sticky composers, in-chat loading/error/success states, and responsive RTL-safe layouts; public chat copy now lives under `bookingChat` in the English/Arabic public content files.
-- Replaced the public booking form plus side assistant with one scoped booking chat for consultation requests and verified reference inquiries.
-- Converted `/client/assistant` into a message-based organizer that reads only the authenticated client's appointments, sessions, cases, visible documents, and payments through existing portal ownership guards.
-- Added deterministic legal-advice refusal for both public and client chat paths; no full chat transcript is persisted in browser storage or the database.
-- Verification passed: `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, local production build with a placeholder `DATABASE_URL`, `cmd /c npm run test:e2e:smoke`, the focused Arabic booking chat Playwright test, `git diff --check`, and desktop/mobile booking-chat screenshot QA under `test-results/`.
+- Redesigned the public booking assistant to match the premium KMT chat reference: large balance avatar, online state, human-review/no-legal-advice badges, trust rail, assistant/user bubbles, quick chips, and rounded composer. Public booking remains scoped to consultation booking and verified reference checks.
+- Added saved client-team live chat for authenticated clients only: new conversation thread/message schema, client APIs, admin APIs, RBAC permissions, authenticated throttling, `/admin/messages` inbox, and `/admin/messages/[threadId]` reply/assign/status screen. Human team messages are saved; public AI booking chat transcripts are not saved as conversation archives.
+- Updated `/client/assistant` with a `Talk to team` path that opens the saved team chat while preserving the organizational AI assistant's existing client-owned data scope and legal-advice refusal.
+- Set OpenRouter's default server-side model to `google/gemini-2.5-flash`, kept mock as the no-key development fallback, and documented the OpenRouter defaults in the API contract.
+- Verification passed: `cmd /c npm run db:validate`, `cmd /c npm run db:generate`, `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, and `cmd /c npm run test:e2e:smoke`.
 
 ## Remaining Count
 

@@ -18,6 +18,7 @@ import {
   priorityLabels
 } from "@/lib/legal-format";
 import { cn } from "@/lib/cn";
+import { ClientTeamChatPanel } from "./client-team-chat-panel";
 
 type AssistantAppointment = {
   id: string;
@@ -107,6 +108,7 @@ const assistantCopy = {
   placeholder: "مثال: موعد جلستي إمتى؟",
   inputLabel: "رسالتك",
   send: "إرسال",
+  talkToTeam: "التحدث مع الفريق",
   typing: "المساعد يراجع بيانات حسابك",
   noData: "لا توجد بيانات ظاهرة لهذا السؤال الآن.",
   requestError: "تعذر تنفيذ الطلب الآن.",
@@ -139,6 +141,7 @@ async function parseAssistantResponse(response: Response) {
 
 export function ClientAssistantPanel() {
   const logEndRef = useRef<HTMLDivElement | null>(null);
+  const [surface, setSurface] = useState<"assistant" | "team">("assistant");
   const [messages, setMessages] = useState<ChatMessage[]>([initialAssistantMessage]);
   const [message, setMessage] = useState("");
   const [isBusy, setIsBusy] = useState(false);
@@ -196,6 +199,10 @@ export function ClientAssistantPanel() {
     sendMessage(message);
   }
 
+  if (surface === "team") {
+    return <ClientTeamChatPanel onBack={() => setSurface("assistant")} />;
+  }
+
   return (
     <ClientPortalPanel description={assistantCopy.description} title={assistantCopy.title}>
       <div
@@ -231,6 +238,17 @@ export function ClientAssistantPanel() {
                 {prompt.label}
               </Button>
             ))}
+            <Button
+              className={cn(clientPortalSecondaryActionClass, "min-h-9 shrink-0 rounded-full border-kmt-gold/35 bg-kmt-gold/12 px-3 text-sm text-amber-100 hover:bg-kmt-gold hover:text-[#120d07]")}
+              disabled={isBusy}
+              size="sm"
+              type="button"
+              variant="secondary"
+              onClick={() => setSurface("team")}
+            >
+              <MaterialSymbol className="text-base" name="forum" />
+              {assistantCopy.talkToTeam}
+            </Button>
           </div>
         </div>
 

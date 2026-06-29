@@ -156,11 +156,19 @@ export function productionReadinessIssues(env: NodeJS.ProcessEnv = process.env) 
     });
   }
 
-  if (env.AI_PROVIDER && env.AI_PROVIDER !== "mock" && (!env.AI_BASE_URL || !env.AI_MODEL)) {
+  if (env.AI_PROVIDER && env.AI_PROVIDER !== "mock" && !env.AI_API_KEY) {
+    issues.push({
+      code: "AI_API_KEY_REQUIRED",
+      severity: "error",
+      message: "Non-mock AI providers require AI_API_KEY to stay server-side only."
+    });
+  }
+
+  if (env.AI_PROVIDER && env.AI_PROVIDER !== "mock" && env.AI_PROVIDER !== "openrouter" && (!env.AI_BASE_URL || !env.AI_MODEL)) {
     issues.push({
       code: "AI_PROVIDER_CONFIG_INCOMPLETE",
       severity: "error",
-      message: "Non-mock AI providers require AI_BASE_URL and AI_MODEL."
+      message: "Custom non-mock AI providers require AI_BASE_URL and AI_MODEL."
     });
   }
 
