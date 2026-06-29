@@ -82,7 +82,7 @@ const secondaryButtonClasses = cn(
 );
 
 const headerBadgeClasses =
-  "inline-flex min-h-12 items-center gap-2 rounded-[0.7rem] border border-kmt-gold/24 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.025))] px-4 text-sm font-medium text-amber-50/95 shadow-[0_18px_48px_-36px_rgba(183,134,64,0.9),inset_0_1px_0_rgba(255,255,255,0.07)] ring-1 ring-inset ring-white/[0.035] backdrop-blur";
+  "inline-flex min-h-9 items-center gap-1.5 rounded-full border border-kmt-gold/22 bg-white/[0.045] px-3 text-xs font-medium text-amber-50/90 shadow-[0_14px_34px_-30px_rgba(183,134,64,0.82),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-inset ring-white/[0.03] backdrop-blur";
 
 const initialDraft: BookingDraft = {
   fullName: "",
@@ -338,19 +338,19 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
                 </p>
               </div>
             </div>
-            <div className="ms-auto flex flex-wrap items-center justify-end gap-3">
+            <div className="ms-auto flex flex-wrap items-center justify-end gap-2">
               <span className={headerBadgeClasses}>
-                <MaterialSymbol className="text-xl text-kmt-gold" name="person_check" />
+                <MaterialSymbol className="text-base text-kmt-gold" name="person_check" />
                 {copy.humanReviewOnly}
               </span>
               <span className={headerBadgeClasses}>
-                <MaterialSymbol className="text-xl text-kmt-gold" name="shield" />
+                <MaterialSymbol className="text-base text-kmt-gold" name="shield" />
                 {copy.noLegalAdvice}
               </span>
             </div>
           </div>
 
-          <div className="mt-6 grid overflow-hidden rounded-[0.85rem] border border-kmt-gold/28 bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(0,0,0,0.2))] text-sm text-amber-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_20px_56px_-46px_rgba(183,134,64,0.9)] ring-1 ring-inset ring-white/[0.035] sm:grid-cols-3 sm:divide-x sm:divide-x-reverse sm:divide-kmt-gold/20">
+          <div className="mt-4 flex flex-wrap gap-2 text-xs text-amber-50">
             <TrustRailItem icon="lock" label={copy.secureConfidential} />
             <TrustRailItem icon="supervisor_account" label={copy.humanReviewBadge} />
             <TrustRailItem icon="bolt" label={copy.fastResponse} />
@@ -567,9 +567,9 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
 function TrustRailItem({ icon, label }: { icon: string; label: string }) {
   return (
-    <div className="flex min-w-0 items-center justify-center gap-3 px-4 py-4 text-center transition-colors hover:bg-white/[0.035]">
-      <MaterialSymbol className="shrink-0 text-2xl text-kmt-gold drop-shadow-[0_0_12px_rgba(183,134,64,0.32)]" name={icon} />
-      <span className="min-w-0 break-words font-medium text-amber-50/95">{label}</span>
+    <div className="inline-flex min-h-9 min-w-0 items-center justify-center gap-2 rounded-full border border-kmt-gold/20 bg-white/[0.035] px-3 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.055)] transition-colors hover:bg-white/[0.055]">
+      <MaterialSymbol className="shrink-0 text-base text-kmt-gold drop-shadow-[0_0_10px_rgba(183,134,64,0.26)]" name={icon} />
+      <span className="min-w-0 break-words font-medium leading-5 text-amber-50/90">{label}</span>
     </div>
   );
 }
