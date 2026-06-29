@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("consultation booking validation", () => {
-  test("shows recoverable Arabic validation before advancing from details on /ar", async ({ page }) => {
+test.describe("consultation booking chat", () => {
+  test("refuses legal advice and advances through Arabic booking chat details", async ({ page }) => {
     const consoleErrors: string[] = [];
     page.on("console", (message) => {
       if (message.type() === "error") {
@@ -17,21 +17,24 @@ test.describe("consultation booking validation", () => {
     const headerIconBox = await page.locator('header a[href="/ar/book-consultation"] .material-symbols-outlined').boundingBox();
     expect(headerIconBox?.width ?? 0).toBeLessThanOrEqual(24);
 
-    await page.getByLabel("الاسم الكامل").fill("أحمد سعيد");
-    await page.getByLabel("رقم الهاتف").fill("+201000000000");
-    await page.getByRole("button", { name: "متابعة" }).click();
+    const chat = page.getByTestId("booking-stepper");
+    await expect(chat).toBeVisible();
+    await expect(chat).toHaveAttribute("data-hydrated", "true");
 
-    await expect(page.getByLabel("ملخص الطلب")).toBeVisible();
+    await chat.locator('input[name="chatMessage"]').fill("هل هكسب القضية؟");
+    await chat.locator('button[type="submit"]').last().click();
+    await expect(chat.getByText(/لا أستطيع تقديم رأي قانوني/)).toBeVisible();
 
-    await page.getByLabel("ملخص الطلب").fill("رفع عليا وصل امانه");
-    await page.getByRole("button", { name: "متابعة" }).click();
-    await expect(page.getByText(/الملخص قصير/)).toBeVisible();
+    await chat.locator('button[type="button"]').first().click();
+    await chat.locator('input[name="fullName"]').fill("أحمد سعيد");
+    await chat.locator('input[name="phone"]').fill("+201000000000");
+    await chat.locator('button[type="submit"]').click();
 
-    await page.getByLabel("ملخص الطلب").fill("رفع عليا وصل أمانة بتاريخ واضح وأحتاج مراجعة قانونية");
-    await page.getByRole("button", { name: "متابعة" }).click();
+    await expect(chat.locator('textarea[name="summary"]')).toBeVisible();
+    await chat.locator('textarea[name="summary"]').fill("رفع عليا وصل أمانة بتاريخ واضح وأحتاج حجز استشارة لمراجعة الطلب مع فريق المكتب.");
+    await chat.locator('button[type="submit"]').click();
 
-    await expect(page.getByText("مراجعة وإرسال")).toBeVisible();
-    await expect(page.getByLabel(/أوافق على استخدام البيانات/)).toBeVisible();
+    await expect(chat.locator("#booking-consent")).toBeVisible();
     expect(consoleErrors).toEqual([]);
   });
 });

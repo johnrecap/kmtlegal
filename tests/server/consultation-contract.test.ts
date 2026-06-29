@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { consultationAssistantOutputSchema } from "@/server/ai/schemas";
-import { publicConsultationAssistantSchema } from "@/server/consultations/consultation-assistant-service";
+import {
+  clientOrganizerIntentFromMessage,
+  isCrossClientDataRequest,
+  isLegalAdviceRequest,
+  publicConsultationAssistantSchema
+} from "@/server/consultations/consultation-assistant-service";
 import { publicConsultationReference, publicConsultationRequestSchema } from "@/server/consultations/consultation-service";
 import { canonicalPhone } from "@/server/phone/phone-normalization";
 
@@ -95,5 +100,17 @@ describe("public consultation contract", () => {
     expect(canonicalPhone("0100 000 0000")).toBe("201000000000");
     expect(canonicalPhone("+20 (100) 000-0000")).toBe("201000000000");
     expect(canonicalPhone("00201000000000")).toBe("201000000000");
+  });
+
+  it("classifies client organizer messages without allowing legal advice", () => {
+    expect(isLegalAdviceRequest("هل هكسب القضية؟")).toBe(true);
+    expect(isCrossClientDataRequest("عايز بيانات عميل آخر")).toBe(true);
+    expect(clientOrganizerIntentFromMessage("هل هكسب القضية؟")).toBe("out_of_scope");
+    expect(clientOrganizerIntentFromMessage("عايز بيانات عميل آخر")).toBe("forbidden_data");
+    expect(clientOrganizerIntentFromMessage("موعد جلستي إمتى؟")).toBe("sessions");
+    expect(clientOrganizerIntentFromMessage("عندي مستندات جديدة؟")).toBe("documents");
+    expect(clientOrganizerIntentFromMessage("ما هي المدفوعات الظاهرة؟")).toBe("payments");
+    expect(clientOrganizerIntentFromMessage("ما هي القضايا المفتوحة؟")).toBe("cases");
+    expect(clientOrganizerIntentFromMessage("مواعيدي القادمة")).toBe("appointments");
   });
 });

@@ -219,6 +219,20 @@ describe("product UI primitives", () => {
     expect(source).toContain("/api/files/");
   });
 
+  it("uses scoped consultation chat surfaces without transcript persistence", () => {
+    const publicPageSource = readFileSync(join(process.cwd(), "src/features/public-site/public-pages.tsx"), "utf8");
+    const publicChatSource = readFileSync(join(process.cwd(), "src/features/public-site/consultation-booking-chat.tsx"), "utf8");
+    const clientChatSource = readFileSync(join(process.cwd(), "src/features/client/client-assistant-panel.tsx"), "utf8");
+
+    expect(publicPageSource).toContain("ConsultationBookingChat");
+    expect(publicPageSource).not.toContain("<BookingStepper");
+    expect(publicPageSource).not.toContain("<ConsultationAssistantPanel");
+    expect(publicChatSource).toContain("I cannot provide a legal opinion");
+    expect(clientChatSource).toContain("لا أقدم رأيًا قانونيًا");
+    expect(`${publicChatSource}\n${clientChatSource}`).not.toContain("localStorage");
+    expect(`${publicChatSource}\n${clientChatSource}`).not.toContain("sessionStorage");
+  });
+
   it("renders Tabs as a pressed button group, not incomplete ARIA tabs", () => {
     const html = renderToStaticMarkup(
       <Tabs

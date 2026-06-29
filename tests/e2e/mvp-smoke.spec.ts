@@ -228,7 +228,7 @@ test.describe("MVP smoke without database", () => {
     await expect(form.getByText("req-contact-plan28")).toBeVisible();
   });
 
-  test("booking form preserves validation, analytics events, and requestId error output", async ({ page }) => {
+  test("booking chat preserves validation, analytics events, and requestId error output", async ({ page }) => {
     const analyticsEvents = await collectAnalyticsEvents(page);
 
     await page.route("**/api/public/consultations**", async (route) => {
@@ -249,9 +249,14 @@ test.describe("MVP smoke without database", () => {
 
     const form = page.getByTestId("booking-stepper");
     await expect(form).toHaveAttribute("data-hydrated", "true");
+
+    await form.locator('input[name="chatMessage"]').fill("Will I win this case?");
+    await form.locator('button[type="submit"]').last().click();
+    await expect(form.getByText("I cannot provide a legal opinion")).toBeVisible();
+
+    await form.locator('button[type="button"]').first().click();
     await form.locator('button[type="submit"]').click();
-    await expect(page.locator("#fullName-error")).toBeVisible();
-    await expect(page.locator("#phone-error")).toBeVisible();
+    await expect(form.getByText("Name and phone are required")).toBeVisible();
 
     await form.locator('input[name="fullName"]').fill("PLAN 28 Visitor");
     await form.locator('input[name="phone"]').fill("+201000000001");

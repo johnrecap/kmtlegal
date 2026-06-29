@@ -5,8 +5,7 @@ import { notFound } from "next/navigation";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
 import { getPublicContent, navForPath } from "@/content/public-content";
-import { BookingStepper } from "@/features/public-site/booking-stepper";
-import { ConsultationAssistantPanel } from "@/features/public-site/consultation-assistant-panel";
+import { ConsultationBookingChat } from "@/features/public-site/consultation-booking-chat";
 import { ContactForm } from "@/features/public-site/contact-form";
 import { DirectoryFilter } from "@/features/public-site/directory-filter";
 import {
@@ -622,9 +621,8 @@ export function BookConsultationPageView({ locale, searchParams }: { locale: Pub
       <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/b8b47a1dd8d5ce08.png" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          <BookingStepper initialService={searchParams.service} locale={locale} />
+          <ConsultationBookingChat initialService={searchParams.service} locale={locale} />
           <aside className="space-y-5">
-            <ConsultationAssistantPanel locale={locale} />
             <section className={cn(publicPanel, publicMotionCardBeam, "p-5")}>
               <h2 className="text-xl font-semibold text-white">{copy.afterSubmitTitle}</h2>
               <ol className={cn("mt-4 space-y-4 text-sm leading-7", publicMutedText)}>
