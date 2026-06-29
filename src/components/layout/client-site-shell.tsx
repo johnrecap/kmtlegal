@@ -10,12 +10,12 @@ function ClientPortalBrand() {
       className="group inline-flex min-w-0 items-center gap-3 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kmt-gold"
       href="/client"
     >
-      <span className="grid h-11 w-11 shrink-0 place-items-center border border-kmt-gold/70 bg-kmt-gold/10 text-kmt-gold">
+      <span className="grid h-10 w-10 shrink-0 place-items-center border border-kmt-gold/70 bg-kmt-gold/10 text-kmt-gold sm:h-11 sm:w-11">
         <MaterialSymbol className="text-2xl" name="balance" />
       </span>
       <span className="min-w-0">
         <span className="block font-label-sm text-[11px] font-semibold uppercase leading-none tracking-[0.22em] text-kmt-gold">KMT</span>
-        <span className="block text-xl font-semibold leading-tight text-[#f8f3ea]">Legal</span>
+        <span className="block text-lg font-semibold leading-tight text-[#f8f3ea] sm:text-xl">Legal</span>
         <span className="block truncate text-xs font-medium leading-5 text-stone-400">بوابة العميل</span>
       </span>
     </Link>
@@ -30,8 +30,11 @@ function ClientPortalNav({
   compact?: boolean;
 }) {
   return (
-    <nav aria-label="تنقل بوابة العميل" className={compact ? "border-t border-white/10 bg-[#090806]/95 lg:hidden" : "hidden items-stretch gap-1 lg:flex"}>
-      <div className={compact ? "mx-auto flex max-w-[1200px] gap-2 overflow-x-auto px-4 py-2 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" : "contents"}>
+    <nav
+      aria-label="تنقل بوابة العميل"
+      className={compact ? "border-t border-white/10 bg-[#090806]/95 lg:hidden" : "hidden border-t border-white/10 bg-[#090806]/80 lg:block"}
+    >
+      <div className="mx-auto flex max-w-[1200px] gap-2 overflow-x-auto px-4 py-2 sm:px-6 lg:px-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {navItems.map((item) => (
           <Link
             key={item.href}
@@ -40,7 +43,7 @@ function ClientPortalNav({
               "inline-flex shrink-0 items-center gap-2 border-b-2 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-kmt-gold",
               compact
                 ? "min-h-11 px-3 py-2 focus-visible:outline-offset-2"
-                : "min-h-[76px] px-3 focus-visible:outline-offset-[-6px]",
+                : "min-h-12 px-3.5 py-2 focus-visible:outline-offset-2",
               item.active
                 ? compact
                   ? "border-kmt-gold bg-kmt-gold/15 text-white"
@@ -85,17 +88,16 @@ export function ClientSiteShell({
       lang="ar"
     >
       <header className="sticky top-0 z-50 border-b border-kmt-gold/20 bg-[#070604]/95 shadow-[0_12px_40px_rgba(0,0,0,0.34)] backdrop-blur-xl">
-        <div className="mx-auto flex min-h-[76px] max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
+        <div className="mx-auto flex min-h-[68px] max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
           <ClientPortalBrand />
-          <ClientPortalNav navItems={navItems} />
           <div className="flex shrink-0 items-center gap-2">
             <Link
-              className="hidden min-h-10 items-center border border-white/15 px-3 text-xs font-semibold text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold sm:inline-flex"
+              className="hidden min-h-10 items-center border border-white/15 px-3 text-xs font-semibold text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold md:inline-flex"
               href="/"
             >
               الرجوع للموقع
             </Link>
-            <span className="hidden max-w-44 truncate border border-kmt-gold/25 bg-kmt-gold/10 px-3 py-2 text-xs font-semibold text-amber-100 md:inline-flex">
+            <span className="hidden max-w-56 truncate border border-kmt-gold/25 bg-kmt-gold/10 px-3 py-2 text-xs font-semibold text-amber-100 sm:inline-flex">
               {userLabel}
             </span>
             <form action="/api/auth/logout" method="post">
@@ -110,6 +112,7 @@ export function ClientSiteShell({
             </form>
           </div>
         </div>
+        <ClientPortalNav navItems={navItems} />
         <ClientPortalNav compact navItems={navItems} />
       </header>
 
