@@ -81,9 +81,6 @@ const secondaryButtonClasses = cn(
   "!border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-[#120d07]"
 );
 
-const headerBadgeClasses =
-  "inline-flex min-h-9 items-center gap-1.5 rounded-full border border-kmt-gold/22 bg-white/[0.045] px-3 text-xs font-medium text-amber-50/90 shadow-[0_14px_34px_-30px_rgba(183,134,64,0.82),inset_0_1px_0_rgba(255,255,255,0.06)] ring-1 ring-inset ring-white/[0.03] backdrop-blur";
-
 const initialDraft: BookingDraft = {
   fullName: "",
   phone: "",
@@ -338,19 +335,11 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
                 </p>
               </div>
             </div>
-            <div className="ms-auto flex flex-wrap items-center justify-end gap-2">
-              <span className={headerBadgeClasses}>
-                <MaterialSymbol className="text-base text-kmt-gold" name="person_check" />
-                {copy.humanReviewOnly}
-              </span>
-              <span className={headerBadgeClasses}>
-                <MaterialSymbol className="text-base text-kmt-gold" name="shield" />
-                {copy.noLegalAdvice}
-              </span>
-            </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2 text-xs text-amber-50">
+          <div className="mt-5 flex flex-wrap items-center gap-1.5 text-amber-50">
+            <TrustRailItem icon="person_check" label={copy.humanReviewOnly} />
+            <TrustRailItem icon="shield" label={copy.noLegalAdvice} />
             <TrustRailItem icon="lock" label={copy.secureConfidential} />
             <TrustRailItem icon="supervisor_account" label={copy.humanReviewBadge} />
             <TrustRailItem icon="bolt" label={copy.fastResponse} />
@@ -567,9 +556,9 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
 function TrustRailItem({ icon, label }: { icon: string; label: string }) {
   return (
-    <div className="inline-flex min-h-9 min-w-0 items-center justify-center gap-2 rounded-full border border-kmt-gold/20 bg-white/[0.035] px-3 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.055)] transition-colors hover:bg-white/[0.055]">
-      <MaterialSymbol className="shrink-0 text-base text-kmt-gold drop-shadow-[0_0_10px_rgba(183,134,64,0.26)]" name={icon} />
-      <span className="min-w-0 break-words font-medium leading-5 text-amber-50/90">{label}</span>
+    <div className="inline-flex min-h-8 max-w-full items-center justify-center gap-1 rounded-full border border-kmt-gold/25 bg-[#12100c]/72 px-2 text-center shadow-[0_12px_26px_-24px_rgba(183,134,64,0.9)] transition-colors hover:border-kmt-gold/40 hover:bg-[#17130d]/82">
+      <MaterialSymbol className="shrink-0 text-sm text-kmt-gold drop-shadow-[0_0_10px_rgba(183,134,64,0.26)]" name={icon} />
+      <span className="min-w-0 truncate text-[0.68rem] font-medium leading-4 text-amber-50/90">{label}</span>
     </div>
   );
 }
