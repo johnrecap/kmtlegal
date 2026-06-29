@@ -20,19 +20,23 @@ test.describe("consultation booking chat", () => {
     const chat = page.getByTestId("booking-stepper");
     await expect(chat).toBeVisible();
     await expect(chat).toHaveAttribute("data-hydrated", "true");
+    await expect(page.getByTestId("booking-chat-shell")).toBeVisible();
+    await expect(page.getByTestId("booking-chat-composer")).toBeVisible();
 
     await chat.locator('input[name="chatMessage"]').fill("هل هكسب القضية؟");
     await chat.locator('button[type="submit"]').last().click();
     await expect(chat.getByText(/لا أستطيع تقديم رأي قانوني/)).toBeVisible();
 
-    await chat.locator('button[type="button"]').first().click();
+    await page.getByTestId("booking-quick-book").click();
+    const stepCard = page.getByTestId("booking-chat-step-card");
+    await expect(stepCard).toBeVisible();
     await chat.locator('input[name="fullName"]').fill("أحمد سعيد");
     await chat.locator('input[name="phone"]').fill("+201000000000");
-    await chat.locator('button[type="submit"]').click();
+    await stepCard.locator('button[type="submit"]').click();
 
     await expect(chat.locator('textarea[name="summary"]')).toBeVisible();
     await chat.locator('textarea[name="summary"]').fill("رفع عليا وصل أمانة بتاريخ واضح وأحتاج حجز استشارة لمراجعة الطلب مع فريق المكتب.");
-    await chat.locator('button[type="submit"]').click();
+    await stepCard.locator('button[type="submit"]').click();
 
     await expect(chat.locator("#booking-consent")).toBeVisible();
     expect(consoleErrors).toEqual([]);

@@ -249,25 +249,29 @@ test.describe("MVP smoke without database", () => {
 
     const form = page.getByTestId("booking-stepper");
     await expect(form).toHaveAttribute("data-hydrated", "true");
+    await expect(page.getByTestId("booking-chat-shell")).toBeVisible();
+    await expect(page.getByTestId("booking-chat-composer")).toBeVisible();
 
     await form.locator('input[name="chatMessage"]').fill("Will I win this case?");
     await form.locator('button[type="submit"]').last().click();
     await expect(form.getByText("I cannot provide a legal opinion")).toBeVisible();
 
-    await form.locator('button[type="button"]').first().click();
-    await form.locator('button[type="submit"]').click();
+    await page.getByTestId("booking-quick-book").click();
+    const stepCard = page.getByTestId("booking-chat-step-card");
+    await expect(stepCard).toBeVisible();
+    await stepCard.locator('button[type="submit"]').click();
     await expect(form.getByText("Name and phone are required")).toBeVisible();
 
     await form.locator('input[name="fullName"]').fill("PLAN 28 Visitor");
     await form.locator('input[name="phone"]').fill("+201000000001");
     await form.locator('input[name="email"]').fill("plan28@example.com");
-    await form.locator('button[type="submit"]').click();
+    await stepCard.locator('button[type="submit"]').click();
 
     await form.locator('textarea[name="summary"]').fill("This is a sufficiently detailed public consultation summary for the PLAN 28 smoke test.");
-    await form.locator('button[type="submit"]').click();
+    await stepCard.locator('button[type="submit"]').click();
 
     await page.locator("#booking-consent").check();
-    await form.locator('button[type="submit"]').click();
+    await stepCard.locator('button[type="submit"]').click();
 
     await expect(form.getByText("req-booking-plan28")).toBeVisible();
     await expect.poll(() => analyticsEvents).toContain("booking.step_viewed");

@@ -223,11 +223,20 @@ describe("product UI primitives", () => {
     const publicPageSource = readFileSync(join(process.cwd(), "src/features/public-site/public-pages.tsx"), "utf8");
     const publicChatSource = readFileSync(join(process.cwd(), "src/features/public-site/consultation-booking-chat.tsx"), "utf8");
     const clientChatSource = readFileSync(join(process.cwd(), "src/features/client/client-assistant-panel.tsx"), "utf8");
+    const publicContentEn = readFileSync(join(process.cwd(), "src/content/public-content.en.ts"), "utf8");
+    const publicContentAr = readFileSync(join(process.cwd(), "src/content/public-content.ar.ts"), "utf8");
 
     expect(publicPageSource).toContain("ConsultationBookingChat");
     expect(publicPageSource).not.toContain("<BookingStepper");
     expect(publicPageSource).not.toContain("<ConsultationAssistantPanel");
-    expect(publicChatSource).toContain("I cannot provide a legal opinion");
+    expect(publicChatSource).toContain("content.bookingChat");
+    expect(publicChatSource).toContain('data-testid="booking-chat-shell"');
+    expect(publicChatSource).not.toContain("const chatCopy");
+    expect(publicContentEn).toContain("bookingChat");
+    expect(publicContentEn).toContain("I cannot provide a legal opinion");
+    expect(publicContentAr).toContain("bookingChat");
+    expect(publicContentAr).toContain("لا أستطيع تقديم رأي قانوني");
+    expect(clientChatSource).toContain("KMT Client Assistant");
     expect(clientChatSource).toContain("لا أقدم رأيًا قانونيًا");
     expect(`${publicChatSource}\n${clientChatSource}`).not.toContain("localStorage");
     expect(`${publicChatSource}\n${clientChatSource}`).not.toContain("sessionStorage");

@@ -615,23 +615,30 @@ export function ContactPageView({ locale }: { locale: PublicLocale }) {
 export function BookConsultationPageView({ locale, searchParams }: { locale: PublicLocale; searchParams: SearchParams }) {
   const content = getPublicContent(locale);
   const copy = content.bookingPage;
+  const chatCopy = content.bookingChat;
 
   return (
     <PublicShell currentPath={localizedPublicHref("/book-consultation", locale)} locale={locale} navItems={navForPath("/book-consultation", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/b8b47a1dd8d5ce08.png" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
-      <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/b8b47a1dd8d5ce08.png" size="compact" title={chatCopy.heroTitle} description={chatCopy.heroDescription} />
+      <PublicSection eyebrow={copy.sectionEyebrow} title={chatCopy.sectionTitle} description={chatCopy.sectionDescription}>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <ConsultationBookingChat initialService={searchParams.service} locale={locale} />
-          <aside className="space-y-5">
+          <aside className="space-y-4 lg:pt-2">
             <section className={cn(publicPanel, publicMotionCardBeam, "p-5")}>
-              <h2 className="text-xl font-semibold text-white">{copy.afterSubmitTitle}</h2>
-              <ol className={cn("mt-4 space-y-4 text-sm leading-7", publicMutedText)}>
-                {copy.afterSubmitSteps.map((step, index) => (
-                  <li key={step}>
-                    {index + 1}. {step}
-                  </li>
+              <h2 className="text-lg font-semibold text-white">{chatCopy.trustTitle}</h2>
+              <div className="mt-4 space-y-4">
+                {chatCopy.trustItems.map((item) => (
+                  <div key={item.label} className="flex gap-3">
+                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-kmt-gold">
+                      <MaterialSymbol className={cn("text-lg", publicMotionIcon, publicMotionIconHalo)} name={item.icon} />
+                    </span>
+                    <div>
+                      <p className="text-sm font-semibold text-white">{item.label}</p>
+                      <p className={cn("mt-1 text-sm leading-6", publicMutedText)}>{item.description}</p>
+                    </div>
+                  </div>
                 ))}
-              </ol>
+              </div>
               {searchParams.lawyer ? (
                 <p className="mt-5 rounded border border-kmt-gold/25 bg-kmt-gold/10 p-3 text-sm text-amber-100">
                   {copy.requestedLawyer}: {searchParams.lawyer}

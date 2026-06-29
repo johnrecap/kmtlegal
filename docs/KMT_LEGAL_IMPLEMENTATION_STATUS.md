@@ -54,10 +54,11 @@ Total plans: 32
 
 ## Latest PLAN-32 Follow-Up
 
+- Redesigned the public booking assistant and `/client/assistant` as real chat surfaces with assistant/user bubbles, compact quick actions, sticky composers, in-chat loading/error/success states, and responsive RTL-safe layouts; public chat copy now lives under `bookingChat` in the English/Arabic public content files.
 - Replaced the public booking form plus side assistant with one scoped booking chat for consultation requests and verified reference inquiries.
 - Converted `/client/assistant` into a message-based organizer that reads only the authenticated client's appointments, sessions, cases, visible documents, and payments through existing portal ownership guards.
 - Added deterministic legal-advice refusal for both public and client chat paths; no full chat transcript is persisted in browser storage or the database.
-- Verification passed: `npm run typecheck`, `npm run lint`, `npm run test`, local production build with a placeholder `DATABASE_URL`, `npm run test:e2e:smoke`, and the focused Arabic booking chat Playwright test.
+- Verification passed: `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, local production build with a placeholder `DATABASE_URL`, `cmd /c npm run test:e2e:smoke`, the focused Arabic booking chat Playwright test, `git diff --check`, and desktop/mobile booking-chat screenshot QA under `test-results/`.
 
 ## Remaining Count
 
