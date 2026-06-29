@@ -80,6 +80,9 @@ const secondaryButtonClasses = cn(
   "!border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-[#120d07]"
 );
 
+const headerBadgeClasses =
+  "inline-flex min-h-12 items-center gap-2 rounded-[0.7rem] border border-kmt-gold/24 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.025))] px-4 text-sm font-medium text-amber-50/95 shadow-[0_18px_48px_-36px_rgba(183,134,64,0.9),inset_0_1px_0_rgba(255,255,255,0.07)] ring-1 ring-inset ring-white/[0.035] backdrop-blur";
+
 const initialDraft: BookingDraft = {
   fullName: "",
   phone: "",
@@ -325,30 +328,30 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         <header className="px-5 pb-4 pt-5 sm:px-8 sm:pt-8">
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div className="flex min-w-0 items-center gap-4">
-              <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full border border-kmt-gold/70 bg-[radial-gradient(circle_at_35%_25%,rgba(255,255,255,0.18),transparent_32%),linear-gradient(145deg,rgba(183,134,64,0.24),rgba(0,0,0,0.48))] text-kmt-gold shadow-[0_0_42px_rgba(183,134,64,0.24)] max-sm:h-14 max-sm:w-14">
-                <MaterialSymbol className="text-[2.5rem] max-sm:text-3xl" name="balance" />
+              <span className="flex h-[4.5rem] w-[4.5rem] shrink-0 items-center justify-center rounded-full border border-kmt-gold/65 bg-[radial-gradient(circle_at_35%_25%,rgba(255,255,255,0.18),transparent_32%),linear-gradient(145deg,rgba(183,134,64,0.24),rgba(0,0,0,0.48))] text-kmt-gold shadow-[0_0_42px_rgba(183,134,64,0.24)] max-sm:h-14 max-sm:w-14">
+                <MaterialSymbol className="text-[2.25rem] max-sm:text-3xl" name="balance" />
               </span>
               <div className="min-w-0">
-                <p className="truncate font-serif text-3xl font-semibold text-white max-sm:text-xl">{copy.assistantName}</p>
+                <p className="truncate font-serif text-[1.9rem] font-semibold leading-tight text-white max-sm:text-xl">{copy.assistantName}</p>
                 <p className="mt-2 flex items-center gap-2 text-sm font-medium text-[#7ad36a]">
                   <span className="h-2.5 w-2.5 rounded-full bg-[#7ad36a] shadow-[0_0_16px_rgba(122,211,106,0.85)]" aria-hidden="true" />
                   {copy.onlineNow}
                 </p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex min-h-12 items-center gap-2 rounded-lg border border-white/12 bg-white/[0.05] px-4 text-sm text-amber-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+            <div className="ms-auto flex flex-wrap items-center justify-end gap-3">
+              <span className={headerBadgeClasses}>
                 <MaterialSymbol className="text-xl text-kmt-gold" name="person_check" />
                 {copy.humanReviewOnly}
               </span>
-              <span className="inline-flex min-h-12 items-center gap-2 rounded-lg border border-white/12 bg-white/[0.05] px-4 text-sm text-amber-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+              <span className={headerBadgeClasses}>
                 <MaterialSymbol className="text-xl text-kmt-gold" name="shield" />
                 {copy.noLegalAdvice}
               </span>
             </div>
           </div>
 
-          <div className="mt-6 grid gap-3 rounded-lg border border-kmt-gold/22 bg-black/22 px-4 py-4 text-sm text-amber-50 sm:grid-cols-3">
+          <div className="mt-6 grid overflow-hidden rounded-[0.85rem] border border-kmt-gold/28 bg-[linear-gradient(180deg,rgba(255,255,255,0.055),rgba(0,0,0,0.2))] text-sm text-amber-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_20px_56px_-46px_rgba(183,134,64,0.9)] ring-1 ring-inset ring-white/[0.035] sm:grid-cols-3 sm:divide-x sm:divide-x-reverse sm:divide-kmt-gold/20">
             <TrustRailItem icon="lock" label={copy.secureConfidential} />
             <TrustRailItem icon="supervisor_account" label={copy.humanReviewBadge} />
             <TrustRailItem icon="bolt" label={copy.fastResponse} />
@@ -565,9 +568,9 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
 function TrustRailItem({ icon, label }: { icon: string; label: string }) {
   return (
-    <div className="flex min-w-0 items-center justify-center gap-3 border-kmt-gold/20 text-center sm:border-l sm:first:border-l-0">
-      <MaterialSymbol className="shrink-0 text-2xl text-kmt-gold" name={icon} />
-      <span className="min-w-0 break-words font-medium">{label}</span>
+    <div className="flex min-w-0 items-center justify-center gap-3 px-4 py-4 text-center transition-colors hover:bg-white/[0.035]">
+      <MaterialSymbol className="shrink-0 text-2xl text-kmt-gold drop-shadow-[0_0_12px_rgba(183,134,64,0.32)]" name={icon} />
+      <span className="min-w-0 break-words font-medium text-amber-50/95">{label}</span>
     </div>
   );
 }
