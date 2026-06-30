@@ -239,6 +239,9 @@ describe("product UI primitives", () => {
     expect(publicChatSource).toContain("overscroll-contain");
     expect(publicChatSource).toContain("SlotChoicePanel");
     expect(publicChatSource).toContain("booking-slot-choice-panel");
+    expect(publicChatSource).toContain("booking-language-choice");
+    expect(publicChatSource).toContain("setChatLocale");
+    expect(publicChatSource).toContain("activeLocale");
     expect(publicChatSource).toContain("KmtBrandLogo");
     expect(publicChatSource).not.toContain("booking-chat-step-card");
     expect(publicChatSource).not.toContain('name="fullName"');
@@ -248,8 +251,12 @@ describe("product UI primitives", () => {
     expect(publicChatSource).not.toContain('name="balance"');
     expect(publicChatSource).not.toContain("const chatCopy");
     expect(publicContentEn).toContain("bookingChat");
+    expect(publicContentEn).toContain("languagePrompt");
+    expect(publicContentEn).toContain("languagePendingPlaceholder");
     expect(publicContentEn).toContain("I cannot provide a legal opinion");
     expect(publicContentAr).toContain("bookingChat");
+    expect(publicContentAr).toContain("languagePrompt");
+    expect(publicContentAr).toContain("languagePendingPlaceholder");
     expect(publicContentAr).toContain("لا أستطيع تقديم رأي قانوني");
     expect(clientChatSource).toContain("KMT Client Assistant");
     expect(clientChatSource).toContain("KmtBrandLogo");

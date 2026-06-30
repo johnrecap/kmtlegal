@@ -108,11 +108,15 @@ const initialDraft: BookingDraft = {
 };
 
 export function ConsultationBookingChat({ initialService, locale = "en" }: { initialService?: string; locale?: PublicLocale }) {
-  const content = getPublicContent(locale);
+  const [chatLocale, setChatLocale] = useState<PublicLocale | null>(null);
+  const activeLocale = chatLocale ?? locale;
+  const content = getPublicContent(activeLocale);
   const copy = content.bookingChat;
   const logEndRef = useRef<HTMLDivElement | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>(() => [{ id: "greeting", role: "assistant", text: copy.greeting }]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
+    { id: "language-prompt", role: "assistant", text: getPublicContent(locale).bookingChat.languagePrompt }
+  ]);
   const [draft, setDraft] = useState<BookingDraft>(() => ({ ...initialDraft, serviceCategory: initialService || "" }));
   const [freeMessage, setFreeMessage] = useState("");
   const [isBusy, setIsBusy] = useState(false);
@@ -134,15 +138,33 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     setMessages((current) => [...current, { id: `${role}-${Date.now()}-${current.length}`, role, text, tone }]);
   }
 
+  function chooseLanguage(nextLocale: PublicLocale) {
+    const nextCopy = getPublicContent(nextLocale).bookingChat;
+    setChatLocale(nextLocale);
+    setFlow(null);
+    setAvailableSlots([]);
+    setSlotWindow(null);
+    setReadyToConfirm(false);
+    setSelectedSlot("");
+    setMessages((current) => [
+      ...current,
+      { id: `user-language-${nextLocale}`, role: "user", text: nextLocale === "ar" ? nextCopy.languageArabic : nextCopy.languageEnglish },
+      { id: `assistant-greeting-${nextLocale}`, role: "assistant", text: nextCopy.greeting }
+    ]);
+  }
+
   function startBooking() {
+    if (!chatLocale) return;
     void sendBookingMessage(copy.book, { userText: copy.book, flow: "booking" });
   }
 
   function startBookingWithCategory(label: string, category: string) {
+    if (!chatLocale) return;
     void sendBookingMessage(label, { userText: label, flow: "booking", draftPatch: { serviceCategory: category } });
   }
 
   function startInquiry() {
+    if (!chatLocale) return;
     setFlow("inquiry");
     setAvailableSlots([]);
     setSlotWindow(null);
@@ -155,6 +177,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     event.preventDefault();
     const text = freeMessage.trim();
     if (!text || isBusy) return;
+    if (!chatLocale) return;
     setFreeMessage("");
 
     if (looksLikeLegalAdvice(text)) {
@@ -186,7 +209,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          locale,
+          locale: activeLocale,
           intent: "appointment_inquiry",
           message: text,
           reference: inquiry.reference,
@@ -201,7 +224,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       }
       append("assistant", body.data?.message ?? copy.inquiryResult, "success");
       for (const appointment of body.data?.appointments ?? []) {
-        append("assistant", `${appointment.title} · ${formatPublicDate(appointment.startsAt, locale)} · ${appointment.status}`, "success");
+        append("assistant", `${appointment.title} · ${formatPublicDate(appointment.startsAt, activeLocale)} · ${appointment.status}`, "success");
       }
       setFlow(null);
     } catch {
@@ -236,7 +259,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          locale,
+          locale: activeLocale,
           message,
           draft: nextDraft,
           selectedSlot: nextSlot,
@@ -245,7 +268,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       });
       const body = (await response.json().catch(() => ({}))) as AssistantApiBody;
       if (!response.ok) {
-        trackClientAnalyticsEvent("booking.submit_failed", { locale, status: response.status });
+        trackClientAnalyticsEvent("booking.submit_failed", { locale: activeLocale, status: response.status });
         append("assistant", errorMessage(body, copy), "error");
         return;
       }
@@ -267,7 +290,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       if (data.reference) {
         append("assistant", `${copy.successTitle} · ${copy.reference}: ${data.reference}`, "success");
         if (data.appointment) {
-          append("assistant", `${data.appointment.title} · ${formatPublicDate(data.appointment.startsAt, locale)}`, "success");
+          append("assistant", `${data.appointment.title} · ${formatPublicDate(data.appointment.startsAt, activeLocale)}`, "success");
         }
         setFlow(null);
         setAvailableSlots([]);
@@ -277,7 +300,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         setDraft({ ...initialDraft, serviceCategory: initialService || "" });
       }
     } catch {
-      trackClientAnalyticsEvent("booking.submit_failed", { locale, status: "network" });
+      trackClientAnalyticsEvent("booking.submit_failed", { locale: activeLocale, status: "network" });
       append("assistant", copy.fallbackError, "error");
     } finally {
       setIsBusy(false);
@@ -285,7 +308,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   }
 
   function chooseSlot(slot: PublicSlot) {
-    const label = formatPublicDate(slot.startsAt, locale);
+    const label = formatPublicDate(slot.startsAt, activeLocale);
     setSelectedSlot(slot.startsAt);
     setAvailableSlots([]);
     setSlotWindow(null);
@@ -321,6 +344,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       className={darkSurfaceClasses}
       data-hydrated={isHydrated ? "true" : "false"}
       data-testid="booking-stepper"
+      dir={activeLocale === "ar" ? "rtl" : "ltr"}
     >
       <div className="relative z-10 flex h-[min(78vh,46rem)] min-h-[36rem] min-w-0 flex-col max-sm:h-[min(82svh,44rem)] max-sm:min-h-[34rem]" data-testid="booking-chat-shell">
         <header className="shrink-0 px-5 pb-4 pt-5 sm:px-8 sm:pt-8">
@@ -355,7 +379,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
           {messages.map((message) => (
             <ChatBubble key={message.id} message={message} />
           ))}
-          {availableSlots.length ? <SlotChoicePanel locale={locale} slotWindow={slotWindow ?? undefined} slots={availableSlots} onChoose={chooseSlot} /> : null}
+          {!chatLocale ? <LanguageChoicePanel copy={copy} onSelect={chooseLanguage} /> : null}
+          {availableSlots.length ? <SlotChoicePanel locale={activeLocale} slotWindow={slotWindow ?? undefined} slots={availableSlots} onChoose={chooseSlot} /> : null}
           {readyToConfirm ? (
             <div className="flex flex-wrap justify-end gap-2">
               <Button className={cn(publicMotionButton, publicMotionCta, "rounded-full")} data-testid="booking-confirm-booking" loading={isBusy} type="button" onClick={confirmBooking}>
@@ -374,19 +399,19 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
         <div className="shrink-0 px-5 pb-5 sm:px-8 sm:pb-8">
           <div className="mb-5 flex flex-wrap gap-3">
-            <Button className={chipButtonClasses} data-testid="booking-quick-book" disabled={isBusy} size="sm" type="button" variant="secondary" onClick={startBooking}>
+            <Button className={chipButtonClasses} data-testid="booking-quick-book" disabled={!chatLocale || isBusy} size="sm" type="button" variant="secondary" onClick={startBooking}>
               <MaterialSymbol className="text-xl" name="event_available" />
               {copy.book}
             </Button>
-            <Button className={chipButtonClasses} data-testid="booking-quick-inquiry" disabled={isBusy} size="sm" type="button" variant="secondary" onClick={startInquiry}>
+            <Button className={chipButtonClasses} data-testid="booking-quick-inquiry" disabled={!chatLocale || isBusy} size="sm" type="button" variant="secondary" onClick={startInquiry}>
               <MaterialSymbol className="text-xl" name="search" />
               {copy.inquire}
             </Button>
-            <Button className={chipButtonClasses} disabled={isBusy} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(copy.corporateLaw, "corporate")}>
+            <Button className={chipButtonClasses} disabled={!chatLocale || isBusy} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(copy.corporateLaw, "corporate")}>
               <MaterialSymbol className="text-xl" name="account_balance" />
               {copy.corporateLaw}
             </Button>
-            <Button className={chipButtonClasses} disabled={isBusy} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(copy.litigation, "disputes")}>
+            <Button className={chipButtonClasses} disabled={!chatLocale || isBusy} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(copy.litigation, "disputes")}>
               <MaterialSymbol className="text-xl" name="gavel" />
               {copy.litigation}
             </Button>
@@ -397,10 +422,10 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
               <TextInput
                 autoComplete="off"
                 className={cn(darkControlClasses, "!min-h-16 !rounded-full !border-kmt-gold/55 !bg-black/42 !px-6 !text-base")}
-                disabled={isBusy}
+                disabled={!chatLocale || isBusy}
                 label={copy.messageLabel}
                 name="chatMessage"
-                placeholder={copy.messagePlaceholder}
+                placeholder={chatLocale ? copy.messagePlaceholder : copy.languagePendingPlaceholder}
                 value={freeMessage}
                 onChange={(event) => setFreeMessage(event.target.value)}
               />
@@ -408,7 +433,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
             <Button
               aria-label={copy.send}
               className={cn(publicMotionButton, publicMotionCta, "mb-0 h-16 w-16 shrink-0 rounded-full !px-0 shadow-[0_16px_45px_-24px_rgba(183,134,64,1)]")}
-              disabled={isBusy || !freeMessage.trim()}
+              disabled={!chatLocale || isBusy || !freeMessage.trim()}
               type="submit"
             >
               <MaterialSymbol className="text-xl" name="send" />
@@ -430,6 +455,21 @@ function TrustRailItem({ icon, label }: { icon: string; label: string }) {
     <div className="inline-flex min-h-8 max-w-full items-center justify-center gap-1 rounded-full border border-kmt-gold/25 bg-[#12100c]/72 px-2 text-center shadow-[0_12px_26px_-24px_rgba(183,134,64,0.9)] transition-colors hover:border-kmt-gold/40 hover:bg-[#17130d]/82">
       <MaterialSymbol className="shrink-0 text-sm text-kmt-gold drop-shadow-[0_0_10px_rgba(183,134,64,0.26)]" name={icon} />
       <span className="min-w-0 truncate text-[0.68rem] font-medium leading-4 text-amber-50/90">{label}</span>
+    </div>
+  );
+}
+
+function LanguageChoicePanel({ copy, onSelect }: { copy: BookingChatCopy; onSelect: (locale: PublicLocale) => void }) {
+  return (
+    <div className="flex flex-wrap justify-start gap-3 ps-16 max-sm:ps-0" data-testid="booking-language-choice">
+      <Button className={chipButtonClasses} data-testid="booking-language-ar" type="button" variant="secondary" onClick={() => onSelect("ar")}>
+        <MaterialSymbol className="text-xl" name="translate" />
+        {copy.languageArabic}
+      </Button>
+      <Button className={chipButtonClasses} data-testid="booking-language-en" type="button" variant="secondary" onClick={() => onSelect("en")}>
+        <MaterialSymbol className="text-xl" name="translate" />
+        {copy.languageEnglish}
+      </Button>
     </div>
   );
 }

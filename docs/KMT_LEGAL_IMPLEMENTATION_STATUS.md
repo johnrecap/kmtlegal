@@ -1,6 +1,6 @@
 # KMT Legal Implementation Status
 
-Last updated: 2026-06-29
+Last updated: 2026-06-30
 
 This is the main tracking file for the 32 Spec Kit implementation plans.
 
@@ -67,9 +67,11 @@ Total plans: 32
 - Hardened the public booking assistant draft validation so phone numbers cannot be accepted as client names, availability words such as tomorrow cannot be accepted as phone numbers, and date/time-only replies cannot be inferred as names before appointment confirmation.
 - Hardened booking confirmation recovery so expired, invalid, already-booked, or no-longer-available appointment slots return a conversational next step or fresh alternatives instead of a generic failed-request bubble.
 - Decoupled public booking confirmation and verified reference inquiry from the AI provider so completed appointment bookings are saved through deterministic system rules even if Gemini/OpenAI-compatible output is unavailable or schema-invalid; AI provider failures now emit safe request/model/status diagnostics without exposing secrets or client content.
+- Added a first-message Arabic/English language choice inside the public booking chat; the selected language now controls the chat copy, API `locale`, date formatting, and chat `dir` independently of the surrounding public page language.
 - Verification passed: `cmd /c npm run db:validate`, `cmd /c npm run db:generate`, `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, and `cmd /c npm run test:e2e:smoke`.
 - Latest follow-up verification passed: `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:DATABASE_URL='postgresql://postgres:postgres@localhost:5432/kmtlegal'; cmd /c npm run build`, and `$env:DATABASE_URL='postgresql://postgres:postgres@localhost:5432/kmtlegal'; cmd /c npm run test:e2e:smoke`.
 - Latest AI decoupling verification passed: `cmd /c npm run typecheck`, `cmd /c npx vitest run tests/server/consultation-contract.test.ts`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, and `cmd /c npm run test:e2e:smoke`.
+- Latest booking language-choice verification passed: `cmd /c npm run typecheck`, `cmd /c npx vitest run tests/ui/product-components.test.tsx`, `cmd /c node scripts/run-playwright-with-server.mjs tests/e2e/booking-stepper-validation.spec.ts`, `cmd /c node scripts/run-playwright-with-server.mjs tests/e2e/mvp-smoke.spec.ts --grep "booking chat preserves"`, `cmd /c npm run lint`, `cmd /c npm run test`, and `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`.
 
 ## Latest Brand Identity Follow-Up
 

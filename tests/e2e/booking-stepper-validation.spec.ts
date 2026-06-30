@@ -19,6 +19,9 @@ test.describe("consultation booking chat", () => {
     await expect(chat).toHaveAttribute("data-hydrated", "true");
     await expect(page.getByTestId("booking-chat-shell")).toBeVisible();
     await expect(page.getByTestId("booking-chat-composer")).toBeVisible();
+    await expect(page.getByTestId("booking-language-choice")).toBeVisible();
+
+    await page.getByTestId("booking-language-ar").click();
 
     await chat.locator('input[name="chatMessage"]').fill("هل هكسب القضية؟");
     await chat.locator('button[type="submit"]').last().click();

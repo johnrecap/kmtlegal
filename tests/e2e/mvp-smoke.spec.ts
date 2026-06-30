@@ -251,6 +251,9 @@ test.describe("MVP smoke without database", () => {
     await expect(form).toHaveAttribute("data-hydrated", "true");
     await expect(page.getByTestId("booking-chat-shell")).toBeVisible();
     await expect(page.getByTestId("booking-chat-composer")).toBeVisible();
+    await expect(page.getByTestId("booking-language-choice")).toBeVisible();
+
+    await page.getByTestId("booking-language-en").click();
 
     await form.locator('input[name="chatMessage"]').fill("Will I win this case?");
     await form.locator('button[type="submit"]').last().click();
