@@ -35,6 +35,10 @@ function statusTone(status: string) {
 }
 
 const hiddenAiTextPatterns = [/mock/i, /placeholder/i, /structured intake/i, /draft only/i, /internal review/i, /review required/i, /not legal advice/i];
+const genericBookingSummaryPatterns = [
+  /collected through the public booking chat/i,
+  /تم جمع طلب الاستشارة من شات الحجز العام/
+];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
@@ -133,6 +137,35 @@ function DetailItem({ label, value }: { label: string; value: React.ReactNode })
   );
 }
 
+function shouldReplaceGenericAiSummary(value?: string | null) {
+  const text = value?.trim();
+  return !text || genericBookingSummaryPatterns.some((pattern) => pattern.test(text));
+}
+
+function adminConsultationOfficeBrief(consultation: Awaited<ReturnType<typeof getAdminConsultationDetail>>) {
+  if (!shouldReplaceGenericAiSummary(consultation.aiSummary)) {
+    return consultation.aiSummary;
+  }
+
+  const consultationAppointment = consultation.appointments.find((appointment) => appointment.type === "CONSULTATION") ?? consultation.appointments[0];
+  const contactParts = [
+    `الهاتف: ${consultation.phone}`,
+    consultation.email ? `البريد: ${consultation.email}` : "",
+    consultation.city ? `المدينة: ${consultation.city}` : ""
+  ].filter(Boolean);
+  const appointmentText = consultationAppointment
+    ? `${formatDateTime(consultationAppointment.startsAt)} - ${labelFrom(modeLabels, consultationAppointment.mode)}`
+    : "لم يتم العثور على موعد مرتبط";
+
+  return [
+    `ملخص للفريق: ${consultation.fullName} طلب استشارة في مجال ${labelFrom(serviceCategoryLabels, consultation.serviceCategory)}.`,
+    `طلب العميل كما وصل: ${consultation.summary}`,
+    `بيانات التواصل: ${contactParts.join("، ")}.`,
+    `التفضيلات: ${labelFrom(modeLabels, consultation.preferredMode)}، أولوية ${labelFrom(urgencyLabels, consultation.urgency)}، الموعد ${appointmentText}.`,
+    "الإجراء المطلوب: مراجعة الطلب، تأكيد الملاءمة مع العميل، ثم تعيين محامي مناسب قبل أي إجراء أو توجيه قانوني."
+  ].join("\n");
+}
+
 export default async function AdminConsultationDetailPage({ params }: PageProps) {
   const guard = await requireAdminPage(`/admin/consultations/${params.consultationId}`);
   if (guard.status === "forbidden") {
@@ -146,6 +179,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
     }),
     listAssignableLawyers()
   ]);
+  const officeAiSummary = adminConsultationOfficeBrief(consultation);
 
   return (
     <DashboardShell
@@ -223,7 +257,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
               <CardDescription>سياق تنظيمي مستخرج من شات الحجز ليساعد السكرتيرة والفريق على مراجعة الطلب وتعيين المحامي المناسب.</CardDescription>
             </CardHeader>
             <CardContent>
-              {consultation.aiSummary ? <p className="mb-4 text-sm leading-7 text-kmt-ink">{consultation.aiSummary}</p> : null}
+              <p className="mb-4 whitespace-pre-wrap text-sm leading-7 text-kmt-ink">{officeAiSummary}</p>
               <AiClassificationSummary value={consultation.aiClassification} />
             </CardContent>
           </Card>

@@ -304,6 +304,16 @@ describe("product UI primitives", () => {
     expect(source).not.toContain("read-only");
   });
 
+  it("keeps admin consultation AI summaries useful for old public chat bookings", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/admin/consultations/[consultationId]/page.tsx"), "utf8");
+
+    expect(source).toContain("adminConsultationOfficeBrief");
+    expect(source).toContain("genericBookingSummaryPatterns");
+    expect(source).toContain("ملخص AI للفريق");
+    expect(source).toContain("تعيين محامي مناسب");
+    expect(source).not.toContain("{consultation.aiSummary ? <p");
+  });
+
   it("keeps the finance submit form reference stable across async requests", () => {
     const source = readFileSync(join(process.cwd(), "src/features/admin/finance/finance-forms.tsx"), "utf8");
 
