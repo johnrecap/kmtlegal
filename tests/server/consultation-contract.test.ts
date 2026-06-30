@@ -7,6 +7,7 @@ import {
   inferPublicConsultationServiceCategory,
   isCrossClientDataRequest,
   isLegalAdviceRequest,
+  publicBookingSlotConfirmationError,
   publicConsultationAssistantSchema
 } from "@/server/consultations/consultation-assistant-service";
 import {
@@ -187,6 +188,48 @@ describe("public consultation contract", () => {
     expect(pollutedResult.missingFields).toEqual(expect.arrayContaining(["fullName", "phone"]));
     expect(pollutedResult.draft.fullName).toBe("");
     expect(pollutedResult.draft.phone).toBe("");
+  });
+
+  it("recovers expired booking slots before confirming an appointment", async () => {
+    expect(publicBookingSlotConfirmationError("en", "2020-01-01T10:00:00.000Z", new Date("2026-06-30T10:00:00.000Z"))).toContain(
+      "no longer available"
+    );
+
+    const request = new Request("https://example.test/api/public/consultations/assistant", {
+      headers: { "x-forwarded-for": "203.0.113.11" }
+    });
+
+    const result = await handlePublicConsultationAssistant({
+      body: {
+        locale: "en",
+        message: "Book appointment",
+        confirmBooking: true,
+        selectedSlot: "2020-01-01T10:00:00.000Z",
+        draft: {
+          fullName: "Khaled Ahmed",
+          phone: "01063887871",
+          serviceCategory: "disputes",
+          summary: "Signed trust receipt dispute requiring urgent office review.",
+          preferredMode: "ONLINE",
+          startsAt: "2020-01-01T10:00:00.000Z"
+        }
+      },
+      request,
+      requestId: "test-booking-expired-slot"
+    });
+
+    const bookingResult = result as unknown as {
+      message: string;
+      missingFields: string[];
+      readyToConfirm: boolean;
+      needsAvailabilityPreference: boolean;
+      draft: { startsAt: string };
+    };
+    expect(bookingResult.message).toContain("no longer available");
+    expect(bookingResult.missingFields).toContain("startsAt");
+    expect(bookingResult.readyToConfirm).toBe(false);
+    expect(bookingResult.needsAvailabilityPreference).toBe(true);
+    expect(bookingResult.draft.startsAt).toBe("");
   });
 
   it("canonicalizes phone numbers for duplicate and rate-limit checks", () => {

@@ -133,6 +133,20 @@ async function handlePublicBookingConversation(input: {
       });
     }
 
+    const selectedSlotError = publicBookingSlotConfirmationError(input.body.locale, selectedSlot);
+    if (selectedSlotError) {
+      const nextDraft = normalizeBookingDraft({ ...draft, startsAt: "" });
+      return bookingConversationResponse({
+        locale: input.body.locale,
+        draft: nextDraft,
+        missingFields: ["startsAt"],
+        selectedSlot: "",
+        needsAvailabilityPreference: true,
+        slotWindow: availabilityWindowDto(nextDraft.availabilityPreference),
+        message: selectedSlotError
+      });
+    }
+
     const bookingBody = {
       ...input.body,
       ...draft,
@@ -145,7 +159,27 @@ async function handlePublicBookingConversation(input: {
       actorId: null,
       requestId: input.requestId
     });
-    return bookConsultationAppointment({ body: bookingBody, ai, request: input.request, requestId: input.requestId });
+    try {
+      return await bookConsultationAppointment({ body: bookingBody, ai, request: input.request, requestId: input.requestId });
+    } catch (error) {
+      if (isRecoverableBookingSlotError(error)) {
+        return recoverBookingSlotSelection({
+          locale: input.body.locale,
+          draft,
+          message: recoveredSlotSelectionMessage(input.body.locale, true)
+        });
+      }
+      if (isDuplicateBookingError(error)) {
+        return bookingConversationResponse({
+          locale: input.body.locale,
+          draft,
+          missingFields: [],
+          selectedSlot,
+          message: duplicateBookingConversationMessage(input.body.locale)
+        });
+      }
+      throw error;
+    }
   }
 
   if (missingFields.length) {
@@ -1230,6 +1264,82 @@ function parseBookingDate(value: string) {
     throw new ApiError(400, "VALIDATION_ERROR", "Appointment date must be in the future.");
   }
   return parsed;
+}
+
+export function publicBookingSlotConfirmationError(locale: "ar" | "en", selectedSlot: string, now = new Date()) {
+  const parsed = new Date(selectedSlot);
+  if (!selectedSlot || Number.isNaN(parsed.getTime())) {
+    return locale === "ar"
+      ? "الموعد المختار غير واضح. اكتب اليوم أو الفترة المناسبة لك وسأعرض المواعيد المتاحة."
+      : "The selected appointment time is not clear. Write the day or time window that works for you and I will show available slots.";
+  }
+  if (parsed <= now) {
+    return recoveredSlotSelectionMessage(locale, false);
+  }
+  return "";
+}
+
+async function recoverBookingSlotSelection(input: {
+  locale: "ar" | "en";
+  draft: ReturnType<typeof mergeBookingDraft>;
+  message: string;
+}) {
+  const nextDraft = normalizeBookingDraft({ ...input.draft, startsAt: "" });
+  const hasPreference = hasAvailabilityPreference(nextDraft.availabilityPreference);
+  const requestedSlots = hasPreference
+    ? await listPublicConsultationSlots({
+        mode: nextDraft.preferredMode,
+        limit: 12,
+        date: nextDraft.availabilityPreference.date || undefined,
+        fromTime: nextDraft.availabilityPreference.fromTime || undefined,
+        toTime: nextDraft.availabilityPreference.toTime || undefined
+      })
+    : [];
+  const fallbackSlots = requestedSlots.length ? undefined : await listPublicConsultationSlots({ mode: nextDraft.preferredMode, limit: 6 });
+  const slots = requestedSlots.length ? requestedSlots : fallbackSlots;
+
+  return bookingConversationResponse({
+    locale: input.locale,
+    draft: nextDraft,
+    missingFields: ["startsAt"],
+    selectedSlot: "",
+    availableSlots: slots,
+    slotWindow: availabilityWindowDto(nextDraft.availabilityPreference, !requestedSlots.length && Boolean(fallbackSlots?.length)),
+    message: slots?.length ? input.message : recoveredSlotSelectionMessage(input.locale, false)
+  });
+}
+
+function isRecoverableBookingSlotError(error: unknown) {
+  return (
+    error instanceof ApiError &&
+    [
+      "Appointment date is invalid.",
+      "Appointment date must be in the future.",
+      "This consultation slot is no longer available. Please choose another time.",
+      "This consultation slot is already booked."
+    ].includes(error.message)
+  );
+}
+
+function isDuplicateBookingError(error: unknown) {
+  return error instanceof ApiError && error.message === "A scheduled consultation already exists for this contact and service area.";
+}
+
+function recoveredSlotSelectionMessage(locale: "ar" | "en", hasAlternatives: boolean) {
+  if (hasAlternatives) {
+    return locale === "ar"
+      ? "الموعد ده لم يعد متاحًا. اختر موعدًا جديدًا من أقرب المواعيد المتاحة بالأسفل، وبعدها سأعرض ملخص الحجز للتأكيد."
+      : "That time is no longer available. Choose one of the latest available times below, then I will show the booking summary again.";
+  }
+  return locale === "ar"
+    ? "الموعد ده لم يعد متاحًا. اكتب يوم أو فترة مناسبة لك وسأفحص المواعيد المتاحة من جديد."
+    : "That time is no longer available. Write another day or time window and I will check availability again.";
+}
+
+function duplicateBookingConversationMessage(locale: "ar" | "en") {
+  return locale === "ar"
+    ? "يوجد بالفعل حجز استشارة مجدول لنفس رقم الهاتف ونفس مجال الطلب. استخدم استعلام برقم المرجع لو معك المرجع، أو انتظر مراجعة فريق المكتب."
+    : "A scheduled consultation already exists for this phone and request area. Use Check reference if you have the reference, or wait for the office team review.";
 }
 
 async function assertNoSlotConflict(startsAt: Date, endsAt: Date) {

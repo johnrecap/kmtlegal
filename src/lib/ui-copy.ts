@@ -39,6 +39,12 @@ const apiExactMessages: Record<string, string> = {
   "An unexpected server error occurred.": "حدث خطأ غير متوقع في الخادم. حاول مرة أخرى لاحقًا.",
   "A recent consultation request already exists for the same phone number and area. Please wait for the team review or contact us.":
     "يوجد طلب استشارة قريب بنفس رقم الهاتف ونفس المجال. انتظر مراجعة الفريق أو تواصل معنا.",
+  "Appointment date is invalid.": "الموعد المختار غير واضح. اختر موعدًا جديدًا.",
+  "Appointment date must be in the future.": "الموعد ده لم يعد متاحًا. اختر موعدًا جديدًا.",
+  "This consultation slot is no longer available. Please choose another time.": "الموعد ده لم يعد متاحًا. اختر موعدًا آخر.",
+  "This consultation slot is already booked.": "الموعد ده تم حجزه بالفعل. اختر موعدًا آخر.",
+  "A scheduled consultation already exists for this contact and service area.":
+    "يوجد بالفعل حجز استشارة مجدول لنفس بيانات التواصل ونفس مجال الطلب.",
   "Email OTP fallback is disabled for this release.": "التحقق عبر البريد غير متاح في هذه النسخة.",
   "TOTP is deferred and disabled in this release.": "التحقق الثنائي غير متاح في هذه النسخة.",
   "Staff 2FA reset is deferred and disabled in this release.": "إعادة ضبط التحقق الثنائي للموظفين غير متاحة في هذه النسخة.",
