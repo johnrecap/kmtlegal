@@ -242,6 +242,8 @@ describe("product UI primitives", () => {
     expect(publicChatSource).toContain("booking-language-choice");
     expect(publicChatSource).toContain("setChatLocale");
     expect(publicChatSource).toContain("activeLocale");
+    expect(publicChatSource).toContain("logScrollRef");
+    expect(publicChatSource).not.toContain("scrollIntoView");
     expect(publicChatSource).toContain("KmtBrandLogo");
     expect(publicChatSource).not.toContain("booking-chat-step-card");
     expect(publicChatSource).not.toContain('name="fullName"');

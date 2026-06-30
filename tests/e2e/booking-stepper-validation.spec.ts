@@ -24,8 +24,11 @@ test.describe("consultation booking chat", () => {
     await page.getByTestId("booking-language-ar").click();
 
     await chat.locator('input[name="chatMessage"]').fill("هل هكسب القضية؟");
+    const pageScrollBeforeSubmit = await page.evaluate(() => window.scrollY);
     await chat.locator('button[type="submit"]').last().click();
     await expect(chat.getByText(/لا أستطيع تقديم رأي قانوني/)).toBeVisible();
+    const pageScrollAfterSubmit = await page.evaluate(() => window.scrollY);
+    expect(Math.abs(pageScrollAfterSubmit - pageScrollBeforeSubmit)).toBeLessThanOrEqual(2);
 
     await page.getByTestId("booking-quick-book").click();
     await expect(page.getByTestId("booking-chat-step-card")).toHaveCount(0);

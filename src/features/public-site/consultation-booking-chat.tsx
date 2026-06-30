@@ -112,7 +112,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   const activeLocale = chatLocale ?? locale;
   const content = getPublicContent(activeLocale);
   const copy = content.bookingChat;
-  const logEndRef = useRef<HTMLDivElement | null>(null);
+  const logScrollRef = useRef<HTMLDivElement | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
     { id: "language-prompt", role: "assistant", text: getPublicContent(locale).bookingChat.languagePrompt }
@@ -131,7 +131,14 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   }, []);
 
   useEffect(() => {
-    logEndRef.current?.scrollIntoView({ block: "end" });
+    const chatLog = logScrollRef.current;
+    if (!chatLog) return undefined;
+
+    const frame = window.requestAnimationFrame(() => {
+      chatLog.scrollTop = chatLog.scrollHeight;
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [messages, availableSlots, readyToConfirm, isBusy]);
 
   function append(role: ChatMessage["role"], text: string, tone: ChatMessage["tone"] = "default") {
@@ -371,6 +378,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         </header>
 
         <div
+          ref={logScrollRef}
           aria-busy={isBusy ? "true" : "false"}
           className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8"
           data-testid="booking-chat-log"
@@ -394,7 +402,6 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
             </div>
           ) : null}
           {isBusy ? <TypingIndicator label={copy.typing} /> : null}
-          <div ref={logEndRef} />
         </div>
 
         <div className="shrink-0 px-5 pb-5 sm:px-8 sm:pb-8">
