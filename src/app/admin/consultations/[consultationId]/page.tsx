@@ -219,8 +219,8 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
 
           <Card>
             <CardHeader>
-              <CardTitle>نتيجة AI المنظمة</CardTitle>
-              <CardDescription>نتيجة إرشادية للمكتب فقط وتحتاج مراجعة بشرية قبل أي إجراء قانوني.</CardDescription>
+              <CardTitle>ملخص AI للفريق</CardTitle>
+              <CardDescription>سياق تنظيمي مستخرج من شات الحجز ليساعد السكرتيرة والفريق على مراجعة الطلب وتعيين المحامي المناسب.</CardDescription>
             </CardHeader>
             <CardContent>
               {consultation.aiSummary ? <p className="mb-4 text-sm leading-7 text-kmt-ink">{consultation.aiSummary}</p> : null}

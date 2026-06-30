@@ -327,7 +327,7 @@ export async function convertConsultationToCase(input: { actor: Principal; consu
   await assertAssignableLawyer(assignedLawyerId);
 
   const appointmentStartsAt = body.appointmentStartsAt ? new Date(body.appointmentStartsAt) : null;
-  const caseTitle = body.caseTitle || consultation.aiSummary || consultation.summary.slice(0, 120);
+  const caseTitle = body.caseTitle || consultation.summary.slice(0, 120);
   const caseType = body.caseType || consultation.serviceCategory;
   const priority = body.priority || priorityFromUrgency(consultation.urgency);
   const now = new Date();

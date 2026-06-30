@@ -5,6 +5,7 @@ import { consultationAssistantOutputSchema } from "@/server/ai/schemas";
 import { adminConsultationListQuerySchema } from "@/server/admin/consultation-review-service";
 import {
   clientOrganizerIntentFromMessage,
+  deterministicBookingSummary,
   handlePublicConsultationAssistant,
   inferPublicConsultationServiceCategory,
   isCrossClientDataRequest,
@@ -140,6 +141,34 @@ describe("public consultation contract", () => {
     expect(source).toContain("deterministic_booking_rules");
     expect(source).toContain("publicAppointmentInquiry({ body, requestId: input.requestId })");
     expect(source).toContain("bookConsultationAppointment({ body: bookingBody, request: input.request, requestId: input.requestId })");
+  });
+
+  it("builds a useful office brief for public AI chat bookings", () => {
+    const brief = deterministicBookingSummary(
+      {
+        locale: "ar",
+        message: "احجز استشارة",
+        fullName: "خالد أحمد",
+        phone: "01063887871",
+        email: "khaled@example.com",
+        city: "القاهرة",
+        serviceCategory: "disputes",
+        summary: "وصل أمانة موقع عليا وعايز استشارة عاجلة قبل اتخاذ أي خطوة.",
+        urgency: "URGENT",
+        preferredMode: "ONLINE",
+        startsAt: "2026-07-01T09:00:00.000Z",
+        consent: true
+      },
+      new Date("2026-07-01T09:00:00.000Z")
+    );
+
+    expect(brief).toContain("ملخص للفريق");
+    expect(brief).toContain("خالد أحمد");
+    expect(brief).toContain("المنازعات والتقاضي");
+    expect(brief).toContain("وصل أمانة");
+    expect(brief).toContain("01063887871");
+    expect(brief).toContain("أونلاين");
+    expect(brief).toContain("تعيين محامي مناسب");
   });
 
   it("does not treat booking quick actions as the client name", async () => {

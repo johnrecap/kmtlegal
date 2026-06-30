@@ -1092,13 +1092,8 @@ async function bookConsultationAppointment(input: {
         urgency: input.body.urgency,
         preferredMode: input.body.preferredMode,
         status: "SCHEDULED",
-        aiClassification: {
-          assistantAction: "book_consultation_appointment",
-          reviewRequired: true,
-          requestId: input.requestId,
-          source: "deterministic_booking_rules"
-        },
-        aiSummary: deterministicBookingSummary(input.body.locale)
+        aiClassification: deterministicBookingClassification(input.body, startsAt, input.requestId),
+        aiSummary: deterministicBookingSummary(input.body, startsAt)
       }
     });
 
@@ -1603,8 +1598,82 @@ function deterministicAssistantMetadata(requestId: string) {
   };
 }
 
-function deterministicBookingSummary(locale: "ar" | "en") {
-  return locale === "ar"
-    ? "تم جمع طلب الاستشارة من شات الحجز العام، ويحتاج إلى مراجعة بشرية من فريق المكتب قبل أي توجيه قانوني أو تعيين محامي."
-    : "The consultation request was collected through the public booking chat and requires human office review before legal guidance or lawyer assignment.";
+function deterministicBookingClassification(body: PublicConsultationAssistantInput, startsAt: Date, requestId: string) {
+  return {
+    assistantAction: "book_consultation_appointment",
+    category: body.serviceCategory || "unspecified",
+    urgency: body.urgency,
+    preferredMode: body.preferredMode,
+    reasons: [
+      `مجال الطلب من المحادثة: ${teamServiceCategoryLabel(body.serviceCategory)}.`,
+      `طريقة التواصل المطلوبة: ${teamModeLabel(body.preferredMode)}.`,
+      `الموعد المختار من مواعيد السكرتارية المتاحة: ${formatTeamDateTime(startsAt)}.`
+    ],
+    reviewNote: "هذا ملخص تنظيمي للفريق فقط. يجب مراجعة الطلب والتواصل مع العميل قبل أي توجيه قانوني أو تعيين محامي.",
+    reviewRequired: true,
+    requestId,
+    source: "deterministic_booking_rules"
+  };
+}
+
+export function deterministicBookingSummary(body: PublicConsultationAssistantInput, startsAt: Date) {
+  const contactParts = [
+    `الهاتف: ${body.phone || "غير محدد"}`,
+    body.email ? `البريد: ${body.email}` : "",
+    body.city ? `المدينة: ${body.city}` : ""
+  ].filter(Boolean);
+  const opposingParty = body.opposingPartyName ? `\nالطرف المقابل المذكور: ${body.opposingPartyName}.` : "";
+
+  return [
+    `ملخص للفريق: ${body.fullName || "عميل غير محدد"} طلب استشارة في مجال ${teamServiceCategoryLabel(body.serviceCategory)} من خلال شات الحجز العام.`,
+    `طلب العميل كما وصل: ${truncateTeamText(body.summary || "لم يتم إدخال ملخص واضح.", 700)}${opposingParty}`,
+    `بيانات التواصل: ${contactParts.join("، ")}.`,
+    `التفضيلات: ${teamModeLabel(body.preferredMode)}، أولوية ${teamUrgencyLabel(body.urgency)}، الموعد المختار ${formatTeamDateTime(startsAt)}.`,
+    "الإجراء المطلوب: مراجعة الطلب، تأكيد الملاءمة مع العميل، ثم تعيين محامي مناسب قبل أي إجراء أو توجيه قانوني."
+  ].join("\n");
+}
+
+function teamServiceCategoryLabel(value?: string | null) {
+  const labels: Record<string, string> = {
+    corporate: "الشركات والعقود",
+    disputes: "المنازعات والتقاضي",
+    "real-estate": "العقارات",
+    employment: "العمل"
+  };
+  return value ? labels[value] ?? value : "غير محدد";
+}
+
+function teamUrgencyLabel(value?: string | null) {
+  const labels: Record<string, string> = {
+    LOW: "منخفضة",
+    NORMAL: "عادية",
+    HIGH: "مرتفعة",
+    URGENT: "عاجلة"
+  };
+  return value ? labels[value] ?? value : "عادية";
+}
+
+function teamModeLabel(value?: string | null) {
+  const labels: Record<string, string> = {
+    PHONE: "هاتف",
+    ONLINE: "أونلاين",
+    OFFICE: "في المكتب"
+  };
+  return value ? labels[value] ?? value : "أونلاين";
+}
+
+function formatTeamDateTime(value: Date) {
+  return new Intl.DateTimeFormat("ar-EG", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: OFFICE_TIMEZONE
+  }).format(value);
+}
+
+function truncateTeamText(value: string, maxLength: number) {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+  return `${normalized.slice(0, maxLength - 1)}…`;
 }
