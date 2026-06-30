@@ -19,6 +19,7 @@ test.describe("consultation booking chat", () => {
     await expect(chat).toHaveAttribute("data-hydrated", "true");
     await expect(page.getByTestId("booking-chat-shell")).toBeVisible();
     await expect(page.getByTestId("booking-chat-composer")).toBeVisible();
+    await expect(page.getByTestId("booking-chat-log")).toHaveClass(/kmt-chat-scrollbar/);
     await expect(page.getByTestId("booking-language-choice")).toBeVisible();
 
     await page.getByTestId("booking-language-ar").click();

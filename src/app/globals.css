@@ -244,6 +244,41 @@ a {
 }
 
 @layer utilities {
+  .kmt-chat-scrollbar {
+    scrollbar-color: rgb(199 154 82 / 72%) transparent;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+  }
+
+  .kmt-chat-scrollbar::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  .kmt-chat-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .kmt-chat-scrollbar::-webkit-scrollbar-thumb {
+    min-height: 3rem;
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background: rgb(199 154 82 / 72%);
+    background-clip: content-box;
+  }
+
+  .kmt-chat-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgb(244 207 136 / 86%);
+    background-clip: content-box;
+  }
+
+  .kmt-chat-scrollbar::-webkit-scrollbar-button,
+  .kmt-chat-scrollbar::-webkit-scrollbar-corner {
+    display: none;
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+
   @keyframes kmt-motion-reveal {
     from {
       opacity: 0;

@@ -380,7 +380,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         <div
           ref={logScrollRef}
           aria-busy={isBusy ? "true" : "false"}
-          className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8"
+          className="kmt-chat-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8"
           data-testid="booking-chat-log"
           role="log"
         >

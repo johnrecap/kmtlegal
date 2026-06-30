@@ -227,6 +227,7 @@ describe("product UI primitives", () => {
     const clientChatSource = readFileSync(join(process.cwd(), "src/features/client/client-assistant-panel.tsx"), "utf8");
     const teamChatSource = readFileSync(join(process.cwd(), "src/features/client/client-team-chat-panel.tsx"), "utf8");
     const brandLogoSource = readFileSync(join(process.cwd(), "src/components/brand/kmt-brand-logo.tsx"), "utf8");
+    const globalStyles = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
     const publicContentEn = readFileSync(join(process.cwd(), "src/content/public-content.en.ts"), "utf8");
     const publicContentAr = readFileSync(join(process.cwd(), "src/content/public-content.ar.ts"), "utf8");
 
@@ -243,7 +244,11 @@ describe("product UI primitives", () => {
     expect(publicChatSource).toContain("setChatLocale");
     expect(publicChatSource).toContain("activeLocale");
     expect(publicChatSource).toContain("logScrollRef");
+    expect(publicChatSource).toContain("kmt-chat-scrollbar");
     expect(publicChatSource).not.toContain("scrollIntoView");
+    expect(globalStyles).toContain(".kmt-chat-scrollbar::-webkit-scrollbar-track");
+    expect(globalStyles).toContain("scrollbar-color: rgb(199 154 82 / 72%) transparent");
+    expect(globalStyles).toContain(".kmt-chat-scrollbar::-webkit-scrollbar-button");
     expect(publicChatSource).toContain("KmtBrandLogo");
     expect(publicChatSource).not.toContain("booking-chat-step-card");
     expect(publicChatSource).not.toContain('name="fullName"');
