@@ -49,6 +49,13 @@ export function createOpenAICompatibleProvider(config: AIProviderConfig, name: A
         });
 
         if (!response.ok) {
+          console.warn("AI provider request failed", {
+            provider: name,
+            model: config.model,
+            requestId: input.requestId,
+            status: response.status,
+            statusText: response.statusText
+          });
           throw new ApiError(502, "AI_PROVIDER_UNAVAILABLE", "AI provider request failed.");
         }
 

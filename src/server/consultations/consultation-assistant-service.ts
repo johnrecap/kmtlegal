@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { AI_REVIEW_DISCLAIMER, consultationAssistantOutputSchema, generateStructured } from "@/server/ai";
+import { AI_REVIEW_DISCLAIMER } from "@/server/ai";
 import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { getIpAddress } from "@/server/auth/session-store";
 import type { Principal } from "@/server/auth/policy";
@@ -26,7 +26,6 @@ import {
 } from "./consultation-availability-service";
 import { publicConsultationReference } from "./consultation-service";
 
-const DEFAULT_DURATION_MINUTES = 60;
 const OFFICE_TIMEZONE = CONSULTATION_TIMEZONE;
 
 const assistantActionSchema = z.enum([
@@ -100,13 +99,7 @@ export async function handlePublicConsultationAssistant(input: { body: unknown; 
   }
 
   if (body.intent === "appointment_inquiry" || body.reference) {
-    const ai = await runAssistantAI({
-      locale: body.locale,
-      body,
-      actorId: null,
-      requestId: input.requestId
-    });
-    return publicAppointmentInquiry({ body, ai });
+    return publicAppointmentInquiry({ body, requestId: input.requestId });
   }
 
   return handlePublicBookingConversation({ body, request: input.request, requestId: input.requestId });
@@ -153,14 +146,8 @@ async function handlePublicBookingConversation(input: {
       startsAt: selectedSlot,
       consent: true
     };
-    const ai = await runAssistantAI({
-      locale: input.body.locale,
-      body: bookingBody,
-      actorId: null,
-      requestId: input.requestId
-    });
     try {
-      return await bookConsultationAppointment({ body: bookingBody, ai, request: input.request, requestId: input.requestId });
+      return await bookConsultationAppointment({ body: bookingBody, request: input.request, requestId: input.requestId });
     } catch (error) {
       if (isRecoverableBookingSlotError(error)) {
         return recoverBookingSlotSelection({
@@ -312,30 +299,6 @@ export async function handleClientConsultationAssistant(input: { actor: Principa
     disclaimer: clientOrganizerDisclaimer(body.locale),
     requestId: input.requestId
   };
-}
-
-async function runAssistantAI(input: {
-  locale: "ar" | "en";
-  body: unknown;
-  actorId: string | null;
-  requestId: string;
-}) {
-  return generateStructured({
-    task: "consultation_assistant",
-    locale: input.locale,
-    input: {
-      ...sanitizeAssistantInput(input.body),
-      allowedActions: assistantActionSchema.options,
-      bookingRules: {
-        durationMinutes: DEFAULT_DURATION_MINUTES,
-        timezone: OFFICE_TIMEZONE,
-        officeHours: "Sunday-Thursday 10:00-17:00"
-      }
-    },
-    schema: consultationAssistantOutputSchema,
-    actorId: input.actorId,
-    requestId: input.requestId
-  });
 }
 
 function mergeBookingDraft(body: PublicConsultationAssistantInput) {
@@ -1085,7 +1048,6 @@ async function listClientSessions(actor: Principal) {
 
 async function bookConsultationAppointment(input: {
   body: PublicConsultationAssistantInput;
-  ai: Awaited<ReturnType<typeof runAssistantAI>>;
   request: Request;
   requestId: string;
 }) {
@@ -1095,9 +1057,9 @@ async function bookConsultationAppointment(input: {
       action: "collect_booking_fields" as const,
       message: missingFieldsMessage(input.body.locale, missing),
       missingFields: missing,
-      reviewRequired: input.ai.reviewRequired,
+      reviewRequired: true,
       disclaimer: AI_REVIEW_DISCLAIMER[input.body.locale],
-      ai: aiMetadata(input.ai)
+      ai: deterministicAssistantMetadata(input.requestId)
     };
   }
   if (input.body.consent !== true) {
@@ -1131,11 +1093,12 @@ async function bookConsultationAppointment(input: {
         preferredMode: input.body.preferredMode,
         status: "SCHEDULED",
         aiClassification: {
-          assistantAction: input.ai.output.action,
-          reviewRequired: input.ai.reviewRequired,
-          requestId: input.ai.requestId
+          assistantAction: "book_consultation_appointment",
+          reviewRequired: true,
+          requestId: input.requestId,
+          source: "deterministic_booking_rules"
         },
-        aiSummary: input.ai.output.message
+        aiSummary: deterministicBookingSummary(input.body.locale)
       }
     });
 
@@ -1181,15 +1144,15 @@ async function bookConsultationAppointment(input: {
     message: bookedMessage(input.body.locale),
     reference: publicConsultationReference(result.consultation.id),
     appointment: appointmentDto(result.appointment),
-    reviewRequired: input.ai.reviewRequired,
+    reviewRequired: true,
     disclaimer: AI_REVIEW_DISCLAIMER[input.body.locale],
-    ai: aiMetadata(input.ai)
+    ai: deterministicAssistantMetadata(input.requestId)
   };
 }
 
 async function publicAppointmentInquiry(input: {
   body: PublicConsultationAssistantInput;
-  ai: Awaited<ReturnType<typeof runAssistantAI>>;
+  requestId: string;
 }) {
   const reference = input.body.reference?.trim();
   const phoneCanonical = canonicalPhone(input.body.phone || "");
@@ -1212,9 +1175,9 @@ async function publicAppointmentInquiry(input: {
       : clientMessage(input.body.locale, "appointments_empty"),
     reference: publicConsultationReference(consultation.id),
     appointments: consultation.appointments.map(appointmentDto),
-    reviewRequired: input.ai.reviewRequired,
+    reviewRequired: true,
     disclaimer: AI_REVIEW_DISCLAIMER[input.body.locale],
-    ai: aiMetadata(input.ai)
+    ai: deterministicAssistantMetadata(input.requestId)
   };
 }
 
@@ -1631,20 +1594,17 @@ function clientOrganizerDisclaimer(locale: "ar" | "en") {
     : "Organizational assistant only. It is not a lawyer and does not provide legal advice.";
 }
 
-function aiMetadata(ai: Awaited<ReturnType<typeof runAssistantAI>>) {
+function deterministicAssistantMetadata(requestId: string) {
   return {
-    provider: ai.provider,
-    model: ai.model,
-    requestId: ai.requestId,
-    latencyMs: ai.latencyMs
+    provider: "system",
+    model: "kmt-booking-rules-v1",
+    requestId,
+    latencyMs: 0
   };
 }
 
-function sanitizeAssistantInput(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== "object") {
-    return {};
-  }
-  const copy = { ...(value as Record<string, unknown>) };
-  delete copy.password;
-  return copy;
+function deterministicBookingSummary(locale: "ar" | "en") {
+  return locale === "ar"
+    ? "تم جمع طلب الاستشارة من شات الحجز العام، ويحتاج إلى مراجعة بشرية من فريق المكتب قبل أي توجيه قانوني أو تعيين محامي."
+    : "The consultation request was collected through the public booking chat and requires human office review before legal guidance or lawyer assignment.";
 }

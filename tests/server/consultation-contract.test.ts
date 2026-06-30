@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { consultationAssistantOutputSchema } from "@/server/ai/schemas";
 import { adminConsultationListQuerySchema } from "@/server/admin/consultation-review-service";
@@ -127,6 +129,17 @@ describe("public consultation contract", () => {
   it("infers dispute consultations from Arabic trust receipt language", () => {
     expect(inferPublicConsultationServiceCategory("وصل أمانة موقع عليا وعايز استشارة عاجلة")).toBe("disputes");
     expect(inferPublicConsultationServiceCategory("I signed a promissory note and need urgent consultation")).toBe("disputes");
+  });
+
+  it("keeps public booking confirmation and reference inquiry independent from AI provider availability", () => {
+    const source = readFileSync(join(process.cwd(), "src/server/consultations/consultation-assistant-service.ts"), "utf8");
+
+    expect(source).not.toContain("generateStructured");
+    expect(source).not.toContain("runAssistantAI");
+    expect(source).toContain("deterministicBookingSummary");
+    expect(source).toContain("deterministic_booking_rules");
+    expect(source).toContain("publicAppointmentInquiry({ body, requestId: input.requestId })");
+    expect(source).toContain("bookConsultationAppointment({ body: bookingBody, request: input.request, requestId: input.requestId })");
   });
 
   it("does not treat booking quick actions as the client name", async () => {

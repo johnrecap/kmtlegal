@@ -66,8 +66,10 @@ Total plans: 32
 - Fixed a chat booking confirmation edge case where quick actions such as `Book consultation` or `Litigation` could be mistaken for the client's name; stale polluted drafts are now cleaned before confirmation and public assistant API errors preserve the request locale for clearer recovery messages.
 - Hardened the public booking assistant draft validation so phone numbers cannot be accepted as client names, availability words such as tomorrow cannot be accepted as phone numbers, and date/time-only replies cannot be inferred as names before appointment confirmation.
 - Hardened booking confirmation recovery so expired, invalid, already-booked, or no-longer-available appointment slots return a conversational next step or fresh alternatives instead of a generic failed-request bubble.
+- Decoupled public booking confirmation and verified reference inquiry from the AI provider so completed appointment bookings are saved through deterministic system rules even if Gemini/OpenAI-compatible output is unavailable or schema-invalid; AI provider failures now emit safe request/model/status diagnostics without exposing secrets or client content.
 - Verification passed: `cmd /c npm run db:validate`, `cmd /c npm run db:generate`, `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, and `cmd /c npm run test:e2e:smoke`.
 - Latest follow-up verification passed: `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:DATABASE_URL='postgresql://postgres:postgres@localhost:5432/kmtlegal'; cmd /c npm run build`, and `$env:DATABASE_URL='postgresql://postgres:postgres@localhost:5432/kmtlegal'; cmd /c npm run test:e2e:smoke`.
+- Latest AI decoupling verification passed: `cmd /c npm run typecheck`, `cmd /c npx vitest run tests/server/consultation-contract.test.ts`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, and `cmd /c npm run test:e2e:smoke`.
 
 ## Latest Brand Identity Follow-Up
 

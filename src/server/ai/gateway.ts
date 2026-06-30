@@ -27,6 +27,13 @@ export async function generateStructured<TOutput>(input: AIGatewayInput<TOutput>
     const parsed = input.schema.safeParse(providerResult.output);
 
     if (!parsed.success || !assertNoFinalLegalAdviceText(providerResult.output)) {
+      console.warn("AI provider output failed validation", {
+        provider: providerResult.provider,
+        model: providerResult.model,
+        task: input.task,
+        requestId,
+        schemaValid: parsed.success
+      });
       await recordAiProviderRun({
         shouldRecord: input.recordRun,
         actorId: input.actorId,
