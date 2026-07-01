@@ -99,11 +99,19 @@ describe("PLAN-26 panel-aware installer contract", () => {
     const source = fs.readFileSync(path.join(process.cwd(), "deploy", "install", "aapanel-pm2-update.sh"), "utf8");
 
     expect(source).toContain("PUBLIC_CACHE_PURGE_ENABLED");
+    expect(source).toContain("PUBLIC_CACHE_POLICY_ENABLED");
+    expect(source).toContain("PUBLIC_CACHEABLE_VERIFY_PATHS");
+    expect(source).toContain("SENSITIVE_CACHE_VERIFY_PATHS");
     expect(source).toContain("PUBLIC_PROXY_CACHE_DIRS");
     expect(source).toContain("PUBLIC_VERIFY_RETRY_DELAY_SECONDS");
     expect(source).toContain("run_public_origin_verify_once");
+    expect(source).toContain("install_public_cache_policy");
+    expect(source).toContain("assertPublicCacheHeaders");
+    expect(source).toContain("assertSensitiveNoStoreHeaders");
     expect(source).toContain("purge_public_proxy_cache");
     expect(source).toContain("/www/wwwroot/%s/proxy_cache_dir");
+    expect(source).toContain("kmt-public-cache-policy");
+    expect(source).toContain("next-no-cache");
     expect(source).toContain('[[ "${cache_dir}" == /www/wwwroot/*/proxy_cache_dir ]]');
     expect(source).not.toMatch(/rm -rf\s+["']?\/["']?(\s|$)/);
   });

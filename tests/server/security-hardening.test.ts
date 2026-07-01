@@ -248,9 +248,17 @@ describe("security, privacy, upload, and observability hardening", () => {
   it("keeps sensitive auth routes and 2FA reset contract hardened", () => {
     const authMeSource = fs.readFileSync(path.join(process.cwd(), "src/app/api/auth/me/route.ts"), "utf8");
     const reset2faSource = fs.readFileSync(path.join(process.cwd(), "src/app/api/admin/users/[userId]/2fa/reset/route.ts"), "utf8");
+    const middlewareSource = fs.readFileSync(path.join(process.cwd(), "src/middleware.ts"), "utf8");
+    const nextConfigSource = fs.readFileSync(path.join(process.cwd(), "next.config.mjs"), "utf8");
 
     expect(authMeSource).toContain('"Cache-Control": "no-store"');
     expect(reset2faSource).toContain("FEATURE_DISABLED");
+    expect(middlewareSource).toContain('response.headers.set("Cache-Control", "no-store")');
+    expect(nextConfigSource).toContain('source: "/admin/:path*"');
+    expect(nextConfigSource).toContain('source: "/client/:path*"');
+    expect(nextConfigSource).toContain('source: "/portal/:path*"');
+    expect(nextConfigSource).toContain('source: "/login/:path*"');
+    expect(nextConfigSource).toContain('source: "/install/:path*"');
   });
 
   it("does not fall back to a dev database URL at production runtime", () => {

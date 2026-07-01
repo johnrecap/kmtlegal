@@ -87,7 +87,9 @@ The script:
 - Recreates the `kmtlegal` PM2 process with `--cwd /www/wwwroot/kmtlegal` and starts the Next.js CLI directly, not through `npm`, so PM2 does not leave an old child process serving port `3000`.
 - Stops any stale process still listening on port `3000` before starting the new PM2 process.
 - Waits for PM2 to stay `online`, checks the local app response, and prints recent PM2 logs if the process exits.
+- Installs a guarded aaPanel/Nginx public cache policy include when `APP_ORIGIN` is set, so public HTML is cacheable while `/api/*`, `/admin/*`, `/client/*`, `/portal/*`, `/login*`, and `/install*` remain `no-store`.
 - When `APP_ORIGIN` is set, verifies public `/api/health` reports the same `APP_RELEASE` as the local PM2 app, compares `/`, `/articles`, `/case-studies`, `/media`, and `/contact` against the local app build, verifies public `_next/static` assets return JavaScript/CSS instead of HTML errors, and fails if the public domain still serves stale homepage article/case-study detail links or stale demo content cards.
+- Also verifies that public pages no longer return `Cache-Control: no-store` or `X-Kmt-Proxy: next-no-cache`, and that sensitive app/API/login/install paths still return `Cache-Control: no-store`.
 - If public `/api/health` reaches the new release but public HTML still serves an old Next.js build, purges the aaPanel/Nginx proxy cache directory derived from `APP_ORIGIN` (`/www/wwwroot/<host>/proxy_cache_dir`), reloads Nginx when available, waits briefly, and retries public verification once.
 - Saves PM2 state only after the process passes the stability checks.
 
@@ -110,6 +112,15 @@ bash deploy/install/aapanel-pm2-update.sh
 ```
 
 Set `PUBLIC_CACHE_PURGE_ENABLED=false` only when the public domain is not behind aaPanel/Nginx proxy cache and the deploy should fail immediately on public/local build mismatch.
+
+If aaPanel uses a non-standard Nginx vhost file, pass it explicitly so the cache-policy include can be inserted safely:
+
+```bash
+PUBLIC_NGINX_VHOST_FILES=/www/server/panel/vhost/nginx/kmtlegal.saeeddev.com.conf \
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+Set `PUBLIC_CACHE_POLICY_ENABLED=false` only if you intentionally want to manage the public/sensitive `Cache-Control` split manually in aaPanel or Cloudflare.
 
 ## Manual aaPanel + PM2 Fallback
 

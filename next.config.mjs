@@ -24,6 +24,26 @@ const nextConfig = {
         headers: [{ key: "Cache-Control", value: "no-store" }]
       },
       {
+        source: "/admin/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store" }]
+      },
+      {
+        source: "/client/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store" }]
+      },
+      {
+        source: "/portal/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store" }]
+      },
+      {
+        source: "/login/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store" }]
+      },
+      {
+        source: "/install/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store" }]
+      },
+      {
         source: "/:path*",
         headers: securityHeaders()
       }

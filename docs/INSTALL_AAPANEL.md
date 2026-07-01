@@ -65,7 +65,7 @@ PORT=3000 \
 bash deploy/install/aapanel-pm2-update.sh
 ```
 
-This script pulls the latest GitHub commit, installs dependencies with build-time packages included, preserves the previous `.next/static` assets for open browser tabs and cached HTML, removes stale `.next` build output, builds a fresh Next.js release, verifies the Next.js static manifest, runs production migrations, recreates the PM2 process from `/www/wwwroot/kmtlegal`, stops stale listeners on port `3000`, starts the Next.js CLI directly under PM2, waits for PM2 to stay `online`, checks the local app response, compares public `APP_ORIGIN` pages against the local build, automatically purges the derived aaPanel/Nginx `proxy_cache_dir` and retries once when public HTML is stale, prints recent PM2 logs on failure, and saves PM2 state only after the stability checks pass.
+This script pulls the latest GitHub commit, installs dependencies with build-time packages included, preserves the previous `.next/static` assets for open browser tabs and cached HTML, removes stale `.next` build output, builds a fresh Next.js release, verifies the Next.js static manifest, runs production migrations, recreates the PM2 process from `/www/wwwroot/kmtlegal`, stops stale listeners on port `3000`, starts the Next.js CLI directly under PM2, waits for PM2 to stay `online`, checks the local app response, installs a guarded aaPanel/Nginx cache policy include for public HTML versus sensitive paths, compares public `APP_ORIGIN` pages against the local build, verifies public cache headers do not keep the old `next-no-cache` policy, automatically purges the derived aaPanel/Nginx `proxy_cache_dir` and retries once when public HTML is stale, prints recent PM2 logs on failure, and saves PM2 state only after the stability checks pass.
 
 By default, the stale-HTML recovery derives the cache path from `APP_ORIGIN`, for example `/www/wwwroot/kmtlegal.saeeddev.com/proxy_cache_dir`. Override only for non-standard aaPanel layouts:
 
@@ -75,6 +75,15 @@ bash deploy/install/aapanel-pm2-update.sh
 ```
 
 Set `PUBLIC_CACHE_PURGE_ENABLED=false` only if the domain is not using aaPanel/Nginx proxy cache and you want the deploy to fail immediately on public/local build mismatch.
+
+If the domain vhost file is not in the standard aaPanel location, pass it explicitly:
+
+```bash
+PUBLIC_NGINX_VHOST_FILES=/www/server/panel/vhost/nginx/kmtlegal.saeeddev.com.conf \
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+Set `PUBLIC_CACHE_POLICY_ENABLED=false` only if you have manually configured the same split in aaPanel or Cloudflare: public `GET/HEAD` HTML cacheable, and `/api/*`, `/admin/*`, `/client/*`, `/portal/*`, `/login*`, and `/install*` as `no-store`.
 
 If a browser tab was open during deployment, it may still hold HTML or runtime state from the previous build. Preserving old static assets prevents most `ChunkLoadError` failures while the user refreshes into the new build.
 

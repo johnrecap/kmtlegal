@@ -50,7 +50,9 @@ export function middleware(request: NextRequest) {
   }
 
   if (!request.cookies.has(SESSION_COOKIE_NAME)) {
-    return NextResponse.redirect(loginUrlForProtectedPath(request.nextUrl.origin, pathname, search));
+    const response = NextResponse.redirect(loginUrlForProtectedPath(request.nextUrl.origin, pathname, search));
+    response.headers.set("Cache-Control", "no-store");
+    return response;
   }
 
   return NextResponse.next();

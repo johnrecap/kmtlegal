@@ -93,6 +93,7 @@ Total plans: 32
 - Added cached public content reads with `unstable_cache`, lighter page card queries for article/case-study lists, and public-content tag invalidation after admin article/case-study create/update.
 - Moved booking query handling for `service` and `lawyer` into client-side Suspense wrappers so `/book-consultation` can remain static while preserving query behavior.
 - Fixed build-time Prisma noise by skipping runtime readiness checks during `next build` only; runtime readiness still runs for production app/admin/client entry routes.
+- Added an aaPanel/Nginx cache-policy deploy gate so public pages must stop returning `Cache-Control: no-store` or `X-Kmt-Proxy: next-no-cache`, while `/api/*`, `/admin/*`, `/client/*`, `/portal/*`, `/login*`, and `/install*` remain `no-store`.
 - Verification passed: `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, and `cmd /c npm run test:e2e:smoke`.
 
 ## Remaining Count
