@@ -1,6 +1,6 @@
 # KMT Legal Implementation Status
 
-Last updated: 2026-06-30
+Last updated: 2026-07-02
 
 This is the main tracking file for the 32 Spec Kit implementation plans.
 
@@ -83,6 +83,17 @@ Total plans: 32
 - Added the provided KMT Legal logo as the official product identity source under `public/brand/`, with optimized full, mark, and favicon/app-icon assets.
 - Added a reusable `KmtBrandLogo` component and wired it into the public shell, client portal shell, admin dashboard shell, login page, public booking chat, client assistant chat, team chat, and favicon metadata while leaving `stitch-clone` untouched.
 - The logo mark replaces previous brand-avatar Material Symbol placeholders; functional action icons such as send, search, case, and calendar icons remain unchanged.
+
+## Latest Performance Follow-Up
+
+- Split top-level App Router layouts into public English, public Arabic, app/admin/client Arabic, and install/Stitch groups without changing URLs, so public pages no longer depend on request headers or the production readiness database gate.
+- Removed `x-kmt-pathname` middleware injection, moved public pages to ISR/static output where safe, and kept admin/client/API routes dynamic and `no-store`.
+- Converted the shared `MaterialSymbol` product component from the 3.86MB Material Symbols font to an internal SVG icon map with the same API, while leaving Stitch clone legacy classes isolated.
+- Changed local font loading to `font-display: swap`, removed the unused Arabic 300 weight, added static asset/cache headers, and kept API cache headers as `no-store`.
+- Added cached public content reads with `unstable_cache`, lighter page card queries for article/case-study lists, and public-content tag invalidation after admin article/case-study create/update.
+- Moved booking query handling for `service` and `lawyer` into client-side Suspense wrappers so `/book-consultation` can remain static while preserving query behavior.
+- Fixed build-time Prisma noise by skipping runtime readiness checks during `next build` only; runtime readiness still runs for production app/admin/client entry routes.
+- Verification passed: `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, and `cmd /c npm run test:e2e:smoke`.
 
 ## Remaining Count
 

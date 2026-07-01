@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { unstable_noStore as noStore } from "next/cache";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
 import { getPublicContent, navForPath } from "@/content/public-content";
 import { ConsultationBookingChat } from "@/features/public-site/consultation-booking-chat";
+import { ConsultationBookingChatFromQuery, RequestedLawyerQueryNotice } from "@/features/public-site/booking-query-client";
 import { ContactForm } from "@/features/public-site/contact-form";
 import { DirectoryFilter } from "@/features/public-site/directory-filter";
 import {
@@ -38,15 +39,14 @@ import {
 import { cn } from "@/lib/cn";
 import { alternatePublicLanguages, localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 import {
+  listPublishedArticleCards,
+  listPublishedCaseStudyCards,
   getPublishedArticleBySlug,
-  getPublishedCaseStudyBySlug,
-  listPublishedArticles,
-  listPublishedCaseStudies
+  getPublishedCaseStudyBySlug
 } from "@/server/public/content-service";
 
-type SearchParams = { service?: string; lawyer?: string };
-type FeaturedArticle = Awaited<ReturnType<typeof listPublishedArticles>>[number];
-type FeaturedCaseStudy = Awaited<ReturnType<typeof listPublishedCaseStudies>>[number];
+type FeaturedArticle = Awaited<ReturnType<typeof listPublishedArticleCards>>[number];
+type FeaturedCaseStudy = Awaited<ReturnType<typeof listPublishedCaseStudyCards>>[number];
 
 export function publicPageMetadata(locale: PublicLocale, pathname: string, title: string, description: string): Metadata {
   return {
@@ -96,7 +96,6 @@ export function articlesMetadata(locale: PublicLocale) {
 }
 
 export async function articleDetailMetadata(locale: PublicLocale, slug: string): Promise<Metadata> {
-  noStore();
   const article = await loadArticle(locale, slug);
   if (!article) return {};
 
@@ -109,7 +108,6 @@ export function caseStudiesMetadata(locale: PublicLocale) {
 }
 
 export async function caseStudyDetailMetadata(locale: PublicLocale, slug: string): Promise<Metadata> {
-  noStore();
   const study = await loadCaseStudy(locale, slug);
   if (!study) return {};
 
@@ -168,7 +166,7 @@ export async function metadataForPublicPath(locale: PublicLocale, path: string[]
   return {};
 }
 
-export async function renderPublicPath(locale: PublicLocale, path: string[] = [], searchParams: SearchParams = {}) {
+export async function renderPublicPath(locale: PublicLocale, path: string[] = []) {
   const [section, slug] = path;
   if (!section) return <HomePageView locale={locale} />;
   if (section === "services" && !slug) return <ServicesPageView locale={locale} />;
@@ -181,7 +179,7 @@ export async function renderPublicPath(locale: PublicLocale, path: string[] = []
   if (section === "case-studies" && slug && path.length === 2) return <CaseStudyDetailPageView locale={locale} slug={slug} />;
   if (section === "media" && path.length === 1) return <MediaPageView locale={locale} />;
   if (section === "contact" && path.length === 1) return <ContactPageView locale={locale} />;
-  if (section === "book-consultation" && path.length === 1) return <BookConsultationPageView locale={locale} searchParams={searchParams} />;
+  if (section === "book-consultation" && path.length === 1) return <BookConsultationPageView locale={locale} />;
   if (section === "privacy" && path.length === 1) return <PrivacyPageView locale={locale} />;
   if (section === "terms" && path.length === 1) return <TermsPageView locale={locale} />;
   notFound();
@@ -472,7 +470,6 @@ export async function ArticlesPageView({ locale }: { locale: PublicLocale }) {
 }
 
 export async function ArticleDetailPageView({ locale, slug }: { locale: PublicLocale; slug: string }) {
-  noStore();
   const content = getPublicContent(locale);
   const article = await loadArticle(locale, slug);
   if (!article) notFound();
@@ -528,7 +525,6 @@ export async function CaseStudiesPageView({ locale }: { locale: PublicLocale }) 
 }
 
 export async function CaseStudyDetailPageView({ locale, slug }: { locale: PublicLocale; slug: string }) {
-  noStore();
   const content = getPublicContent(locale);
   const study = await loadCaseStudy(locale, slug);
   if (!study) notFound();
@@ -612,7 +608,7 @@ export function ContactPageView({ locale }: { locale: PublicLocale }) {
   );
 }
 
-export function BookConsultationPageView({ locale, searchParams }: { locale: PublicLocale; searchParams: SearchParams }) {
+export function BookConsultationPageView({ locale }: { locale: PublicLocale }) {
   const content = getPublicContent(locale);
   const copy = content.bookingPage;
   const chatCopy = content.bookingChat;
@@ -622,7 +618,9 @@ export function BookConsultationPageView({ locale, searchParams }: { locale: Pub
       <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/b8b47a1dd8d5ce08.png" size="compact" title={chatCopy.heroTitle} description={chatCopy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={chatCopy.sectionTitle} description={chatCopy.sectionDescription}>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <ConsultationBookingChat initialService={searchParams.service} locale={locale} />
+          <Suspense fallback={<ConsultationBookingChat locale={locale} />}>
+            <ConsultationBookingChatFromQuery locale={locale} />
+          </Suspense>
           <aside className="space-y-4 lg:pt-2">
             <section className={cn(publicPanel, publicMotionCardBeam, "p-5")}>
               <h2 className="text-lg font-semibold text-white">{chatCopy.trustTitle}</h2>
@@ -639,11 +637,9 @@ export function BookConsultationPageView({ locale, searchParams }: { locale: Pub
                   </div>
                 ))}
               </div>
-              {searchParams.lawyer ? (
-                <p className="mt-5 rounded border border-kmt-gold/25 bg-kmt-gold/10 p-3 text-sm text-amber-100">
-                  {copy.requestedLawyer}: {searchParams.lawyer}
-                </p>
-              ) : null}
+              <Suspense fallback={null}>
+                <RequestedLawyerQueryNotice label={copy.requestedLawyer} />
+              </Suspense>
             </section>
           </aside>
         </div>
@@ -694,14 +690,12 @@ async function loadFeaturedContent(locale: PublicLocale): Promise<{
   articles: FeaturedArticle[];
   caseStudies: FeaturedCaseStudy[];
 }> {
-  noStore();
-
   if (!shouldLoadDatabaseContent()) {
     return { articles: [], caseStudies: [] };
   }
 
   try {
-    const [articles, caseStudies] = await Promise.all([listPublishedArticles(locale), listPublishedCaseStudies(locale)]);
+    const [articles, caseStudies] = await Promise.all([listPublishedArticleCards(locale), listPublishedCaseStudyCards(locale)]);
     return {
       articles: articles.slice(0, 2),
       caseStudies: caseStudies.slice(0, 1)
@@ -712,14 +706,12 @@ async function loadFeaturedContent(locale: PublicLocale): Promise<{
 }
 
 async function loadArticles(locale: PublicLocale) {
-  noStore();
-
   if (!shouldLoadDatabaseContent()) {
     return [];
   }
 
   try {
-    return await listPublishedArticles(locale);
+    return await listPublishedArticleCards(locale);
   } catch {
     return [];
   }
@@ -738,14 +730,12 @@ async function loadArticle(locale: PublicLocale, slug: string) {
 }
 
 async function loadCaseStudies(locale: PublicLocale) {
-  noStore();
-
   if (!shouldLoadDatabaseContent()) {
     return [];
   }
 
   try {
-    return await listPublishedCaseStudies(locale);
+    return await listPublishedCaseStudyCards(locale);
   } catch {
     return [];
   }
@@ -764,7 +754,7 @@ async function loadCaseStudy(locale: PublicLocale, slug: string) {
 }
 
 function shouldLoadDatabaseContent() {
-  return Boolean(process.env.DATABASE_URL) || process.env.APP_ENV === "production" || process.env.NODE_ENV === "production";
+  return Boolean(process.env.DATABASE_URL);
 }
 
 function CaseStudyBlock({ title, body }: { title: string; body: string }) {

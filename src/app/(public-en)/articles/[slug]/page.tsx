@@ -3,9 +3,7 @@ import { ArticleDetailPageView, articleDetailMetadata } from "@/features/public-
 
 type ArticleDetailPageProps = { params: { slug: string } };
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
+export const revalidate = 900;
 
 export function generateMetadata({ params }: ArticleDetailPageProps): Promise<Metadata> {
   return articleDetailMetadata("en", params.slug);

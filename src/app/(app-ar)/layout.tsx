@@ -1,38 +1,26 @@
-import type { Metadata } from "next";
-import { headers } from "next/headers";
-import { documentLocaleForPath, publicLocaleDirection } from "@/lib/public-locale";
-import { shouldBypassReadinessGate } from "@/lib/readiness-routing";
+import { rootMetadata } from "../root-metadata";
 import { getApplicationReadiness } from "@/server/health/runtime-readiness";
-import "./globals.css";
+import "../globals.css";
 
-export const metadata: Metadata = {
-  title: "KMT Legal Platform",
-  description: "KMT Legal planning and Stitch clone foundation",
-  icons: {
-    icon: [
-      { url: "/favicon.ico", type: "image/png" },
-      { url: "/brand/kmt-logo-icon.png", sizes: "512x512", type: "image/png" }
-    ],
-    apple: [{ url: "/brand/kmt-logo-icon.png", sizes: "512x512", type: "image/png" }]
-  }
-};
+export const metadata = rootMetadata;
 
-export default async function RootLayout({
+export default async function AppArabicRootLayout({
   children
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const requestHeaders = headers();
-  const pathname = requestHeaders.get("x-kmt-pathname") ?? "/";
-  const locale = documentLocaleForPath(pathname);
-  const readiness = shouldBypassReadinessGate(pathname) ? null : await getApplicationReadiness();
+  const readiness = isNextBuildPhase() ? null : await getApplicationReadiness();
   const page = readiness && !readiness.ready ? <ReadinessBlockedPage checks={readiness.checks} /> : children;
 
   return (
-    <html lang={locale} dir={publicLocaleDirection(locale)}>
+    <html lang="ar" dir="rtl">
       <body>{page}</body>
     </html>
   );
+}
+
+function isNextBuildPhase() {
+  return process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build";
 }
 
 function ReadinessBlockedPage({ checks }: { checks: Array<{ id: string; ok: boolean; blocking: boolean; label: string; message: string }> }) {

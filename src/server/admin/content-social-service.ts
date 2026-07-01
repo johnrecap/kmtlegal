@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { articleStatusValues, caseStudyStatusValues, socialDraftStatusValues, socialPlatformValues } from "@/lib/legal-content";
@@ -244,6 +245,14 @@ function handleUniqueSlugError(error: unknown): never {
   }
 
   throw error;
+}
+
+function revalidatePublicContentCache() {
+  try {
+    revalidateTag("public-content");
+  } catch {
+    // Public pages still refresh through ISR if tag invalidation is unavailable in the current runtime.
+  }
 }
 
 function normalizeQuery(input: unknown) {
@@ -635,6 +644,8 @@ export async function createAdminArticle(input: { actor: Principal; body: unknow
       request: input.request
     });
 
+    revalidatePublicContentCache();
+
     return article;
   } catch (error) {
     handleUniqueSlugError(error);
@@ -666,6 +677,8 @@ export async function updateAdminArticle(input: { actor: Principal; articleId: s
       request: input.request
     });
 
+    revalidatePublicContentCache();
+
     return article;
   } catch (error) {
     handleUniqueSlugError(error);
@@ -690,6 +703,8 @@ export async function createAdminCaseStudy(input: { actor: Principal; body: unkn
       metadata: { status: study.status, slug: study.slug, locale: study.locale, isAnonymized: study.isAnonymized },
       request: input.request
     });
+
+    revalidatePublicContentCache();
 
     return study;
   } catch (error) {
@@ -721,6 +736,8 @@ export async function updateAdminCaseStudy(input: { actor: Principal; caseStudyI
       metadata: { previousStatus: existing.status, status: study.status, previousSlug: existing.slug, slug: study.slug, previousLocale: existing.locale, locale: study.locale },
       request: input.request
     });
+
+    revalidatePublicContentCache();
 
     return study;
   } catch (error) {

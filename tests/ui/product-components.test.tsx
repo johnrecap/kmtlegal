@@ -213,7 +213,7 @@ describe("product UI primitives", () => {
   });
 
   it("keeps the client files page wired to the upload form after portal redirects", () => {
-    const source = readFileSync(join(process.cwd(), "src/app/client/files/page.tsx"), "utf8");
+    const source = readFileSync(join(process.cwd(), "src/app/(app-ar)/client/files/page.tsx"), "utf8");
 
     expect(source).toContain("DocumentUploadForm");
     expect(source).toContain("listPortalCases");
@@ -293,7 +293,7 @@ describe("product UI primitives", () => {
   });
 
   it("keeps targeted admin content labels localized", () => {
-    const source = readFileSync(join(process.cwd(), "src/app/admin/content/page.tsx"), "utf8");
+    const source = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/content/page.tsx"), "utf8");
 
     expect(source).not.toContain('["articles", "Articles"]');
     expect(source).not.toContain('["case-studies", "Case Studies"]');
@@ -305,7 +305,7 @@ describe("product UI primitives", () => {
   });
 
   it("keeps admin consultation AI summaries useful for old public chat bookings", () => {
-    const source = readFileSync(join(process.cwd(), "src/app/admin/consultations/[consultationId]/page.tsx"), "utf8");
+    const source = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/consultations/[consultationId]/page.tsx"), "utf8");
 
     expect(source).toContain("adminConsultationOfficeBrief");
     expect(source).toContain("genericBookingSummaryPatterns");
@@ -324,7 +324,7 @@ describe("product UI primitives", () => {
   });
 
   it("keeps the admin audit log page on client-friendly DTO fields", () => {
-    const source = readFileSync(join(process.cwd(), "src/app/admin/audit-log/page.tsx"), "utf8");
+    const source = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/audit-log/page.tsx"), "utf8");
 
     expect(source).toContain("row.event.label");
     expect(source).toContain("row.summary");

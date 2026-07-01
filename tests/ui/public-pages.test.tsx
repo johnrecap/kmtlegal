@@ -113,7 +113,7 @@ describe("public website UI", () => {
   });
 
   it("keeps product font loading local and blocks fallback font flashes", () => {
-    const layoutSource = readFileSync(join(process.cwd(), "src/app/layout.tsx"), "utf8");
+    const layoutSource = readFileSync(join(process.cwd(), "src/app/(public-en)/layout.tsx"), "utf8");
     const globalsSource = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
 
     expect(layoutSource).not.toContain("@fontsource/ibm-plex-sans-arabic");
@@ -121,7 +121,7 @@ describe("public website UI", () => {
     expect(globalsSource).toContain('font-family: "Inter", "IBM Plex Sans Arabic"');
     expect(globalsSource).toContain('font-family: "IBM Plex Sans Arabic"');
     expect(globalsSource).toContain('font-family: "Material Symbols Outlined"');
-    expect(globalsSource).toContain("font-display: block");
+    expect(globalsSource).toContain("font-display: swap");
   });
 
   it("keeps PLAN-31 motion contract free of removed thread utilities", () => {

@@ -42,28 +42,22 @@ export function middleware(request: NextRequest) {
       );
     }
 
-    return nextWithPathname(request);
+    return NextResponse.next();
   }
 
   if (!isProtectedAppPath(pathname)) {
-    return nextWithPathname(request);
+    return NextResponse.next();
   }
 
   if (!request.cookies.has(SESSION_COOKIE_NAME)) {
     return NextResponse.redirect(loginUrlForProtectedPath(request.nextUrl.origin, pathname, search));
   }
 
-  return nextWithPathname(request);
+  return NextResponse.next();
 }
 
 function isProductionRuntime() {
   return process.env.APP_ENV === "production" || process.env.NODE_ENV === "production";
-}
-
-function nextWithPathname(request: NextRequest) {
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-kmt-pathname", request.nextUrl.pathname);
-  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {
