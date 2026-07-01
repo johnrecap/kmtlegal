@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { ButtonLink, MaterialSymbol } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
@@ -87,7 +88,15 @@ export function PageHero({
 
   return (
     <section className={cn("relative isolate overflow-hidden bg-kmt-navy text-white", isCompact ? "min-h-[340px]" : "min-h-[560px]")}>
-      <img alt="" aria-hidden="true" className={cn("kmt-motion-hero-image absolute inset-0 h-full w-full object-cover", imageOpacity)} src={image} />
+      <Image
+        alt=""
+        aria-hidden="true"
+        className={cn("kmt-motion-hero-image absolute inset-0 h-full w-full object-cover", imageOpacity)}
+        fill
+        priority={!isCompact}
+        sizes="100vw"
+        src={image}
+      />
       <div className={cn("absolute inset-0 bg-gradient-to-l", overlay)} />
       <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-[#07090b]" />
       <div className={cn("relative mx-auto flex max-w-[1200px] items-center px-4 sm:px-6 lg:px-10", isCompact ? "min-h-[340px] py-12" : "min-h-[560px] py-16")}>
@@ -234,8 +243,8 @@ export function LuxuryFeaturePanel({
 }) {
   return (
     <div className={cn(publicPanel, publicMotionCardBeam, "grid overflow-hidden lg:grid-cols-[0.8fr_1.2fr]")}>
-      <div className={cn("h-full overflow-hidden", publicMotionImageCard)}>
-        <img alt="" className={cn("h-full min-h-[320px] w-full object-cover opacity-80", publicMotionImage)} src={image} />
+      <div className={cn("relative h-full min-h-[320px] overflow-hidden", publicMotionImageCard)}>
+        <Image alt="" className={cn("object-cover opacity-80", publicMotionImage)} fill sizes="(min-width: 1024px) 40vw, 100vw" src={image} />
       </div>
       <div className="p-6 lg:p-8">
         <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p>
