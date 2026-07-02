@@ -22,6 +22,7 @@
     "security:audit": "npm audit --audit-level=high --omit=dev",
     "security:audit:all": "npm audit --audit-level=moderate",
     "security:secrets": "node scripts/security-secret-scan.mjs",
+    "cloudflare:cache-rules": "node scripts/cloudflare-public-cache-rule.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "node scripts/run-playwright-with-server.mjs",

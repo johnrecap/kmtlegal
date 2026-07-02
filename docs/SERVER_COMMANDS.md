@@ -35,6 +35,62 @@ cd /www/wwwroot/kmtlegal
 bash deploy/install/aapanel-pm2-update.sh
 ```
 
+## Cloudflare Public HTML Cache Rule
+
+Use this only for the public domain cache layer. It is separate from the aaPanel/PM2 deploy and should be run only with a Cloudflare API token that can edit Cache Rules/Zone Rulesets.
+
+Required token permissions:
+
+- `Zone: Read`
+- `Cache Rules: Edit` or `Zone Rulesets: Edit`
+
+The script manages only these two rules for `kmtlegal.saeeddev.com`:
+
+- Bypass cache for `/api/*`, `/admin/*`, `/client/*`, `/portal/*`, `/login*`, `/install*`, `/product-system*`, and `/stitch-clone*`.
+- Make public `GET/HEAD` pages eligible for Cloudflare edge cache with a 900 second edge TTL.
+
+Preview the exact expressions without calling Cloudflare:
+
+```bash
+npm run cloudflare:cache-rules -- --print
+```
+
+Check the zone and current ruleset without mutating Cloudflare:
+
+```bash
+export CLOUDFLARE_API_TOKEN='...'
+npm run cloudflare:cache-rules -- --dry-run
+```
+
+Apply the rule:
+
+```bash
+export CLOUDFLARE_API_TOKEN='...'
+npm run cloudflare:cache-rules -- --apply
+```
+
+Override defaults only when needed:
+
+```bash
+CLOUDFLARE_API_TOKEN='...' \
+npm run cloudflare:cache-rules -- --apply --zone=saeeddev.com --host=kmtlegal.saeeddev.com --edge-ttl=900
+```
+
+After applying, verify public HTML is not `no-store` and sensitive paths still are:
+
+```bash
+curl -I https://kmtlegal.saeeddev.com/
+curl -I https://kmtlegal.saeeddev.com/
+curl -I https://kmtlegal.saeeddev.com/api/health
+curl -I https://kmtlegal.saeeddev.com/client
+```
+
+Expected results:
+
+- `/` returns `Cache-Control: public, max-age=60, s-maxage=900, stale-while-revalidate=86400`.
+- `/api/*`, `/client/*`, `/admin/*`, login, and install paths return `Cache-Control: no-store`.
+- After Cloudflare has the rule, a repeated request to `/` should become cache-eligible and can return `CF-Cache-Status: HIT` after warm-up.
+
 ## Local Push
 
 Use these commands from the project checkout on the development machine:
