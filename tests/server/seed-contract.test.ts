@@ -20,7 +20,8 @@ describe("database seed contract", () => {
 
     expect(source).toContain("@kmt.local");
     expect(source).toContain("محكمة القاهرة الاقتصادية");
-    expect(source).toContain("صياغة ومراجعة العقود");
+    expect(source).toContain("الاستشارات القانونية");
+    expect(source).toContain("التحصيل والتسويات");
     expect(source).not.toContain("ظ…");
     expect(source).not.toContain("ط§ظ");
   });

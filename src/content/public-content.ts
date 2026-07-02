@@ -1,5 +1,6 @@
 import { publicContentAr } from "./public-content.ar";
 import { publicContentEn } from "./public-content.en";
+import { resolvePublicServiceSlug } from "./public-services";
 import { defaultPublicLocale, type PublicLocale } from "@/lib/public-locale";
 
 export const publicContentByLocale = {
@@ -43,6 +44,15 @@ export function navForPath(pathname: string, locale: PublicLocale = defaultPubli
 
 export function findBySlug<T extends { slug: string }>(items: readonly T[], slug: string) {
   return items.find((item) => item.slug === slug);
+}
+
+export function findPublicService(locale: PublicLocale, slug: string) {
+  const canonicalSlug = resolvePublicServiceSlug(slug);
+  return getPublicContent(locale).legalServices.find((item) => item.slug === canonicalSlug);
+}
+
+export function canonicalPublicServiceSlug(slug: string) {
+  return resolvePublicServiceSlug(slug);
 }
 
 export function publicSearchText(value: unknown) {

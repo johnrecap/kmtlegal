@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { AI_REVIEW_DISCLAIMER } from "@/server/ai/copy";
 import { Button, MaterialSymbol, Select, Textarea, TextInput } from "@/components/ui";
 import { trackClientAnalyticsEvent } from "@/lib/analytics-client";
-import { getPublicContent, type PublicContent } from "@/content/public-content";
+import { findPublicService, getPublicContent, type PublicContent } from "@/content/public-content";
 import {
   publicMotionButton,
   publicMotionControl,
@@ -56,7 +56,7 @@ const initialValues: BookingValues = {
   phone: "",
   email: "",
   city: "",
-  serviceCategory: "corporate",
+  serviceCategory: "legal-consultation",
   summary: "",
   opposingPartyName: "",
   urgency: "NORMAL",
@@ -247,10 +247,10 @@ export function BookingStepper({ initialService, locale = "en" }: { initialServi
         <div className={cn("mt-6 grid gap-4", publicMotionStepPanel)}>
           <div className="grid gap-4 md:grid-cols-3">
             <Select className={darkControlClasses} label={copy.serviceCategory} name="serviceCategory" value={values.serviceCategory} onChange={(event) => updateValue("serviceCategory", event.target.value)}>
-              <option value="corporate">{copy.categories.corporate}</option>
-              <option value="real-estate">{copy.categories["real-estate"]}</option>
-              <option value="employment">{copy.categories.employment}</option>
-              <option value="disputes">{copy.categories.disputes}</option>
+              <option value="legal-consultation">{copy.categories["legal-consultation"]}</option>
+              <option value="corporate-business-services">{copy.categories["corporate-business-services"]}</option>
+              <option value="real-estate-legal-support">{copy.categories["real-estate-legal-support"]}</option>
+              <option value="claims-collections">{copy.categories["claims-collections"]}</option>
             </Select>
             <Select className={darkControlClasses} label={copy.urgency} name="urgency" value={values.urgency} onChange={(event) => updateValue("urgency", event.target.value as BookingValues["urgency"])}>
               <option value="LOW">{copy.urgencyLabels.LOW}</option>
@@ -395,6 +395,6 @@ function labelForUrgency(urgency: string | null | undefined, copy: BookingFormCo
 function categoryFromInitialService(initialService: string | undefined, locale: PublicLocale) {
   if (!initialService) return initialValues.serviceCategory;
   const legalServices = getPublicContent(locale).legalServices;
-  const service = legalServices.find((item) => item.title === initialService || item.slug === initialService);
+  const service = legalServices.find((item) => item.title === initialService || item.slug === initialService) ?? findPublicService(locale, initialService);
   return service?.category ?? initialValues.serviceCategory;
 }

@@ -23,7 +23,7 @@ describe("public website UI", () => {
     expect(html).toContain("data-testid=\"public-language-switch\"");
     expect(html).toContain("href=\"/services\"");
     expect(html).toContain("aria-current=\"page\"");
-    expect(html).toContain("Practice Areas");
+    expect(html).toContain("Services");
     expect(html).toContain("Book a Consultation");
     expect(html).toContain("Client Login");
     expect(html).toContain("href=\"/login?next=/client\"");
@@ -101,7 +101,7 @@ describe("public website UI", () => {
   it("renders dark public section and detail CTA APIs", () => {
     const html = renderToStaticMarkup(
         <PublicSection align="center" eyebrow="Test" title="General title" description="General description" surface="muted">
-          <DetailCta serviceTitle="Corporate Law" />
+          <DetailCta serviceTitle="Corporate & Business Services" />
         </PublicSection>
       );
 
@@ -109,7 +109,7 @@ describe("public website UI", () => {
     expect(html).toContain("mx-auto text-center");
     expect(html).toContain("Chat With The Booking Assistant");
     expect(html).toContain("Book a Consultation");
-    expect(html).toContain("href=\"/book-consultation?service=Corporate%20Law\"");
+    expect(html).toContain("href=\"/book-consultation?service=Corporate%20%26%20Business%20Services\"");
   });
 
   it("keeps product font loading local and blocks fallback font flashes", () => {

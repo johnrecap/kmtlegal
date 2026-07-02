@@ -24,6 +24,8 @@ export type DirectoryItem = {
   category: string;
   categoryLabel: string;
   meta?: string;
+  chips?: readonly string[];
+  searchText?: string;
 };
 
 const darkFieldScopeClasses =
@@ -62,7 +64,7 @@ export function DirectoryFilter({
 
   const filteredItems = items.filter((item) => {
     const matchesCategory = category === "all" || item.category === category;
-    const text = `${item.title} ${item.description} ${item.categoryLabel} ${item.meta ?? ""}`.toLowerCase();
+    const text = `${item.title} ${item.description} ${item.categoryLabel} ${item.meta ?? ""} ${(item.chips ?? []).join(" ")} ${item.searchText ?? ""}`.toLowerCase();
     return matchesCategory && text.includes(query.trim().toLowerCase());
   });
   const hasActiveFilters = query.trim().length > 0 || category !== "all";
@@ -144,6 +146,15 @@ export function DirectoryFilter({
               </div>
               <h3 className="mt-4 text-xl font-semibold text-white">{item.title}</h3>
               <p className="mt-3 text-sm leading-7 text-slate-300">{item.description}</p>
+              {item.chips?.length ? (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {item.chips.slice(0, 5).map((chip) => (
+                    <span key={chip} className="rounded-full border border-kmt-gold/25 bg-kmt-gold/10 px-3 py-1 text-xs font-semibold text-amber-100/90">
+                      {chip}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
               <ButtonLink
                 className={cn("mt-5 !border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white", publicMotionButton, publicMotionCta)}
                 href={localizedPublicHref(item.href, locale)}

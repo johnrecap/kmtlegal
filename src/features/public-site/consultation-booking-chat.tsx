@@ -3,7 +3,7 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { KmtBrandLogo } from "@/components/brand";
 import { Button, MaterialSymbol, TextInput } from "@/components/ui";
-import { getPublicContent, type PublicContent } from "@/content/public-content";
+import { findPublicService, getPublicContent, type PublicContent } from "@/content/public-content";
 import { trackClientAnalyticsEvent } from "@/lib/analytics-client";
 import { cn } from "@/lib/cn";
 import type { PublicLocale } from "@/lib/public-locale";
@@ -117,7 +117,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
     { id: "language-prompt", role: "assistant", text: getPublicContent(locale).bookingChat.languagePrompt }
   ]);
-  const [draft, setDraft] = useState<BookingDraft>(() => ({ ...initialDraft, serviceCategory: initialService || "" }));
+  const initialServiceCategory = categoryFromInitialService(initialService, locale);
+  const [draft, setDraft] = useState<BookingDraft>(() => ({ ...initialDraft, serviceCategory: initialServiceCategory }));
   const [freeMessage, setFreeMessage] = useState("");
   const [isBusy, setIsBusy] = useState(false);
   const [flow, setFlow] = useState<"booking" | "inquiry" | null>(null);
@@ -304,7 +305,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         setSlotWindow(null);
         setSelectedSlot("");
         setReadyToConfirm(false);
-        setDraft({ ...initialDraft, serviceCategory: initialService || "" });
+        setDraft({ ...initialDraft, serviceCategory: initialServiceCategory });
       }
     } catch {
       trackClientAnalyticsEvent("booking.submit_failed", { locale: activeLocale, status: "network" });
@@ -414,14 +415,12 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
               <MaterialSymbol className="text-xl" name="search" />
               {copy.inquire}
             </Button>
-            <Button className={chipButtonClasses} disabled={!chatLocale || isBusy} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(copy.corporateLaw, "corporate")}>
-              <MaterialSymbol className="text-xl" name="account_balance" />
-              {copy.corporateLaw}
-            </Button>
-            <Button className={chipButtonClasses} disabled={!chatLocale || isBusy} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(copy.litigation, "disputes")}>
-              <MaterialSymbol className="text-xl" name="gavel" />
-              {copy.litigation}
-            </Button>
+            {content.legalServices.map((service) => (
+              <Button key={service.slug} className={chipButtonClasses} disabled={!chatLocale || isBusy} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(service.title, service.category)}>
+                <MaterialSymbol className="text-xl" name={service.icon} />
+                {service.title}
+              </Button>
+            ))}
           </div>
 
           <form className="flex min-w-0 items-end gap-3" data-testid="booking-chat-composer" noValidate onSubmit={submitMessage}>
@@ -586,6 +585,15 @@ function normalizeDraft(value: Partial<BookingDraft>): BookingDraft {
       toTime: value.availabilityPreference?.toTime ?? ""
     }
   };
+}
+
+function categoryFromInitialService(initialService: string | undefined, locale: PublicLocale) {
+  if (!initialService) return "";
+  const content = getPublicContent(locale);
+  const service =
+    content.legalServices.find((item) => item.title === initialService || item.slug === initialService) ??
+    findPublicService(locale, initialService);
+  return service?.category ?? "";
 }
 
 function inquiryFromMessage(value: string) {

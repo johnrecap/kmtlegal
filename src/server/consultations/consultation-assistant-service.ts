@@ -429,22 +429,29 @@ export function inferPublicConsultationServiceCategory(message: string) {
 function serviceCategoryFromMessage(text: string) {
   if (
     containsAny(text, [
-      "litigation",
-      "dispute",
-      "court",
-      "case",
       "claim",
+      "claims",
+      "collection",
+      "collections",
+      "debt collection",
+      "legal notice",
+      "notice",
       "promissory note",
       "trust receipt",
       "receipt of trust",
       "cheque",
       "check",
       "debt",
-      "criminal complaint",
-      "نزاع",
-      "قضية",
-      "محكمة",
-      "تقاضي",
+      "settlement",
+      "invoice",
+      "تحصيل",
+      "مطالبة",
+      "مطالبات",
+      "تسوية",
+      "تسويات",
+      "انذار",
+      "إنذار",
+      "إنذارات",
       "ايصال امانه",
       "إيصال أمانة",
       "وصل امانه",
@@ -454,23 +461,108 @@ function serviceCategoryFromMessage(text: string) {
       "شيك",
       "دين",
       "مديونية",
-      "مطالبة",
+      "فاتورة"
+    ])
+  ) {
+    return "claims-collections";
+  }
+  if (
+    containsAny(text, [
+      "real estate",
+      "property",
+      "lease",
+      "landlord",
+      "tenant",
+      "sale contract",
+      "purchase contract",
+      "due diligence",
+      "عقار",
+      "عقاري",
+      "شقة",
+      "أرض",
+      "ارض",
+      "ايجار",
+      "إيجار",
+      "بيع",
+      "شراء",
+      "ملكية"
+    ])
+  ) {
+    return "real-estate-legal-support";
+  }
+  if (
+    containsAny(text, [
+      "company formation",
+      "contract drafting",
+      "contract review",
+      "governance",
+      "compliance",
+      "business dispute",
+      "company",
+      "corporate",
+      "shareholder",
+      "contract",
+      "تأسيس شركة",
+      "تاسيس شركة",
+      "شركة",
+      "شركات",
+      "صياغة عقد",
+      "صياغة العقود",
+      "مراجعة عقد",
+      "مراجعة العقود",
+      "حوكمة",
+      "امتثال",
+      "نزاع تجاري",
+      "منازعات تجارية",
+      "عقد"
+    ])
+  ) {
+    return "corporate-business-services";
+  }
+  if (
+    containsAny(text, [
+      "legal consultation",
+      "criminal",
+      "civil",
+      "commercial legal",
+      "family",
+      "labor",
+      "employment",
+      "employee",
+      "work",
+      "litigation",
+      "dispute",
+      "court",
+      "case",
+      "complaint",
+      "استشارة قانونية",
+      "استشاره قانونيه",
+      "جنائي",
+      "جنائية",
+      "مدني",
+      "مدنية",
+      "تجاري",
+      "تجارية",
+      "أسرة",
+      "اسرة",
+      "أسرية",
+      "اسرية",
+      "عمالي",
+      "عمالية",
+      "عمل",
+      "موظف",
+      "عامل",
+      "نزاع",
+      "قضية",
+      "محكمة",
+      "تقاضي",
       "محضر",
       "بلاغ",
       "جنحة",
       "تبديد"
     ])
   ) {
-    return "disputes";
-  }
-  if (containsAny(text, ["real estate", "property", "عقار", "شقة", "أرض", "ارض"])) {
-    return "real-estate";
-  }
-  if (containsAny(text, ["employment", "employee", "work", "labor", "عمل", "موظف", "عامل"])) {
-    return "employment";
-  }
-  if (containsAny(text, ["contract", "company", "corporate", "shareholder", "شركة", "عقد", "شركات", "تأسيس"])) {
-    return "corporate";
+    return "legal-consultation";
   }
   return "";
 }
@@ -786,7 +878,7 @@ function bookingQuestionMessage(locale: "ar" | "en", field?: string) {
     ar: {
       fullName: "تمام. اكتب اسمك الكامل كما تحب أن يظهر في طلب الاستشارة.",
       phone: "ما رقم الهاتف المناسب للتواصل معك؟",
-      serviceCategory: "ما مجال الاستشارة الأقرب لطلبك؟ يمكنك كتابة شركات، نزاعات، عقارات، أو عمل.",
+      serviceCategory: "ما الخدمة الأقرب لطلبك؟ يمكنك كتابة استشارة قانونية، شركات وأعمال، عقارات، أو تحصيل وتسويات.",
       summary: "اكتب ملخصًا قصيرًا لما تحتاجه من المكتب، بدون إرسال مستندات حساسة هنا.",
       startsAt: "اختر موعدًا مناسبًا من المواعيد المتاحة داخل المحادثة.",
       fallback: "أستطيع تنظيم حجز الاستشارة فقط. اكتب الاسم والهاتف ونوع الطلب وملخصًا قصيرًا."
@@ -794,7 +886,7 @@ function bookingQuestionMessage(locale: "ar" | "en", field?: string) {
     en: {
       fullName: "Great. Please write your full name for the consultation request.",
       phone: "What phone number should the team use to contact you?",
-      serviceCategory: "Which consultation area is closest to your request? You can write corporate, disputes, real estate, or employment.",
+      serviceCategory: "Which service is closest to your request? You can write legal consultation, corporate and business, real estate, or claims and collections.",
       summary: "Please write a short summary of what you need from the office. Do not send sensitive documents here.",
       startsAt: "Choose a suitable time from the available slots inside the chat.",
       fallback: "I can organize consultation booking only. Send your name, phone, request area, and a short summary."
@@ -825,8 +917,8 @@ function shouldClarifyBookingField(field: string | undefined, latestMessage: str
 function unclearBookingFieldMessage(locale: "ar" | "en", field: string | undefined) {
   if (field === "serviceCategory") {
     return locale === "ar"
-      ? "الإجابة مش واضحة بالنسبة لمجال الاستشارة. اكتب المجال الأقرب: نزاعات، شركات، عقارات، أو عمل. لو الموضوع إيصال أمانة أو شيك أو محضر، اختار نزاعات."
-      : "I could not identify the request area from that answer. Write the closest area: disputes, corporate, real estate, or employment. For trust receipts, checks, claims, or complaints, choose disputes.";
+      ? "الإجابة مش واضحة بالنسبة لنوع الخدمة. اكتب الأقرب: استشارة قانونية، شركات وأعمال، عقارات، أو تحصيل وتسويات. لو الموضوع إيصال أمانة أو شيك أو مديونية، اختار التحصيل والتسويات."
+      : "I could not identify the service from that answer. Write the closest service: legal consultation, corporate and business, real estate, or claims and collections. For trust receipts, cheques, debt, or collections, choose claims and collections.";
   }
   return locale === "ar" ? "الإجابة مش واضحة. من فضلك أعد كتابة المطلوب بشكل أبسط." : "That answer is not clear. Please write it again more simply.";
 }
@@ -903,8 +995,26 @@ function formatAssistantDate(value: string, locale: "ar" | "en") {
 
 function serviceCategoryLabel(value: string, locale: "ar" | "en") {
   const labels = {
-    ar: { corporate: "شركات وعقود", disputes: "نزاعات وتقاضي", "real-estate": "عقارات", employment: "عمل وامتثال" },
-    en: { corporate: "corporate and contracts", disputes: "litigation and disputes", "real-estate": "real estate", employment: "employment" }
+    ar: {
+      "legal-consultation": "الاستشارات القانونية",
+      "corporate-business-services": "خدمات الشركات والأعمال",
+      "real-estate-legal-support": "الدعم القانوني العقاري",
+      "claims-collections": "التحصيل والتسويات",
+      corporate: "شركات وعقود",
+      disputes: "نزاعات وتقاضي",
+      "real-estate": "عقارات",
+      employment: "عمل وامتثال"
+    },
+    en: {
+      "legal-consultation": "legal consultation",
+      "corporate-business-services": "corporate and business services",
+      "real-estate-legal-support": "real estate legal support",
+      "claims-collections": "claims and collections",
+      corporate: "corporate and contracts",
+      disputes: "litigation and disputes",
+      "real-estate": "real estate",
+      employment: "employment"
+    }
   };
   return labels[locale][value as keyof (typeof labels)["en"]] ?? value;
 }
@@ -1635,6 +1745,10 @@ export function deterministicBookingSummary(body: PublicConsultationAssistantInp
 
 function teamServiceCategoryLabel(value?: string | null) {
   const labels: Record<string, string> = {
+    "legal-consultation": "الاستشارات القانونية",
+    "corporate-business-services": "خدمات الشركات والأعمال",
+    "real-estate-legal-support": "الدعم القانوني العقاري",
+    "claims-collections": "التحصيل والتسويات",
     corporate: "الشركات والعقود",
     disputes: "المنازعات والتقاضي",
     "real-estate": "العقارات",

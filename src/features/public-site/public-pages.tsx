@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
-import { getPublicContent, navForPath } from "@/content/public-content";
+import { canonicalPublicServiceSlug, findPublicService, getPublicContent, navForPath } from "@/content/public-content";
 import { ConsultationBookingChat } from "@/features/public-site/consultation-booking-chat";
 import { ConsultationBookingChatFromQuery, RequestedLawyerQueryNotice } from "@/features/public-site/booking-query-client";
 import { ContactForm } from "@/features/public-site/contact-form";
@@ -70,8 +70,7 @@ export function servicesMetadata(locale: PublicLocale) {
 }
 
 export function serviceDetailMetadata(locale: PublicLocale, slug: string): Metadata {
-  const content = getPublicContent(locale);
-  const service = content.legalServices.find((item) => item.slug === slug);
+  const service = findPublicService(locale, slug);
   if (!service) return {};
 
   return publicPageMetadata(locale, `/services/${service.slug}`, `${service.title} | KMT Legal`, service.description);
@@ -190,7 +189,7 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
   const copy = content.home;
   const featuredContent = await loadFeaturedContent(locale);
   const hasFeaturedContent = featuredContent.articles.length > 0 || featuredContent.caseStudies.length > 0;
-  const focusService = content.legalServices.find((service) => service.slug === "corporate-law") ?? content.legalServices[0];
+  const focusService = content.legalServices.find((service) => service.slug === "corporate-business-services") ?? content.legalServices[0];
   const currentPath = localizedPublicHref("/", locale);
 
   return (
@@ -214,7 +213,7 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
       <TrustStrip items={copy.trustItems} />
 
       <PublicSection align="center" eyebrow={copy.practiceEyebrow} title={copy.practiceTitle} description={copy.practiceDescription}>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {content.practiceAreaMatrix.map((area) => (
             <PracticeAreaCard key={area.key} href={area.href} icon={area.icon} locale={locale} summary={area.summary} title={area.title} />
           ))}
@@ -318,7 +317,10 @@ export function ServicesPageView({ locale }: { locale: PublicLocale }) {
             description: service.description,
             href: `/services/${service.slug}`,
             category: service.category,
-            categoryLabel: content.serviceCategories[service.category as keyof typeof content.serviceCategories] ?? service.category
+            categoryLabel: content.serviceCategories[service.category as keyof typeof content.serviceCategories] ?? service.category,
+            chips: service.subServices,
+            meta: `${service.subServices.length} ${copy.servicesCountLabel}`,
+            searchText: service.subServices.join(" ")
           }))}
           searchLabel={copy.searchLabel}
         />
@@ -329,12 +331,13 @@ export function ServicesPageView({ locale }: { locale: PublicLocale }) {
 
 export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; slug: string }) {
   const content = getPublicContent(locale);
-  const service = content.legalServices.find((item) => item.slug === slug);
+  const service = findPublicService(locale, slug);
   if (!service) notFound();
   const copy = content.serviceDetail;
+  const currentSlug = canonicalPublicServiceSlug(slug);
 
   return (
-    <PublicShell currentPath={localizedPublicHref(`/services/${service.slug}`, locale)} locale={locale} navItems={navForPath("/services", locale)}>
+    <PublicShell currentPath={localizedPublicHref(`/services/${currentSlug}`, locale)} locale={locale} navItems={navForPath("/services", locale)}>
       <PublicSection
         eyebrow={content.serviceCategories[service.category as keyof typeof content.serviceCategories] ?? service.category}
         title={service.title}
@@ -344,6 +347,14 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
           <article className={cn(publicPanel, "p-6")}>
             <MaterialSymbol className={cn("text-4xl", publicGoldText)} name={service.icon} />
             <p className={cn("mt-5 leading-8", publicMutedText)}>{service.content}</p>
+            <h2 className="mt-8 text-2xl font-semibold text-white">{copy.includedTitle}</h2>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {service.subServices.map((subService) => (
+                <Badge key={subService} className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100">
+                  {subService}
+                </Badge>
+              ))}
+            </div>
             <h2 className="mt-8 text-2xl font-semibold text-white">{copy.documentsTitle}</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {service.requiredDocuments.map((document) => (

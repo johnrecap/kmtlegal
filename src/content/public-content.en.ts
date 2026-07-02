@@ -1,132 +1,4 @@
-const serviceCategories = {
-  corporate: "Corporate and transactions",
-  disputes: "Litigation and disputes",
-  "real-estate": "Real estate",
-  employment: "Employment and compliance"
-} as const;
-
-const legalServices = [
-  {
-    areaKey: "corporate",
-    title: "Corporate Law",
-    slug: "corporate-law",
-    category: "corporate",
-    icon: "account_balance",
-    description: "Legal support for formation, governance, restructuring, and day-to-day corporate decisions.",
-    content:
-      "We help companies organize documents, resolutions, and contractual relationships with clear risk review before material management or commercial decisions.",
-    requiredDocuments: ["Commercial register or formation draft", "Shareholder or board resolutions", "Contracts or related correspondence"],
-    outcomes: ["Structured legal summary", "Issues list for review or decision", "Suggested document and action plan"]
-  },
-  {
-    areaKey: "litigation",
-    title: "Litigation",
-    slug: "commercial-disputes",
-    category: "disputes",
-    icon: "gavel",
-    description: "Organizing commercial and civil dispute files before negotiation, escalation, or court action.",
-    content:
-      "We arrange facts, correspondence, and supporting documents, identify strengths and gaps, and prepare a practical review path without promising a specific outcome.",
-    requiredDocuments: ["Contract or obligation source", "Correspondence and notices", "Invoices or supporting documents"],
-    outcomes: ["Facts chronology", "Missing-document list", "Initial review path options"]
-  },
-  {
-    areaKey: "arbitration",
-    title: "Arbitration",
-    slug: "arbitration",
-    category: "disputes",
-    icon: "balance",
-    description: "Reviewing arbitration clauses and organizing local or international dispute files before proceedings.",
-    content:
-      "We review the arbitration clause, scope, prior correspondence, and core facts, then prepare the file for specialist legal review with documents and arguments in order.",
-    requiredDocuments: ["Contract containing the arbitration clause", "Dispute notices", "Relevant correspondence and supporting documents"],
-    outcomes: ["Initial arbitration clause read", "Jurisdiction and procedure issue list", "Organized document file"]
-  },
-  {
-    areaKey: "real-estate",
-    title: "Real Estate",
-    slug: "real-estate-consultation",
-    category: "real-estate",
-    icon: "real_estate_agent",
-    description: "Reviewing ownership position, real estate transactions, and sale, lease, or partnership risks.",
-    content:
-      "We help clients understand property documents, registration risks, previous dispositions, and visible obligations before a legal or commercial decision.",
-    requiredDocuments: ["Ownership document", "Identity document or company details", "Related contracts or receipts"],
-    outcomes: ["Initial document assessment", "Questions before signing", "Required document plan"]
-  },
-  {
-    areaKey: "tax-advisory",
-    title: "Tax Advisory",
-    slug: "tax-advisory",
-    category: "corporate",
-    icon: "receipt_long",
-    description: "Initial legal review of tax and contractual risks connected to business activities and transactions.",
-    content:
-      "We help clients organize activity records, invoices, and contracts and identify compliance points that need specialist tax or accounting review before decisions are made.",
-    requiredDocuments: ["Business activity details", "Contracts and invoices", "Any tax correspondence or notices"],
-    outcomes: ["Initial compliance map", "Document list for review", "Organized questions for the specialist adviser"]
-  },
-  {
-    areaKey: "criminal-defense",
-    title: "Criminal Defense",
-    slug: "criminal-defense",
-    category: "disputes",
-    icon: "shield",
-    description: "Organizing reports, investigations, and documents while respecting confidentiality and party rights.",
-    content:
-      "We review available facts and documents, organize the chronology, and prepare review questions without publishing personal data or sensitive details.",
-    requiredDocuments: ["Report or complaint details", "Supporting documents", "Timeline summary of facts"],
-    outcomes: ["Initial fact organization", "Missing-data list", "Clear review questions"]
-  },
-  {
-    areaKey: "labor-law",
-    title: "Labor Law",
-    slug: "employment-compliance",
-    category: "employment",
-    icon: "badge",
-    description: "Reviewing employment contracts, internal policies, and termination steps to reduce risk.",
-    content:
-      "We help companies and employees understand core obligations and rights and organize documents before formal or negotiation steps.",
-    requiredDocuments: ["Employment contract", "Internal policies", "Correspondence or warnings"],
-    outcomes: ["Initial review", "Risk list", "Suggested next steps for lawyer review"]
-  },
-  {
-    areaKey: "commercial-contracts",
-    title: "Commercial Contracts",
-    slug: "contract-drafting",
-    category: "corporate",
-    icon: "contract",
-    description: "Drafting and reviewing commercial contracts with focus on risks and clauses that need negotiation.",
-    content:
-      "We review contracts through obligations, liability, penalties, delivery timing, confidentiality, and termination mechanics so the client understands each clause before committing.",
-    requiredDocuments: ["Contract draft", "Commercial register or party details", "Any negotiation correspondence"],
-    outcomes: ["Organized legal comments", "Clauses requiring amendment", "Alternative drafting where needed"]
-  },
-  {
-    areaKey: "foreign-investment",
-    title: "Foreign Investment",
-    slug: "foreign-investment",
-    category: "corporate",
-    icon: "public",
-    description: "Organizing legal requirements for foreign investors, market entry, and local partnerships.",
-    content:
-      "We review the proposed entry structure, available business and partner information, and draft agreements, then identify legal and regulatory review points before commitment.",
-    requiredDocuments: ["Business activity description", "Investor or partner details", "Draft agreements or letters of intent"],
-    outcomes: ["Initial legal structure summary", "Requirements and documents list", "Regulatory review points"]
-  },
-  {
-    areaKey: "debt-recovery",
-    title: "Debt Recovery",
-    slug: "debt-recovery",
-    category: "disputes",
-    icon: "payments",
-    description: "Organizing debt documents, correspondence, and claim options before taking any step.",
-    content:
-      "We review invoices, contracts, delivery and payment evidence, and correspondence, then arrange the claim file for negotiation or the next legal review.",
-    requiredDocuments: ["Invoices or purchase orders", "Correspondence", "Contract or quotation"],
-    outcomes: ["Organized debt schedule", "Supporting-document list", "Claim paths ready for review"]
-  }
-] as const;
+﻿import { publicLegalServicesEn as legalServices, publicServiceCategoriesEn as serviceCategories } from "./public-services";
 
 const practiceAreaMatrix = legalServices.map((service) => ({
   key: service.areaKey,
@@ -232,33 +104,33 @@ const caseStudies = [
 
 const representativeMatters = [
   {
-    areaKey: "real-estate",
-    label: "Real Estate",
-    title: "Reviewed A Real Estate Development Transaction Structure",
+    areaKey: "real-estate-legal-support",
+    label: "Real Estate Legal Support",
+    title: "Reviewed A Real Estate Transaction File",
     region: "Egypt",
     year: "2026",
-    summary: "Organized ownership documents, negotiation correspondence, and financing points for clearer legal review.",
-    href: "/services/real-estate-consultation",
+    summary: "Organized ownership documents, sale terms, and correspondence for clearer office review.",
+    href: "/services/real-estate-legal-support",
     privacyNote: "An anonymized illustrative example that does not display client data or promise a result."
   },
   {
-    areaKey: "foreign-investment",
-    label: "Foreign Investment",
-    title: "Prepared A Market-Entry File For A Foreign Investor",
+    areaKey: "corporate-business-services",
+    label: "Corporate & Business Services",
+    title: "Prepared A Company And Contract Review File",
     region: "Region",
     year: "2026",
-    summary: "Structured entry model, partner details, and agreement drafts before regulatory review.",
-    href: "/services/foreign-investment",
-    privacyNote: "A simplified anonymized example for explaining practice areas."
+    summary: "Structured company details, contract drafts, and governance questions before lawyer assignment.",
+    href: "/services/corporate-business-services",
+    privacyNote: "A simplified anonymized example for explaining services."
   },
   {
-    areaKey: "litigation",
-    label: "Litigation",
-    title: "Organized A High-Value Commercial Dispute",
+    areaKey: "claims-collections",
+    label: "Claims & Collections",
+    title: "Organized A Claims And Collection Request",
     region: "Egypt",
     year: "2026",
-    summary: "Collected facts, correspondence, and invoices into a timeline that supported option assessment.",
-    href: "/services/commercial-disputes",
+    summary: "Collected debt documents, correspondence, and payment history into a file ready for review.",
+    href: "/services/claims-collections",
     privacyNote: "No party names, private documents, or guaranteed legal result are included."
   }
 ] as const;
@@ -326,7 +198,7 @@ const footerContent = {
 export const publicContentEn = {
   navItems: [
     { label: "Home", href: "/" },
-    { label: "Practice Areas", href: "/services" },
+    { label: "Services", href: "/services" },
     { label: "Team", href: "/team" },
     { label: "Insights", href: "/articles" },
     { label: "Case Studies", href: "/case-studies" },
@@ -353,9 +225,9 @@ export const publicContentEn = {
     footerCtaDescription: "Start with a structured request, and the team will review the details before confirming the right contact or booking path.",
     confidentiality: "Data confidentiality",
     humanReview: "Human review",
-    practiceLinksLabel: "Practice area links",
-    practiceLinksTitle: "Practice Areas",
-    viewAllPracticeAreas: "View All Practice Areas",
+    practiceLinksLabel: "Service links",
+    practiceLinksTitle: "Services",
+    viewAllPracticeAreas: "View All Services",
     officesTitle: "Offices",
     contactTitle: "Contact Us",
     hours: "Sunday - Thursday, 9:00 AM - 6:00 PM",
@@ -366,7 +238,7 @@ export const publicContentEn = {
   },
   shared: {
     bookConsultation: "Book a Consultation",
-    browsePracticeAreas: "Browse Practice Areas",
+    browsePracticeAreas: "Browse Services",
     viewDetails: "View Details",
     clearFilters: "Clear Filters",
     noLegalAdvice: "This content is for general awareness and does not replace lawyer review based on the facts and documents.",
@@ -375,7 +247,7 @@ export const publicContentEn = {
   home: {
     metadataTitle: "KMT Legal | Comprehensive Legal Expertise Across Critical Sectors",
     metadataDescription: "Structured legal consultation, corporate, contract, real estate, dispute, and booking support from KMT Legal.",
-    heroEyebrow: "Practice Areas",
+    heroEyebrow: "Services",
     heroTitle: "Comprehensive Legal Expertise Across Critical Sectors",
     heroDescription:
       "We provide strategic and practical legal support for companies, investors, and individuals, from organizing facts and documents to setting a clear review path.",
@@ -384,8 +256,8 @@ export const publicContentEn = {
       { icon: "lock", label: "Client data and documents are not published" },
       { icon: "schedule", label: "Organized follow-up from request to appointment" }
     ],
-    practiceEyebrow: "Our Practice Areas",
-    practiceTitle: "Legal Practice Areas",
+    practiceEyebrow: "Our Services",
+    practiceTitle: "KMT Legal Services",
     practiceDescription: "A clear service structure helps you choose the closest path for your request while protecting privacy and client data.",
     focusEyebrow: "Focus Area",
     approachEyebrow: "Our Approach",
@@ -393,7 +265,7 @@ export const publicContentEn = {
     approachDescription: "The site does not promise outcomes. It organizes the starting point and makes communication with the team clearer.",
     representativeEyebrow: "Representative Matters",
     representativeTitle: "Recent Representative Matters",
-    representativeDescription: "Anonymized and simplified examples that show the type of files handled by the office without revealing client data.",
+    representativeDescription: "Anonymized and simplified examples that show the type of service requests handled by the office without revealing client data.",
     industriesEyebrow: "Industries",
     industriesTitle: "Industries We Serve",
     industriesDescription: "The dark visual language does not change the product: the content remains legal, clear, and directed toward practical business decisions.",
@@ -415,7 +287,7 @@ export const publicContentEn = {
   },
   servicesPage: {
     metadataTitle: "Legal Services | KMT Legal",
-    metadataDescription: "Legal services in contracts, companies, real estate, employment, and commercial disputes.",
+    metadataDescription: "KMT Legal services in legal consultation, companies, contracts, real estate, claims, and collections.",
     heroEyebrow: "Services",
     heroTitle: "Filterable Legal Services",
     heroDescription: "Start from the file type or search directly for the service closest to your need, then submit a structured request for human review.",
@@ -423,12 +295,14 @@ export const publicContentEn = {
     sectionTitle: "Choose the closest path for your request",
     sectionDescription: "Use search or category filters to reach the right service, then start a structured consultation request.",
     searchLabel: "Search services",
-    emptyTitle: "No matching services"
+    emptyTitle: "No matching services",
+    servicesCountLabel: "services"
   },
   serviceDetail: {
+    includedTitle: "Services included",
     documentsTitle: "Documents That Help Review",
     outcomesTitle: "Expected Outputs",
-    backToServices: "Back to Practice Areas"
+    backToServices: "Back to Services"
   },
   teamPage: {
     metadataTitle: "KMT Legal Team",
@@ -547,8 +421,8 @@ export const publicContentEn = {
     greeting: "Hello. I can help you book a consultation or check a previous booking reference. I will collect only the details needed for team review.",
     book: "Book consultation",
     inquire: "Check reference",
-    corporateLaw: "Corporate law",
-    litigation: "Litigation",
+    corporateLaw: "Corporate & business",
+    litigation: "Claims & collections",
     messageLabel: "Message",
     messagePlaceholder: "Type a booking request or reference question",
     languagePendingPlaceholder: "Choose Arabic or English to start",
@@ -646,7 +520,12 @@ export const publicContentEn = {
     preferredMode: "Contact Method",
     opposingPartyName: "Opposing party name, if any",
     summary: "Request Summary",
-    categories: { corporate: "Corporate and contracts", "real-estate": "Real estate", employment: "Employment", disputes: "Disputes" },
+    categories: {
+      "legal-consultation": "Legal consultation",
+      "corporate-business-services": "Corporate & business services",
+      "real-estate-legal-support": "Real estate legal support",
+      "claims-collections": "Claims & collections"
+    },
     urgencyLabels: { LOW: "Low", NORMAL: "Normal", HIGH: "High", URGENT: "Urgent" },
     preferredModeLabels: { PHONE: "Phone", ONLINE: "Online", OFFICE: "Office" },
     summaryHintShort: "Write {count} more characters at minimum. Mention the main fact, date, or requested action without attaching documents.",

@@ -1,123 +1,4 @@
-const serviceCategories = {
-  corporate: "الشركات والمعاملات",
-  disputes: "التقاضي والمنازعات",
-  "real-estate": "العقارات",
-  employment: "العمل والامتثال"
-} as const;
-
-const legalServices = [
-  {
-    areaKey: "corporate",
-    title: "قانون الشركات",
-    slug: "corporate-law",
-    category: "corporate",
-    icon: "account_balance",
-    description: "دعم قانوني للشركات في التأسيس والحوكمة وإعادة الهيكلة والمعاملات اليومية.",
-    content: "نساعد الشركات على تنظيم المستندات والقرارات والعلاقات التعاقدية بصورة واضحة، مع مراجعة المخاطر قبل اتخاذ قرارات إدارية أو تجارية مؤثرة.",
-    requiredDocuments: ["السجل التجاري أو مسودة التأسيس", "قرارات الشركاء أو مجلس الإدارة", "العقود أو المراسلات ذات الصلة"],
-    outcomes: ["ملخص قانوني منظم", "قائمة نقاط تحتاج مراجعة أو قرار", "خطة مستندات وإجراءات مقترحة"]
-  },
-  {
-    areaKey: "litigation",
-    title: "التقاضي",
-    slug: "commercial-disputes",
-    category: "disputes",
-    icon: "gavel",
-    description: "تنظيم ملفات المنازعات التجارية والمدنية ومراجعة المستندات قبل التفاوض أو التصعيد.",
-    content: "نرتب الوقائع والمراسلات والمستندات ونحدد نقاط القوة والقصور، ثم نقترح مسار مراجعة عملي يساعد العميل على فهم الخيارات دون وعود بنتيجة.",
-    requiredDocuments: ["العقد أو مصدر الالتزام", "المراسلات والإنذارات", "الفواتير أو المستندات المؤيدة"],
-    outcomes: ["ملخص وقائع", "قائمة مستندات ناقصة", "تصور أولي لمسارات المراجعة"]
-  },
-  {
-    areaKey: "arbitration",
-    title: "التحكيم",
-    slug: "arbitration",
-    category: "disputes",
-    icon: "balance",
-    description: "مراجعة شروط التحكيم وتنظيم ملف النزاع المحلي أو الدولي قبل بدء الإجراءات.",
-    content: "نراجع شرط التحكيم ونطاقه والمراسلات السابقة والوقائع الأساسية، ثم نجهز الملف للمراجعة القانونية المتخصصة بما يحافظ على ترتيب المستندات والحجج.",
-    requiredDocuments: ["العقد المتضمن شرط التحكيم", "إشعارات النزاع", "المراسلات والمستندات المؤيدة"],
-    outcomes: ["قراءة أولية لشرط التحكيم", "قائمة نقاط اختصاص وإجراءات", "تنظيم ملف المستندات"]
-  },
-  {
-    areaKey: "real-estate",
-    title: "العقارات",
-    slug: "real-estate-consultation",
-    category: "real-estate",
-    icon: "real_estate_agent",
-    description: "مراجعة موقف الملكية والتصرفات العقارية ومخاطر البيع أو الإيجار أو المشاركة.",
-    content: "نساعد العملاء على فهم المستندات العقارية ومخاطر التسجيل والتصرفات السابقة والالتزامات الظاهرة قبل اتخاذ قرار قانوني أو تجاري.",
-    requiredDocuments: ["مستند الملكية", "بطاقة الهوية أو بيانات الشركة", "العقود أو الإيصالات ذات الصلة"],
-    outcomes: ["تقييم أولي للمستندات", "نقاط استفسار قبل التعاقد", "خطة مستندات مطلوبة"]
-  },
-  {
-    areaKey: "tax-advisory",
-    title: "الاستشارات الضريبية",
-    slug: "tax-advisory",
-    category: "corporate",
-    icon: "receipt_long",
-    description: "مراجعة قانونية أولية للمخاطر الضريبية والتعاقدية المرتبطة بالأنشطة والمعاملات.",
-    content: "نساعد العملاء على ترتيب مستندات النشاط والفواتير والعقود وفهم نقاط الالتزام التي تحتاج مراجعة ضريبية أو محاسبية متخصصة قبل اتخاذ القرار.",
-    requiredDocuments: ["بيانات النشاط", "العقود والفواتير", "أي مراسلات أو إخطارات ضريبية"],
-    outcomes: ["خريطة أولية لنقاط الالتزام", "قائمة مستندات للمراجعة", "أسئلة منظمة للمستشار المختص"]
-  },
-  {
-    areaKey: "criminal-defense",
-    title: "الدفاع الجنائي",
-    slug: "criminal-defense",
-    category: "disputes",
-    icon: "shield",
-    description: "تنظيم وقائع البلاغات والمحاضر والمستندات مع مراعاة السرية وحقوق الأطراف.",
-    content: "نراجع الوقائع والمستندات المتاحة ونساعد على ترتيب التسلسل الزمني والأسئلة المطلوبة للمراجعة القانونية، دون نشر بيانات شخصية أو تفاصيل حساسة.",
-    requiredDocuments: ["بيانات المحضر أو البلاغ", "المستندات المؤيدة", "ملخص زمني للوقائع"],
-    outcomes: ["تنظيم أولي للوقائع", "قائمة بيانات ناقصة", "أسئلة مراجعة واضحة"]
-  },
-  {
-    areaKey: "labor-law",
-    title: "قانون العمل",
-    slug: "employment-compliance",
-    category: "employment",
-    icon: "badge",
-    description: "مراجعة عقود العمل والسياسات الداخلية وإجراءات إنهاء العلاقة بما يقلل المخاطر.",
-    content: "نساعد الشركات والموظفين على فهم الالتزامات والحقوق الأساسية وترتيب المستندات قبل اتخاذ خطوات رسمية أو تفاوضية.",
-    requiredDocuments: ["عقد العمل", "السياسات الداخلية", "المراسلات أو الإنذارات"],
-    outcomes: ["مراجعة أولية", "قائمة مخاطر", "اقتراح خطوات مطلوبة للمحامي"]
-  },
-  {
-    areaKey: "commercial-contracts",
-    title: "العقود التجارية",
-    slug: "contract-drafting",
-    category: "corporate",
-    icon: "contract",
-    description: "صياغة ومراجعة العقود التجارية مع تحديد المخاطر والبنود التي تحتاج تفاوضًا قبل التوقيع.",
-    content:
-      "نراجع العقود من زاوية الالتزامات، المسؤولية، الجزاءات، مواعيد التسليم، السرية، وآليات إنهاء التعاقد. الهدف هو أن يفهم العميل أثر كل بند قبل الالتزام به.",
-    requiredDocuments: ["مسودة العقد", "السجل التجاري أو بيانات الأطراف", "أي مراسلات تفاوضية"],
-    outcomes: ["ملاحظات قانونية منظمة", "قائمة بنود تحتاج تعديل", "صياغات بديلة عند الحاجة"]
-  },
-  {
-    areaKey: "foreign-investment",
-    title: "الاستثمار الأجنبي",
-    slug: "foreign-investment",
-    category: "corporate",
-    icon: "public",
-    description: "تنظيم المتطلبات القانونية للمستثمرين الأجانب ودخول السوق والشراكات المحلية.",
-    content: "نراجع هيكل الدخول المقترح والبيانات المتاحة عن النشاط والشركاء والعقود الأولية، ثم نحدد نقاط المراجعة القانونية والتنظيمية قبل الالتزام.",
-    requiredDocuments: ["وصف النشاط", "بيانات المستثمرين أو الشركاء", "مسودات الاتفاقات أو خطابات النوايا"],
-    outcomes: ["ملخص هيكل قانوني أولي", "قائمة متطلبات ومستندات", "نقاط تحتاج مراجعة تنظيمية"]
-  },
-  {
-    areaKey: "debt-recovery",
-    title: "تحصيل الديون",
-    slug: "debt-recovery",
-    category: "disputes",
-    icon: "payments",
-    description: "تنظيم مستندات المديونية والمراسلات وخيارات المطالبة قبل اتخاذ أي إجراء.",
-    content: "نراجع الفواتير والعقود وإثباتات التسليم والسداد والمراسلات، ونرتب ملف المطالبة بصورة تساعد على التفاوض أو المراجعة القانونية التالية.",
-    requiredDocuments: ["الفواتير أو أوامر التوريد", "المراسلات", "العقد أو عرض السعر"],
-    outcomes: ["جدول مديونية منظم", "قائمة مستندات داعمة", "مسارات مطالبة قابلة للمراجعة"]
-  }
-] as const;
+﻿import { publicLegalServicesAr as legalServices, publicServiceCategoriesAr as serviceCategories } from "./public-services";
 
 const practiceAreaMatrix = legalServices.map((service) => ({
   key: service.areaKey,
@@ -222,33 +103,33 @@ const caseStudies = [
 
 const representativeMatters = [
   {
-    areaKey: "real-estate",
-    label: "عقارات",
-    title: "مراجعة هيكل صفقة تطوير عقاري",
+    areaKey: "real-estate-legal-support",
+    label: "الدعم القانوني العقاري",
+    title: "مراجعة ملف تصرف عقاري",
     region: "مصر",
     year: "2026",
-    summary: "تنظيم مستندات الملكية ومراسلات التفاوض ونقاط التمويل لمراجعة قانونية أكثر وضوحًا.",
-    href: "/services/real-estate-consultation",
+    summary: "تنظيم مستندات الملكية وشروط البيع والمراسلات حتى يراجع المكتب الطلب بوضوح.",
+    href: "/services/real-estate-legal-support",
     privacyNote: "مثال تمثيلي مجهول لا يعرض بيانات عملاء ولا يقدم وعدًا بنتيجة."
   },
   {
-    areaKey: "foreign-investment",
-    label: "استثمار أجنبي",
-    title: "تجهيز ملف دخول مستثمر أجنبي للسوق",
+    areaKey: "corporate-business-services",
+    label: "خدمات الشركات والأعمال",
+    title: "تجهيز ملف شركة ومراجعة عقود",
     region: "المنطقة",
     year: "2026",
-    summary: "ترتيب هيكل الدخول وبيانات الشركاء ومسودات الاتفاقات قبل المراجعة التنظيمية.",
-    href: "/services/foreign-investment",
-    privacyNote: "مثال تمثيلي مجهول ومبسط لأغراض التعريف بمجالات العمل."
+    summary: "تنظيم بيانات الشركة ومسودات العقود وأسئلة الحوكمة قبل تعيين المحامي المناسب.",
+    href: "/services/corporate-business-services",
+    privacyNote: "مثال تمثيلي مجهول ومبسط لأغراض التعريف بالخدمات."
   },
   {
-    areaKey: "litigation",
-    label: "تقاض",
-    title: "تنظيم نزاع تجاري عالي القيمة",
+    areaKey: "claims-collections",
+    label: "التحصيل والتسويات",
+    title: "تنظيم طلب تحصيل ومطالبة",
     region: "مصر",
     year: "2026",
-    summary: "جمع الوقائع والمراسلات والفواتير في ملف زمني يساعد على تقييم الخيارات القانونية.",
-    href: "/services/commercial-disputes",
+    summary: "جمع مستندات الدين والمراسلات وسجل السداد في ملف جاهز للمراجعة.",
+    href: "/services/claims-collections",
     privacyNote: "لا يتضمن المثال أسماء أطراف أو مستندات خاصة أو نتيجة قانونية مضمونة."
   }
 ] as const;
@@ -291,7 +172,7 @@ const footerContent = {
 export const publicContentAr = {
   navItems: [
     { label: "الرئيسية", href: "/" },
-    { label: "مجالات الخبرة", href: "/services" },
+    { label: "الخدمات", href: "/services" },
     { label: "الفريق", href: "/team" },
     { label: "المقالات", href: "/articles" },
     { label: "دراسات الحالة", href: "/case-studies" },
@@ -318,9 +199,9 @@ export const publicContentAr = {
     footerCtaDescription: "ابدأ بطلب منظم، وسيراجع الفريق البيانات قبل تحديد المسار المناسب للتواصل أو الحجز.",
     confidentiality: "سرية البيانات",
     humanReview: "مراجعة بشرية",
-    practiceLinksLabel: "روابط مجالات الخبرة",
-    practiceLinksTitle: "مجالات الخبرة",
-    viewAllPracticeAreas: "عرض كل المجالات",
+    practiceLinksLabel: "روابط الخدمات",
+    practiceLinksTitle: "الخدمات",
+    viewAllPracticeAreas: "عرض كل الخدمات",
     officesTitle: "المكاتب",
     contactTitle: "تواصل معنا",
     hours: "الأحد - الخميس، 9:00 ص - 6:00 م",
@@ -331,7 +212,7 @@ export const publicContentAr = {
   },
   shared: {
     bookConsultation: "احجز استشارة",
-    browsePracticeAreas: "تصفح مجالات الخبرة",
+    browsePracticeAreas: "تصفح الخدمات",
     viewDetails: "عرض التفاصيل",
     clearFilters: "مسح الفلاتر",
     noLegalAdvice: "هذا المحتوى للتوعية العامة ولا يغني عن مراجعة محام بناء على الوقائع والمستندات.",
@@ -340,7 +221,7 @@ export const publicContentAr = {
   home: {
     metadataTitle: "KMT Legal | خبرة قانونية شاملة للقطاعات الحرجة",
     metadataDescription: "موقع KMT Legal للاستشارات القانونية المنظمة وخدمات الشركات والعقود والعقارات والمنازعات وحجز الاستشارات بأمان.",
-    heroEyebrow: "مجالات الخبرة",
+    heroEyebrow: "الخدمات",
     heroTitle: "خبرة قانونية شاملة للقطاعات الحرجة",
     heroDescription: "نقدم دعما قانونيا استراتيجيا وعمليا للشركات والمستثمرين والأفراد، من تنظيم الوقائع والمستندات إلى وضع مسار واضح للمراجعة القانونية.",
     trustItems: [
@@ -348,8 +229,8 @@ export const publicContentAr = {
       { icon: "lock", label: "لا ننشر بيانات العملاء أو المستندات" },
       { icon: "schedule", label: "متابعة منظمة من الطلب حتى الموعد" }
     ],
-    practiceEyebrow: "Our Practice Areas",
-    practiceTitle: "مجالات الخبرة القانونية",
+    practiceEyebrow: "خدماتنا",
+    practiceTitle: "خدمات KMT Legal",
     practiceDescription: "هيكل خدمات واضح يساعدك على اختيار المسار الأقرب لطلبك، مع الحفاظ على الخصوصية وعدم نشر بيانات العملاء.",
     focusEyebrow: "Focus Area",
     approachEyebrow: "Our Approach",
@@ -357,7 +238,7 @@ export const publicContentAr = {
     approachDescription: "الموقع لا يقدم وعدا بنتيجة، لكنه ينظم البداية ويجعل التواصل مع الفريق أكثر وضوحا.",
     representativeEyebrow: "Representative Matters",
     representativeTitle: "أمثلة تمثيلية حديثة",
-    representativeDescription: "نماذج مجهولة ومبسطة توضح نوع الملفات التي يتعامل معها المكتب دون كشف بيانات عملاء أو نتائج مضمونة.",
+    representativeDescription: "نماذج مجهولة ومبسطة توضح نوع طلبات الخدمات التي يتعامل معها المكتب دون كشف بيانات عملاء أو نتائج مضمونة.",
     industriesEyebrow: "Industries",
     industriesTitle: "قطاعات نخدمها",
     industriesDescription: "لغة التصميم الداكنة هنا لا تغير طبيعة المنتج: المحتوى يظل قانونيا، واضحا، وموجها لقرارات عمل عملية.",
@@ -379,7 +260,7 @@ export const publicContentAr = {
   },
   servicesPage: {
     metadataTitle: "الخدمات القانونية | KMT Legal",
-    metadataDescription: "خدمات قانونية في العقود والشركات والعقارات والعمل والمنازعات التجارية.",
+    metadataDescription: "خدمات KMT Legal في الاستشارات القانونية والشركات والعقود والعقارات والتحصيل والتسويات.",
     heroEyebrow: "الخدمات",
     heroTitle: "خدمات قانونية قابلة للفرز",
     heroDescription: "ابدأ من نوع الملف أو ابحث مباشرة عن الخدمة الأقرب لاحتياجك، ثم أرسل طلب استشارة منظم للمراجعة البشرية.",
@@ -387,12 +268,14 @@ export const publicContentAr = {
     sectionTitle: "اختر المسار الأقرب لطلبك",
     sectionDescription: "استخدم البحث أو التصنيف للوصول للخدمة المناسبة، ثم ابدأ طلب استشارة منظم.",
     searchLabel: "ابحث في الخدمات",
-    emptyTitle: "لا توجد خدمات مطابقة"
+    emptyTitle: "لا توجد خدمات مطابقة",
+    servicesCountLabel: "خدمات"
   },
   serviceDetail: {
+    includedTitle: "الخدمات المتضمنة",
     documentsTitle: "مستندات تساعد على المراجعة",
     outcomesTitle: "مخرجات متوقعة",
-    backToServices: "العودة لمجالات الخبرة"
+    backToServices: "العودة للخدمات"
   },
   teamPage: {
     metadataTitle: "فريق KMT Legal",
@@ -511,8 +394,8 @@ export const publicContentAr = {
     greeting: "مرحبًا. أستطيع مساعدتك في حجز استشارة أو الاستعلام عن رقم مرجع سابق. سأجمع فقط البيانات اللازمة لمراجعة الفريق.",
     book: "حجز استشارة",
     inquire: "استعلام عن مرجع",
-    corporateLaw: "قانون الشركات",
-    litigation: "التقاضي",
+    corporateLaw: "خدمات الشركات والأعمال",
+    litigation: "التحصيل والتسويات",
     messageLabel: "الرسالة",
     messagePlaceholder: "اكتب طلب حجز أو سؤال عن رقم مرجع",
     languagePendingPlaceholder: "اختر العربية أو English للبدء",
@@ -610,7 +493,12 @@ export const publicContentAr = {
     preferredMode: "طريقة التواصل",
     opposingPartyName: "اسم الطرف الآخر إن وجد",
     summary: "ملخص الطلب",
-    categories: { corporate: "الشركات والعقود", "real-estate": "العقارات", employment: "العمل", disputes: "المنازعات" },
+    categories: {
+      "legal-consultation": "الاستشارات القانونية",
+      "corporate-business-services": "خدمات الشركات والأعمال",
+      "real-estate-legal-support": "الدعم القانوني العقاري",
+      "claims-collections": "التحصيل والتسويات"
+    },
     urgencyLabels: { LOW: "منخفضة", NORMAL: "عادية", HIGH: "مرتفعة", URGENT: "عاجلة" },
     preferredModeLabels: { PHONE: "هاتف", ONLINE: "أونلاين", OFFICE: "في المكتب" },
     summaryHintShort: "اكتب {count} حرفًا إضافيًا على الأقل. اذكر الواقعة الأساسية والتاريخ أو المطلوب من المكتب بدون إرفاق مستندات.",

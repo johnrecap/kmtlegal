@@ -29,7 +29,7 @@ describe("public consultation contract", () => {
       phone: "+201000000000",
       email: "ahmed@example.com",
       city: "القاهرة",
-      serviceCategory: "corporate",
+      serviceCategory: "corporate-business-services",
       summary: "أحتاج مراجعة عقد توريد قبل التوقيع مع توضيح أهم المخاطر.",
       opposingPartyName: "",
       urgency: "NORMAL",
@@ -46,7 +46,7 @@ describe("public consultation contract", () => {
       publicConsultationRequestSchema.parse({
         fullName: "أحمد",
         phone: "+201000000000",
-        serviceCategory: "corporate",
+        serviceCategory: "corporate-business-services",
         summary: "قصير",
         urgency: "NORMAL",
         preferredMode: "PHONE",
@@ -67,7 +67,7 @@ describe("public consultation contract", () => {
       fullName: "أحمد منصور",
       phone: "+201000000000",
       email: "ahmed@example.com",
-      serviceCategory: "corporate",
+      serviceCategory: "corporate-business-services",
       summary: "أحتاج مراجعة عقد توريد قبل التوقيع مع توضيح أهم المخاطر.",
       urgency: "NORMAL",
       preferredMode: "ONLINE",
@@ -82,7 +82,7 @@ describe("public consultation contract", () => {
       locale: "en",
       message: "My name is Sara, phone +201000000002, I need contract review",
       draft: {
-        serviceCategory: "corporate",
+        serviceCategory: "corporate-business-services",
         preferredMode: "ONLINE",
         availabilityPreference: {
           date: "2026-07-06",
@@ -92,7 +92,7 @@ describe("public consultation contract", () => {
       selectedSlot: "2026-07-05T10:00:00+03:00",
       confirmBooking: false
     });
-    expect(conversational.draft?.serviceCategory).toBe("corporate");
+    expect(conversational.draft?.serviceCategory).toBe("corporate-business-services");
     expect(conversational.draft?.availabilityPreference?.date).toBe("2026-07-06");
     expect(conversational.selectedSlot).toContain("2026-07-05");
 
@@ -127,9 +127,12 @@ describe("public consultation contract", () => {
     ).toThrow();
   });
 
-  it("infers dispute consultations from Arabic trust receipt language", () => {
-    expect(inferPublicConsultationServiceCategory("وصل أمانة موقع عليا وعايز استشارة عاجلة")).toBe("disputes");
-    expect(inferPublicConsultationServiceCategory("I signed a promissory note and need urgent consultation")).toBe("disputes");
+  it("infers real KMT service categories from booking chat language", () => {
+    expect(inferPublicConsultationServiceCategory("وصل أمانة موقع عليا وعايز استشارة عاجلة")).toBe("claims-collections");
+    expect(inferPublicConsultationServiceCategory("I signed a promissory note and need urgent consultation")).toBe("claims-collections");
+    expect(inferPublicConsultationServiceCategory("I need contract review and company formation")).toBe("corporate-business-services");
+    expect(inferPublicConsultationServiceCategory("Lease agreement for an apartment")).toBe("real-estate-legal-support");
+    expect(inferPublicConsultationServiceCategory("استشارات جنائية")).toBe("legal-consultation");
   });
 
   it("keeps public booking confirmation and reference inquiry independent from AI provider availability", () => {
@@ -152,7 +155,7 @@ describe("public consultation contract", () => {
         phone: "01063887871",
         email: "khaled@example.com",
         city: "القاهرة",
-        serviceCategory: "disputes",
+        serviceCategory: "claims-collections",
         summary: "وصل أمانة موقع عليا وعايز استشارة عاجلة قبل اتخاذ أي خطوة.",
         urgency: "URGENT",
         preferredMode: "ONLINE",
@@ -164,7 +167,7 @@ describe("public consultation contract", () => {
 
     expect(brief).toContain("ملخص للفريق");
     expect(brief).toContain("خالد أحمد");
-    expect(brief).toContain("المنازعات والتقاضي");
+    expect(brief).toContain("التحصيل والتسويات");
     expect(brief).toContain("وصل أمانة");
     expect(brief).toContain("01063887871");
     expect(brief).toContain("أونلاين");
@@ -193,7 +196,7 @@ describe("public consultation contract", () => {
         draft: {
           fullName: "Book consultation",
           phone: "01036887871",
-          serviceCategory: "disputes",
+          serviceCategory: "claims-collections",
           summary: "Signed trust receipt dispute requiring urgent office review.",
           preferredMode: "ONLINE",
           startsAt: "2026-07-05T10:00:00.000Z"
@@ -216,7 +219,7 @@ describe("public consultation contract", () => {
         draft: {
           fullName: "01063887871",
           phone: "tomorrow",
-          serviceCategory: "disputes",
+          serviceCategory: "claims-collections",
           summary: "Signed trust receipt dispute requiring urgent office review.",
           preferredMode: "ONLINE",
           startsAt: "2026-07-05T10:00:00.000Z"
@@ -250,7 +253,7 @@ describe("public consultation contract", () => {
         draft: {
           fullName: "Khaled Ahmed",
           phone: "01063887871",
-          serviceCategory: "disputes",
+          serviceCategory: "claims-collections",
           summary: "Signed trust receipt dispute requiring urgent office review.",
           preferredMode: "ONLINE",
           startsAt: "2020-01-01T10:00:00.000Z"
