@@ -15,15 +15,17 @@ export type ProtectedPageResult =
       description: string;
     };
 
-export function cookieHeaderForServerComponent() {
-  return cookies()
+export async function cookieHeaderForServerComponent() {
+  const cookieStore = await cookies();
+
+  return cookieStore
     .getAll()
     .map((cookie) => `${cookie.name}=${encodeURIComponent(cookie.value)}`)
     .join("; ");
 }
 
 export async function getAuthContextForPage(options: { allowPendingTwoFactor?: boolean } = {}) {
-  return getAuthContextFromCookieHeader(cookieHeaderForServerComponent(), options);
+  return getAuthContextFromCookieHeader(await cookieHeaderForServerComponent(), options);
 }
 
 export async function redirectSignedInUser(requestedPath?: string | null) {

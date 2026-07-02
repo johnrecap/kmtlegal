@@ -83,13 +83,13 @@ function groupAppointmentsByDay(appointments: CalendarAppointment[]) {
   }, []);
 }
 
-export default async function AdminCalendarPage({ searchParams = {} }: { searchParams?: SearchParams }) {
+export default async function AdminCalendarPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminPage("/admin/calendar");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }
 
-  const query = flattenSearchParams(searchParams);
+  const query = flattenSearchParams((await searchParams) ?? {});
   let result: Awaited<ReturnType<typeof listAdminCalendarAppointments>>;
   let caseOptions: Awaited<ReturnType<typeof listCalendarCaseOptions>>;
   let filterOptions: Awaited<ReturnType<typeof getAdminCaseFilterOptions>>;

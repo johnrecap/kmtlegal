@@ -6,8 +6,9 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request: Request, { params }: { params: { userId: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ userId: string }> }) {
   const requestId = getRequestId(request);
+  const { userId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -19,7 +20,7 @@ export async function POST(request: Request, { params }: { params: { userId: str
     const result = await updateAdminUserPassword({
       actor: context.principal,
       actorSessionId: context.sessionId,
-      userId: params.userId,
+      userId,
       body,
       request
     });

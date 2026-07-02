@@ -6,8 +6,9 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 
 export const dynamic = "force-dynamic";
 
-export async function PATCH(request: Request, { params }: { params: { key: string } }) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ key: string }> }) {
   const requestId = getRequestId(request);
+  const { key } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -16,7 +17,7 @@ export async function PATCH(request: Request, { params }: { params: { key: strin
     }
 
     const body = await parseJsonRequest(request, adminSettingUpdateSchema, "Setting payload is invalid.");
-    const setting = await updateAdminSetting({ actor: context.principal, key: params.key, body, request });
+    const setting = await updateAdminSetting({ actor: context.principal, key, body, request });
 
     return NextResponse.json({ data: setting, requestId }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {

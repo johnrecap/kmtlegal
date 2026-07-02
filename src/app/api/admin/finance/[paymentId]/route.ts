@@ -7,13 +7,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type PaymentRouteProps = {
-  params: {
+  params: Promise<{
     paymentId: string;
-  };
+  }>;
 };
 
 export async function GET(request: Request, { params }: PaymentRouteProps) {
   const requestId = getRequestId(request);
+  const { paymentId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -23,7 +24,7 @@ export async function GET(request: Request, { params }: PaymentRouteProps) {
 
     const payment = await getAdminPaymentDetail({
       actor: context.principal,
-      paymentId: params.paymentId
+      paymentId
     });
 
     return NextResponse.json({ data: payment, requestId }, { headers: { "Cache-Control": "no-store" } });
@@ -34,6 +35,7 @@ export async function GET(request: Request, { params }: PaymentRouteProps) {
 
 export async function PATCH(request: Request, { params }: PaymentRouteProps) {
   const requestId = getRequestId(request);
+  const { paymentId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -44,7 +46,7 @@ export async function PATCH(request: Request, { params }: PaymentRouteProps) {
     const body = await parseJsonRequest(request, adminPaymentWriteSchema, "Payment payload is invalid.");
     const payment = await updateAdminPayment({
       actor: context.principal,
-      paymentId: params.paymentId,
+      paymentId,
       body,
       request
     });

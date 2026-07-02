@@ -7,13 +7,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type SocialDraftRouteProps = {
-  params: {
+  params: Promise<{
     draftId: string;
-  };
+  }>;
 };
 
 export async function GET(request: Request, { params }: SocialDraftRouteProps) {
   const requestId = getRequestId(request);
+  const { draftId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -21,7 +22,7 @@ export async function GET(request: Request, { params }: SocialDraftRouteProps) {
       return jsonError(401, "UNAUTHENTICATED", "Authentication required.", requestId);
     }
 
-    const draft = await getAdminSocialDraftDetail({ actor: context.principal, draftId: params.draftId });
+    const draft = await getAdminSocialDraftDetail({ actor: context.principal, draftId });
 
     return NextResponse.json({ data: draft, requestId }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
@@ -31,6 +32,7 @@ export async function GET(request: Request, { params }: SocialDraftRouteProps) {
 
 export async function PATCH(request: Request, { params }: SocialDraftRouteProps) {
   const requestId = getRequestId(request);
+  const { draftId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -39,7 +41,7 @@ export async function PATCH(request: Request, { params }: SocialDraftRouteProps)
     }
 
     const body = await parseJsonRequest(request, adminSocialDraftWriteSchema, "Social draft payload is invalid.");
-    const draft = await updateAdminSocialDraft({ actor: context.principal, draftId: params.draftId, body, request });
+    const draft = await updateAdminSocialDraft({ actor: context.principal, draftId, body, request });
 
     return NextResponse.json({ data: draft, requestId }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {

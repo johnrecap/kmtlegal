@@ -7,13 +7,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type AppointmentActionRouteProps = {
-  params: {
+  params: Promise<{
     appointmentId: string;
-  };
+  }>;
 };
 
 export async function POST(request: Request, { params }: AppointmentActionRouteProps) {
   const requestId = getRequestId(request);
+  const { appointmentId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -24,7 +25,7 @@ export async function POST(request: Request, { params }: AppointmentActionRouteP
     const body = await parseJsonRequest(request, appointmentRescheduleSchema, "Appointment reschedule payload is invalid.");
     const appointment = await rescheduleAdminCalendarAppointment({
       actor: context.principal,
-      appointmentId: params.appointmentId,
+      appointmentId,
       body,
       request
     });

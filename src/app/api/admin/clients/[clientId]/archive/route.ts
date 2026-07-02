@@ -7,13 +7,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type ClientActionRouteProps = {
-  params: {
+  params: Promise<{
     clientId: string;
-  };
+  }>;
 };
 
 export async function POST(request: Request, { params }: ClientActionRouteProps) {
   const requestId = getRequestId(request);
+  const { clientId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -24,7 +25,7 @@ export async function POST(request: Request, { params }: ClientActionRouteProps)
     const body = await parseJsonRequest(request, archiveClientSchema, "Client archive payload is invalid.");
     const client = await archiveAdminClient({
       actor: context.principal,
-      clientId: params.clientId,
+      clientId,
       body,
       request
     });

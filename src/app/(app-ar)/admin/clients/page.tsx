@@ -150,7 +150,7 @@ function ClientMobileCard({ row }: { row: ClientRow }) {
   );
 }
 
-export default async function AdminClientsPage({ searchParams = {} }: { searchParams?: SearchParams }) {
+export default async function AdminClientsPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminPage("/admin/clients");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
@@ -160,7 +160,7 @@ export default async function AdminClientsPage({ searchParams = {} }: { searchPa
     return <PermissionBlocked title="غير مسموح بقراءة CRM العملاء" description="هذا المسار يحتاج صلاحية قراءة العملاء أو قراءة العملاء المعينين لك." />;
   }
 
-  const query = flattenSearchParams(searchParams);
+  const query = flattenSearchParams((await searchParams) ?? {});
   const [result, options] = await Promise.all([
     listAdminClients({ actor: guard.context.principal, query }),
     getAdminClientFilterOptions(guard.context.principal)

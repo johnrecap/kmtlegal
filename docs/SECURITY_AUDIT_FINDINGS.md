@@ -1,6 +1,6 @@
 # Security Audit Findings
 
-Date: 2026-06-24
+Date: 2026-07-02
 
 Command run:
 
@@ -8,39 +8,29 @@ Command run:
 npm run security:audit
 ```
 
-Result: failed release gate.
+Result: passed release gate after controlled dependency remediation.
 
-## Findings
+## Remediated Findings
 
 | Package | Severity | Source | Release impact |
 | --- | --- | --- | --- |
-| `next` | High | npm audit advisories for DoS/cache poisoning/XSS/SSRF classes in the installed Next.js range | Blocks production release until upgraded and regression-tested. |
-| `postcss` nested under `next` | Moderate | npm audit advisory for CSS stringify escaping | Tied to the Next.js upgrade path. |
-| `@hono/node-server` through `@prisma/dev` / `prisma` | Moderate | npm audit advisory for repeated-slash static middleware bypass | Blocks release review for Prisma toolchain until a safe Prisma upgrade/downgrade path is selected. |
+| `next` | High | npm audit advisories in the previously installed Next.js range | Remediated by upgrading to `next@15.5.20` and `eslint-config-next@15.5.20`. |
+| `postcss` nested under `next` | Moderate | npm audit advisory for CSS stringify escaping | Remediated by pinning `postcss@8.5.10` and applying a matching npm override. |
+| `@hono/node-server` through `@prisma/dev` / `prisma` | Moderate | npm audit advisory for repeated-slash static middleware bypass | Remediated with npm override `@hono/node-server@1.19.13`. |
+| `vitest` / `vite` / `esbuild` | Moderate to critical in dev tooling | npm audit advisories affecting the development server toolchain | Remediated by upgrading `vitest` to `^4.1.9`. |
 
 ## Decision
 
 Do not run `npm audit fix --force` blindly.
 
-The audit output proposes breaking dependency changes:
-
-- `next@16.2.9`
-- `prisma@6.19.3`
-
-Those changes need a dedicated dependency-upgrade branch with:
-
-- Next.js upgrade notes reviewed.
-- Prisma migration/generate behavior verified.
-- Full `npm run qa:local`.
-- `npm run test:e2e:smoke`.
-- DB-backed migration/seed smoke.
-- Manual browser smoke for public, login, portal, and admin routes.
+This pass intentionally stayed on the Next.js 15 line instead of jumping to Next.js 16. The compatibility updates required by Next 15 were applied to async `cookies()`, App Router `params`, page `searchParams`, and Vitest 4 JSX transform configuration.
 
 ## Current Status
 
-The repository has PLAN-23 handoff artifacts and local quality gates, but it is not release-clear until this audit blocker is resolved.
+The dependency audit blocker is resolved in this workspace:
 
-PLAN-24 update:
-- `npm run security:secrets` now exists and passed locally with no high-confidence secret patterns.
-- `npm run qa:release` includes dependency audit and secret scan, but remains blocked until dependency upgrade work is completed and a real DB/VPS gate is available.
-- The dependency audit result above still blocks production release; this file must be updated after the controlled Next/Prisma upgrade pass.
+- `npm run security:audit` passes with `found 0 vulnerabilities`.
+- `npm run security:audit:all` passes with `found 0 vulnerabilities`.
+- `npm run security:secrets` passes with no high-confidence secret patterns.
+
+Production release is still not fully clear until `qa:db`, `qa:release`, and live VPS smoke run against a real PostgreSQL/VPS target.

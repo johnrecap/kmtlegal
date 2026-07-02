@@ -183,7 +183,7 @@ function RecentPaymentMobileCard({ row }: { row: RecentPaymentRow }) {
   );
 }
 
-export default async function AdminReportsPage({ searchParams = {} }: { searchParams?: SearchParams }) {
+export default async function AdminReportsPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminPage("/admin/reports");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
@@ -193,7 +193,7 @@ export default async function AdminReportsPage({ searchParams = {} }: { searchPa
     return <PermissionBlocked title="غير مسموح بقراءة التقارير" description="هذا المسار يحتاج صلاحية report.read.any." />;
   }
 
-  const query = flattenSearchParams(searchParams);
+  const query = flattenSearchParams((await searchParams) ?? {});
   const report = await getAdminReports({ actor: guard.context.principal, query });
   const selectedCurrency = report.filters.currency || undefined;
 

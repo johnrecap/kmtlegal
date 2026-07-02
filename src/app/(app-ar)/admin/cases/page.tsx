@@ -186,7 +186,7 @@ function CaseMobileCard({ row }: { row: CaseRow }) {
   );
 }
 
-export default async function AdminCasesPage({ searchParams = {} }: { searchParams?: SearchParams }) {
+export default async function AdminCasesPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminPage("/admin/cases");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
@@ -201,7 +201,7 @@ export default async function AdminCasesPage({ searchParams = {} }: { searchPara
     );
   }
 
-  const query = flattenSearchParams(searchParams);
+  const query = flattenSearchParams((await searchParams) ?? {});
   const [result, options] = await Promise.all([
     listAdminCases({ actor: guard.context.principal, query }),
     getAdminCaseFilterOptions(guard.context.principal)

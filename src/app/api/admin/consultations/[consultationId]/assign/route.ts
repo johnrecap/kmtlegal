@@ -8,13 +8,14 @@ import { assignConsultationSchema } from "@/server/admin/consultation-review-ser
 export const dynamic = "force-dynamic";
 
 type ConsultationActionRouteProps = {
-  params: {
+  params: Promise<{
     consultationId: string;
-  };
+  }>;
 };
 
 export async function POST(request: Request, { params }: ConsultationActionRouteProps) {
   const requestId = getRequestId(request);
+  const { consultationId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -25,7 +26,7 @@ export async function POST(request: Request, { params }: ConsultationActionRoute
     const body = await parseJsonRequest(request, assignConsultationSchema, "Assignment payload is invalid.");
     const consultation = await assignConsultation({
       actor: context.principal,
-      consultationId: params.consultationId,
+      consultationId,
       body,
       request
     });

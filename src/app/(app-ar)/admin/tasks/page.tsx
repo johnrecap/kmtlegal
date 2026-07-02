@@ -125,7 +125,7 @@ function TaskCard({
   );
 }
 
-export default async function AdminTasksPage({ searchParams = {} }: { searchParams?: SearchParams }) {
+export default async function AdminTasksPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminPage("/admin/tasks");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
@@ -135,7 +135,7 @@ export default async function AdminTasksPage({ searchParams = {} }: { searchPara
     return <PermissionBlocked title="غير مسموح بقراءة المهام" description="هذا المسار يحتاج صلاحية قراءة أو إدارة المهام داخل نطاقك." />;
   }
 
-  const query = flattenSearchParams(searchParams);
+  const query = flattenSearchParams((await searchParams) ?? {});
   const [result, options] = await Promise.all([
     listAdminTasks({ actor: guard.context.principal, query }),
     getAdminTaskOptions(guard.context.principal)

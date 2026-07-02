@@ -6,13 +6,14 @@ import { errorToResponse, getRequestId, jsonError } from "@/server/http/errors";
 export const dynamic = "force-dynamic";
 
 type ConsultationRouteProps = {
-  params: {
+  params: Promise<{
     consultationId: string;
-  };
+  }>;
 };
 
 export async function GET(request: Request, { params }: ConsultationRouteProps) {
   const requestId = getRequestId(request);
+  const { consultationId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -22,7 +23,7 @@ export async function GET(request: Request, { params }: ConsultationRouteProps) 
 
     const consultation = await getAdminConsultationDetail({
       actor: context.principal,
-      consultationId: params.consultationId
+      consultationId
     });
 
     return NextResponse.json({ data: consultation, requestId }, { headers: { "Cache-Control": "no-store" } });

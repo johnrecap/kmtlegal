@@ -6,13 +6,14 @@ import { errorToResponse, getRequestId, jsonError } from "@/server/http/errors";
 export const dynamic = "force-dynamic";
 
 type UserClientProfileRouteProps = {
-  params: {
+  params: Promise<{
     userId: string;
-  };
+  }>;
 };
 
 export async function POST(request: Request, { params }: UserClientProfileRouteProps) {
   const requestId = getRequestId(request);
+  const { userId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -22,7 +23,7 @@ export async function POST(request: Request, { params }: UserClientProfileRouteP
 
     const client = await createClientProfileForPortalUser({
       actor: context.principal,
-      userId: params.userId,
+      userId,
       request
     });
 

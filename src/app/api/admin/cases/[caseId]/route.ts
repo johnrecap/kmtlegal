@@ -6,13 +6,14 @@ import { errorToResponse, getRequestId, jsonError } from "@/server/http/errors";
 export const dynamic = "force-dynamic";
 
 type CaseRouteProps = {
-  params: {
+  params: Promise<{
     caseId: string;
-  };
+  }>;
 };
 
 export async function GET(request: Request, { params }: CaseRouteProps) {
   const requestId = getRequestId(request);
+  const { caseId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -22,7 +23,7 @@ export async function GET(request: Request, { params }: CaseRouteProps) {
 
     const legalCase = await getAdminCaseDetail({
       actor: context.principal,
-      caseId: params.caseId
+      caseId
     });
 
     return NextResponse.json({ data: legalCase, requestId }, { headers: { "Cache-Control": "no-store" } });

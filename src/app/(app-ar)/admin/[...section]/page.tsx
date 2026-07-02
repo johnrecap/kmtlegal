@@ -8,14 +8,15 @@ export const metadata: Metadata = {
   title: "مسار إداري محمي | KMT Legal"
 };
 
-export default async function AdminSectionPlaceholderPage({ params }: { params: { section: string[] } }) {
-  const pathname = `/admin/${params.section.join("/")}`;
+export default async function AdminSectionPlaceholderPage({ params }: { params: Promise<{ section: string[] }> }) {
+  const { section } = await params;
+  const pathname = `/admin/${section.join("/")}`;
   const guard = await requireAdminPage(pathname);
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }
 
-  const sectionLabel = adminSectionLabel(params.section);
+  const sectionLabel = adminSectionLabel(section);
 
   return (
     <DashboardShell

@@ -7,13 +7,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type CaseActionRouteProps = {
-  params: {
+  params: Promise<{
     caseId: string;
-  };
+  }>;
 };
 
 export async function POST(request: Request, { params }: CaseActionRouteProps) {
   const requestId = getRequestId(request);
+  const { caseId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -24,7 +25,7 @@ export async function POST(request: Request, { params }: CaseActionRouteProps) {
     const body = await parseJsonRequest(request, caseStatusUpdateSchema, "Case status payload is invalid.");
     const legalCase = await updateAdminCaseStatus({
       actor: context.principal,
-      caseId: params.caseId,
+      caseId,
       body,
       request,
       requestId

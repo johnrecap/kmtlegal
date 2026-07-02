@@ -84,8 +84,9 @@ function AuditMobileCard({ row }: { row: AuditRow }) {
   );
 }
 
-export default async function AdminUserDetailPage({ params }: { params: { userId: string } }) {
-  const guard = await requireAdminPage(`/admin/users/${params.userId}`);
+export default async function AdminUserDetailPage({ params }: { params: Promise<{ userId: string }> }) {
+  const { userId } = await params;
+  const guard = await requireAdminPage(`/admin/users/${userId}`);
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }
@@ -95,7 +96,7 @@ export default async function AdminUserDetailPage({ params }: { params: { userId
   }
 
   const [user, options] = await Promise.all([
-    getAdminUserDetail({ actor: guard.context.principal, userId: params.userId }),
+    getAdminUserDetail({ actor: guard.context.principal, userId }),
     getAdminUserOptions(guard.context.principal)
   ]);
   const permissionKeys = user.role.permissions.map((entry) => entry.permission.key);

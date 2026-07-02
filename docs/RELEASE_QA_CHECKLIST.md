@@ -33,7 +33,8 @@ This is not a production-ready gate by itself.
 ## Network-Dependent Gates
 
 - [x] `npm run security:audit` was executed in this workspace.
-- [ ] Resolve current npm audit blockers before production release.
+- [x] Resolve current npm audit blockers before production release.
+- [x] `npm run security:audit:all` passes with no vulnerabilities.
 
 This requires npm registry/advisory access.
 
@@ -144,7 +145,7 @@ npx playwright test tests/e2e/live-admin-smoke.spec.ts
 
 - Docker CLI is not installed in this workspace, so local PostgreSQL via `docker compose up -d db` could not be executed here.
 - DB-backed E2E must be run after PostgreSQL and seed data are available.
-- `npm run security:audit` currently fails and blocks release clearance.
-- PLAN-24 remains open until `qa:db`, `qa:release`, dependency audit remediation, and VPS smoke are complete.
+- `npm run security:audit` and `npm run security:audit:all` pass after the controlled dependency remediation.
+- PLAN-24 remains open until `qa:db`, `qa:release`, and VPS smoke are complete.
 - PLAN-27 local remediation has passed `typecheck`, full `test`, `build`, and non-DB smoke E2E in this workspace.
 - PLAN-27 remains open until full public/static/mobile smoke, DB-backed staging checks, and deployed-site evidence pass.

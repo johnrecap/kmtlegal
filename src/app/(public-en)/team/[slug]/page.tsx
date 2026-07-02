@@ -1,16 +1,18 @@
 import type { Metadata } from "next";
 import { TeamDetailPageView, publicLawyerStaticParams, teamDetailMetadata } from "@/features/public-site/public-pages";
 
-type LawyerProfilePageProps = { params: { slug: string } };
+type LawyerProfilePageProps = { params: Promise<{ slug: string }> };
 
 export function generateStaticParams() {
   return publicLawyerStaticParams("en");
 }
 
-export function generateMetadata({ params }: LawyerProfilePageProps): Metadata {
-  return teamDetailMetadata("en", params.slug);
+export async function generateMetadata({ params }: LawyerProfilePageProps): Promise<Metadata> {
+  const { slug } = await params;
+  return teamDetailMetadata("en", slug);
 }
 
-export default function LawyerProfilePage({ params }: LawyerProfilePageProps) {
-  return <TeamDetailPageView locale="en" slug={params.slug} />;
+export default async function LawyerProfilePage({ params }: LawyerProfilePageProps) {
+  const { slug } = await params;
+  return <TeamDetailPageView locale="en" slug={slug} />;
 }

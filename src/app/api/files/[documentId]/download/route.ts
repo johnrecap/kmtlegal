@@ -6,13 +6,14 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 type DocumentDownloadRouteProps = {
-  params: {
+  params: Promise<{
     documentId: string;
-  };
+  }>;
 };
 
 export async function GET(request: Request, { params }: DocumentDownloadRouteProps) {
   const requestId = getRequestId(request);
+  const { documentId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -22,7 +23,7 @@ export async function GET(request: Request, { params }: DocumentDownloadRoutePro
 
     const download = await getAuthorizedDocumentDownload({
       actor: context.principal,
-      documentId: params.documentId,
+      documentId,
       request
     });
 

@@ -6,13 +6,14 @@ import { errorToResponse, getRequestId, jsonError } from "@/server/http/errors";
 export const dynamic = "force-dynamic";
 
 type ClientMessageRouteProps = {
-  params: {
+  params: Promise<{
     threadId: string;
-  };
+  }>;
 };
 
 export async function GET(request: Request, { params }: ClientMessageRouteProps) {
   const requestId = getRequestId(request);
+  const { threadId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -22,7 +23,7 @@ export async function GET(request: Request, { params }: ClientMessageRouteProps)
 
     const result = await getClientConversationDetail({
       actor: context.principal,
-      threadId: params.threadId
+      threadId
     });
 
     return NextResponse.json({ data: result, requestId }, { headers: { "Cache-Control": "no-store" } });

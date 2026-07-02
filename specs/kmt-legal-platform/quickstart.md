@@ -1,7 +1,7 @@
 # quickstart.md
 
 ## Status
-The MVP implementation and handoff artifacts now exist through partial PLAN-27 live-site QA remediation. Local static/unit/build gates can run without PostgreSQL. Production readiness still requires a running PostgreSQL `DATABASE_URL`, migrations, seed data, DB-backed E2E, dependency audit remediation, installer lock, hosting smoke for the chosen setup mode, and PLAN-27 deployed-site smoke covering public links, static chunks, CSP, favicon, auth/admin copy, booking/contact UX, authenticated admin routes, mobile overflow, and approved production content.
+The MVP implementation and handoff artifacts now exist through partial PLAN-27 live-site QA remediation and dependency audit remediation. Local static/unit/build gates can run without PostgreSQL. Production readiness still requires a running PostgreSQL `DATABASE_URL`, migrations, seed data, DB-backed E2E, installer lock, hosting smoke for the chosen setup mode, and PLAN-27 deployed-site smoke covering public links, static chunks, CSP, favicon, auth/admin copy, booking/contact UX, authenticated admin routes, mobile overflow, and approved production content.
 
 ## Prerequisites
 - Node.js version compatible with the chosen Next.js version.
@@ -135,6 +135,8 @@ npm run qa:local
 npm run qa:db
 npm run qa:release
 npm run security:secrets
+npm run security:audit
+npm run security:audit:all
 npm run test:e2e
 ```
 
@@ -244,4 +246,4 @@ PLAN-26 flow:
 - VPS systemd and Nginx examples exist under `deploy/`; Docker packaging remains optional.
 - Upload route runtime smoke still needs a writable private `UPLOADS_DIR` and migrated PostgreSQL database.
 - Consultation booking submit also needs a migrated PostgreSQL database for runtime persistence.
-- Dependency audit remediation is still a production blocker until `docs/SECURITY_AUDIT_FINDINGS.md` is updated with a passing or explicitly accepted result.
+- Dependency audit remediation is complete in this workspace; rerun `npm run security:audit` and `npm run security:audit:all` for every release candidate.

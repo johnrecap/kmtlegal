@@ -22,13 +22,14 @@ export const metadata: Metadata = {
 };
 
 type AdminMessageDetailPageProps = {
-  params: {
+  params: Promise<{
     threadId: string;
-  };
+  }>;
 };
 
 export default async function AdminMessageDetailPage({ params }: AdminMessageDetailPageProps) {
-  const guard = await requireAdminPage(`/admin/messages/${params.threadId}`);
+  const { threadId } = await params;
+  const guard = await requireAdminPage(`/admin/messages/${threadId}`);
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }
@@ -38,7 +39,7 @@ export default async function AdminMessageDetailPage({ params }: AdminMessageDet
   }
 
   const [thread, assignees] = await Promise.all([
-    getAdminConversationDetail({ actor: guard.context.principal, threadId: params.threadId }),
+    getAdminConversationDetail({ actor: guard.context.principal, threadId }),
     listConversationAssignees({ actor: guard.context.principal })
   ]);
 

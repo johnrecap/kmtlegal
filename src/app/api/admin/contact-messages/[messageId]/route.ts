@@ -6,8 +6,9 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 
 export const dynamic = "force-dynamic";
 
-export async function PATCH(request: Request, context: { params: { messageId: string } }) {
+export async function PATCH(request: Request, context: { params: Promise<{ messageId: string }> }) {
   const requestId = getRequestId(request);
+  const { messageId } = await context.params;
 
   try {
     const authContext = await getAuthContextFromRequest(request);
@@ -18,7 +19,7 @@ export async function PATCH(request: Request, context: { params: { messageId: st
     const body = await parseJsonRequest(request, adminContactMessageStatusUpdateSchema, "Contact message status payload is invalid.");
     const message = await updateAdminContactMessageStatus({
       actor: authContext.principal,
-      messageId: context.params.messageId,
+      messageId,
       body,
       request,
       requestId

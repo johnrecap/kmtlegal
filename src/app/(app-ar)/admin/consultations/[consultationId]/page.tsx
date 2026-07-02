@@ -16,9 +16,9 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  params: {
+  params: Promise<{
     consultationId: string;
-  };
+  }>;
 };
 
 function statusTone(status: string) {
@@ -167,7 +167,8 @@ function adminConsultationOfficeBrief(consultation: Awaited<ReturnType<typeof ge
 }
 
 export default async function AdminConsultationDetailPage({ params }: PageProps) {
-  const guard = await requireAdminPage(`/admin/consultations/${params.consultationId}`);
+  const { consultationId } = await params;
+  const guard = await requireAdminPage(`/admin/consultations/${consultationId}`);
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }
@@ -175,7 +176,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
   const [consultation, lawyers] = await Promise.all([
     getAdminConsultationDetail({
       actor: guard.context.principal,
-      consultationId: params.consultationId
+      consultationId
     }),
     listAssignableLawyers()
   ]);

@@ -32,7 +32,7 @@ The local gates cover:
 - ESLint.
 - Vitest server/UI contract tests.
 - Next production build.
-- Dependency audit was run and failed; see `docs/SECURITY_AUDIT_FINDINGS.md`.
+- Dependency audit was remediated and now passes; see `docs/SECURITY_AUDIT_FINDINGS.md`.
 - Non-DB Playwright browser smoke:
   - public/static routes render;
   - RTL shell exists;
@@ -52,11 +52,12 @@ Still required in an environment with PostgreSQL:
 - Login -> staff 2FA -> `/admin`.
 - Booking -> admin review -> convert to case -> client portal.
 - Client/admin upload -> authorized download.
-- `npm run security:audit` with npm registry access.
+- `npm run security:audit` and `npm run security:audit:all` with npm registry access.
 
 ## Release Blockers
 
-- `npm run security:audit` currently fails because npm reports vulnerabilities in `next`, nested `postcss`, and Prisma's toolchain path. Do not use `npm audit fix --force` without a dedicated dependency-upgrade pass.
+- `npm run qa:db`, `npm run qa:release`, and live VPS smoke still require a real PostgreSQL/VPS target and archived evidence.
+- Dependency audit is no longer a current blocker, but future dependency updates must remain controlled and must not use `npm audit fix --force` blindly.
 
 ## Definition Of Done
 
@@ -68,4 +69,4 @@ PLAN-23 is complete for repository handoff when:
 - blocked DB/staging gates are explicit and runnable by the next operator;
 - implementation status is updated.
 
-It is not production-release-clear until `docs/SECURITY_AUDIT_FINDINGS.md` is resolved.
+It is not production-release-clear until DB-backed QA, release QA, and live VPS smoke are complete.

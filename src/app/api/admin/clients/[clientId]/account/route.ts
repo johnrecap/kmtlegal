@@ -7,13 +7,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type ClientAccountRouteProps = {
-  params: {
+  params: Promise<{
     clientId: string;
-  };
+  }>;
 };
 
 export async function POST(request: Request, { params }: ClientAccountRouteProps) {
   const requestId = getRequestId(request);
+  const { clientId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -24,7 +25,7 @@ export async function POST(request: Request, { params }: ClientAccountRouteProps
     const body = await parseJsonRequest(request, clientAccountCreateSchema, "Client account payload is invalid.");
     const client = await createOrLinkClientPortalAccount({
       actor: context.principal,
-      clientId: params.clientId,
+      clientId,
       body,
       request
     });

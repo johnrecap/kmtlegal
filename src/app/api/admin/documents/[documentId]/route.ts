@@ -7,13 +7,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type DocumentRouteProps = {
-  params: {
+  params: Promise<{
     documentId: string;
-  };
+  }>;
 };
 
 export async function PATCH(request: Request, { params }: DocumentRouteProps) {
   const requestId = getRequestId(request);
+  const { documentId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -24,7 +25,7 @@ export async function PATCH(request: Request, { params }: DocumentRouteProps) {
     const body = await parseJsonRequest(request, adminDocumentUpdateSchema, "Document payload is invalid.");
     const document = await updateAdminDocument({
       actor: context.principal,
-      documentId: params.documentId,
+      documentId,
       body,
       request
     });

@@ -123,7 +123,7 @@ function ConversationMobileCard({ row }: { row: ConversationRow }) {
   );
 }
 
-export default async function AdminMessagesPage({ searchParams = {} }: { searchParams?: SearchParams }) {
+export default async function AdminMessagesPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminPage("/admin/messages");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
@@ -133,7 +133,7 @@ export default async function AdminMessagesPage({ searchParams = {} }: { searchP
     return <PermissionBlocked title="غير مسموح بقراءة رسائل العملاء" description="هذا المسار يحتاج صلاحية قراءة محادثات العملاء." />;
   }
 
-  const query = flattenSearchParams(searchParams);
+  const query = flattenSearchParams((await searchParams) ?? {});
   const [result, assignees] = await Promise.all([
     listAdminConversations({ actor: guard.context.principal, query }),
     listConversationAssignees({ actor: guard.context.principal })

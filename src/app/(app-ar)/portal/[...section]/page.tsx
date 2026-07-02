@@ -15,8 +15,9 @@ const portalRedirects: Record<string, string> = {
   profile: "/client/profile"
 };
 
-export default function PortalSectionRedirectPage({ params }: { params: { section: string[] } }) {
-  const [section, id] = params.section;
+export default async function PortalSectionRedirectPage({ params }: { params: Promise<{ section: string[] }> }) {
+  const { section: sectionParts } = await params;
+  const [section, id] = sectionParts;
 
   if (section === "cases" && id) {
     redirect(`/client/cases/${id}`);

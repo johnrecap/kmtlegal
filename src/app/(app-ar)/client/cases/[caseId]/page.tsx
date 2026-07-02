@@ -32,18 +32,19 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  params: {
+  params: Promise<{
     caseId: string;
-  };
+  }>;
 };
 
 export default async function ClientCaseDetailPage({ params }: PageProps) {
-  const guard = await requirePortalPage(`/client/cases/${params.caseId}`);
+  const { caseId } = await params;
+  const guard = await requirePortalPage(`/client/cases/${caseId}`);
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }
 
-  const legalCase = await getPortalCaseDetail(guard.context.principal, params.caseId);
+  const legalCase = await getPortalCaseDetail(guard.context.principal, caseId);
 
   return (
     <ClientSiteShell

@@ -182,7 +182,7 @@ function AuditMobileCard({ row }: { row: AuditRow }) {
   );
 }
 
-export default async function AdminAuditLogPage({ searchParams = {} }: { searchParams?: SearchParams }) {
+export default async function AdminAuditLogPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminPage("/admin/audit-log");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
@@ -192,7 +192,7 @@ export default async function AdminAuditLogPage({ searchParams = {} }: { searchP
     return <PermissionBlocked title="غير مسموح بقراءة سجل التدقيق" description="هذا المسار يحتاج صلاحية audit.read.any." />;
   }
 
-  const query = flattenSearchParams(searchParams);
+  const query = flattenSearchParams((await searchParams) ?? {});
   const result = await listAdminAuditLogs({ actor: guard.context.principal, query });
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
 

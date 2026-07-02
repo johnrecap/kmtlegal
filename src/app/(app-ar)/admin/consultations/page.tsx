@@ -139,7 +139,7 @@ function ConsultationMobileCard({ row }: { row: ConsultationRow }) {
   );
 }
 
-export default async function AdminConsultationsPage({ searchParams = {} }: { searchParams?: SearchParams }) {
+export default async function AdminConsultationsPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminPage("/admin/consultations");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
@@ -147,7 +147,7 @@ export default async function AdminConsultationsPage({ searchParams = {} }: { se
 
   const result = await listAdminConsultations({
     actor: guard.context.principal,
-    query: flattenSearchParams(searchParams)
+    query: flattenSearchParams((await searchParams) ?? {})
   });
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
 

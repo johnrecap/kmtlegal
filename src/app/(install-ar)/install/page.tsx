@@ -11,23 +11,25 @@ export const metadata: Metadata = {
 };
 
 type InstallPageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     token?: string | string[];
-  };
+  }>;
 };
 
 function firstSearchParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-export default function InstallPage({ searchParams }: InstallPageProps) {
+export default async function InstallPage({ searchParams }: InstallPageProps) {
   if (!isInstallerEnabled()) {
     notFound();
   }
 
+  const resolvedSearchParams = (await searchParams) ?? {};
+
   return (
     <main className="min-h-screen bg-kmt-canvas">
-      <InstallWizard initialToken={firstSearchParam(searchParams?.token) ?? ""} />
+      <InstallWizard initialToken={firstSearchParam(resolvedSearchParams.token) ?? ""} />
     </main>
   );
 }

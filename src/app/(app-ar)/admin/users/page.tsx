@@ -115,7 +115,7 @@ function UserMobileCard({ row }: { row: UserRow }) {
   );
 }
 
-export default async function AdminUsersPage({ searchParams = {} }: { searchParams?: SearchParams }) {
+export default async function AdminUsersPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminPage("/admin/users");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
@@ -125,7 +125,7 @@ export default async function AdminUsersPage({ searchParams = {} }: { searchPara
     return <PermissionBlocked title="غير مسموح بإدارة المستخدمين" description="هذا المسار مخصص لمدير النظام أو أي دور يملك صلاحية إدارة المستخدمين." />;
   }
 
-  const query = flattenSearchParams(searchParams);
+  const query = flattenSearchParams((await searchParams) ?? {});
   const [result, options] = await Promise.all([
     listAdminUsers({ actor: guard.context.principal, query }),
     getAdminUserOptions(guard.context.principal)

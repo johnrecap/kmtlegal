@@ -11,13 +11,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type AdminMessageRouteProps = {
-  params: {
+  params: Promise<{
     threadId: string;
-  };
+  }>;
 };
 
 export async function GET(request: Request, { params }: AdminMessageRouteProps) {
   const requestId = getRequestId(request);
+  const { threadId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -27,7 +28,7 @@ export async function GET(request: Request, { params }: AdminMessageRouteProps) 
 
     const result = await getAdminConversationDetail({
       actor: context.principal,
-      threadId: params.threadId
+      threadId
     });
 
     return NextResponse.json({ data: result, requestId }, { headers: { "Cache-Control": "no-store" } });
@@ -38,6 +39,7 @@ export async function GET(request: Request, { params }: AdminMessageRouteProps) 
 
 export async function PATCH(request: Request, { params }: AdminMessageRouteProps) {
   const requestId = getRequestId(request);
+  const { threadId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -48,7 +50,7 @@ export async function PATCH(request: Request, { params }: AdminMessageRouteProps
     const body = await parseJsonRequest(request, adminConversationUpdateSchema, "Conversation update payload is invalid.");
     const result = await updateAdminConversation({
       actor: context.principal,
-      threadId: params.threadId,
+      threadId,
       body,
       request,
       requestId

@@ -7,13 +7,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type CaseStudyRouteProps = {
-  params: {
+  params: Promise<{
     caseStudyId: string;
-  };
+  }>;
 };
 
 export async function GET(request: Request, { params }: CaseStudyRouteProps) {
   const requestId = getRequestId(request);
+  const { caseStudyId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -21,7 +22,7 @@ export async function GET(request: Request, { params }: CaseStudyRouteProps) {
       return jsonError(401, "UNAUTHENTICATED", "Authentication required.", requestId);
     }
 
-    const study = await getAdminCaseStudyDetail({ actor: context.principal, caseStudyId: params.caseStudyId });
+    const study = await getAdminCaseStudyDetail({ actor: context.principal, caseStudyId });
 
     return NextResponse.json({ data: study, requestId }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
@@ -31,6 +32,7 @@ export async function GET(request: Request, { params }: CaseStudyRouteProps) {
 
 export async function PATCH(request: Request, { params }: CaseStudyRouteProps) {
   const requestId = getRequestId(request);
+  const { caseStudyId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -39,7 +41,7 @@ export async function PATCH(request: Request, { params }: CaseStudyRouteProps) {
     }
 
     const body = await parseJsonRequest(request, adminCaseStudyWriteSchema, "Case study payload is invalid.");
-    const study = await updateAdminCaseStudy({ actor: context.principal, caseStudyId: params.caseStudyId, body, request });
+    const study = await updateAdminCaseStudy({ actor: context.principal, caseStudyId, body, request });
 
     return NextResponse.json({ data: study, requestId }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {

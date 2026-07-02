@@ -33,9 +33,9 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  params: {
+  params: Promise<{
     clientId: string;
-  };
+  }>;
 };
 
 function DetailItem({ label, value }: { label: string; value: React.ReactNode }) {
@@ -48,7 +48,8 @@ function DetailItem({ label, value }: { label: string; value: React.ReactNode })
 }
 
 export default async function AdminClientDetailPage({ params }: PageProps) {
-  const guard = await requireAdminPage(`/admin/clients/${params.clientId}`);
+  const { clientId } = await params;
+  const guard = await requireAdminPage(`/admin/clients/${clientId}`);
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }
@@ -57,7 +58,7 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
   try {
     client = await getAdminClientDetail({
       actor: guard.context.principal,
-      clientId: params.clientId
+      clientId
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) {

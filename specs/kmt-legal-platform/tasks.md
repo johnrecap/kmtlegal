@@ -273,7 +273,7 @@ Acceptance:
 - [x] T154 Align OpenAPI route plan with implemented finance/calendar/files/portal routes and add route-manifest contract test.
 - [x] T155 Add DB-backed E2E entrypoint for staff password login and client portal login.
 - [ ] T156 Run `npm run qa:db` against real PostgreSQL and verify seeded upload backing files.
-- [ ] T157 Complete dependency upgrade/audit remediation without `npm audit fix --force`.
+- [x] T157 Complete dependency upgrade/audit remediation without `npm audit fix --force`.
 - [ ] T158 Run `npm run qa:release` and archive evidence.
 - [ ] T159 Run VPS smoke for Nginx/TLS/systemd/private uploads/backups with `SMTP_ENABLED=false`.
 - [ ] T160 Close PLAN-04, PLAN-23, and PLAN-24 only after all release gates pass.

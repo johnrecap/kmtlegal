@@ -3,11 +3,12 @@ import { findPublicService } from "@/content/public-content";
 import { localeFromSearchParams } from "@/lib/public-locale";
 import { jsonError } from "@/server/http/errors";
 
-type RouteProps = { params: { slug: string } };
+type RouteProps = { params: Promise<{ slug: string }> };
 
-export function GET(request: Request, { params }: RouteProps) {
+export async function GET(request: Request, { params }: RouteProps) {
   const locale = localeFromSearchParams(new URL(request.url).searchParams);
-  const service = findPublicService(locale, params.slug);
+  const { slug } = await params;
+  const service = findPublicService(locale, slug);
   if (!service) return jsonError(404, "NOT_FOUND", "Service was not found.", undefined, undefined, { locale });
   return NextResponse.json({ data: service }, { headers: { "Cache-Control": "public, max-age=60, s-maxage=300" } });
 }

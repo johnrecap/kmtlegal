@@ -7,13 +7,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type ClientAccountPasswordRouteProps = {
-  params: {
+  params: Promise<{
     clientId: string;
-  };
+  }>;
 };
 
 export async function POST(request: Request, { params }: ClientAccountPasswordRouteProps) {
   const requestId = getRequestId(request);
+  const { clientId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -24,7 +25,7 @@ export async function POST(request: Request, { params }: ClientAccountPasswordRo
     const body = await parseJsonRequest(request, clientAccountPasswordSchema, "Client account password payload is invalid.");
     const result = await resetClientPortalAccountPassword({
       actor: context.principal,
-      clientId: params.clientId,
+      clientId,
       body,
       request
     });

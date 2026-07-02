@@ -39,7 +39,7 @@ Only work that closes a known finding or a release gate belongs here. Feature ex
 | P24-21 Route manifest contract test | Done | `tests/server/route-manifest-contract.test.ts` |
 | P24-22 DB-backed E2E entrypoint | In progress | `test:e2e:db` added; requires real PostgreSQL seed |
 | P24-23 Secret scan | Done | `security:secrets` script added |
-| P24-24 Dependency audit remediation | Open | Needs controlled Next/Prisma upgrade pass |
+| P24-24 Dependency audit remediation | Done | Next 15/Vitest 4 upgrade plus focused npm overrides; `security:audit` and `security:audit:all` pass |
 | P24-25 VPS production smoke | Open | Needs staging/VPS execution |
 
 ## Release Gates
@@ -52,12 +52,10 @@ PLAN-23 can close only after:
 - `npm run qa:local`
 - `npm run qa:db`
 - `npm run qa:release`
-- dependency audit findings are resolved or accepted with documented risk
 - VPS smoke passes behind Nginx/TLS/systemd
 
 PLAN-24 can close only after:
 - all `Partial` and `Open` rows above are done
-- `docs/SECURITY_AUDIT_FINDINGS.md` reflects the final dependency audit state
 - `docs/RELEASE_QA_CHECKLIST.md` contains the final VPS evidence
 
 ## Commands
@@ -67,6 +65,7 @@ npm run qa:db
 npm run qa:release
 npm run security:secrets
 npm run security:audit
+npm run security:audit:all
 ```
 
 ## Production Notes

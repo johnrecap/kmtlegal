@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { metadataForPublicPath, publicLawyerStaticParams, publicServiceStaticParams, renderPublicPath } from "@/features/public-site/public-pages";
 
 type ArabicPublicPageProps = {
-  params: { path?: string[] };
+  params: Promise<{ path?: string[] }>;
 };
 
 export const revalidate = 900;
@@ -28,10 +28,12 @@ export function generateStaticParams() {
   ];
 }
 
-export function generateMetadata({ params }: ArabicPublicPageProps): Promise<Metadata> {
-  return metadataForPublicPath("ar", params.path ?? []);
+export async function generateMetadata({ params }: ArabicPublicPageProps): Promise<Metadata> {
+  const { path } = await params;
+  return metadataForPublicPath("ar", path ?? []);
 }
 
-export default function ArabicPublicPage({ params }: ArabicPublicPageProps) {
-  return renderPublicPath("ar", params.path ?? []);
+export default async function ArabicPublicPage({ params }: ArabicPublicPageProps) {
+  const { path } = await params;
+  return renderPublicPath("ar", path ?? []);
 }

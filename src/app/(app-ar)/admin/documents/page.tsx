@@ -168,7 +168,7 @@ function DocumentCard({ document, options }: { document: DocumentRow; options: D
   );
 }
 
-export default async function AdminDocumentsPage({ searchParams = {} }: { searchParams?: SearchParams }) {
+export default async function AdminDocumentsPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminPage("/admin/documents");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
@@ -183,7 +183,7 @@ export default async function AdminDocumentsPage({ searchParams = {} }: { search
     );
   }
 
-  const query = flattenSearchParams(searchParams);
+  const query = flattenSearchParams((await searchParams) ?? {});
   const [result, options] = await Promise.all([
     listAdminDocuments({ actor: guard.context.principal, query }),
     getAdminDocumentOptions(guard.context.principal)

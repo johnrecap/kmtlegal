@@ -8,11 +8,12 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  params: {
+  params: Promise<{
     caseId: string;
-  };
+  }>;
 };
 
-export default function PortalCaseDetailPage({ params }: PageProps) {
-  redirect(`/client/cases/${params.caseId}`);
+export default async function PortalCaseDetailPage({ params }: PageProps) {
+  const { caseId } = await params;
+  redirect(`/client/cases/${caseId}`);
 }

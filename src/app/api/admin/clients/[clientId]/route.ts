@@ -7,13 +7,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type ClientRouteProps = {
-  params: {
+  params: Promise<{
     clientId: string;
-  };
+  }>;
 };
 
 export async function GET(request: Request, { params }: ClientRouteProps) {
   const requestId = getRequestId(request);
+  const { clientId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -23,7 +24,7 @@ export async function GET(request: Request, { params }: ClientRouteProps) {
 
     const client = await getAdminClientDetail({
       actor: context.principal,
-      clientId: params.clientId
+      clientId
     });
 
     return NextResponse.json({ data: client, requestId }, { headers: { "Cache-Control": "no-store" } });
@@ -34,6 +35,7 @@ export async function GET(request: Request, { params }: ClientRouteProps) {
 
 export async function PATCH(request: Request, { params }: ClientRouteProps) {
   const requestId = getRequestId(request);
+  const { clientId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -44,7 +46,7 @@ export async function PATCH(request: Request, { params }: ClientRouteProps) {
     const body = await parseJsonRequest(request, adminClientWriteSchema, "Client payload is invalid.");
     const client = await updateAdminClient({
       actor: context.principal,
-      clientId: params.clientId,
+      clientId,
       body,
       request
     });

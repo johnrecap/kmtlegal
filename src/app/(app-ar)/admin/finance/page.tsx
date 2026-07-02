@@ -222,7 +222,7 @@ function PaymentMobileCard({ row, query }: { row: PaymentRow; query: Record<stri
   );
 }
 
-export default async function AdminFinancePage({ searchParams = {} }: { searchParams?: SearchParams }) {
+export default async function AdminFinancePage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminPage("/admin/finance");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
@@ -232,7 +232,7 @@ export default async function AdminFinancePage({ searchParams = {} }: { searchPa
     return <PermissionBlocked title="غير مسموح بقراءة الفواتير" description="هذا المسار يحتاج صلاحية finance.read.any أو finance.manage.any." />;
   }
 
-  const query = flattenSearchParams(searchParams);
+  const query = flattenSearchParams((await searchParams) ?? {});
   const [result, options] = await Promise.all([
     listAdminPayments({ actor: guard.context.principal, query }),
     getAdminFinanceOptions(guard.context.principal)

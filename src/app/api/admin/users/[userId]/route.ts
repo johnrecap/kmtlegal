@@ -7,13 +7,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type UserRouteProps = {
-  params: {
+  params: Promise<{
     userId: string;
-  };
+  }>;
 };
 
 export async function GET(request: Request, { params }: UserRouteProps) {
   const requestId = getRequestId(request);
+  const { userId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -21,7 +22,7 @@ export async function GET(request: Request, { params }: UserRouteProps) {
       return jsonError(401, "UNAUTHENTICATED", "Authentication required.", requestId);
     }
 
-    const user = await getAdminUserDetail({ actor: context.principal, userId: params.userId });
+    const user = await getAdminUserDetail({ actor: context.principal, userId });
     return NextResponse.json({ data: user, requestId }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return errorToResponse(error, requestId);
@@ -30,6 +31,7 @@ export async function GET(request: Request, { params }: UserRouteProps) {
 
 export async function PATCH(request: Request, { params }: UserRouteProps) {
   const requestId = getRequestId(request);
+  const { userId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -38,7 +40,7 @@ export async function PATCH(request: Request, { params }: UserRouteProps) {
     }
 
     const body = await parseJsonRequest(request, adminUserUpdateSchema, "User payload is invalid.");
-    const user = await updateAdminUser({ actor: context.principal, userId: params.userId, body, request });
+    const user = await updateAdminUser({ actor: context.principal, userId, body, request });
 
     return NextResponse.json({ data: user, requestId }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {

@@ -7,13 +7,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type TaskRouteProps = {
-  params: {
+  params: Promise<{
     taskId: string;
-  };
+  }>;
 };
 
 export async function PATCH(request: Request, { params }: TaskRouteProps) {
   const requestId = getRequestId(request);
+  const { taskId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -24,7 +25,7 @@ export async function PATCH(request: Request, { params }: TaskRouteProps) {
     const body = await parseJsonRequest(request, adminTaskWriteSchema, "Task payload is invalid.");
     const task = await updateAdminTask({
       actor: context.principal,
-      taskId: params.taskId,
+      taskId,
       body,
       request
     });

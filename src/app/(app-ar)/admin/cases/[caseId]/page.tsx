@@ -39,12 +39,12 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  params: {
+  params: Promise<{
     caseId: string;
-  };
-  searchParams?: {
+  }>;
+  searchParams?: Promise<{
     tab?: string | string[];
-  };
+  }>;
 };
 
 type CaseDetail = Awaited<ReturnType<typeof getAdminCaseDetail>>;
@@ -431,7 +431,9 @@ function DocumentsTab({ data, documentOptions }: { data: CaseTaskDocumentTabs; d
 }
 
 export default async function AdminCaseDetailPage({ params, searchParams }: PageProps) {
-  const guard = await requireAdminPage(`/admin/cases/${params.caseId}`);
+  const { caseId } = await params;
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const guard = await requireAdminPage(`/admin/cases/${caseId}`);
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }
@@ -440,7 +442,7 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
   try {
     legalCase = await getAdminCaseDetail({
       actor: guard.context.principal,
-      caseId: params.caseId
+      caseId
     });
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) {
@@ -449,7 +451,7 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
     throw error;
   }
 
-  const tab = activeTab(searchParams?.tab);
+  const tab = activeTab(resolvedSearchParams.tab);
   let taskDocumentData: CaseTaskDocumentTabs | null = null;
   let documentOptions: DocumentOptions | null = null;
 
@@ -457,11 +459,11 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
     try {
       if (tab === "documents") {
         [taskDocumentData, documentOptions] = await Promise.all([
-          getCaseTaskDocumentTabs({ actor: guard.context.principal, caseId: params.caseId }),
+          getCaseTaskDocumentTabs({ actor: guard.context.principal, caseId }),
           getAdminDocumentOptions(guard.context.principal)
         ]);
       } else {
-        taskDocumentData = await getCaseTaskDocumentTabs({ actor: guard.context.principal, caseId: params.caseId });
+        taskDocumentData = await getCaseTaskDocumentTabs({ actor: guard.context.principal, caseId });
       }
     } catch (error) {
       if (error instanceof ApiError && error.status === 403) {

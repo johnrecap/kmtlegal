@@ -7,13 +7,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type AdminMessageRouteProps = {
-  params: {
+  params: Promise<{
     threadId: string;
-  };
+  }>;
 };
 
 export async function POST(request: Request, { params }: AdminMessageRouteProps) {
   const requestId = getRequestId(request);
+  const { threadId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -24,7 +25,7 @@ export async function POST(request: Request, { params }: AdminMessageRouteProps)
     const body = await parseJsonRequest(request, conversationMessageCreateSchema, "Conversation message payload is invalid.");
     const result = await replyAdminConversation({
       actor: context.principal,
-      threadId: params.threadId,
+      threadId,
       body,
       request,
       requestId

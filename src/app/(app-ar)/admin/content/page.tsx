@@ -284,7 +284,7 @@ function socialDraftFormValue(draft: Awaited<ReturnType<typeof getAdminSocialDra
   };
 }
 
-export default async function AdminContentPage({ searchParams = {} }: { searchParams?: SearchParams }) {
+export default async function AdminContentPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminPage("/admin/content");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
@@ -294,7 +294,7 @@ export default async function AdminContentPage({ searchParams = {} }: { searchPa
     return <PermissionBlocked title="غير مسموح بإدارة المحتوى" description="هذا المسار يحتاج صلاحيات content أو caseStudy أو socialDraft." />;
   }
 
-  const query = flattenSearchParams(searchParams);
+  const query = flattenSearchParams((await searchParams) ?? {});
   const result = await getAdminContentHub({ actor: guard.context.principal, query });
   const activeTab = result.tab as ContentTab;
   const rows = rowsFor(result, query);

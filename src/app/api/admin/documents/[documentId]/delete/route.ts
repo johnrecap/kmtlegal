@@ -7,13 +7,14 @@ import { parseJsonRequest } from "@/server/validation/schemas";
 export const dynamic = "force-dynamic";
 
 type DocumentActionRouteProps = {
-  params: {
+  params: Promise<{
     documentId: string;
-  };
+  }>;
 };
 
 export async function POST(request: Request, { params }: DocumentActionRouteProps) {
   const requestId = getRequestId(request);
+  const { documentId } = await params;
 
   try {
     const context = await getAuthContextFromRequest(request);
@@ -24,7 +25,7 @@ export async function POST(request: Request, { params }: DocumentActionRouteProp
     const body = await parseJsonRequest(request, adminDocumentDeleteSchema, "Document delete payload is invalid.");
     const document = await deleteAdminDocument({
       actor: context.principal,
-      documentId: params.documentId,
+      documentId,
       body,
       request
     });
