@@ -194,7 +194,7 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
     <PublicShell currentPath={currentPath} locale={locale} navItems={navForPath("/", locale)}>
       <PageHero
         eyebrow={copy.heroEyebrow}
-        image="/stitch-assets/b8b47a1dd8d5ce08.png"
+        image="/stitch-assets/6764cfecee488659.png"
         title={copy.heroTitle}
         description={copy.heroDescription}
         actions={

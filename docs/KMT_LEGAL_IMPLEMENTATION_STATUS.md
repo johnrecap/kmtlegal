@@ -56,6 +56,7 @@ Total plans: 33
 ## Latest Public UI And Booking UX Follow-Up
 
 - Fixed public hero imagery on the first public pages by serving Stitch hero assets directly from `/stitch-assets`, lightening the hero overlay so the photography remains visible, adding explicit `/stitch-assets` cache handling, and covering the first English/Arabic hero images in Playwright.
+- Separated the homepage hero photograph from the services hero so the first public navigation pages do not repeat the same hero image.
 - Removed the duplicate homepage final CTA by keeping only the global public-shell footer CTA.
 - Localized Arabic homepage section eyebrows that were still showing English labels.
 - Reduced booking chat clutter: trust instructions still disappear after language choice, quick actions now disappear after a selected path or after the second free-text message, and the Suspense fallback no longer renders a duplicate chat instance during load.

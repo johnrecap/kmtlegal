@@ -44,6 +44,8 @@ const publicHeroImagePages = [
   { path: "/ar/articles", name: "articles-ar" }
 ];
 
+const primaryEnglishHeroImagePages = publicHeroImagePages.filter((page) => !page.path.startsWith("/ar"));
+
 async function stubAnalytics(page: import("@playwright/test").Page) {
   await page.route("**/api/analytics/events", async (route) => {
     await route.fulfill({
@@ -65,6 +67,7 @@ async function expectNoHorizontalOverflow(page: import("@playwright/test").Page,
 test.describe("PLAN-28 public luxury visual smoke", () => {
   test("first public hero images load from direct public asset URLs", async ({ page }) => {
     await stubAnalytics(page);
+    const primaryEnglishHeroSrcs = new Set<string>();
 
     for (const pageTarget of publicHeroImagePages) {
       const response = await page.goto(pageTarget.path, { waitUntil: "load" });
@@ -75,6 +78,9 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
 
       const src = await heroImage.getAttribute("src");
       expect(src, `${pageTarget.name} hero image should use a direct public asset URL`).toMatch(/^\/stitch-assets\/.+\.png$/);
+      if (primaryEnglishHeroImagePages.some((primaryPage) => primaryPage.path === pageTarget.path) && src) {
+        primaryEnglishHeroSrcs.add(src);
+      }
 
       await expect
         .poll(
@@ -87,6 +93,8 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
         )
         .toBe(true);
     }
+
+    expect(primaryEnglishHeroSrcs.size, "the first English public pages should not repeat the same hero photograph").toBe(primaryEnglishHeroImagePages.length);
   });
 
   for (const viewport of publicVisualViewports) {
