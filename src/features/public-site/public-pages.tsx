@@ -5,7 +5,6 @@ import { Suspense } from "react";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
 import { canonicalPublicServiceSlug, findPublicService, getPublicContent, navForPath } from "@/content/public-content";
-import { ConsultationBookingChat } from "@/features/public-site/consultation-booking-chat";
 import { ConsultationBookingChatFromQuery, RequestedLawyerQueryNotice } from "@/features/public-site/booking-query-client";
 import { ContactForm } from "@/features/public-site/contact-form";
 import { DirectoryFilter } from "@/features/public-site/directory-filter";
@@ -22,7 +21,6 @@ import {
 } from "@/features/public-site/public-motion";
 import {
   DetailCta,
-  FinalCtaBand,
   IndustryGrid,
   LuxuryFeaturePanel,
   PageHero,
@@ -296,7 +294,6 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
         </PublicSection>
       ) : null}
 
-      <FinalCtaBand locale={locale} title={copy.finalCtaTitle} description={copy.finalCtaDescription} />
     </PublicShell>
   );
 }
@@ -629,7 +626,7 @@ export function BookConsultationPageView({ locale }: { locale: PublicLocale }) {
       <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/b8b47a1dd8d5ce08.png" size="compact" title={chatCopy.heroTitle} description={chatCopy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={chatCopy.sectionTitle} description={chatCopy.sectionDescription}>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <Suspense fallback={<ConsultationBookingChat locale={locale} />}>
+          <Suspense fallback={<div aria-hidden="true" className={cn(publicPanel, "min-h-[36rem] rounded-[1.75rem] border-kmt-gold/35 bg-black/30")} />}>
             <ConsultationBookingChatFromQuery locale={locale} />
           </Suspense>
           <aside className="space-y-4 lg:pt-2">

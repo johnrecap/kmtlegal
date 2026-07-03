@@ -7,6 +7,7 @@ import { PublicShell } from "@/components/layout";
 import { ButtonLink } from "@/components/ui";
 import { getPublicContent, navForPath } from "@/content/public-content";
 import { DetailCta, PageHero, PublicSection, TrustStrip } from "@/features/public-site/public-components";
+import { HomePageView } from "@/features/public-site/public-pages";
 
 describe("public website UI", () => {
   it("renders public shell navigation with English default labels and active page", () => {
@@ -53,6 +54,22 @@ describe("public website UI", () => {
     expect(html).toContain("English");
     expect(html).toContain("دخول العميل");
     expect(html).toContain("href=\"/login?next=/client\"");
+  });
+
+  it("keeps the Arabic homepage CTA and section eyebrows clean", async () => {
+    const content = getPublicContent("ar");
+    const html = renderToStaticMarkup(await HomePageView({ locale: "ar" }));
+    const publicPageSource = readFileSync(join(process.cwd(), "src/features/public-site/public-pages.tsx"), "utf8");
+
+    expect(content.home.focusEyebrow).toBe("مجال التركيز");
+    expect(content.home.approachEyebrow).toBe("منهج العمل");
+    expect(content.home.representativeEyebrow).toBe("نماذج تمثيلية");
+    expect(content.home.industriesEyebrow).toBe("القطاعات");
+    expect(content.home.teamEyebrow).toBe("الفريق");
+    expect(content.home.insightsEyebrow).toBe("رؤى قانونية");
+    expect(html).toContain("هل تحتاج إلى دعم قانوني واضح؟");
+    expect(html).not.toContain("هل تحتاج إلى دعم قانوني لعملك؟");
+    expect(publicPageSource).not.toContain("<FinalCtaBand");
   });
 
   it("renders cinematic hero and trust strip without relying on cards inside hero", () => {

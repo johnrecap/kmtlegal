@@ -150,8 +150,10 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   const [readyToConfirm, setReadyToConfirm] = useState(false);
   const [readyToCheckout, setReadyToCheckout] = useState(false);
   const [paymentReview, setPaymentReview] = useState<PaymentReview | null>(null);
+  const [freeTextTurnsAfterLanguage, setFreeTextTurnsAfterLanguage] = useState(0);
+  const [quickActionsDismissed, setQuickActionsDismissed] = useState(false);
   const showTrustRail = !chatLocale;
-  const showQuickActions = Boolean(chatLocale) && !flow && !availableSlots.length && !readyToConfirm && !readyToCheckout;
+  const showQuickActions = Boolean(chatLocale) && !quickActionsDismissed && !flow && !availableSlots.length && !readyToConfirm && !readyToCheckout;
 
   useEffect(() => {
     setIsHydrated(true);
@@ -182,6 +184,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     setReadyToCheckout(false);
     setPaymentReview(null);
     setSelectedSlot("");
+    setFreeTextTurnsAfterLanguage(0);
+    setQuickActionsDismissed(false);
     setMessages((current) => [
       ...current,
       { id: `user-language-${nextLocale}`, role: "user", text: nextLocale === "ar" ? nextCopy.languageArabic : nextCopy.languageEnglish },
@@ -191,16 +195,19 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
   function startBooking() {
     if (!chatLocale) return;
+    setQuickActionsDismissed(true);
     void sendBookingMessage(copy.book, { userText: copy.book, flow: "booking" });
   }
 
   function startBookingWithCategory(label: string, category: string) {
     if (!chatLocale) return;
+    setQuickActionsDismissed(true);
     void sendBookingMessage(label, { userText: label, flow: "booking", draftPatch: { serviceCategory: category } });
   }
 
   function startInquiry() {
     if (!chatLocale) return;
+    setQuickActionsDismissed(true);
     setFlow("inquiry");
     setAvailableSlots([]);
     setSlotWindow(null);
@@ -217,6 +224,11 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     if (!text || isBusy) return;
     if (!chatLocale) return;
     setFreeMessage("");
+    const nextFreeTextTurns = freeTextTurnsAfterLanguage + 1;
+    setFreeTextTurnsAfterLanguage(nextFreeTextTurns);
+    if (nextFreeTextTurns >= 2) {
+      setQuickActionsDismissed(true);
+    }
 
     if (looksLikeLegalAdvice(text)) {
       append("user", text);
@@ -341,6 +353,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         setReadyToConfirm(false);
         setReadyToCheckout(false);
         setPaymentReview(null);
+        setQuickActionsDismissed(true);
         setDraft({ ...initialDraft, serviceCategory: initialServiceCategory });
       }
     } catch {
@@ -669,11 +682,8 @@ function PaymentReviewPanel({
   onBack: () => void;
   onPay: () => void;
 }) {
-  const amount = new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-US", {
-    style: "currency",
-    currency: paymentReview.currency,
-    maximumFractionDigits: 2
-  }).format(Number(paymentReview.amount));
+  const amount = formatPublicMoney(paymentReview.amount, paymentReview.currency, locale);
+  const serviceCategory = formatServiceCategory(draft.serviceCategory || paymentReview.serviceCategory, locale);
 
   return (
     <div className="ms-auto max-w-[42rem] rounded-3xl border border-kmt-gold/35 bg-black/30 p-4 shadow-[0_18px_58px_-42px_rgba(183,134,64,0.95)]" data-testid="booking-payment-review">
@@ -687,8 +697,8 @@ function PaymentReviewPanel({
         </div>
       </div>
       <dl className="grid gap-3 text-sm text-amber-50/85 sm:grid-cols-2">
-        <PaymentReviewItem icon="category" label={copy.detailsTitle} value={draft.serviceCategory || paymentReview.serviceCategory} />
-        <PaymentReviewItem icon="video_chat" label={copy.preferredSlot} value={`${modeLabel(paymentReview.mode, locale)} · ${formatPublicDate(selectedSlot, locale)}`} />
+        <PaymentReviewItem icon="category" label={copy.detailsTitle} value={serviceCategory} />
+        <PaymentReviewItem icon="video_chat" label={copy.preferredSlot} value={`${modeLabel(paymentReview.mode, locale)} - ${formatPublicDate(selectedSlot, locale)}`} />
         <PaymentReviewItem className="sm:col-span-2" icon="receipt_long" label={copy.bookingFee} value={amount} />
       </dl>
       <div className="mt-4 flex flex-wrap justify-end gap-2">
@@ -712,7 +722,9 @@ function PaymentReviewItem({ icon, label, value, className }: { icon: string; la
         <MaterialSymbol className="text-base text-kmt-gold" name={icon} />
         {label}
       </dt>
-      <dd className="mt-2 break-words text-base font-semibold leading-7 text-white">{value}</dd>
+      <dd className="mt-2 break-words text-base font-semibold leading-7 text-white">
+        <bdi dir="auto">{value}</bdi>
+      </dd>
     </div>
   );
 }
@@ -789,35 +801,68 @@ function normalizeText(value: string) {
 }
 
 function formatPublicDate(value: string, locale: PublicLocale) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
   return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "Africa/Cairo"
-  }).format(new Date(value));
+  }).format(date);
 }
 
 function formatPublicDay(value: string, locale: PublicLocale) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
   return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", {
     weekday: "long",
     month: "short",
     day: "numeric",
     timeZone: "Africa/Cairo"
-  }).format(new Date(value));
+  }).format(date);
 }
 
 function formatPublicTime(value: string, locale: PublicLocale) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
   return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", {
     timeStyle: "short",
     timeZone: "Africa/Cairo"
-  }).format(new Date(value));
+  }).format(date);
 }
 
 function modeLabel(value: BookingDraft["preferredMode"], locale: PublicLocale) {
-  const labels = {
-    ar: { PHONE: "هاتف", ONLINE: "أونلاين", OFFICE: "في المكتب" },
-    en: { PHONE: "Phone", ONLINE: "Online", OFFICE: "Office" }
-  };
-  return labels[locale][value] ?? value;
+  const labels = getPublicContent(locale).bookingForm.preferredModeLabels as Record<string, string>;
+  return labels[value] ?? value;
+}
+
+function formatServiceCategory(value: string, locale: PublicLocale) {
+  if (!value) return "";
+  const content = getPublicContent(locale);
+  const bookingCategories = content.bookingForm.categories as Record<string, string>;
+  const serviceCategories = content.serviceCategories as Record<string, string>;
+  const service = findPublicService(locale, value);
+  return bookingCategories[value] ?? serviceCategories[value] ?? service?.title ?? value;
+}
+
+function formatPublicMoney(amount: string, currency: string, locale: PublicLocale) {
+  const numericAmount = Number(amount);
+  if (!Number.isFinite(numericAmount) || !currency) {
+    return [amount, currency].filter(Boolean).join(" ");
+  }
+
+  try {
+    return new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-US", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 2
+    }).format(numericAmount);
+  } catch {
+    return `${amount} ${currency}`.trim();
+  }
 }
 
 function groupSlotsByDay(slots: PublicSlot[], locale: PublicLocale) {
