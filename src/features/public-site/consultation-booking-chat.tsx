@@ -150,6 +150,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   const [readyToConfirm, setReadyToConfirm] = useState(false);
   const [readyToCheckout, setReadyToCheckout] = useState(false);
   const [paymentReview, setPaymentReview] = useState<PaymentReview | null>(null);
+  const showTrustRail = !chatLocale;
+  const showQuickActions = Boolean(chatLocale) && !flow && !availableSlots.length && !readyToConfirm && !readyToCheckout;
 
   useEffect(() => {
     setIsHydrated(true);
@@ -451,13 +453,15 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
             </div>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-1.5 text-amber-50">
-            <TrustRailItem icon="person_check" label={copy.humanReviewOnly} />
-            <TrustRailItem icon="shield" label={copy.noLegalAdvice} />
-            <TrustRailItem icon="lock" label={copy.secureConfidential} />
-            <TrustRailItem icon="supervisor_account" label={copy.humanReviewBadge} />
-            <TrustRailItem icon="bolt" label={copy.fastResponse} />
-          </div>
+          {showTrustRail ? (
+            <div className="mt-5 flex flex-wrap items-center gap-1.5 text-amber-50" data-testid="booking-trust-rail">
+              <TrustRailItem icon="person_check" label={copy.humanReviewOnly} />
+              <TrustRailItem icon="shield" label={copy.noLegalAdvice} />
+              <TrustRailItem icon="lock" label={copy.secureConfidential} />
+              <TrustRailItem icon="supervisor_account" label={copy.humanReviewBadge} />
+              <TrustRailItem icon="bolt" label={copy.fastResponse} />
+            </div>
+          ) : null}
         </header>
 
         <div
@@ -500,22 +504,24 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         </div>
 
         <div className="shrink-0 px-5 pb-5 sm:px-8 sm:pb-8">
-          <div className="mb-5 flex flex-wrap gap-3">
-            <Button className={chipButtonClasses} data-testid="booking-quick-book" disabled={!chatLocale || isBusy} size="sm" type="button" variant="secondary" onClick={startBooking}>
-              <MaterialSymbol className="text-xl" name="event_available" />
-              {copy.book}
-            </Button>
-            <Button className={chipButtonClasses} data-testid="booking-quick-inquiry" disabled={!chatLocale || isBusy} size="sm" type="button" variant="secondary" onClick={startInquiry}>
-              <MaterialSymbol className="text-xl" name="search" />
-              {copy.inquire}
-            </Button>
-            {content.legalServices.map((service) => (
-              <Button key={service.slug} className={chipButtonClasses} disabled={!chatLocale || isBusy} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(service.title, service.category)}>
-                <MaterialSymbol className="text-xl" name={service.icon} />
-                {service.title}
+          {showQuickActions ? (
+            <div className="mb-5 flex flex-wrap gap-3" data-testid="booking-quick-actions">
+              <Button className={chipButtonClasses} data-testid="booking-quick-book" disabled={isBusy} size="sm" type="button" variant="secondary" onClick={startBooking}>
+                <MaterialSymbol className="text-xl" name="event_available" />
+                {copy.book}
               </Button>
-            ))}
-          </div>
+              <Button className={chipButtonClasses} data-testid="booking-quick-inquiry" disabled={isBusy} size="sm" type="button" variant="secondary" onClick={startInquiry}>
+                <MaterialSymbol className="text-xl" name="search" />
+                {copy.inquire}
+              </Button>
+              {content.legalServices.map((service) => (
+                <Button key={service.slug} className={chipButtonClasses} disabled={isBusy} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(service.title, service.category)}>
+                  <MaterialSymbol className="text-xl" name={service.icon} />
+                  {service.title}
+                </Button>
+              ))}
+            </div>
+          ) : null}
 
           <form className="flex min-w-0 items-end gap-3" data-testid="booking-chat-composer" noValidate onSubmit={submitMessage}>
             <div className="min-w-0 flex-1 [&_label]:sr-only">
