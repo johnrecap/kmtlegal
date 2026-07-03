@@ -326,7 +326,7 @@ if ($request_uri ~* "^/_next/static/") {
   set $kmt_cache_control "public, max-age=31536000, immutable";
 }
 
-if ($request_uri ~* "^/(brand|site-assets)/") {
+if ($request_uri ~* "^/(brand|site-assets|stitch-assets)/") {
   set $kmt_cache_control "public, max-age=31536000, immutable";
 }
 

@@ -33,6 +33,17 @@ const publicCrawlSeedPages = [
   "/ar/book-consultation"
 ];
 
+const publicHeroImagePages = [
+  { path: "/", name: "home" },
+  { path: "/services", name: "services" },
+  { path: "/team", name: "team" },
+  { path: "/articles", name: "articles" },
+  { path: "/ar", name: "home-ar" },
+  { path: "/ar/services", name: "services-ar" },
+  { path: "/ar/team", name: "team-ar" },
+  { path: "/ar/articles", name: "articles-ar" }
+];
+
 async function stubAnalytics(page: import("@playwright/test").Page) {
   await page.route("**/api/analytics/events", async (route) => {
     await route.fulfill({
@@ -52,6 +63,32 @@ async function expectNoHorizontalOverflow(page: import("@playwright/test").Page,
 }
 
 test.describe("PLAN-28 public luxury visual smoke", () => {
+  test("first public hero images load from direct public asset URLs", async ({ page }) => {
+    await stubAnalytics(page);
+
+    for (const pageTarget of publicHeroImagePages) {
+      const response = await page.goto(pageTarget.path, { waitUntil: "load" });
+      expect(response?.status(), `${pageTarget.path} should render before checking the hero image`).toBeLessThan(400);
+
+      const heroImage = page.getByTestId("public-page-hero-image").first();
+      await expect(heroImage, `${pageTarget.name} hero image should be visible`).toBeVisible();
+
+      const src = await heroImage.getAttribute("src");
+      expect(src, `${pageTarget.name} hero image should use a direct public asset URL`).toMatch(/^\/stitch-assets\/.+\.png$/);
+
+      await expect
+        .poll(
+          () =>
+            heroImage.evaluate((node) => {
+              const image = node as HTMLImageElement;
+              return image.complete && image.naturalWidth > 0 && image.naturalHeight > 0 && image.currentSrc.includes("/stitch-assets/");
+            }),
+          { message: `${pageTarget.name} hero image should finish loading` }
+        )
+        .toBe(true);
+    }
+  });
+
   for (const viewport of publicVisualViewports) {
     for (const pageTarget of publicVisualPages) {
       test(`${pageTarget.name} captures ${viewport.name} evidence without horizontal overflow`, async ({ page }, testInfo) => {

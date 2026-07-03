@@ -83,18 +83,18 @@ export function PageHero({
   size?: "full" | "compact";
 }) {
   const isCompact = size === "compact";
-  const imageOpacity = isCompact ? "opacity-60" : "opacity-50";
-  const overlay = isCompact ? "from-kmt-navy/85 via-kmt-navy/40 to-[#07090b]/30" : "from-[#050607]/95 via-kmt-navy/60 to-[#07090b]/25";
+  const imageOpacity = isCompact ? "opacity-75" : "opacity-80";
+  const overlay = isCompact ? "from-kmt-navy/80 via-kmt-navy/35 to-[#07090b]/10" : "from-[#050607]/88 via-kmt-navy/42 to-[#07090b]/10";
 
   return (
     <section className={cn("relative isolate overflow-hidden bg-kmt-navy text-white", isCompact ? "min-h-[340px]" : "min-h-[560px]")}>
-      <Image
+      <img
         alt=""
         aria-hidden="true"
         className={cn("kmt-motion-hero-image absolute inset-0 h-full w-full object-cover", imageOpacity)}
-        fill
-        priority={!isCompact}
-        sizes="100vw"
+        data-testid="public-page-hero-image"
+        decoding="async"
+        loading={isCompact ? "lazy" : "eager"}
         src={image}
       />
       <div className={cn("absolute inset-0 bg-gradient-to-l", overlay)} />
@@ -244,7 +244,7 @@ export function LuxuryFeaturePanel({
   return (
     <div className={cn(publicPanel, publicMotionCardBeam, "grid overflow-hidden lg:grid-cols-[0.8fr_1.2fr]")}>
       <div className={cn("relative h-full min-h-[320px] overflow-hidden", publicMotionImageCard)}>
-        <Image alt="" className={cn("object-cover opacity-80", publicMotionImage)} fill sizes="(min-width: 1024px) 40vw, 100vw" src={image} />
+        <Image alt="" className={cn("object-cover opacity-80", publicMotionImage)} fill sizes="(min-width: 1024px) 40vw, 100vw" src={image} unoptimized />
       </div>
       <div className="p-6 lg:p-8">
         <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p>

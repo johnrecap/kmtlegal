@@ -90,8 +90,12 @@ describe("public website UI", () => {
     expect(html).toContain("Structured Legal Consultations");
     expect(html).toContain("Human review");
     expect(html).toContain("object-cover");
-    expect(html).toContain("opacity-50");
-    expect(html).toContain("via-kmt-navy/60");
+    expect(html).toContain("data-testid=\"public-page-hero-image\"");
+    expect(html).toContain("loading=\"eager\"");
+    expect(html).toContain("src=\"/image.png\"");
+    expect(html).not.toContain("/_next/image");
+    expect(html).toContain("opacity-80");
+    expect(html).toContain("via-kmt-navy/42");
     expect(html).toContain("bg-[#090d11]");
     expect(html).not.toContain("kmt-motion-thread");
     expect(html).toContain("kmt-motion-icon-halo");
@@ -109,8 +113,9 @@ describe("public website UI", () => {
     );
 
     expect(html).toContain("min-h-[340px]");
-    expect(html).toContain("opacity-60");
-    expect(html).toContain("via-kmt-navy/40");
+    expect(html).toContain("loading=\"lazy\"");
+    expect(html).toContain("opacity-75");
+    expect(html).toContain("via-kmt-navy/35");
     expect(html).toContain("Filterable Legal Services");
     expect(html).not.toContain("secondary-container");
   });
