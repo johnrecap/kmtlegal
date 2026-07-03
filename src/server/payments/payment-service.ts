@@ -8,14 +8,25 @@ import { ApiError } from "@/server/http/errors";
 import { toPagination } from "@/server/http/pagination";
 import { captureAnalyticsEventBestEffort } from "@/server/observability/analytics-service";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
-import { createHostedCheckout, verifyWebhookSignature } from "./payment-provider";
 import {
-  paymentProvider,
+  createHostedCheckout,
+  mapProviderPaymentStatus,
+  normalizeProviderWebhookPayload,
+  providerWebhookEventId,
+  verifyWebhookSignature,
+  webhookSignature,
+  type NormalizedWebhookPayload
+} from "./payment-provider";
+import {
   paymentReservationMinutes,
   paymentWebhookSecret,
   requireVerifiedWebhookSignature
 } from "./payment-config";
+import { getActivePaymentGateway } from "./payment-settings-service";
+import type { PaymentProviderName } from "./payment-config";
 import type { ConsultationPriceSnapshot } from "./pricing-service";
+
+export { mapProviderPaymentStatus } from "./payment-provider";
 
 const paymentAttemptStatusSchema = z.enum(["CREATED", "PENDING", "PAID", "FAILED", "EXPIRED", "REFUNDED", "DISPUTED", "CANCELLED"]);
 const webhookProcessingStatusSchema = z.enum(["PENDING", "PROCESSED", "FAILED", "IGNORED"]);
@@ -34,15 +45,6 @@ export const adminPaymentWebhookListQuerySchema = z.object({
 });
 
 type PaymentClient = Prisma.TransactionClient;
-type NormalizedWebhookPayload = {
-  provider: string;
-  attemptId: string;
-  providerTransactionId: string | null;
-  rawStatus: string;
-  status: ReturnType<typeof mapProviderPaymentStatus>;
-  amount: string;
-  currency: string;
-};
 
 export type CreateConsultationPaymentAttemptInput = {
   tx: PaymentClient;
@@ -109,8 +111,10 @@ export async function expireOpenConsultationPaymentAttempts(now = new Date()) {
 }
 
 export async function createConsultationPaymentAttempt(input: CreateConsultationPaymentAttemptInput) {
+  const activeProvider = await getActivePaymentGateway({ client: input.tx });
   const expiresAt = new Date(Date.now() + paymentReservationMinutes() * 60_000);
   const idempotencyKey = consultationAttemptIdempotencyKey({
+    provider: activeProvider,
     clientId: input.client.id,
     startsAt: input.appointment.startsAt,
     serviceCategory: input.price.serviceCategory,
@@ -136,7 +140,7 @@ export async function createConsultationPaymentAttempt(input: CreateConsultation
     ? existing
     : await input.tx.paymentAttempt.create({
         data: {
-          provider: paymentProvider(),
+          provider: activeProvider,
           status: "CREATED",
           clientId: input.client.id,
           consultationRequestId: input.consultationRequest.id,
@@ -155,6 +159,7 @@ export async function createConsultationPaymentAttempt(input: CreateConsultation
       });
 
   const checkout = await createHostedCheckout({
+    provider: activeProvider,
     attemptId: attempt.id,
     amount: input.price.amountText,
     currency: input.price.currency,
@@ -230,14 +235,14 @@ export async function getPublicPaymentAttemptStatus(input: { attemptId: string }
   return paymentAttemptDto(attempt);
 }
 
-export async function handlePaymentWebhook(input: { request: Request; rawBody: string; requestId: string }) {
+export async function handlePaymentWebhook(input: { request: Request; rawBody: string; requestId: string; provider: PaymentProviderName }) {
   const payloadHash = createHash("sha256").update(input.rawBody).digest("hex");
   const body = parseWebhookJson(input.rawBody);
-  const provider = String(body.provider || paymentProvider()).toLowerCase();
-  const eventId = webhookEventId(body, payloadHash);
-  const secret = paymentWebhookSecret();
-  const signature = webhookSignature(input.request);
-  const signatureVerified = verifyWebhookSignature({ rawBody: input.rawBody, signature, secret });
+  const provider = input.provider;
+  const eventId = providerWebhookEventId(body, provider, payloadHash);
+  const secret = paymentWebhookSecret(provider);
+  const signature = webhookSignature(input.request, provider, body);
+  const signatureVerified = verifyWebhookSignature({ rawBody: input.rawBody, signature, secret, provider, parsedBody: body });
   const signatureStatus = signatureVerified ? "VERIFIED" : secret || requireVerifiedWebhookSignature() ? "INVALID" : "UNVERIFIED";
 
   const existing = await prisma.paymentWebhookEvent.findUnique({
@@ -261,7 +266,7 @@ export async function handlePaymentWebhook(input: { request: Request; rawBody: s
     ]);
   }
 
-  const normalized = normalizeWebhookPayload(body, provider);
+  const normalized = normalizeProviderWebhookPayload(body, provider, payloadHash);
   const event = await upsertWebhookEvent({
     provider,
     eventId,
@@ -339,10 +344,12 @@ export async function replayAdminPaymentWebhookEvent(input: { actor: Principal; 
     return replayed;
   }
 
+  const provider: PaymentProviderName = event.provider === "paymob" ? "paymob" : "paytabs";
+
   return applyWebhookPaymentState({
     eventId: replayed.id,
     payload: normalized,
-    provider: event.provider,
+    provider,
     request: input.request ?? new Request("http://internal.kmt.local/admin/payment-webhook-replay"),
     requestId: input.requestId ?? replayed.id
   });
@@ -424,6 +431,7 @@ export async function listAdminPaymentWebhookEvents(input: { actor: Principal; q
 }
 
 function consultationAttemptIdempotencyKey(input: {
+  provider: string;
   clientId: string;
   startsAt: Date;
   serviceCategory: string;
@@ -433,7 +441,7 @@ function consultationAttemptIdempotencyKey(input: {
   priceVersion: number;
 }) {
   return createHash("sha256")
-    .update([input.clientId, input.startsAt.toISOString(), input.serviceCategory, input.mode, input.amount, input.currency, input.priceVersion].join("|"))
+    .update([input.provider, input.clientId, input.startsAt.toISOString(), input.serviceCategory, input.mode, input.amount, input.currency, input.priceVersion].join("|"))
     .digest("hex");
 }
 
@@ -448,64 +456,6 @@ function parseWebhookJson(rawBody: string) {
     throw new ApiError(400, "VALIDATION_ERROR", "Payment webhook payload is invalid.");
   }
   return parsed as Record<string, unknown>;
-}
-
-function webhookSignature(request: Request) {
-  return (
-    request.headers.get("x-kmt-payment-signature") ||
-    request.headers.get("x-paytabs-signature") ||
-    request.headers.get("signature") ||
-    request.headers.get("Signature")
-  );
-}
-
-function webhookEventId(body: Record<string, unknown>, payloadHash: string) {
-  return String(body.eventId || body.id || body.tran_ref || body.transaction_id || body.cart_id || payloadHash);
-}
-
-function normalizeWebhookPayload(body: Record<string, unknown>, provider: string): NormalizedWebhookPayload {
-  const attemptId = String(body.attemptId || body.cart_id || body.cartId || "");
-  const providerTransactionId = String(body.transactionId || body.tran_ref || body.transaction_id || body.providerTransactionId || "");
-  const rawStatus = String(body.status || body.respStatus || nestedString(body, ["payment_result", "response_status"]) || "");
-  const amount = String(body.amount || body.cart_amount || "");
-  const currency = String(body.currency || body.cart_currency || "EGP");
-
-  if (!attemptId) {
-    throw new ApiError(400, "VALIDATION_ERROR", "Payment webhook attempt id is missing.");
-  }
-
-  return {
-    provider,
-    attemptId,
-    providerTransactionId: providerTransactionId || null,
-    rawStatus,
-    status: mapProviderPaymentStatus(rawStatus),
-    amount,
-    currency
-  };
-}
-
-export function mapProviderPaymentStatus(status: string) {
-  const value = status.trim().toLowerCase();
-  if (["a", "paid", "success", "succeeded", "captured", "approved", "authorized"].includes(value)) {
-    return "PAID" as const;
-  }
-  if (["p", "pending", "created", "processing"].includes(value)) {
-    return "PENDING" as const;
-  }
-  if (["r", "refunded", "refund"].includes(value)) {
-    return "REFUNDED" as const;
-  }
-  if (["d", "disputed", "chargeback"].includes(value)) {
-    return "DISPUTED" as const;
-  }
-  if (["c", "cancelled", "canceled", "void"].includes(value)) {
-    return "CANCELLED" as const;
-  }
-  if (["expired", "timeout", "timed_out"].includes(value)) {
-    return "EXPIRED" as const;
-  }
-  return "FAILED" as const;
 }
 
 async function upsertWebhookEvent(input: {
@@ -543,8 +493,8 @@ async function upsertWebhookEvent(input: {
 
 async function applyWebhookPaymentState(input: {
   eventId: string;
-  provider: string;
-  payload: ReturnType<typeof normalizeWebhookPayload>;
+  provider: PaymentProviderName;
+  payload: NormalizedWebhookPayload;
   request: Request;
   requestId: string;
 }) {
@@ -561,6 +511,10 @@ async function applyWebhookPaymentState(input: {
 
     if (!attempt) {
       throw new ApiError(404, "NOT_FOUND", "Payment attempt was not found.");
+    }
+
+    if (attempt.provider !== input.provider) {
+      throw new ApiError(409, "CONFLICT", "Payment webhook provider does not match the original payment attempt provider.");
     }
 
     const transaction = await upsertPaymentTransaction(tx, {
@@ -831,17 +785,6 @@ function paymentAttemptDto(
   };
 }
 
-function nestedString(body: Record<string, unknown>, path: string[]) {
-  let value: unknown = body;
-  for (const segment of path) {
-    if (!value || typeof value !== "object") {
-      return "";
-    }
-    value = (value as Record<string, unknown>)[segment];
-  }
-  return typeof value === "string" ? value : "";
-}
-
 function parseStoredNormalizedPayload(value: Prisma.JsonValue | null): NormalizedWebhookPayload | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
@@ -855,7 +798,7 @@ function parseStoredNormalizedPayload(value: Prisma.JsonValue | null): Normalize
   }
 
   return {
-    provider: typeof body.provider === "string" ? body.provider : paymentProvider(),
+    provider: typeof body.provider === "string" && ["paytabs", "paymob"].includes(body.provider) ? (body.provider as PaymentProviderName) : "paytabs",
     attemptId,
     providerTransactionId: typeof body.providerTransactionId === "string" ? body.providerTransactionId : null,
     rawStatus: typeof body.rawStatus === "string" ? body.rawStatus : "",

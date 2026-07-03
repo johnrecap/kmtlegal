@@ -6,7 +6,7 @@ Accepted for v1 implementation, pending final merchant comparison.
 
 ## Decision
 
-Implement a provider-neutral payment layer with PayTabs Egypt as the default v1 provider placeholder. The final live provider must be confirmed only after merchant comparison with Paymob, Fawry, and Tap.
+Implement a provider-neutral payment layer with PayTabs Egypt as the default fallback and Paymob as a selectable v1 Hosted/Unified Checkout provider. The final live provider must be confirmed only after merchant comparison with PayTabs, Paymob, Fawry, and Tap.
 
 ## Context
 
@@ -24,6 +24,8 @@ The redirect return page is never the source of truth. Appointment confirmation 
 - AI never decides price, payment state, or appointment confirmation.
 - No card data is collected or stored by KMT Legal.
 - Provider secrets remain server-only through environment variables.
+- The active provider for new bookings is stored as a non-secret `SystemSetting` and can be switched from admin after env readiness validation.
+- Existing payment attempts remain tied to the provider used when they were created.
 - `PaymentAttempt`, `PaymentTransaction`, and `PaymentWebhookEvent` support reconciliation and replay.
 - Existing `Payment` remains the internal invoice/statement layer and is created after successful trusted payment.
 

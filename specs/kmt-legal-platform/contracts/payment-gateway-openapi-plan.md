@@ -27,19 +27,25 @@ Response includes `paymentAttempt.id`, `status`, `amount`, `currency`, `checkout
 
 Returns payment attempt, appointment, consultation status, and internal payment receipt if available.
 
-## Webhook
+## Webhooks
 
 `POST /api/webhooks/paytabs`
 
-Accepts raw provider payload, verifies HMAC when configured, stores event metadata, processes idempotently, and confirms the appointment only for trusted paid state.
+`POST /api/webhooks/paymob`
+
+Each provider has its own route. The route determines the provider, accepts the raw provider payload, verifies HMAC when configured, stores event metadata, processes idempotently, and confirms the appointment only for trusted paid state.
 
 ## Admin
 
 - `GET /api/admin/payments/pricing`
 - `POST /api/admin/payments/pricing`
 - `PATCH /api/admin/payments/pricing/[ruleId]`
+- `GET /api/admin/payments/settings`
+- `PATCH /api/admin/payments/settings`
 - `GET /api/admin/payments/attempts`
 - `GET /api/admin/payments/webhooks`
 - `POST /api/admin/payments/webhooks/[eventId]/replay`
 
-All admin routes require authenticated finance read/manage permissions through existing RBAC.
+Payment settings store only `activeProvider` (`paytabs` or `paymob`) in `SystemSetting`. Provider secrets remain in server env and are returned only as non-secret readiness booleans/missing key names.
+
+All admin routes require authenticated finance read/manage permissions through existing RBAC. Payment settings also allow `settings.manage.any` for super-admin settings operators.

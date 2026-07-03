@@ -20,7 +20,12 @@ import {
   type DataTableColumn
 } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
-import { PaymentForm } from "@/features/admin/finance/finance-forms";
+import {
+  ConsultationPricingRuleForm,
+  PaymentForm,
+  PaymentGatewaySettingsForm,
+  type PricingRuleValue
+} from "@/features/admin/finance/finance-forms";
 import { currencyValues, paymentStatusValues } from "@/lib/legal-finance";
 import { formatDate, formatDateTime, formatMoney, labelFrom, paymentStatusLabels } from "@/lib/legal-format";
 import {
@@ -32,6 +37,7 @@ import {
 import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
 import { listAdminPaymentAttempts, listAdminPaymentWebhookEvents } from "@/server/payments/payment-service";
 import { listAdminConsultationPricingRules } from "@/server/payments/pricing-service";
+import { getAdminPaymentGatewaySettings } from "@/server/payments/payment-settings-service";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +53,7 @@ type PaymentDetail = Awaited<ReturnType<typeof getAdminPaymentDetail>>;
 type PaymentAttemptRow = Awaited<ReturnType<typeof listAdminPaymentAttempts>>["items"][number];
 type PaymentWebhookRow = Awaited<ReturnType<typeof listAdminPaymentWebhookEvents>>["items"][number];
 type PricingRuleRow = Awaited<ReturnType<typeof listAdminConsultationPricingRules>>[number];
+type PaymentGatewaySettings = Awaited<ReturnType<typeof getAdminPaymentGatewaySettings>>;
 
 function flattenSearchParams(searchParams: SearchParams) {
   return Object.fromEntries(
@@ -120,6 +127,12 @@ function editHref(paymentId: string, query: Record<string, string>) {
   return `/admin/finance?${params.toString()}`;
 }
 
+function pricingRuleEditHref(ruleId: string, query: Record<string, string>) {
+  const params = new URLSearchParams(query);
+  params.set("editPricingRuleId", ruleId);
+  return `/admin/finance?${params.toString()}`;
+}
+
 function paymentFormValue(payment: PaymentDetail) {
   return {
     id: payment.id,
@@ -135,6 +148,20 @@ function paymentFormValue(payment: PaymentDetail) {
     receiptNumber: payment.receiptNumber,
     paidAt: payment.paidAt?.toISOString() ?? null,
     notes: payment.notes
+  };
+}
+
+function pricingRuleFormValue(rule: PricingRuleRow): PricingRuleValue {
+  return {
+    id: rule.id,
+    serviceCategory: rule.serviceCategory,
+    mode: rule.mode,
+    amount: rule.amount.toString(),
+    currency: rule.currency,
+    active: rule.active,
+    effectiveFrom: rule.effectiveFrom.toISOString(),
+    version: rule.version,
+    label: rule.label
   };
 }
 
@@ -329,6 +356,134 @@ function GatewayOperationsPanel({
   );
 }
 
+function PaymentGatewayOperationsPanel({
+  attempts,
+  canManage,
+  gatewaySettings,
+  query,
+  selectedPricingRule,
+  pricingRules,
+  webhookEvents
+}: {
+  attempts: PaymentAttemptRow[];
+  canManage: boolean;
+  gatewaySettings: PaymentGatewaySettings;
+  query: Record<string, string>;
+  selectedPricingRule: PricingRuleRow | null;
+  pricingRules: PricingRuleRow[];
+  webhookEvents: PaymentWebhookRow[];
+}) {
+  return (
+    <div className="space-y-5">
+      <Card>
+        <CardHeader>
+          <CardTitle>قيمة الاستشارة ومعلومات الدفع</CardTitle>
+          <CardDescription>السعر يأتي من قواعد المكتب فقط، والبوابة النشطة تستخدم للحجوزات الجديدة دون تغيير المحاولات القديمة.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+          <div className="space-y-3">
+            {pricingRules.length ? (
+              pricingRules.slice(0, 8).map((rule) => (
+                <div key={rule.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-kmt-ink">{rule.label || rule.serviceCategory || "سعر عام"}</p>
+                      <p className="mt-1 text-kmt-muted">
+                        {formatMoney(rule.amount.toString(), rule.currency)} · {rule.mode || "كل الطرق"} · v{rule.version}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge tone={rule.active ? "active" : "neutral"}>{rule.active ? "نشط" : "متوقف"}</Badge>
+                      {canManage ? (
+                        <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={pricingRuleEditHref(rule.id, query)}>
+                          تعديل
+                        </Link>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <StateBlock tone="empty" title="لا توجد قواعد سعر" description="يجب إنشاء قاعدة سعر نشطة قبل تفعيل الدفع العام للحجوزات." />
+            )}
+          </div>
+
+          <div className="space-y-5">
+            {canManage ? (
+              <>
+                <div className="rounded border border-kmt-border bg-kmt-surface-muted p-4">
+                  <h3 className="font-semibold text-kmt-ink">بوابة الدفع</h3>
+                  <p className="mb-4 mt-1 text-sm leading-6 text-kmt-muted">لا يتم حفظ المفاتيح هنا. يتم التحقق من جاهزية env قبل تفعيل البوابة.</p>
+                  <PaymentGatewaySettingsForm settings={gatewaySettings} />
+                </div>
+                <div className="rounded border border-kmt-border bg-kmt-surface-muted p-4">
+                  <h3 className="font-semibold text-kmt-ink">{selectedPricingRule ? "تعديل سعر الاستشارة" : "سعر استشارة جديد"}</h3>
+                  <p className="mb-4 mt-1 text-sm leading-6 text-kmt-muted">اترك التصنيف أو الطريقة فارغة لاستخدام السعر كقاعدة عامة.</p>
+                  <ConsultationPricingRuleForm pricingRule={selectedPricingRule ? pricingRuleFormValue(selectedPricingRule) : undefined} />
+                </div>
+              </>
+            ) : (
+              <StateBlock tone="permission" title="إدارة الدفع غير متاحة" description="قراءة معلومات الدفع متاحة فقط. الحفظ يحتاج صلاحية finance.manage.any أو settings.manage.any." />
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid gap-5 xl:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>محاولات الدفع</CardTitle>
+            <CardDescription>آخر محاولات Hosted Checkout وحجز المواعيد المؤقت.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {attempts.length ? (
+              attempts.slice(0, 8).map((attempt) => (
+                <div key={attempt.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-semibold text-kmt-ink">{attempt.client.fullName}</p>
+                    <Badge tone={attemptTone(attempt.status)}>{attempt.status}</Badge>
+                  </div>
+                  <p className="mt-1 text-kmt-muted">
+                    {formatMoney(attempt.amount.toString(), attempt.currency)} · {attempt.provider} · {formatDateTime(attempt.appointment.startsAt)}
+                  </p>
+                  <p className="mt-1 truncate text-xs text-kmt-muted">{attempt.providerSessionId || attempt.id}</p>
+                </div>
+              ))
+            ) : (
+              <StateBlock tone="empty" title="لا توجد محاولات دفع" description="ستظهر محاولات الدفع هنا بعد إنشاء أول checkout." />
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>أحداث Webhook</CardTitle>
+            <CardDescription>حالة التوقيع والمعالجة وإعادة التشغيل الآمن.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {webhookEvents.length ? (
+              webhookEvents.slice(0, 8).map((event) => (
+                <div key={event.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="truncate font-semibold text-kmt-ink">{event.eventId}</p>
+                    <Badge tone={webhookTone(event.processingStatus)}>{event.processingStatus}</Badge>
+                  </div>
+                  <p className="mt-1 text-kmt-muted">
+                    {event.provider} · توقيع {event.signatureStatus} · replay {event.replayCount}
+                  </p>
+                  <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(event.receivedAt)}</p>
+                </div>
+              ))
+            ) : (
+              <StateBlock tone="empty" title="لا توجد Webhooks" description="ستظهر أحداث بوابة الدفع بعد أول إشعار من المزود." />
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 export default async function AdminFinancePage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminPage("/admin/finance");
   if (guard.status === "forbidden") {
@@ -340,17 +495,20 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
   }
 
   const query = flattenSearchParams((await searchParams) ?? {});
-  const [result, options, pricingRules, paymentAttempts, webhookEvents] = await Promise.all([
+  const [result, options, pricingRules, paymentGatewaySettings, paymentAttempts, webhookEvents] = await Promise.all([
     listAdminPayments({ actor: guard.context.principal, query }),
     getAdminFinanceOptions(guard.context.principal),
     listAdminConsultationPricingRules({ actor: guard.context.principal, query: { active: "" } }),
+    getAdminPaymentGatewaySettings({ actor: guard.context.principal }),
     listAdminPaymentAttempts({ actor: guard.context.principal, query: { pageSize: 8 } }),
     listAdminPaymentWebhookEvents({ actor: guard.context.principal, query: { pageSize: 8 } })
   ]);
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
   const selectedCurrency = result.filters.currency || undefined;
   const editPaymentId = query.editPaymentId;
+  const editPricingRuleId = query.editPricingRuleId;
   let editPayment: PaymentDetail | null = null;
+  const selectedPricingRule = pricingRules.find((rule) => rule.id === editPricingRuleId) ?? null;
 
   if (editPaymentId && options.canManage) {
     try {
@@ -492,8 +650,12 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
           </Card>
         </div>
 
-        <GatewayOperationsPanel
+        <PaymentGatewayOperationsPanel
           attempts={paymentAttempts.items}
+          canManage={options.canManage}
+          gatewaySettings={paymentGatewaySettings}
+          query={query}
+          selectedPricingRule={selectedPricingRule}
           pricingRules={pricingRules}
           webhookEvents={webhookEvents.items}
         />

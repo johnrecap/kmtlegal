@@ -151,6 +151,17 @@ async function seedProductionBootstrap() {
       }
     }
   });
+
+  await prisma.systemSetting.upsert({
+    where: { key: "payment.gateway" },
+    create: {
+      key: "payment.gateway",
+      value: {
+        activeProvider: process.env.PAYMENT_PROVIDER ?? "paytabs"
+      }
+    },
+    update: {}
+  });
 }
 
 async function upsertUser({ email, name, phone, roleName, status = "ACTIVE" }, roleRows) {
@@ -573,6 +584,16 @@ async function seedOperationalData(users) {
       value: { driver: "vps-filesystem", uploadsDir: "/var/lib/kmt-legal/uploads" },
       updatedById: users.superAdmin.id
     }
+  });
+
+  await prisma.systemSetting.upsert({
+    where: { key: "payment.gateway" },
+    create: {
+      key: "payment.gateway",
+      value: { activeProvider: process.env.PAYMENT_PROVIDER ?? "paytabs" },
+      updatedById: users.superAdmin.id
+    },
+    update: {}
   });
 }
 

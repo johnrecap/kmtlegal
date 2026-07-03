@@ -22,8 +22,8 @@ Last updated: 2026-07-03
 
 ## Backend Risks And Follow-Ups
 
-- Provider live API integration is intentionally not hardcoded yet. `PAYMENT_HOSTED_CHECKOUT_URL_TEMPLATE` is a safe bridge until the selected provider API credentials and contract are finalized.
-- PayTabs-specific signature/header rules must be finalized against merchant docs and sandbox payloads.
+- Paymob Hosted/Unified Checkout is implemented as a provider adapter and can be selected from admin once required env keys are configured. PayTabs still uses the hosted-checkout URL-template bridge until the merchant API contract is finalized.
+- PayTabs and Paymob signature/header rules must be finalized against merchant docs and sandbox payloads before live launch.
 - Replay now reprocesses safe normalized payload, not raw provider payload. If a provider requires richer replay data, add allowlisted normalized fields only.
 - Refunds/disputes are modeled but not operationalized in v1 UI.
 - Manual payment fallback needs separate models or workflow fields for admin verification, proof attachment, and audit logs.

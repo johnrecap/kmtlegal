@@ -53,6 +53,7 @@ describe("route manifest contract", () => {
       ["/api/public/consultations/slots", "/api/public/consultations/slots"],
       ["/api/public/payments/status", "/api/public/payments/status"],
       ["/api/webhooks/paytabs", "/api/webhooks/paytabs"],
+      ["/api/webhooks/paymob", "/api/webhooks/paymob"],
       ["/api/admin/consultation-availability", "/api/admin/consultation-availability"],
       ["/api/client/assistant", "/api/client/assistant"],
       ["/api/client/messages", "/api/client/messages"],
@@ -65,6 +66,7 @@ describe("route manifest contract", () => {
       ["/api/admin/clients/[clientId]/account/password", "/api/admin/clients/{id}/account/password"],
       ["/api/admin/payments/pricing", "/api/admin/payments/pricing"],
       ["/api/admin/payments/pricing/[ruleId]", "/api/admin/payments/pricing/{ruleId}"],
+      ["/api/admin/payments/settings", "/api/admin/payments/settings"],
       ["/api/admin/payments/attempts", "/api/admin/payments/attempts"],
       ["/api/admin/payments/webhooks", "/api/admin/payments/webhooks"],
       ["/api/admin/payments/webhooks/[eventId]/replay", "/api/admin/payments/webhooks/{eventId}/replay"]

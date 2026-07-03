@@ -9,7 +9,7 @@ export async function POST(request: Request) {
 
   try {
     const rawBody = await request.text();
-    const result = await handlePaymentWebhook({ request, rawBody, requestId, provider: "paytabs" });
+    const result = await handlePaymentWebhook({ request, rawBody, requestId, provider: "paymob" });
     return NextResponse.json(
       {
         data: {
@@ -22,6 +22,6 @@ export async function POST(request: Request) {
       { headers: { "Cache-Control": "no-store" } }
     );
   } catch (error) {
-    return errorToResponse(error, requestId, { routeGroup: "payment-webhook-paytabs", method: "POST" });
+    return errorToResponse(error, requestId, { routeGroup: "payment-webhook-paymob", method: "POST" });
   }
 }

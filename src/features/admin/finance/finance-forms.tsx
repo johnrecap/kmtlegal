@@ -39,6 +39,32 @@ type PaymentValue = {
   notes?: string | null;
 };
 
+type PaymentProviderOption = {
+  provider: "paytabs" | "paymob";
+  label: string;
+  configured: boolean;
+  missing: string[];
+  checkoutMode: string;
+  active: boolean;
+};
+
+export type PaymentGatewaySettingsValue = {
+  activeProvider: "paytabs" | "paymob";
+  providers: PaymentProviderOption[];
+};
+
+export type PricingRuleValue = {
+  id?: string;
+  serviceCategory?: string | null;
+  mode?: string | null;
+  amount?: string | number | null;
+  currency?: string;
+  active?: boolean;
+  effectiveFrom?: string | null;
+  version?: number;
+  label?: string | null;
+};
+
 type ApiErrorBody = {
   error?: {
     message?: string;
@@ -102,6 +128,21 @@ function paymentPayloadFromForm(form: HTMLFormElement) {
     receiptNumber: formData.get("receiptNumber"),
     paidAt: toIsoFromLocalDateTime(formData.get("paidAt")),
     notes: formData.get("notes")
+  };
+}
+
+function pricingPayloadFromForm(form: HTMLFormElement) {
+  const formData = new FormData(form);
+
+  return {
+    serviceCategory: formData.get("serviceCategory"),
+    mode: formData.get("mode"),
+    amount: formData.get("amount"),
+    currency: formData.get("currency"),
+    active: formData.get("active") === "on",
+    effectiveFrom: toIsoFromLocalDateTime(formData.get("effectiveFrom")),
+    version: formData.get("version"),
+    label: formData.get("label")
   };
 }
 
@@ -268,6 +309,182 @@ export function PaymentForm({
       <Textarea defaultValue={payment?.notes ?? ""} disabled={isBusy} label="ملاحظات داخلية" name="notes" />
       <Button loading={isBusy} type="submit">
         {isEdit ? "حفظ الفاتورة" : "إنشاء فاتورة"}
+      </Button>
+      <StatusMessage message={message} />
+    </form>
+  );
+}
+
+export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGatewaySettingsValue }) {
+  const router = useRouter();
+  const [message, setMessage] = useState<string | null>(null);
+  const [isBusy, setIsBusy] = useState(false);
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    setMessage(null);
+    setIsBusy(true);
+
+    try {
+      const response = await sendJson("/api/admin/payments/settings", "PATCH", {
+        activeProvider: formData.get("activeProvider")
+      });
+
+      if (!response.ok) {
+        setMessage(await readMessage(response));
+        return;
+      }
+
+      setMessage("تم حفظ بوابة الدفع النشطة.");
+      router.refresh();
+    } catch {
+      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  return (
+    <form className="grid gap-4" onSubmit={submit}>
+      <Select defaultValue={settings.activeProvider} disabled={isBusy} label="بوابة الدفع النشطة" name="activeProvider">
+        {settings.providers.map((provider) => (
+          <option key={provider.provider} value={provider.provider}>
+            {provider.label}
+          </option>
+        ))}
+      </Select>
+      <div className="grid gap-2">
+        {settings.providers.map((provider) => (
+          <div key={provider.provider} className="rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-semibold text-kmt-ink">{provider.label}</span>
+              <span className={provider.configured ? "text-emerald-700" : "text-amber-700"}>
+                {provider.configured ? "جاهزة" : "ناقص إعدادات"}
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-kmt-muted">
+              {provider.configured ? `وضع التشغيل: ${provider.checkoutMode}` : `المطلوب: ${provider.missing.join(", ")}`}
+            </p>
+          </div>
+        ))}
+      </div>
+      <Button loading={isBusy} type="submit">
+        حفظ بوابة الدفع
+      </Button>
+      <StatusMessage message={message} />
+    </form>
+  );
+}
+
+export function ConsultationPricingRuleForm({
+  pricingRule
+}: {
+  pricingRule?: PricingRuleValue;
+}) {
+  const router = useRouter();
+  const [message, setMessage] = useState<string | null>(null);
+  const [isBusy, setIsBusy] = useState(false);
+  const isEdit = Boolean(pricingRule?.id);
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    setMessage(null);
+    setIsBusy(true);
+
+    try {
+      const response = await sendJson(
+        isEdit ? `/api/admin/payments/pricing/${pricingRule?.id}` : "/api/admin/payments/pricing",
+        isEdit ? "PATCH" : "POST",
+        pricingPayloadFromForm(form)
+      );
+
+      if (!response.ok) {
+        setMessage(await readMessage(response));
+        return;
+      }
+
+      if (!isEdit) {
+        form.reset();
+      }
+
+      setMessage(isEdit ? "تم حفظ سعر الاستشارة." : "تم إنشاء سعر الاستشارة.");
+      router.refresh();
+    } catch {
+      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  return (
+    <form className="grid gap-4" onSubmit={submit}>
+      <TextInput
+        defaultValue={pricingRule?.label ?? ""}
+        disabled={isBusy}
+        label="اسم السعر الداخلي"
+        name="label"
+        placeholder="عربون استشارة عامة"
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <TextInput
+          defaultValue={pricingRule?.serviceCategory ?? ""}
+          disabled={isBusy}
+          label="تصنيف الخدمة"
+          name="serviceCategory"
+          placeholder="اتركه فارغًا لسعر عام"
+        />
+        <Select defaultValue={pricingRule?.mode ?? ""} disabled={isBusy} label="طريقة الاستشارة" name="mode">
+          <option value="">كل الطرق</option>
+          <option value="PHONE">هاتف</option>
+          <option value="ONLINE">أونلاين</option>
+          <option value="OFFICE">في المكتب</option>
+        </Select>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <TextInput
+          defaultValue={pricingRule?.amount ? String(pricingRule.amount) : ""}
+          disabled={isBusy}
+          inputMode="decimal"
+          label="قيمة الحجز"
+          min="0.01"
+          name="amount"
+          required
+          step="0.01"
+          type="number"
+        />
+        <Select defaultValue={pricingRule?.currency ?? "EGP"} disabled={isBusy} label="العملة" name="currency">
+          {currencyValues.map((currency) => (
+            <option key={currency} value={currency}>
+              {currency}
+            </option>
+          ))}
+        </Select>
+        <TextInput
+          defaultValue={String(pricingRule?.version ?? 1)}
+          disabled={isBusy}
+          label="الإصدار"
+          min="1"
+          name="version"
+          required
+          type="number"
+        />
+      </div>
+      <TextInput
+        defaultValue={toDateTimeInput(pricingRule?.effectiveFrom) || toDateTimeInput(new Date().toISOString())}
+        disabled={isBusy}
+        label="يبدأ من"
+        name="effectiveFrom"
+        required
+        type="datetime-local"
+      />
+      <label className="flex items-center gap-3 rounded border border-kmt-border bg-white px-3 py-2 text-sm font-semibold text-kmt-ink">
+        <input className="h-4 w-4 accent-kmt-navy" defaultChecked={pricingRule?.active ?? true} disabled={isBusy} name="active" type="checkbox" />
+        <span>سعر نشط</span>
+      </label>
+      <Button loading={isBusy} type="submit">
+        {isEdit ? "حفظ سعر الاستشارة" : "إنشاء سعر استشارة"}
       </Button>
       <StatusMessage message={message} />
     </form>

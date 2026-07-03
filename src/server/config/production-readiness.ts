@@ -1,4 +1,5 @@
 import path from "node:path";
+import { paymentProvider, paymentProviderReadiness } from "@/server/payments/payment-config";
 
 export type ProductionReadinessIssue = {
   code: string;
@@ -169,6 +170,23 @@ export function productionReadinessIssues(env: NodeJS.ProcessEnv = process.env) 
       code: "AI_PROVIDER_CONFIG_INCOMPLETE",
       severity: "error",
       message: "Custom non-mock AI providers require AI_BASE_URL and AI_MODEL."
+    });
+  }
+
+  try {
+    const readiness = paymentProviderReadiness(paymentProvider(env), env);
+    if (!readiness.configured) {
+      issues.push({
+        code: "PAYMENT_PROVIDER_CONFIG_INCOMPLETE",
+        severity: "error",
+        message: `Payment provider ${readiness.provider} is missing required server-side configuration.`
+      });
+    }
+  } catch {
+    issues.push({
+      code: "PAYMENT_PROVIDER_UNSUPPORTED",
+      severity: "error",
+      message: "PAYMENT_PROVIDER must be paytabs or paymob."
     });
   }
 

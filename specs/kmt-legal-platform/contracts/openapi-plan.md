@@ -98,6 +98,7 @@ PLAN-26 installer preflight must reject unsupported panel environments before bu
 | POST | `/api/public/consultations/checkout` | Create a paid consultation booking checkout after server-side review and pricing | Guest | consultation.create.public |
 | GET | `/api/public/payments/status` | Read payment attempt status for a return/status page without confirming from redirect | Guest | public |
 | POST | `/api/webhooks/paytabs` | Process PayTabs-compatible payment webhook/IPN with signature verification and idempotency | Provider | internal |
+| POST | `/api/webhooks/paymob` | Process Paymob payment webhook/callback with provider-owned route, signature verification, and idempotency | Provider | internal |
 
 ### Email
 | Method | Path/Action | Purpose | Auth | Permission |
@@ -215,6 +216,8 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 | GET | `/api/admin/payments/pricing` | List consultation pricing rules used by checkout | Admin | finance.read.any |
 | POST | `/api/admin/payments/pricing` | Create consultation pricing rule | Admin | finance.manage.any |
 | PATCH | `/api/admin/payments/pricing/{ruleId}` | Update consultation pricing rule | Admin | finance.manage.any |
+| GET | `/api/admin/payments/settings` | Read active payment provider and non-secret readiness state | Admin | finance.read.any / settings.manage.any |
+| PATCH | `/api/admin/payments/settings` | Switch active provider for new checkout attempts after env readiness validation | Admin | finance.manage.any / settings.manage.any |
 | GET | `/api/admin/payments/attempts` | List gateway payment attempts and slot reservations | Admin | finance.read.any |
 | GET | `/api/admin/payments/webhooks` | List payment webhook events and processing status | Admin | finance.read.any |
 | POST | `/api/admin/payments/webhooks/{eventId}/replay` | Replay safe normalized webhook processing | Admin | finance.manage.any |

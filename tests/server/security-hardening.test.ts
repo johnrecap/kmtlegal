@@ -213,6 +213,7 @@ describe("security, privacy, upload, and observability hardening", () => {
       STAFF_2FA_MODE: "disabled",
       INSTALLER_ENABLED: "false",
       AI_PROVIDER: "mock",
+      PAYTABS_HOSTED_CHECKOUT_URL_TEMPLATE: "https://payments.example/checkout/{attemptId}",
       ANALYTICS_ENABLED: "true"
     });
 

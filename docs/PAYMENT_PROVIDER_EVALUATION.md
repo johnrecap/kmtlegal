@@ -4,16 +4,16 @@ Last verified: 2026-07-03
 
 ## Position
 
-PayTabs Egypt is the default v1 implementation provider, not the final commercial decision. Before production go-live, KMT Legal must compare real merchant offers from PayTabs, Paymob, Fawry, and Tap using the checklist below.
+PayTabs Egypt and Paymob are now both supported in the v1 technical layer, with one active provider selected from the admin finance settings. PayTabs remains the default fallback, not the final commercial decision. Before production go-live, KMT Legal must compare real merchant offers from PayTabs, Paymob, Fawry, and Tap using the checklist below.
 
-The v1 technical architecture is provider-neutral: `PricingService -> PaymentAttempt -> Hosted Checkout -> verified webhook -> appointment confirmation`.
+The v1 technical architecture is provider-neutral: `PricingService -> active provider -> PaymentAttempt -> Hosted Checkout -> verified webhook -> appointment confirmation`. Existing attempts keep their original provider even after the admin switches the active provider for new bookings.
 
 ## Provider Shortlist
 
 | Provider | Why It Matters | Current Fit | Must Confirm With Merchant |
 | --- | --- | --- | --- |
-| PayTabs Egypt | Official Egypt page lists local currency settlement, merchant dashboard, onboarding, online payments, PayLinks, invoices, APIs, Direct API, Mobile SDK, and iFrame options. Docs list Hosted Payment among API integration types. | Strong default for v1 hosted checkout and quick integration. | Exact Egypt contract, fee tiers, EGP settlement schedule, webhook/IPN signing details, refund process, dashboard users, sandbox credentials. |
-| Paymob | Strong Egyptian PSP candidate and should be evaluated seriously for local payment methods. Public developer docs were JS-gated during review, so contract verification is required. | Strong alternative, especially if local wallets/kiosk methods are a priority. | Cards, wallets, Meeza, Aman/Masary/kiosk support, HMAC/callback contract, refunds, settlement, dashboard, support SLA. |
+| PayTabs Egypt | Official Egypt page lists local currency settlement, merchant dashboard, onboarding, online payments, PayLinks, invoices, APIs, Direct API, Mobile SDK, and iFrame options. Docs list Hosted Payment among API integration types. | Supported as default fallback through the hosted-checkout URL-template bridge. | Exact Egypt contract, fee tiers, EGP settlement schedule, webhook/IPN signing details, refund process, dashboard users, sandbox credentials, and direct API request shape if replacing the bridge. |
+| Paymob | Strong Egyptian PSP candidate and should be evaluated seriously for local payment methods. Public developer docs were JS-gated during review, so merchant documentation verification is required. | Supported as a Hosted/Unified Checkout adapter and can be selected from admin after env readiness passes. | Cards, wallets, Meeza, Aman/Masary/kiosk support, HMAC/callback contract, refunds, settlement, dashboard, support SLA, payment-method IDs, and exact live/sandbox base URLs. |
 | FawryPay | Official developer guide lists Pay By Link, Express Checkout, Fawry-hosted checkout link, REST APIs, cards, 3D Secure, e-wallet, reference number, ValU, and installments. | Strong if KMT wants cash/reference-number behavior for clients who avoid cards. | Whether hosted checkout is available for legal-service deposits, reference expiry, reconciliation exports, refund/manual verification operations. |
 | Tap | Official developer docs mention local/regional/global methods across MENA including Fawry, Visa, Mastercard, and more. | Worth a fast merchant comparison; not selected by default. | Egypt onboarding, EGP settlement, payment-method availability in Egypt, hosted checkout/webhook signing, support and refund workflow. |
 | Stripe | Official global availability does not list Egypt as a supported country/region for direct Stripe merchant accounts; UAE, UK, and US are listed. | Not default for an Egyptian entity. | Only viable if KMT has a legal entity and bank account in a Stripe-supported country/region. |
