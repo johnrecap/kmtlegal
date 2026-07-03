@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const rootMetadata: Metadata = {
   title: "KMT Legal Platform",
-  description: "KMT Legal planning and Stitch clone foundation",
+  description: "Structured legal support, consultation requests, and client portal services from KMT Legal.",
   icons: {
     icon: [
       { url: "/favicon.ico", type: "image/png" },

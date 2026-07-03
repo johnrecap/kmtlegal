@@ -104,7 +104,7 @@ const caseStudies = [
 const representativeMatters = [
   {
     areaKey: "real-estate-legal-support",
-    label: "الدعم القانوني العقاري",
+    label: "مراجعة قانونية عقارية",
     title: "مراجعة ملف تصرف عقاري",
     region: "مصر",
     year: "2026",
@@ -114,7 +114,7 @@ const representativeMatters = [
   },
   {
     areaKey: "corporate-business-services",
-    label: "خدمات الشركات والأعمال",
+    label: "الشركات والعقود التجارية",
     title: "تجهيز ملف شركة ومراجعة عقود",
     region: "المنطقة",
     year: "2026",
@@ -124,7 +124,7 @@ const representativeMatters = [
   },
   {
     areaKey: "claims-collections",
-    label: "التحصيل والتسويات",
+    label: "المطالبات المالية والتسويات",
     title: "تنظيم طلب تحصيل ومطالبة",
     region: "مصر",
     year: "2026",
@@ -150,16 +150,17 @@ const publicIndustries = [
 ] as const;
 
 const branches = [
-  { name: "فرع القاهرة", address: "وسط القاهرة، قريب من الجهات الإدارية والمحاكم الاقتصادية", phone: "+20 100 000 0001", email: "contact@kmtlegal.com" },
-  { name: "اجتماعات أونلاين", address: "مواعيد مرنة عبر مكالمات فيديو بعد مراجعة الطلب", phone: "+20 100 000 0002", email: "booking@kmtlegal.com" }
+  { name: "زيارة مكتب القاهرة", address: "زيارة المكتب في القاهرة بمواعيد مؤكدة مسبقًا", phone: "تواصل عبر نموذج الطلب", email: "contact@kmtlegal.com" },
+  { name: "اجتماعات عن بعد", address: "تُرتب الاجتماعات الأونلاين بعد مراجعة الطلب وتأكيد الموعد", phone: "يؤكدها فريق المكتب", email: "booking@kmtlegal.com" }
 ] as const;
 
 const footerContent = {
-  brandSummary: "حلول قانونية منظمة للشركات والمستثمرين والأفراد مع مراعاة السرية وعدم نشر بيانات العملاء.",
+  brandSummary: "دعم قانوني منظم للشركات والمستثمرين والأفراد مع مراعاة السرية ومراجعة المكتب.",
   practiceLinks: practiceAreaMatrix.map((area) => ({ label: area.title, href: area.href })),
   offices: branches.map((branch) => ({ name: branch.name, address: branch.address })),
   contact: {
     email: "contact@kmtlegal.com",
+    phone: "بموعد مؤكد مسبقًا",
     bookingHref: "/book-consultation",
     note: "طلبات الاستشارة تبدأ من نموذج منظم ولا تمثل استشارة قانونية نهائية."
   },
@@ -191,12 +192,12 @@ export const publicContentAr = {
   branches,
   footerContent,
   shell: {
-    consultationCta: "احجز استشارة",
+    consultationCta: "طلب استشارة",
     clientLoginCta: "دخول العميل",
     mainNavLabel: "التنقل الرئيسي",
     compactNavLabel: "التنقل المختصر",
-    footerCtaTitle: "هل تحتاج إلى دعم قانوني واضح؟",
-    footerCtaDescription: "ابدأ بطلب منظم، وسيراجع الفريق البيانات قبل تحديد المسار المناسب للتواصل أو الحجز.",
+    footerCtaTitle: "هل تريد مناقشة مسألة قانونية؟",
+    footerCtaDescription: "أرسل طلبًا منظمًا، وسيراجع المكتب البيانات قبل تأكيد طريقة التواصل أو الموعد.",
     confidentiality: "سرية البيانات",
     humanReview: "مراجعة بشرية",
     practiceLinksLabel: "روابط الخدمات",
@@ -211,7 +212,7 @@ export const publicContentAr = {
     languageSwitchLabel: "English"
   },
   shared: {
-    bookConsultation: "احجز استشارة",
+    bookConsultation: "طلب استشارة",
     browsePracticeAreas: "تصفح الخدمات",
     viewDetails: "عرض التفاصيل",
     clearFilters: "مسح الفلاتر",
@@ -219,29 +220,29 @@ export const publicContentAr = {
     notFound: "لم يتم العثور على العنصر المطلوب."
   },
   home: {
-    metadataTitle: "KMT Legal | خبرة قانونية شاملة للقطاعات الحرجة",
+    metadataTitle: "KMT Legal | دعم قانوني منظم للشركات والأفراد",
     metadataDescription: "موقع KMT Legal للاستشارات القانونية المنظمة وخدمات الشركات والعقود والعقارات والمنازعات وحجز الاستشارات بأمان.",
     heroEyebrow: "الخدمات",
-    heroTitle: "خبرة قانونية شاملة للقطاعات الحرجة",
-    heroDescription: "نقدم دعما قانونيا استراتيجيا وعمليا للشركات والمستثمرين والأفراد، من تنظيم الوقائع والمستندات إلى وضع مسار واضح للمراجعة القانونية.",
+    heroTitle: "دعم قانوني منظم للشركات والأفراد",
+    heroDescription: "ابدأ طلبك من خلال نموذج واضح؛ يراجع المكتب الوقائع والمستندات قبل تحديد المسار المناسب والخطوة التالية.",
     trustItems: [
-      { icon: "verified_user", label: "مراجعة بشرية قبل أي قرار قانوني" },
-      { icon: "lock", label: "لا ننشر بيانات العملاء أو المستندات" },
-      { icon: "schedule", label: "متابعة منظمة من الطلب حتى الموعد" }
+      { icon: "verified_user", label: "مراجعة من المكتب قبل أي خطوة قانونية" },
+      { icon: "lock", label: "التعامل مع بيانات العملاء بسرية" },
+      { icon: "schedule", label: "متابعة واضحة من الطلب حتى الموعد" }
     ],
     practiceEyebrow: "خدماتنا",
-    practiceTitle: "خدمات KMT Legal",
-    practiceDescription: "هيكل خدمات واضح يساعدك على اختيار المسار الأقرب لطلبك، مع الحفاظ على الخصوصية وعدم نشر بيانات العملاء.",
+    practiceTitle: "خدمات قانونية حسب نوع الطلب",
+    practiceDescription: "اختر الخدمة الأقرب لطلبك، ثم أرسل طلب استشارة منظمًا لمراجعة المكتب.",
     focusEyebrow: "مجال التركيز",
     approachEyebrow: "منهج العمل",
-    approachTitle: "منهج العمل من أول طلب حتى الحل",
-    approachDescription: "الموقع لا يقدم وعدا بنتيجة، لكنه ينظم البداية ويجعل التواصل مع الفريق أكثر وضوحا.",
+    approachTitle: "كيف يتم التعامل مع الطلب",
+    approachDescription: "الموقع ينظم الطلب فقط؛ الرأي القانوني وقبول الملف يتمان بعد مراجعة المكتب.",
     representativeEyebrow: "نماذج تمثيلية",
     representativeTitle: "أمثلة تمثيلية حديثة",
     representativeDescription: "نماذج مجهولة ومبسطة توضح نوع طلبات الخدمات التي يتعامل معها المكتب دون كشف بيانات عملاء أو نتائج مضمونة.",
     industriesEyebrow: "القطاعات",
     industriesTitle: "قطاعات نخدمها",
-    industriesDescription: "لغة التصميم الداكنة هنا لا تغير طبيعة المنتج: المحتوى يظل قانونيا، واضحا، وموجها لقرارات عمل عملية.",
+    industriesDescription: "نساعد العملاء على اتخاذ قرارات أوضح من خلال مراجعة المستندات وتقييم المخاطر وتحديد الخطوات العملية.",
     teamEyebrow: "الفريق",
     teamTitle: "فريق قانوني بتخصصات عملية",
     teamDescription: "تعرف على مسارات الخبرة المتاحة للحجز أو المراجعة الأولية.",
@@ -249,25 +250,25 @@ export const publicContentAr = {
     insightsTitle: "توعية قانونية بدون وعود",
     insightsDescription: "محتوى منشور من النظام الإداري فقط، ولا يظهر كرابط تفصيلي ثابت إذا لم يكن منشورا في اللغة الحالية.",
     caseStudyAnonymous: "دراسة حالة مجهولة",
-    finalCtaTitle: "هل تحتاج إلى دعم قانوني لعملك؟",
-    finalCtaDescription: "فريقنا جاهز لاستلام طلب منظم ومراجعة البيانات الأولية قبل تحديد الموعد أو الخطوة التالية.",
+    finalCtaTitle: "هل تريد مناقشة مسألة قانونية؟",
+    finalCtaDescription: "أرسل طلبًا منظمًا، وسيراجع المكتب البيانات قبل تأكيد طريقة التواصل أو الموعد.",
     approachSteps: [
-      { number: "01", title: "استشارة", summary: "نستمع للوقائع ونحدد الهدف والبيانات المطلوبة قبل أي توصية.", icon: "groups" },
-      { number: "02", title: "استراتيجية", summary: "نرتب الخيارات القانونية في مسار عملي يتناسب مع أهداف العمل.", icon: "strategy" },
-      { number: "03", title: "تنفيذ", summary: "نراجع المستندات والخطوات مع تقليل المخاطر وسد النواقص.", icon: "contract_edit" },
-      { number: "04", title: "حل", summary: "نقود الملف نحو نتيجة عملية مع متابعة واضحة للخطوات التالية.", icon: "target" }
+      { number: "01", title: "استقبال الطلب", summary: "نستقبل الوقائع وبيانات التواصل والسؤال الأساسي في نموذج منظم.", icon: "groups" },
+      { number: "02", title: "مراجعة أولية", summary: "يراجع المكتب الطلب ويحدد المستندات أو التوضيحات المطلوبة.", icon: "strategy" },
+      { number: "03", title: "تحديد الخطوات", summary: "يوضح الفريق مسار المراجعة المناسب ومتطلبات الموعد أو المتابعة.", icon: "contract_edit" },
+      { number: "04", title: "متابعة", summary: "يبقى الطلب منظمًا حتى يؤكد المكتب الخطوات العملية التالية.", icon: "target" }
     ]
   },
   servicesPage: {
     metadataTitle: "الخدمات القانونية | KMT Legal",
-    metadataDescription: "خدمات KMT Legal في الاستشارات القانونية والشركات والعقود والعقارات والتحصيل والتسويات.",
+    metadataDescription: "خدمات KMT Legal في الاستشارات حسب المجال والشركات والعقود والعقارات والمطالبات المالية والتسويات.",
     heroEyebrow: "الخدمات",
-    heroTitle: "خدمات قانونية قابلة للفرز",
-    heroDescription: "ابدأ من نوع الملف أو ابحث مباشرة عن الخدمة الأقرب لاحتياجك، ثم أرسل طلب استشارة منظم للمراجعة البشرية.",
+    heroTitle: "اختر مسار الخدمة الأقرب لطلبك",
+    heroDescription: "ابدأ من نوع الطلب أو ابحث عن الخدمة الأقرب لاحتياجك، ثم أرسل طلب استشارة منظمًا لمراجعة المكتب.",
     sectionEyebrow: "الخدمات",
-    sectionTitle: "اختر المسار الأقرب لطلبك",
-    sectionDescription: "استخدم البحث أو التصنيف للوصول للخدمة المناسبة، ثم ابدأ طلب استشارة منظم.",
-    searchLabel: "ابحث في الخدمات",
+    sectionTitle: "اختر مسار الخدمة الأقرب لطلبك",
+    sectionDescription: "استخدم أسماء الخدمات ومجالات الطلب للوصول للمسار المناسب، ثم ابدأ طلب استشارة منظمًا.",
+    searchLabel: "ابحث باسم الخدمة أو نوع الطلب",
     emptyTitle: "لا توجد خدمات مطابقة",
     servicesCountLabel: "خدمات"
   },
@@ -281,15 +282,15 @@ export const publicContentAr = {
     metadataTitle: "فريق KMT Legal",
     metadataDescription: "تعرف على فريق KMT Legal وتخصصات المحامين المتاحة للمراجعة والحجز.",
     heroEyebrow: "الفريق",
-    heroTitle: "فريق قانوني بتخصصات واضحة",
+    heroTitle: "فريق قانوني بتخصصات محددة",
     heroDescription: "راجع الاختصاصات قبل الحجز حتى يصل طلبك للمحامي الأنسب من البداية.",
     sectionEyebrow: "الفريق",
     sectionTitle: "اختصاصات واضحة قبل الحجز",
     sectionDescription: "اختر محاميًا بحسب مجال الطلب أو راجع كل التخصصات المتاحة.",
     searchLabel: "ابحث في الفريق",
     emptyTitle: "لا توجد ملفات مطابقة",
-    bookingAvailable: "متاح للحجز",
-    officeReview: "مراجعة مكتبية"
+    bookingAvailable: "متاح بعد مراجعة المكتب",
+    officeReview: "بحاجة إلى مراجعة المكتب"
   },
   teamDetail: {
     specialtiesTitle: "التخصصات",
@@ -337,33 +338,33 @@ export const publicContentAr = {
   },
   mediaPage: {
     metadataTitle: "الإعلام والمحتوى | KMT Legal",
-    metadataDescription: "حائط إعلامي للقراءة فقط للمحتوى التوعوي والندوات والمنشورات.",
+    metadataDescription: "توعية قانونية وتحديثات عامة من مكتب KMT Legal.",
     heroEyebrow: "الإعلام",
-    heroTitle: "محتوى توعوي للقراءة فقط",
-    heroDescription: "متابعة منظمة للندوات والمنشورات العامة بدون تكامل نشر خارجي في هذه المرحلة.",
+    heroTitle: "توعية قانونية وتحديثات من المكتب",
+    heroDescription: "مقالات ولقاءات وتحديثات عامة تساعدك على تجهيز الأسئلة قبل التواصل مع المكتب.",
     sectionEyebrow: "الإعلام",
-    sectionTitle: "محتوى توعوي منظم",
-    sectionDescription: "صفحة قراءة فقط للمحتوى الإعلامي العام، بدون نشر خارجي أو تكامل اجتماعي في هذه المرحلة."
+    sectionTitle: "توعية قانونية وتحديثات من المكتب",
+    sectionDescription: "محتوى توعوي عام من المكتب للمساعدة في التحضير والفهم العام."
   },
   contactPage: {
     metadataTitle: "تواصل مع KMT Legal",
     metadataDescription: "بيانات التواصل وفروع KMT Legal ونموذج تواصل عام.",
     heroEyebrow: "تواصل",
-    heroTitle: "تواصل واضح من أول رسالة",
-    heroDescription: "أرسل سؤالا عاما أو اختر حجز استشارة إذا كان الطلب يحتاج مراجعة قانونية منظمة.",
+    heroTitle: "تواصل مع المكتب",
+    heroDescription: "أرسل رسالة عامة، أو اطلب استشارة إذا كان الموضوع يحتاج مراجعة قانونية منظمة.",
     sectionEyebrow: "تواصل",
-    sectionTitle: "ابدأ برسالة واضحة",
+    sectionTitle: "تواصل مع المكتب",
     sectionDescription: "استخدم نموذج التواصل للأسئلة العامة. للاستشارات القانونية، استخدم نموذج الحجز المنظم."
   },
   bookingPage: {
-    metadataTitle: "حجز استشارة | KMT Legal",
-    metadataDescription: "حجز استشارة من خلال شات واضح مع مراجعة بشرية وبدون رأي قانوني من الذكاء الاصطناعي.",
+    metadataTitle: "طلب استشارة أولية | KMT Legal",
+    metadataDescription: "طلب استشارة أولية من خلال مساعد استقبال واضح مع مراجعة من المكتب وبدون رأي قانوني من الذكاء الاصطناعي.",
     heroEyebrow: "طلب استشارة",
-    heroTitle: "احجز استشارة من خلال الشات",
-    heroDescription: "الشات يجمع البيانات اللازمة للمراجعة البشرية، ولا يقدم استشارة قانونية قبل تواصل الفريق.",
+    heroTitle: "اطلب استشارة أولية",
+    heroDescription: "مساعد الاستقبال يجمع البيانات اللازمة لمراجعة المكتب، ولا يقدم استشارة قانونية قبل تواصل الفريق.",
     sectionEyebrow: "طلب استشارة",
-    sectionTitle: "تحدث مع مساعد الحجز",
-    sectionDescription: "استخدم شات واحد واضح لطلب استشارة أو الاستعلام عن رقم مرجع سابق. لا ترسل مستندات في هذه المرحلة.",
+    sectionTitle: "ابدأ مع مساعد طلب الاستشارة",
+    sectionDescription: "استخدم محادثة واضحة لطلب استشارة أو الاستعلام عن رقم مرجع سابق. لا ترسل مستندات الآن.",
     afterSubmitTitle: "ما الذي يحدث بعد الإرسال؟",
     afterSubmitSteps: [
       "يتم حفظ الطلب كطلب جديد للمراجعة.",
@@ -374,28 +375,28 @@ export const publicContentAr = {
     requestedLawyer: "المحامي المطلوب"
   },
   bookingChat: {
-    heroTitle: "احجز استشارة من خلال الشات",
-    heroDescription: "مساعد حجز واضح يجمع البيانات التي يحتاجها المكتب للمراجعة البشرية. لا يقدم أي رأي قانوني.",
-    sectionTitle: "ابدأ مع مساعد الحجز",
-    sectionDescription: "استخدم الشات لحجز استشارة أو الاستعلام عن رقم مرجع سابق. يراجع الفريق كل طلب قبل تأكيد الخطوة التالية.",
-    title: "شات حجز الاستشارة",
-    assistantName: "KMT Booking Assistant",
+    heroTitle: "اطلب استشارة أولية",
+    heroDescription: "مساعد استقبال واضح يجمع البيانات التي يحتاجها المكتب للمراجعة. لا يقدم أي رأي قانوني.",
+    sectionTitle: "ابدأ مع مساعد طلب الاستشارة",
+    sectionDescription: "استخدم المحادثة لطلب استشارة أو الاستعلام عن رقم مرجع سابق. يراجع الفريق كل طلب قبل تأكيد الخطوة التالية.",
+    title: "مساعد طلب الاستشارة",
+    assistantName: "مساعد طلب الاستشارة",
     status: "حجز فقط",
     scope: "حجز واستعلام عن مرجع فقط. بدون رأي قانوني.",
-    onlineNow: "متاح الآن",
+    onlineNow: "النموذج متاح",
     humanReviewOnly: "مراجعة بشرية فقط",
     noLegalAdvice: "بدون رأي قانوني",
-    secureConfidential: "آمن وسري",
+    secureConfidential: "بيانات محدودة للمراجعة",
     humanReviewBadge: "مراجعة بشرية",
-    fastResponse: "استجابة سريعة",
+    fastResponse: "متابعة من المكتب",
     languagePrompt: "من فضلك اختر لغة المحادثة. / Please choose the conversation language.",
     languageArabic: "العربية",
     languageEnglish: "English",
     greeting: "مرحبًا. أستطيع مساعدتك في حجز استشارة أو الاستعلام عن رقم مرجع سابق. سأجمع فقط البيانات اللازمة لمراجعة الفريق.",
     book: "حجز استشارة",
     inquire: "استعلام عن مرجع",
-    corporateLaw: "خدمات الشركات والأعمال",
-    litigation: "التحصيل والتسويات",
+    corporateLaw: "الشركات والعقود التجارية",
+    litigation: "المطالبات المالية والتسويات",
     messageLabel: "الرسالة",
     messagePlaceholder: "اكتب طلب حجز أو سؤال عن رقم مرجع",
     languagePendingPlaceholder: "اختر العربية أو English للبدء",
@@ -425,7 +426,7 @@ export const publicContentAr = {
     paymentStatus: "حالة الدفع",
     preferredSlot: "الموعد المفضل",
     preferredSlotHint: "اختياري. مواعيد المكتب تخضع لمراجعة الفريق.",
-    consent: "أوافق على استخدام البيانات لمراجعة الطلب والتواصل معي، وأفهم أن هذا الشات لا يقدم استشارة قانونية.",
+    consent: "أوافق على استخدام البيانات لمراجعة الطلب والتواصل معي، وأفهم أن هذا المساعد لا يقدم استشارة قانونية.",
     successTitle: "تم حفظ الطلب",
     reference: "رقم المرجع",
     inquiryResult: "بيانات الحجز المتحقق منها",
@@ -441,7 +442,7 @@ export const publicContentAr = {
     trustItems: [
       { icon: "verified_user", label: "مراجعة بشرية", description: "يراجع فريق المكتب الطلب قبل أي قرار قانوني." },
       { icon: "event_available", label: "تأكيد الموعد", description: "يتواصل الفريق معك لتأكيد الملاءمة والتوقيت." },
-      { icon: "lock", label: "بيانات محدودة", description: "لا ترسل مستندات داخل هذا الشات العام." }
+      { icon: "lock", label: "بيانات محدودة", description: "لا ترسل مستندات داخل هذه المحادثة العامة." }
     ]
   },
   privacyPage: {
@@ -453,8 +454,8 @@ export const publicContentAr = {
     blocks: [
       { title: "البيانات التي نستقبلها", body: "قد نستقبل الاسم، رقم الهاتف، البريد الإلكتروني، المدينة، ملخص الطلب، وطريقة التواصل المفضلة عند إرسال نموذج استشارة أو تواصل." },
       { title: "الغرض من الاستخدام", body: "نستخدم البيانات لمراجعة الطلب، التواصل معك، تنظيم الموعد، وتحسين سير العمل الداخلي. لا يتم نشر بيانات العملاء أو المستندات في الصفحات العامة." },
-      { title: "الذكاء الاصطناعي", body: "قد يستخدم النظام بوابة AI داخلية لتنظيم الطلب مبدئيا. المخرجات مساعدة فقط وتحتاج مراجعة محام، وليست استشارة قانونية نهائية." },
-      { title: "الملفات القانونية", body: "الملفات ترفع فقط عبر بوابة محمية لاحقا، وتخزن في مساحة خاصة على الخادم ولا تخدم مباشرة من Nginx أو مجلد public." }
+      { title: "الذكاء الاصطناعي", body: "قد تستخدم المنصة أدوات آلية لتنظيم الطلب مبدئيًا. المخرجات مساعدة فقط وتحتاج مراجعة محام، وليست استشارة قانونية نهائية." },
+      { title: "الملفات القانونية", body: "تشارك الملفات القانونية لاحقًا فقط من خلال قنوات محمية يعتمدها المكتب، ولا تُرسل عبر نماذج الموقع العامة." }
     ]
   },
   termsPage: {
@@ -502,10 +503,10 @@ export const publicContentAr = {
     opposingPartyName: "اسم الطرف الآخر إن وجد",
     summary: "ملخص الطلب",
     categories: {
-      "legal-consultation": "الاستشارات القانونية",
-      "corporate-business-services": "خدمات الشركات والأعمال",
-      "real-estate-legal-support": "الدعم القانوني العقاري",
-      "claims-collections": "التحصيل والتسويات"
+      "legal-consultation": "استشارات حسب المجال",
+      "corporate-business-services": "الشركات والعقود التجارية",
+      "real-estate-legal-support": "مراجعة قانونية عقارية",
+      "claims-collections": "المطالبات المالية والتسويات"
     },
     urgencyLabels: { LOW: "منخفضة", NORMAL: "عادية", HIGH: "مرتفعة", URGENT: "عاجلة" },
     preferredModeLabels: { PHONE: "هاتف", ONLINE: "أونلاين", OFFICE: "في المكتب" },

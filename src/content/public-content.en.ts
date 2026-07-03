@@ -56,7 +56,7 @@ const articles = [
     readTime: "5 min read"
   },
   {
-    title: "How To Prepare A Legal Consultation File",
+    title: "How To Prepare A Consultation Request",
     slug: "prepare-consultation-file",
     category: "intake",
     excerpt: "A practical way to organize facts and documents before meeting a lawyer.",
@@ -105,7 +105,7 @@ const caseStudies = [
 const representativeMatters = [
   {
     areaKey: "real-estate-legal-support",
-    label: "Real Estate Legal Support",
+    label: "Real Estate Legal Review",
     title: "Reviewed A Real Estate Transaction File",
     region: "Egypt",
     year: "2026",
@@ -115,7 +115,7 @@ const representativeMatters = [
   },
   {
     areaKey: "corporate-business-services",
-    label: "Corporate & Business Services",
+    label: "Companies & Commercial Contracts",
     title: "Prepared A Company And Contract Review File",
     region: "Region",
     year: "2026",
@@ -125,7 +125,7 @@ const representativeMatters = [
   },
   {
     areaKey: "claims-collections",
-    label: "Claims & Collections",
+    label: "Debt Claims & Settlement",
     title: "Organized A Claims And Collection Request",
     region: "Egypt",
     year: "2026",
@@ -167,25 +167,26 @@ const publicIndustries = [
 
 const branches = [
   {
-    name: "Cairo Office",
-    address: "Central Cairo, close to administrative bodies and economic courts",
-    phone: "+20 100 000 0001",
+    name: "Cairo Office Visits",
+    address: "Cairo office visits by confirmed appointment.",
+    phone: "Use the consultation request form",
     email: "contact@kmtlegal.com"
   },
   {
-    name: "Online Meetings",
-    address: "Flexible video-call appointments after request review",
-    phone: "+20 100 000 0002",
+    name: "Remote Meetings",
+    address: "Online meetings are arranged after request review and appointment confirmation.",
+    phone: "Confirmed by the office team",
     email: "booking@kmtlegal.com"
   }
 ] as const;
 
 const footerContent = {
-  brandSummary: "Structured legal support for companies, investors, and individuals, with confidentiality and no publication of client data.",
+  brandSummary: "Structured legal support for companies, investors, and individuals, with intake, document review, and office follow-up.",
   practiceLinks: practiceAreaMatrix.map((area) => ({ label: area.title, href: area.href })),
   offices: branches.map((branch) => ({ name: branch.name, address: branch.address })),
   contact: {
     email: "contact@kmtlegal.com",
+    phone: "By confirmed appointment",
     bookingHref: "/book-consultation",
     note: "Consultation requests begin with a structured form and do not create final legal advice."
   },
@@ -217,12 +218,12 @@ export const publicContentEn = {
   branches,
   footerContent,
   shell: {
-    consultationCta: "Book a Consultation",
+    consultationCta: "Request a Consultation",
     clientLoginCta: "Client Login",
     mainNavLabel: "Main navigation",
     compactNavLabel: "Compact navigation",
-    footerCtaTitle: "Need clear legal support?",
-    footerCtaDescription: "Start with a structured request, and the team will review the details before confirming the right contact or booking path.",
+    footerCtaTitle: "Ready to discuss a legal matter?",
+    footerCtaDescription: "Send a structured request so the office can review the matter before confirming the suitable contact or appointment path.",
     confidentiality: "Data confidentiality",
     humanReview: "Human review",
     practiceLinksLabel: "Service links",
@@ -237,7 +238,7 @@ export const publicContentEn = {
     languageSwitchLabel: "العربية"
   },
   shared: {
-    bookConsultation: "Book a Consultation",
+    bookConsultation: "Request a Consultation",
     browsePracticeAreas: "Browse Services",
     viewDetails: "View Details",
     clearFilters: "Clear Filters",
@@ -245,30 +246,30 @@ export const publicContentEn = {
     notFound: "The requested item was not found."
   },
   home: {
-    metadataTitle: "KMT Legal | Comprehensive Legal Expertise Across Critical Sectors",
+    metadataTitle: "KMT Legal | Structured Legal Support for Business and Private Matters",
     metadataDescription: "Structured legal consultation, corporate, contract, real estate, dispute, and booking support from KMT Legal.",
     heroEyebrow: "Services",
-    heroTitle: "Comprehensive Legal Expertise Across Critical Sectors",
+    heroTitle: "Structured Legal Support for Business and Private Matters",
     heroDescription:
-      "We provide strategic and practical legal support for companies, investors, and individuals, from organizing facts and documents to setting a clear review path.",
+      "Submit your matter through a clear intake process. The office reviews the facts and documents before confirming the suitable next step.",
     trustItems: [
-      { icon: "verified_user", label: "Human review before any legal decision" },
-      { icon: "lock", label: "Client data and documents are not published" },
-      { icon: "schedule", label: "Organized follow-up from request to appointment" }
+      { icon: "verified_user", label: "Reviewed by the office before any legal step" },
+      { icon: "lock", label: "Client information is handled confidentially" },
+      { icon: "schedule", label: "Clear follow-up from request to appointment" }
     ],
     practiceEyebrow: "Our Services",
-    practiceTitle: "KMT Legal Services",
-    practiceDescription: "A clear service structure helps you choose the closest path for your request while protecting privacy and client data.",
+    practiceTitle: "Legal Services by Matter Type",
+    practiceDescription: "Choose the service closest to your matter, then send a structured consultation request for office review.",
     focusEyebrow: "Focus Area",
     approachEyebrow: "Our Approach",
-    approachTitle: "From first request to clear next steps",
-    approachDescription: "The site does not promise outcomes. It organizes the starting point and makes communication with the team clearer.",
+    approachTitle: "How the request is handled",
+    approachDescription: "The website organizes intake; legal advice and file acceptance happen only after office review.",
     representativeEyebrow: "Representative Matters",
     representativeTitle: "Recent Representative Matters",
     representativeDescription: "Anonymized and simplified examples that show the type of service requests handled by the office without revealing client data.",
     industriesEyebrow: "Industries",
     industriesTitle: "Industries We Serve",
-    industriesDescription: "The dark visual language does not change the product: the content remains legal, clear, and directed toward practical business decisions.",
+    industriesDescription: "We help clients make clearer decisions through document review, risk assessment, and practical next steps.",
     teamEyebrow: "Team",
     teamTitle: "A practical specialist legal team",
     teamDescription: "Explore available expertise paths for booking or initial review.",
@@ -276,25 +277,25 @@ export const publicContentEn = {
     insightsTitle: "Legal Awareness Without Promises",
     insightsDescription: "Published administrative content only appears when it is approved and available in the current language.",
     caseStudyAnonymous: "Anonymous case study",
-    finalCtaTitle: "Need Legal Support for Your Business?",
-    finalCtaDescription: "Our team is ready to receive a structured request and review initial details before confirming an appointment or next step.",
+    finalCtaTitle: "Ready to discuss a legal matter?",
+    finalCtaDescription: "Send a structured request so the office can review the matter before confirming the suitable contact or appointment path.",
     approachSteps: [
-      { number: "01", title: "Consultation", summary: "We listen to the facts and identify the goal and required information before any recommendation.", icon: "groups" },
-      { number: "02", title: "Strategy", summary: "We organize legal options into a practical path aligned with business goals.", icon: "strategy" },
-      { number: "03", title: "Execution", summary: "We review documents and steps while reducing risk and closing gaps.", icon: "contract_edit" },
-      { number: "04", title: "Resolution", summary: "We move the file toward a practical result with clear follow-up.", icon: "target" }
+      { number: "01", title: "Intake", summary: "We receive the facts, contact details, and key question in an organized form.", icon: "groups" },
+      { number: "02", title: "Initial Review", summary: "The office reviews the matter and identifies the documents or clarifications needed.", icon: "strategy" },
+      { number: "03", title: "Next Steps", summary: "The team outlines the suitable review path and appointment or follow-up requirements.", icon: "contract_edit" },
+      { number: "04", title: "Follow-up", summary: "The matter stays organized while the office confirms the next practical steps.", icon: "target" }
     ]
   },
   servicesPage: {
     metadataTitle: "Legal Services | KMT Legal",
     metadataDescription: "KMT Legal services in legal consultation, companies, contracts, real estate, claims, and collections.",
     heroEyebrow: "Services",
-    heroTitle: "Filterable Legal Services",
-    heroDescription: "Start from the file type or search directly for the service closest to your need, then submit a structured request for human review.",
+    heroTitle: "Find the Closest Service Path",
+    heroDescription: "Start from the matter type or search for the service closest to your need, then submit a structured request for office review.",
     sectionEyebrow: "Services",
-    sectionTitle: "Choose the closest path for your request",
-    sectionDescription: "Use search or category filters to reach the right service, then start a structured consultation request.",
-    searchLabel: "Search services",
+    sectionTitle: "Find the Closest Service Path",
+    sectionDescription: "Use the service names and matter areas to reach the right path, then start a structured consultation request.",
+    searchLabel: "Search by service or matter",
     emptyTitle: "No matching services",
     servicesCountLabel: "services"
   },
@@ -308,15 +309,15 @@ export const publicContentEn = {
     metadataTitle: "KMT Legal Team",
     metadataDescription: "Learn about KMT Legal lawyers and their available review and booking specialties.",
     heroEyebrow: "Team",
-    heroTitle: "Legal Team With Clear Specialties",
+    heroTitle: "Lawyers With Defined Practice Areas",
     heroDescription: "Review specialties before booking so your request reaches the right lawyer from the beginning.",
     sectionEyebrow: "Team",
-    sectionTitle: "Clear specialties before booking",
+    sectionTitle: "Practice areas before requesting a consultation",
     sectionDescription: "Choose a lawyer by request area or review all available specialties.",
     searchLabel: "Search the team",
     emptyTitle: "No matching profiles",
-    bookingAvailable: "Available for booking",
-    officeReview: "Office review"
+    bookingAvailable: "Available after office review",
+    officeReview: "Office review required"
   },
   teamDetail: {
     specialtiesTitle: "Specialties",
@@ -364,33 +365,33 @@ export const publicContentEn = {
   },
   mediaPage: {
     metadataTitle: "Media and Content | KMT Legal",
-    metadataDescription: "Read-only media wall for awareness content, seminars, and posts.",
+    metadataDescription: "Legal awareness content, seminars, and office updates.",
     heroEyebrow: "Media",
-    heroTitle: "Read-Only Awareness Content",
-    heroDescription: "Organized follow-up for seminars and public posts without external publishing integration at this stage.",
+    heroTitle: "Legal Awareness and Office Updates",
+    heroDescription: "Articles, talks, and public updates that help clients prepare questions before contacting the office.",
     sectionEyebrow: "Media",
-    sectionTitle: "Organized Awareness Content",
-    sectionDescription: "A read-only page for general media content, without external publishing or social integration at this stage."
+    sectionTitle: "Legal Awareness and Office Updates",
+    sectionDescription: "Public legal awareness content from the office for preparation and general understanding."
   },
   contactPage: {
     metadataTitle: "Contact KMT Legal",
     metadataDescription: "KMT Legal contact details, offices, and general contact form.",
     heroEyebrow: "Contact",
-    heroTitle: "Clear Contact From The First Message",
-    heroDescription: "Send a general question or book a consultation if the request needs structured legal review.",
+    heroTitle: "Contact the Office",
+    heroDescription: "Send a general message, or request a consultation if the matter needs structured legal review.",
     sectionEyebrow: "Contact",
-    sectionTitle: "Start With A Clear Message",
+    sectionTitle: "Contact the Office",
     sectionDescription: "Use the contact form for general questions. For legal consultations, use the structured booking form."
   },
   bookingPage: {
-    metadataTitle: "Book a Consultation | KMT Legal",
-    metadataDescription: "Book a consultation through a focused chat assistant with human review and no legal advice from AI.",
+    metadataTitle: "Request an Initial Consultation | KMT Legal",
+    metadataDescription: "Request an initial consultation through a focused intake assistant with office review and no legal advice from AI.",
     heroEyebrow: "Consultation Request",
-    heroTitle: "Book A Consultation Through Chat",
-    heroDescription: "The chat collects the details needed for human review. It does not provide legal advice before the team contacts you.",
+    heroTitle: "Request an Initial Consultation",
+    heroDescription: "The intake assistant collects the details needed for office review. It does not provide legal advice before the team contacts you.",
     sectionEyebrow: "Consultation Request",
-    sectionTitle: "Chat With The Booking Assistant",
-    sectionDescription: "Use one clear chat to request a consultation or check a previous reference. Do not send documents now.",
+    sectionTitle: "Start with the Consultation Assistant",
+    sectionDescription: "Use one clear conversation to request a consultation or check a previous reference. Do not send documents now.",
     afterSubmitTitle: "What happens after submission?",
     afterSubmitSteps: [
       "The request is saved as a new review item.",
@@ -401,28 +402,28 @@ export const publicContentEn = {
     requestedLawyer: "Requested lawyer"
   },
   bookingChat: {
-    heroTitle: "Book A Consultation Through Chat",
-    heroDescription: "A focused booking assistant collects the details the office needs for human review. It does not provide legal advice.",
-    sectionTitle: "Start With The Booking Assistant",
-    sectionDescription: "Use the chat to book a consultation or check a previous reference. The team reviews every request before confirming next steps.",
-    title: "Consultation booking chat",
-    assistantName: "KMT Booking Assistant",
+    heroTitle: "Request an Initial Consultation",
+    heroDescription: "A focused intake assistant collects the details the office needs for review. It does not provide legal advice.",
+    sectionTitle: "Start with the Consultation Assistant",
+    sectionDescription: "Use the conversation to request a consultation or check a previous reference. The team reviews every request before confirming next steps.",
+    title: "Consultation request assistant",
+    assistantName: "KMT Consultation Assistant",
     status: "Booking only",
     scope: "Booking and reference checks only. No legal advice.",
-    onlineNow: "Online now",
+    onlineNow: "Assistant available",
     humanReviewOnly: "Human review only",
     noLegalAdvice: "No legal advice",
-    secureConfidential: "Secure & Confidential",
+    secureConfidential: "Confidential intake",
     humanReviewBadge: "Human Review",
-    fastResponse: "Fast response",
+    fastResponse: "Reviewed follow-up",
     languagePrompt: "Please choose the conversation language. / من فضلك اختر لغة المحادثة.",
     languageArabic: "العربية",
     languageEnglish: "English",
     greeting: "Hello. I can help you book a consultation or check a previous booking reference. I will collect only the details needed for team review.",
     book: "Book consultation",
     inquire: "Check reference",
-    corporateLaw: "Corporate & business",
-    litigation: "Claims & collections",
+    corporateLaw: "Companies & commercial contracts",
+    litigation: "Debt claims & settlement",
     messageLabel: "Message",
     messagePlaceholder: "Type a booking request or reference question",
     languagePendingPlaceholder: "Choose Arabic or English to start",
@@ -452,7 +453,7 @@ export const publicContentEn = {
     paymentStatus: "Payment status",
     preferredSlot: "Preferred appointment time",
     preferredSlotHint: "Optional. Office booking slots are reviewed by the team.",
-    consent: "I agree to use this data to review the request and contact me. I understand this chat does not provide legal advice.",
+    consent: "I agree to use this data to review the request and contact me. I understand this assistant does not provide legal advice.",
     successTitle: "Request saved",
     reference: "Reference",
     inquiryResult: "Verified booking details",
@@ -468,7 +469,7 @@ export const publicContentEn = {
     trustItems: [
       { icon: "verified_user", label: "Human review", description: "The office team reviews the request before any legal decision." },
       { icon: "event_available", label: "Timing confirmation", description: "The team contacts you to confirm suitability and timing." },
-      { icon: "lock", label: "Limited data", description: "Do not send documents in this public chat." }
+      { icon: "lock", label: "Limited data", description: "Do not send documents in this public conversation." }
     ]
   },
   privacyPage: {
@@ -480,8 +481,8 @@ export const publicContentEn = {
     blocks: [
       { title: "Data We Receive", body: "We may receive name, phone number, email, city, request summary, and preferred contact method when a consultation or contact form is submitted." },
       { title: "Purpose Of Use", body: "We use the data to review the request, contact you, organize appointments, and improve internal workflow. Client data and documents are not published on public pages." },
-      { title: "Artificial Intelligence", body: "The system may use an internal AI gateway to organize the request initially. Outputs are assistive only, require lawyer review, and are not final legal advice." },
-      { title: "Legal Files", body: "Files are uploaded only through a protected portal later, stored in private server space, and not served directly from Nginx or the public folder." }
+      { title: "Artificial Intelligence", body: "The system may use automated tools to organize the request initially. Outputs are assistive only, require lawyer review, and are not final legal advice." },
+      { title: "Legal Files", body: "Legal files are shared later only through protected channels approved by the office, not through public website forms." }
     ]
   },
   termsPage: {
@@ -529,10 +530,10 @@ export const publicContentEn = {
     opposingPartyName: "Opposing party name, if any",
     summary: "Request Summary",
     categories: {
-      "legal-consultation": "Legal consultation",
-      "corporate-business-services": "Corporate & business services",
-      "real-estate-legal-support": "Real estate legal support",
-      "claims-collections": "Claims & collections"
+      "legal-consultation": "Consultations by area",
+      "corporate-business-services": "Companies & commercial contracts",
+      "real-estate-legal-support": "Real estate legal review",
+      "claims-collections": "Debt claims & settlement"
     },
     urgencyLabels: { LOW: "Low", NORMAL: "Normal", HIGH: "High", URGENT: "Urgent" },
     preferredModeLabels: { PHONE: "Phone", ONLINE: "Online", OFFICE: "Office" },

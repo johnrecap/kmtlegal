@@ -205,7 +205,7 @@ export function PublicShell({
               </li>
               <li className="flex gap-2">
                 <MaterialSymbol className={cn("mt-0.5 text-kmt-gold", publicMotionIcon, publicMotionIconHalo)} name="call" />
-                <span dir="ltr">+20 100 000 0001</span>
+                <span>{content.footerContent.contact.phone}</span>
               </li>
               <li className="flex gap-2">
                 <MaterialSymbol className={cn("mt-0.5 text-kmt-gold", publicMotionIcon, publicMotionIconHalo)} name="schedule" />

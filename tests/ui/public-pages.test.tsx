@@ -25,7 +25,7 @@ describe("public website UI", () => {
     expect(html).toContain("href=\"/services\"");
     expect(html).toContain("aria-current=\"page\"");
     expect(html).toContain("Services");
-    expect(html).toContain("Book a Consultation");
+    expect(html).toContain("Request a Consultation");
     expect(html).toContain("Client Login");
     expect(html).toContain("href=\"/login?next=/client\"");
     expect(html).toContain("العربية");
@@ -67,7 +67,7 @@ describe("public website UI", () => {
     expect(content.home.industriesEyebrow).toBe("القطاعات");
     expect(content.home.teamEyebrow).toBe("الفريق");
     expect(content.home.insightsEyebrow).toBe("رؤى قانونية");
-    expect(html).toContain("هل تحتاج إلى دعم قانوني واضح؟");
+    expect(html).toContain("هل تريد مناقشة مسألة قانونية؟");
     expect(html).not.toContain("هل تحتاج إلى دعم قانوني لعملك؟");
     expect(publicPageSource).not.toContain("<FinalCtaBand");
   });
@@ -88,7 +88,7 @@ describe("public website UI", () => {
     );
 
     expect(html).toContain("Structured Legal Consultations");
-    expect(html).toContain("Human review");
+    expect(html).toContain("Reviewed by the office before any legal step");
     expect(html).toContain("object-cover");
     expect(html).toContain("data-testid=\"public-page-hero-image\"");
     expect(html).toContain("loading=\"eager\"");
@@ -109,7 +109,7 @@ describe("public website UI", () => {
         eyebrow="Services"
         image="/services.png"
         size="compact"
-        title="Filterable Legal Services"
+        title="Find the Closest Service Path"
         description="Clear English description"
       />
     );
@@ -119,22 +119,22 @@ describe("public website UI", () => {
     expect(html).toContain("loading=\"lazy\"");
     expect(html).toContain("opacity-95");
     expect(html).toContain("bg-[#020403]/42");
-    expect(html).toContain("Filterable Legal Services");
+    expect(html).toContain("Find the Closest Service Path");
     expect(html).not.toContain("secondary-container");
   });
 
   it("renders dark public section and detail CTA APIs", () => {
     const html = renderToStaticMarkup(
         <PublicSection align="center" eyebrow="Test" title="General title" description="General description" surface="muted">
-          <DetailCta serviceTitle="Corporate & Business Services" />
+          <DetailCta serviceTitle="Companies & Commercial Contracts" />
         </PublicSection>
       );
 
     expect(html).toContain("bg-[#0c1116]");
     expect(html).toContain("mx-auto text-center");
-    expect(html).toContain("Chat With The Booking Assistant");
-    expect(html).toContain("Book a Consultation");
-    expect(html).toContain("href=\"/book-consultation?service=Corporate%20%26%20Business%20Services\"");
+    expect(html).toContain("Start with the Consultation Assistant");
+    expect(html).toContain("Request a Consultation");
+    expect(html).toContain("href=\"/book-consultation?service=Companies%20%26%20Commercial%20Contracts\"");
   });
 
   it("keeps product font loading local and blocks fallback font flashes", () => {
