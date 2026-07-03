@@ -4,6 +4,7 @@ import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
+import { expireOpenConsultationPaymentAttempts } from "@/server/payments/payment-service";
 import { parseWithSchema } from "@/server/validation/schemas";
 
 export const CONSULTATION_AVAILABILITY_SETTING_KEY = "consultation.availability";
@@ -148,12 +149,13 @@ export async function listPublicConsultationSlots(input: {
   fromTime?: string;
   toTime?: string;
 } = {}) {
+  await expireOpenConsultationPaymentAttempts(input.now ?? new Date());
   const availability = await getConsultationAvailability();
   const window = consultationSlotWindow(availability, input.now ?? new Date());
   const appointments = await prisma.appointment.findMany({
     where: {
       type: "CONSULTATION",
-      status: { in: ["SCHEDULED", "RESCHEDULED"] },
+      status: { in: ["RESERVED", "SCHEDULED", "RESCHEDULED"] },
       startsAt: { lt: window.endsAt },
       endsAt: { gt: window.startsAt }
     },

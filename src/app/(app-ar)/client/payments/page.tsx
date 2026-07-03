@@ -5,7 +5,7 @@ import { Badge, DataRecordCard, DataTable, type DataTableColumn } from "@/compon
 import { buttonClasses } from "@/components/ui/button";
 import { formatDateTime, formatMoney, labelFrom, paymentStatusLabels } from "@/lib/legal-format";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
-import { listPortalPayments } from "@/server/portal/client-portal-service";
+import { listPortalPaymentAttempts, listPortalPayments } from "@/server/portal/client-portal-service";
 import { clientNavForPath } from "../client-navigation";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 };
 
 type PaymentRow = Awaited<ReturnType<typeof listPortalPayments>>[number];
+type PaymentAttemptRow = Awaited<ReturnType<typeof listPortalPaymentAttempts>>[number];
 
 function isDue(payment: PaymentRow) {
   return payment.status !== "PAID" && payment.status !== "CANCELLED";
@@ -24,6 +25,13 @@ function statusTone(status: string) {
   if (status === "PAID") return "active" as const;
   if (status === "CANCELLED") return "closed" as const;
   if (status === "OVERDUE" || status === "PENDING") return "danger" as const;
+  return "pending" as const;
+}
+
+function attemptTone(status: string) {
+  if (status === "PAID") return "active" as const;
+  if (status === "REFUNDED" || status === "CANCELLED") return "closed" as const;
+  if (status === "FAILED" || status === "EXPIRED" || status === "DISPUTED") return "danger" as const;
   return "pending" as const;
 }
 
@@ -89,13 +97,57 @@ function MobileCard({ row }: { row: PaymentRow }) {
   );
 }
 
+function GatewayAttemptCards({ attempts }: { attempts: PaymentAttemptRow[] }) {
+  if (!attempts.length) {
+    return null;
+  }
+
+  return (
+    <section className="space-y-3" aria-labelledby="client-payment-attempts-title">
+      <div>
+        <h2 id="client-payment-attempts-title" className="text-lg font-semibold text-kmt-ink">
+          محاولات دفع حجز الاستشارة
+        </h2>
+        <p className="mt-1 text-sm text-kmt-muted">يتم تأكيد الموعد فقط بعد إشعار دفع موثوق من بوابة الدفع.</p>
+      </div>
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {attempts.map((attempt) => (
+          <div key={attempt.id} className="rounded border border-kmt-border bg-white p-4 shadow-sm">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-semibold text-kmt-ink">{formatMoney(attempt.amount.toString(), attempt.currency)}</p>
+              <Badge tone={attemptTone(attempt.status)}>{attempt.status}</Badge>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-kmt-muted">{attempt.appointment.title}</p>
+            <p className="text-sm leading-6 text-kmt-muted">{formatDateTime(attempt.appointment.startsAt)}</p>
+            {attempt.payment ? <p className="mt-2 text-sm text-kmt-muted">فاتورة: {attempt.payment.invoiceNumber}</p> : null}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {attempt.checkoutUrl && ["CREATED", "PENDING"].includes(attempt.status) ? (
+                <Link className={buttonClasses({ variant: "primary", size: "sm", className: `min-h-11 ${clientPortalSecondaryActionClass}` })} href={attempt.checkoutUrl}>
+                  استكمال الدفع
+                </Link>
+              ) : null}
+              <Link className={buttonClasses({ variant: "secondary", size: "sm", className: `min-h-11 ${clientPortalSecondaryActionClass}` })} href={`/payment/consultation/return?attemptId=${attempt.id}`}>
+                متابعة الحالة
+              </Link>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default async function ClientPaymentsPage() {
   const guard = await requirePortalPage("/client/payments");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }
 
-  const payments = await listPortalPayments(guard.context.principal);
+  const [payments, paymentAttempts] = await Promise.all([
+    listPortalPayments(guard.context.principal),
+    listPortalPaymentAttempts(guard.context.principal)
+  ]);
+  const activeGatewayAttempts = paymentAttempts.filter((attempt) => attempt.status !== "PAID" || !attempt.payment);
   const duePayments = payments.filter(isDue);
   const dueBalance = duePayments.reduce((total, payment) => total + Number(payment.amount.toString()), 0);
 
@@ -107,6 +159,7 @@ export default async function ClientPaymentsPage() {
           <ClientPortalMetric icon="account_balance_wallet" label="إجمالي المستحق" tone={dueBalance > 0 ? "due" : "default"} value={formatMoney(dueBalance)} meta="حسب الفواتير الظاهرة لك." />
           <ClientPortalMetric icon="receipt_long" label="كل السجلات" value={String(payments.length)} meta="فواتير وإيصالات مرتبطة بحسابك." />
         </div>
+        <GatewayAttemptCards attempts={activeGatewayAttempts} />
         <DataTable
           className={clientPortalTableClass}
           columns={columns}

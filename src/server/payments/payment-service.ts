@@ -1,0 +1,870 @@
+import { createHash } from "crypto";
+import { Prisma } from "@prisma/client";
+import { z } from "zod";
+import { appendAuditLog, appendAuditLogBestEffort } from "@/server/audit/audit-service";
+import { hasPermission, type Principal } from "@/server/auth/policy";
+import { prisma } from "@/server/db/prisma";
+import { ApiError } from "@/server/http/errors";
+import { toPagination } from "@/server/http/pagination";
+import { captureAnalyticsEventBestEffort } from "@/server/observability/analytics-service";
+import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
+import { createHostedCheckout, verifyWebhookSignature } from "./payment-provider";
+import {
+  paymentProvider,
+  paymentReservationMinutes,
+  paymentWebhookSecret,
+  requireVerifiedWebhookSignature
+} from "./payment-config";
+import type { ConsultationPriceSnapshot } from "./pricing-service";
+
+const paymentAttemptStatusSchema = z.enum(["CREATED", "PENDING", "PAID", "FAILED", "EXPIRED", "REFUNDED", "DISPUTED", "CANCELLED"]);
+const webhookProcessingStatusSchema = z.enum(["PENDING", "PROCESSED", "FAILED", "IGNORED"]);
+
+export const adminPaymentAttemptListQuerySchema = z.object({
+  status: paymentAttemptStatusSchema.optional().or(z.literal("")),
+  q: z.string().trim().max(120).optional().or(z.literal("")),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(80).default(20)
+});
+
+export const adminPaymentWebhookListQuerySchema = z.object({
+  processingStatus: webhookProcessingStatusSchema.optional().or(z.literal("")),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(80).default(20)
+});
+
+type PaymentClient = Prisma.TransactionClient;
+type NormalizedWebhookPayload = {
+  provider: string;
+  attemptId: string;
+  providerTransactionId: string | null;
+  rawStatus: string;
+  status: ReturnType<typeof mapProviderPaymentStatus>;
+  amount: string;
+  currency: string;
+};
+
+export type CreateConsultationPaymentAttemptInput = {
+  tx: PaymentClient;
+  client: {
+    id: string;
+    fullName: string;
+    email: string | null;
+    phone: string;
+  };
+  consultationRequest: {
+    id: string;
+    serviceCategory: string;
+  };
+  appointment: {
+    id: string;
+    title: string;
+    startsAt: Date;
+    endsAt: Date;
+    mode: "PHONE" | "ONLINE" | "OFFICE";
+  };
+  price: ConsultationPriceSnapshot;
+  request?: Request;
+};
+
+export function canReadAdminPaymentOperations(actor: Principal) {
+  return hasPermission(actor, "finance.read.any") || hasPermission(actor, "finance.manage.any");
+}
+
+export function canManageAdminPaymentOperations(actor: Principal) {
+  return hasPermission(actor, "finance.manage.any");
+}
+
+export async function expireOpenConsultationPaymentAttempts(now = new Date()) {
+  const attempts = await prisma.paymentAttempt.findMany({
+    where: {
+      status: { in: ["CREATED", "PENDING"] },
+      expiresAt: { lt: now }
+    },
+    select: { id: true, appointmentId: true, consultationRequestId: true }
+  });
+
+  if (!attempts.length) {
+    return 0;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.paymentAttempt.updateMany({
+      where: { id: { in: attempts.map((attempt) => attempt.id) } },
+      data: { status: "EXPIRED", failureCode: "ATTEMPT_EXPIRED" }
+    });
+
+    await tx.appointment.updateMany({
+      where: { id: { in: attempts.map((attempt) => attempt.appointmentId) }, status: "RESERVED" },
+      data: { status: "CANCELLED", notes: "Payment reservation expired before trusted payment confirmation." }
+    });
+
+    await tx.consultationRequest.updateMany({
+      where: { id: { in: attempts.map((attempt) => attempt.consultationRequestId) }, status: "PAYMENT_PENDING" },
+      data: { status: "REVIEWING" }
+    });
+  });
+
+  return attempts.length;
+}
+
+export async function createConsultationPaymentAttempt(input: CreateConsultationPaymentAttemptInput) {
+  const expiresAt = new Date(Date.now() + paymentReservationMinutes() * 60_000);
+  const idempotencyKey = consultationAttemptIdempotencyKey({
+    clientId: input.client.id,
+    startsAt: input.appointment.startsAt,
+    serviceCategory: input.price.serviceCategory,
+    mode: input.price.mode,
+    amount: input.price.amountText,
+    currency: input.price.currency,
+    priceVersion: input.price.priceVersion
+  });
+
+  const existing = await input.tx.paymentAttempt.findFirst({
+    where: {
+      idempotencyKey,
+      status: { in: ["CREATED", "PENDING"] },
+      expiresAt: { gt: new Date() }
+    }
+  });
+
+  if (existing?.checkoutUrl) {
+    return existing;
+  }
+
+  const attempt = existing
+    ? existing
+    : await input.tx.paymentAttempt.create({
+        data: {
+          provider: paymentProvider(),
+          status: "CREATED",
+          clientId: input.client.id,
+          consultationRequestId: input.consultationRequest.id,
+          appointmentId: input.appointment.id,
+          pricingRuleId: input.price.pricingRuleId,
+          priceVersion: input.price.priceVersion,
+          serviceCategory: input.price.serviceCategory,
+          mode: input.price.mode,
+          amount: input.price.amount,
+          currency: input.price.currency,
+          startsAt: input.appointment.startsAt,
+          endsAt: input.appointment.endsAt,
+          expiresAt,
+          idempotencyKey
+        }
+      });
+
+  const checkout = await createHostedCheckout({
+    attemptId: attempt.id,
+    amount: input.price.amountText,
+    currency: input.price.currency,
+    description: `KMT Legal consultation booking ${attempt.id}`,
+    customer: {
+      name: input.client.fullName,
+      email: input.client.email,
+      phone: input.client.phone
+    },
+    request: input.request
+  });
+
+  const updated = await input.tx.paymentAttempt.update({
+    where: { id: attempt.id },
+    data: {
+      provider: checkout.provider,
+      status: "PENDING",
+      checkoutUrl: checkout.checkoutUrl,
+      providerSessionId: checkout.providerSessionId
+    }
+  });
+
+  await appendAuditLog({
+    client: input.tx,
+    action: "payment.checkout_create",
+    resourceType: "PaymentAttempt",
+    resourceId: updated.id,
+    clientId: input.client.id,
+    appointmentId: input.appointment.id,
+    metadata: {
+      provider: updated.provider,
+      amount: updated.amount.toString(),
+      currency: updated.currency,
+      serviceCategory: updated.serviceCategory,
+      mode: updated.mode,
+      expiresAt: updated.expiresAt.toISOString()
+    },
+    request: input.request
+  });
+
+  captureAnalyticsEventBestEffort({
+    name: "payment.checkout_created",
+    source: "SERVER",
+    outcome: "INFO",
+    properties: {
+      provider: updated.provider,
+      serviceCategory: updated.serviceCategory,
+      mode: updated.mode,
+      currency: updated.currency
+    }
+  });
+
+  return updated;
+}
+
+export async function getPublicPaymentAttemptStatus(input: { attemptId: string }) {
+  const attemptId = parseWithSchema(uuidSchema, input.attemptId, "Payment attempt id is invalid.");
+  await expireOpenConsultationPaymentAttempts();
+
+  const attempt = await prisma.paymentAttempt.findUnique({
+    where: { id: attemptId },
+    include: {
+      appointment: { select: { id: true, title: true, startsAt: true, status: true } },
+      consultationRequest: { select: { id: true, status: true } },
+      payment: { select: { id: true, invoiceNumber: true, status: true, paidAt: true } }
+    }
+  });
+
+  if (!attempt) {
+    throw new ApiError(404, "NOT_FOUND", "Payment attempt was not found.");
+  }
+
+  return paymentAttemptDto(attempt);
+}
+
+export async function handlePaymentWebhook(input: { request: Request; rawBody: string; requestId: string }) {
+  const payloadHash = createHash("sha256").update(input.rawBody).digest("hex");
+  const body = parseWebhookJson(input.rawBody);
+  const provider = String(body.provider || paymentProvider()).toLowerCase();
+  const eventId = webhookEventId(body, payloadHash);
+  const secret = paymentWebhookSecret();
+  const signature = webhookSignature(input.request);
+  const signatureVerified = verifyWebhookSignature({ rawBody: input.rawBody, signature, secret });
+  const signatureStatus = signatureVerified ? "VERIFIED" : secret || requireVerifiedWebhookSignature() ? "INVALID" : "UNVERIFIED";
+
+  const existing = await prisma.paymentWebhookEvent.findUnique({
+    where: { provider_eventId: { provider, eventId } }
+  });
+  if (existing?.processingStatus === "PROCESSED") {
+    return { event: existing, idempotent: true };
+  }
+
+  if (signatureStatus === "INVALID") {
+    const event = await upsertWebhookEvent({
+      provider,
+      eventId,
+      payloadHash,
+      signatureStatus,
+      processingStatus: "FAILED",
+      errorCode: "INVALID_SIGNATURE"
+    });
+    throw new ApiError(400, "VALIDATION_ERROR", "Payment webhook signature is invalid.", [
+      { path: "signature", message: "Invalid webhook signature.", code: "invalid_signature" }
+    ]);
+  }
+
+  const normalized = normalizeWebhookPayload(body, provider);
+  const event = await upsertWebhookEvent({
+    provider,
+    eventId,
+    payloadHash,
+    signatureStatus,
+    processingStatus: "PENDING",
+    attemptId: normalized.attemptId,
+    normalizedPayload: normalized
+  });
+
+  try {
+    const processed = await applyWebhookPaymentState({
+      eventId: event.id,
+      payload: normalized,
+      provider,
+      request: input.request,
+      requestId: input.requestId
+    });
+    return { event: processed, idempotent: false };
+  } catch (error) {
+    await prisma.paymentWebhookEvent.update({
+      where: { id: event.id },
+      data: {
+        processingStatus: "FAILED",
+        errorCode: error instanceof ApiError ? error.code : "WEBHOOK_PROCESSING_FAILED",
+        processedAt: new Date()
+      }
+    });
+    throw error;
+  }
+}
+
+export async function replayAdminPaymentWebhookEvent(input: { actor: Principal; eventId: string; request?: Request; requestId?: string }) {
+  if (!canManageAdminPaymentOperations(input.actor)) {
+    throw new ApiError(403, "PERMISSION_DENIED", "Finance management permission is required.");
+  }
+
+  const eventId = parseWithSchema(uuidSchema, input.eventId, "Webhook event id is invalid.");
+  const event = await prisma.paymentWebhookEvent.findUnique({
+    where: { id: eventId },
+    include: { attempt: true }
+  });
+
+  if (!event) {
+    throw new ApiError(404, "NOT_FOUND", "Payment webhook event was not found.");
+  }
+
+  if (!event.attempt) {
+    throw new ApiError(409, "CONFLICT", "Webhook event is not linked to a payment attempt.");
+  }
+
+  const replayed = await prisma.paymentWebhookEvent.update({
+    where: { id: event.id },
+    data: {
+      replayCount: { increment: 1 },
+      processingStatus: "PENDING",
+      errorCode: null
+    }
+  });
+
+  await appendAuditLogBestEffort({
+    actorId: input.actor.id,
+    action: "payment.webhook_replay",
+    resourceType: "PaymentWebhookEvent",
+    resourceId: replayed.id,
+    clientId: event.attempt.clientId,
+    appointmentId: event.attempt.appointmentId,
+    metadata: { provider: event.provider, eventId: event.eventId, replayCount: replayed.replayCount },
+    request: input.request,
+    requestId: input.requestId
+  });
+
+  const normalized = parseStoredNormalizedPayload(replayed.normalizedPayload);
+  if (!normalized) {
+    return replayed;
+  }
+
+  return applyWebhookPaymentState({
+    eventId: replayed.id,
+    payload: normalized,
+    provider: event.provider,
+    request: input.request ?? new Request("http://internal.kmt.local/admin/payment-webhook-replay"),
+    requestId: input.requestId ?? replayed.id
+  });
+}
+
+export async function listAdminPaymentAttempts(input: { actor: Principal; query?: unknown }) {
+  if (!canReadAdminPaymentOperations(input.actor)) {
+    throw new ApiError(403, "PERMISSION_DENIED", "Finance read permission is required.");
+  }
+
+  const filters = parseWithSchema(adminPaymentAttemptListQuerySchema, input.query ?? {}, "Payment attempt filters are invalid.");
+  const pagination = toPagination(filters);
+  const where: Prisma.PaymentAttemptWhereInput = {
+    ...(filters.status ? { status: filters.status } : {}),
+    ...(filters.q
+      ? {
+          OR: [
+            { providerSessionId: { contains: filters.q, mode: "insensitive" } },
+            { providerPaymentId: { contains: filters.q, mode: "insensitive" } },
+            { client: { fullName: { contains: filters.q, mode: "insensitive" } } },
+            { consultationRequest: { phone: { contains: filters.q, mode: "insensitive" } } }
+          ]
+        }
+      : {})
+  };
+
+  const [items, total] = await Promise.all([
+    prisma.paymentAttempt.findMany({
+      where,
+      include: {
+        client: { select: { id: true, fullName: true, phone: true, email: true } },
+        appointment: { select: { id: true, startsAt: true, endsAt: true, status: true, title: true } },
+        payment: { select: { id: true, invoiceNumber: true, status: true, paidAt: true } }
+      },
+      orderBy: [{ createdAt: "desc" }],
+      skip: pagination.skip,
+      take: pagination.take
+    }),
+    prisma.paymentAttempt.count({ where })
+  ]);
+
+  return { items, total, filters, page: pagination.page, pageSize: pagination.pageSize };
+}
+
+export async function listAdminPaymentWebhookEvents(input: { actor: Principal; query?: unknown }) {
+  if (!canReadAdminPaymentOperations(input.actor)) {
+    throw new ApiError(403, "PERMISSION_DENIED", "Finance read permission is required.");
+  }
+
+  const filters = parseWithSchema(adminPaymentWebhookListQuerySchema, input.query ?? {}, "Webhook filters are invalid.");
+  const pagination = toPagination(filters);
+  const where: Prisma.PaymentWebhookEventWhereInput = {
+    ...(filters.processingStatus ? { processingStatus: filters.processingStatus } : {})
+  };
+
+  const [items, total] = await Promise.all([
+    prisma.paymentWebhookEvent.findMany({
+      where,
+      include: {
+        attempt: {
+          select: {
+            id: true,
+            status: true,
+            amount: true,
+            currency: true,
+            client: { select: { id: true, fullName: true } },
+            appointment: { select: { id: true, startsAt: true, status: true } }
+          }
+        }
+      },
+      orderBy: [{ receivedAt: "desc" }],
+      skip: pagination.skip,
+      take: pagination.take
+    }),
+    prisma.paymentWebhookEvent.count({ where })
+  ]);
+
+  return { items, total, filters, page: pagination.page, pageSize: pagination.pageSize };
+}
+
+function consultationAttemptIdempotencyKey(input: {
+  clientId: string;
+  startsAt: Date;
+  serviceCategory: string;
+  mode: string;
+  amount: string;
+  currency: string;
+  priceVersion: number;
+}) {
+  return createHash("sha256")
+    .update([input.clientId, input.startsAt.toISOString(), input.serviceCategory, input.mode, input.amount, input.currency, input.priceVersion].join("|"))
+    .digest("hex");
+}
+
+function parseWebhookJson(rawBody: string) {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(rawBody || "{}");
+  } catch {
+    throw new ApiError(400, "VALIDATION_ERROR", "Payment webhook payload is invalid JSON.");
+  }
+  if (!parsed || typeof parsed !== "object") {
+    throw new ApiError(400, "VALIDATION_ERROR", "Payment webhook payload is invalid.");
+  }
+  return parsed as Record<string, unknown>;
+}
+
+function webhookSignature(request: Request) {
+  return (
+    request.headers.get("x-kmt-payment-signature") ||
+    request.headers.get("x-paytabs-signature") ||
+    request.headers.get("signature") ||
+    request.headers.get("Signature")
+  );
+}
+
+function webhookEventId(body: Record<string, unknown>, payloadHash: string) {
+  return String(body.eventId || body.id || body.tran_ref || body.transaction_id || body.cart_id || payloadHash);
+}
+
+function normalizeWebhookPayload(body: Record<string, unknown>, provider: string): NormalizedWebhookPayload {
+  const attemptId = String(body.attemptId || body.cart_id || body.cartId || "");
+  const providerTransactionId = String(body.transactionId || body.tran_ref || body.transaction_id || body.providerTransactionId || "");
+  const rawStatus = String(body.status || body.respStatus || nestedString(body, ["payment_result", "response_status"]) || "");
+  const amount = String(body.amount || body.cart_amount || "");
+  const currency = String(body.currency || body.cart_currency || "EGP");
+
+  if (!attemptId) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Payment webhook attempt id is missing.");
+  }
+
+  return {
+    provider,
+    attemptId,
+    providerTransactionId: providerTransactionId || null,
+    rawStatus,
+    status: mapProviderPaymentStatus(rawStatus),
+    amount,
+    currency
+  };
+}
+
+export function mapProviderPaymentStatus(status: string) {
+  const value = status.trim().toLowerCase();
+  if (["a", "paid", "success", "succeeded", "captured", "approved", "authorized"].includes(value)) {
+    return "PAID" as const;
+  }
+  if (["p", "pending", "created", "processing"].includes(value)) {
+    return "PENDING" as const;
+  }
+  if (["r", "refunded", "refund"].includes(value)) {
+    return "REFUNDED" as const;
+  }
+  if (["d", "disputed", "chargeback"].includes(value)) {
+    return "DISPUTED" as const;
+  }
+  if (["c", "cancelled", "canceled", "void"].includes(value)) {
+    return "CANCELLED" as const;
+  }
+  if (["expired", "timeout", "timed_out"].includes(value)) {
+    return "EXPIRED" as const;
+  }
+  return "FAILED" as const;
+}
+
+async function upsertWebhookEvent(input: {
+  provider: string;
+  eventId: string;
+  payloadHash: string;
+  signatureStatus: "VERIFIED" | "UNVERIFIED" | "INVALID";
+  processingStatus: "PENDING" | "PROCESSED" | "FAILED" | "IGNORED";
+  errorCode?: string;
+  attemptId?: string;
+  normalizedPayload?: NormalizedWebhookPayload;
+}) {
+  return prisma.paymentWebhookEvent.upsert({
+    where: { provider_eventId: { provider: input.provider, eventId: input.eventId } },
+    create: {
+      provider: input.provider,
+      eventId: input.eventId,
+      payloadHash: input.payloadHash,
+      signatureStatus: input.signatureStatus,
+      processingStatus: input.processingStatus,
+      errorCode: input.errorCode ?? null,
+      normalizedPayload: input.normalizedPayload ? (input.normalizedPayload as Prisma.InputJsonValue) : undefined,
+      attemptId: isUuid(input.attemptId) ? input.attemptId : null
+    },
+    update: {
+      payloadHash: input.payloadHash,
+      signatureStatus: input.signatureStatus,
+      processingStatus: input.processingStatus,
+      errorCode: input.errorCode ?? null,
+      normalizedPayload: input.normalizedPayload ? (input.normalizedPayload as Prisma.InputJsonValue) : undefined,
+      attemptId: isUuid(input.attemptId) ? input.attemptId : undefined
+    }
+  });
+}
+
+async function applyWebhookPaymentState(input: {
+  eventId: string;
+  provider: string;
+  payload: ReturnType<typeof normalizeWebhookPayload>;
+  request: Request;
+  requestId: string;
+}) {
+  const attemptId = parseWithSchema(uuidSchema, input.payload.attemptId, "Payment attempt id is invalid.");
+  return prisma.$transaction(async (tx) => {
+    const attempt = await tx.paymentAttempt.findUnique({
+      where: { id: attemptId },
+      include: {
+        appointment: true,
+        consultationRequest: true,
+        payment: true
+      }
+    });
+
+    if (!attempt) {
+      throw new ApiError(404, "NOT_FOUND", "Payment attempt was not found.");
+    }
+
+    const transaction = await upsertPaymentTransaction(tx, {
+      eventId: input.eventId,
+      attemptId: attempt.id,
+      provider: input.provider,
+      providerTransactionId: input.payload.providerTransactionId,
+      rawStatus: input.payload.rawStatus || null,
+      status: paymentTransactionStatus(input.payload.status),
+      amount: attempt.amount,
+      currency: attempt.currency,
+      paidAt: input.payload.status === "PAID" ? new Date() : null
+    });
+
+    await tx.paymentWebhookEvent.update({
+      where: { id: input.eventId },
+      data: { attemptId: attempt.id, transactionId: transaction.id }
+    });
+
+    if (input.payload.status === "PAID") {
+      await confirmPaidAttempt({ tx, attempt, transaction, request: input.request, requestId: input.requestId });
+    } else if (input.payload.status === "FAILED" || input.payload.status === "EXPIRED" || input.payload.status === "CANCELLED") {
+      await releaseFailedAttempt({ tx, attempt, status: input.payload.status, failureCode: input.payload.rawStatus || input.payload.status });
+    } else {
+      await tx.paymentAttempt.update({
+        where: { id: attempt.id },
+        data: { status: input.payload.status }
+      });
+    }
+
+    return tx.paymentWebhookEvent.update({
+      where: { id: input.eventId },
+      data: {
+        processingStatus: "PROCESSED",
+        errorCode: null,
+        processedAt: new Date()
+      }
+    });
+  });
+}
+
+async function upsertPaymentTransaction(
+  tx: PaymentClient,
+  input: {
+    eventId: string;
+    attemptId: string;
+    provider: string;
+    providerTransactionId: string | null;
+    rawStatus: string | null;
+    status: ReturnType<typeof paymentTransactionStatus>;
+    amount: Prisma.Decimal;
+    currency: "EGP" | "USD" | "EUR" | "SAR" | "AED";
+    paidAt: Date | null;
+  }
+) {
+  const existingEvent = await tx.paymentWebhookEvent.findUnique({
+    where: { id: input.eventId },
+    select: { transactionId: true }
+  });
+
+  if (existingEvent?.transactionId) {
+    return tx.paymentTransaction.update({
+      where: { id: existingEvent.transactionId },
+      data: {
+        rawStatus: input.rawStatus,
+        status: input.status,
+        amount: input.amount,
+        currency: input.currency,
+        paidAt: input.paidAt
+      }
+    });
+  }
+
+  if (input.providerTransactionId) {
+    const existingTransaction = await tx.paymentTransaction.findUnique({
+      where: {
+        provider_providerTransactionId: {
+          provider: input.provider,
+          providerTransactionId: input.providerTransactionId
+        }
+      }
+    });
+
+    if (existingTransaction) {
+      return tx.paymentTransaction.update({
+        where: { id: existingTransaction.id },
+        data: {
+          attemptId: input.attemptId,
+          rawStatus: input.rawStatus,
+          status: input.status,
+          amount: input.amount,
+          currency: input.currency,
+          paidAt: input.paidAt
+        }
+      });
+    }
+  }
+
+  return tx.paymentTransaction.create({
+    data: {
+      attemptId: input.attemptId,
+      provider: input.provider,
+      providerTransactionId: input.providerTransactionId,
+      rawStatus: input.rawStatus,
+      status: input.status,
+      amount: input.amount,
+      currency: input.currency,
+      paidAt: input.paidAt
+    }
+  });
+}
+
+async function confirmPaidAttempt(input: {
+  tx: PaymentClient;
+  attempt: Prisma.PaymentAttemptGetPayload<{ include: { appointment: true; consultationRequest: true; payment: true } }>;
+  transaction: { providerTransactionId: string | null; id: string };
+  request: Request;
+  requestId: string;
+}) {
+  if (input.attempt.payment || input.attempt.status === "PAID") {
+    return;
+  }
+
+  const now = new Date();
+  const invoiceNumber = gatewayInvoiceNumber(input.attempt.id, now);
+  const payment = await input.tx.payment.create({
+    data: {
+      invoiceNumber,
+      clientId: input.attempt.clientId,
+      consultationRequestId: input.attempt.consultationRequestId,
+      appointmentId: input.attempt.appointmentId,
+      paymentAttemptId: input.attempt.id,
+      issueDate: now,
+      amount: input.attempt.amount,
+      currency: input.attempt.currency,
+      status: "PAID",
+      paymentMethod: input.attempt.provider,
+      receiptNumber: input.transaction.providerTransactionId || input.transaction.id,
+      paidAt: now,
+      notes: "Gateway-confirmed consultation booking payment."
+    }
+  });
+
+  await input.tx.paymentAttempt.update({
+    where: { id: input.attempt.id },
+    data: {
+      status: "PAID",
+      providerPaymentId: input.transaction.providerTransactionId
+    }
+  });
+
+  await input.tx.appointment.update({
+    where: { id: input.attempt.appointmentId },
+    data: {
+      status: "SCHEDULED",
+      notes: "Confirmed after trusted payment webhook."
+    }
+  });
+
+  await input.tx.consultationRequest.update({
+    where: { id: input.attempt.consultationRequestId },
+    data: { status: "SCHEDULED" }
+  });
+
+  await appendAuditLog({
+    client: input.tx,
+    action: "payment.webhook_paid",
+    resourceType: "PaymentAttempt",
+    resourceId: input.attempt.id,
+    clientId: input.attempt.clientId,
+    appointmentId: input.attempt.appointmentId,
+    paymentId: payment.id,
+    metadata: {
+      invoiceNumber,
+      provider: input.attempt.provider,
+      amount: input.attempt.amount.toString(),
+      currency: input.attempt.currency
+    },
+    request: input.request,
+    requestId: input.requestId
+  });
+
+  captureAnalyticsEventBestEffort({
+    name: "payment.webhook_paid",
+    source: "SERVER",
+    outcome: "SUCCESS",
+    properties: {
+      provider: input.attempt.provider,
+      serviceCategory: input.attempt.serviceCategory,
+      mode: input.attempt.mode,
+      currency: input.attempt.currency
+    }
+  });
+}
+
+async function releaseFailedAttempt(input: {
+  tx: PaymentClient;
+  attempt: Prisma.PaymentAttemptGetPayload<{ include: { appointment: true; consultationRequest: true; payment: true } }>;
+  status: "FAILED" | "EXPIRED" | "CANCELLED";
+  failureCode: string;
+}) {
+  await input.tx.paymentAttempt.update({
+    where: { id: input.attempt.id },
+    data: { status: input.status, failureCode: input.failureCode }
+  });
+
+  if (input.attempt.appointment.status === "RESERVED") {
+    await input.tx.appointment.update({
+      where: { id: input.attempt.appointmentId },
+      data: {
+        status: "CANCELLED",
+        notes: `Payment attempt ended with ${input.status}.`
+      }
+    });
+  }
+
+  if (input.attempt.consultationRequest.status === "PAYMENT_PENDING") {
+    await input.tx.consultationRequest.update({
+      where: { id: input.attempt.consultationRequestId },
+      data: { status: "REVIEWING" }
+    });
+  }
+}
+
+function paymentTransactionStatus(status: ReturnType<typeof mapProviderPaymentStatus>) {
+  if (status === "PAID") return "PAID";
+  if (status === "REFUNDED") return "REFUNDED";
+  if (status === "DISPUTED") return "DISPUTED";
+  if (status === "CANCELLED") return "CANCELLED";
+  if (status === "PENDING") return "PENDING";
+  return "FAILED";
+}
+
+function gatewayInvoiceNumber(attemptId: string, paidAt: Date) {
+  return `CONS-${paidAt.getUTCFullYear()}-${attemptId.slice(0, 8).toUpperCase()}`;
+}
+
+function paymentAttemptDto(
+  attempt: Prisma.PaymentAttemptGetPayload<{
+    include: {
+      appointment: { select: { id: true; title: true; startsAt: true; status: true } };
+      consultationRequest: { select: { id: true; status: true } };
+      payment: { select: { id: true; invoiceNumber: true; status: true; paidAt: true } };
+    };
+  }>
+) {
+  return {
+    id: attempt.id,
+    provider: attempt.provider,
+    status: attempt.status,
+    amount: attempt.amount.toString(),
+    currency: attempt.currency,
+    checkoutUrl: attempt.checkoutUrl,
+    expiresAt: attempt.expiresAt.toISOString(),
+    appointment: {
+      id: attempt.appointment.id,
+      title: attempt.appointment.title,
+      startsAt: attempt.appointment.startsAt.toISOString(),
+      status: attempt.appointment.status
+    },
+    consultation: attempt.consultationRequest,
+    payment: attempt.payment
+      ? {
+          ...attempt.payment,
+          paidAt: attempt.payment.paidAt?.toISOString() ?? null
+        }
+      : null
+  };
+}
+
+function nestedString(body: Record<string, unknown>, path: string[]) {
+  let value: unknown = body;
+  for (const segment of path) {
+    if (!value || typeof value !== "object") {
+      return "";
+    }
+    value = (value as Record<string, unknown>)[segment];
+  }
+  return typeof value === "string" ? value : "";
+}
+
+function parseStoredNormalizedPayload(value: Prisma.JsonValue | null): NormalizedWebhookPayload | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  const body = value as Record<string, unknown>;
+  const status = typeof body.status === "string" ? body.status : "";
+  const attemptId = typeof body.attemptId === "string" ? body.attemptId : "";
+  if (!attemptId || !status) {
+    return null;
+  }
+
+  return {
+    provider: typeof body.provider === "string" ? body.provider : paymentProvider(),
+    attemptId,
+    providerTransactionId: typeof body.providerTransactionId === "string" ? body.providerTransactionId : null,
+    rawStatus: typeof body.rawStatus === "string" ? body.rawStatus : "",
+    status: mapProviderPaymentStatus(status),
+    amount: typeof body.amount === "string" ? body.amount : "",
+    currency: typeof body.currency === "string" ? body.currency : "EGP"
+  };
+}
+
+function isUuid(value: unknown) {
+  return typeof value === "string" && uuidSchema.safeParse(value).success;
+}

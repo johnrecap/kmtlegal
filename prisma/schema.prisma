@@ -36,6 +36,7 @@ enum ClientStatus {
 enum ConsultationStatus {
   NEW
   REVIEWING
+  PAYMENT_PENDING
   SCHEDULED
   REJECTED
   CONVERTED
@@ -70,6 +71,7 @@ enum AppointmentMode {
 }
 
 enum AppointmentStatus {
+  RESERVED
   SCHEDULED
   COMPLETED
   CANCELLED
@@ -157,6 +159,39 @@ enum Currency {
   EUR
   SAR
   AED
+}
+
+enum PaymentAttemptStatus {
+  CREATED
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  REFUNDED
+  DISPUTED
+  CANCELLED
+}
+
+enum PaymentTransactionStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  DISPUTED
+  CANCELLED
+}
+
+enum PaymentWebhookSignatureStatus {
+  VERIFIED
+  UNVERIFIED
+  INVALID
+}
+
+enum PaymentWebhookProcessingStatus {
+  PENDING
+  PROCESSED
+  FAILED
+  IGNORED
 }
 
 enum TwoFactorRecoveryState {
@@ -312,6 +347,7 @@ model User {
   createdTasks            Task[]                    @relation("TaskCreator")
   internalNotes           InternalNote[]            @relation("InternalNoteAuthor")
   createdPayments         Payment[]                 @relation("PaymentCreator")
+  updatedPricingRules     ConsultationPricingRule[] @relation("ConsultationPricingRuleUpdater")
   twoFactorCredential     StaffTwoFactorCredential?
   emailOtpChallenges      EmailOtpChallenge[]
   emailMessages           EmailMessage[]
@@ -377,6 +413,7 @@ model Client {
   appointments         Appointment[]
   documents            Document[]
   payments             Payment[]
+  paymentAttempts      PaymentAttempt[]
   conversationThreads  ConversationThread[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
@@ -447,6 +484,8 @@ model ConsultationRequest {
   assignedLawyer    User?              @relation("AssignedLawyerConsultations", fields: [assignedLawyerId], references: [id], onDelete: SetNull)
   convertedCase     LegalCase?
   appointments      Appointment[]
+  payments          Payment[]
+  paymentAttempts   PaymentAttempt[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
@@ -477,6 +516,8 @@ model Appointment {
   endsAt                DateTime
   status                AppointmentStatus    @default(SCHEDULED)
   notes                 String?
+  payments              Payment[]
+  paymentAttempts       PaymentAttempt[]
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
 
@@ -634,33 +675,156 @@ model InternalNote {
 }
 
 model Payment {
-  id            String        @id @default(uuid()) @db.Uuid
-  invoiceNumber String        @unique
-  clientId      String        @db.Uuid
-  client        Client        @relation(fields: [clientId], references: [id])
-  caseId        String?       @db.Uuid
-  case          LegalCase?    @relation(fields: [caseId], references: [id], onDelete: SetNull)
-  issueDate     DateTime
-  dueDate       DateTime?
-  amount        Decimal       @db.Decimal(12, 2)
-  currency      Currency      @default(EGP)
-  status        PaymentStatus @default(DRAFT)
-  paymentMethod String?
-  receiptNumber String?
-  paidAt        DateTime?
-  notes         String?
-  createdById   String        @db.Uuid
-  createdBy     User          @relation("PaymentCreator", fields: [createdById], references: [id])
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id                    String               @id @default(uuid()) @db.Uuid
+  invoiceNumber         String               @unique
+  clientId              String               @db.Uuid
+  client                Client               @relation(fields: [clientId], references: [id])
+  caseId                String?              @db.Uuid
+  case                  LegalCase?           @relation(fields: [caseId], references: [id], onDelete: SetNull)
+  consultationRequestId String?              @db.Uuid
+  consultationRequest   ConsultationRequest? @relation(fields: [consultationRequestId], references: [id], onDelete: SetNull)
+  appointmentId         String?              @db.Uuid
+  appointment           Appointment?         @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  paymentAttemptId      String?              @unique @db.Uuid
+  paymentAttempt        PaymentAttempt?      @relation("PaymentAttemptPayment", fields: [paymentAttemptId], references: [id], onDelete: SetNull)
+  issueDate             DateTime
+  dueDate               DateTime?
+  amount                Decimal              @db.Decimal(12, 2)
+  currency              Currency             @default(EGP)
+  status                PaymentStatus        @default(DRAFT)
+  paymentMethod         String?
+  receiptNumber         String?
+  paidAt                DateTime?
+  notes                 String?
+  createdById           String?              @db.Uuid
+  createdBy             User?                @relation("PaymentCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
 
   @@index([clientId])
   @@index([caseId])
+  @@index([consultationRequestId])
+  @@index([appointmentId])
   @@index([status])
   @@index([issueDate])
   @@index([dueDate])
   @@index([createdAt])
   @@map("payments")
+}
+
+model ConsultationPricingRule {
+  id              String           @id @default(uuid()) @db.Uuid
+  serviceCategory String?
+  mode            ConsultationMode?
+  amount          Decimal          @db.Decimal(12, 2)
+  currency        Currency         @default(EGP)
+  active          Boolean          @default(true)
+  effectiveFrom   DateTime         @default(now())
+  version         Int              @default(1)
+  label           String?
+  updatedById     String?          @db.Uuid
+  updatedBy       User?            @relation("ConsultationPricingRuleUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  paymentAttempts PaymentAttempt[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@index([serviceCategory])
+  @@index([mode])
+  @@index([active, effectiveFrom])
+  @@index([updatedById])
+  @@map("consultation_pricing_rules")
+}
+
+model PaymentAttempt {
+  id                    String               @id @default(uuid()) @db.Uuid
+  provider              String               @default("paytabs")
+  status                PaymentAttemptStatus @default(CREATED)
+  clientId              String               @db.Uuid
+  client                Client               @relation(fields: [clientId], references: [id])
+  consultationRequestId String               @db.Uuid
+  consultationRequest   ConsultationRequest  @relation(fields: [consultationRequestId], references: [id], onDelete: Cascade)
+  appointmentId         String               @db.Uuid
+  appointment           Appointment          @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  payment               Payment?             @relation("PaymentAttemptPayment")
+  pricingRuleId         String?              @db.Uuid
+  pricingRule           ConsultationPricingRule? @relation(fields: [pricingRuleId], references: [id], onDelete: SetNull)
+  priceVersion          Int
+  serviceCategory       String
+  mode                  ConsultationMode
+  amount                Decimal              @db.Decimal(12, 2)
+  currency              Currency             @default(EGP)
+  startsAt              DateTime
+  endsAt                DateTime
+  expiresAt             DateTime
+  idempotencyKey        String               @unique
+  checkoutUrl           String?
+  providerSessionId     String?
+  providerPaymentId     String?
+  manualMethod          String?
+  failureCode           String?
+  transactions          PaymentTransaction[]
+  webhookEvents         PaymentWebhookEvent[]
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  @@index([provider])
+  @@index([status])
+  @@index([clientId])
+  @@index([consultationRequestId])
+  @@index([appointmentId])
+  @@index([pricingRuleId])
+  @@index([startsAt, endsAt])
+  @@index([expiresAt])
+  @@map("payment_attempts")
+}
+
+model PaymentTransaction {
+  id                    String                   @id @default(uuid()) @db.Uuid
+  attemptId             String                   @db.Uuid
+  attempt               PaymentAttempt           @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  provider              String
+  providerTransactionId String?
+  rawStatus             String?
+  status                PaymentTransactionStatus @default(PENDING)
+  amount                Decimal                  @db.Decimal(12, 2)
+  currency              Currency                 @default(EGP)
+  settlementStatus      String?
+  paidAt                DateTime?
+  webhookEvents         PaymentWebhookEvent[]
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+
+  @@unique([provider, providerTransactionId])
+  @@index([attemptId])
+  @@index([status])
+  @@index([settlementStatus])
+  @@map("payment_transactions")
+}
+
+model PaymentWebhookEvent {
+  id               String                         @id @default(uuid()) @db.Uuid
+  provider         String
+  eventId          String
+  attemptId        String?                        @db.Uuid
+  attempt          PaymentAttempt?                @relation(fields: [attemptId], references: [id], onDelete: SetNull)
+  transactionId    String?                        @db.Uuid
+  transaction      PaymentTransaction?            @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  signatureStatus  PaymentWebhookSignatureStatus  @default(UNVERIFIED)
+  processingStatus PaymentWebhookProcessingStatus @default(PENDING)
+  replayCount      Int                            @default(0)
+  payloadHash      String
+  normalizedPayload Json?
+  errorCode        String?
+  receivedAt       DateTime                       @default(now())
+  processedAt      DateTime?
+
+  @@unique([provider, eventId])
+  @@index([attemptId])
+  @@index([transactionId])
+  @@index([signatureStatus])
+  @@index([processingStatus])
+  @@index([receivedAt])
+  @@map("payment_webhook_events")
 }
 
 model StaffTwoFactorCredential {

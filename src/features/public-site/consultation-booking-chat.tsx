@@ -44,6 +44,25 @@ type PublicSlot = {
   mode: BookingDraft["preferredMode"];
 };
 
+type PaymentReview = {
+  amount: string;
+  currency: string;
+  pricingRuleId: string;
+  priceVersion: number;
+  serviceCategory: string;
+  mode: BookingDraft["preferredMode"];
+  label: string | null;
+};
+
+type PublicPaymentAttempt = {
+  id: string;
+  status: string;
+  amount: string;
+  currency: string;
+  checkoutUrl: string | null;
+  expiresAt: string;
+};
+
 type ChatMessage = {
   id: string;
   role: "assistant" | "user";
@@ -61,6 +80,9 @@ type AssistantApiBody = {
     needsAvailabilityPreference?: boolean;
     slotWindow?: SlotWindow;
     readyToConfirm?: boolean;
+    readyToCheckout?: boolean;
+    paymentReview?: PaymentReview;
+    paymentAttempt?: PublicPaymentAttempt;
     reference?: string;
     appointment?: { title: string; startsAt: string; status: string };
     appointments?: Array<{ title: string; startsAt: string; status: string }>;
@@ -126,6 +148,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   const [slotWindow, setSlotWindow] = useState<SlotWindow | null>(null);
   const [selectedSlot, setSelectedSlot] = useState("");
   const [readyToConfirm, setReadyToConfirm] = useState(false);
+  const [readyToCheckout, setReadyToCheckout] = useState(false);
+  const [paymentReview, setPaymentReview] = useState<PaymentReview | null>(null);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -140,7 +164,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, [messages, availableSlots, readyToConfirm, isBusy]);
+  }, [messages, availableSlots, readyToConfirm, readyToCheckout, isBusy]);
 
   function append(role: ChatMessage["role"], text: string, tone: ChatMessage["tone"] = "default") {
     setMessages((current) => [...current, { id: `${role}-${Date.now()}-${current.length}`, role, text, tone }]);
@@ -153,6 +177,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     setAvailableSlots([]);
     setSlotWindow(null);
     setReadyToConfirm(false);
+    setReadyToCheckout(false);
+    setPaymentReview(null);
     setSelectedSlot("");
     setMessages((current) => [
       ...current,
@@ -177,6 +203,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     setAvailableSlots([]);
     setSlotWindow(null);
     setReadyToConfirm(false);
+    setReadyToCheckout(false);
+    setPaymentReview(null);
     append("user", copy.inquire);
     append("assistant", copy.inquiryPrompt);
   }
@@ -258,6 +286,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     setFlow(options.flow ?? "booking");
     setIsBusy(true);
     setReadyToConfirm(false);
+    setReadyToCheckout(false);
+    setPaymentReview(null);
 
     const nextDraft = normalizeDraft({ ...draft, ...options.draftPatch });
     const nextSlot = options.selectedSlot ?? selectedSlot ?? nextDraft.startsAt;
@@ -293,6 +323,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       setSlotWindow(data.slotWindow ?? null);
       setSelectedSlot(updatedDraft.startsAt || nextSlot || "");
       setReadyToConfirm(Boolean(data.readyToConfirm));
+      setReadyToCheckout(Boolean(data.readyToCheckout));
+      setPaymentReview(data.paymentReview ?? null);
       append("assistant", data.message ?? copy.scopeReply, data.reference ? "success" : "default");
 
       if (data.reference) {
@@ -305,6 +337,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         setSlotWindow(null);
         setSelectedSlot("");
         setReadyToConfirm(false);
+        setReadyToCheckout(false);
+        setPaymentReview(null);
         setDraft({ ...initialDraft, serviceCategory: initialServiceCategory });
       }
     } catch {
@@ -338,8 +372,56 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     });
   }
 
+  async function payBooking() {
+    if (!selectedSlot || !paymentReview || isBusy) return;
+    setIsBusy(true);
+    append("user", copy.payBooking);
+
+    try {
+      const response = await fetch("/api/public/consultations/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          locale: activeLocale,
+          message: copy.payBooking,
+          draft: normalizeDraft({ ...draft, startsAt: selectedSlot }),
+          selectedSlot,
+          consent: true,
+          confirmPayment: true
+        })
+      });
+      const body = (await response.json().catch(() => ({}))) as AssistantApiBody;
+      if (!response.ok) {
+        trackClientAnalyticsEvent("booking.submit_failed", { locale: activeLocale, status: response.status, step: "checkout" });
+        append("assistant", errorMessage(body, copy), "error");
+        return;
+      }
+
+      const attempt = body.data?.paymentAttempt;
+      append("assistant", body.data?.message ?? copy.checkoutCreated, "success");
+      if (body.data?.reference) {
+        append("assistant", `${copy.reference}: ${body.data.reference}`, "success");
+      }
+
+      if (attempt?.checkoutUrl) {
+        window.location.assign(attempt.checkoutUrl);
+        return;
+      }
+
+      setReadyToCheckout(false);
+      setPaymentReview(null);
+    } catch {
+      trackClientAnalyticsEvent("booking.submit_failed", { locale: activeLocale, status: "network", step: "checkout" });
+      append("assistant", copy.fallbackError, "error");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
   function editDetails() {
     setReadyToConfirm(false);
+    setReadyToCheckout(false);
+    setPaymentReview(null);
     setSelectedSlot("");
     setDraft((current) => ({ ...current, startsAt: "" }));
     setSlotWindow(null);
@@ -401,6 +483,18 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
                 {copy.back}
               </Button>
             </div>
+          ) : null}
+          {readyToCheckout && paymentReview ? (
+            <PaymentReviewPanel
+              copy={copy}
+              draft={draft}
+              locale={activeLocale}
+              paymentReview={paymentReview}
+              selectedSlot={selectedSlot}
+              isBusy={isBusy}
+              onBack={editDetails}
+              onPay={payBooking}
+            />
           ) : null}
           {isBusy ? <TypingIndicator label={copy.typing} /> : null}
         </div>
@@ -550,6 +644,73 @@ function SlotChoicePanel({
   );
 }
 
+function PaymentReviewPanel({
+  copy,
+  draft,
+  locale,
+  paymentReview,
+  selectedSlot,
+  isBusy,
+  onBack,
+  onPay
+}: {
+  copy: BookingChatCopy;
+  draft: BookingDraft;
+  locale: PublicLocale;
+  paymentReview: PaymentReview;
+  selectedSlot: string;
+  isBusy: boolean;
+  onBack: () => void;
+  onPay: () => void;
+}) {
+  const amount = new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-US", {
+    style: "currency",
+    currency: paymentReview.currency,
+    maximumFractionDigits: 2
+  }).format(Number(paymentReview.amount));
+
+  return (
+    <div className="ms-auto max-w-[42rem] rounded-3xl border border-kmt-gold/35 bg-black/30 p-4 shadow-[0_18px_58px_-42px_rgba(183,134,64,0.95)]" data-testid="booking-payment-review">
+      <div className="mb-4 flex items-center gap-2 text-amber-50">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-kmt-gold/45 bg-kmt-gold/15 text-kmt-gold">
+          <MaterialSymbol name="payments" />
+        </span>
+        <div>
+          <p className="font-serif text-xl font-semibold leading-tight">{copy.paymentReviewTitle}</p>
+          <p className="mt-1 text-sm text-amber-100/70">{copy.cancellationPolicy}</p>
+        </div>
+      </div>
+      <dl className="grid gap-3 text-sm text-amber-50/85 sm:grid-cols-2">
+        <PaymentReviewItem icon="category" label={copy.detailsTitle} value={draft.serviceCategory || paymentReview.serviceCategory} />
+        <PaymentReviewItem icon="video_chat" label={copy.preferredSlot} value={`${modeLabel(paymentReview.mode, locale)} · ${formatPublicDate(selectedSlot, locale)}`} />
+        <PaymentReviewItem className="sm:col-span-2" icon="receipt_long" label={copy.bookingFee} value={amount} />
+      </dl>
+      <div className="mt-4 flex flex-wrap justify-end gap-2">
+        <Button className={cn(publicMotionButton, publicMotionCta, "rounded-full")} data-testid="booking-pay-booking" loading={isBusy} type="button" onClick={onPay}>
+          <MaterialSymbol name="lock" />
+          {copy.payBooking}
+        </Button>
+        <Button className={chipButtonClasses} disabled={isBusy} type="button" variant="secondary" onClick={onBack}>
+          <MaterialSymbol name="edit" />
+          {copy.back}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function PaymentReviewItem({ icon, label, value, className }: { icon: string; label: string; value: string; className?: string }) {
+  return (
+    <div className={cn("rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3", className)}>
+      <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-amber-100/55">
+        <MaterialSymbol className="text-base text-kmt-gold" name={icon} />
+        {label}
+      </dt>
+      <dd className="mt-2 break-words text-base font-semibold leading-7 text-white">{value}</dd>
+    </div>
+  );
+}
+
 function TypingIndicator({ label }: { label: string }) {
   return (
     <div className="flex items-end gap-2 text-slate-300">
@@ -643,6 +804,14 @@ function formatPublicTime(value: string, locale: PublicLocale) {
     timeStyle: "short",
     timeZone: "Africa/Cairo"
   }).format(new Date(value));
+}
+
+function modeLabel(value: BookingDraft["preferredMode"], locale: PublicLocale) {
+  const labels = {
+    ar: { PHONE: "هاتف", ONLINE: "أونلاين", OFFICE: "في المكتب" },
+    en: { PHONE: "Phone", ONLINE: "Online", OFFICE: "Office" }
+  };
+  return labels[locale][value] ?? value;
 }
 
 function groupSlotsByDay(slots: PublicSlot[], locale: PublicLocale) {

@@ -7,6 +7,8 @@ import type { Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
 import { canonicalPhone } from "@/server/phone/phone-normalization";
+import { createConsultationPaymentAttempt } from "@/server/payments/payment-service";
+import { consultationPriceDto, resolveConsultationPrice } from "@/server/payments/pricing-service";
 import {
   assertClientPortalAccess,
   listPortalAppointments,
@@ -86,8 +88,31 @@ export const clientConsultationAssistantSchema = publicConsultationAssistantSche
   intent: true
 });
 
+export const publicConsultationCheckoutSchema = publicConsultationAssistantSchema
+  .pick({
+    locale: true,
+    message: true,
+    draft: true,
+    selectedSlot: true,
+    fullName: true,
+    phone: true,
+    email: true,
+    city: true,
+    serviceCategory: true,
+    summary: true,
+    opposingPartyName: true,
+    urgency: true,
+    preferredMode: true,
+    startsAt: true,
+    consent: true
+  })
+  .extend({
+    confirmPayment: z.literal(true)
+  });
+
 export type PublicConsultationAssistantInput = z.infer<typeof publicConsultationAssistantSchema>;
 export type ClientConsultationAssistantInput = z.infer<typeof clientConsultationAssistantSchema>;
+export type PublicConsultationCheckoutInput = z.infer<typeof publicConsultationCheckoutSchema>;
 
 export async function handlePublicConsultationAssistant(input: { body: unknown; request: Request; requestId: string }) {
   const body = parseWithSchema(publicConsultationAssistantSchema, input.body, "Consultation assistant payload is invalid.");
@@ -147,7 +172,7 @@ async function handlePublicBookingConversation(input: {
       consent: true
     };
     try {
-      return await bookConsultationAppointment({ body: bookingBody, request: input.request, requestId: input.requestId });
+      return await prepareConsultationPaymentReview({ body: bookingBody, requestId: input.requestId });
     } catch (error) {
       if (isRecoverableBookingSlotError(error)) {
         return recoverBookingSlotSelection({
@@ -855,6 +880,8 @@ function bookingConversationResponse(input: {
   needsAvailabilityPreference?: boolean;
   slotWindow?: ReturnType<typeof availabilityWindowDto>;
   readyToConfirm?: boolean;
+  readyToCheckout?: boolean;
+  paymentReview?: ReturnType<typeof consultationPriceDto>;
 }) {
   return {
     action: "collect_booking_fields" as const,
@@ -868,6 +895,8 @@ function bookingConversationResponse(input: {
     needsAvailabilityPreference: input.needsAvailabilityPreference ?? false,
     slotWindow: input.slotWindow,
     readyToConfirm: input.readyToConfirm ?? false,
+    readyToCheckout: input.readyToCheckout ?? false,
+    paymentReview: input.paymentReview,
     reviewRequired: true,
     disclaimer: AI_REVIEW_DISCLAIMER[input.locale]
   };
@@ -976,9 +1005,29 @@ function availabilityWindowLabel(preference: AvailabilityPreference, locale: "ar
 function bookingConfirmMessage(locale: "ar" | "en", draft: ReturnType<typeof mergeBookingDraft>, selectedSlot: string) {
   const when = formatAssistantDate(selectedSlot, locale);
   if (locale === "ar") {
-    return `سأحجز الاستشارة بهذه البيانات: ${draft.fullName}، ${draft.phone}، ${serviceCategoryLabel(draft.serviceCategory, locale)}، ${modeLabel(draft.preferredMode, locale)}، ${when}. اضغط تأكيد الحجز لإرسال الطلب للسكرتيرة.`;
+    return `سأراجع الحجز بهذه البيانات: ${draft.fullName}، ${draft.phone}، ${serviceCategoryLabel(draft.serviceCategory, locale)}، ${modeLabel(draft.preferredMode, locale)}، ${when}. اضغط تأكيد الحجز لعرض رسوم الحجز قبل الدفع.`;
   }
-  return `I will book the consultation with these details: ${draft.fullName}, ${draft.phone}, ${serviceCategoryLabel(draft.serviceCategory, locale)}, ${modeLabel(draft.preferredMode, locale)}, ${when}. Confirm the booking to send it to the team.`;
+  return `I will review the consultation with these details: ${draft.fullName}, ${draft.phone}, ${serviceCategoryLabel(draft.serviceCategory, locale)}, ${modeLabel(draft.preferredMode, locale)}, ${when}. Confirm to review the booking fee before payment.`;
+}
+
+function bookingPaymentReviewMessage(
+  locale: "ar" | "en",
+  body: PublicConsultationAssistantInput,
+  startsAt: Date,
+  amount: string,
+  currency: string
+) {
+  const when = formatAssistantDate(startsAt.toISOString(), locale);
+  if (locale === "ar") {
+    return `مراجعة الدفع: ${serviceCategoryLabel(body.serviceCategory || "", locale)}، ${modeLabel(body.preferredMode, locale)}، ${when}. رسوم حجز الاستشارة ${amount} ${currency}. سيتم حجز الموعد مؤقتًا لمدة محدودة بعد الضغط على الدفع، ولن يتم تأكيد الموعد إلا بعد إشعار دفع موثوق من بوابة الدفع.`;
+  }
+  return `Payment review: ${serviceCategoryLabel(body.serviceCategory || "", locale)}, ${modeLabel(body.preferredMode, locale)}, ${when}. Consultation booking fee is ${amount} ${currency}. The slot is reserved for a limited time after payment starts, and the appointment is confirmed only after a trusted payment webhook.`;
+}
+
+function checkoutCreatedMessage(locale: "ar" | "en") {
+  return locale === "ar"
+    ? "تم حجز الموعد مؤقتًا وإنشاء رابط الدفع. سيتم تأكيد الموعد فقط بعد وصول إشعار دفع موثوق."
+    : "The slot is temporarily reserved and the payment link is ready. The appointment is confirmed only after a trusted payment webhook.";
 }
 
 function formatAssistantDate(value: string, locale: "ar" | "en") {
@@ -1156,9 +1205,8 @@ async function listClientSessions(actor: Principal) {
     .slice(0, 20);
 }
 
-async function bookConsultationAppointment(input: {
+async function prepareConsultationPaymentReview(input: {
   body: PublicConsultationAssistantInput;
-  request: Request;
   requestId: string;
 }) {
   const missing = requiredBookingFields(input.body);
@@ -1184,26 +1232,80 @@ async function bookConsultationAppointment(input: {
   const endsAt = new Date(slot.endsAt);
   await assertNoBookingDuplicate(input.body);
   await assertNoSlotConflict(startsAt, endsAt);
+  const price = await resolveConsultationPrice({
+    serviceCategory: input.body.serviceCategory!,
+    mode: input.body.preferredMode
+  });
 
-  const phoneCanonical = canonicalPhone(input.body.phone!);
+  return bookingConversationResponse({
+    locale: input.body.locale,
+    draft: normalizeBookingDraft(input.body),
+    missingFields: [],
+    selectedSlot: input.body.startsAt,
+    readyToCheckout: true,
+    paymentReview: consultationPriceDto(price),
+    message: bookingPaymentReviewMessage(input.body.locale, input.body, startsAt, price.amountText, price.currency)
+  });
+}
+
+export async function createPublicConsultationCheckout(input: {
+  body: unknown;
+  request: Request;
+  requestId: string;
+}) {
+  const body = parseWithSchema(publicConsultationCheckoutSchema, input.body, "Consultation checkout payload is invalid.");
+  const draft = normalizeBookingDraft({
+    ...mergeBookingDraft(body),
+    startsAt: body.selectedSlot || body.startsAt || body.draft?.startsAt || ""
+  });
+  const limitKey = getIpAddress(input.request) ?? canonicalPhone(draft.phone || "") ?? "anonymous";
+  enforceRateLimit(rateLimiters.booking, `public-consultation-checkout:${limitKey}`);
+  const checkoutBody = {
+    ...body,
+    ...draft,
+    startsAt: body.selectedSlot || draft.startsAt,
+    consent: true
+  };
+  const missing = requiredBookingFields(checkoutBody);
+  if (missing.length) {
+    throw new ApiError(400, "VALIDATION_ERROR", missingFieldsMessage(body.locale, missing));
+  }
+  if (body.consent !== true) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Client consent is required before payment checkout.");
+  }
+
+  const startsAt = parseBookingDate(checkoutBody.startsAt!);
+  const slot = await assertPublicConsultationSlotAvailable({
+    startsAt,
+    mode: checkoutBody.preferredMode
+  });
+  const endsAt = new Date(slot.endsAt);
+  await assertNoBookingDuplicate(checkoutBody);
+  await assertNoSlotConflict(startsAt, endsAt);
+  const price = await resolveConsultationPrice({
+    serviceCategory: checkoutBody.serviceCategory!,
+    mode: checkoutBody.preferredMode
+  });
+
+  const phoneCanonical = canonicalPhone(checkoutBody.phone!);
   const result = await prisma.$transaction(async (tx) => {
-    const client = await upsertAssistantClient(tx, input.body, phoneCanonical);
+    const client = await upsertAssistantClient(tx, checkoutBody, phoneCanonical);
     const consultation = await tx.consultationRequest.create({
       data: {
         clientId: client.id,
-        fullName: input.body.fullName!,
-        phone: input.body.phone!,
+        fullName: checkoutBody.fullName!,
+        phone: checkoutBody.phone!,
         phoneCanonical,
-        email: input.body.email || null,
-        city: input.body.city || null,
-        serviceCategory: input.body.serviceCategory!,
-        summary: input.body.summary!,
-        opposingPartyName: input.body.opposingPartyName || null,
-        urgency: input.body.urgency,
-        preferredMode: input.body.preferredMode,
-        status: "SCHEDULED",
-        aiClassification: deterministicBookingClassification(input.body, startsAt, input.requestId),
-        aiSummary: deterministicBookingSummary(input.body, startsAt)
+        email: checkoutBody.email || null,
+        city: checkoutBody.city || null,
+        serviceCategory: checkoutBody.serviceCategory!,
+        summary: checkoutBody.summary!,
+        opposingPartyName: checkoutBody.opposingPartyName || null,
+        urgency: checkoutBody.urgency,
+        preferredMode: checkoutBody.preferredMode,
+        status: "PAYMENT_PENDING",
+        aiClassification: deterministicBookingClassification(checkoutBody, startsAt, input.requestId),
+        aiSummary: deterministicBookingSummary(checkoutBody, startsAt)
       }
     });
 
@@ -1211,24 +1313,39 @@ async function bookConsultationAppointment(input: {
       data: {
         clientId: client.id,
         consultationRequestId: consultation.id,
-        title: appointmentTitle(input.body.locale, consultation.id),
+        title: appointmentTitle(body.locale, consultation.id),
         type: "CONSULTATION",
-        mode: input.body.preferredMode,
+        mode: checkoutBody.preferredMode,
         startsAt,
         endsAt,
-        status: "SCHEDULED",
-        notes: "Booked by public consultation assistant."
+        status: "RESERVED",
+        notes: "Reserved pending trusted payment webhook confirmation."
       }
     });
 
-    return { client, consultation, appointment };
+    const attempt = await createConsultationPaymentAttempt({
+      tx,
+      client,
+      consultationRequest: consultation,
+      appointment: {
+        id: appointment.id,
+        title: appointment.title,
+        startsAt: appointment.startsAt,
+        endsAt: appointment.endsAt,
+        mode: checkoutBody.preferredMode
+      },
+      price,
+      request: input.request
+    });
+
+    return { client, consultation, appointment, attempt };
   });
 
   await appendAuditLogBestEffort({
     actorId: null,
-    action: "consultation.assistant_book",
-    resourceType: "Appointment",
-    resourceId: result.appointment.id,
+    action: "consultation.checkout_reserved",
+    resourceType: "PaymentAttempt",
+    resourceId: result.attempt.id,
     clientId: result.client.id,
     appointmentId: result.appointment.id,
     metadata: {
@@ -1238,6 +1355,9 @@ async function bookConsultationAppointment(input: {
       urgency: result.consultation.urgency,
       mode: result.appointment.mode,
       startsAt: result.appointment.startsAt.toISOString(),
+      paymentAttemptId: result.attempt.id,
+      amount: result.attempt.amount.toString(),
+      currency: result.attempt.currency,
       source: "public-assistant"
     },
     request: input.request,
@@ -1245,12 +1365,20 @@ async function bookConsultationAppointment(input: {
   });
 
   return {
-    action: "book_consultation_appointment" as const,
-    message: bookedMessage(input.body.locale),
+    action: "checkout_created" as const,
+    message: checkoutCreatedMessage(body.locale),
     reference: publicConsultationReference(result.consultation.id),
     appointment: appointmentDto(result.appointment),
+    paymentAttempt: {
+      id: result.attempt.id,
+      status: result.attempt.status,
+      amount: result.attempt.amount.toString(),
+      currency: result.attempt.currency,
+      checkoutUrl: result.attempt.checkoutUrl,
+      expiresAt: result.attempt.expiresAt.toISOString()
+    },
     reviewRequired: true,
-    disclaimer: AI_REVIEW_DISCLAIMER[input.body.locale],
+    disclaimer: AI_REVIEW_DISCLAIMER[body.locale],
     ai: deterministicAssistantMetadata(input.requestId)
   };
 }
@@ -1414,7 +1542,7 @@ async function assertNoSlotConflict(startsAt: Date, endsAt: Date) {
   const conflict = await prisma.appointment.findFirst({
     where: {
       type: "CONSULTATION",
-      status: { in: ["SCHEDULED", "RESCHEDULED"] },
+      status: { in: ["RESERVED", "SCHEDULED", "RESCHEDULED"] },
       startsAt: { lt: endsAt },
       endsAt: { gt: startsAt }
     },

@@ -49,7 +49,10 @@ describe("route manifest contract", () => {
       ["/api/portal/profile", "/api/portal/profile"],
       ["/api/public/consultations", "/api/public/consultations"],
       ["/api/public/consultations/assistant", "/api/public/consultations/assistant"],
+      ["/api/public/consultations/checkout", "/api/public/consultations/checkout"],
       ["/api/public/consultations/slots", "/api/public/consultations/slots"],
+      ["/api/public/payments/status", "/api/public/payments/status"],
+      ["/api/webhooks/paytabs", "/api/webhooks/paytabs"],
       ["/api/admin/consultation-availability", "/api/admin/consultation-availability"],
       ["/api/client/assistant", "/api/client/assistant"],
       ["/api/client/messages", "/api/client/messages"],
@@ -59,7 +62,12 @@ describe("route manifest contract", () => {
       ["/api/admin/messages/[threadId]", "/api/admin/messages/{threadId}"],
       ["/api/admin/messages/[threadId]/messages", "/api/admin/messages/{threadId}/messages"],
       ["/api/admin/clients/[clientId]/account", "/api/admin/clients/{id}/account"],
-      ["/api/admin/clients/[clientId]/account/password", "/api/admin/clients/{id}/account/password"]
+      ["/api/admin/clients/[clientId]/account/password", "/api/admin/clients/{id}/account/password"],
+      ["/api/admin/payments/pricing", "/api/admin/payments/pricing"],
+      ["/api/admin/payments/pricing/[ruleId]", "/api/admin/payments/pricing/{ruleId}"],
+      ["/api/admin/payments/attempts", "/api/admin/payments/attempts"],
+      ["/api/admin/payments/webhooks", "/api/admin/payments/webhooks"],
+      ["/api/admin/payments/webhooks/[eventId]/replay", "/api/admin/payments/webhooks/{eventId}/replay"]
     ]) {
       expect(routes).toContain(route);
       expect(contract).toContain(contractRoute);

@@ -174,9 +174,23 @@ export async function listPortalPayments(actor: Principal) {
   return prisma.payment.findMany({
     where: { clientId },
     include: {
-      case: { select: { id: true, title: true, internalFileNumber: true } }
+      case: { select: { id: true, title: true, internalFileNumber: true } },
+      paymentAttempt: { select: { id: true, provider: true, status: true, checkoutUrl: true, expiresAt: true, providerPaymentId: true } }
     },
     orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }]
+  });
+}
+
+export async function listPortalPaymentAttempts(actor: Principal) {
+  const clientId = assertClientPortalAccess(actor);
+  return prisma.paymentAttempt.findMany({
+    where: { clientId },
+    include: {
+      appointment: { select: { id: true, title: true, startsAt: true, status: true } },
+      payment: { select: { id: true, invoiceNumber: true, status: true, paidAt: true } }
+    },
+    orderBy: [{ createdAt: "desc" }],
+    take: 20
   });
 }
 

@@ -71,6 +71,28 @@ const analyticsPropertySchemas = {
       assignedLawyerChanged: z.boolean()
     })
     .strict(),
+  "payment.checkout_created": z
+    .object({
+      provider: safeSlugSchema,
+      serviceCategory: safeSlugSchema,
+      mode: z.enum(["PHONE", "ONLINE", "OFFICE"]),
+      currency: z.enum(["EGP", "USD", "EUR", "SAR", "AED"])
+    })
+    .strict(),
+  "payment.webhook_paid": z
+    .object({
+      provider: safeSlugSchema,
+      serviceCategory: safeSlugSchema,
+      mode: z.enum(["PHONE", "ONLINE", "OFFICE"]),
+      currency: z.enum(["EGP", "USD", "EUR", "SAR", "AED"])
+    })
+    .strict(),
+  "payment.webhook_failed": z
+    .object({
+      provider: safeSlugSchema,
+      errorCode: errorCodeSchema
+    })
+    .strict(),
   "document.upload_succeeded": z
     .object({
       fileType: fileTypeSchema,

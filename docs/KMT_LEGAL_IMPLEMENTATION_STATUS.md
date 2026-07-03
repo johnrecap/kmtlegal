@@ -2,16 +2,16 @@
 
 Last updated: 2026-07-02
 
-This is the main tracking file for the 32 Spec Kit implementation plans.
+This is the main tracking file for the 33 Spec Kit implementation plans.
 
 ## Summary
 
-Total plans: 32
+Total plans: 33
 
 | Status | Count |
 | --- | ---: |
 | Done | 27 |
-| In progress / partial / planned | 5 |
+| In progress / partial / planned | 6 |
 | Not started | 0 |
 
 ## Current Execution State
@@ -51,6 +51,7 @@ Total plans: 32
 | PLAN-30 KMT Signature Motion System | Done / superseded by PLAN-31 V2 | Implemented the first public-only Judicial Precision motion pass with scoped `kmt-motion-*` utilities, nav/footer underline reveal, CTA sheen/lift, hero reveal/image settle, clickable card edge glow/lift, image-card zoom, icon glow, RTL-safe inline-forward arrows, directory filter transitions, contact/booking form focus glow, booking step/status transitions, and reduced-motion fallbacks. | PLAN-31 intentionally removes the visible thread accent from PLAN-30 and replaces it with the Cinematic Legal V2 motion contract. |
 | PLAN-31 Public Motion V2 - Cinematic Legal | Done | Removed `kmt-motion-thread` and `kmt-motion-trust-strip` from runtime source and CSS; added CSS-only V2 utilities for CTA shine/inner glow/active press, masked card border beams, icon halo/tilt, inline-forward arrow trails, panel enter transitions, stronger hero image settle, and hero CTA spotlight. Applied V2 hooks to public shell CTAs/icons/nav, hero actions, trust strip icons, practice cards, directory cards, public focus/cards, contact branch cards, booking panels, contact form, and booking stepper while preserving RTL and reduced-motion behavior. Verification passed: `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, `cmd /c node scripts/run-playwright-with-server.mjs tests/e2e/public-luxury-visual.spec.ts`, `cmd /c npm run test:e2e:smoke`, `git diff --check`, runtime `src` thread scan, and exact animation dependency scan. | Nothing blocking for PLAN-31. No new animation runtime dependency was added, and protected/admin/product/Stitch surfaces remain out of scope. |
 | PLAN-32 AI Booking, Secretary Role & Client Portal | Done | Added `Secretary` role and `client.account.manage`, client-only account create/password-reset APIs in CRM, indexed audit context columns and filters, AI assistant task/schema/routes for public booking and verified inquiry, authenticated client assistant, `/client` protected website-style portal routes with `/portal` compatibility, public booking assistant panel, public header client-login entry point to `/login?next=/client`, recoverable guard for Client-role accounts not linked to a CRM client profile, admin user-detail repair action for unlinked Client-role accounts, route/auth/localization contracts, audit metadata propagation, and a dark client dashboard redesign for `/client` pages with `/portal/*` compatibility redirects. The `/client/files` surface preserves the visible document list and client upload form from the legacy portal documents page. Follow-up fixed desktop header congestion by separating account actions from portal navigation and replaced the client upload dropdowns with dark portal-native listboxes. Verification passed: `npm run db:generate`, `npm run typecheck`, `npm run lint`, `npm run test`, `DATABASE_URL=local npm run build`, `npm run db:validate`, `DATABASE_URL=local npm run test:e2e:smoke`, plus follow-up header/login and unlinked-client guard checks with `npm run typecheck`, `npm run lint`, `npm run test`, local build, and `npm run test:e2e:smoke`; client dashboard redesign follow-up passed `git diff --check`, `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, and `cmd /c npm run test:e2e:smoke`; dropdown follow-up passed `git diff --check`, `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, and `cmd /c npm run test:e2e:smoke`. | DB-backed authenticated smoke for secretary-create-account, client login, client dashboard visual QA, and client upload/download waits for a migrated PostgreSQL runtime and writable `UPLOADS_DIR`. Public AI booking runtime smoke also needs migrated DB availability. |
+| PLAN-33 Payment Gateway For Consultation Booking | In progress / partial | Added server-side consultation pricing rules, payment attempts, transactions, webhook events, reserved appointment state, payment-pending consultation state, provider-neutral payment services, PayTabs-compatible webhook endpoint, checkout/status/admin payment APIs, public booking review/pay UI, payment return/status page, client gateway attempt cards, admin finance gateway visibility, payment analytics events, env placeholders, provider evaluation docs, ADR, audits, Spec Kit data/API docs, and focused contract tests. | Live provider API credentials and merchant comparison remain required before production go-live. Manual payment fallback, refunds/disputes UI, settlement imports, and full provider sandbox smoke remain follow-up work. |
 
 ## Latest PLAN-32 Follow-Up
 
@@ -107,7 +108,7 @@ Total plans: 32
 ## Remaining Count
 
 - Fully not started: 0 plans.
-- Partially open/planned: 5 plans.
+- Partially open/planned: 6 plans.
 - Done: 27 plans.
 
 ## Immediate Next Steps

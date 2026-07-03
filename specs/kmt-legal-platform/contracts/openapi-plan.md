@@ -95,6 +95,9 @@ PLAN-26 installer preflight must reject unsupported panel environments before bu
 | POST | `/api/public/consultations` | Create consultation request | Guest | consultation.create.public |
 | POST | `/api/public/consultations/assistant` | AI-assisted consultation booking and verified appointment inquiry | Guest | consultation.create.public |
 | GET | `/api/public/consultations/slots` | Public consultation slots generated from secretary availability without exposing internal calendar data | Guest | public |
+| POST | `/api/public/consultations/checkout` | Create a paid consultation booking checkout after server-side review and pricing | Guest | consultation.create.public |
+| GET | `/api/public/payments/status` | Read payment attempt status for a return/status page without confirming from redirect | Guest | public |
+| POST | `/api/webhooks/paytabs` | Process PayTabs-compatible payment webhook/IPN with signature verification and idempotency | Provider | internal |
 
 ### Email
 | Method | Path/Action | Purpose | Auth | Permission |
@@ -209,9 +212,15 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 | GET | `/api/admin/finance` | Invoice/payment basics overview | Admin | finance.read.any |
 | POST | `/api/admin/finance` | Create manual invoice/payment record | Admin | finance.manage.any |
 | PATCH | `/api/admin/finance/{paymentId}` | Update invoice/payment status | Admin | finance.manage.any |
+| GET | `/api/admin/payments/pricing` | List consultation pricing rules used by checkout | Admin | finance.read.any |
+| POST | `/api/admin/payments/pricing` | Create consultation pricing rule | Admin | finance.manage.any |
+| PATCH | `/api/admin/payments/pricing/{ruleId}` | Update consultation pricing rule | Admin | finance.manage.any |
+| GET | `/api/admin/payments/attempts` | List gateway payment attempts and slot reservations | Admin | finance.read.any |
+| GET | `/api/admin/payments/webhooks` | List payment webhook events and processing status | Admin | finance.read.any |
+| POST | `/api/admin/payments/webhooks/{eventId}/replay` | Replay safe normalized webhook processing | Admin | finance.manage.any |
 | GET | `/api/admin/reports` | MVP reports summary | Admin | reports.read.any |
 
-Manual invoice/payment DTO fields: `invoiceNumber`, `clientId`, `caseId?`, `issueDate`, `dueDate?`, `amount`, `currency`, `status`, `paymentMethod?`, `receiptNumber?`, `paidAt?`, `notes?`, `createdById`, timestamps. MVP excludes tax, discounts, settlement, gateway payments, refunds, and accounting ledger.
+Manual invoice/payment DTO fields: `invoiceNumber`, `clientId`, `caseId?`, `issueDate`, `dueDate?`, `amount`, `currency`, `status`, `paymentMethod?`, `receiptNumber?`, `paidAt?`, `notes?`, `createdById`, timestamps. Gateway v1 adds `ConsultationPricingRule`, `PaymentAttempt`, `PaymentTransaction`, and `PaymentWebhookEvent`; refunds/disputes are modeled but not operationalized in v1.
 
 ### Files
 | Method | Path | Purpose | Auth | Permission |

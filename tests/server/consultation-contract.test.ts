@@ -11,7 +11,8 @@ import {
   isCrossClientDataRequest,
   isLegalAdviceRequest,
   publicBookingSlotConfirmationError,
-  publicConsultationAssistantSchema
+  publicConsultationAssistantSchema,
+  publicConsultationCheckoutSchema
 } from "@/server/consultations/consultation-assistant-service";
 import {
   canManageConsultationAvailability,
@@ -143,7 +144,37 @@ describe("public consultation contract", () => {
     expect(source).toContain("deterministicBookingSummary");
     expect(source).toContain("deterministic_booking_rules");
     expect(source).toContain("publicAppointmentInquiry({ body, requestId: input.requestId })");
-    expect(source).toContain("bookConsultationAppointment({ body: bookingBody, request: input.request, requestId: input.requestId })");
+    expect(source).toContain("prepareConsultationPaymentReview({ body: bookingBody, requestId: input.requestId })");
+    expect(source).toContain("createPublicConsultationCheckout");
+  });
+
+  it("validates public checkout as a separate payment confirmation contract", () => {
+    const checkout = publicConsultationCheckoutSchema.parse({
+      locale: "ar",
+      message: "دفع رسوم الحجز",
+      draft: {
+        fullName: "أحمد منصور",
+        phone: "+201000000000",
+        serviceCategory: "corporate-business-services",
+        summary: "أحتاج مراجعة عقد توريد قبل التوقيع مع توضيح أهم المخاطر.",
+        preferredMode: "ONLINE",
+        startsAt: "2026-07-05T10:00:00+03:00"
+      },
+      selectedSlot: "2026-07-05T10:00:00+03:00",
+      consent: true,
+      confirmPayment: true
+    });
+
+    expect(checkout.confirmPayment).toBe(true);
+    expect(checkout.draft?.preferredMode).toBe("ONLINE");
+    expect(() =>
+      publicConsultationCheckoutSchema.parse({
+        locale: "ar",
+        message: "دفع",
+        consent: true,
+        confirmPayment: false
+      })
+    ).toThrow();
   });
 
   it("builds a useful office brief for public AI chat bookings", () => {

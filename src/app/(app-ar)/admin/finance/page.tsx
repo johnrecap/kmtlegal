@@ -30,6 +30,8 @@ import {
   listAdminPayments
 } from "@/server/admin/finance-report-service";
 import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { listAdminPaymentAttempts, listAdminPaymentWebhookEvents } from "@/server/payments/payment-service";
+import { listAdminConsultationPricingRules } from "@/server/payments/pricing-service";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +44,9 @@ export const metadata: Metadata = {
 type SearchParams = Record<string, string | string[] | undefined>;
 type PaymentRow = Awaited<ReturnType<typeof listAdminPayments>>["items"][number];
 type PaymentDetail = Awaited<ReturnType<typeof getAdminPaymentDetail>>;
+type PaymentAttemptRow = Awaited<ReturnType<typeof listAdminPaymentAttempts>>["items"][number];
+type PaymentWebhookRow = Awaited<ReturnType<typeof listAdminPaymentWebhookEvents>>["items"][number];
+type PricingRuleRow = Awaited<ReturnType<typeof listAdminConsultationPricingRules>>[number];
 
 function flattenSearchParams(searchParams: SearchParams) {
   return Object.fromEntries(
@@ -60,6 +65,20 @@ function statusTone(status: string) {
     return "closed" as const;
   }
   return status === "DRAFT" ? ("neutral" as const) : ("pending" as const);
+}
+
+function attemptTone(status: string) {
+  if (status === "PAID") return "active" as const;
+  if (["FAILED", "EXPIRED", "CANCELLED", "DISPUTED"].includes(status)) return "danger" as const;
+  if (status === "REFUNDED") return "closed" as const;
+  return "pending" as const;
+}
+
+function webhookTone(status: string) {
+  if (status === "PROCESSED") return "active" as const;
+  if (status === "FAILED") return "danger" as const;
+  if (status === "IGNORED") return "neutral" as const;
+  return "pending" as const;
 }
 
 function summaryAmount(amount: number, currency?: string) {
@@ -127,7 +146,7 @@ function columns(query: Record<string, string>): Array<DataTableColumn<PaymentRo
       render: (row) => (
         <div>
           <p className="font-semibold text-kmt-ink">{row.invoiceNumber}</p>
-          <p className="mt-1 text-xs text-kmt-muted">أُنشئت بواسطة {row.createdBy.name}</p>
+          <p className="mt-1 text-xs text-kmt-muted">أُنشئت بواسطة {row.createdBy?.name ?? "النظام"}</p>
         </div>
       )
     },
@@ -196,7 +215,7 @@ function PaymentMobileCard({ row, query }: { row: PaymentRow; query: Record<stri
   return (
     <DataRecordCard
       title={row.invoiceNumber}
-      description={`أُنشئت بواسطة ${row.createdBy.name}`}
+      description={`أُنشئت بواسطة ${row.createdBy?.name ?? "النظام"}`}
       badges={<Badge tone={statusTone(row.status)}>{labelFrom(paymentStatusLabels, row.status)}</Badge>}
       fields={[
         {
@@ -222,6 +241,94 @@ function PaymentMobileCard({ row, query }: { row: PaymentRow; query: Record<stri
   );
 }
 
+function GatewayOperationsPanel({
+  attempts,
+  pricingRules,
+  webhookEvents
+}: {
+  attempts: PaymentAttemptRow[];
+  pricingRules: PricingRuleRow[];
+  webhookEvents: PaymentWebhookRow[];
+}) {
+  return (
+    <div className="grid gap-5 xl:grid-cols-3">
+      <Card>
+        <CardHeader>
+          <CardTitle>تسعير حجز الاستشارة</CardTitle>
+          <CardDescription>مصدر السعر الوحيد قبل إنشاء محاولة الدفع.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {pricingRules.length ? (
+            pricingRules.slice(0, 6).map((rule) => (
+              <div key={rule.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-semibold text-kmt-ink">{rule.label || rule.serviceCategory || "سعر عام"}</p>
+                  <Badge tone={rule.active ? "active" : "neutral"}>{rule.active ? "نشط" : "متوقف"}</Badge>
+                </div>
+                <p className="mt-1 text-kmt-muted">
+                  {formatMoney(rule.amount.toString(), rule.currency)} · {rule.mode || "كل الطرق"} · v{rule.version}
+                </p>
+              </div>
+            ))
+          ) : (
+            <StateBlock tone="empty" title="لا توجد قواعد سعر" description="يجب إنشاء قاعدة سعر نشطة قبل تفعيل checkout العام." />
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>محاولات الدفع</CardTitle>
+          <CardDescription>آخر محاولات Hosted Checkout وحجز المواعيد المؤقت.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {attempts.length ? (
+            attempts.slice(0, 8).map((attempt) => (
+              <div key={attempt.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-semibold text-kmt-ink">{attempt.client.fullName}</p>
+                  <Badge tone={attemptTone(attempt.status)}>{attempt.status}</Badge>
+                </div>
+                <p className="mt-1 text-kmt-muted">
+                  {formatMoney(attempt.amount.toString(), attempt.currency)} · {formatDateTime(attempt.appointment.startsAt)}
+                </p>
+                <p className="mt-1 truncate text-xs text-kmt-muted">{attempt.providerSessionId || attempt.id}</p>
+              </div>
+            ))
+          ) : (
+            <StateBlock tone="empty" title="لا توجد محاولات دفع" description="ستظهر محاولات الدفع هنا بعد إنشاء أول checkout." />
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>أحداث Webhook</CardTitle>
+          <CardDescription>حالة التوقيع والمعالجة وإعادة التشغيل الآمن.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {webhookEvents.length ? (
+            webhookEvents.slice(0, 8).map((event) => (
+              <div key={event.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="truncate font-semibold text-kmt-ink">{event.eventId}</p>
+                  <Badge tone={webhookTone(event.processingStatus)}>{event.processingStatus}</Badge>
+                </div>
+                <p className="mt-1 text-kmt-muted">
+                  {event.provider} · توقيع {event.signatureStatus} · replay {event.replayCount}
+                </p>
+                <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(event.receivedAt)}</p>
+              </div>
+            ))
+          ) : (
+            <StateBlock tone="empty" title="لا توجد Webhooks" description="ستظهر أحداث بوابة الدفع بعد أول إشعار من المزود." />
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default async function AdminFinancePage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminPage("/admin/finance");
   if (guard.status === "forbidden") {
@@ -233,9 +340,12 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
   }
 
   const query = flattenSearchParams((await searchParams) ?? {});
-  const [result, options] = await Promise.all([
+  const [result, options, pricingRules, paymentAttempts, webhookEvents] = await Promise.all([
     listAdminPayments({ actor: guard.context.principal, query }),
-    getAdminFinanceOptions(guard.context.principal)
+    getAdminFinanceOptions(guard.context.principal),
+    listAdminConsultationPricingRules({ actor: guard.context.principal, query: { active: "" } }),
+    listAdminPaymentAttempts({ actor: guard.context.principal, query: { pageSize: 8 } }),
+    listAdminPaymentWebhookEvents({ actor: guard.context.principal, query: { pageSize: 8 } })
   ]);
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
   const selectedCurrency = result.filters.currency || undefined;
@@ -381,6 +491,12 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
             </CardContent>
           </Card>
         </div>
+
+        <GatewayOperationsPanel
+          attempts={paymentAttempts.items}
+          pricingRules={pricingRules}
+          webhookEvents={webhookEvents.items}
+        />
       </div>
     </DashboardShell>
   );
