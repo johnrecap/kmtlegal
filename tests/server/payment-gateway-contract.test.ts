@@ -9,6 +9,7 @@ import {
   requireVerifiedWebhookSignature
 } from "@/server/payments/payment-config";
 import { createHostedCheckout, verifyWebhookSignature } from "@/server/payments/payment-provider";
+import { createPaymentReceiptToken, publicPaymentReceiptUrl, verifyPaymentReceiptToken } from "@/server/payments/payment-receipt-service";
 import { activeProviderFromValue } from "@/server/payments/payment-settings-service";
 import { mapProviderPaymentStatus } from "@/server/payments/payment-service";
 import { adminConsultationPricingRuleWriteSchema, consultationPriceDto } from "@/server/payments/pricing-service";
@@ -69,6 +70,27 @@ describe("payment gateway contract", () => {
     expect(verifyWebhookSignature({ rawBody, signature: `sha256=${signature}`, secret })).toBe(true);
     expect(verifyWebhookSignature({ rawBody, signature: "bad", secret })).toBe(false);
     expect(verifyWebhookSignature({ rawBody, signature, secret: "wrong" })).toBe(false);
+  });
+
+  it("signs public payment receipt links and rejects tampered tokens", () => {
+    const env = testEnv({ PAYMENT_RECEIPT_SIGNING_SECRET: "receipt-secret-32-characters-long" });
+    const attemptId = "11111111-1111-4111-8111-111111111111";
+    const paymentId = "22222222-2222-4222-8222-222222222222";
+    const token = createPaymentReceiptToken({ attemptId, paymentId }, env);
+
+    expect(verifyPaymentReceiptToken({ attemptId, token }, env)).toMatchObject({ attemptId, paymentId });
+    expect(verifyPaymentReceiptToken({ attemptId: "33333333-3333-4333-8333-333333333333", token }, env)).toBeNull();
+    expect(verifyPaymentReceiptToken({ attemptId, token: `${token}tampered` }, env)).toBeNull();
+
+    vi.stubEnv("PAYMENT_RECEIPT_SIGNING_SECRET", "receipt-secret-32-characters-long");
+    try {
+      const url = publicPaymentReceiptUrl({ attemptId, paymentId });
+      expect(url).toContain("/payment/consultation/receipt?");
+      expect(url).toContain(`attemptId=${attemptId}`);
+      expect(new URL(`https://kmt.test${url}`).searchParams.get("token")).toBeTruthy();
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("creates a Paymob hosted checkout intention without exposing secrets", async () => {

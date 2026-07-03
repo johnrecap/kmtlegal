@@ -22,6 +22,7 @@ import {
   paymentWebhookSecret,
   requireVerifiedWebhookSignature
 } from "./payment-config";
+import { publicPaymentReceiptUrl } from "./payment-receipt-service";
 import { getActivePaymentGateway } from "./payment-settings-service";
 import type { PaymentProviderName } from "./payment-config";
 import type { ConsultationPriceSnapshot } from "./pricing-service";
@@ -222,9 +223,21 @@ export async function getPublicPaymentAttemptStatus(input: { attemptId: string }
   const attempt = await prisma.paymentAttempt.findUnique({
     where: { id: attemptId },
     include: {
+      client: { select: { fullName: true, phone: true } },
       appointment: { select: { id: true, title: true, startsAt: true, status: true } },
       consultationRequest: { select: { id: true, status: true } },
-      payment: { select: { id: true, invoiceNumber: true, status: true, paidAt: true } }
+      payment: {
+        select: {
+          id: true,
+          invoiceNumber: true,
+          receiptNumber: true,
+          amount: true,
+          currency: true,
+          status: true,
+          paymentMethod: true,
+          paidAt: true
+        }
+      }
     }
   });
 
@@ -755,9 +768,21 @@ function gatewayInvoiceNumber(attemptId: string, paidAt: Date) {
 function paymentAttemptDto(
   attempt: Prisma.PaymentAttemptGetPayload<{
     include: {
+      client: { select: { fullName: true; phone: true } };
       appointment: { select: { id: true; title: true; startsAt: true; status: true } };
       consultationRequest: { select: { id: true; status: true } };
-      payment: { select: { id: true; invoiceNumber: true; status: true; paidAt: true } };
+      payment: {
+        select: {
+          id: true;
+          invoiceNumber: true;
+          receiptNumber: true;
+          amount: true;
+          currency: true;
+          status: true;
+          paymentMethod: true;
+          paidAt: true;
+        };
+      };
     };
   }>
 ) {
@@ -776,10 +801,27 @@ function paymentAttemptDto(
       status: attempt.appointment.status
     },
     consultation: attempt.consultationRequest,
+    client:
+      attempt.payment && attempt.status === "PAID"
+        ? {
+            fullName: attempt.client.fullName,
+            phone: attempt.client.phone
+          }
+        : null,
     payment: attempt.payment
       ? {
-          ...attempt.payment,
-          paidAt: attempt.payment.paidAt?.toISOString() ?? null
+          id: attempt.payment.id,
+          invoiceNumber: attempt.payment.invoiceNumber,
+          receiptNumber: attempt.payment.receiptNumber,
+          amount: attempt.payment.amount.toString(),
+          currency: attempt.payment.currency,
+          status: attempt.payment.status,
+          paymentMethod: attempt.payment.paymentMethod,
+          paidAt: attempt.payment.paidAt?.toISOString() ?? null,
+          receiptUrl:
+            attempt.status === "PAID" && attempt.payment.status === "PAID"
+              ? publicPaymentReceiptUrl({ attemptId: attempt.id, paymentId: attempt.payment.id })
+              : null
         }
       : null
   };

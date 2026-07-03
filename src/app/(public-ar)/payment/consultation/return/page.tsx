@@ -3,6 +3,7 @@ import { PublicShell } from "@/components/layout/public-shell";
 import { MaterialSymbol } from "@/components/ui";
 import { navForPath } from "@/content/public-content";
 import { cn } from "@/lib/cn";
+import { formatMoney } from "@/lib/legal-format";
 import { getPublicPaymentAttemptStatus } from "@/server/payments/payment-service";
 
 export const dynamic = "force-dynamic";
@@ -17,31 +18,37 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
   const params = await searchParams;
   const attemptId = params?.attemptId ?? "";
   const result = attemptId ? await getPaymentStatus(attemptId) : null;
+  const tone = statusTone(result?.status);
+  const isPaid = result?.status === "PAID" && result.payment;
 
   return (
     <PublicShell currentPath="/payment/consultation/return" locale="ar" navItems={navForPath("/", "ar")}>
-      <section className="mx-auto min-h-[68vh] max-w-[900px] px-4 py-16 sm:px-6 lg:px-10" dir="rtl">
+      <section className="mx-auto min-h-[68vh] max-w-[940px] px-4 py-16 sm:px-6 lg:px-10" dir="rtl">
         <div className="rounded-[1.75rem] border border-kmt-gold/30 bg-[#100d08] p-6 shadow-[0_34px_120px_-68px_rgba(183,134,64,0.58)] sm:p-8">
           <div className="flex items-start gap-4">
-            <span className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-full border", statusTone(result?.status).iconClass)}>
-              <MaterialSymbol name={statusTone(result?.status).icon} />
+            <span className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-full border", tone.iconClass)}>
+              <MaterialSymbol name={tone.icon} />
             </span>
             <div className="min-w-0">
               <p className="text-sm font-semibold uppercase tracking-[0.16em] text-kmt-gold">حالة دفع حجز الاستشارة</p>
-              <h1 className="mt-3 font-serif text-3xl font-semibold leading-tight text-white sm:text-4xl">{statusTone(result?.status).title}</h1>
-              <p className="mt-4 max-w-2xl text-base leading-8 text-amber-50/78">{statusTone(result?.status).description}</p>
+              <h1 className="mt-3 font-serif text-3xl font-semibold leading-tight text-white sm:text-4xl">{tone.title}</h1>
+              <p className="mt-4 max-w-2xl text-base leading-8 text-amber-50/78">{tone.description}</p>
             </div>
           </div>
 
           {result ? (
-            <dl className="mt-8 grid gap-3 text-sm text-amber-50/86 sm:grid-cols-2">
-              <StatusItem label="رقم محاولة الدفع" value={result.id} />
-              <StatusItem label="الحالة" value={result.status} />
-              <StatusItem label="المبلغ" value={`${result.amount} ${result.currency}`} />
-              <StatusItem label="الموعد" value={formatCairoDate(result.appointment.startsAt)} />
-              {result.payment ? <StatusItem label="رقم الفاتورة" value={result.payment.invoiceNumber} /> : null}
-              <StatusItem label="انتهاء الحجز المؤقت" value={formatCairoDate(result.expiresAt)} />
-            </dl>
+            <div className="mt-8 space-y-5">
+              {isPaid ? <PaidConfirmation result={result} /> : null}
+
+              <dl className="grid gap-3 text-sm text-amber-50/86 sm:grid-cols-2">
+                <StatusItem label="رقم محاولة الدفع" value={result.id} dir="ltr" />
+                <StatusItem label="الحالة" value={result.status} />
+                <StatusItem label="المبلغ" value={formatMoney(result.amount, result.currency)} />
+                <StatusItem label="الموعد" value={formatCairoDate(result.appointment.startsAt)} />
+                {result.payment ? <StatusItem label="رقم الفاتورة" value={result.payment.invoiceNumber} dir="ltr" /> : null}
+                <StatusItem label="انتهاء الحجز المؤقت" value={formatCairoDate(result.expiresAt)} />
+              </dl>
+            </div>
           ) : (
             <p className="mt-8 rounded-2xl border border-red-300/25 bg-red-950/30 px-4 py-3 text-sm leading-7 text-red-100">
               رابط الدفع غير مكتمل. ارجع إلى صفحة الحجز وابدأ المحاولة مرة أخرى.
@@ -53,6 +60,12 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
               <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-kmt-gold bg-kmt-gold px-5 text-sm font-semibold text-[#120d07] transition-colors hover:bg-[#c7a363]" href={result.checkoutUrl}>
                 <MaterialSymbol name="lock" />
                 استكمال الدفع
+              </Link>
+            ) : null}
+            {result?.payment?.receiptUrl ? (
+              <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-kmt-gold bg-kmt-gold px-5 text-sm font-semibold text-[#120d07] transition-colors hover:bg-[#c7a363]" href={result.payment.receiptUrl}>
+                <MaterialSymbol name="receipt_long" />
+                عرض / طباعة الفاتورة
               </Link>
             ) : null}
             <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 px-5 text-sm font-semibold text-amber-50 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold" href="/ar/book-consultation">
@@ -72,6 +85,34 @@ async function getPaymentStatus(attemptId: string) {
   } catch {
     return null;
   }
+}
+
+function PaidConfirmation({ result }: { result: NonNullable<Awaited<ReturnType<typeof getPaymentStatus>>> }) {
+  if (!result.payment) {
+    return null;
+  }
+
+  return (
+    <section className="rounded-2xl border border-emerald-300/25 bg-emerald-950/20 p-4 text-amber-50 sm:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-semibold text-white">تم تأكيد الدفع والموعد</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-7 text-amber-50/78">تم إصدار فاتورة الدفع تلقائيًا وربطها بحجز الاستشارة.</p>
+        </div>
+        <span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/35 bg-emerald-400/10 px-3 py-1 text-sm font-semibold text-emerald-100">
+          <MaterialSymbol name="check_circle" />
+          مدفوع
+        </span>
+      </div>
+
+      <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+        {result.client ? <StatusItem label="اسم العميل" value={result.client.fullName} /> : null}
+        {result.client ? <StatusItem label="رقم الهاتف" value={result.client.phone} dir="ltr" /> : null}
+        <StatusItem label="المبلغ المدفوع" value={formatMoney(result.payment.amount, result.payment.currency)} />
+        <StatusItem label="رقم الإيصال" value={result.payment.receiptNumber ?? "غير متاح"} dir="ltr" />
+      </dl>
+    </section>
+  );
 }
 
 function statusTone(status: string | undefined) {
@@ -104,7 +145,7 @@ function statusTone(status: string | undefined) {
       icon: "pending",
       iconClass: "border-kmt-gold/45 bg-kmt-gold/15 text-kmt-gold",
       title: "ننتظر تأكيد بوابة الدفع",
-      description: "لا يتم تأكيد الموعد من صفحة الرجوع. سنعرض التأكيد فقط بعد وصول webhook/IPN موثوق."
+      description: "لا يتم تأكيد الموعد من صفحة الرجوع. سنعرض التأكيد فقط بعد وصول webhook أو IPN موثوق."
     };
   }
   return {
@@ -115,11 +156,13 @@ function statusTone(status: string | undefined) {
   };
 }
 
-function StatusItem({ label, value }: { label: string; value: string }) {
+function StatusItem({ label, value, dir }: { label: string; value: string; dir?: "rtl" | "ltr" }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-3">
       <dt className="text-xs font-semibold text-amber-100/55">{label}</dt>
-      <dd className="mt-1 break-words text-base font-semibold leading-7 text-white">{value}</dd>
+      <dd className="mt-1 break-words text-base font-semibold leading-7 text-white" dir={dir}>
+        {value}
+      </dd>
     </div>
   );
 }

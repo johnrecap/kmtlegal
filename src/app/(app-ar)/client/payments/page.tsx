@@ -5,6 +5,7 @@ import { Badge, DataRecordCard, DataTable, type DataTableColumn } from "@/compon
 import { buttonClasses } from "@/components/ui/button";
 import { formatDateTime, formatMoney, labelFrom, paymentStatusLabels } from "@/lib/legal-format";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
+import { publicPaymentReceiptUrl } from "@/server/payments/payment-receipt-service";
 import { listPortalPaymentAttempts, listPortalPayments } from "@/server/portal/client-portal-service";
 import { clientNavForPath } from "../client-navigation";
 
@@ -35,6 +36,14 @@ function attemptTone(status: string) {
   return "pending" as const;
 }
 
+function paymentReceiptLink(payment: PaymentRow) {
+  if (payment.status !== "PAID" || !payment.paymentAttempt?.id) {
+    return null;
+  }
+
+  return publicPaymentReceiptUrl({ attemptId: payment.paymentAttempt.id, paymentId: payment.id });
+}
+
 const columns: Array<DataTableColumn<PaymentRow>> = [
   {
     key: "invoice",
@@ -61,10 +70,26 @@ const columns: Array<DataTableColumn<PaymentRow>> = [
   { key: "amount", header: "المبلغ", render: (row) => formatMoney(row.amount.toString(), row.currency) },
   { key: "status", header: "الحالة", render: (row) => <Badge tone={statusTone(row.status)}>{labelFrom(paymentStatusLabels, row.status)}</Badge> },
   { key: "issueDate", header: "الإصدار", render: (row) => formatDateTime(row.issueDate) },
-  { key: "dueDate", header: "الاستحقاق", render: (row) => formatDateTime(row.dueDate) }
+  { key: "dueDate", header: "الاستحقاق", render: (row) => formatDateTime(row.dueDate) },
+  {
+    key: "receipt",
+    header: "الفاتورة",
+    render: (row) => {
+      const receiptUrl = paymentReceiptLink(row);
+      return receiptUrl ? (
+        <Link className={buttonClasses({ variant: "secondary", size: "sm", className: `min-h-10 ${clientPortalSecondaryActionClass}` })} href={receiptUrl}>
+          عرض الفاتورة
+        </Link>
+      ) : (
+        <span className="text-sm text-kmt-muted">غير متاحة</span>
+      );
+    }
+  }
 ];
 
 function MobileCard({ row }: { row: PaymentRow }) {
+  const receiptUrl = paymentReceiptLink(row);
+
   return (
     <DataRecordCard
       className={clientPortalRowClass}
@@ -87,10 +112,19 @@ function MobileCard({ row }: { row: PaymentRow }) {
         { label: "الاستحقاق", value: formatDateTime(row.dueDate) }
       ]}
       action={
-        row.case ? (
-          <Link className={buttonClasses({ variant: "secondary", size: "sm", className: `min-h-11 w-full ${clientPortalSecondaryActionClass}` })} href={`/client/cases/${row.case.id}`}>
-            فتح القضية
-          </Link>
+        receiptUrl || row.case ? (
+          <div className="grid gap-2">
+            {receiptUrl ? (
+              <Link className={buttonClasses({ variant: "primary", size: "sm", className: `min-h-11 w-full ${clientPortalSecondaryActionClass}` })} href={receiptUrl}>
+                عرض الفاتورة
+              </Link>
+            ) : null}
+            {row.case ? (
+              <Link className={buttonClasses({ variant: "secondary", size: "sm", className: `min-h-11 w-full ${clientPortalSecondaryActionClass}` })} href={`/client/cases/${row.case.id}`}>
+                فتح القضية
+              </Link>
+            ) : null}
+          </div>
         ) : null
       }
     />

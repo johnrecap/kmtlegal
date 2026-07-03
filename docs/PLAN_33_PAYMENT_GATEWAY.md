@@ -16,7 +16,7 @@ Clients pay a consultation booking fee/deposit before the selected appointment i
 - `PaymentAttempt`: provider-neutral checkout attempt, selected provider, price snapshot, temporary slot hold, checkout URL, expiry.
 - `PaymentTransaction`: provider transaction reference, raw/provider status, settlement field.
 - `PaymentWebhookEvent`: event id, signature status, processing status, replay count, payload hash, safe normalized payload.
-- `Payment`: internal paid invoice/receipt created after trusted paid webhook.
+- `Payment`: internal paid invoice/receipt created after trusted paid webhook, with a signed public printable receipt link after `PAID`.
 
 ## API Surface
 
@@ -24,6 +24,7 @@ Clients pay a consultation booking fee/deposit before the selected appointment i
 - `GET /api/public/payments/status?attemptId=...`
 - `POST /api/webhooks/paytabs`
 - `POST /api/webhooks/paymob`
+- `GET /payment/consultation/receipt?attemptId=...&token=...`
 - `GET /api/admin/payments/pricing`
 - `POST /api/admin/payments/pricing`
 - `PATCH /api/admin/payments/pricing/[ruleId]`
@@ -38,6 +39,7 @@ Clients pay a consultation booking fee/deposit before the selected appointment i
 - Price: server-side `PricingService` only.
 - Active gateway for new attempts: `SystemSetting` key `payment.gateway`, falling back to `PAYMENT_PROVIDER`.
 - Payment success: verified/idempotent webhook only.
+- Receipt display: signed receipt token plus a paid `PaymentAttempt` and paid `Payment`.
 - Appointment confirmation: `PaymentWebhookService` after paid provider state.
 - AI: intake helper only; no price/payment/confirmation authority.
 
@@ -46,6 +48,7 @@ Clients pay a consultation booking fee/deposit before the selected appointment i
 - `PAYMENT_PROVIDER=paytabs`
 - `PAYMENT_ATTEMPT_EXPIRY_MINUTES=15`
 - `PAYMENT_REQUIRE_WEBHOOK_SIGNATURE=true` in production
+- `PAYMENT_RECEIPT_SIGNING_SECRET` for signed public receipt links; `AUTH_SECRET` is the server-side fallback.
 - `PAYMENT_WEBHOOK_SECRET` / `PAYTABS_WEBHOOK_SECRET`
 - `PAYMENT_HOSTED_CHECKOUT_URL_TEMPLATE` or `PAYTABS_HOSTED_CHECKOUT_URL_TEMPLATE`
 - `PAYMOB_SECRET_KEY`

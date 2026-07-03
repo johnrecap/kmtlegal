@@ -25,7 +25,13 @@ Response includes `paymentAttempt.id`, `status`, `amount`, `currency`, `checkout
 
 `GET /api/public/payments/status?attemptId=...`
 
-Returns payment attempt, appointment, consultation status, and internal payment receipt if available.
+Returns payment attempt, appointment, consultation status, and internal payment receipt if available. Paid receipts include a signed `receiptUrl`; pending, failed, cancelled, and expired attempts do not expose a receipt URL.
+
+## Public Receipt Page
+
+`GET /payment/consultation/receipt?attemptId=...&token=...`
+
+Server-rendered printable receipt page. The token is signed server-side, the attempt and payment must both be `PAID`, and the page does not expose card details or raw provider webhook payloads.
 
 ## Webhooks
 

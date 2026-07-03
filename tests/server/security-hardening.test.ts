@@ -214,6 +214,7 @@ describe("security, privacy, upload, and observability hardening", () => {
       INSTALLER_ENABLED: "false",
       AI_PROVIDER: "mock",
       PAYTABS_HOSTED_CHECKOUT_URL_TEMPLATE: "https://payments.example/checkout/{attemptId}",
+      PAYMENT_RECEIPT_SIGNING_SECRET: "0123456789abcdef0123456789abcdef",
       ANALYTICS_ENABLED: "true"
     });
 

@@ -29,6 +29,7 @@ Last updated: 2026-07-03
 - Protected `/client` portal with dashboard, cases, appointments/court dates, documents, payments, profile, AI assistant, and team chat.
 - Client payments now distinguish internal invoices from gateway payment attempts.
 - Gateway attempt cards expose pay/status actions without treating pending attempts as paid invoices.
+- Paid consultation invoices expose a signed printable receipt page with the client name, phone, amount, invoice number, receipt reference, office name, and KMT logo.
 
 ## Admin
 
@@ -41,6 +42,7 @@ Last updated: 2026-07-03
 - Manual invoice/payment tracking remains available.
 - Gateway payment foundation adds `ConsultationPricingRule`, `PaymentAttempt`, `PaymentTransaction`, `PaymentWebhookEvent`.
 - `Payment` is created as the internal paid invoice after trusted gateway confirmation.
+- Paid gateway invoices can be viewed from the payment return page and client payments page through signed receipt links.
 - Reconciliation keys link provider transaction, attempt, payment/invoice, appointment, and consultation request.
 
 ## Content
