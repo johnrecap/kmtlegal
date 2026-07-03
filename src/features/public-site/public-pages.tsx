@@ -194,7 +194,8 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
     <PublicShell currentPath={currentPath} locale={locale} navItems={navForPath("/", locale)}>
       <PageHero
         eyebrow={copy.heroEyebrow}
-        image="/stitch-assets/6764cfecee488659.png"
+        image="/stitch-assets/b392b48a7cb6b561.png"
+        imagePosition="object-[center_55%]"
         title={copy.heroTitle}
         description={copy.heroDescription}
         actions={
@@ -304,7 +305,7 @@ export function ServicesPageView({ locale }: { locale: PublicLocale }) {
 
   return (
     <PublicShell currentPath={localizedPublicHref("/services", locale)} locale={locale} navItems={navForPath("/services", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/b8b47a1dd8d5ce08.png" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
+      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/b8b47a1dd8d5ce08.png" imagePosition="object-[center_62%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <DirectoryFilter
           emptyTitle={copy.emptyTitle}
@@ -386,7 +387,7 @@ export function TeamPageView({ locale }: { locale: PublicLocale }) {
 
   return (
     <PublicShell currentPath={localizedPublicHref("/team", locale)} locale={locale} navItems={navForPath("/team", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/bd64f8e89da8f4f6.png" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
+      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/bd64f8e89da8f4f6.png" imagePosition="object-[center_38%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <DirectoryFilter
           emptyTitle={copy.emptyTitle}
@@ -457,7 +458,7 @@ export async function ArticlesPageView({ locale }: { locale: PublicLocale }) {
 
   return (
     <PublicShell currentPath={localizedPublicHref("/articles", locale)} locale={locale} navItems={navForPath("/articles", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/b392b48a7cb6b561.png" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
+      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/2c0d439a80ab607f.png" imagePosition="object-[center_50%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <DirectoryFilter
           emptyTitle={copy.emptyTitle}
@@ -512,7 +513,7 @@ export async function CaseStudiesPageView({ locale }: { locale: PublicLocale }) 
 
   return (
     <PublicShell currentPath={localizedPublicHref("/case-studies", locale)} locale={locale} navItems={navForPath("/case-studies", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/2484f68d86633ca8.png" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
+      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/2484f68d86633ca8.png" imagePosition="object-[center_60%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <DirectoryFilter
           emptyTitle={copy.emptyTitle}
@@ -568,7 +569,7 @@ export function MediaPageView({ locale }: { locale: PublicLocale }) {
 
   return (
     <PublicShell currentPath={localizedPublicHref("/media", locale)} locale={locale} navItems={navForPath("/media", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/f9addb2d07ebf63d.png" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
+      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/f9addb2d07ebf63d.png" imagePosition="object-[center_52%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <div className="grid gap-4 md:grid-cols-3">
           {content.mediaItems.map((item) => (
@@ -593,7 +594,7 @@ export function ContactPageView({ locale }: { locale: PublicLocale }) {
 
   return (
     <PublicShell currentPath={localizedPublicHref("/contact", locale)} locale={locale} navItems={navForPath("/contact", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/11c3bae2e63b7192.png" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
+      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/11c3bae2e63b7192.png" imagePosition="object-[center_48%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
           <ContactForm locale={locale} />
@@ -623,7 +624,7 @@ export function BookConsultationPageView({ locale }: { locale: PublicLocale }) {
 
   return (
     <PublicShell currentPath={localizedPublicHref("/book-consultation", locale)} locale={locale} navItems={navForPath("/book-consultation", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/b8b47a1dd8d5ce08.png" size="compact" title={chatCopy.heroTitle} description={chatCopy.heroDescription} />
+      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/b8b47a1dd8d5ce08.png" imagePosition="object-[center_62%]" size="compact" title={chatCopy.heroTitle} description={chatCopy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={chatCopy.sectionTitle} description={chatCopy.sectionDescription}>
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <Suspense fallback={<div aria-hidden="true" className={cn(publicPanel, "min-h-[36rem] rounded-[1.75rem] border-kmt-gold/35 bg-black/30")} />}>

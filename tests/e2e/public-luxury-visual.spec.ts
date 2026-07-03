@@ -3,10 +3,18 @@ import { expect, test } from "@playwright/test";
 const publicVisualPages = [
   { path: "/", name: "home", expectedDir: "ltr" },
   { path: "/services", name: "services", expectedDir: "ltr" },
+  { path: "/team", name: "team", expectedDir: "ltr" },
+  { path: "/articles", name: "articles", expectedDir: "ltr" },
+  { path: "/case-studies", name: "case-studies", expectedDir: "ltr" },
+  { path: "/media", name: "media", expectedDir: "ltr" },
   { path: "/contact", name: "contact", expectedDir: "ltr" },
   { path: "/book-consultation", name: "book-consultation", expectedDir: "ltr" },
   { path: "/ar", name: "home-ar", expectedDir: "rtl" },
   { path: "/ar/services", name: "services-ar", expectedDir: "rtl" },
+  { path: "/ar/team", name: "team-ar", expectedDir: "rtl" },
+  { path: "/ar/articles", name: "articles-ar", expectedDir: "rtl" },
+  { path: "/ar/case-studies", name: "case-studies-ar", expectedDir: "rtl" },
+  { path: "/ar/media", name: "media-ar", expectedDir: "rtl" },
   { path: "/ar/contact", name: "contact-ar", expectedDir: "rtl" },
   { path: "/ar/book-consultation", name: "book-consultation-ar", expectedDir: "rtl" }
 ];
@@ -14,6 +22,17 @@ const publicVisualPages = [
 const publicVisualViewports = [
   { name: "desktop", width: 1440, height: 900 },
   { name: "mobile", width: 390, height: 844 }
+];
+
+const publicMotionSmokePages = [
+  { path: "/", name: "home", expectedDir: "ltr" },
+  { path: "/services", name: "services", expectedDir: "ltr" },
+  { path: "/contact", name: "contact", expectedDir: "ltr" },
+  { path: "/book-consultation", name: "book-consultation", expectedDir: "ltr" },
+  { path: "/ar", name: "home-ar", expectedDir: "rtl" },
+  { path: "/ar/services", name: "services-ar", expectedDir: "rtl" },
+  { path: "/ar/contact", name: "contact-ar", expectedDir: "rtl" },
+  { path: "/ar/book-consultation", name: "book-consultation-ar", expectedDir: "rtl" }
 ];
 
 const publicCrawlSeedPages = [
@@ -34,17 +53,26 @@ const publicCrawlSeedPages = [
 ];
 
 const publicHeroImagePages = [
-  { path: "/", name: "home" },
-  { path: "/services", name: "services" },
-  { path: "/team", name: "team" },
-  { path: "/articles", name: "articles" },
-  { path: "/ar", name: "home-ar" },
-  { path: "/ar/services", name: "services-ar" },
-  { path: "/ar/team", name: "team-ar" },
-  { path: "/ar/articles", name: "articles-ar" }
+  { path: "/", name: "home", expectedObjectPosition: "50% 55%" },
+  { path: "/services", name: "services", expectedObjectPosition: "50% 62%" },
+  { path: "/team", name: "team", expectedObjectPosition: "50% 38%" },
+  { path: "/articles", name: "articles", expectedObjectPosition: "50% 50%" },
+  { path: "/case-studies", name: "case-studies", expectedObjectPosition: "50% 60%" },
+  { path: "/media", name: "media", expectedObjectPosition: "50% 52%" },
+  { path: "/contact", name: "contact", expectedObjectPosition: "50% 48%" },
+  { path: "/book-consultation", name: "book-consultation", expectedObjectPosition: "50% 62%" },
+  { path: "/ar", name: "home-ar", expectedObjectPosition: "50% 55%" },
+  { path: "/ar/services", name: "services-ar", expectedObjectPosition: "50% 62%" },
+  { path: "/ar/team", name: "team-ar", expectedObjectPosition: "50% 38%" },
+  { path: "/ar/articles", name: "articles-ar", expectedObjectPosition: "50% 50%" },
+  { path: "/ar/case-studies", name: "case-studies-ar", expectedObjectPosition: "50% 60%" },
+  { path: "/ar/media", name: "media-ar", expectedObjectPosition: "50% 52%" },
+  { path: "/ar/contact", name: "contact-ar", expectedObjectPosition: "50% 48%" },
+  { path: "/ar/book-consultation", name: "book-consultation-ar", expectedObjectPosition: "50% 62%" }
 ];
 
-const primaryEnglishHeroImagePages = publicHeroImagePages.filter((page) => !page.path.startsWith("/ar"));
+const primaryEnglishHeroImagePaths = new Set(["/", "/services", "/team", "/articles"]);
+const primaryEnglishHeroImagePages = publicHeroImagePages.filter((page) => primaryEnglishHeroImagePaths.has(page.path));
 
 async function stubAnalytics(page: import("@playwright/test").Page) {
   await page.route("**/api/analytics/events", async (route) => {
@@ -78,6 +106,7 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
 
       const src = await heroImage.getAttribute("src");
       expect(src, `${pageTarget.name} hero image should use a direct public asset URL`).toMatch(/^\/stitch-assets\/.+\.png$/);
+      await expect(heroImage, `${pageTarget.name} hero crop should use the page-specific focal point`).toHaveCSS("object-position", pageTarget.expectedObjectPosition);
       if (primaryEnglishHeroImagePages.some((primaryPage) => primaryPage.path === pageTarget.path) && src) {
         primaryEnglishHeroSrcs.add(src);
       }
@@ -152,7 +181,7 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
     await stubAnalytics(page);
     await page.emulateMedia({ reducedMotion: "reduce" });
 
-    for (const pageTarget of publicVisualPages) {
+    for (const pageTarget of publicMotionSmokePages) {
       const response = await page.goto(pageTarget.path, { waitUntil: "domcontentloaded" });
 
       expect(response?.status(), `${pageTarget.path} should render with reduced motion`).toBeLessThan(400);

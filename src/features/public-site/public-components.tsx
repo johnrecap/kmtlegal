@@ -72,6 +72,7 @@ export function PageHero({
   title,
   description,
   image,
+  imagePosition = "object-center",
   actions,
   size = "full"
 }: {
@@ -79,31 +80,35 @@ export function PageHero({
   title: string;
   description: string;
   image: string;
+  imagePosition?: string;
   actions?: ReactNode;
   size?: "full" | "compact";
 }) {
   const isCompact = size === "compact";
-  const imageOpacity = isCompact ? "opacity-75" : "opacity-80";
-  const overlay = isCompact ? "from-kmt-navy/80 via-kmt-navy/35 to-[#07090b]/10" : "from-[#050607]/88 via-kmt-navy/42 to-[#07090b]/10";
+  const imageOpacity = "opacity-95";
+  const heroHeight = isCompact ? "min-h-[360px] md:min-h-[420px]" : "min-h-[560px]";
+  const contentHeight = isCompact ? "min-h-[360px] py-14 md:min-h-[420px]" : "min-h-[560px] py-16";
+  const ambientOverlay = isCompact ? "bg-[#020403]/42" : "bg-[#020403]/38";
 
   return (
-    <section className={cn("relative isolate overflow-hidden bg-kmt-navy text-white", isCompact ? "min-h-[340px]" : "min-h-[560px]")}>
+    <section className={cn("relative isolate overflow-hidden bg-kmt-navy text-white", heroHeight)}>
       <img
         alt=""
         aria-hidden="true"
-        className={cn("kmt-motion-hero-image absolute inset-0 h-full w-full object-cover", imageOpacity)}
+        className={cn("kmt-motion-hero-image absolute inset-0 h-full w-full object-cover", imageOpacity, imagePosition)}
         data-testid="public-page-hero-image"
         decoding="async"
         loading={isCompact ? "lazy" : "eager"}
         src={image}
       />
-      <div className={cn("absolute inset-0 bg-gradient-to-l", overlay)} />
+      <div className={cn("absolute inset-0", ambientOverlay)} />
+      <div className="absolute inset-y-0 w-[92%] from-[#050607]/95 via-[#050607]/76 to-transparent ltr:left-0 ltr:bg-gradient-to-r rtl:right-0 rtl:bg-gradient-to-l sm:w-[82%] lg:w-[74%]" />
       <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-[#07090b]" />
-      <div className={cn("relative mx-auto flex max-w-[1200px] items-center px-4 sm:px-6 lg:px-10", isCompact ? "min-h-[340px] py-12" : "min-h-[560px] py-16")}>
+      <div className={cn("relative mx-auto flex max-w-[1200px] items-center px-4 sm:px-6 lg:px-10", contentHeight)}>
         <div className="kmt-motion-reveal max-w-3xl">
-          <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p>
-          <h1 className={cn("mt-4 max-w-3xl font-semibold leading-tight", isCompact ? "text-3xl md:text-5xl" : "text-4xl md:text-6xl")}>{title}</h1>
-          <p className={cn("mt-5 max-w-2xl leading-9 text-slate-100", isCompact ? "text-base md:text-lg" : "text-lg")}>{description}</p>
+          <p className={cn("text-sm font-semibold drop-shadow-[0_2px_10px_rgba(0,0,0,0.82)]", publicGoldText)}>{eyebrow}</p>
+          <h1 className={cn("mt-4 max-w-3xl font-semibold leading-tight drop-shadow-[0_4px_22px_rgba(0,0,0,0.88)]", isCompact ? "text-3xl md:text-5xl" : "text-4xl md:text-6xl")}>{title}</h1>
+          <p className={cn("mt-5 max-w-2xl leading-9 text-slate-100 drop-shadow-[0_3px_16px_rgba(0,0,0,0.86)]", isCompact ? "text-base md:text-lg" : "text-lg")}>{description}</p>
           {actions ? <div className={cn("kmt-motion-reveal kmt-motion-reveal-delay mt-8 flex flex-wrap gap-3", publicMotionHeroSpotlight)}>{actions}</div> : null}
         </div>
       </div>
