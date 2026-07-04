@@ -148,6 +148,20 @@ describe("public consultation contract", () => {
     expect(source).toContain("createPublicConsultationCheckout");
   });
 
+  it("guards paid chat and manual review consultation entry points by booking mode", () => {
+    const assistantRoute = readFileSync(join(process.cwd(), "src/app/api/public/consultations/assistant/route.ts"), "utf8");
+    const checkoutRoute = readFileSync(join(process.cwd(), "src/app/api/public/consultations/checkout/route.ts"), "utf8");
+    const manualRoute = readFileSync(join(process.cwd(), "src/app/api/public/consultations/route.ts"), "utf8");
+    const manualService = readFileSync(join(process.cwd(), "src/server/consultations/consultation-service.ts"), "utf8");
+
+    expect(assistantRoute).toContain("assertPaidChatBookingEnabled");
+    expect(checkoutRoute).toContain("assertPaidChatBookingEnabled");
+    expect(manualRoute).toContain("assertManualReviewBookingEnabled");
+    expect(manualRoute).toContain('organizerMode: "manual"');
+    expect(manualService).toContain("manualReviewOrganizer");
+    expect(manualService).toContain('status: "manual_review"');
+  });
+
   it("validates public checkout as a separate payment confirmation contract", () => {
     const checkout = publicConsultationCheckoutSchema.parse({
       locale: "ar",

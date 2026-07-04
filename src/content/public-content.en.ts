@@ -389,9 +389,12 @@ export const publicContentEn = {
     heroEyebrow: "Consultation Request",
     heroTitle: "Request an Initial Consultation",
     heroDescription: "The intake assistant collects the details needed for office review. It does not provide legal advice before the team contacts you.",
+    manualHeroDescription: "Complete the short request form, then the office reviews the details and contacts you to confirm the suitable next step.",
     sectionEyebrow: "Consultation Request",
     sectionTitle: "Start with the Consultation Assistant",
     sectionDescription: "Use one clear conversation to request a consultation or check a previous reference. Do not send documents now.",
+    manualSectionTitle: "Send Your Request For Office Review",
+    manualSectionDescription: "No booking fee is shown in this mode, and no appointment is confirmed automatically. The office reviews the request and then contacts you.",
     afterSubmitTitle: "What happens after submission?",
     afterSubmitSteps: [
       "The request is saved as a new review item.",
@@ -552,6 +555,8 @@ export const publicContentEn = {
     categoryLabel: "Initial area",
     urgencyLabel: "Urgency",
     organizerUnavailable: "The request was saved and will be organized manually if the assistant is unavailable.",
+    manualReviewNotice: "This request will be sent for office review only. No booking fee is shown here, and no appointment is confirmed automatically before the office contacts you.",
+    manualReviewSaved: "The request was saved for office review. The office will contact you after reviewing the details and confirming the suitable next step.",
     validation: {
       fullName: "Write the full name so we know who owns the request.",
       phone: "Write a valid phone number so we can contact you.",

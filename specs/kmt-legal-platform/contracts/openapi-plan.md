@@ -92,10 +92,10 @@ PLAN-26 installer preflight must reject unsupported panel environments before bu
 | GET | `/api/public/case-studies` | Published anonymized studies | Guest | public |
 | GET | `/api/public/case-studies/{slug}` | Case study detail | Guest | public |
 | POST | `/api/public/contact` | Persist contact form submission and return `201 { data: { id, reference, status }, requestId }` | Guest | contact.create.public |
-| POST | `/api/public/consultations` | Create consultation request | Guest | consultation.create.public |
-| POST | `/api/public/consultations/assistant` | AI-assisted consultation booking and verified appointment inquiry | Guest | consultation.create.public |
+| POST | `/api/public/consultations` | Create manual-review consultation request; enabled only when `consultation.booking.mode=MANUAL_REVIEW` | Guest | consultation.create.public |
+| POST | `/api/public/consultations/assistant` | AI-assisted paid consultation booking and verified appointment inquiry; enabled only when `consultation.booking.mode=PAID_CHAT` | Guest | consultation.create.public |
 | GET | `/api/public/consultations/slots` | Public consultation slots generated from secretary availability without exposing internal calendar data | Guest | public |
-| POST | `/api/public/consultations/checkout` | Create a paid consultation booking checkout after server-side review and pricing | Guest | consultation.create.public |
+| POST | `/api/public/consultations/checkout` | Create a paid consultation booking checkout after server-side review and pricing; enabled only when `consultation.booking.mode=PAID_CHAT` | Guest | consultation.create.public |
 | GET | `/api/public/payments/status` | Read payment attempt status for a return/status page without confirming from redirect; paid attempts include signed `payment.receiptUrl` | Guest | public |
 | POST | `/api/webhooks/paytabs` | Process PayTabs-compatible payment webhook/IPN with signature verification and idempotency | Provider | internal |
 | POST | `/api/webhooks/paymob` | Process Paymob payment webhook/callback with provider-owned route, signature verification, and idempotency | Provider | internal |

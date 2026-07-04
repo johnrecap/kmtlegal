@@ -16,7 +16,6 @@ export function generateStaticParams() {
     ["case-studies"],
     ["media"],
     ["contact"],
-    ["book-consultation"],
     ["privacy"],
     ["terms"]
   ];

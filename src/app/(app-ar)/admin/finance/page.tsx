@@ -412,8 +412,8 @@ function PaymentGatewayOperationsPanel({
             {canManage ? (
               <>
                 <div className="rounded border border-kmt-border bg-kmt-surface-muted p-4">
-                  <h3 className="font-semibold text-kmt-ink">بوابة الدفع</h3>
-                  <p className="mb-4 mt-1 text-sm leading-6 text-kmt-muted">لا يتم حفظ المفاتيح هنا. يتم التحقق من جاهزية env قبل تفعيل البوابة.</p>
+                  <h3 className="font-semibold text-kmt-ink">وضع الحجز وبوابة الدفع</h3>
+                  <p className="mb-4 mt-1 text-sm leading-6 text-kmt-muted">لا يتم حفظ المفاتيح هنا. عند تفعيل الدردشة مع الدفع يجب وجود سعر استشارة نشط وبوابة دفع جاهزة.</p>
                   <PaymentGatewaySettingsForm settings={gatewaySettings} />
                 </div>
                 <div className="rounded border border-kmt-border bg-kmt-surface-muted p-4">

@@ -31,14 +31,19 @@ export const publicConsultationRequestSchema = z.object({
 export type PublicConsultationRequestInput = z.infer<typeof publicConsultationRequestSchema>;
 
 export type ConsultationOrganizerResult = {
-  status: "ready" | "unavailable";
+  status: "ready" | "unavailable" | "manual_review";
   classification: z.infer<typeof consultationClassificationOutputSchema> | null;
   intakeSummary: z.infer<typeof intakeSummaryOutputSchema> | null;
   reviewRequired: true;
   disclaimer: string;
 };
 
-export async function createPublicConsultation(input: { body: PublicConsultationRequestInput; request: Request; requestId: string }) {
+export async function createPublicConsultation(input: {
+  body: PublicConsultationRequestInput;
+  request: Request;
+  requestId: string;
+  organizerMode?: "ai" | "manual";
+}) {
   const phoneCanonical = canonicalPhone(input.body.phone);
   const phoneWhere: Prisma.ConsultationRequestWhereInput = phoneCanonical
     ? { OR: [{ phoneCanonical }, { phone: input.body.phone }] }
@@ -61,7 +66,10 @@ export async function createPublicConsultation(input: { body: PublicConsultation
     );
   }
 
-  const organizer = await organizeConsultation(input.body, input.requestId, getIpAddress(input.request) ?? phoneCanonical ?? input.body.phone);
+  const organizer =
+    input.organizerMode === "manual"
+      ? manualReviewOrganizer(input.body)
+      : await organizeConsultation(input.body, input.requestId, getIpAddress(input.request) ?? phoneCanonical ?? input.body.phone);
 
   const consultation = await prisma.consultationRequest.create({
     data: {
@@ -123,6 +131,30 @@ export async function createPublicConsultation(input: { body: PublicConsultation
     status: consultation.status,
     organizer,
     emailDelivery
+  };
+}
+
+function manualReviewOrganizer(body: PublicConsultationRequestInput): ConsultationOrganizerResult {
+  return {
+    status: "manual_review",
+    classification: {
+      category: body.serviceCategory,
+      urgency: body.urgency.toLowerCase() as "low" | "normal" | "high" | "urgent",
+      confidence: 1,
+      reasons: ["Submitted through the manual office review form."],
+      reviewNote: "Manual office review is required before any legal direction or appointment confirmation."
+    },
+    intakeSummary: {
+      summary: body.summary,
+      keyFacts: [],
+      missingInfo: [],
+      reviewNote: "The office team should review the request and contact the client."
+    },
+    reviewRequired: true,
+    disclaimer:
+      body.locale === "ar"
+        ? "تم حفظ الطلب للمراجعة المكتبية فقط. لا يتم تأكيد موعد أو تقديم استشارة قانونية نهائية من هذا النموذج."
+        : "The request was saved for office review only. This form does not confirm an appointment or provide final legal advice."
   };
 }
 

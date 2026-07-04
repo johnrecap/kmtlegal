@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { BookingStepper } from "@/features/public-site/booking-stepper";
 import { ConsultationBookingChat } from "@/features/public-site/consultation-booking-chat";
 import { cn } from "@/lib/cn";
 import type { PublicLocale } from "@/lib/public-locale";
@@ -10,6 +11,13 @@ export function ConsultationBookingChatFromQuery({ locale }: { locale: PublicLoc
   const initialService = searchParams.get("service") ?? undefined;
 
   return <ConsultationBookingChat initialService={initialService} locale={locale} />;
+}
+
+export function BookingStepperFromQuery({ locale }: { locale: PublicLocale }) {
+  const searchParams = useSearchParams();
+  const initialService = searchParams.get("service") ?? undefined;
+
+  return <BookingStepper initialService={initialService} locale={locale} manualReviewOnly />;
 }
 
 export function RequestedLawyerQueryNotice({

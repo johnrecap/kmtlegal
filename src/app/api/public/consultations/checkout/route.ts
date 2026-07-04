@@ -3,6 +3,7 @@ import {
   createPublicConsultationCheckout,
   publicConsultationCheckoutSchema
 } from "@/server/consultations/consultation-assistant-service";
+import { assertPaidChatBookingEnabled } from "@/server/consultations/consultation-booking-settings";
 import { errorToResponse, getRequestId } from "@/server/http/errors";
 import { parseJsonRequest } from "@/server/validation/schemas";
 
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
   try {
     const body = await parseJsonRequest(request, publicConsultationCheckoutSchema, "Consultation checkout payload is invalid.");
     locale = body.locale;
+    await assertPaidChatBookingEnabled();
     const result = await createPublicConsultationCheckout({ body, request, requestId });
     return NextResponse.json({ data: result, requestId }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) {

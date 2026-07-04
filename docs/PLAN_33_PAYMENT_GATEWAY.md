@@ -1,6 +1,6 @@
 # PLAN 33: Payment Gateway For Consultation Booking
 
-Last updated: 2026-07-03
+Last updated: 2026-07-04
 
 ## Goal
 
@@ -9,6 +9,11 @@ Clients pay a consultation booking fee/deposit before the selected appointment i
 ## Implemented v1 Architecture
 
 `Booking -> Review -> PricingService -> active provider -> PaymentAttempt -> Hosted Checkout -> Verified Webhook/IPN -> Confirm Appointment`
+
+The public consultation entry point is controlled by a non-secret `SystemSetting` key named `consultation.booking`:
+
+- `PAID_CHAT`: booking chat is enabled, AI-style intake is enabled for the public booking surface, and payment is mandatory before appointment confirmation.
+- `MANUAL_REVIEW`: the public page shows a normal request form, no booking fee is displayed, no `PaymentAttempt` is created, and the request is saved for office review only.
 
 ## Data Model
 
@@ -36,12 +41,21 @@ Clients pay a consultation booking fee/deposit before the selected appointment i
 
 ## Truth Sources
 
+- Booking mode for new public consultation requests: `SystemSetting` key `consultation.booking`, defaulting to `PAID_CHAT`.
 - Price: server-side `PricingService` only.
 - Active gateway for new attempts: `SystemSetting` key `payment.gateway`, falling back to `PAYMENT_PROVIDER`.
 - Payment success: verified/idempotent webhook only.
 - Receipt display: signed receipt token plus a paid `PaymentAttempt` and paid `Payment`.
 - Appointment confirmation: `PaymentWebhookService` after paid provider state.
 - AI: intake helper only; no price/payment/confirmation authority.
+
+## Booking Mode Guards
+
+- `/api/public/consultations/assistant` is available only in `PAID_CHAT`.
+- `/api/public/consultations/checkout` is available only in `PAID_CHAT`.
+- `/api/public/consultations` is available only in `MANUAL_REVIEW` to prevent unpaid bypass while paid chat is active.
+- Switching to `PAID_CHAT` from admin requires an active consultation pricing rule and a configured active payment provider.
+- Switching to `MANUAL_REVIEW` does not require pricing or gateway credentials.
 
 ## Environment
 

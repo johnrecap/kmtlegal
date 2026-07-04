@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
 import { canonicalPublicServiceSlug, findPublicService, getPublicContent, navForPath } from "@/content/public-content";
-import { ConsultationBookingChatFromQuery, RequestedLawyerQueryNotice } from "@/features/public-site/booking-query-client";
+import { BookingStepperFromQuery, ConsultationBookingChatFromQuery, RequestedLawyerQueryNotice } from "@/features/public-site/booking-query-client";
 import { ContactForm } from "@/features/public-site/contact-form";
 import { DirectoryFilter } from "@/features/public-site/directory-filter";
 import {
@@ -42,6 +43,7 @@ import {
   getPublishedArticleBySlug,
   getPublishedCaseStudyBySlug
 } from "@/server/public/content-service";
+import { getPublicConsultationBookingMode } from "@/server/consultations/consultation-booking-settings";
 
 type FeaturedArticle = Awaited<ReturnType<typeof listPublishedArticleCards>>[number];
 type FeaturedCaseStudy = Awaited<ReturnType<typeof listPublishedCaseStudyCards>>[number];
@@ -617,18 +619,32 @@ export function ContactPageView({ locale }: { locale: PublicLocale }) {
   );
 }
 
-export function BookConsultationPageView({ locale }: { locale: PublicLocale }) {
+export async function BookConsultationPageView({ locale }: { locale: PublicLocale }) {
+  noStore();
   const content = getPublicContent(locale);
   const copy = content.bookingPage;
   const chatCopy = content.bookingChat;
+  const bookingMode = await getPublicConsultationBookingMode();
+  const isPaidChat = bookingMode === "PAID_CHAT";
 
   return (
     <PublicShell currentPath={localizedPublicHref("/book-consultation", locale)} locale={locale} navItems={navForPath("/book-consultation", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/b8b47a1dd8d5ce08.png" imagePosition="object-[center_62%]" size="compact" title={chatCopy.heroTitle} description={chatCopy.heroDescription} />
-      <PublicSection eyebrow={copy.sectionEyebrow} title={chatCopy.sectionTitle} description={chatCopy.sectionDescription}>
+      <PageHero
+        eyebrow={copy.heroEyebrow}
+        image="/stitch-assets/b8b47a1dd8d5ce08.png"
+        imagePosition="object-[center_62%]"
+        size="compact"
+        title={isPaidChat ? chatCopy.heroTitle : copy.heroTitle}
+        description={isPaidChat ? chatCopy.heroDescription : copy.manualHeroDescription}
+      />
+      <PublicSection
+        eyebrow={copy.sectionEyebrow}
+        title={isPaidChat ? chatCopy.sectionTitle : copy.manualSectionTitle}
+        description={isPaidChat ? chatCopy.sectionDescription : copy.manualSectionDescription}
+      >
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <Suspense fallback={<div aria-hidden="true" className={cn(publicPanel, "min-h-[36rem] rounded-[1.75rem] border-kmt-gold/35 bg-black/30")} />}>
-            <ConsultationBookingChatFromQuery locale={locale} />
+            {isPaidChat ? <ConsultationBookingChatFromQuery locale={locale} /> : <BookingStepperFromQuery locale={locale} />}
           </Suspense>
           <aside className="space-y-4 lg:pt-2">
             <section className={cn(publicPanel, publicMotionCardBeam, "p-5")}>

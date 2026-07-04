@@ -10,9 +10,10 @@ import {
 } from "@/server/payments/payment-config";
 import { createHostedCheckout, verifyWebhookSignature } from "@/server/payments/payment-provider";
 import { createPaymentReceiptToken, publicPaymentReceiptUrl, verifyPaymentReceiptToken } from "@/server/payments/payment-receipt-service";
-import { activeProviderFromValue } from "@/server/payments/payment-settings-service";
+import { adminPaymentGatewaySettingsSchema, activeProviderFromValue } from "@/server/payments/payment-settings-service";
 import { mapProviderPaymentStatus } from "@/server/payments/payment-service";
 import { adminConsultationPricingRuleWriteSchema, consultationPriceDto } from "@/server/payments/pricing-service";
+import { consultationBookingFlags, consultationBookingModeFromValue } from "@/server/consultations/consultation-booking-settings";
 
 describe("payment gateway contract", () => {
   it("keeps payment provider config bounded and production signatures required", () => {
@@ -59,6 +60,34 @@ describe("payment gateway contract", () => {
     } finally {
       vi.unstubAllEnvs();
     }
+  });
+
+  it("bounds consultation booking mode settings to paid chat or manual review", () => {
+    expect(consultationBookingModeFromValue(null)).toBe("PAID_CHAT");
+    expect(consultationBookingModeFromValue({ mode: "MANUAL_REVIEW" })).toBe("MANUAL_REVIEW");
+    expect(consultationBookingModeFromValue({ mode: "free_booking" })).toBe("PAID_CHAT");
+    expect(consultationBookingFlags("PAID_CHAT")).toMatchObject({
+      bookingMode: "PAID_CHAT",
+      paymentEnabled: true,
+      aiChatEnabled: true
+    });
+    expect(consultationBookingFlags("MANUAL_REVIEW")).toMatchObject({
+      bookingMode: "MANUAL_REVIEW",
+      paymentEnabled: false,
+      aiChatEnabled: false
+    });
+    expect(
+      adminPaymentGatewaySettingsSchema.parse({
+        activeProvider: "paymob",
+        bookingMode: "MANUAL_REVIEW"
+      })
+    ).toMatchObject({ activeProvider: "paymob", bookingMode: "MANUAL_REVIEW" });
+    expect(() =>
+      adminPaymentGatewaySettingsSchema.parse({
+        activeProvider: "paytabs",
+        bookingMode: "FREE_AUTO_CONFIRM"
+      })
+    ).toThrow();
   });
 
   it("verifies webhook HMAC signatures with constant-time hex comparison", () => {

@@ -39,7 +39,7 @@ type SubmitState =
 type BookingSuccess = {
   reference: string;
   organizer: {
-    status: "ready" | "unavailable";
+    status: "ready" | "unavailable" | "manual_review";
     classification: { category: string; urgency: string; confidence: number; reasons: string[]; reviewNote: string } | null;
     intakeSummary: { summary: string; keyFacts: string[]; missingInfo: string[]; reviewNote: string } | null;
     disclaimer: string;
@@ -93,7 +93,15 @@ const stepItemClasses = (index: number, currentStep: number) => {
   return cn(publicMotionStep, "rounded border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-slate-300");
 };
 
-export function BookingStepper({ initialService, locale = "en" }: { initialService?: string; locale?: PublicLocale }) {
+export function BookingStepper({
+  initialService,
+  locale = "en",
+  manualReviewOnly = false
+}: {
+  initialService?: string;
+  locale?: PublicLocale;
+  manualReviewOnly?: boolean;
+}) {
   const content = getPublicContent(locale);
   const copy = content.bookingForm;
   const [isHydrated, setIsHydrated] = useState(false);
@@ -207,7 +215,9 @@ export function BookingStepper({ initialService, locale = "en" }: { initialServi
         </div>
         <div className="mt-6 rounded-lg border border-emerald-300/25 bg-black/25 p-4">
           <h3 className="font-semibold text-white">{copy.organizerTitle}</h3>
-          {state.data.organizer.status === "ready" ? (
+          {state.data.organizer.status === "manual_review" ? (
+            <p className="mt-3 text-sm leading-7 text-slate-300">{copy.manualReviewSaved}</p>
+          ) : state.data.organizer.status === "ready" ? (
             <div className="mt-3 grid gap-3 text-sm leading-7 text-slate-300">
               <p>{copy.organizerReady}</p>
               <p>
@@ -305,7 +315,9 @@ export function BookingStepper({ initialService, locale = "en" }: { initialServi
               <strong className="text-amber-100">{copy.reviewLabels.summary}:</strong> {values.summary || copy.missing}
             </p>
           </div>
-          <p className="rounded border border-amber-300/35 bg-amber-950/35 p-3 text-sm leading-7 text-amber-100">{AI_REVIEW_DISCLAIMER[locale]}</p>
+          <p className="rounded border border-amber-300/35 bg-amber-950/35 p-3 text-sm leading-7 text-amber-100">
+            {manualReviewOnly ? copy.manualReviewNotice : AI_REVIEW_DISCLAIMER[locale]}
+          </p>
           <label className="flex items-start gap-3 text-sm leading-7 !text-slate-300" htmlFor="booking-consent">
             <input
               aria-describedby={errors.consent ? "booking-consent-error" : undefined}

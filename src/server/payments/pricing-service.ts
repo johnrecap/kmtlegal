@@ -197,6 +197,19 @@ export async function resolveConsultationPrice(input: {
   };
 }
 
+export async function hasActiveConsultationPricingRule(input: { now?: Date; client?: PricingClient } = {}) {
+  const now = input.now ?? new Date();
+  const client = input.client ?? prisma;
+  const count = await client.consultationPricingRule.count({
+    where: {
+      active: true,
+      effectiveFrom: { lte: now }
+    }
+  });
+
+  return count > 0;
+}
+
 export function consultationPriceDto(price: ConsultationPriceSnapshot) {
   return {
     amount: price.amountText,

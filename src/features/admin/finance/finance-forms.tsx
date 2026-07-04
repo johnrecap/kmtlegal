@@ -50,6 +50,11 @@ type PaymentProviderOption = {
 
 export type PaymentGatewaySettingsValue = {
   activeProvider: "paytabs" | "paymob";
+  bookingMode: "PAID_CHAT" | "MANUAL_REVIEW";
+  paymentEnabled: boolean;
+  aiChatEnabled: boolean;
+  hasActivePricingRule: boolean;
+  readyForPaidChat: boolean;
   providers: PaymentProviderOption[];
 };
 
@@ -319,6 +324,11 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [activeProvider, setActiveProvider] = useState(settings.activeProvider);
+  const [bookingMode, setBookingMode] = useState(settings.bookingMode);
+  const selectedProvider = settings.providers.find((provider) => provider.provider === activeProvider) ?? settings.providers[0];
+  const paidChatReady = Boolean(selectedProvider?.configured && settings.hasActivePricingRule);
+  const blocksPaidChatSave = bookingMode === "PAID_CHAT" && !paidChatReady;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -328,7 +338,8 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
 
     try {
       const response = await sendJson("/api/admin/payments/settings", "PATCH", {
-        activeProvider: formData.get("activeProvider")
+        activeProvider: formData.get("activeProvider"),
+        bookingMode: formData.get("bookingMode")
       });
 
       if (!response.ok) {
@@ -336,7 +347,7 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
         return;
       }
 
-      setMessage("تم حفظ بوابة الدفع النشطة.");
+      setMessage("تم حفظ إعدادات الحجز والدفع.");
       router.refresh();
     } catch {
       setMessage("لا يمكن الوصول إلى الخادم الآن.");
@@ -347,7 +358,33 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
 
   return (
     <form className="grid gap-4" onSubmit={submit}>
-      <Select defaultValue={settings.activeProvider} disabled={isBusy} label="بوابة الدفع النشطة" name="activeProvider">
+      <Select
+        disabled={isBusy}
+        label="وضع استقبال طلب الاستشارة"
+        name="bookingMode"
+        value={bookingMode}
+        onChange={(event) => setBookingMode(event.target.value as PaymentGatewaySettingsValue["bookingMode"])}
+      >
+        <option value="PAID_CHAT">دردشة الحجز + دفع إلكتروني</option>
+        <option value="MANUAL_REVIEW">نموذج عادي + مراجعة مكتبية بدون دفع</option>
+      </Select>
+      <div className="rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6">
+        <p className="font-semibold text-kmt-ink">
+          {bookingMode === "PAID_CHAT" ? "الدفع والدردشة مفعلان للحجوزات الجديدة." : "الطلبات الجديدة ستذهب للمراجعة المكتبية بدون دفع أو دردشة."}
+        </p>
+        <p className="mt-1 text-xs text-kmt-muted">
+          {bookingMode === "PAID_CHAT"
+            ? "يتطلب هذا الوضع بوابة دفع جاهزة وسعر استشارة نشط قبل الحفظ."
+            : "لا يشترط هذا الوضع وجود سعر استشارة أو إعدادات بوابة دفع."}
+        </p>
+      </div>
+      <Select
+        disabled={isBusy}
+        label="بوابة الدفع النشطة"
+        name="activeProvider"
+        value={activeProvider}
+        onChange={(event) => setActiveProvider(event.target.value as PaymentGatewaySettingsValue["activeProvider"])}
+      >
         {settings.providers.map((provider) => (
           <option key={provider.provider} value={provider.provider}>
             {provider.label}
@@ -369,8 +406,21 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
           </div>
         ))}
       </div>
-      <Button loading={isBusy} type="submit">
-        حفظ بوابة الدفع
+      <div className="rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6">
+        <p className={settings.hasActivePricingRule ? "font-semibold text-emerald-700" : "font-semibold text-amber-700"}>
+          {settings.hasActivePricingRule ? "يوجد سعر استشارة نشط." : "لا يوجد سعر استشارة نشط."}
+        </p>
+        <p className="mt-1 text-xs text-kmt-muted">
+          {selectedProvider?.configured ? `${selectedProvider.label} جاهزة للتفعيل.` : `${selectedProvider?.label ?? "بوابة الدفع"} ناقصة إعدادات.`}
+        </p>
+      </div>
+      {blocksPaidChatSave ? (
+        <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-900" role="alert">
+          لا يمكن تفعيل دردشة الحجز مع الدفع قبل تجهيز بوابة الدفع المختارة وإنشاء سعر استشارة نشط.
+        </div>
+      ) : null}
+      <Button disabled={blocksPaidChatSave || isBusy} loading={isBusy} type="submit">
+        حفظ إعدادات الحجز والدفع
       </Button>
       <StatusMessage message={message} />
     </form>

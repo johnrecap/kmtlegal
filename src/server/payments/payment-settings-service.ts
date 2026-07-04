@@ -2,9 +2,17 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { appendAuditLog } from "@/server/audit/audit-service";
 import { hasPermission, type Principal } from "@/server/auth/policy";
+import {
+  CONSULTATION_BOOKING_SETTING_KEY,
+  consultationBookingFlags,
+  consultationBookingModeFromValue,
+  consultationBookingModeSchema,
+  type ConsultationBookingMode
+} from "@/server/consultations/consultation-booking-settings";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
 import { parseWithSchema } from "@/server/validation/schemas";
+import { hasActiveConsultationPricingRule } from "./pricing-service";
 import {
   DEFAULT_PAYMENT_PROVIDER,
   SUPPORTED_PAYMENT_PROVIDERS,
@@ -19,7 +27,8 @@ export const PAYMENT_GATEWAY_SETTING_KEY = "payment.gateway";
 
 export const adminPaymentGatewaySettingsSchema = z
   .object({
-    activeProvider: z.enum(SUPPORTED_PAYMENT_PROVIDERS)
+    activeProvider: z.enum(SUPPORTED_PAYMENT_PROVIDERS),
+    bookingMode: consultationBookingModeSchema.optional()
   })
   .strict();
 
@@ -52,9 +61,18 @@ export async function getAdminPaymentGatewaySettings(input: { actor: Principal }
     include: { updatedBy: { select: { id: true, name: true, email: true } } }
   });
   const activeProvider = activeProviderFromValue(setting?.value);
+  const bookingSetting = await prisma.systemSetting.findUnique({
+    where: { key: CONSULTATION_BOOKING_SETTING_KEY },
+    include: { updatedBy: { select: { id: true, name: true, email: true } } }
+  });
+  const bookingMode = consultationBookingModeFromValue(bookingSetting?.value);
+  const hasActivePricingRule = await hasActiveConsultationPricingRule();
 
   return {
     activeProvider,
+    ...consultationBookingFlags(bookingMode),
+    hasActivePricingRule,
+    readyForPaidChat: providerReadinessDto(activeProvider).configured && hasActivePricingRule,
     providers: SUPPORTED_PAYMENT_PROVIDERS.map((provider) => ({
       ...providerReadinessDto(provider),
       active: provider === activeProvider
@@ -75,10 +93,23 @@ export async function updateAdminPaymentGatewaySettings(input: {
   }
 
   const body = parseWithSchema(adminPaymentGatewaySettingsSchema, input.body, "Payment gateway setting payload is invalid.");
-  assertProviderReadyForActivation(body.activeProvider);
+  const currentBookingMode = await getStoredBookingMode();
+  const nextBookingMode = body.bookingMode ?? currentBookingMode;
+  if (nextBookingMode === "PAID_CHAT") {
+    assertProviderReadyForActivation(body.activeProvider);
+    if (!(await hasActiveConsultationPricingRule())) {
+      throw new ApiError(409, "CONFLICT", "An active consultation pricing rule is required before enabling paid booking chat.", [
+        {
+          path: "bookingMode",
+          code: "MISSING_ACTIVE_PRICING_RULE",
+          message: "Create an active consultation pricing rule before enabling paid booking chat."
+        }
+      ]);
+    }
+  }
 
-  const setting = await prisma.$transaction(async (tx) => {
-    const updated = await tx.systemSetting.upsert({
+  const result = await prisma.$transaction(async (tx) => {
+    const gatewaySetting = await tx.systemSetting.upsert({
       where: { key: PAYMENT_GATEWAY_SETTING_KEY },
       create: {
         key: PAYMENT_GATEWAY_SETTING_KEY,
@@ -91,32 +122,53 @@ export async function updateAdminPaymentGatewaySettings(input: {
       },
       include: { updatedBy: { select: { id: true, name: true, email: true } } }
     });
+    const bookingSetting = await tx.systemSetting.upsert({
+      where: { key: CONSULTATION_BOOKING_SETTING_KEY },
+      create: {
+        key: CONSULTATION_BOOKING_SETTING_KEY,
+        value: { mode: nextBookingMode },
+        updatedById: input.actor.id
+      },
+      update: {
+        value: { mode: nextBookingMode },
+        updatedById: input.actor.id
+      },
+      include: { updatedBy: { select: { id: true, name: true, email: true } } }
+    });
 
     await appendAuditLog({
       client: tx,
       actorId: input.actor.id,
       action: "settings.update",
       resourceType: "SystemSetting",
-      resourceId: updated.id,
+      resourceId: gatewaySetting.id,
       metadata: {
         key: PAYMENT_GATEWAY_SETTING_KEY,
-        activeProvider: body.activeProvider
+        activeProvider: body.activeProvider,
+        bookingSettingKey: CONSULTATION_BOOKING_SETTING_KEY,
+        bookingMode: nextBookingMode
       },
       request: input.request,
       requestId: input.requestId
     });
 
-    return updated;
+    return { gatewaySetting, bookingSetting };
   });
+  const hasActivePricingRule = await hasActiveConsultationPricingRule();
 
   return {
     activeProvider: body.activeProvider,
+    ...consultationBookingFlags(nextBookingMode),
+    hasActivePricingRule,
+    readyForPaidChat: providerReadinessDto(body.activeProvider).configured && hasActivePricingRule,
     providers: SUPPORTED_PAYMENT_PROVIDERS.map((provider) => ({
       ...providerReadinessDto(provider),
       active: provider === body.activeProvider
     })),
-    updatedAt: setting.updatedAt.toISOString(),
-    updatedBy: setting.updatedBy
+    updatedAt: result.gatewaySetting.updatedAt.toISOString(),
+    updatedBy: result.gatewaySetting.updatedBy,
+    bookingUpdatedAt: result.bookingSetting.updatedAt.toISOString(),
+    bookingUpdatedBy: result.bookingSetting.updatedBy
   };
 }
 
@@ -148,4 +200,11 @@ function providerReadinessDto(provider: PaymentProviderName) {
     missing: readiness.missing,
     checkoutMode: readiness.checkoutMode
   };
+}
+
+async function getStoredBookingMode(): Promise<ConsultationBookingMode> {
+  const setting = await prisma.systemSetting.findUnique({
+    where: { key: CONSULTATION_BOOKING_SETTING_KEY }
+  });
+  return consultationBookingModeFromValue(setting?.value);
 }

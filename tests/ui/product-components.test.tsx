@@ -221,7 +221,7 @@ describe("product UI primitives", () => {
     expect(source).toContain("/api/files/");
   });
 
-  it("uses scoped consultation chat surfaces without transcript persistence", () => {
+  it("uses scoped consultation booking surfaces without transcript persistence", () => {
     const publicPageSource = readFileSync(join(process.cwd(), "src/features/public-site/public-pages.tsx"), "utf8");
     const publicChatSource = readFileSync(join(process.cwd(), "src/features/public-site/consultation-booking-chat.tsx"), "utf8");
     const clientChatSource = readFileSync(join(process.cwd(), "src/features/client/client-assistant-panel.tsx"), "utf8");
@@ -232,7 +232,8 @@ describe("product UI primitives", () => {
     const publicContentAr = readFileSync(join(process.cwd(), "src/content/public-content.ar.ts"), "utf8");
 
     expect(publicPageSource).toContain("ConsultationBookingChat");
-    expect(publicPageSource).not.toContain("<BookingStepper");
+    expect(publicPageSource).toContain("BookingStepperFromQuery");
+    expect(publicPageSource).toContain("getPublicConsultationBookingMode");
     expect(publicPageSource).not.toContain("<ConsultationAssistantPanel");
     expect(publicChatSource).toContain("content.bookingChat");
     expect(publicChatSource).toContain('data-testid="booking-chat-shell"');

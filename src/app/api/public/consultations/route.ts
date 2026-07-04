@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { localeFromSearchParams } from "@/lib/public-locale";
 import { getIpAddress } from "@/server/auth/session-store";
+import { assertManualReviewBookingEnabled } from "@/server/consultations/consultation-booking-settings";
 import { createPublicConsultation, publicConsultationRequestSchema } from "@/server/consultations/consultation-service";
 import { ApiError, errorToResponse, getRequestId } from "@/server/http/errors";
 import { canonicalPhone } from "@/server/phone/phone-normalization";
@@ -19,10 +20,11 @@ export async function POST(request: Request) {
       publicConsultationRequestSchema,
       locale === "ar" ? "بيانات طلب الاستشارة غير مكتملة." : "Consultation request data is incomplete."
     );
+    await assertManualReviewBookingEnabled();
     enforceRateLimit(rateLimiters.booking, `${canonicalPhone(body.phone) ?? body.phone}:${body.email || "no-email"}:${getIpAddress(request) ?? "unknown"}`);
 
     try {
-      const consultation = await createPublicConsultation({ body, request, requestId });
+      const consultation = await createPublicConsultation({ body, request, requestId, organizerMode: "manual" });
       return NextResponse.json(
         {
           data: consultation,
