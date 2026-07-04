@@ -149,6 +149,7 @@ describe("public consultation contract", () => {
     expect(source).toContain("deterministic_booking_rules");
     expect(source).toContain("publicAppointmentInquiry({ body, requestId: input.requestId })");
     expect(source).toContain("prepareConsultationPaymentReview({ body: bookingBody, requestId: input.requestId })");
+    expect(source).toContain("createFreeConsultationBooking({ body: bookingBody, request: input.request, requestId: input.requestId })");
     expect(source).toContain("createPublicConsultationCheckout");
 
     const startsAtBranch = source.indexOf('if (missingFields.includes("startsAt"))');
@@ -240,9 +241,33 @@ describe("public consultation contract", () => {
         expect(bookingResult.draft.serviceCategory).toBe("");
         expect(bookingResult.draft.summary).toBe("");
         expect(bookingResult.message).toContain("ملخصًا أوضح");
-        expect(bookingResult.missingFields).toEqual(expect.arrayContaining(["serviceCategory", "summary"]));
+        expect(bookingResult.missingFields).toContain("summary");
+        expect(bookingResult.missingFields).not.toContain("serviceCategory");
       }
     );
+  });
+
+  it("keeps the client's complaint text as the booking summary without requiring service category", async () => {
+    await withBookingExtractionFailure(async () => {
+      const message = "مشاجره وعايز ارفع دعوه على شخص";
+      const result = await handlePublicConsultationAssistant({
+        body: { locale: "ar", message },
+        request: new Request("https://example.test/api/public/consultations/assistant", {
+          headers: { "x-forwarded-for": "203.0.113.24" }
+        }),
+        requestId: "test-raw-complaint-summary"
+      });
+
+      const bookingResult = result as unknown as {
+        draft: { summary: string; serviceCategory: string };
+        missingFields: string[];
+        message: string;
+      };
+      expect(bookingResult.draft.summary).toBe(message);
+      expect(bookingResult.draft.serviceCategory).toBe("");
+      expect(bookingResult.missingFields).not.toContain("serviceCategory");
+      expect(bookingResult.message).not.toContain("نوع الخدمة");
+    });
   });
 
   it("falls back safely when booking AI extraction is unavailable", async () => {
@@ -265,15 +290,17 @@ describe("public consultation contract", () => {
     });
   });
 
-  it("guards paid chat and manual review consultation entry points by booking mode", () => {
+  it("guards AI chat and paid checkout entry points by booking mode", () => {
     const assistantRoute = readFileSync(join(process.cwd(), "src/app/api/public/consultations/assistant/route.ts"), "utf8");
     const checkoutRoute = readFileSync(join(process.cwd(), "src/app/api/public/consultations/checkout/route.ts"), "utf8");
     const manualRoute = readFileSync(join(process.cwd(), "src/app/api/public/consultations/route.ts"), "utf8");
     const manualService = readFileSync(join(process.cwd(), "src/server/consultations/consultation-service.ts"), "utf8");
+    const bookingSettings = readFileSync(join(process.cwd(), "src/server/consultations/consultation-booking-settings.ts"), "utf8");
 
-    expect(assistantRoute).toContain("assertPaidChatBookingEnabled");
+    expect(assistantRoute).toContain("assertAiChatBookingEnabled");
     expect(checkoutRoute).toContain("assertPaidChatBookingEnabled");
     expect(manualRoute).toContain("assertManualReviewBookingEnabled");
+    expect(bookingSettings).toContain("Manual consultation form is disabled. Use the consultation assistant.");
     expect(manualRoute).toContain('organizerMode: "manual"');
     expect(manualService).toContain("manualReviewOrganizer");
     expect(manualService).toContain('status: "manual_review"');

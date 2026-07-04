@@ -11,7 +11,7 @@ Last updated: 2026-07-04
 
 ## Consultation Booking
 
-- Admin-controlled consultation entry mode: `PAID_CHAT` for chat plus mandatory hosted checkout, or `MANUAL_REVIEW` for a normal office-review request form without payment.
+- Admin-controlled consultation entry mode: `AI_CHAT_PAID` for chat plus mandatory hosted checkout, or `AI_CHAT_FREE` for the same chat flow without a booking fee; legacy `PAID_CHAT`/`MANUAL_REVIEW` values are normalized.
 - Chat-first public booking assistant with Arabic/English language choice when paid chat mode is active.
 - Manual review form creates a `ConsultationRequest` for office review only; it does not create a payment attempt or confirm an appointment.
 - Booking field collection, service classification, phone/name/date validation, slot selection, conflict recovery.

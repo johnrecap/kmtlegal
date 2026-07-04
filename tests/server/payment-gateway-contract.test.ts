@@ -62,26 +62,33 @@ describe("payment gateway contract", () => {
     }
   });
 
-  it("bounds consultation booking mode settings to paid chat or manual review", () => {
-    expect(consultationBookingModeFromValue(null)).toBe("PAID_CHAT");
-    expect(consultationBookingModeFromValue({ mode: "MANUAL_REVIEW" })).toBe("MANUAL_REVIEW");
-    expect(consultationBookingModeFromValue({ mode: "free_booking" })).toBe("PAID_CHAT");
-    expect(consultationBookingFlags("PAID_CHAT")).toMatchObject({
-      bookingMode: "PAID_CHAT",
+  it("bounds consultation booking mode settings to paid or free AI chat", () => {
+    expect(consultationBookingModeFromValue(null)).toBe("AI_CHAT_PAID");
+    expect(consultationBookingModeFromValue({ mode: "PAID_CHAT" })).toBe("AI_CHAT_PAID");
+    expect(consultationBookingModeFromValue({ mode: "MANUAL_REVIEW" })).toBe("AI_CHAT_FREE");
+    expect(consultationBookingModeFromValue({ mode: "free_booking" })).toBe("AI_CHAT_PAID");
+    expect(consultationBookingFlags("AI_CHAT_PAID")).toMatchObject({
+      bookingMode: "AI_CHAT_PAID",
       paymentEnabled: true,
       aiChatEnabled: true
     });
-    expect(consultationBookingFlags("MANUAL_REVIEW")).toMatchObject({
-      bookingMode: "MANUAL_REVIEW",
+    expect(consultationBookingFlags("AI_CHAT_FREE")).toMatchObject({
+      bookingMode: "AI_CHAT_FREE",
       paymentEnabled: false,
-      aiChatEnabled: false
+      aiChatEnabled: true
     });
+    expect(
+      adminPaymentGatewaySettingsSchema.parse({
+        activeProvider: "paymob",
+        bookingMode: "AI_CHAT_FREE"
+      })
+    ).toMatchObject({ activeProvider: "paymob", bookingMode: "AI_CHAT_FREE" });
     expect(
       adminPaymentGatewaySettingsSchema.parse({
         activeProvider: "paymob",
         bookingMode: "MANUAL_REVIEW"
       })
-    ).toMatchObject({ activeProvider: "paymob", bookingMode: "MANUAL_REVIEW" });
+    ).toMatchObject({ activeProvider: "paymob", bookingMode: "AI_CHAT_FREE" });
     expect(() =>
       adminPaymentGatewaySettingsSchema.parse({
         activeProvider: "paytabs",

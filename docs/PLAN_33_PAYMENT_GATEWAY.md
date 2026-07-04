@@ -12,8 +12,9 @@ Clients pay a consultation booking fee/deposit before the selected appointment i
 
 The public consultation entry point is controlled by a non-secret `SystemSetting` key named `consultation.booking`:
 
-- `PAID_CHAT`: booking chat is enabled, AI-style intake is enabled for the public booking surface, and payment is mandatory before appointment confirmation.
-- `MANUAL_REVIEW`: the public page shows a normal request form, no booking fee is displayed, no `PaymentAttempt` is created, and the request is saved for office review only.
+- `AI_CHAT_PAID`: booking chat is enabled, AI-style intake is enabled for the public booking surface, and payment is mandatory before appointment confirmation.
+- `AI_CHAT_FREE`: booking chat is enabled without a booking fee; no `PaymentAttempt` is created, and the appointment is confirmed directly from the assistant for secretary review.
+- Legacy stored values are normalized: `PAID_CHAT` maps to `AI_CHAT_PAID`, and `MANUAL_REVIEW` maps to `AI_CHAT_FREE`.
 
 ## Data Model
 
@@ -41,7 +42,7 @@ The public consultation entry point is controlled by a non-secret `SystemSetting
 
 ## Truth Sources
 
-- Booking mode for new public consultation requests: `SystemSetting` key `consultation.booking`, defaulting to `PAID_CHAT`.
+- Booking mode for new public consultation requests: `SystemSetting` key `consultation.booking`, defaulting to `AI_CHAT_PAID`.
 - Price: server-side `PricingService` only.
 - Active gateway for new attempts: `SystemSetting` key `payment.gateway`, falling back to `PAYMENT_PROVIDER`.
 - Payment success: verified/idempotent webhook only.
@@ -51,11 +52,11 @@ The public consultation entry point is controlled by a non-secret `SystemSetting
 
 ## Booking Mode Guards
 
-- `/api/public/consultations/assistant` is available only in `PAID_CHAT`.
-- `/api/public/consultations/checkout` is available only in `PAID_CHAT`.
-- `/api/public/consultations` is available only in `MANUAL_REVIEW` to prevent unpaid bypass while paid chat is active.
-- Switching to `PAID_CHAT` from admin requires an active consultation pricing rule and a configured active payment provider.
-- Switching to `MANUAL_REVIEW` does not require pricing or gateway credentials.
+- `/api/public/consultations/assistant` is available in both `AI_CHAT_PAID` and `AI_CHAT_FREE`.
+- `/api/public/consultations/checkout` is available only in `AI_CHAT_PAID`.
+- `/api/public/consultations` remains disabled for the public booking page so the old form cannot bypass assistant review.
+- Switching to `AI_CHAT_PAID` from admin requires an active consultation pricing rule and a configured active payment provider.
+- Switching to `AI_CHAT_FREE` does not require pricing or gateway credentials.
 
 ## Environment
 

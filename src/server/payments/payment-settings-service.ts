@@ -6,7 +6,7 @@ import {
   CONSULTATION_BOOKING_SETTING_KEY,
   consultationBookingFlags,
   consultationBookingModeFromValue,
-  consultationBookingModeSchema,
+  consultationBookingModeInputSchema,
   type ConsultationBookingMode
 } from "@/server/consultations/consultation-booking-settings";
 import { prisma } from "@/server/db/prisma";
@@ -28,7 +28,7 @@ export const PAYMENT_GATEWAY_SETTING_KEY = "payment.gateway";
 export const adminPaymentGatewaySettingsSchema = z
   .object({
     activeProvider: z.enum(SUPPORTED_PAYMENT_PROVIDERS),
-    bookingMode: consultationBookingModeSchema.optional()
+    bookingMode: consultationBookingModeInputSchema.optional()
   })
   .strict();
 
@@ -95,7 +95,7 @@ export async function updateAdminPaymentGatewaySettings(input: {
   const body = parseWithSchema(adminPaymentGatewaySettingsSchema, input.body, "Payment gateway setting payload is invalid.");
   const currentBookingMode = await getStoredBookingMode();
   const nextBookingMode = body.bookingMode ?? currentBookingMode;
-  if (nextBookingMode === "PAID_CHAT") {
+  if (nextBookingMode === "AI_CHAT_PAID") {
     assertProviderReadyForActivation(body.activeProvider);
     if (!(await hasActiveConsultationPricingRule())) {
       throw new ApiError(409, "CONFLICT", "An active consultation pricing rule is required before enabling paid booking chat.", [

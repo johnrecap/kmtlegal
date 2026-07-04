@@ -110,6 +110,7 @@ function listWhere(actor: Principal, filters: AdminConsultationListQuery): Prism
               { fullName: { contains: search, mode: "insensitive" } },
               { phone: { contains: search, mode: "insensitive" } },
               { email: { contains: search, mode: "insensitive" } },
+              { summary: { contains: search, mode: "insensitive" } },
               { serviceCategory: { contains: search, mode: "insensitive" } }
             ]
           }

@@ -232,7 +232,7 @@ describe("product UI primitives", () => {
     const publicContentAr = readFileSync(join(process.cwd(), "src/content/public-content.ar.ts"), "utf8");
 
     expect(publicPageSource).toContain("ConsultationBookingChat");
-    expect(publicPageSource).toContain("BookingStepperFromQuery");
+    expect(publicPageSource).not.toContain("BookingStepperFromQuery");
     expect(publicPageSource).toContain("getPublicConsultationBookingMode");
     expect(publicPageSource).not.toContain("<ConsultationAssistantPanel");
     expect(publicChatSource).toContain("content.bookingChat");

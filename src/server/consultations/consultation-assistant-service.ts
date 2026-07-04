@@ -26,6 +26,7 @@ import {
   type ConsultationMode,
   type PublicConsultationSlot
 } from "./consultation-availability-service";
+import { getPublicConsultationBookingMode } from "./consultation-booking-settings";
 import { publicConsultationReference } from "./consultation-service";
 
 const OFFICE_TIMEZONE = CONSULTATION_TIMEZONE;
@@ -126,6 +127,7 @@ type BookingMergeResult = {
 
 const BOOKING_AI_CONFIDENCE_THRESHOLD = 0.55;
 const BOOKING_AI_FIELD_CONFIDENCE_THRESHOLD = 0.5;
+const DEFAULT_ASSISTANT_SERVICE_CATEGORY = "legal-consultation";
 
 export async function handlePublicConsultationAssistant(input: { body: unknown; request: Request; requestId: string }) {
   const body = parseWithSchema(publicConsultationAssistantSchema, input.body, "Consultation assistant payload is invalid.");
@@ -148,6 +150,7 @@ async function handlePublicBookingConversation(input: {
   request: Request;
   requestId: string;
 }) {
+  const bookingMode = await getPublicConsultationBookingMode();
   const mergeResult = await mergeBookingDraftWithAi(input.body, input.requestId);
   if (mergeResult.legalAdviceRequested) {
     return scopedPublicAssistantReply(input.body.locale, true);
@@ -186,10 +189,14 @@ async function handlePublicBookingConversation(input: {
     const bookingBody = {
       ...input.body,
       ...draft,
+      serviceCategory: assistantServiceCategory(draft.serviceCategory),
       startsAt: selectedSlot,
       consent: true
     };
     try {
+      if (bookingMode === "AI_CHAT_FREE") {
+        return await createFreeConsultationBooking({ body: bookingBody, request: input.request, requestId: input.requestId });
+      }
       return await prepareConsultationPaymentReview({ body: bookingBody, requestId: input.requestId });
     } catch (error) {
       if (isRecoverableBookingSlotError(error)) {
@@ -277,7 +284,7 @@ async function handlePublicBookingConversation(input: {
     selectedSlot,
     missingFields: [],
     readyToConfirm: true,
-    message: bookingConfirmMessage(input.body.locale, draft, selectedSlot)
+    message: bookingConfirmMessage(input.body.locale, draft, selectedSlot, bookingMode === "AI_CHAT_PAID")
   });
 }
 
@@ -401,7 +408,7 @@ async function mergeBookingDraftWithAi(body: PublicConsultationAssistantInput, r
 
   const aiDraft = bookingDraftFromAiExtraction(extraction, base);
   const mergedDraft = normalizeBookingDraft({
-    ...base,
+    ...fallbackDraft,
     ...aiDraft
   });
 
@@ -1151,7 +1158,7 @@ function bookingQuestionMessage(locale: "ar" | "en", field?: string) {
       serviceCategory: "ما الخدمة الأقرب لطلبك؟ يمكنك كتابة استشارة قانونية، شركات وأعمال، عقارات، أو تحصيل وتسويات.",
       summary: "اكتب ملخصًا قصيرًا لما تحتاجه من المكتب، بدون إرسال مستندات حساسة هنا.",
       startsAt: "اختر موعدًا مناسبًا من المواعيد المتاحة داخل المحادثة.",
-      fallback: "أستطيع تنظيم حجز الاستشارة فقط. اكتب الاسم والهاتف ونوع الطلب وملخصًا قصيرًا."
+      fallback: "أستطيع تنظيم حجز الاستشارة فقط. اكتب الاسم والهاتف وملخصًا قصيرًا للمشكلة والموعد المناسب إن وجد."
     },
     en: {
       fullName: "Great. Please write your full name for the consultation request.",
@@ -1159,7 +1166,7 @@ function bookingQuestionMessage(locale: "ar" | "en", field?: string) {
       serviceCategory: "Which service is closest to your request? You can write legal consultation, corporate and business, real estate, or claims and collections.",
       summary: "Please write a short summary of what you need from the office. Do not send sensitive documents here.",
       startsAt: "Choose a suitable time from the available slots inside the chat.",
-      fallback: "I can organize consultation booking only. Send your name, phone, request area, and a short summary."
+      fallback: "I can organize consultation booking only. Send your name, phone, a short request summary, and your preferred time if available."
     }
   };
 
@@ -1184,8 +1191,8 @@ function bookingFollowUpMessage(locale: "ar" | "en", field: string | undefined, 
 
 function bookingAiUnavailableMessage(locale: "ar" | "en") {
   return locale === "ar"
-    ? "تعذر فهم الرسالة تلقائيًا الآن. اكتب البيانات في رسالة واحدة: الاسم، رقم الهاتف، نوع الطلب، ملخص قصير، والموعد المناسب إن وجد."
-    : "Automatic message understanding is unavailable right now. Send the details in one message: name, phone, request type, a short summary, and preferred time if available.";
+    ? "تعذر فهم الرسالة تلقائيًا الآن. اكتب البيانات في رسالة واحدة: الاسم، رقم الهاتف، ملخص قصير للمشكلة، والموعد المناسب إن وجد."
+    : "Automatic message understanding is unavailable right now. Send the details in one message: name, phone, a short request summary, and preferred time if available.";
 }
 
 function shouldClarifyBookingField(field: string | undefined, latestMessage: string) {
@@ -1258,12 +1265,15 @@ function availabilityWindowLabel(preference: AvailabilityPreference, locale: "ar
   return parts.join(locale === "ar" ? " " : " ");
 }
 
-function bookingConfirmMessage(locale: "ar" | "en", draft: ReturnType<typeof mergeBookingDraft>, selectedSlot: string) {
+function bookingConfirmMessage(locale: "ar" | "en", draft: ReturnType<typeof mergeBookingDraft>, selectedSlot: string, requiresPayment: boolean) {
   const when = formatAssistantDate(selectedSlot, locale);
+  const summary = truncateTeamText(draft.summary || (locale === "ar" ? "طلب استشارة" : "Consultation request"), 140);
   if (locale === "ar") {
-    return `سأراجع الحجز بهذه البيانات: ${draft.fullName}، ${draft.phone}، ${serviceCategoryLabel(draft.serviceCategory, locale)}، ${modeLabel(draft.preferredMode, locale)}، ${when}. اضغط تأكيد الحجز لعرض رسوم الحجز قبل الدفع.`;
+    const action = requiresPayment ? "اضغط تأكيد الحجز لعرض رسوم الحجز قبل الدفع." : "اضغط تأكيد الحجز لتثبيت الموعد وإظهار رقم المرجع.";
+    return `سأراجع الحجز بهذه البيانات: ${draft.fullName}، ${draft.phone}، ${modeLabel(draft.preferredMode, locale)}، ${when}. نص الطلب: ${summary}. ${action}`;
   }
-  return `I will review the consultation with these details: ${draft.fullName}, ${draft.phone}, ${serviceCategoryLabel(draft.serviceCategory, locale)}, ${modeLabel(draft.preferredMode, locale)}, ${when}. Confirm to review the booking fee before payment.`;
+  const action = requiresPayment ? "Confirm to review the booking fee before payment." : "Confirm to book the appointment and show your reference.";
+  return `I will review the consultation with these details: ${draft.fullName}, ${draft.phone}, ${modeLabel(draft.preferredMode, locale)}, ${when}. Request text: ${summary}. ${action}`;
 }
 
 function bookingPaymentReviewMessage(
@@ -1274,10 +1284,11 @@ function bookingPaymentReviewMessage(
   currency: string
 ) {
   const when = formatAssistantDate(startsAt.toISOString(), locale);
+  const summary = truncateTeamText(body.summary || (locale === "ar" ? "طلب استشارة" : "Consultation request"), 140);
   if (locale === "ar") {
-    return `مراجعة الدفع: ${serviceCategoryLabel(body.serviceCategory || "", locale)}، ${modeLabel(body.preferredMode, locale)}، ${when}. رسوم حجز الاستشارة ${amount} ${currency}. سيتم حجز الموعد مؤقتًا لمدة محدودة بعد الضغط على الدفع، ولن يتم تأكيد الموعد إلا بعد إشعار دفع موثوق من بوابة الدفع.`;
+    return `مراجعة الدفع: ${modeLabel(body.preferredMode, locale)}، ${when}. نص الطلب: ${summary}. رسوم حجز الاستشارة ${amount} ${currency}. سيتم حجز الموعد مؤقتًا لمدة محدودة بعد الضغط على الدفع، ولن يتم تأكيد الموعد إلا بعد إشعار دفع موثوق من بوابة الدفع.`;
   }
-  return `Payment review: ${serviceCategoryLabel(body.serviceCategory || "", locale)}, ${modeLabel(body.preferredMode, locale)}, ${when}. Consultation booking fee is ${amount} ${currency}. The slot is reserved for a limited time after payment starts, and the appointment is confirmed only after a trusted payment webhook.`;
+  return `Payment review: ${modeLabel(body.preferredMode, locale)}, ${when}. Request text: ${summary}. Consultation booking fee is ${amount} ${currency}. The slot is reserved for a limited time after payment starts, and the appointment is confirmed only after a trusted payment webhook.`;
 }
 
 function checkoutCreatedMessage(locale: "ar" | "en") {
@@ -1343,7 +1354,7 @@ function scopedPublicAssistantReply(locale: "ar" | "en", isLegalQuestion: boolea
         : isLegalQuestion
           ? "I cannot provide legal opinions or legal interpretation here. I can only help book a consultation or check an existing booking reference for team review."
           : "I can help book a consultation or check an existing booking reference only. Start a booking or send your reference to inquire.",
-    missingFields: ["fullName", "phone", "serviceCategory", "summary"],
+    missingFields: ["fullName", "phone", "summary"],
     reviewRequired: true,
     disclaimer: AI_REVIEW_DISCLAIMER[locale]
   };
@@ -1461,46 +1472,58 @@ async function listClientSessions(actor: Principal) {
     .slice(0, 20);
 }
 
+function assistantServiceCategory(value?: string | null) {
+  return value?.trim() || DEFAULT_ASSISTANT_SERVICE_CATEGORY;
+}
+
+function withAssistantBookingDefaults(body: PublicConsultationAssistantInput): PublicConsultationAssistantInput {
+  return {
+    ...body,
+    serviceCategory: assistantServiceCategory(body.serviceCategory)
+  };
+}
+
 async function prepareConsultationPaymentReview(input: {
   body: PublicConsultationAssistantInput;
   requestId: string;
 }) {
-  const missing = requiredBookingFields(input.body);
+  const body = withAssistantBookingDefaults(input.body);
+  const missing = requiredBookingFields(body);
   if (missing.length) {
     return {
       action: "collect_booking_fields" as const,
-      message: missingFieldsMessage(input.body.locale, missing),
+      message: missingFieldsMessage(body.locale, missing),
       missingFields: missing,
       reviewRequired: true,
-      disclaimer: AI_REVIEW_DISCLAIMER[input.body.locale],
+      disclaimer: AI_REVIEW_DISCLAIMER[body.locale],
       ai: deterministicAssistantMetadata(input.requestId)
     };
   }
-  if (input.body.consent !== true) {
+  if (body.consent !== true) {
     throw new ApiError(400, "VALIDATION_ERROR", "Client consent is required before booking a consultation appointment.");
   }
 
-  const startsAt = parseBookingDate(input.body.startsAt!);
+  const startsAt = parseBookingDate(body.startsAt!);
   const slot = await assertPublicConsultationSlotAvailable({
     startsAt,
-    mode: input.body.preferredMode
+    mode: body.preferredMode
   });
   const endsAt = new Date(slot.endsAt);
-  await assertNoBookingDuplicate(input.body);
+  await assertNoBookingDuplicate(body);
   await assertNoSlotConflict(startsAt, endsAt);
   const price = await resolveConsultationPrice({
-    serviceCategory: input.body.serviceCategory!,
-    mode: input.body.preferredMode
+    serviceCategory: body.serviceCategory!,
+    mode: body.preferredMode
   });
 
   return bookingConversationResponse({
-    locale: input.body.locale,
-    draft: normalizeBookingDraft(input.body),
+    locale: body.locale,
+    draft: normalizeBookingDraft(body),
     missingFields: [],
-    selectedSlot: input.body.startsAt,
+    selectedSlot: body.startsAt,
     readyToCheckout: true,
     paymentReview: consultationPriceDto(price),
-    message: bookingPaymentReviewMessage(input.body.locale, input.body, startsAt, price.amountText, price.currency)
+    message: bookingPaymentReviewMessage(body.locale, body, startsAt, price.amountText, price.currency)
   });
 }
 
@@ -1519,6 +1542,7 @@ export async function createPublicConsultationCheckout(input: {
   const checkoutBody = {
     ...body,
     ...draft,
+    serviceCategory: assistantServiceCategory(draft.serviceCategory || body.serviceCategory),
     startsAt: body.selectedSlot || draft.startsAt,
     consent: true
   };
@@ -1639,6 +1663,106 @@ export async function createPublicConsultationCheckout(input: {
   };
 }
 
+async function createFreeConsultationBooking(input: {
+  body: PublicConsultationAssistantInput;
+  request: Request;
+  requestId: string;
+}) {
+  const body = withAssistantBookingDefaults(input.body);
+  const missing = requiredBookingFields(body);
+  if (missing.length) {
+    return {
+      action: "collect_booking_fields" as const,
+      message: missingFieldsMessage(body.locale, missing),
+      missingFields: missing,
+      reviewRequired: true,
+      disclaimer: AI_REVIEW_DISCLAIMER[body.locale],
+      ai: deterministicAssistantMetadata(input.requestId)
+    };
+  }
+  if (body.consent !== true) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Client consent is required before booking a consultation appointment.");
+  }
+
+  const startsAt = parseBookingDate(body.startsAt!);
+  const slot = await assertPublicConsultationSlotAvailable({
+    startsAt,
+    mode: body.preferredMode
+  });
+  const endsAt = new Date(slot.endsAt);
+  await assertNoBookingDuplicate(body);
+  await assertNoSlotConflict(startsAt, endsAt);
+
+  const phoneCanonical = canonicalPhone(body.phone!);
+  const result = await prisma.$transaction(async (tx) => {
+    const client = await upsertAssistantClient(tx, body, phoneCanonical);
+    const consultation = await tx.consultationRequest.create({
+      data: {
+        clientId: client.id,
+        fullName: body.fullName!,
+        phone: body.phone!,
+        phoneCanonical,
+        email: body.email || null,
+        city: body.city || null,
+        serviceCategory: body.serviceCategory!,
+        summary: body.summary!,
+        opposingPartyName: body.opposingPartyName || null,
+        urgency: body.urgency,
+        preferredMode: body.preferredMode,
+        status: "SCHEDULED",
+        aiClassification: deterministicBookingClassification(body, startsAt, input.requestId),
+        aiSummary: deterministicBookingSummary(body, startsAt)
+      }
+    });
+
+    const appointment = await tx.appointment.create({
+      data: {
+        clientId: client.id,
+        consultationRequestId: consultation.id,
+        title: appointmentTitle(body.locale, consultation.id),
+        type: "CONSULTATION",
+        mode: body.preferredMode,
+        startsAt,
+        endsAt,
+        status: "SCHEDULED",
+        notes: "Confirmed from public assistant without payment because booking fee is disabled."
+      }
+    });
+
+    return { client, consultation, appointment };
+  });
+
+  await appendAuditLogBestEffort({
+    actorId: null,
+    action: "consultation.ai_chat_free_booked",
+    resourceType: "ConsultationRequest",
+    resourceId: result.consultation.id,
+    clientId: result.client.id,
+    appointmentId: result.appointment.id,
+    metadata: {
+      reference: publicConsultationReference(result.consultation.id),
+      serviceCategory: result.consultation.serviceCategory,
+      urgency: result.consultation.urgency,
+      mode: result.appointment.mode,
+      startsAt: result.appointment.startsAt.toISOString(),
+      source: "public-assistant",
+      paymentEnabled: false
+    },
+    request: input.request,
+    requestId: input.requestId
+  });
+
+  return {
+    action: "booking_confirmed" as const,
+    message: bookedMessage(body.locale),
+    reference: publicConsultationReference(result.consultation.id),
+    appointment: appointmentDto(result.appointment),
+    reviewRequired: true,
+    disclaimer: AI_REVIEW_DISCLAIMER[body.locale],
+    ai: deterministicAssistantMetadata(input.requestId)
+  };
+}
+
 async function publicAppointmentInquiry(input: {
   body: PublicConsultationAssistantInput;
   requestId: string;
@@ -1701,7 +1825,6 @@ function requiredBookingFields(body: PublicConsultationAssistantInput) {
   const missing: string[] = [];
   if (!body.fullName || isInvalidBookingFullName(body.fullName)) missing.push("fullName");
   if (!body.phone || !isValidBookingPhone(body.phone)) missing.push("phone");
-  if (!body.serviceCategory) missing.push("serviceCategory");
   if (!body.summary || body.summary.trim().length < 20) missing.push("summary");
   if (!body.startsAt) missing.push("startsAt");
   return missing;
@@ -1790,8 +1913,8 @@ function recoveredSlotSelectionMessage(locale: "ar" | "en", hasAlternatives: boo
 
 function duplicateBookingConversationMessage(locale: "ar" | "en") {
   return locale === "ar"
-    ? "يوجد بالفعل حجز استشارة مجدول لنفس رقم الهاتف ونفس مجال الطلب. استخدم استعلام برقم المرجع لو معك المرجع، أو انتظر مراجعة فريق المكتب."
-    : "A scheduled consultation already exists for this phone and request area. Use Check reference if you have the reference, or wait for the office team review.";
+    ? "يوجد بالفعل حجز استشارة مجدول لنفس رقم الهاتف خلال الفترة الحالية. استخدم استعلام برقم المرجع لو معك المرجع، أو انتظر مراجعة فريق المكتب."
+    : "A scheduled consultation already exists for this phone in the current period. Use Check reference if you have the reference, or wait for the office team review.";
 }
 
 async function assertNoSlotConflict(startsAt: Date, endsAt: Date) {
@@ -1819,7 +1942,6 @@ async function assertNoBookingDuplicate(body: PublicConsultationAssistantInput) 
 
   const recentDuplicate = await prisma.consultationRequest.findFirst({
     where: {
-      serviceCategory: body.serviceCategory!,
       status: "SCHEDULED",
       createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
       OR: contactFilters
@@ -2099,7 +2221,8 @@ function deterministicBookingClassification(body: PublicConsultationAssistantInp
     urgency: body.urgency,
     preferredMode: body.preferredMode,
     reasons: [
-      `مجال الطلب من المحادثة: ${teamServiceCategoryLabel(body.serviceCategory)}.`,
+      `تصنيف داخلي مبدئي فقط: ${teamServiceCategoryLabel(body.serviceCategory)}.`,
+      `نص طلب العميل كما وصل: ${truncateTeamText(body.summary || "غير محدد", 350)}.`,
       `طريقة التواصل المطلوبة: ${teamModeLabel(body.preferredMode)}.`,
       `الموعد المختار من مواعيد السكرتارية المتاحة: ${formatTeamDateTime(startsAt)}.`
     ],
@@ -2119,7 +2242,7 @@ export function deterministicBookingSummary(body: PublicConsultationAssistantInp
   const opposingParty = body.opposingPartyName ? `\nالطرف المقابل المذكور: ${body.opposingPartyName}.` : "";
 
   return [
-    `ملخص للفريق: ${body.fullName || "عميل غير محدد"} طلب استشارة في مجال ${teamServiceCategoryLabel(body.serviceCategory)} من خلال شات الحجز العام.`,
+    `ملخص للفريق: ${body.fullName || "عميل غير محدد"} طلب استشارة من خلال شات الحجز العام. التصنيف الداخلي المبدئي: ${teamServiceCategoryLabel(body.serviceCategory)}.`,
     `طلب العميل كما وصل: ${truncateTeamText(body.summary || "لم يتم إدخال ملخص واضح.", 700)}${opposingParty}`,
     `بيانات التواصل: ${contactParts.join("، ")}.`,
     `التفضيلات: ${teamModeLabel(body.preferredMode)}، أولوية ${teamUrgencyLabel(body.urgency)}، الموعد المختار ${formatTeamDateTime(startsAt)}.`,

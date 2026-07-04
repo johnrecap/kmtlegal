@@ -50,7 +50,7 @@ type PaymentProviderOption = {
 
 export type PaymentGatewaySettingsValue = {
   activeProvider: "paytabs" | "paymob";
-  bookingMode: "PAID_CHAT" | "MANUAL_REVIEW";
+  bookingMode: "AI_CHAT_PAID" | "AI_CHAT_FREE";
   paymentEnabled: boolean;
   aiChatEnabled: boolean;
   hasActivePricingRule: boolean;
@@ -328,7 +328,7 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
   const [bookingMode, setBookingMode] = useState(settings.bookingMode);
   const selectedProvider = settings.providers.find((provider) => provider.provider === activeProvider) ?? settings.providers[0];
   const paidChatReady = Boolean(selectedProvider?.configured && settings.hasActivePricingRule);
-  const blocksPaidChatSave = bookingMode === "PAID_CHAT" && !paidChatReady;
+  const blocksPaidChatSave = bookingMode === "AI_CHAT_PAID" && !paidChatReady;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -365,17 +365,17 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
         value={bookingMode}
         onChange={(event) => setBookingMode(event.target.value as PaymentGatewaySettingsValue["bookingMode"])}
       >
-        <option value="PAID_CHAT">دردشة الحجز + دفع إلكتروني</option>
-        <option value="MANUAL_REVIEW">نموذج عادي + مراجعة مكتبية بدون دفع</option>
+        <option value="AI_CHAT_PAID">شات AI + دفع رسوم الحجز</option>
+        <option value="AI_CHAT_FREE">شات AI بدون رسوم حجز</option>
       </Select>
       <div className="rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6">
         <p className="font-semibold text-kmt-ink">
-          {bookingMode === "PAID_CHAT" ? "الدفع والدردشة مفعلان للحجوزات الجديدة." : "الطلبات الجديدة ستذهب للمراجعة المكتبية بدون دفع أو دردشة."}
+          {bookingMode === "AI_CHAT_PAID" ? "الشات والدفع مفعلان للحجوزات الجديدة." : "الشات مفعل، وسيتم تأكيد الموعد من المحادثة بدون تحصيل رسوم حجز."}
         </p>
         <p className="mt-1 text-xs text-kmt-muted">
-          {bookingMode === "PAID_CHAT"
+          {bookingMode === "AI_CHAT_PAID"
             ? "يتطلب هذا الوضع بوابة دفع جاهزة وسعر استشارة نشط قبل الحفظ."
-            : "لا يشترط هذا الوضع وجود سعر استشارة أو إعدادات بوابة دفع."}
+            : "لا يشترط هذا الوضع وجود سعر استشارة أو إعدادات بوابة دفع، لكن نص طلب العميل سيظل ظاهرًا للسكرتيرة للمراجعة والتوزيع."}
         </p>
       </div>
       <Select
@@ -416,7 +416,7 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
       </div>
       {blocksPaidChatSave ? (
         <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-900" role="alert">
-          لا يمكن تفعيل دردشة الحجز مع الدفع قبل تجهيز بوابة الدفع المختارة وإنشاء سعر استشارة نشط.
+          لا يمكن تفعيل شات الحجز مع الدفع قبل تجهيز بوابة الدفع المختارة وإنشاء سعر استشارة نشط.
         </div>
       ) : null}
       <Button disabled={blocksPaidChatSave || isBusy} loading={isBusy} type="submit">

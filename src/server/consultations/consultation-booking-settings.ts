@@ -5,15 +5,21 @@ import { ApiError } from "@/server/http/errors";
 
 export const CONSULTATION_BOOKING_SETTING_KEY = "consultation.booking";
 
-export const consultationBookingModeValues = ["PAID_CHAT", "MANUAL_REVIEW"] as const;
+export const consultationBookingModeValues = ["AI_CHAT_PAID", "AI_CHAT_FREE"] as const;
+export const legacyConsultationBookingModeValues = ["PAID_CHAT", "MANUAL_REVIEW"] as const;
+export const consultationBookingModeInputValues = [
+  ...consultationBookingModeValues,
+  ...legacyConsultationBookingModeValues
+] as const;
 export const consultationBookingModeSchema = z.enum(consultationBookingModeValues);
+export const consultationBookingModeInputSchema = z.enum(consultationBookingModeInputValues).transform((mode) => normalizeConsultationBookingMode(mode));
 export type ConsultationBookingMode = z.infer<typeof consultationBookingModeSchema>;
 
-export const DEFAULT_CONSULTATION_BOOKING_MODE: ConsultationBookingMode = "PAID_CHAT";
+export const DEFAULT_CONSULTATION_BOOKING_MODE: ConsultationBookingMode = "AI_CHAT_PAID";
 
 export const consultationBookingSettingSchema = z
   .object({
-    mode: consultationBookingModeSchema.default(DEFAULT_CONSULTATION_BOOKING_MODE)
+    mode: consultationBookingModeInputSchema.default(DEFAULT_CONSULTATION_BOOKING_MODE)
   })
   .strict();
 
@@ -23,7 +29,7 @@ export function consultationBookingModeFromValue(value: Prisma.JsonValue | null 
   if (value && typeof value === "object" && !Array.isArray(value)) {
     const configured = (value as Record<string, unknown>).mode;
     if (typeof configured === "string") {
-      const parsed = consultationBookingModeSchema.safeParse(configured);
+      const parsed = consultationBookingModeInputSchema.safeParse(configured);
       if (parsed.success) {
         return parsed.data;
       }
@@ -36,8 +42,8 @@ export function consultationBookingModeFromValue(value: Prisma.JsonValue | null 
 export function consultationBookingFlags(mode: ConsultationBookingMode) {
   return {
     bookingMode: mode,
-    paymentEnabled: mode === "PAID_CHAT",
-    aiChatEnabled: mode === "PAID_CHAT"
+    paymentEnabled: mode === "AI_CHAT_PAID",
+    aiChatEnabled: true
   };
 }
 
@@ -64,14 +70,29 @@ export async function getPublicConsultationBookingMode(input: { client?: Consult
 
 export async function assertPaidChatBookingEnabled(input: { client?: ConsultationBookingSettingsClient } = {}) {
   const mode = await getConsultationBookingMode(input);
-  if (mode !== "PAID_CHAT") {
-    throw new ApiError(409, "FEATURE_DISABLED", "Paid booking chat is disabled. Use the manual consultation request form.");
+  if (mode !== "AI_CHAT_PAID") {
+    throw new ApiError(409, "FEATURE_DISABLED", "Paid booking is disabled. Use the consultation assistant without payment.");
+  }
+}
+
+export async function assertAiChatBookingEnabled(input: { client?: ConsultationBookingSettingsClient } = {}) {
+  const mode = await getConsultationBookingMode(input);
+  if (!consultationBookingFlags(mode).aiChatEnabled) {
+    throw new ApiError(409, "FEATURE_DISABLED", "Consultation assistant booking is disabled.");
   }
 }
 
 export async function assertManualReviewBookingEnabled(input: { client?: ConsultationBookingSettingsClient } = {}) {
-  const mode = await getConsultationBookingMode(input);
-  if (mode !== "MANUAL_REVIEW") {
-    throw new ApiError(409, "FEATURE_DISABLED", "Manual consultation requests are disabled while paid booking chat is active.");
+  await getConsultationBookingMode(input);
+  throw new ApiError(409, "FEATURE_DISABLED", "Manual consultation form is disabled. Use the consultation assistant.");
+}
+
+function normalizeConsultationBookingMode(mode: (typeof consultationBookingModeInputValues)[number]): ConsultationBookingMode {
+  if (mode === "PAID_CHAT") {
+    return "AI_CHAT_PAID";
   }
+  if (mode === "MANUAL_REVIEW") {
+    return "AI_CHAT_FREE";
+  }
+  return mode;
 }

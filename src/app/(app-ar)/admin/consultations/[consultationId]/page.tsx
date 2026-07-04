@@ -102,7 +102,7 @@ function AiClassificationSummary({ value }: { value: unknown }) {
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {category ? <DetailItem label="المجال المقترح" value={labelFrom(serviceCategoryLabels, category)} /> : null}
+        {category ? <DetailItem label="تصنيف AI مساعد" value={labelFrom(serviceCategoryLabels, category)} /> : null}
         {urgency ? <DetailItem label="الأولوية المقترحة" value={labelFrom(urgencyLabels, urgency)} /> : null}
         {preferredMode ? <DetailItem label="طريقة التواصل" value={labelFrom(modeLabels, preferredMode)} /> : null}
         {confidence ? <DetailItem label="درجة الثقة" value={confidence} /> : null}
@@ -158,7 +158,7 @@ function adminConsultationOfficeBrief(consultation: Awaited<ReturnType<typeof ge
     : "لم يتم العثور على موعد مرتبط";
 
   return [
-    `ملخص للفريق: ${consultation.fullName} طلب استشارة في مجال ${labelFrom(serviceCategoryLabels, consultation.serviceCategory)}.`,
+    `ملخص للفريق: ${consultation.fullName} طلب استشارة من خلال شات الحجز العام. التصنيف الداخلي المبدئي: ${labelFrom(serviceCategoryLabels, consultation.serviceCategory)}.`,
     `طلب العميل كما وصل: ${consultation.summary}`,
     `بيانات التواصل: ${contactParts.join("، ")}.`,
     `التفضيلات: ${labelFrom(modeLabels, consultation.preferredMode)}، أولوية ${labelFrom(urgencyLabels, consultation.urgency)}، الموعد ${appointmentText}.`,
@@ -202,7 +202,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <CardTitle>بيانات الطلب</CardTitle>
-                  <CardDescription>كل بيانات الاستشارة كما وصلت من نموذج الحجز العام.</CardDescription>
+                  <CardDescription>كل بيانات الاستشارة كما وصلت من شات الحجز العام.</CardDescription>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Badge tone={statusTone(consultation.status)}>{labelFrom(consultationStatusLabels, consultation.status)}</Badge>
@@ -217,7 +217,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
                 <DetailItem label="الهاتف" value={consultation.phone} />
                 <DetailItem label="البريد الإلكتروني" value={consultation.email} />
                 <DetailItem label="المدينة" value={consultation.city} />
-                <DetailItem label="نوع الخدمة" value={labelFrom(serviceCategoryLabels, consultation.serviceCategory)} />
+                <DetailItem label="تصنيف داخلي مبدئي" value={labelFrom(serviceCategoryLabels, consultation.serviceCategory)} />
                 <DetailItem label="طريقة التواصل" value={labelFrom(modeLabels, consultation.preferredMode)} />
                 <DetailItem label="رقم المرجع" value={<span dir="ltr">{publicConsultationReference(consultation.id)}</span>} />
                 <DetailItem label="تاريخ الطلب" value={formatDateTime(consultation.createdAt)} />
@@ -239,8 +239,8 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
 
           <Card>
             <CardHeader>
-              <CardTitle>ملخص العميل</CardTitle>
-              <CardDescription>لا يتم عرض هذا النص للعميل تلقائياً؛ هو مخصص للمراجعة الداخلية قبل التحويل.</CardDescription>
+              <CardTitle>نص طلب العميل كما وصل</CardTitle>
+              <CardDescription>هذا هو النص الذي كتبه العميل في الشات، والسكرتيرة تستخدمه لتحديد المجال الداخلي والمحامي المسؤول.</CardDescription>
             </CardHeader>
             <CardContent>
               <p className="whitespace-pre-wrap text-sm leading-7 text-kmt-ink">{consultation.summary}</p>

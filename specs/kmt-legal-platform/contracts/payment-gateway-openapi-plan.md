@@ -4,7 +4,7 @@
 
 `POST /api/public/consultations/checkout`
 
-Creates a payment attempt after server-side validation and pricing. This route is available only when `consultation.booking.mode` is `PAID_CHAT`.
+Creates a payment attempt after server-side validation and pricing. This route is available only when `consultation.booking.mode` is `AI_CHAT_PAID`.
 
 Request:
 
@@ -52,8 +52,8 @@ Each provider has its own route. The route determines the provider, accepts the 
 - `GET /api/admin/payments/webhooks`
 - `POST /api/admin/payments/webhooks/[eventId]/replay`
 
-Payment settings store only non-secret choices in `SystemSetting`: `payment.gateway.activeProvider` (`paytabs` or `paymob`) and `consultation.booking.mode` (`PAID_CHAT` or `MANUAL_REVIEW`). Provider secrets remain in server env and are returned only as non-secret readiness booleans/missing key names.
+Payment settings store only non-secret choices in `SystemSetting`: `payment.gateway.activeProvider` (`paytabs` or `paymob`) and `consultation.booking.mode` (`AI_CHAT_PAID` or `AI_CHAT_FREE`; legacy `PAID_CHAT` and `MANUAL_REVIEW` are normalized). Provider secrets remain in server env and are returned only as non-secret readiness booleans/missing key names.
 
-`GET /api/admin/payments/settings` returns `activeProvider`, `bookingMode`, `paymentEnabled`, `aiChatEnabled`, provider readiness, and active-pricing readiness. `PATCH /api/admin/payments/settings` accepts `activeProvider` and `bookingMode`; `PAID_CHAT` cannot be saved unless the chosen provider is configured and at least one active consultation pricing rule exists.
+`GET /api/admin/payments/settings` returns `activeProvider`, `bookingMode`, `paymentEnabled`, `aiChatEnabled`, provider readiness, and active-pricing readiness. `PATCH /api/admin/payments/settings` accepts `activeProvider` and `bookingMode`; `AI_CHAT_PAID` cannot be saved unless the chosen provider is configured and at least one active consultation pricing rule exists.
 
 All admin routes require authenticated finance read/manage permissions through existing RBAC. Payment settings also allow `settings.manage.any` for super-admin settings operators.

@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
 import { canonicalPublicServiceSlug, findPublicService, getPublicContent, navForPath } from "@/content/public-content";
-import { BookingStepperFromQuery, ConsultationBookingChatFromQuery, RequestedLawyerQueryNotice } from "@/features/public-site/booking-query-client";
+import { ConsultationBookingChatFromQuery, RequestedLawyerQueryNotice } from "@/features/public-site/booking-query-client";
 import { ContactForm } from "@/features/public-site/contact-form";
 import { DirectoryFilter } from "@/features/public-site/directory-filter";
 import {
@@ -624,8 +624,7 @@ export async function BookConsultationPageView({ locale }: { locale: PublicLocal
   const content = getPublicContent(locale);
   const copy = content.bookingPage;
   const chatCopy = content.bookingChat;
-  const bookingMode = await getPublicConsultationBookingMode();
-  const isPaidChat = bookingMode === "PAID_CHAT";
+  await getPublicConsultationBookingMode();
 
   return (
     <PublicShell currentPath={localizedPublicHref("/book-consultation", locale)} locale={locale} navItems={navForPath("/book-consultation", locale)}>
@@ -634,17 +633,17 @@ export async function BookConsultationPageView({ locale }: { locale: PublicLocal
         image="/stitch-assets/b8b47a1dd8d5ce08.png"
         imagePosition="object-[center_62%]"
         size="compact"
-        title={isPaidChat ? chatCopy.heroTitle : copy.heroTitle}
-        description={isPaidChat ? chatCopy.heroDescription : copy.manualHeroDescription}
+        title={chatCopy.heroTitle}
+        description={chatCopy.heroDescription}
       />
       <PublicSection
         eyebrow={copy.sectionEyebrow}
-        title={isPaidChat ? chatCopy.sectionTitle : copy.manualSectionTitle}
-        description={isPaidChat ? chatCopy.sectionDescription : copy.manualSectionDescription}
+        title={chatCopy.sectionTitle}
+        description={chatCopy.sectionDescription}
       >
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <Suspense fallback={<div aria-hidden="true" className={cn(publicPanel, "min-h-[36rem] rounded-[1.75rem] border-kmt-gold/35 bg-black/30")} />}>
-            {isPaidChat ? <ConsultationBookingChatFromQuery locale={locale} /> : <BookingStepperFromQuery locale={locale} />}
+            <ConsultationBookingChatFromQuery locale={locale} />
           </Suspense>
           <aside className="space-y-4 lg:pt-2">
             <section className={cn(publicPanel, publicMotionCardBeam, "p-5")}>

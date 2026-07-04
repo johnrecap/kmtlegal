@@ -3,7 +3,7 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
-import { consultationStatusLabels, formatDateTime, labelFrom, modeLabels, serviceCategoryLabels, urgencyLabels } from "@/lib/legal-format";
+import { consultationStatusLabels, formatDateTime, labelFrom, modeLabels, urgencyLabels } from "@/lib/legal-format";
 import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
 import { listAdminConsultations } from "@/server/admin/consultation-review-service";
 import { adminNavForPath } from "../admin-navigation";
@@ -55,6 +55,14 @@ function listHref(filters: { q?: string; status?: string; assigned?: string; pag
   return `/admin/consultations?${params.toString()}`;
 }
 
+function summaryPreview(value: string, maxLength = 120) {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLength) {
+    return normalized;
+  }
+  return `${normalized.slice(0, maxLength - 1)}…`;
+}
+
 const columns: Array<DataTableColumn<ConsultationRow>> = [
   {
     key: "client",
@@ -69,11 +77,11 @@ const columns: Array<DataTableColumn<ConsultationRow>> = [
     )
   },
   {
-    key: "service",
-    header: "نوع الطلب",
+    key: "requestText",
+    header: "نص طلب العميل",
     render: (row) => (
       <div className="min-w-0">
-        <p className="break-words font-medium">{labelFrom(serviceCategoryLabels, row.serviceCategory)}</p>
+        <p className="break-words font-medium">{summaryPreview(row.summary)}</p>
         <p className="mt-1 text-xs text-kmt-muted">{labelFrom(modeLabels, row.preferredMode)}</p>
       </div>
     )
@@ -125,7 +133,7 @@ function ConsultationMobileCard({ row }: { row: ConsultationRow }) {
         </>
       }
       fields={[
-        { label: "نوع الطلب", value: labelFrom(serviceCategoryLabels, row.serviceCategory) },
+        { label: "نص طلب العميل", value: summaryPreview(row.summary, 90) },
         { label: "طريقة التواصل", value: labelFrom(modeLabels, row.preferredMode) },
         { label: "المحامي", value: row.assignedLawyer?.name ?? "غير معين" },
         { label: "تاريخ الطلب", value: formatDateTime(row.createdAt) }
@@ -162,7 +170,7 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
       <div className="min-w-0 space-y-5">
         <form action="/admin/consultations" method="get">
           <FilterBar>
-            <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالاسم أو الهاتف أو نوع الخدمة" />
+            <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالاسم أو الهاتف أو نص طلب العميل" />
             <Select className="min-w-44" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
               <option value="">كل الحالات</option>
               {Object.entries(consultationStatusLabels).map(([value, label]) => (
