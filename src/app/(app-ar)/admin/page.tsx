@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, FilterBar, MetricCard, SearchInput, StateBlock } from "@/components/ui";
 import {
   appointmentStatusLabels,
@@ -53,6 +54,8 @@ export default async function AdminHomePage() {
       navItems={adminNavForPath("/admin")}
       title="نظرة تشغيلية"
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="min-w-0 space-y-6">
         <form action="/admin/clients" method="get">

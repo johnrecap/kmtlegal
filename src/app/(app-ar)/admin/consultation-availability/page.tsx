@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { StateBlock } from "@/components/ui";
 import { ConsultationAvailabilityForm } from "@/features/admin/consultations/consultation-availability-form";
 import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
@@ -40,6 +41,8 @@ export default async function AdminConsultationAvailabilityPage() {
       navItems={adminNavForPath("/admin/consultation-availability")}
       title="أوقات حجز الاستشارات"
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="space-y-5">
         <StateBlock

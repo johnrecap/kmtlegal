@@ -107,15 +107,15 @@
 - Retention: public content history optional.
 
 ### ConsultationRequest
-- Purpose: Public intake record for review and conversion.
-- Fields: `id`, `clientId optional`, `fullName`, `phone`, `email`, `city`, `serviceCategory`, `summary`, `opposingPartyName optional`, `urgency`, `preferredMode`, `status`, `aiClassification json`, `aiSummary`, `assignedLawyerId optional`, `createdAt`, `updatedAt`.
-- Relationships: optional Client, optional assigned lawyer, optional converted Case/Appointment.
+- Purpose: Public intake record for AI-assisted booking, secretary review, assignment, and conversion.
+- Fields: `id`, `clientId optional`, `fullName`, `phone`, `email`, `city`, `serviceCategory`, `summary`, `opposingPartyName optional`, `urgency`, `preferredMode`, `status`, `aiClassification json`, `aiSummary`, `assignedLawyerId optional`, `secretaryReviewedAt optional`, `secretaryReviewedById optional`, `secretaryReviewNote optional`, `createdAt`, `updatedAt`.
+- Relationships: optional Client, optional assigned lawyer, optional secretary reviewer, optional converted Case/Appointment.
 - Ownership: office staff; public submitter has no portal access until linked.
 - Permissions: `consultation.create.public`, `consultation.review.any`, `consultation.review.assigned`.
-- Lifecycle: new/reviewing/scheduled/rejected/converted.
+- Lifecycle: new/reviewing/payment_pending/scheduled/rejected/converted. A scheduled request needs secretary attention until reviewed or assigned to a lawyer.
 - Validation: required name/phone/service/summary/mode, status transition rules.
-- Indexes: phone, status, assignedLawyerId, createdAt, serviceCategory.
-- Audit: assign, reject, convert.
+- Indexes: phone, status, assignedLawyerId, secretaryReviewedAt, secretaryReviewedById, createdAt, serviceCategory.
+- Audit: assign, secretary review, reject, convert.
 - Soft delete: no hard delete in MVP; status/archive later.
 - Retention: legal intake retention policy.
 
@@ -315,14 +315,14 @@
 - Retention: content retention policy.
 
 ### Notification
-- Purpose: In-app notification record.
-- Fields: `id`, `userId`, `title`, `body`, `type`, `readAt`, `createdAt`.
-- Relationships: User.
+- Purpose: In-app notification record, including secretary consultation-review alerts.
+- Fields: `id`, `userId`, `title`, `body`, `type`, `resourceType optional`, `resourceId optional`, `actionUrl optional`, `readAt`, `createdAt`.
+- Relationships: User; optional typed link to a business resource such as `ConsultationRequest`.
 - Ownership: recipient.
 - Permissions: `notification.read.self`, system create.
-- Lifecycle: unread/read/deleted.
+- Lifecycle: unread/read/deleted. Consultation notifications are resolved for all recipients once the consultation is secretary-reviewed, rejected, converted, or assigned.
 - Validation: no sensitive document/case content in body unless protected.
-- Indexes: userId, readAt, createdAt, type.
+- Indexes: userId, readAt, createdAt, type, resourceType+resourceId, unique userId+type+resourceType+resourceId for idempotent consultation alerts.
 - Audit: not required for read; creation for sensitive notifications optional.
 - Soft delete: optional.
 - Retention: short-term configurable.

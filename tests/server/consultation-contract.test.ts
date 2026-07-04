@@ -268,6 +268,20 @@ describe("public consultation contract", () => {
     expect(source).toContain("await assertNoSlotConflict(startsAt, endsAt, tx)");
   });
 
+  it("creates secretary review notifications only after free chat booking confirmation", () => {
+    const source = readFileSync(join(process.cwd(), "src/server/consultations/consultation-assistant-service.ts"), "utf8");
+    const freeBookingIndex = source.indexOf("async function createFreeConsultationBooking");
+    const paidReservationIndex = source.indexOf("export async function createPublicConsultationCheckout");
+    const freeNotificationIndex = source.indexOf("createConsultationReviewNotifications", freeBookingIndex);
+    const paidReservationSource = source.slice(paidReservationIndex, freeBookingIndex);
+
+    expect(freeBookingIndex).toBeGreaterThan(-1);
+    expect(paidReservationIndex).toBeGreaterThan(-1);
+    expect(freeNotificationIndex).toBeGreaterThan(freeBookingIndex);
+    expect(paidReservationIndex).toBeLessThan(freeBookingIndex);
+    expect(paidReservationSource).not.toContain("createConsultationReviewNotifications");
+  });
+
   it("extracts natural-language booking intake with structured AI output", async () => {
     await withBookingExtractionMock(
       {

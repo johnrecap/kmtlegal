@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import {
   Badge,
   Button,
@@ -525,6 +526,8 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
       navItems={adminNavForPath("/admin/finance")}
       title="الفواتير والتحصيل"
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

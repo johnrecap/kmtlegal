@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { caseStatusLabels, formatDateTime, labelFrom, priorityLabels } from "@/lib/legal-format";
@@ -215,6 +216,8 @@ export default async function AdminCasesPage({ searchParams }: { searchParams?: 
       navItems={adminNavForPath("/admin/cases")}
       title="إدارة القضايا"
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="space-y-5">
         <form action="/admin/cases" method="get">

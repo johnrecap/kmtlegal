@@ -308,6 +308,18 @@ describe("payment gateway contract", () => {
     expect(source).toContain("await updateOpenAttemptStatus");
   });
 
+  it("creates secretary review notifications only after paid webhook confirmation", () => {
+    const source = readFileSync(join(process.cwd(), "src/server/payments/payment-service.ts"), "utf8");
+    const paidConfirmationIndex = source.indexOf("async function confirmPaidAttempt");
+    const notificationIndex = source.indexOf("createConsultationReviewNotifications", paidConfirmationIndex);
+    const openAttemptUpdateIndex = source.indexOf("async function updateOpenAttemptStatus");
+
+    expect(paidConfirmationIndex).toBeGreaterThan(-1);
+    expect(notificationIndex).toBeGreaterThan(paidConfirmationIndex);
+    expect(notificationIndex).toBeLessThan(openAttemptUpdateIndex);
+    expect(source).toContain("consultationId: input.attempt.consultationRequestId");
+  });
+
   it("validates admin consultation pricing rules and price snapshots", () => {
     const rule = adminConsultationPricingRuleWriteSchema.parse({
       serviceCategory: "claims-collections",

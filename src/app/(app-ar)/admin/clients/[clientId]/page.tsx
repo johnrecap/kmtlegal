@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, MetricCard, StateBlock } from "@/components/ui";
 import { ClientActionPanel } from "@/features/admin/clients/client-crm-forms";
 import {
@@ -76,6 +77,8 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
       navItems={adminNavForPath("/admin/clients")}
       title={client.fullName}
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
       action={
         <ButtonLink href="/admin/clients" size="sm" variant="secondary">
           رجوع للعملاء

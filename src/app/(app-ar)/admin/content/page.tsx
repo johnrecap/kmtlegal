@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DataRecordCard, DataTable, FilterBar, MetricCard, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { AiSocialDraftForm, ArticleForm, CaseStudyForm, SocialDraftForm } from "@/features/admin/content/content-forms";
@@ -322,6 +323,8 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
       navItems={adminNavForPath("/admin/content")}
       title="المحتوى والسوشيال"
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">

@@ -2,6 +2,7 @@ import { createHash } from "crypto";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { appendAuditLog, appendAuditLogBestEffort } from "@/server/audit/audit-service";
+import { createConsultationReviewNotifications } from "@/server/admin/notification-service";
 import { hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
@@ -698,6 +699,11 @@ async function confirmPaidAttempt(input: {
   await input.tx.consultationRequest.update({
     where: { id: input.attempt.consultationRequestId },
     data: { status: "SCHEDULED" }
+  });
+
+  await createConsultationReviewNotifications({
+    client: input.tx,
+    consultationId: input.attempt.consultationRequestId
   });
 
   await appendAuditLog({

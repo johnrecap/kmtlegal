@@ -8,8 +8,9 @@ import { captureAnalyticsEventBestEffort } from "@/server/observability/analytic
 import { toPagination } from "@/server/http/pagination";
 import { canonicalPhone } from "@/server/phone/phone-normalization";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
+import { resolveConsultationNotifications, unreviewedConsultationWhere } from "./notification-service";
 
-const consultationStatusSchema = z.enum(["NEW", "REVIEWING", "SCHEDULED", "REJECTED", "CONVERTED"]);
+const consultationStatusSchema = z.enum(["NEW", "REVIEWING", "PAYMENT_PENDING", "SCHEDULED", "REJECTED", "CONVERTED"]);
 const urgencySchema = z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]);
 const appointmentModeSchema = z.enum(["PHONE", "ONLINE", "OFFICE"]).default("ONLINE");
 
@@ -17,6 +18,7 @@ export const adminConsultationListQuerySchema = z.object({
   q: z.string().trim().max(120).optional().or(z.literal("")),
   status: consultationStatusSchema.optional().or(z.literal("")),
   assigned: z.enum(["", "assigned", "unassigned"]).default(""),
+  review: z.enum(["", "unreviewed"]).default(""),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(50).default(20)
 });
@@ -27,6 +29,10 @@ export const assignConsultationSchema = z.object({
 
 export const rejectConsultationSchema = z.object({
   reason: z.string().trim().max(500).optional().or(z.literal(""))
+});
+
+export const reviewConsultationSchema = z.object({
+  note: z.string().trim().max(800).optional().or(z.literal(""))
 });
 
 export const convertConsultationSchema = z.object({
@@ -97,6 +103,7 @@ function listWhere(actor: Principal, filters: AdminConsultationListQuery): Prism
   const search = filters.q?.trim();
   const status = filters.status || undefined;
   const assigned = filters.assigned || undefined;
+  const review = filters.review || undefined;
 
   return {
     AND: [
@@ -104,6 +111,7 @@ function listWhere(actor: Principal, filters: AdminConsultationListQuery): Prism
       status ? { status } : {},
       assigned === "assigned" ? { assignedLawyerId: { not: null } } : {},
       assigned === "unassigned" ? { assignedLawyerId: null } : {},
+      review === "unreviewed" ? { status: "SCHEDULED", secretaryReviewedAt: null } : {},
       search
         ? {
             OR: [
@@ -130,13 +138,15 @@ export async function listAdminConsultations(input: { actor: Principal; query: u
       { status: { in: ["NEW", "REVIEWING", "SCHEDULED"] } }
     ]
   };
+  const unreviewedWhere = unreviewedConsultationWhere(input.actor);
 
-  const [items, total, unassignedTotal] = await Promise.all([
+  const [items, total, unassignedTotal, unreviewedTotal] = await Promise.all([
     prisma.consultationRequest.findMany({
       where,
       include: {
         assignedLawyer: { select: { id: true, name: true, email: true } },
         client: { select: { id: true, fullName: true } },
+        secretaryReviewedBy: { select: { id: true, name: true, email: true } },
         convertedCase: { select: { id: true, internalFileNumber: true, title: true } }
       },
       orderBy: [{ createdAt: "desc" }],
@@ -144,10 +154,11 @@ export async function listAdminConsultations(input: { actor: Principal; query: u
       take: pagination.take
     }),
     prisma.consultationRequest.count({ where }),
-    prisma.consultationRequest.count({ where: unassignedWhere })
+    prisma.consultationRequest.count({ where: unassignedWhere }),
+    prisma.consultationRequest.count({ where: unreviewedWhere })
   ]);
 
-  return { items, total, unassignedTotal, filters, page: pagination.page, pageSize: pagination.pageSize };
+  return { items, total, unassignedTotal, unreviewedTotal, filters, page: pagination.page, pageSize: pagination.pageSize };
 }
 
 export async function getAdminConsultationDetail(input: { actor: Principal; consultationId: string }) {
@@ -157,6 +168,7 @@ export async function getAdminConsultationDetail(input: { actor: Principal; cons
     include: {
       assignedLawyer: { select: { id: true, name: true, email: true } },
       client: { select: { id: true, fullName: true, phone: true, email: true } },
+      secretaryReviewedBy: { select: { id: true, name: true, email: true } },
       appointments: { orderBy: { startsAt: "asc" } },
       convertedCase: { select: { id: true, internalFileNumber: true, title: true, status: true } }
     }
@@ -214,7 +226,7 @@ export async function assignConsultation(input: { actor: Principal; consultation
 
   const consultation = await prisma.consultationRequest.findUnique({
     where: { id: consultationId },
-    select: { id: true, status: true, assignedLawyerId: true, clientId: true }
+    select: { id: true, status: true, assignedLawyerId: true, clientId: true, secretaryReviewedAt: true }
   });
 
   if (!consultation) {
@@ -224,17 +236,30 @@ export async function assignConsultation(input: { actor: Principal; consultation
     throw new ApiError(409, "CONFLICT", "Closed consultations cannot be assigned.");
   }
 
+  const now = new Date();
+  const shouldMarkReviewed = consultation.status === "SCHEDULED" && !consultation.secretaryReviewedAt;
   const updated = await prisma.$transaction(async (tx) => {
     const assignedConsultation = await tx.consultationRequest.update({
       where: { id: consultationId },
       data: {
         assignedLawyerId: body.assignedLawyerId,
-        status: consultation.status === "SCHEDULED" ? "SCHEDULED" : "REVIEWING"
+        status: consultation.status === "SCHEDULED" ? "SCHEDULED" : "REVIEWING",
+        ...(shouldMarkReviewed
+          ? {
+              secretaryReviewedAt: now,
+              secretaryReviewedById: input.actor.id,
+              secretaryReviewNote: "تمت مراجعة الطلب أثناء تعيين المحامي المسؤول."
+            }
+          : {})
       },
       include: {
         assignedLawyer: { select: { id: true, name: true, email: true } }
       }
     });
+
+    if (shouldMarkReviewed) {
+      await resolveConsultationNotifications({ client: tx, consultationId });
+    }
 
     await tx.appointment.updateMany({
       where: { consultationRequestId: consultationId, type: "CONSULTATION" },
@@ -264,6 +289,74 @@ export async function assignConsultation(input: { actor: Principal; consultation
   return updated;
 }
 
+export async function reviewConsultation(input: { actor: Principal; consultationId: string; body: unknown; request?: Request; requestId?: string }) {
+  const consultationId = parseWithSchema(uuidSchema, input.consultationId, "Consultation id is invalid.");
+  const body = parseWithSchema(reviewConsultationSchema, input.body, "Review payload is invalid.");
+  const consultation = await prisma.consultationRequest.findUnique({
+    where: { id: consultationId },
+    select: { id: true, status: true, assignedLawyerId: true, secretaryReviewedAt: true }
+  });
+
+  if (!consultation) {
+    throw new ApiError(404, "NOT_FOUND", "Consultation was not found.");
+  }
+  if (!canReviewConsultation(input.actor, consultation)) {
+    throw new ApiError(403, "PERMISSION_DENIED", "Consultation review is not allowed.");
+  }
+  if (consultation.status === "PAYMENT_PENDING") {
+    throw new ApiError(409, "CONFLICT", "Paid consultation cannot be reviewed before trusted payment confirmation.");
+  }
+  if (consultation.status === "CONVERTED" || consultation.status === "REJECTED") {
+    throw new ApiError(409, "CONFLICT", "Closed consultations cannot be reviewed.");
+  }
+
+  const now = new Date();
+  const result = await prisma.$transaction(async (tx) => {
+    const updated = await tx.consultationRequest.update({
+      where: { id: consultationId },
+      data: {
+        secretaryReviewedAt: consultation.secretaryReviewedAt ?? now,
+        secretaryReviewedById: consultation.secretaryReviewedAt ? undefined : input.actor.id,
+        secretaryReviewNote: body.note || null
+      },
+      include: {
+        secretaryReviewedBy: { select: { id: true, name: true, email: true } }
+      }
+    });
+
+    await resolveConsultationNotifications({ client: tx, consultationId });
+
+    const next = await tx.consultationRequest.findFirst({
+      where: {
+        AND: [unreviewedConsultationWhere(input.actor), { id: { not: consultationId } }]
+      },
+      select: { id: true },
+      orderBy: { createdAt: "asc" }
+    });
+
+    return {
+      consultation: updated,
+      nextReviewHref: next ? `/admin/consultations/${next.id}` : null
+    };
+  });
+
+  await appendAuditLogBestEffort({
+    actorId: input.actor.id,
+    action: "consultation.secretary_review",
+    resourceType: "ConsultationRequest",
+    resourceId: consultationId,
+    lawyerId: consultation.assignedLawyerId,
+    metadata: {
+      previousSecretaryReviewedAt: consultation.secretaryReviewedAt?.toISOString() ?? null,
+      secretaryReviewedAt: result.consultation.secretaryReviewedAt?.toISOString() ?? null,
+      nextReviewHref: result.nextReviewHref
+    },
+    request: input.request
+  });
+
+  return result;
+}
+
 export async function rejectConsultation(input: { actor: Principal; consultationId: string; body: unknown; request?: Request }) {
   const consultationId = parseWithSchema(uuidSchema, input.consultationId, "Consultation id is invalid.");
   const body = parseWithSchema(rejectConsultationSchema, input.body, "Reject payload is invalid.");
@@ -282,9 +375,13 @@ export async function rejectConsultation(input: { actor: Principal; consultation
     throw new ApiError(409, "CONFLICT", "Closed consultations cannot be rejected.");
   }
 
-  const updated = await prisma.consultationRequest.update({
-    where: { id: consultationId },
-    data: { status: "REJECTED" }
+  const updated = await prisma.$transaction(async (tx) => {
+    const rejected = await tx.consultationRequest.update({
+      where: { id: consultationId },
+      data: { status: "REJECTED" }
+    });
+    await resolveConsultationNotifications({ client: tx, consultationId });
+    return rejected;
   });
 
   await appendAuditLogBestEffort({
@@ -391,6 +488,8 @@ export async function convertConsultationToCase(input: { actor: Principal; consu
         status: "CONVERTED"
       }
     });
+
+    await resolveConsultationNotifications({ client: tx, consultationId: consultation.id });
 
     await appendAuditLog({
       client: tx,

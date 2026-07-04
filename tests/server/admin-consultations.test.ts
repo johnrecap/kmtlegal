@@ -2,11 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   appointmentEndAt,
   canReviewConsultation,
+  adminConsultationListQuerySchema,
   consultationInternalFileNumber,
   consultationScopeWhereForPrincipal,
   convertConsultationSchema,
-  priorityFromUrgency
+  priorityFromUrgency,
+  reviewConsultationSchema
 } from "@/server/admin/consultation-review-service";
+import { unreviewedConsultationWhere } from "@/server/admin/notification-service";
 import { ROLES, type Principal } from "@/server/auth/policy";
 import { ApiError } from "@/server/http/errors";
 
@@ -81,5 +84,36 @@ describe("admin consultation review contract", () => {
     expect(parsed.appointmentDurationMinutes).toBe(45);
     expect(parsed.priority).toBe("HIGH");
     expect(parsed.appointmentMode).toBe("ONLINE");
+  });
+
+  it("supports secretary review filters and notes", () => {
+    expect(adminConsultationListQuerySchema.parse({ review: "unreviewed", status: "PAYMENT_PENDING" })).toMatchObject({
+      review: "unreviewed",
+      status: "PAYMENT_PENDING"
+    });
+
+    expect(reviewConsultationSchema.parse({ note: "  reviewed by phone  " })).toEqual({ note: "reviewed by phone" });
+    expect(reviewConsultationSchema.parse({ note: "" })).toEqual({ note: "" });
+  });
+
+  it("scopes secretary review notifications to scheduled unreviewed consultations", () => {
+    expect(unreviewedConsultationWhere(officeAdmin)).toEqual({
+      AND: [
+        {},
+        {
+          status: "SCHEDULED",
+          secretaryReviewedAt: null
+        }
+      ]
+    });
+    expect(unreviewedConsultationWhere(assignedLawyer)).toEqual({
+      AND: [
+        { assignedLawyerId: assignedLawyer.id },
+        {
+          status: "SCHEDULED",
+          secretaryReviewedAt: null
+        }
+      ]
+    });
   });
 });

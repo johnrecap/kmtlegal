@@ -45,6 +45,7 @@ export function formatBytes(bytes: number) {
 export const consultationStatusLabels: Record<string, string> = {
   NEW: "جديد",
   REVIEWING: "قيد المراجعة",
+  PAYMENT_PENDING: "في انتظار الدفع",
   SCHEDULED: "تم تحديد موعد",
   REJECTED: "مرفوض",
   CONVERTED: "تم التحويل"

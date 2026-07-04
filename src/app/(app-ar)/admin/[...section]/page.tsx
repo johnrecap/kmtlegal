@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { StateBlock } from "@/components/ui";
 import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
 import { adminNavForPath, adminSectionLabel } from "../admin-navigation";
@@ -25,6 +26,8 @@ export default async function AdminSectionPlaceholderPage({ params }: { params: 
       navItems={adminNavForPath(pathname)}
       title={sectionLabel}
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <StateBlock
         title={`${sectionLabel} ضمن خطة تنفيذ لاحقة`}

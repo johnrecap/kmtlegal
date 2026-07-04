@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { AI_REVIEW_DISCLAIMER, bookingIntakeExtractionOutputSchema, generateStructured } from "@/server/ai";
+import { createConsultationReviewNotifications } from "@/server/admin/notification-service";
 import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { getIpAddress } from "@/server/auth/session-store";
 import type { Principal } from "@/server/auth/policy";
@@ -1758,6 +1759,11 @@ async function createFreeConsultationBooking(input: {
         status: "SCHEDULED",
         notes: "Confirmed from public assistant without payment because booking fee is disabled."
       }
+    });
+
+    await createConsultationReviewNotifications({
+      client: tx,
+      consultationId: consultation.id
     });
 
     return { client, consultation, appointment };

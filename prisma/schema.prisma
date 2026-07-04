@@ -250,6 +250,7 @@ enum SocialDraftStatus {
 enum NotificationType {
   SYSTEM
   CASE
+  CONSULTATION
   APPOINTMENT
   DOCUMENT
   PAYMENT
@@ -339,6 +340,7 @@ model User {
   sessions                Session[]                 @relation("UserSessions")
   assignedClients         Client[]                  @relation("AssignedLawyerClients")
   assignedConsultations   ConsultationRequest[]     @relation("AssignedLawyerConsultations")
+  secretaryReviewedConsultations ConsultationRequest[] @relation("SecretaryReviewedConsultations")
   lawyerAppointments      Appointment[]             @relation("AppointmentLawyer")
   assignedCases           LegalCase[]               @relation("AssignedCaseLawyer")
   createdCaseSessions     CaseSession[]             @relation("CaseSessionCreator")
@@ -482,6 +484,10 @@ model ConsultationRequest {
   aiSummary         String?
   assignedLawyerId  String?            @db.Uuid
   assignedLawyer    User?              @relation("AssignedLawyerConsultations", fields: [assignedLawyerId], references: [id], onDelete: SetNull)
+  secretaryReviewedAt DateTime?
+  secretaryReviewedById String?         @db.Uuid
+  secretaryReviewedBy User?             @relation("SecretaryReviewedConsultations", fields: [secretaryReviewedById], references: [id], onDelete: SetNull)
+  secretaryReviewNote String?
   convertedCase     LegalCase?
   appointments      Appointment[]
   payments          Payment[]
@@ -492,6 +498,8 @@ model ConsultationRequest {
   @@index([phone])
   @@index([status])
   @@index([assignedLawyerId])
+  @@index([secretaryReviewedAt])
+  @@index([secretaryReviewedById])
   @@index([createdAt])
   @@index([serviceCategory])
   @@map("consultation_requests")
@@ -986,6 +994,9 @@ model Notification {
   title     String
   body      String
   type      NotificationType @default(SYSTEM)
+  resourceType String?
+  resourceId   String?
+  actionUrl    String?
   readAt    DateTime?
   createdAt DateTime         @default(now())
 
@@ -993,6 +1004,8 @@ model Notification {
   @@index([readAt])
   @@index([createdAt])
   @@index([type])
+  @@index([resourceType, resourceId])
+  @@unique([userId, type, resourceType, resourceId])
   @@map("notifications")
 }
 

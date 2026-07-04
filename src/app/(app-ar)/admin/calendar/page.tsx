@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, FilterBar, Select, StateBlock, TextInput } from "@/components/ui";
 import {
   AppointmentRescheduleForm,
@@ -118,6 +119,8 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
       navItems={adminNavForPath("/admin/calendar")}
       title="تقويم المكتب"
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
         <div className="space-y-5">

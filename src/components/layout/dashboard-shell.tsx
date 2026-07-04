@@ -3,6 +3,7 @@ import Link from "next/link";
 import { KmtBrandLogo } from "@/components/brand";
 import { Badge, MaterialSymbol, buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import type { Principal } from "@/server/auth/policy";
 
 export type DashboardNavItem = {
   label: string;
@@ -18,6 +19,8 @@ export function DashboardShell({
   navItems,
   children,
   userLabel,
+  principal,
+  notificationBell,
   mode = "admin",
   action,
   className
@@ -27,6 +30,8 @@ export function DashboardShell({
   navItems: DashboardNavItem[];
   children: ReactNode;
   userLabel: string;
+  principal?: Principal;
+  notificationBell?: ReactNode;
   mode?: "admin" | "portal";
   action?: ReactNode;
   className?: string;
@@ -87,6 +92,7 @@ export function DashboardShell({
               <h1 className="break-words text-2xl font-semibold text-kmt-ink">{title}</h1>
             </div>
             <div className="flex min-w-0 flex-wrap items-center justify-end gap-3">
+              {mode === "admin" ? notificationBell : null}
               <span className="hidden min-w-0 max-w-56 truncate text-sm text-kmt-muted sm:inline">{userLabel}</span>
               <form action="/api/auth/logout" method="post">
                 <button

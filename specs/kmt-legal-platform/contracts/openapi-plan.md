@@ -115,6 +115,9 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 | PATCH | `/api/admin/consultations/{id}/assign` | Assign lawyer | Admin | consultation.assign.any |
 | PATCH | `/api/admin/consultations/{id}/reject` | Reject request | Admin | consultation.review.any |
 | POST | `/api/admin/consultations/{id}/convert` | Convert to client/case | Admin | consultation.convert.any |
+| POST | `/api/admin/consultations/{id}/review` | Mark secretary review complete and resolve consultation notifications | Secretary/Admin | consultation.review.any |
+| GET | `/api/admin/notifications` | Read current user's in-app notifications and consultation review count | Staff | notification.read.self / consultation.review.any |
+| POST | `/api/admin/notifications/{notificationId}/read` | Mark one current-user notification as read | Staff | notification.read.self / consultation.review.any |
 | GET | `/api/admin/consultation-availability` | Read weekly public consultation booking availability | Secretary/Admin | appointment.manage.any |
 | PATCH | `/api/admin/consultation-availability` | Update weekly public consultation booking availability | Secretary/Admin | appointment.manage.any |
 

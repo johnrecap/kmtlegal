@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { conversationStatusLabels, formatDateTime, labelFrom } from "@/lib/legal-format";
@@ -147,6 +148,8 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
       navItems={adminNavForPath("/admin/messages")}
       title="رسائل العملاء"
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="min-w-0 space-y-5">
         <form action="/admin/messages" method="get">

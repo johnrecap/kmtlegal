@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { AdminUserCreateForm } from "@/features/admin/governance/governance-forms";
@@ -139,6 +140,8 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
       navItems={adminNavForPath("/admin/users")}
       title="المستخدمون والأدوار"
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="space-y-5">
         {canCreateAdminUsers(guard.context.principal) ? <AdminUserCreateForm roles={options.roles} /> : null}

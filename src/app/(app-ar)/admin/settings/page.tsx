@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import {
   EmailPolicySettingForm,
@@ -55,6 +56,8 @@ export default async function AdminSettingsPage() {
       navItems={adminNavForPath("/admin/settings")}
       title="الإعدادات"
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="grid gap-5 xl:grid-cols-2">
         {settings.map((setting) => (

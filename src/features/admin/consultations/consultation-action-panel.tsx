@@ -16,6 +16,12 @@ type ApiErrorBody = {
   };
 };
 
+type ApiSuccessBody = {
+  data?: {
+    nextReviewHref?: string | null;
+  };
+};
+
 async function readMessage(response: Response) {
   const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
   return body.error?.message ?? "تعذر تنفيذ الإجراء الآن.";
@@ -25,19 +31,26 @@ export function ConsultationActionPanel({
   consultationId,
   status,
   assignedLawyerId,
+  secretaryReviewedAt,
+  secretaryReviewedByName,
+  secretaryReviewNote,
   lawyers
 }: {
   consultationId: string;
   status: string;
   assignedLawyerId?: string | null;
+  secretaryReviewedAt?: string | null;
+  secretaryReviewedByName?: string | null;
+  secretaryReviewNote?: string | null;
   lawyers: LawyerOption[];
 }) {
   const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const isClosed = status === "CONVERTED" || status === "REJECTED";
+  const canReview = !isClosed && status !== "PAYMENT_PENDING";
 
-  async function postJson(path: string, payload: unknown) {
+  async function postJson(path: string, payload: unknown, options: { goToNextReview?: boolean } = {}) {
     setIsBusy(true);
     setMessage(null);
 
@@ -53,7 +66,12 @@ export function ConsultationActionPanel({
         return;
       }
 
+      const body = (await response.json().catch(() => ({}))) as ApiSuccessBody;
       setMessage("تم حفظ الإجراء بنجاح.");
+      if (options.goToNextReview && body.data?.nextReviewHref) {
+        router.push(body.data.nextReviewHref);
+        return;
+      }
       router.refresh();
     } catch {
       setMessage("لا يمكن الوصول إلى الخادم الآن.");
@@ -94,8 +112,40 @@ export function ConsultationActionPanel({
     });
   }
 
+  function review(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    postJson(
+      `/api/admin/consultations/${consultationId}/review`,
+      {
+        note: formData.get("note")
+      },
+      { goToNextReview: true }
+    );
+  }
+
   return (
     <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>مراجعة السكرتيرة</CardTitle>
+          <CardDescription>بعد مراجعة بيانات الطلب، سيختفي من إشعارات الطلبات الجديدة وتنتقل مباشرة للطلب التالي إن وجد.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {secretaryReviewedAt ? (
+            <div className="mb-3 rounded border border-blue-200 bg-blue-50 px-3 py-2 text-sm leading-6 text-blue-900">
+              تمت المراجعة{secretaryReviewedByName ? ` بواسطة ${secretaryReviewedByName}` : ""}.
+            </div>
+          ) : null}
+          <form className="space-y-3" onSubmit={review}>
+            <Textarea defaultValue={secretaryReviewNote ?? ""} disabled={!canReview || isBusy || Boolean(secretaryReviewedAt)} label="ملاحظة مراجعة داخلية" name="note" />
+            <Button disabled={!canReview || Boolean(secretaryReviewedAt)} loading={isBusy} type="submit" variant="secondary">
+              تمت مراجعة السكرتيرة
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>تعيين المحامي</CardTitle>

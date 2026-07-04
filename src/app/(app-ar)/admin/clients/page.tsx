@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { ClientCreateForm } from "@/features/admin/clients/client-crm-forms";
@@ -174,6 +175,8 @@ export default async function AdminClientsPage({ searchParams }: { searchParams?
       navItems={adminNavForPath("/admin/clients")}
       title="CRM العملاء"
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       {options.canManage ? (
         <div className="mb-4 md:hidden">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, MetricCard, StateBlock } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import {
@@ -485,6 +486,8 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
       navItems={adminNavForPath("/admin/cases")}
       title={legalCase.internalFileNumber}
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
       action={
         <ButtonLink href="/admin/cases" size="sm" variant="secondary">
           رجوع للقضايا

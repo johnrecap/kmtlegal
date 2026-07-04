@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
 import { AdminUserActionPanel } from "@/features/admin/governance/governance-forms";
 import { formatDateTime } from "@/lib/legal-format";
@@ -108,6 +109,8 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
       navItems={adminNavForPath("/admin/users")}
       title={user.name}
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="mb-5">
         <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/users">

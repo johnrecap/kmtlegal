@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import {
   Badge,
   Button,
@@ -204,6 +205,8 @@ export default async function AdminReportsPage({ searchParams }: { searchParams?
       navItems={adminNavForPath("/admin/reports")}
       title="التقارير الأساسية"
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="space-y-6">
         <form action="/admin/reports" method="get">

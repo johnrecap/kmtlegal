@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, StateBlock } from "@/components/ui";
 import { ConsultationActionPanel } from "@/features/admin/consultations/consultation-action-panel";
 import { consultationStatusLabels, formatDateTime, labelFrom, modeLabels, serviceCategoryLabels, urgencyLabels } from "@/lib/legal-format";
@@ -189,6 +190,8 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
       navItems={adminNavForPath("/admin/consultations")}
       title={consultation.fullName}
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
       action={
         <ButtonLink href="/admin/consultations" variant="secondary" size="sm">
           رجوع للقائمة
@@ -223,6 +226,14 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
                 <DetailItem label="تاريخ الطلب" value={formatDateTime(consultation.createdAt)} />
                 <DetailItem label="المحامي المسؤول" value={consultation.assignedLawyer?.name} />
                 <DetailItem label="العميل المرتبط" value={consultation.client?.fullName} />
+                <DetailItem
+                  label="مراجعة السكرتيرة"
+                  value={
+                    consultation.secretaryReviewedAt
+                      ? `${formatDateTime(consultation.secretaryReviewedAt)}${consultation.secretaryReviewedBy?.name ? ` - ${consultation.secretaryReviewedBy.name}` : ""}`
+                      : "لم تتم المراجعة بعد"
+                  }
+                />
                 <DetailItem
                   label="القضية المحولة"
                   value={
@@ -290,6 +301,9 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
           consultationId={consultation.id}
           status={consultation.status}
           assignedLawyerId={consultation.assignedLawyerId}
+          secretaryReviewedAt={consultation.secretaryReviewedAt?.toISOString() ?? null}
+          secretaryReviewedByName={consultation.secretaryReviewedBy?.name ?? null}
+          secretaryReviewNote={consultation.secretaryReviewNote}
           lawyers={lawyers}
         />
       </div>

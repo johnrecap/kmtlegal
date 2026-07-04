@@ -1,6 +1,6 @@
 # KMT Legal Feature Inventory
 
-Last updated: 2026-07-04
+Last updated: 2026-07-05
 
 ## Public Site
 
@@ -11,13 +11,14 @@ Last updated: 2026-07-04
 
 ## Consultation Booking
 
-- Admin-controlled consultation entry mode: `AI_CHAT_PAID` for chat plus mandatory hosted checkout, or `AI_CHAT_FREE` for the same chat flow without a booking fee; legacy `PAID_CHAT`/`MANUAL_REVIEW` values are normalized.
-- Chat-first public booking assistant with Arabic/English language choice when paid chat mode is active.
-- Manual review form creates a `ConsultationRequest` for office review only; it does not create a payment attempt or confirm an appointment.
+- Admin-controlled consultation entry mode: `AI_CHAT_PAID` for chat plus mandatory hosted checkout, or `AI_CHAT_FREE` for the same AI chat flow without a booking fee; legacy `PAID_CHAT`/`MANUAL_REVIEW` values are normalized.
+- Chat-first public booking assistant with Arabic/English language choice in both paid and free booking modes.
+- In free booking mode, the assistant confirms the consultation appointment after client approval without creating a payment attempt.
 - Booking field collection, service classification, phone/name/date validation, slot selection, conflict recovery.
 - Secretary-managed consultation availability.
 - New paid booking v1: server-side pricing review, payment attempt creation, hosted checkout URL, return/status page, trusted webhook confirmation.
 - Temporary reservation: appointment status `RESERVED` while payment is pending; confirmed appointment uses `SCHEDULED` only after trusted payment.
+- Confirmed consultation bookings create secretary review alerts after free chat confirmation or after paid webhook confirmation.
 
 ## AI
 
@@ -36,6 +37,8 @@ Last updated: 2026-07-04
 ## Admin
 
 - Admin dashboard, CRM clients, consultations, cases, calendar, sessions, tasks, documents, users, settings, audit log, messages, finance, and reports.
+- Admin consultation queue includes secretary review status, unreviewed/unassigned filters, post-booking review action, and next-request navigation.
+- Dashboard shell includes consultation review notifications for staff with `consultation.review.any`.
 - Finance now includes manual invoices plus gateway operations visibility: pricing rules, payment attempts, and webhook events.
 - Finance settings include the active consultation booking mode plus active payment provider readiness, without storing provider or AI secrets.
 - Role/permission model protects admin and portal surfaces.

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { buttonClasses } from "@/components/ui/button";
 import { AdminMessageThreadPanel } from "@/features/admin/messages/admin-message-thread-panel";
 import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
@@ -50,6 +51,8 @@ export default async function AdminMessageDetailPage({ params }: AdminMessageDet
       navItems={adminNavForPath("/admin/messages")}
       title={`محادثة ${thread.client.fullName}`}
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
       action={
         <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href="/admin/messages">
           رجوع للرسائل

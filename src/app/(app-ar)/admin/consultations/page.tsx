@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { DashboardShell } from "@/components/layout";
+import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { consultationStatusLabels, formatDateTime, labelFrom, modeLabels, urgencyLabels } from "@/lib/legal-format";
@@ -37,7 +39,31 @@ function badgeTone(status: string) {
   return "neutral" as const;
 }
 
-function listHref(filters: { q?: string; status?: string; assigned?: string; pageSize?: number }, page: number) {
+function consultationReviewBadges(row: ConsultationRow): ReactNode {
+  const badges: ReactNode[] = [];
+  if (row.status === "SCHEDULED" && !row.secretaryReviewedAt) {
+    badges.push(
+      <Badge key="secretary-review" tone="pending">
+        لم تراجعه السكرتيرة
+      </Badge>
+    );
+    badges.push(
+      <Badge key="new" tone="active">
+        جديد
+      </Badge>
+    );
+  }
+  if (!row.assignedLawyerId) {
+    badges.push(
+      <Badge key="unassigned" tone="danger">
+        بدون محامي
+      </Badge>
+    );
+  }
+  return badges;
+}
+
+function listHref(filters: { q?: string; status?: string; assigned?: string; review?: string; pageSize?: number }, page: number) {
   const params = new URLSearchParams();
   if (filters.q) {
     params.set("q", filters.q);
@@ -47,6 +73,9 @@ function listHref(filters: { q?: string; status?: string; assigned?: string; pag
   }
   if (filters.assigned) {
     params.set("assigned", filters.assigned);
+  }
+  if (filters.review) {
+    params.set("review", filters.review);
   }
   if (filters.pageSize) {
     params.set("pageSize", String(filters.pageSize));
@@ -89,7 +118,12 @@ const columns: Array<DataTableColumn<ConsultationRow>> = [
   {
     key: "status",
     header: "الحالة",
-    render: (row) => <Badge tone={badgeTone(row.status)}>{labelFrom(consultationStatusLabels, row.status)}</Badge>
+    render: (row) => (
+      <div className="flex flex-wrap gap-2">
+        <Badge tone={badgeTone(row.status)}>{labelFrom(consultationStatusLabels, row.status)}</Badge>
+        {consultationReviewBadges(row)}
+      </div>
+    )
   },
   {
     key: "urgency",
@@ -130,6 +164,7 @@ function ConsultationMobileCard({ row }: { row: ConsultationRow }) {
         <>
           <Badge tone={badgeTone(row.status)}>{labelFrom(consultationStatusLabels, row.status)}</Badge>
           <Badge tone={row.urgency === "URGENT" || row.urgency === "HIGH" ? "pending" : "neutral"}>{labelFrom(urgencyLabels, row.urgency)}</Badge>
+          {consultationReviewBadges(row)}
         </>
       }
       fields={[
@@ -166,6 +201,8 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
       navItems={adminNavForPath("/admin/consultations")}
       title="مراجعة الاستشارات"
       userLabel={guard.context.user.name}
+      principal={guard.context.principal}
+      notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="min-w-0 space-y-5">
         <form action="/admin/consultations" method="get">
@@ -184,6 +221,10 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
               <option value="unassigned">يحتاج تعيين محامي</option>
               <option value="assigned">تم تعيين محامي</option>
             </Select>
+            <Select className="min-w-44" defaultValue={result.filters.review ?? ""} label="مراجعة السكرتيرة" name="review">
+              <option value="">كل الطلبات</option>
+              <option value="unreviewed">تحتاج مراجعة</option>
+            </Select>
             <Button type="submit" variant="secondary">
               تطبيق
             </Button>
@@ -191,9 +232,14 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
         </form>
 
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
-          <Link className={buttonClasses({ variant: result.filters.assigned === "unassigned" ? "primary" : "secondary", size: "sm" })} href="/admin/consultations?assigned=unassigned">
-            {result.unassignedTotal} يحتاج تعيين محامي
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link className={buttonClasses({ variant: result.filters.assigned === "unassigned" ? "primary" : "secondary", size: "sm" })} href="/admin/consultations?assigned=unassigned">
+              {result.unassignedTotal} يحتاج تعيين محامي
+            </Link>
+            <Link className={buttonClasses({ variant: result.filters.review === "unreviewed" ? "primary" : "secondary", size: "sm" })} href="/admin/consultations?review=unreviewed">
+              {result.unreviewedTotal} يحتاج مراجعة السكرتيرة
+            </Link>
+          </div>
           <p>{result.total} طلب استشارة</p>
           <p>
             صفحة {result.page} من {totalPages}
