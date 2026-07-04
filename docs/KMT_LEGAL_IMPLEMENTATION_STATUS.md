@@ -1,6 +1,6 @@
 # KMT Legal Implementation Status
 
-Last updated: 2026-07-04
+Last updated: 2026-07-05
 
 This is the main tracking file for the 33 Spec Kit implementation plans.
 
@@ -57,6 +57,7 @@ Total plans: 33
 
 - Fixed the public booking assistant's AI scheduling regression: short date/time replies such as `بكره`, `بعد 3`, and `الصبح` now bypass the AI extractor, preserve locally parsed availability preferences, and reach the appointment-slot branch before any AI unavailable/low-confidence fallback.
 - Hardened the booking assistant's deterministic date parser so `بعد بكره` / `بعد بكرة` / `day after tomorrow` resolve to +2 days before `بكره` / `tomorrow`, ambiguous next-week replies ask for a specific day, and booking writes re-check duplicate contacts and slot conflicts inside a serializable transaction. Payment webhooks no longer confirm expired/released appointments or downgrade already-paid attempts.
+- Clarified the public booking assistant's request-description prompt so clients see the minimum `20` character requirement before writing their case summary.
 - Fixed public hero imagery on the first public pages by serving Stitch hero assets directly from `/stitch-assets`, lightening the hero overlay so the photography remains visible, adding explicit `/stitch-assets` cache handling, and covering the first English/Arabic hero images in Playwright.
 - Separated the homepage hero photograph from the services hero so the first public navigation pages do not repeat the same hero image.
 - Hardened public hero readability and image crops with RTL/LTR text-side scrims, text shadows, taller compact hero bands, and page-specific image focal points.

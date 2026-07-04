@@ -160,6 +160,15 @@ describe("public consultation contract", () => {
     expect(startsAtBranch).toBeLessThan(aiFallbackBranch);
   });
 
+  it("shows the minimum request-description length in booking assistant copy", () => {
+    const source = readFileSync(join(process.cwd(), "src/server/consultations/consultation-assistant-service.ts"), "utf8");
+
+    expect(source).toContain("const BOOKING_SUMMARY_MIN_LENGTH = 20");
+    expect(source).toContain("${BOOKING_SUMMARY_MIN_LENGTH} حرفًا على الأقل");
+    expect(source).toContain("at least ${BOOKING_SUMMARY_MIN_LENGTH} characters");
+    expect(source).toContain("body.summary.trim().length < BOOKING_SUMMARY_MIN_LENGTH");
+  });
+
   it("keeps short availability replies out of the AI extractor", () => {
     expect(shouldBypassBookingAiForMessage("بكره")).toBe(true);
     expect(shouldBypassBookingAiForMessage("بعد بكره")).toBe(true);

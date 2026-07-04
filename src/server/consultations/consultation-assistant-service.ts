@@ -128,6 +128,7 @@ type BookingMergeResult = {
 const BOOKING_AI_CONFIDENCE_THRESHOLD = 0.55;
 const BOOKING_AI_FIELD_CONFIDENCE_THRESHOLD = 0.5;
 const DEFAULT_ASSISTANT_SERVICE_CATEGORY = "legal-consultation";
+const BOOKING_SUMMARY_MIN_LENGTH = 20;
 
 export async function handlePublicConsultationAssistant(input: { body: unknown; request: Request; requestId: string }) {
   const body = parseWithSchema(publicConsultationAssistantSchema, input.body, "Consultation assistant payload is invalid.");
@@ -1178,17 +1179,17 @@ function bookingQuestionMessage(locale: "ar" | "en", field?: string) {
       fullName: "تمام. اكتب اسمك الكامل كما تحب أن يظهر في طلب الاستشارة.",
       phone: "ما رقم الهاتف المناسب للتواصل معك؟",
       serviceCategory: "ما الخدمة الأقرب لطلبك؟ يمكنك كتابة استشارة قانونية، شركات وأعمال، عقارات، أو تحصيل وتسويات.",
-      summary: "اكتب ملخصًا قصيرًا لما تحتاجه من المكتب، بدون إرسال مستندات حساسة هنا.",
+      summary: `اكتب وصفًا قصيرًا لما تحتاجه من المكتب، ${BOOKING_SUMMARY_MIN_LENGTH} حرفًا على الأقل، بدون إرسال مستندات حساسة هنا.`,
       startsAt: "اختر موعدًا مناسبًا من المواعيد المتاحة داخل المحادثة.",
-      fallback: "أستطيع تنظيم حجز الاستشارة فقط. اكتب الاسم والهاتف وملخصًا قصيرًا للمشكلة والموعد المناسب إن وجد."
+      fallback: `أستطيع تنظيم حجز الاستشارة فقط. اكتب الاسم والهاتف ووصفًا للمشكلة لا يقل عن ${BOOKING_SUMMARY_MIN_LENGTH} حرفًا والموعد المناسب إن وجد.`
     },
     en: {
       fullName: "Great. Please write your full name for the consultation request.",
       phone: "What phone number should the team use to contact you?",
       serviceCategory: "Which service is closest to your request? You can write legal consultation, corporate and business, real estate, or claims and collections.",
-      summary: "Please write a short summary of what you need from the office. Do not send sensitive documents here.",
+      summary: `Please write a short description of what you need from the office, at least ${BOOKING_SUMMARY_MIN_LENGTH} characters. Do not send sensitive documents here.`,
       startsAt: "Choose a suitable time from the available slots inside the chat.",
-      fallback: "I can organize consultation booking only. Send your name, phone, a short request summary, and your preferred time if available."
+      fallback: `I can organize consultation booking only. Send your name, phone, a request description of at least ${BOOKING_SUMMARY_MIN_LENGTH} characters, and your preferred time if available.`
     }
   };
 
@@ -1213,8 +1214,8 @@ function bookingFollowUpMessage(locale: "ar" | "en", field: string | undefined, 
 
 function bookingAiUnavailableMessage(locale: "ar" | "en") {
   return locale === "ar"
-    ? "تعذر فهم الرسالة تلقائيًا الآن. اكتب البيانات في رسالة واحدة: الاسم، رقم الهاتف، ملخص قصير للمشكلة، والموعد المناسب إن وجد."
-    : "Automatic message understanding is unavailable right now. Send the details in one message: name, phone, a short request summary, and preferred time if available.";
+    ? `تعذر فهم الرسالة تلقائيًا الآن. اكتب البيانات في رسالة واحدة: الاسم، رقم الهاتف، وصف المشكلة ${BOOKING_SUMMARY_MIN_LENGTH} حرفًا على الأقل، والموعد المناسب إن وجد.`
+    : `Automatic message understanding is unavailable right now. Send the details in one message: name, phone, a request description of at least ${BOOKING_SUMMARY_MIN_LENGTH} characters, and preferred time if available.`;
 }
 
 function shouldClarifyBookingField(field: string | undefined, latestMessage: string) {
@@ -1855,7 +1856,7 @@ function requiredBookingFields(body: PublicConsultationAssistantInput) {
   const missing: string[] = [];
   if (!body.fullName || isInvalidBookingFullName(body.fullName)) missing.push("fullName");
   if (!body.phone || !isValidBookingPhone(body.phone)) missing.push("phone");
-  if (!body.summary || body.summary.trim().length < 20) missing.push("summary");
+  if (!body.summary || body.summary.trim().length < BOOKING_SUMMARY_MIN_LENGTH) missing.push("summary");
   if (!body.startsAt) missing.push("startsAt");
   return missing;
 }
