@@ -31,6 +31,7 @@ export { mapProviderPaymentStatus } from "./payment-provider";
 
 const paymentAttemptStatusSchema = z.enum(["CREATED", "PENDING", "PAID", "FAILED", "EXPIRED", "REFUNDED", "DISPUTED", "CANCELLED"]);
 const webhookProcessingStatusSchema = z.enum(["PENDING", "PROCESSED", "FAILED", "IGNORED"]);
+const confirmablePaidAttemptStatuses = ["CREATED", "PENDING"] as const;
 
 export const adminPaymentAttemptListQuerySchema = z.object({
   status: paymentAttemptStatusSchema.optional().or(z.literal("")),
@@ -552,10 +553,7 @@ async function applyWebhookPaymentState(input: {
     } else if (input.payload.status === "FAILED" || input.payload.status === "EXPIRED" || input.payload.status === "CANCELLED") {
       await releaseFailedAttempt({ tx, attempt, status: input.payload.status, failureCode: input.payload.rawStatus || input.payload.status });
     } else {
-      await tx.paymentAttempt.update({
-        where: { id: attempt.id },
-        data: { status: input.payload.status }
-      });
+      await updateOpenAttemptStatus({ tx, attempt, status: input.payload.status });
     }
 
     return tx.paymentWebhookEvent.update({
@@ -651,6 +649,16 @@ async function confirmPaidAttempt(input: {
     return;
   }
 
+  const blocker = paidAttemptWebhookConfirmationBlocker({
+    attemptStatus: input.attempt.status,
+    expiresAt: input.attempt.expiresAt,
+    appointmentStatus: input.attempt.appointment.status,
+    consultationStatus: input.attempt.consultationRequest.status
+  });
+  if (blocker) {
+    throw new ApiError(409, "CONFLICT", blocker);
+  }
+
   const now = new Date();
   const invoiceNumber = gatewayInvoiceNumber(input.attempt.id, now);
   const payment = await input.tx.payment.create({
@@ -729,6 +737,10 @@ async function releaseFailedAttempt(input: {
   status: "FAILED" | "EXPIRED" | "CANCELLED";
   failureCode: string;
 }) {
+  if (input.attempt.payment || input.attempt.status === "PAID") {
+    return;
+  }
+
   await input.tx.paymentAttempt.update({
     where: { id: input.attempt.id },
     data: { status: input.status, failureCode: input.failureCode }
@@ -750,6 +762,44 @@ async function releaseFailedAttempt(input: {
       data: { status: "REVIEWING" }
     });
   }
+}
+
+async function updateOpenAttemptStatus(input: {
+  tx: PaymentClient;
+  attempt: Prisma.PaymentAttemptGetPayload<{ include: { appointment: true; consultationRequest: true; payment: true } }>;
+  status: ReturnType<typeof mapProviderPaymentStatus>;
+}) {
+  if (input.attempt.payment || input.attempt.status === "PAID") {
+    return;
+  }
+  await input.tx.paymentAttempt.update({
+    where: { id: input.attempt.id },
+    data: { status: input.status }
+  });
+}
+
+export function paidAttemptWebhookConfirmationBlocker(
+  input: {
+    attemptStatus: string;
+    expiresAt: Date;
+    appointmentStatus: string;
+    consultationStatus: string;
+  },
+  now = new Date()
+) {
+  if (!confirmablePaidAttemptStatuses.includes(input.attemptStatus as (typeof confirmablePaidAttemptStatuses)[number])) {
+    return "Payment attempt can no longer confirm this appointment.";
+  }
+  if (input.expiresAt <= now) {
+    return "Payment attempt expired before trusted payment confirmation.";
+  }
+  if (input.appointmentStatus !== "RESERVED") {
+    return "Payment attempt appointment is no longer reserved.";
+  }
+  if (input.consultationStatus !== "PAYMENT_PENDING") {
+    return "Payment attempt consultation is no longer pending payment.";
+  }
+  return "";
 }
 
 function paymentTransactionStatus(status: ReturnType<typeof mapProviderPaymentStatus>) {

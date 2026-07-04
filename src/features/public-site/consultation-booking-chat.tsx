@@ -784,7 +784,11 @@ function inquiryFromMessage(value: string) {
 }
 
 function looksLikeInquiry(value: string) {
-  return /reference|inquiry|check|cons-|مرجع|استعلام|رقم/.test(normalizeText(value));
+  const text = normalizeText(value);
+  if (/cons-[0-9a-f]{8}/i.test(value)) {
+    return true;
+  }
+  return /booking reference|check reference|reference number|previous reference|cons-|مرجع|استعلام|رقم الطلب|رقم الحجز/.test(text);
 }
 
 function looksLikeLegalAdvice(value: string) {

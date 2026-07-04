@@ -1,4 +1,6 @@
 import { createHmac } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { Prisma } from "@prisma/client";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -11,7 +13,7 @@ import {
 import { createHostedCheckout, verifyWebhookSignature } from "@/server/payments/payment-provider";
 import { createPaymentReceiptToken, publicPaymentReceiptUrl, verifyPaymentReceiptToken } from "@/server/payments/payment-receipt-service";
 import { adminPaymentGatewaySettingsSchema, activeProviderFromValue } from "@/server/payments/payment-settings-service";
-import { mapProviderPaymentStatus } from "@/server/payments/payment-service";
+import { mapProviderPaymentStatus, paidAttemptWebhookConfirmationBlocker } from "@/server/payments/payment-service";
 import { adminConsultationPricingRuleWriteSchema, consultationPriceDto } from "@/server/payments/pricing-service";
 import { consultationBookingFlags, consultationBookingModeFromValue } from "@/server/consultations/consultation-booking-settings";
 
@@ -245,6 +247,65 @@ describe("payment gateway contract", () => {
     expect(mapProviderPaymentStatus("void")).toBe("CANCELLED");
     expect(mapProviderPaymentStatus("expired")).toBe("EXPIRED");
     expect(mapProviderPaymentStatus("declined")).toBe("FAILED");
+  });
+
+  it("blocks late paid webhooks from confirming expired or released appointments", () => {
+    const now = new Date("2026-07-04T12:00:00.000Z");
+    const futureExpiry = new Date("2026-07-04T12:10:00.000Z");
+    const pastExpiry = new Date("2026-07-04T11:59:00.000Z");
+
+    expect(
+      paidAttemptWebhookConfirmationBlocker(
+        {
+          attemptStatus: "PENDING",
+          expiresAt: futureExpiry,
+          appointmentStatus: "RESERVED",
+          consultationStatus: "PAYMENT_PENDING"
+        },
+        now
+      )
+    ).toBe("");
+    expect(
+      paidAttemptWebhookConfirmationBlocker(
+        {
+          attemptStatus: "EXPIRED",
+          expiresAt: pastExpiry,
+          appointmentStatus: "CANCELLED",
+          consultationStatus: "REVIEWING"
+        },
+        now
+      )
+    ).toContain("can no longer confirm");
+    expect(
+      paidAttemptWebhookConfirmationBlocker(
+        {
+          attemptStatus: "PENDING",
+          expiresAt: pastExpiry,
+          appointmentStatus: "RESERVED",
+          consultationStatus: "PAYMENT_PENDING"
+        },
+        now
+      )
+    ).toContain("expired");
+    expect(
+      paidAttemptWebhookConfirmationBlocker(
+        {
+          attemptStatus: "PENDING",
+          expiresAt: futureExpiry,
+          appointmentStatus: "CANCELLED",
+          consultationStatus: "PAYMENT_PENDING"
+        },
+        now
+      )
+    ).toContain("no longer reserved");
+  });
+
+  it("keeps already-paid attempts from being downgraded by later non-paid webhooks", () => {
+    const source = readFileSync(join(process.cwd(), "src/server/payments/payment-service.ts"), "utf8");
+
+    expect(source).toContain("async function updateOpenAttemptStatus");
+    expect(source).toContain('input.attempt.payment || input.attempt.status === "PAID"');
+    expect(source).toContain("await updateOpenAttemptStatus");
   });
 
   it("validates admin consultation pricing rules and price snapshots", () => {

@@ -108,4 +108,41 @@ test.describe("consultation booking chat", () => {
     await expect(review).toBeVisible();
     await expect(review).not.toContainText("claims-collections");
   });
+
+  test("keeps contract-check wording inside booking instead of reference inquiry", async ({ page }) => {
+    const payloads: unknown[] = [];
+    await page.route("**/api/public/consultations/assistant", async (route) => {
+      const payload = route.request().postDataJSON();
+      payloads.push(payload);
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          data: {
+            message: "اكتب الاسم ورقم الهاتف والموعد المناسب.",
+            draft: {
+              summary: payload.message,
+              preferredMode: "ONLINE"
+            },
+            missingFields: ["fullName", "phone", "startsAt"]
+          }
+        })
+      });
+    });
+
+    await page.goto("/ar/book-consultation", { waitUntil: "domcontentloaded" });
+    const chat = page.getByTestId("booking-stepper");
+    await expect(chat).toHaveAttribute("data-hydrated", "true");
+    await page.getByTestId("booking-language-ar").click();
+    await chat.locator('input[name="chatMessage"]').fill("عايز contract check");
+    await chat.locator('button[type="submit"]').last().click();
+
+    await expect.poll(() => payloads.length).toBe(1);
+    expect(payloads[0]).toMatchObject({
+      message: "عايز contract check"
+    });
+    expect(payloads[0]).not.toMatchObject({
+      intent: "appointment_inquiry"
+    });
+  });
 });

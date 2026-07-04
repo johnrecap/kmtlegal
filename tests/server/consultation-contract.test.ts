@@ -10,6 +10,7 @@ import {
   inferPublicConsultationServiceCategory,
   isCrossClientDataRequest,
   isLegalAdviceRequest,
+  publicBookingAvailabilityPreferenceFromMessage,
   publicBookingSlotConfirmationError,
   publicConsultationAssistantSchema,
   publicConsultationCheckoutSchema,
@@ -161,9 +162,101 @@ describe("public consultation contract", () => {
 
   it("keeps short availability replies out of the AI extractor", () => {
     expect(shouldBypassBookingAiForMessage("بكره")).toBe(true);
+    expect(shouldBypassBookingAiForMessage("بعد بكره")).toBe(true);
+    expect(shouldBypassBookingAiForMessage("الأسبوع الجاي")).toBe(true);
     expect(shouldBypassBookingAiForMessage("بعد 3")).toBe(true);
     expect(shouldBypassBookingAiForMessage("الصبح")).toBe(true);
     expect(shouldBypassBookingAiForMessage("I need help with a cheque dispute")).toBe(false);
+  });
+
+  it("parses relative appointment dates before AI without confusing day-after-tomorrow with tomorrow", () => {
+    const now = new Date("2026-07-04T09:00:00+03:00");
+
+    expect(publicBookingAvailabilityPreferenceFromMessage("بكره", undefined, now)).toMatchObject({
+      date: "2026-07-05",
+      label: "tomorrow"
+    });
+    expect(publicBookingAvailabilityPreferenceFromMessage("بعد بكره", undefined, now)).toMatchObject({
+      date: "2026-07-06",
+      label: "day_after_tomorrow"
+    });
+    expect(publicBookingAvailabilityPreferenceFromMessage("بعد بكرة الصبح", undefined, now)).toMatchObject({
+      date: "2026-07-06",
+      label: "day_after_tomorrow",
+      timeWindow: "MORNING",
+      fromTime: "09:00",
+      toTime: "12:00"
+    });
+    expect(publicBookingAvailabilityPreferenceFromMessage("بعد بكره بعد الضهر", undefined, now)).toMatchObject({
+      date: "2026-07-06",
+      label: "day_after_tomorrow",
+      timeWindow: "AFTERNOON",
+      fromTime: "12:00",
+      toTime: "17:00"
+    });
+    expect(publicBookingAvailabilityPreferenceFromMessage("after tomorrow morning", undefined, now)).toMatchObject({
+      date: "2026-07-06",
+      label: "day_after_tomorrow",
+      timeWindow: "MORNING"
+    });
+    expect(publicBookingAvailabilityPreferenceFromMessage("بعد 3", undefined, now)).toMatchObject({
+      date: "",
+      fromTime: "15:00",
+      toTime: "",
+      timeWindow: "ANYTIME"
+    });
+    expect(publicBookingAvailabilityPreferenceFromMessage("بعد ٣", undefined, now)).toMatchObject({
+      date: "",
+      fromTime: "15:00",
+      toTime: "",
+      timeWindow: "ANYTIME"
+    });
+    expect(publicBookingAvailabilityPreferenceFromMessage("الأسبوع الجاي", undefined, now)).toMatchObject({
+      date: "",
+      fromTime: "",
+      toTime: "",
+      timeWindow: ""
+    });
+  });
+
+  it("asks a specific clarification for ambiguous next-week availability instead of guessing a date", async () => {
+    const result = await handlePublicConsultationAssistant({
+      body: {
+        locale: "ar",
+        message: "الأسبوع الجاي",
+        draft: {
+          fullName: "محمود محمد",
+          phone: "01010123415",
+          summary: "عايز مراجعة من المكتب بخصوص مشكلة قانونية.",
+          preferredMode: "ONLINE"
+        }
+      },
+      request: new Request("https://example.test/api/public/consultations/assistant", {
+        headers: { "x-forwarded-for": "203.0.113.25" }
+      }),
+      requestId: "test-ambiguous-next-week"
+    });
+
+    const bookingResult = result as unknown as {
+      message: string;
+      needsAvailabilityPreference: boolean;
+      draft: { availabilityPreference: { date: string } };
+    };
+    expect(bookingResult.message).toContain("أي يوم في الأسبوع الجاي");
+    expect(bookingResult.needsAvailabilityPreference).toBe(true);
+    expect(bookingResult.draft.availabilityPreference.date).toBe("");
+  });
+
+  it("keeps booking reservation writes guarded by a serializable transaction and pending duplicate checks", () => {
+    const source = readFileSync(join(process.cwd(), "src/server/consultations/consultation-assistant-service.ts"), "utf8");
+
+    expect(source).toContain("runConsultationBookingTransaction");
+    expect(source).toContain("Prisma.TransactionIsolationLevel.Serializable");
+    expect(source).toContain('status: "PAYMENT_PENDING"');
+    expect(source).toContain("paymentAttempts: {");
+    expect(source).toContain('status: { in: ["CREATED", "PENDING"] }');
+    expect(source).toContain("expiresAt: { gt: now }");
+    expect(source).toContain("await assertNoSlotConflict(startsAt, endsAt, tx)");
   });
 
   it("extracts natural-language booking intake with structured AI output", async () => {

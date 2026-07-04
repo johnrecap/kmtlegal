@@ -230,7 +230,9 @@ async function handlePublicBookingConversation(input: {
           selectedSlot,
           needsAvailabilityPreference: true,
           slotWindow: availabilityWindowDto(draft.availabilityPreference),
-          message: availabilityQuestionMessage(input.body.locale)
+          message: isAmbiguousAvailabilityMessage(input.body.message)
+            ? ambiguousAvailabilityQuestionMessage(input.body.locale)
+            : availabilityQuestionMessage(input.body.locale)
         });
       }
 
@@ -428,6 +430,14 @@ function shouldBypassBookingAi(body: PublicConsultationAssistantInput) {
 
 export function shouldBypassBookingAiForMessage(message: string) {
   return isAvailabilityOnlyMessage(message);
+}
+
+export function publicBookingAvailabilityPreferenceFromMessage(
+  message: string,
+  current?: Partial<AvailabilityPreference>,
+  now = new Date()
+) {
+  return availabilityPreferenceFromMessage(message, current, now);
 }
 
 function baseBookingDraft(body: PublicConsultationAssistantInput) {
@@ -923,7 +933,8 @@ function isAvailabilityOnlyMessage(value: string) {
   }
   const withoutDigits = toAsciiDigits(text).replace(/\d/g, "").trim();
   const hasPreference = hasAvailabilityPreference(availabilityPreferenceFromMessage(text));
-  return hasPreference && withoutDigits.split(/\s+/).filter(Boolean).length <= 5;
+  const hasAmbiguousAvailability = isAmbiguousAvailabilityMessage(text);
+  return (hasPreference || hasAmbiguousAvailability) && withoutDigits.split(/\s+/).filter(Boolean).length <= 5;
 }
 
 function normalizeAvailabilityPreference(value?: Partial<AvailabilityPreference>): AvailabilityPreference {
@@ -940,10 +951,10 @@ function hasAvailabilityPreference(value?: Partial<AvailabilityPreference>) {
   return Boolean(value?.date || value?.fromTime || value?.toTime || value?.timeWindow);
 }
 
-function availabilityPreferenceFromMessage(message: string, current?: Partial<AvailabilityPreference>): AvailabilityPreference {
+function availabilityPreferenceFromMessage(message: string, current?: Partial<AvailabilityPreference>, now = new Date()): AvailabilityPreference {
   const text = normalizedAssistantText(message);
   const next = normalizeAvailabilityPreference(current);
-  const date = availabilityDateFromMessage(text);
+  const date = availabilityDateFromMessage(text, now);
   const timeWindow = availabilityWindowFromMessage(text);
   const explicitTime = availabilityTimeFromMessage(text);
 
@@ -965,9 +976,12 @@ function availabilityPreferenceFromMessage(message: string, current?: Partial<Av
   return next;
 }
 
-function availabilityDateFromMessage(text: string) {
-  const today = cairoDateString(new Date());
+function availabilityDateFromMessage(text: string, now = new Date()) {
+  const today = cairoDateString(now);
   const digitText = toAsciiDigits(text);
+  if (containsAny(text, ["day after tomorrow", "after tomorrow", "بعد بكره", "بعد بكرة", "بعد غد", "بعد غدا", "بعد غدًا"])) {
+    return { date: addCairoDays(today, 2), label: "day_after_tomorrow" };
+  }
   if (containsAny(text, ["today", "النهارده", "اليوم", "النهاردة"])) {
     return { date: today, label: "today" };
   }
@@ -993,6 +1007,14 @@ function availabilityDateFromMessage(text: string) {
   }
 
   return { date: "", label: "" };
+}
+
+function isAmbiguousAvailabilityMessage(value: string) {
+  const text = normalizedAssistantText(value);
+  if (weekdayFromMessage(text) !== null) {
+    return false;
+  }
+  return containsAny(text, ["next week", "coming week", "الاسبوع الجاي", "الأسبوع الجاي", "الاسبوع القادم", "الأسبوع القادم"]);
 }
 
 function numericDateFromMessage(text: string, today: string) {
@@ -1217,8 +1239,12 @@ function unclearBookingFieldMessage(locale: "ar" | "en", field: string | undefin
 
 function availabilityQuestionMessage(locale: "ar" | "en") {
   return locale === "ar"
-    ? "يناسبك أنهي يوم للاستشارة؟ اكتب النهارده، بكره، يوم معين، أو فترة مثل بعد 3 أو الصبح."
-    : "Which day works for the consultation: today, tomorrow, a specific day, or a time window like after 3 or morning?";
+    ? "يناسبك أنهي يوم للاستشارة؟ اكتب النهارده، بكره، بعد بكره، يوم معين، أو فترة مثل بعد 3 أو الصبح."
+    : "Which day works for the consultation: today, tomorrow, the day after tomorrow, a specific day, or a time window like after 3 or morning?";
+}
+
+function ambiguousAvailabilityQuestionMessage(locale: "ar" | "en") {
+  return locale === "ar" ? "تقصد أي يوم في الأسبوع الجاي؟ اكتب اسم اليوم أو التاريخ المناسب." : "Which day next week do you mean? Write the weekday or date that works for you.";
 }
 
 function slotSelectionMessage(locale: "ar" | "en", preference?: AvailabilityPreference) {
@@ -1568,7 +1594,9 @@ export async function createPublicConsultationCheckout(input: {
   });
 
   const phoneCanonical = canonicalPhone(checkoutBody.phone!);
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await runConsultationBookingTransaction(async (tx) => {
+    await assertNoBookingDuplicate(checkoutBody, tx);
+    await assertNoSlotConflict(startsAt, endsAt, tx);
     const client = await upsertAssistantClient(tx, checkoutBody, phoneCanonical);
     const consultation = await tx.consultationRequest.create({
       data: {
@@ -1694,7 +1722,9 @@ async function createFreeConsultationBooking(input: {
   await assertNoSlotConflict(startsAt, endsAt);
 
   const phoneCanonical = canonicalPhone(body.phone!);
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await runConsultationBookingTransaction(async (tx) => {
+    await assertNoBookingDuplicate(body, tx);
+    await assertNoSlotConflict(startsAt, endsAt, tx);
     const client = await upsertAssistantClient(tx, body, phoneCanonical);
     const consultation = await tx.consultationRequest.create({
       data: {
@@ -1917,8 +1947,8 @@ function duplicateBookingConversationMessage(locale: "ar" | "en") {
     : "A scheduled consultation already exists for this phone in the current period. Use Check reference if you have the reference, or wait for the office team review.";
 }
 
-async function assertNoSlotConflict(startsAt: Date, endsAt: Date) {
-  const conflict = await prisma.appointment.findFirst({
+async function assertNoSlotConflict(startsAt: Date, endsAt: Date, client: Pick<typeof prisma, "appointment"> = prisma) {
+  const conflict = await client.appointment.findFirst({
     where: {
       type: "CONSULTATION",
       status: { in: ["RESERVED", "SCHEDULED", "RESCHEDULED"] },
@@ -1933,18 +1963,34 @@ async function assertNoSlotConflict(startsAt: Date, endsAt: Date) {
   }
 }
 
-async function assertNoBookingDuplicate(body: PublicConsultationAssistantInput) {
+async function assertNoBookingDuplicate(body: PublicConsultationAssistantInput, client: Pick<typeof prisma, "consultationRequest"> = prisma) {
   const phoneCanonical = canonicalPhone(body.phone || "");
   const contactFilters: Prisma.ConsultationRequestWhereInput[] = [phoneCanonical ? { phoneCanonical } : { phone: body.phone! }];
   if (body.email) {
     contactFilters.push({ email: body.email });
   }
 
-  const recentDuplicate = await prisma.consultationRequest.findFirst({
+  const now = new Date();
+  const recentDuplicate = await client.consultationRequest.findFirst({
     where: {
-      status: "SCHEDULED",
-      createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      OR: contactFilters
+      createdAt: { gte: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
+      AND: [
+        { OR: contactFilters },
+        {
+          OR: [
+            { status: "SCHEDULED" },
+            {
+              status: "PAYMENT_PENDING",
+              paymentAttempts: {
+                some: {
+                  status: { in: ["CREATED", "PENDING"] },
+                  expiresAt: { gt: now }
+                }
+              }
+            }
+          ]
+        }
+      ]
     },
     select: { id: true }
   });
@@ -1952,6 +1998,21 @@ async function assertNoBookingDuplicate(body: PublicConsultationAssistantInput) 
   if (recentDuplicate) {
     throw new ApiError(409, "CONFLICT", "A scheduled consultation already exists for this contact and service area.");
   }
+}
+
+async function runConsultationBookingTransaction<T>(operation: (tx: Prisma.TransactionClient) => Promise<T>) {
+  try {
+    return await prisma.$transaction(operation, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  } catch (error) {
+    if (isPrismaTransactionConflict(error)) {
+      throw new ApiError(409, "CONFLICT", "This consultation slot is already booked.");
+    }
+    throw error;
+  }
+}
+
+function isPrismaTransactionConflict(error: unknown) {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034";
 }
 
 async function upsertAssistantClient(tx: Prisma.TransactionClient, body: PublicConsultationAssistantInput, phoneCanonical: string | null) {
