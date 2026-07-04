@@ -4,7 +4,12 @@ import { ApiError } from "@/server/http/errors";
 import { AI_REVIEW_DISCLAIMER } from "@/server/ai/copy";
 import { getAIProviderConfig } from "@/server/ai/config";
 import { generateStructured } from "@/server/ai/gateway";
-import { consultationAssistantOutputSchema, consultationClassificationOutputSchema, intakeSummaryOutputSchema } from "@/server/ai/schemas";
+import {
+  bookingIntakeExtractionOutputSchema,
+  consultationAssistantOutputSchema,
+  consultationClassificationOutputSchema,
+  intakeSummaryOutputSchema
+} from "@/server/ai/schemas";
 import { createOpenAICompatibleProvider } from "@/server/ai/providers/openai-compatible";
 
 describe("AI Provider Gateway", () => {
@@ -69,6 +74,24 @@ describe("AI Provider Gateway", () => {
 
     expect(result.task).toBe("consultation_assistant");
     expect(["answer_general", "collect_booking_fields", "book_consultation_appointment", "appointment_inquiry", "handoff_to_human"]).toContain(result.output.action);
+  });
+
+  it("supports structured booking intake extraction through the gateway", async () => {
+    process.env.AI_PROVIDER = "mock";
+
+    const result = await generateStructured({
+      task: "booking_intake_extraction",
+      locale: "ar",
+      input: { userMessage: "عايز أحجز استشارة عن مشكلة قانونية محتاجة مراجعة من المكتب." },
+      schema: bookingIntakeExtractionOutputSchema,
+      requestId: "req_booking_intake",
+      recordRun: false
+    });
+
+    expect(result.task).toBe("booking_intake_extraction");
+    expect(result.output.intent).toBe("booking");
+    expect(result.output.legalAdviceRequested).toBe(false);
+    expect(result.output.fields.summary).toContain("استشارة");
   });
 
 

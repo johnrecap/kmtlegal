@@ -22,7 +22,7 @@ Last updated: 2026-07-04
 ## AI
 
 - Provider-neutral AI gateway with mock/local/OpenAI-compatible providers.
-- Public booking AI assists with intake and classification only.
+- Public booking AI uses schema-validated structured intake extraction to understand multilingual free text, then the server validates and asks for any missing booking fields.
 - Client assistant reads only client-owned data and refuses legal advice.
 - AI does not price, collect card data, confirm payment, or override webhook truth.
 

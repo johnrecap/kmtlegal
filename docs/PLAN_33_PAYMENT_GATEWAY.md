@@ -47,7 +47,7 @@ The public consultation entry point is controlled by a non-secret `SystemSetting
 - Payment success: verified/idempotent webhook only.
 - Receipt display: signed receipt token plus a paid `PaymentAttempt` and paid `Payment`.
 - Appointment confirmation: `PaymentWebhookService` after paid provider state.
-- AI: intake helper only; no price/payment/confirmation authority.
+- AI: structured intake extraction helper only; no price/payment/appointment-slot/payment-status/confirmation authority.
 
 ## Booking Mode Guards
 

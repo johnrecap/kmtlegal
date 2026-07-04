@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
-import { consultationAssistantOutputSchema } from "@/server/ai/schemas";
+import { describe, expect, it, vi } from "vitest";
+import { bookingIntakeExtractionOutputSchema, consultationAssistantOutputSchema } from "@/server/ai/schemas";
 import { adminConsultationListQuerySchema } from "@/server/admin/consultation-review-service";
 import {
   clientOrganizerIntentFromMessage,
@@ -136,16 +136,114 @@ describe("public consultation contract", () => {
     expect(inferPublicConsultationServiceCategory("استشارات جنائية")).toBe("legal-consultation");
   });
 
-  it("keeps public booking confirmation and reference inquiry independent from AI provider availability", () => {
+  it("uses AI intake extraction without letting AI control payment confirmation", () => {
     const source = readFileSync(join(process.cwd(), "src/server/consultations/consultation-assistant-service.ts"), "utf8");
 
-    expect(source).not.toContain("generateStructured");
     expect(source).not.toContain("runAssistantAI");
+    expect(source).toContain("bookingIntakeExtractionOutputSchema");
+    expect(source).toContain("generateStructured");
+    expect(source).toContain("recordRun: false");
     expect(source).toContain("deterministicBookingSummary");
     expect(source).toContain("deterministic_booking_rules");
     expect(source).toContain("publicAppointmentInquiry({ body, requestId: input.requestId })");
     expect(source).toContain("prepareConsultationPaymentReview({ body: bookingBody, requestId: input.requestId })");
     expect(source).toContain("createPublicConsultationCheckout");
+  });
+
+  it("extracts natural-language booking intake with structured AI output", async () => {
+    await withBookingExtractionMock(
+      {
+        intent: "booking",
+        fields: {
+          serviceCategory: "legal-consultation",
+          summary: "عايزة أرفع قضية على شخص بسبب مشكلة قانونية محتاجة مراجعة من المكتب."
+        },
+        fieldConfidence: {
+          serviceCategory: 0.94,
+          summary: 0.96
+        },
+        confidence: 0.94,
+        needsClarification: false,
+        clarifyingQuestion: null,
+        legalAdviceRequested: false,
+        reviewNote: "Requires office review."
+      },
+      async () => {
+        const result = await handlePublicConsultationAssistant({
+          body: { locale: "ar", message: "عايزة أرفع قضية على شخص" },
+          request: new Request("https://example.test/api/public/consultations/assistant", {
+            headers: { "x-forwarded-for": "203.0.113.21" }
+          }),
+          requestId: "test-ai-booking-intake"
+        });
+
+        const bookingResult = result as unknown as {
+          draft: { serviceCategory: string; summary: string; fullName: string };
+          missingFields: string[];
+        };
+        expect(bookingResult.draft.serviceCategory).toBe("legal-consultation");
+        expect(bookingResult.draft.summary).toContain("أرفع قضية");
+        expect(bookingResult.draft.fullName).toBe("");
+        expect(bookingResult.missingFields).toContain("fullName");
+        expect(bookingResult.missingFields).not.toContain("summary");
+      }
+    );
+  });
+
+  it("does not trust low-confidence AI extraction", async () => {
+    await withBookingExtractionMock(
+      {
+        intent: "booking",
+        fields: {
+          serviceCategory: "claims-collections",
+          summary: "موضوع غير واضح ويحتاج سؤال متابعة من العميل."
+        },
+        fieldConfidence: {
+          serviceCategory: 0.3,
+          summary: 0.35
+        },
+        confidence: 0.35,
+        needsClarification: true,
+        clarifyingQuestion: "اكتب ملخصًا أوضح للطلب حتى يراجعه المكتب.",
+        legalAdviceRequested: false,
+        reviewNote: "Low confidence; ask for clarification."
+      },
+      async () => {
+        const result = await handlePublicConsultationAssistant({
+          body: { locale: "ar", message: "موضوع مش واضح" },
+          request: new Request("https://example.test/api/public/consultations/assistant", {
+            headers: { "x-forwarded-for": "203.0.113.22" }
+          }),
+          requestId: "test-ai-low-confidence"
+        });
+
+        const bookingResult = result as unknown as {
+          message: string;
+          draft: { serviceCategory: string; summary: string };
+          missingFields: string[];
+        };
+        expect(bookingResult.draft.serviceCategory).toBe("");
+        expect(bookingResult.draft.summary).toBe("");
+        expect(bookingResult.message).toContain("ملخصًا أوضح");
+        expect(bookingResult.missingFields).toEqual(expect.arrayContaining(["serviceCategory", "summary"]));
+      }
+    );
+  });
+
+  it("falls back safely when booking AI extraction is unavailable", async () => {
+    await withBookingExtractionFailure(async () => {
+      const result = await handlePublicConsultationAssistant({
+        body: { locale: "ar", message: "طلب استشارة في موضوع محتاج مراجعة من المكتب" },
+        request: new Request("https://example.test/api/public/consultations/assistant", {
+          headers: { "x-forwarded-for": "203.0.113.23" }
+        }),
+        requestId: "test-ai-unavailable"
+      });
+
+      const bookingResult = result as unknown as { message: string; missingFields: string[] };
+      expect(bookingResult.message).toContain("تعذر فهم الرسالة تلقائيًا");
+      expect(bookingResult.missingFields.length).toBeGreaterThan(0);
+    });
   });
 
   it("guards paid chat and manual review consultation entry points by booking mode", () => {
@@ -406,3 +504,77 @@ describe("public consultation contract", () => {
     expect(filters.assigned).toBe("unassigned");
   });
 });
+
+async function withBookingExtractionMock(output: unknown, callback: () => Promise<void>) {
+  const parsed = bookingIntakeExtractionOutputSchema.parse(output);
+  const originalFetch = global.fetch;
+  const originalProvider = process.env.AI_PROVIDER;
+  const originalBaseUrl = process.env.AI_BASE_URL;
+  const originalApiKey = process.env.AI_API_KEY;
+  const originalModel = process.env.AI_MODEL;
+
+  process.env.AI_PROVIDER = "openai-compatible";
+  process.env.AI_BASE_URL = "https://model.test/v1";
+  process.env.AI_API_KEY = "test-key";
+  process.env.AI_MODEL = "provider/model";
+  global.fetch = vi.fn(async () => {
+    return new Response(
+      JSON.stringify({
+        model: "provider/model",
+        choices: [{ message: { content: JSON.stringify(parsed) } }],
+        usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 }
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+  }) as typeof fetch;
+
+  try {
+    await callback();
+  } finally {
+    global.fetch = originalFetch;
+    restoreAiEnv({ originalProvider, originalBaseUrl, originalApiKey, originalModel });
+  }
+}
+
+async function withBookingExtractionFailure(callback: () => Promise<void>) {
+  const originalFetch = global.fetch;
+  const originalProvider = process.env.AI_PROVIDER;
+  const originalBaseUrl = process.env.AI_BASE_URL;
+  const originalApiKey = process.env.AI_API_KEY;
+  const originalModel = process.env.AI_MODEL;
+
+  process.env.AI_PROVIDER = "openai-compatible";
+  process.env.AI_BASE_URL = "https://model.test/v1";
+  process.env.AI_API_KEY = "test-key";
+  process.env.AI_MODEL = "provider/model";
+  global.fetch = vi.fn(async () => {
+    return new Response(JSON.stringify({ error: "unavailable" }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }) as typeof fetch;
+
+  try {
+    await callback();
+  } finally {
+    global.fetch = originalFetch;
+    restoreAiEnv({ originalProvider, originalBaseUrl, originalApiKey, originalModel });
+  }
+}
+
+function restoreAiEnv(input: {
+  originalProvider: string | undefined;
+  originalBaseUrl: string | undefined;
+  originalApiKey: string | undefined;
+  originalModel: string | undefined;
+}) {
+  restoreEnvValue("AI_PROVIDER", input.originalProvider);
+  restoreEnvValue("AI_BASE_URL", input.originalBaseUrl);
+  restoreEnvValue("AI_API_KEY", input.originalApiKey);
+  restoreEnvValue("AI_MODEL", input.originalModel);
+}
+
+function restoreEnvValue(key: string, value: string | undefined) {
+  if (value === undefined) {
+    delete process.env[key];
+    return;
+  }
+  process.env[key] = value;
+}

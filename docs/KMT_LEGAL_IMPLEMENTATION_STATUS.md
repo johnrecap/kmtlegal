@@ -1,6 +1,6 @@
 # KMT Legal Implementation Status
 
-Last updated: 2026-07-03
+Last updated: 2026-07-04
 
 This is the main tracking file for the 33 Spec Kit implementation plans.
 
@@ -78,7 +78,8 @@ Total plans: 33
 - Fixed a chat booking confirmation edge case where quick actions such as `Book consultation` or `Litigation` could be mistaken for the client's name; stale polluted drafts are now cleaned before confirmation and public assistant API errors preserve the request locale for clearer recovery messages.
 - Hardened the public booking assistant draft validation so phone numbers cannot be accepted as client names, availability words such as tomorrow cannot be accepted as phone numbers, and date/time-only replies cannot be inferred as names before appointment confirmation.
 - Hardened booking confirmation recovery so expired, invalid, already-booked, or no-longer-available appointment slots return a conversational next step or fresh alternatives instead of a generic failed-request bubble.
-- Decoupled public booking confirmation and verified reference inquiry from the AI provider so completed appointment bookings are saved through deterministic system rules even if Gemini/OpenAI-compatible output is unavailable or schema-invalid; AI provider failures now emit safe request/model/status diagnostics without exposing secrets or client content.
+- Added schema-validated structured AI extraction for public booking free-text intake so multilingual/natural client messages can populate safe draft fields without relying on keyword-only parsing; low-confidence or unavailable AI falls back to a structured recovery prompt, while payment, pricing, slot selection, and appointment confirmation remain deterministic server/provider flows.
+- Decoupled public booking payment confirmation and verified reference inquiry from the AI provider so completed appointment bookings are saved through deterministic system rules even if Gemini/OpenAI-compatible output is unavailable or schema-invalid; AI provider failures emit safe request/model/status diagnostics without exposing secrets or client content.
 - Added a useful admin-facing office brief for confirmed public AI chat bookings: the saved AI summary now includes the client request context, service area, contact details, preferred mode, selected appointment time, urgency, and the next human review/assignment action instead of a generic placeholder sentence. Admin consultation details also replace older generic booking-chat summaries at render time with a derived office brief from the saved request and appointment data.
 - Added a first-message Arabic/English language choice inside the public booking chat; the selected language now controls the chat copy, API `locale`, date formatting, and chat `dir` independently of the surrounding public page language.
 - Fixed the public booking chat auto-scroll so new messages scroll only the internal `booking-chat-log` panel instead of moving or resetting the surrounding page during conversation.

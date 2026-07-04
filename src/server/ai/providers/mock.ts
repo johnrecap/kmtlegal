@@ -10,7 +10,7 @@ export function createMockAIProvider(): AIProviderAdapter {
         provider: "mock",
         model: "mock-kmt-legal-v1",
         task: input.task,
-        output: mockOutputForTask(input.task),
+        output: mockOutputForTask(input.task, input.input),
         usage: {
           inputTokens: 0,
           outputTokens: 0,
@@ -21,8 +21,23 @@ export function createMockAIProvider(): AIProviderAdapter {
   };
 }
 
-function mockOutputForTask(task: AITask) {
+function mockOutputForTask(task: AITask, input?: unknown) {
   switch (task) {
+    case "booking_intake_extraction":
+      return {
+        intent: "booking",
+        fields: {
+          summary: mockBookingMessage(input)
+        },
+        fieldConfidence: {
+          summary: 0.72
+        },
+        confidence: 0.72,
+        needsClarification: false,
+        clarifyingQuestion: null,
+        legalAdviceRequested: false,
+        reviewNote: REVIEW_NOTE
+      };
     case "consultation_classification":
       return {
         category: "corporate",
@@ -72,4 +87,17 @@ function mockOutputForTask(task: AITask) {
         reviewNote: REVIEW_NOTE
       };
   }
+}
+
+function mockBookingMessage(input: unknown) {
+  if (
+    input &&
+    typeof input === "object" &&
+    "userMessage" in input &&
+    typeof (input as { userMessage?: unknown }).userMessage === "string"
+  ) {
+    return (input as { userMessage: string }).userMessage.slice(0, 3000);
+  }
+
+  return "Consultation request collected through the public booking assistant.";
 }

@@ -3,6 +3,7 @@ import type { z } from "zod";
 export type AIProviderName = "mock" | "openrouter" | "openai-compatible" | "local" | "custom";
 
 export type AITask =
+  | "booking_intake_extraction"
   | "consultation_classification"
   | "consultation_assistant"
   | "intake_summary"

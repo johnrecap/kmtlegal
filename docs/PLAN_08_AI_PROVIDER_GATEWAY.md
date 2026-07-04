@@ -14,7 +14,9 @@
 
 ## Supported Tasks
 
+- `booking_intake_extraction`
 - `consultation_classification`
+- `consultation_assistant`
 - `intake_summary`
 - `document_checklist_suggestion`
 - `anonymous_case_study_draft`
@@ -36,4 +38,4 @@
 ## Still Open
 
 - Real provider smoke is blocked until production/staging `AI_PROVIDER`, `AI_BASE_URL`, `AI_API_KEY`, and `AI_MODEL` are selected.
-- AI integration into booking/content flows starts in later feature plans.
+- Real-provider booking intake smoke remains blocked until production/staging `AI_PROVIDER`, `AI_BASE_URL`, `AI_API_KEY`, and `AI_MODEL` are configured.
