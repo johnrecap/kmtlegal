@@ -12,7 +12,8 @@ import {
   isLegalAdviceRequest,
   publicBookingSlotConfirmationError,
   publicConsultationAssistantSchema,
-  publicConsultationCheckoutSchema
+  publicConsultationCheckoutSchema,
+  shouldBypassBookingAiForMessage
 } from "@/server/consultations/consultation-assistant-service";
 import {
   canManageConsultationAvailability,
@@ -143,11 +144,25 @@ describe("public consultation contract", () => {
     expect(source).toContain("bookingIntakeExtractionOutputSchema");
     expect(source).toContain("generateStructured");
     expect(source).toContain("recordRun: false");
+    expect(source).toContain("shouldBypassBookingAiForMessage(body.message)");
     expect(source).toContain("deterministicBookingSummary");
     expect(source).toContain("deterministic_booking_rules");
     expect(source).toContain("publicAppointmentInquiry({ body, requestId: input.requestId })");
     expect(source).toContain("prepareConsultationPaymentReview({ body: bookingBody, requestId: input.requestId })");
     expect(source).toContain("createPublicConsultationCheckout");
+
+    const startsAtBranch = source.indexOf('if (missingFields.includes("startsAt"))');
+    const aiFallbackBranch = source.indexOf("if ((mergeResult.aiUnavailable || mergeResult.lowConfidence) && firstNonSlotMissing)");
+    expect(startsAtBranch).toBeGreaterThan(-1);
+    expect(aiFallbackBranch).toBeGreaterThan(-1);
+    expect(startsAtBranch).toBeLessThan(aiFallbackBranch);
+  });
+
+  it("keeps short availability replies out of the AI extractor", () => {
+    expect(shouldBypassBookingAiForMessage("بكره")).toBe(true);
+    expect(shouldBypassBookingAiForMessage("بعد 3")).toBe(true);
+    expect(shouldBypassBookingAiForMessage("الصبح")).toBe(true);
+    expect(shouldBypassBookingAiForMessage("I need help with a cheque dispute")).toBe(false);
   });
 
   it("extracts natural-language booking intake with structured AI output", async () => {
@@ -210,7 +225,7 @@ describe("public consultation contract", () => {
       },
       async () => {
         const result = await handlePublicConsultationAssistant({
-          body: { locale: "ar", message: "موضوع مش واضح" },
+          body: { locale: "ar", message: "موضوع مش واضح", draft: { startsAt: "2026-07-05T10:00:00.000Z" } },
           request: new Request("https://example.test/api/public/consultations/assistant", {
             headers: { "x-forwarded-for": "203.0.113.22" }
           }),
@@ -233,7 +248,11 @@ describe("public consultation contract", () => {
   it("falls back safely when booking AI extraction is unavailable", async () => {
     await withBookingExtractionFailure(async () => {
       const result = await handlePublicConsultationAssistant({
-        body: { locale: "ar", message: "طلب استشارة في موضوع محتاج مراجعة من المكتب" },
+        body: {
+          locale: "ar",
+          message: "طلب استشارة في موضوع محتاج مراجعة من المكتب",
+          draft: { startsAt: "2026-07-05T10:00:00.000Z" }
+        },
         request: new Request("https://example.test/api/public/consultations/assistant", {
           headers: { "x-forwarded-for": "203.0.113.23" }
         }),

@@ -213,17 +213,6 @@ async function handlePublicBookingConversation(input: {
   }
 
   if (missingFields.length) {
-    const firstNonSlotMissing = missingFields.find((field) => field !== "startsAt");
-    if ((mergeResult.aiUnavailable || mergeResult.lowConfidence) && firstNonSlotMissing) {
-      return bookingConversationResponse({
-        locale: input.body.locale,
-        draft,
-        missingFields,
-        selectedSlot,
-        message: bookingFollowUpMessage(input.body.locale, firstNonSlotMissing, input.body.message, mergeResult)
-      });
-    }
-
     if (missingFields.includes("startsAt")) {
       const hasPreference = hasAvailabilityPreference(draft.availabilityPreference);
       if (!hasPreference && !wantsAlternativeSlots(input.body.message)) {
@@ -259,6 +248,17 @@ async function handlePublicBookingConversation(input: {
         availableSlots: availableSlots.length ? availableSlots : fallbackSlots,
         slotWindow: availabilityWindowDto(draft.availabilityPreference, !availableSlots.length && Boolean(fallbackSlots?.length)),
         message: availableSlots.length ? slotSelectionMessage(input.body.locale, draft.availabilityPreference) : noSlotsForPreferenceMessage(input.body.locale)
+      });
+    }
+
+    const firstNonSlotMissing = missingFields.find((field) => field !== "startsAt");
+    if ((mergeResult.aiUnavailable || mergeResult.lowConfidence) && firstNonSlotMissing) {
+      return bookingConversationResponse({
+        locale: input.body.locale,
+        draft,
+        missingFields,
+        selectedSlot,
+        message: bookingFollowUpMessage(input.body.locale, firstNonSlotMissing, input.body.message, mergeResult)
       });
     }
 
@@ -364,20 +364,20 @@ function mergeBookingDraft(body: PublicConsultationAssistantInput) {
 }
 
 async function mergeBookingDraftWithAi(body: PublicConsultationAssistantInput, requestId: string): Promise<BookingMergeResult> {
-  if (body.confirmBooking || body.selectedSlot) {
-    return {
-      draft: mergeBookingDraft(body),
-      aiUnavailable: false,
-      lowConfidence: false,
-      legalAdviceRequested: false
-    };
-  }
-
   const base = baseBookingDraft(body);
   const fallbackDraft = normalizeBookingDraft({
     ...base,
     ...extractBookingDetails(body.message, base)
   });
+
+  if (shouldBypassBookingAi(body)) {
+    return {
+      draft: fallbackDraft,
+      aiUnavailable: false,
+      lowConfidence: false,
+      legalAdviceRequested: false
+    };
+  }
 
   const extraction = await extractBookingIntakeWithAi(body, normalizeBookingDraft(base), requestId);
   if (!extraction) {
@@ -413,6 +413,14 @@ async function mergeBookingDraftWithAi(body: PublicConsultationAssistantInput, r
     clarifyingQuestion: extraction.needsClarification ? extraction.clarifyingQuestion?.trim() : undefined,
     extraction
   };
+}
+
+function shouldBypassBookingAi(body: PublicConsultationAssistantInput) {
+  return Boolean(body.confirmBooking || body.selectedSlot || shouldBypassBookingAiForMessage(body.message));
+}
+
+export function shouldBypassBookingAiForMessage(message: string) {
+  return isAvailabilityOnlyMessage(message);
 }
 
 function baseBookingDraft(body: PublicConsultationAssistantInput) {

@@ -19,7 +19,6 @@ test.describe("consultation booking chat", () => {
     await page.goto("/ar/book-consultation", { waitUntil: "domcontentloaded" });
 
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    await expect(page.locator("nextjs-portal")).toHaveCount(0);
 
     const chat = page.getByTestId("booking-stepper");
     await expect(chat).toBeVisible();

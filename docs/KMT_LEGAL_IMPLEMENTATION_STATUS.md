@@ -55,6 +55,7 @@ Total plans: 33
 
 ## Latest Public UI And Booking UX Follow-Up
 
+- Fixed the public booking assistant's AI scheduling regression: short date/time replies such as `بكره`, `بعد 3`, and `الصبح` now bypass the AI extractor, preserve locally parsed availability preferences, and reach the appointment-slot branch before any AI unavailable/low-confidence fallback.
 - Fixed public hero imagery on the first public pages by serving Stitch hero assets directly from `/stitch-assets`, lightening the hero overlay so the photography remains visible, adding explicit `/stitch-assets` cache handling, and covering the first English/Arabic hero images in Playwright.
 - Separated the homepage hero photograph from the services hero so the first public navigation pages do not repeat the same hero image.
 - Hardened public hero readability and image crops with RTL/LTR text-side scrims, text shadows, taller compact hero bands, and page-specific image focal points.
