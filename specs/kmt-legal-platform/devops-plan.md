@@ -41,6 +41,7 @@ Names only; never commit real values.
 | `DATABASE_URL` | server | yes | PostgreSQL connection |
 | `DB_SETUP_MODE` | server | no | `existing` for panel-created DB or `auto` for script-created DB |
 | `AUTH_SECRET` | server | yes | session/auth signing |
+| `CLIENT_ACCOUNT_SETUP_SIGNING_SECRET` | server | yes | optional dedicated signing secret for post-consultation client account setup links; falls back to `AUTH_SECRET` |
 | `SESSION_COOKIE_SECURE` | server | no | production secure cookie switch |
 | `STAFF_2FA_MODE` | server | no | must stay `disabled`; TOTP is deferred |
 | `INSTALLER_ENABLED` | server | no | true only during first VPS setup; false after installer lock |

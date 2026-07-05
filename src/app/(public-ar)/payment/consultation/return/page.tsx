@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { PublicShell } from "@/components/layout/public-shell";
 import { MaterialSymbol } from "@/components/ui";
-import { navForPath } from "@/content/public-content";
+import { getPublicContent, navForPath } from "@/content/public-content";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/legal-format";
 import { getPublicPaymentAttemptStatus } from "@/server/payments/payment-service";
 
 export const dynamic = "force-dynamic";
+
+const accountSetupCopy = getPublicContent("ar").clientAccountSetup;
 
 type PaymentReturnPageProps = {
   searchParams?: Promise<{
@@ -66,6 +68,15 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
               <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-kmt-gold bg-kmt-gold px-5 text-sm font-semibold text-[#120d07] transition-colors hover:bg-[#c7a363]" href={result.payment.receiptUrl}>
                 <MaterialSymbol name="receipt_long" />
                 عرض / طباعة الفاتورة
+              </Link>
+            ) : null}
+            {result?.clientAccountSetup ? (
+              <Link
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-kmt-gold bg-kmt-gold px-5 text-sm font-semibold text-[#120d07] transition-colors hover:bg-[#c7a363]"
+                href={result.clientAccountSetup.status === "setup_available" ? result.clientAccountSetup.setupUrl : result.clientAccountSetup.loginUrl}
+              >
+                <MaterialSymbol name="account_circle" />
+                {result.clientAccountSetup.status === "setup_available" ? accountSetupCopy.submit : accountSetupCopy.login}
               </Link>
             ) : null}
             <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 px-5 text-sm font-semibold text-amber-50 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold" href="/ar/book-consultation">

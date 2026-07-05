@@ -68,6 +68,16 @@ type ChatMessage = {
   role: "assistant" | "user";
   text: string;
   tone?: "default" | "error" | "success";
+  actionHref?: string;
+  actionLabel?: string;
+};
+
+type ClientAccountSetupAction = {
+  status: "setup_available" | "existing_account";
+  setupUrl?: string;
+  loginUrl?: string;
+  expiresAt?: string;
+  email?: string | null;
 };
 
 type AssistantApiBody = {
@@ -86,6 +96,7 @@ type AssistantApiBody = {
     reference?: string;
     appointment?: { title: string; startsAt: string; status: string };
     appointments?: Array<{ title: string; startsAt: string; status: string }>;
+    clientAccountSetup?: ClientAccountSetupAction | null;
   };
   error?: {
     message?: string;
@@ -170,8 +181,29 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     return () => window.cancelAnimationFrame(frame);
   }, [messages, availableSlots, readyToConfirm, readyToCheckout, isBusy]);
 
-  function append(role: ChatMessage["role"], text: string, tone: ChatMessage["tone"] = "default") {
-    setMessages((current) => [...current, { id: `${role}-${Date.now()}-${current.length}`, role, text, tone }]);
+  function append(role: ChatMessage["role"], text: string, tone: ChatMessage["tone"] = "default", action?: Pick<ChatMessage, "actionHref" | "actionLabel">) {
+    setMessages((current) => [...current, { id: `${role}-${Date.now()}-${current.length}`, role, text, tone, ...action }]);
+  }
+
+  function appendClientAccountSetupMessage(action: ClientAccountSetupAction | null) {
+    if (!action) {
+      return;
+    }
+
+    if (action.status === "setup_available" && action.setupUrl) {
+      append("assistant", content.clientAccountSetup.chatSetupPrompt, "success", {
+        actionHref: action.setupUrl,
+        actionLabel: content.clientAccountSetup.submit
+      });
+      return;
+    }
+
+    if (action.status === "existing_account" && action.loginUrl) {
+      append("assistant", content.clientAccountSetup.chatExistingPrompt, "success", {
+        actionHref: action.loginUrl,
+        actionLabel: content.clientAccountSetup.login
+      });
+    }
   }
 
   function chooseLanguage(nextLocale: PublicLocale) {
@@ -346,6 +378,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         if (data.appointment) {
           append("assistant", `${data.appointment.title} · ${formatPublicDate(data.appointment.startsAt, activeLocale)}`, "success");
         }
+        appendClientAccountSetupMessage(data.clientAccountSetup ?? null);
         setFlow(null);
         setAvailableSlots([]);
         setSlotWindow(null);
@@ -607,7 +640,7 @@ function ChatBubble({ message }: { message: ChatMessage }) {
           <KmtBrandLogo className="max-sm:[&_span]:h-9 max-sm:[&_span]:w-9" label="" shape="circle" size="md" variant="mark" />
         )
       ) : null}
-      <p
+      <div
         className={cn(
           "max-w-[78%] break-words rounded-[1.45rem] px-6 py-4 text-base leading-8 shadow-[0_22px_60px_-42px_rgba(0,0,0,0.95)] max-sm:max-w-[86%] max-sm:px-4 max-sm:py-3 max-sm:text-sm",
           isUser
@@ -619,7 +652,16 @@ function ChatBubble({ message }: { message: ChatMessage }) {
         role={message.tone === "error" ? "alert" : undefined}
       >
         {message.text}
-      </p>
+        {message.actionHref && message.actionLabel ? (
+          <a
+            className="mt-3 flex w-fit items-center justify-center gap-2 rounded-full border border-kmt-gold bg-kmt-gold px-4 py-2 text-sm font-semibold leading-5 text-[#120d07] transition-colors hover:bg-[#c7a363]"
+            href={message.actionHref}
+          >
+            <MaterialSymbol className="text-lg" name="account_circle" />
+            {message.actionLabel}
+          </a>
+        ) : null}
+      </div>
     </div>
   );
 }

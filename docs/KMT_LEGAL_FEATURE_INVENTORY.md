@@ -20,6 +20,7 @@ Last updated: 2026-07-05
 - New paid booking v1: server-side pricing review, payment attempt creation, hosted checkout URL, return/status page, trusted webhook confirmation.
 - Temporary reservation: appointment status `RESERVED` while payment is pending; confirmed appointment uses `SCHEDULED` only after trusted payment.
 - Confirmed consultation bookings create secretary review alerts after free chat confirmation or after paid webhook confirmation.
+- Successful confirmed consultation bookings expose a signed, time-limited client account setup link so the client can choose an email/password and see the request in `/client`.
 
 ## AI
 
@@ -31,6 +32,7 @@ Last updated: 2026-07-05
 ## Client Portal
 
 - Protected `/client` portal with dashboard, cases, appointments/court dates, documents, payments, profile, AI assistant, and team chat.
+- Public post-booking account setup can create or link a Client-role user account to the booked consultation's `Client` record, then signs the client into the portal.
 - Client payments now distinguish internal invoices from gateway payment attempts.
 - Gateway attempt cards expose pay/status actions without treating pending attempts as paid invoices.
 - Paid consultation invoices expose a signed printable receipt page with the client name, phone, amount, invoice number, receipt reference, office name, and KMT logo.

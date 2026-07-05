@@ -52,6 +52,7 @@ describe("route manifest contract", () => {
       ["/api/public/consultations/checkout", "/api/public/consultations/checkout"],
       ["/api/public/consultations/slots", "/api/public/consultations/slots"],
       ["/api/public/payments/status", "/api/public/payments/status"],
+      ["/api/public/client-account/setup", "/api/public/client-account/setup"],
       ["/api/webhooks/paytabs", "/api/webhooks/paytabs"],
       ["/api/webhooks/paymob", "/api/webhooks/paymob"],
       ["/api/admin/notifications", "/api/admin/notifications"],

@@ -97,6 +97,7 @@ PLAN-26 installer preflight must reject unsupported panel environments before bu
 | GET | `/api/public/consultations/slots` | Public consultation slots generated from secretary availability without exposing internal calendar data | Guest | public |
 | POST | `/api/public/consultations/checkout` | Create a paid consultation booking checkout after server-side review and pricing; enabled only when `consultation.booking.mode=AI_CHAT_PAID` | Guest | consultation.create.public |
 | GET | `/api/public/payments/status` | Read payment attempt status for a return/status page without confirming from redirect; paid attempts include signed `payment.receiptUrl` | Guest | public |
+| POST | `/api/public/client-account/setup` | Create or link a Client portal account from a signed successful-consultation setup link, then set a client session cookie | Guest with signed link | public |
 | POST | `/api/webhooks/paytabs` | Process PayTabs-compatible payment webhook/IPN with signature verification and idempotency | Provider | internal |
 | POST | `/api/webhooks/paymob` | Process Paymob payment webhook/callback with provider-owned route, signature verification, and idempotency | Provider | internal |
 

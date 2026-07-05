@@ -18,6 +18,7 @@ import {
   listPortalPayments,
   ownCaseWhere
 } from "@/server/portal/client-portal-service";
+import { publicClientAccountSetupTarget } from "@/server/portal/client-account-setup-service";
 import { enforceRateLimit, rateLimiters } from "@/server/rate-limit/memory-rate-limit";
 import { emailSchema, parseWithSchema } from "@/server/validation/schemas";
 import {
@@ -1897,6 +1898,11 @@ async function createFreeConsultationBooking(input: {
     message: bookedMessage(body.locale, body),
     reference: publicConsultationReference(result.consultation.id),
     appointment: appointmentDto(result.appointment),
+    clientAccountSetup: publicClientAccountSetupTarget({
+      client: result.client,
+      consultationId: result.consultation.id,
+      request: input.request
+    }),
     reviewRequired: true,
     disclaimer: AI_REVIEW_DISCLAIMER[body.locale],
     ai: deterministicAssistantMetadata(input.requestId)

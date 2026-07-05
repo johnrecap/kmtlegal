@@ -23,6 +23,7 @@ The public consultation entry point is controlled by a non-secret `SystemSetting
 - `PaymentTransaction`: provider transaction reference, raw/provider status, settlement field.
 - `PaymentWebhookEvent`: event id, signature status, processing status, replay count, payload hash, safe normalized payload.
 - `Payment`: internal paid invoice/receipt created after trusted paid webhook, with a signed public printable receipt link after `PAID`.
+- Client account setup: after a confirmed free booking or trusted paid webhook, the success surface can show a signed `/client-account/setup` link. The client chooses email/password and the booked consultation stays linked to the same `Client` profile in `/client`.
 
 ## API Surface
 
@@ -64,6 +65,7 @@ The public consultation entry point is controlled by a non-secret `SystemSetting
 - `PAYMENT_ATTEMPT_EXPIRY_MINUTES=15`
 - `PAYMENT_REQUIRE_WEBHOOK_SIGNATURE=true` in production
 - `PAYMENT_RECEIPT_SIGNING_SECRET` for signed public receipt links; `AUTH_SECRET` is the server-side fallback.
+- `CLIENT_ACCOUNT_SETUP_SIGNING_SECRET` for post-consultation account setup links; `AUTH_SECRET` is the server-side fallback.
 - `PAYMENT_WEBHOOK_SECRET` / `PAYTABS_WEBHOOK_SECRET`
 - `PAYMENT_HOSTED_CHECKOUT_URL_TEMPLATE` or `PAYTABS_HOSTED_CHECKOUT_URL_TEMPLATE`
 - `PAYMOB_SECRET_KEY`

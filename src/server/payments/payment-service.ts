@@ -8,6 +8,7 @@ import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
 import { toPagination } from "@/server/http/pagination";
 import { captureAnalyticsEventBestEffort } from "@/server/observability/analytics-service";
+import { publicClientAccountSetupTarget } from "@/server/portal/client-account-setup-service";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
 import {
   createHostedCheckout,
@@ -225,7 +226,7 @@ export async function getPublicPaymentAttemptStatus(input: { attemptId: string }
   const attempt = await prisma.paymentAttempt.findUnique({
     where: { id: attemptId },
     include: {
-      client: { select: { fullName: true, phone: true } },
+      client: { select: { id: true, fullName: true, phone: true, email: true, userId: true } },
       appointment: { select: { id: true, title: true, startsAt: true, status: true } },
       consultationRequest: { select: { id: true, status: true } },
       payment: {
@@ -824,7 +825,7 @@ function gatewayInvoiceNumber(attemptId: string, paidAt: Date) {
 function paymentAttemptDto(
   attempt: Prisma.PaymentAttemptGetPayload<{
     include: {
-      client: { select: { fullName: true; phone: true } };
+      client: { select: { id: true; fullName: true; phone: true; email: true; userId: true } };
       appointment: { select: { id: true; title: true; startsAt: true; status: true } };
       consultationRequest: { select: { id: true; status: true } };
       payment: {
@@ -863,6 +864,13 @@ function paymentAttemptDto(
             fullName: attempt.client.fullName,
             phone: attempt.client.phone
           }
+        : null,
+    clientAccountSetup:
+      attempt.payment && attempt.status === "PAID" && attempt.payment.status === "PAID"
+        ? publicClientAccountSetupTarget({
+            client: attempt.client,
+            consultationId: attempt.consultationRequest.id
+          })
         : null,
     payment: attempt.payment
       ? {
