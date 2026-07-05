@@ -462,7 +462,7 @@ export const publicContentEn = {
     inquiryResult: "Verified booking details",
     noSlot: "No specific appointment time",
     requiredContact: "Name and phone are required before continuing.",
-    requiredDetails: "Choose an area and write at least 20 characters for the summary.",
+    requiredDetails: "Write a clear request summary of at least 20 characters.",
     requiredConsent: "Consent is required before sending the request.",
     fallbackError: "The request could not be completed. Review the details and try again.",
     requestId: "Request id",

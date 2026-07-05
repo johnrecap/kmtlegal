@@ -130,6 +130,59 @@ const BOOKING_AI_CONFIDENCE_THRESHOLD = 0.55;
 const BOOKING_AI_FIELD_CONFIDENCE_THRESHOLD = 0.5;
 const DEFAULT_ASSISTANT_SERVICE_CATEGORY = "legal-consultation";
 const BOOKING_SUMMARY_MIN_LENGTH = 20;
+const GENERIC_BOOKING_SUMMARY_TOKENS = new Set([
+  "a",
+  "an",
+  "and",
+  "appointment",
+  "asap",
+  "book",
+  "booking",
+  "consultation",
+  "general",
+  "help",
+  "need",
+  "office",
+  "please",
+  "request",
+  "review",
+  "the",
+  "to",
+  "urgent",
+  "user",
+  "wants",
+  "with",
+  "about",
+  "اريد",
+  "استشاره",
+  "استشارة",
+  "استشارات",
+  "احجز",
+  "او",
+  "المكتب",
+  "الي",
+  "الى",
+  "حابه",
+  "حابب",
+  "حجز",
+  "جدا",
+  "ضروري",
+  "طلب",
+  "عامه",
+  "عايز",
+  "عايزه",
+  "عن",
+  "علي",
+  "على",
+  "في",
+  "محتاج",
+  "محتاجه",
+  "مراجعه",
+  "موعد",
+  "من",
+  "موضوع",
+  "و"
+]);
 
 export async function handlePublicConsultationAssistant(input: { body: unknown; request: Request; requestId: string }) {
   const body = parseWithSchema(publicConsultationAssistantSchema, input.body, "Consultation assistant payload is invalid.");
@@ -410,7 +463,7 @@ async function mergeBookingDraftWithAi(body: PublicConsultationAssistantInput, r
     };
   }
 
-  const aiDraft = bookingDraftFromAiExtraction(extraction, base);
+  const aiDraft = bookingDraftFromAiExtraction(extraction, fallbackDraft);
   const mergedDraft = normalizeBookingDraft({
     ...fallbackDraft,
     ...aiDraft
@@ -440,6 +493,28 @@ export function publicBookingAvailabilityPreferenceFromMessage(
   now = new Date()
 ) {
   return availabilityPreferenceFromMessage(message, current, now);
+}
+
+export function isInformativeBookingSummary(value: string | null | undefined) {
+  const trimmed = value?.trim() ?? "";
+  if (trimmed.length < BOOKING_SUMMARY_MIN_LENGTH || isAvailabilityOnlyMessage(trimmed) || likelyNameOnly(trimmed)) {
+    return false;
+  }
+
+  const normalized = normalizedAssistantText(trimmed)
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!normalized) {
+    return false;
+  }
+
+  const meaningfulTokens = normalized
+    .split(" ")
+    .map((token) => token.trim())
+    .filter((token) => token && !GENERIC_BOOKING_SUMMARY_TOKENS.has(token));
+
+  return meaningfulTokens.join("").length >= 8;
 }
 
 function baseBookingDraft(body: PublicConsultationAssistantInput) {
@@ -472,13 +547,14 @@ function normalizeBookingDraft(draft: {
   const availabilityPreference = normalizeAvailabilityPreference(draft.availabilityPreference);
   const fullName = draft.fullName?.trim() ?? "";
   const phone = draft.phone?.trim() ?? "";
+  const summary = draft.summary?.trim() ?? "";
   return {
     fullName: isInvalidBookingFullName(fullName) ? "" : fullName,
     phone: isValidBookingPhone(phone) ? phone : "",
     email: draft.email?.trim() ?? "",
     city: draft.city?.trim() ?? "",
     serviceCategory: draft.serviceCategory?.trim() ?? "",
-    summary: draft.summary?.trim() ?? "",
+    summary: isInformativeBookingSummary(summary) ? summary : "",
     urgency: (["LOW", "NORMAL", "HIGH", "URGENT"].includes(draft.urgency ?? "") ? draft.urgency : "NORMAL") as PublicConsultationAssistantInput["urgency"],
     preferredMode: (["PHONE", "ONLINE", "OFFICE"].includes(draft.preferredMode ?? "") ? draft.preferredMode : "ONLINE") as ConsultationMode,
     startsAt: draft.startsAt?.trim() ?? "",
@@ -545,7 +621,7 @@ function extractBookingDetails(
     .replace(email ?? "", "")
     .replace(phone ?? "", "")
     .trim();
-  if (!current.summary && summaryCandidate.length >= 20 && !likelyNameOnly(summaryCandidate)) {
+  if (!current.summary && isInformativeBookingSummary(summaryCandidate)) {
     next.summary = summaryCandidate;
   }
 
@@ -678,7 +754,7 @@ function bookingDraftFromAiExtraction(
   if (!current.serviceCategory && trustedBookingAiField(extraction, "serviceCategory") && fields.serviceCategory) {
     next.serviceCategory = fields.serviceCategory;
   }
-  if (!current.summary && trustedBookingAiField(extraction, "summary") && fields.summary) {
+  if (!current.summary && trustedBookingAiField(extraction, "summary") && fields.summary && isInformativeBookingSummary(fields.summary)) {
     next.summary = fields.summary;
   }
   if (trustedBookingAiField(extraction, "urgency") && fields.urgency) {
@@ -891,6 +967,13 @@ function cityFromMessage(text: string) {
 function likelyNameOnly(text: string) {
   const value = text.trim();
   if (value.length < 2 || value.length > 80 || /[0-9@]/.test(value)) {
+    return false;
+  }
+  const normalized = normalizedAssistantText(value);
+  if (
+    serviceCategoryFromMessage(normalized) ||
+    containsAny(normalized, ["مشكل", "ضريب", "دعوه", "دعوى", "محامي", "مخالف", "اتهام", "بلاغ", "محضر", "dispute", "tax", "lawyer", "claim"])
+  ) {
     return false;
   }
   return value.split(/\s+/).length <= 5;
@@ -1233,8 +1316,8 @@ function shouldClarifyBookingField(field: string | undefined, latestMessage: str
 function unclearBookingFieldMessage(locale: "ar" | "en", field: string | undefined) {
   if (field === "serviceCategory") {
     return locale === "ar"
-      ? "الإجابة مش واضحة بالنسبة لنوع الخدمة. اكتب الأقرب: استشارة قانونية، شركات وأعمال، عقارات، أو تحصيل وتسويات. لو الموضوع إيصال أمانة أو شيك أو مديونية، اختار التحصيل والتسويات."
-      : "I could not identify the service from that answer. Write the closest service: legal consultation, corporate and business, real estate, or claims and collections. For trust receipts, cheques, debt, or collections, choose claims and collections.";
+      ? "الإجابة مش واضحة بالنسبة لنوع الخدمة. اكتب الأقرب: استشارات حسب المجال، الشركات والعقود التجارية، مراجعة قانونية عقارية، أو المطالبات المالية والتسويات. لو الموضوع إيصال أمانة أو شيك أو مديونية، اختار المطالبات المالية والتسويات."
+      : "I could not identify the service from that answer. Write the closest service: consultations by area, companies and commercial contracts, real estate legal review, or debt claims and settlement. For trust receipts, cheques, debt, or collections, choose debt claims and settlement.";
   }
   return locale === "ar" ? "الإجابة مش واضحة. من فضلك أعد كتابة المطلوب بشكل أبسط." : "That answer is not clear. Please write it again more simply.";
 }
@@ -1293,15 +1376,33 @@ function availabilityWindowLabel(preference: AvailabilityPreference, locale: "ar
   return parts.join(locale === "ar" ? " " : " ");
 }
 
+function displayEmail(value: string | null | undefined, locale: "ar" | "en") {
+  const email = value?.trim();
+  if (email) {
+    return email;
+  }
+  return locale === "ar" ? "غير مضاف" : "not provided";
+}
+
+function displayRequestArea(value: string | null | undefined, locale: "ar" | "en") {
+  return serviceCategoryLabel(value || DEFAULT_ASSISTANT_SERVICE_CATEGORY, locale);
+}
+
+function displayRequestSummary(value: string | null | undefined, locale: "ar" | "en") {
+  return truncateTeamText(value || (locale === "ar" ? "لم يتم إدخال ملخص واضح" : "No clear summary was provided"), 180);
+}
+
 function bookingConfirmMessage(locale: "ar" | "en", draft: ReturnType<typeof mergeBookingDraft>, selectedSlot: string, requiresPayment: boolean) {
   const when = formatAssistantDate(selectedSlot, locale);
-  const summary = truncateTeamText(draft.summary || (locale === "ar" ? "طلب استشارة" : "Consultation request"), 140);
+  const summary = displayRequestSummary(draft.summary, locale);
+  const area = displayRequestArea(draft.serviceCategory, locale);
+  const email = displayEmail(draft.email, locale);
   if (locale === "ar") {
     const action = requiresPayment ? "اضغط تأكيد الحجز لعرض رسوم الحجز قبل الدفع." : "اضغط تأكيد الحجز لتثبيت الموعد وإظهار رقم المرجع.";
-    return `سأراجع الحجز بهذه البيانات: ${draft.fullName}، ${draft.phone}، ${modeLabel(draft.preferredMode, locale)}، ${when}. نص الطلب: ${summary}. ${action}`;
+    return `سأراجع الحجز بهذه البيانات: الاسم: ${draft.fullName}، الهاتف: ${draft.phone}، البريد الإلكتروني: ${email}، طريقة الاستشارة: ${modeLabel(draft.preferredMode, locale)}، الموعد: ${when}، المسار المبدئي: ${area}. ملخص طلب العميل: ${summary}. ${action}`;
   }
   const action = requiresPayment ? "Confirm to review the booking fee before payment." : "Confirm to book the appointment and show your reference.";
-  return `I will review the consultation with these details: ${draft.fullName}, ${draft.phone}, ${modeLabel(draft.preferredMode, locale)}, ${when}. Request text: ${summary}. ${action}`;
+  return `I will review the consultation with these details: name: ${draft.fullName}, phone: ${draft.phone}, email: ${email}, consultation mode: ${modeLabel(draft.preferredMode, locale)}, appointment: ${when}, initial area: ${area}. Client request summary: ${summary}. ${action}`;
 }
 
 function bookingPaymentReviewMessage(
@@ -1312,11 +1413,13 @@ function bookingPaymentReviewMessage(
   currency: string
 ) {
   const when = formatAssistantDate(startsAt.toISOString(), locale);
-  const summary = truncateTeamText(body.summary || (locale === "ar" ? "طلب استشارة" : "Consultation request"), 140);
+  const summary = displayRequestSummary(body.summary, locale);
+  const area = displayRequestArea(body.serviceCategory, locale);
+  const email = displayEmail(body.email, locale);
   if (locale === "ar") {
-    return `مراجعة الدفع: ${modeLabel(body.preferredMode, locale)}، ${when}. نص الطلب: ${summary}. رسوم حجز الاستشارة ${amount} ${currency}. سيتم حجز الموعد مؤقتًا لمدة محدودة بعد الضغط على الدفع، ولن يتم تأكيد الموعد إلا بعد إشعار دفع موثوق من بوابة الدفع.`;
+    return `مراجعة الدفع: الاسم: ${body.fullName}، الهاتف: ${body.phone}، البريد الإلكتروني: ${email}، طريقة الاستشارة: ${modeLabel(body.preferredMode, locale)}، الموعد: ${when}، المسار المبدئي: ${area}. ملخص طلب العميل: ${summary}. رسوم حجز الاستشارة ${amount} ${currency}. سيتم حجز الموعد مؤقتًا لمدة محدودة بعد الضغط على الدفع، ولن يتم تأكيد الموعد إلا بعد إشعار دفع موثوق من بوابة الدفع.`;
   }
-  return `Payment review: ${modeLabel(body.preferredMode, locale)}, ${when}. Request text: ${summary}. Consultation booking fee is ${amount} ${currency}. The slot is reserved for a limited time after payment starts, and the appointment is confirmed only after a trusted payment webhook.`;
+  return `Payment review: name: ${body.fullName}, phone: ${body.phone}, email: ${email}, consultation mode: ${modeLabel(body.preferredMode, locale)}, appointment: ${when}, initial area: ${area}. Client request summary: ${summary}. Consultation booking fee is ${amount} ${currency}. The slot is reserved for a limited time after payment starts, and the appointment is confirmed only after a trusted payment webhook.`;
 }
 
 function checkoutCreatedMessage(locale: "ar" | "en") {
@@ -1340,10 +1443,10 @@ function formatAssistantDate(value: string, locale: "ar" | "en") {
 function serviceCategoryLabel(value: string, locale: "ar" | "en") {
   const labels = {
     ar: {
-      "legal-consultation": "الاستشارات القانونية",
-      "corporate-business-services": "خدمات الشركات والأعمال",
-      "real-estate-legal-support": "الدعم القانوني العقاري",
-      "claims-collections": "التحصيل والتسويات",
+      "legal-consultation": "استشارات حسب المجال",
+      "corporate-business-services": "الشركات والعقود التجارية",
+      "real-estate-legal-support": "مراجعة قانونية عقارية",
+      "claims-collections": "المطالبات المالية والتسويات",
       corporate: "شركات وعقود",
       disputes: "نزاعات وتقاضي",
       "real-estate": "عقارات",
@@ -1791,7 +1894,7 @@ async function createFreeConsultationBooking(input: {
 
   return {
     action: "booking_confirmed" as const,
-    message: bookedMessage(body.locale),
+    message: bookedMessage(body.locale, body),
     reference: publicConsultationReference(result.consultation.id),
     appointment: appointmentDto(result.appointment),
     reviewRequired: true,
@@ -1862,7 +1965,7 @@ function requiredBookingFields(body: PublicConsultationAssistantInput) {
   const missing: string[] = [];
   if (!body.fullName || isInvalidBookingFullName(body.fullName)) missing.push("fullName");
   if (!body.phone || !isValidBookingPhone(body.phone)) missing.push("phone");
-  if (!body.summary || body.summary.trim().length < BOOKING_SUMMARY_MIN_LENGTH) missing.push("summary");
+  if (!isInformativeBookingSummary(body.summary)) missing.push("summary");
   if (!body.startsAt) missing.push("startsAt");
   return missing;
 }
@@ -2202,16 +2305,44 @@ function appointmentTitle(locale: "ar" | "en", consultationId: string) {
   return locale === "ar" ? `موعد استشارة ${reference}` : `Consultation appointment ${reference}`;
 }
 
-function bookedMessage(locale: "ar" | "en") {
-  return locale === "ar"
+function bookedMessage(locale: "ar" | "en", body?: PublicConsultationAssistantInput) {
+  const base = locale === "ar"
     ? "تم حجز موعد الاستشارة. استخدم رقم المرجع للاستعلام عن الموعد."
     : "The consultation appointment has been booked. Use the reference to inquire about the appointment.";
+  if (!body) {
+    return base;
+  }
+  const email = displayEmail(body.email, locale);
+  const area = displayRequestArea(body.serviceCategory, locale);
+  const summary = displayRequestSummary(body.summary, locale);
+  return locale === "ar"
+    ? `${base} بيانات الطلب المحفوظة: البريد الإلكتروني: ${email}، المسار المبدئي: ${area}. ملخص طلب العميل: ${summary}.`
+    : `${base} Saved request details: email: ${email}, initial area: ${area}. Client request summary: ${summary}.`;
 }
 
 function missingFieldsMessage(locale: "ar" | "en", fields: string[]) {
+  const labels = fields.map((field) => bookingFieldLabel(locale, field)).join(locale === "ar" ? "، " : ", ");
   return locale === "ar"
-    ? `أحتاج هذه البيانات قبل الحجز: ${fields.join(", ")}.`
-    : `I need these fields before booking: ${fields.join(", ")}.`;
+    ? `أحتاج هذه البيانات قبل الحجز: ${labels}.`
+    : `I need these details before booking: ${labels}.`;
+}
+
+function bookingFieldLabel(locale: "ar" | "en", field: string) {
+  const labels = {
+    ar: {
+      fullName: "الاسم الكامل",
+      phone: "رقم الهاتف",
+      summary: `وصف الطلب ${BOOKING_SUMMARY_MIN_LENGTH} حرفًا على الأقل`,
+      startsAt: "الموعد المناسب"
+    },
+    en: {
+      fullName: "full name",
+      phone: "phone number",
+      summary: `request description of at least ${BOOKING_SUMMARY_MIN_LENGTH} characters`,
+      startsAt: "appointment time"
+    }
+  };
+  return labels[locale][field as keyof (typeof labels)["en"]] ?? field;
 }
 
 function clientMessage(locale: "ar" | "en", key: "appointments_found" | "appointments_empty") {
@@ -2320,10 +2451,10 @@ export function deterministicBookingSummary(body: PublicConsultationAssistantInp
 
 function teamServiceCategoryLabel(value?: string | null) {
   const labels: Record<string, string> = {
-    "legal-consultation": "الاستشارات القانونية",
-    "corporate-business-services": "خدمات الشركات والأعمال",
-    "real-estate-legal-support": "الدعم القانوني العقاري",
-    "claims-collections": "التحصيل والتسويات",
+    "legal-consultation": "استشارات حسب المجال",
+    "corporate-business-services": "الشركات والعقود التجارية",
+    "real-estate-legal-support": "مراجعة قانونية عقارية",
+    "claims-collections": "المطالبات المالية والتسويات",
     corporate: "الشركات والعقود",
     disputes: "المنازعات والتقاضي",
     "real-estate": "العقارات",

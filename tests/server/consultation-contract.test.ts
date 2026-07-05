@@ -9,6 +9,7 @@ import {
   handlePublicConsultationAssistant,
   inferPublicConsultationServiceCategory,
   isCrossClientDataRequest,
+  isInformativeBookingSummary,
   isLegalAdviceRequest,
   publicBookingAvailabilityPreferenceFromMessage,
   publicBookingSlotConfirmationError,
@@ -166,7 +167,14 @@ describe("public consultation contract", () => {
     expect(source).toContain("const BOOKING_SUMMARY_MIN_LENGTH = 20");
     expect(source).toContain("${BOOKING_SUMMARY_MIN_LENGTH} حرفًا على الأقل");
     expect(source).toContain("at least ${BOOKING_SUMMARY_MIN_LENGTH} characters");
-    expect(source).toContain("body.summary.trim().length < BOOKING_SUMMARY_MIN_LENGTH");
+    expect(source).toContain("isInformativeBookingSummary(body.summary)");
+  });
+
+  it("rejects generic booking summaries from AI or stale drafts", () => {
+    expect(isInformativeBookingSummary("User wants to book a general consultation")).toBe(false);
+    expect(isInformativeBookingSummary("طلب استشارة في موضوع محتاج مراجعة من المكتب")).toBe(false);
+    expect(isInformativeBookingSummary("علينا ضرائب في الشركة وعايز استشارة ضرورية")).toBe(true);
+    expect(isInformativeBookingSummary("مشاجره وعايز ارفع دعوه على شخص")).toBe(true);
   });
 
   it("keeps short availability replies out of the AI extractor", () => {
@@ -363,6 +371,54 @@ describe("public consultation contract", () => {
     );
   });
 
+  it("does not accept generic AI booking text as the client request summary", async () => {
+    await withBookingExtractionMock(
+      {
+        intent: "booking",
+        fields: {
+          serviceCategory: "legal-consultation",
+          summary: "User wants to book a general consultation."
+        },
+        fieldConfidence: {
+          serviceCategory: 0.95,
+          summary: 0.96
+        },
+        confidence: 0.95,
+        needsClarification: false,
+        clarifyingQuestion: null,
+        legalAdviceRequested: false,
+        reviewNote: "Generic booking intent only."
+      },
+      async () => {
+        const result = await handlePublicConsultationAssistant({
+          body: {
+            locale: "ar",
+            message: "عايز احجز استشارة",
+            draft: {
+              fullName: "خالد أحمد",
+              phone: "01063887871",
+              startsAt: "2099-07-05T10:00:00.000Z"
+            }
+          },
+          request: new Request("https://example.test/api/public/consultations/assistant", {
+            headers: { "x-forwarded-for": "203.0.113.25" }
+          }),
+          requestId: "test-ai-generic-summary"
+        });
+
+        const bookingResult = result as unknown as {
+          draft: { serviceCategory: string; summary: string };
+          missingFields: string[];
+          message: string;
+        };
+        expect(bookingResult.draft.serviceCategory).toBe("legal-consultation");
+        expect(bookingResult.draft.summary).toBe("");
+        expect(bookingResult.missingFields).toContain("summary");
+        expect(bookingResult.message).toContain("20 حرفًا على الأقل");
+      }
+    );
+  });
+
   it("keeps the client's complaint text as the booking summary without requiring service category", async () => {
     await withBookingExtractionFailure(async () => {
       const message = "مشاجره وعايز ارفع دعوه على شخص";
@@ -384,6 +440,35 @@ describe("public consultation contract", () => {
       expect(bookingResult.missingFields).not.toContain("serviceCategory");
       expect(bookingResult.message).not.toContain("نوع الخدمة");
     });
+  });
+
+  it("shows client email, initial area, and real request summary in booking confirmation review", async () => {
+    const result = await handlePublicConsultationAssistant({
+      body: {
+        locale: "ar",
+        message: "اختيار الموعد",
+        selectedSlot: "2099-07-05T10:00:00.000Z",
+        draft: {
+          fullName: "خالد أحمد",
+          phone: "01063887871",
+          email: "khaled@example.com",
+          serviceCategory: "claims-collections",
+          summary: "وصل أمانة موقع عليا وعايز استشارة عاجلة قبل اتخاذ أي خطوة.",
+          preferredMode: "ONLINE",
+          startsAt: "2099-07-05T10:00:00.000Z"
+        }
+      },
+      request: new Request("https://example.test/api/public/consultations/assistant", {
+        headers: { "x-forwarded-for": "203.0.113.26" }
+      }),
+      requestId: "test-booking-confirmation-review-message"
+    });
+
+    const bookingResult = result as unknown as { message: string; readyToConfirm: boolean };
+    expect(bookingResult.readyToConfirm).toBe(true);
+    expect(bookingResult.message).toContain("البريد الإلكتروني: khaled@example.com");
+    expect(bookingResult.message).toContain("المطالبات المالية والتسويات");
+    expect(bookingResult.message).toContain("ملخص طلب العميل: وصل أمانة");
   });
 
   it("falls back safely when booking AI extraction is unavailable", async () => {
@@ -472,7 +557,7 @@ describe("public consultation contract", () => {
 
     expect(brief).toContain("ملخص للفريق");
     expect(brief).toContain("خالد أحمد");
-    expect(brief).toContain("التحصيل والتسويات");
+    expect(brief).toContain("المطالبات المالية والتسويات");
     expect(brief).toContain("وصل أمانة");
     expect(brief).toContain("01063887871");
     expect(brief).toContain("أونلاين");

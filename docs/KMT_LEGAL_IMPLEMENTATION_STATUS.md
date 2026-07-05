@@ -56,6 +56,7 @@ Total plans: 33
 ## Latest Public UI And Booking UX Follow-Up
 
 - Added post-confirmation secretary review workflow: free AI chat bookings create review alerts immediately after confirmation, paid bookings create alerts only after trusted webhook confirmation, and staff can clear the review queue from consultation details or the admin notification bell.
+- Tightened the public booking assistant review data: generic AI booking summaries are no longer accepted as the client's request description, stale generic summaries are cleaned from returned drafts, and the booking/payment review text now displays email state, initial area, and the client's actual summary.
 
 - Fixed the public booking assistant's AI scheduling regression: short date/time replies such as `بكره`, `بعد 3`, and `الصبح` now bypass the AI extractor, preserve locally parsed availability preferences, and reach the appointment-slot branch before any AI unavailable/low-confidence fallback.
 - Hardened the booking assistant's deterministic date parser so `بعد بكره` / `بعد بكرة` / `day after tomorrow` resolve to +2 days before `بكره` / `tomorrow`, ambiguous next-week replies ask for a specific day, and booking writes re-check duplicate contacts and slot conflicts inside a serializable transaction. Payment webhooks no longer confirm expired/released appointments or downgrade already-paid attempts.

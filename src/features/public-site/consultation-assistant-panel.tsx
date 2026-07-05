@@ -114,10 +114,10 @@ export function ConsultationAssistantPanel({ locale }: { locale: PublicLocale })
           <TextInput className={darkControlClasses} label={isArabic ? "المدينة" : "City"} name="city" />
         </div>
         <Select className={darkControlClasses} label={isArabic ? "مجال الخدمة" : "Service area"} name="serviceCategory" defaultValue="legal-consultation">
-          <option value="legal-consultation">{isArabic ? "الاستشارات القانونية" : "Legal consultation"}</option>
-          <option value="corporate-business-services">{isArabic ? "خدمات الشركات والأعمال" : "Corporate & business services"}</option>
-          <option value="real-estate-legal-support">{isArabic ? "الدعم القانوني العقاري" : "Real estate legal support"}</option>
-          <option value="claims-collections">{isArabic ? "التحصيل والتسويات" : "Claims & collections"}</option>
+          <option value="legal-consultation">{isArabic ? "استشارات حسب المجال" : "Consultations by area"}</option>
+          <option value="corporate-business-services">{isArabic ? "الشركات والعقود التجارية" : "Companies & commercial contracts"}</option>
+          <option value="real-estate-legal-support">{isArabic ? "مراجعة قانونية عقارية" : "Real estate legal review"}</option>
+          <option value="claims-collections">{isArabic ? "المطالبات المالية والتسويات" : "Debt claims & settlement"}</option>
         </Select>
         <Textarea className={darkControlClasses} label={isArabic ? "ملخص الطلب" : "Summary"} name="summary" required />
         <div className="grid gap-3 sm:grid-cols-3">

@@ -13,6 +13,7 @@ Last updated: 2026-07-05
 
 - Admin-controlled consultation entry mode: `AI_CHAT_PAID` for chat plus mandatory hosted checkout, or `AI_CHAT_FREE` for the same AI chat flow without a booking fee; legacy `PAID_CHAT`/`MANUAL_REVIEW` values are normalized.
 - Chat-first public booking assistant with Arabic/English language choice in both paid and free booking modes.
+- Public booking review shows the client's email state, initial request area, and the client's real request summary; generic AI text such as a general booking intent is rejected as an insufficient request description.
 - In free booking mode, the assistant confirms the consultation appointment after client approval without creating a payment attempt.
 - Booking field collection, service classification, phone/name/date validation, slot selection, conflict recovery.
 - Secretary-managed consultation availability.

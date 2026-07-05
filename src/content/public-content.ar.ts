@@ -435,7 +435,7 @@ export const publicContentAr = {
     inquiryResult: "بيانات الحجز المتحقق منها",
     noSlot: "بدون موعد محدد",
     requiredContact: "الاسم والهاتف مطلوبان قبل المتابعة.",
-    requiredDetails: "اختر المجال واكتب ملخصًا لا يقل عن 20 حرفًا.",
+    requiredDetails: "اكتب ملخصًا واضحًا للطلب لا يقل عن 20 حرفًا.",
     requiredConsent: "الموافقة مطلوبة قبل إرسال الطلب.",
     fallbackError: "تعذر تنفيذ الطلب. راجع البيانات وحاول مرة أخرى.",
     requestId: "رقم الطلب",

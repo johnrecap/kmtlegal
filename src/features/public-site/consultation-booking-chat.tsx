@@ -683,7 +683,10 @@ function PaymentReviewPanel({
   onPay: () => void;
 }) {
   const amount = formatPublicMoney(paymentReview.amount, paymentReview.currency, locale);
+  const bookingFormCopy = getPublicContent(locale).bookingForm;
   const requestText = draft.summary?.trim() || formatServiceCategory(draft.serviceCategory || paymentReview.serviceCategory, locale);
+  const requestArea = formatServiceCategory(draft.serviceCategory || paymentReview.serviceCategory, locale);
+  const emailText = draft.email?.trim() || bookingFormCopy.unknown;
 
   return (
     <div className="ms-auto max-w-[42rem] rounded-3xl border border-kmt-gold/35 bg-black/30 p-4 shadow-[0_18px_58px_-42px_rgba(183,134,64,0.95)]" data-testid="booking-payment-review">
@@ -697,9 +700,11 @@ function PaymentReviewPanel({
         </div>
       </div>
       <dl className="grid gap-3 text-sm text-amber-50/85 sm:grid-cols-2">
-        <PaymentReviewItem icon="description" label={copy.detailsTitle} value={requestText} />
+        <PaymentReviewItem icon="category" label={bookingFormCopy.serviceCategory} value={requestArea} />
+        <PaymentReviewItem icon="mail" label={bookingFormCopy.email} value={emailText} />
+        <PaymentReviewItem className="sm:col-span-2" icon="description" label={copy.detailsTitle} value={requestText} />
         <PaymentReviewItem icon="video_chat" label={copy.preferredSlot} value={`${modeLabel(paymentReview.mode, locale)} - ${formatPublicDate(selectedSlot, locale)}`} />
-        <PaymentReviewItem className="sm:col-span-2" icon="receipt_long" label={copy.bookingFee} value={amount} />
+        <PaymentReviewItem icon="receipt_long" label={copy.bookingFee} value={amount} />
       </dl>
       <div className="mt-4 flex flex-wrap justify-end gap-2">
         <Button className={cn(publicMotionButton, publicMotionCta, "rounded-full")} data-testid="booking-pay-booking" loading={isBusy} type="button" onClick={onPay}>

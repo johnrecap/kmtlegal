@@ -66,10 +66,10 @@ export const modeLabels: Record<string, string> = {
 };
 
 export const serviceCategoryLabels: Record<string, string> = {
-  "legal-consultation": "الاستشارات القانونية",
-  "corporate-business-services": "خدمات الشركات والأعمال",
-  "real-estate-legal-support": "الدعم القانوني العقاري",
-  "claims-collections": "التحصيل والتسويات",
+  "legal-consultation": "استشارات حسب المجال",
+  "corporate-business-services": "الشركات والعقود التجارية",
+  "real-estate-legal-support": "مراجعة قانونية عقارية",
+  "claims-collections": "المطالبات المالية والتسويات",
   corporate: "الشركات والعقود",
   "real-estate": "العقارات",
   employment: "العمل",
