@@ -5,6 +5,7 @@
 This repo contains the KMT Legal MVP implementation: a Next.js App Router app, Prisma/PostgreSQL data model, private VPS filesystem upload contract, SMTP email abstraction, AI Provider Gateway, public website, client portal, admin office tools, analytics, and release hardening.
 
 Use this file as the first handoff map. The detailed plan tracker is `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md`.
+For a current-state PRD and external model review brief, use `docs/KMT_LEGAL_CURRENT_PROJECT_PRD_FOR_REVIEW.md`.
 
 ## Current Status
 
