@@ -1088,7 +1088,8 @@ function availabilityDateFromMessage(text: string, now = new Date()) {
   const weekday = weekdayFromMessage(text);
   if (weekday !== null) {
     const currentWeekday = cairoWeekday(today);
-    const offset = (weekday - currentWeekday + 7) % 7 || 7;
+    const nearestOffset = (weekday - currentWeekday + 7) % 7;
+    const offset = explicitNextWeekAvailabilityMessage(text) ? nearestOffset + 7 : nearestOffset;
     return { date: addCairoDays(today, offset), label: "weekday" };
   }
 
@@ -1100,6 +1101,10 @@ function isAmbiguousAvailabilityMessage(value: string) {
   if (weekdayFromMessage(text) !== null) {
     return false;
   }
+  return explicitNextWeekAvailabilityMessage(text);
+}
+
+function explicitNextWeekAvailabilityMessage(text: string) {
   return containsAny(text, ["next week", "coming week", "الاسبوع الجاي", "الأسبوع الجاي", "الاسبوع القادم", "الأسبوع القادم"]);
 }
 

@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { bookingIntakeExtractionOutputSchema, consultationAssistantOutputSchema } from "@/server/ai/schemas";
 import { adminConsultationListQuerySchema } from "@/server/admin/consultation-review-service";
+import * as consultationAvailabilityService from "@/server/consultations/consultation-availability-service";
 import {
   clientOrganizerIntentFromMessage,
   deterministicBookingSummary,
@@ -216,6 +217,19 @@ describe("public consultation contract", () => {
       label: "day_after_tomorrow",
       timeWindow: "MORNING"
     });
+    const sameWeekdayNow = new Date("2026-07-08T09:00:00+03:00");
+    expect(publicBookingAvailabilityPreferenceFromMessage("الأربعاء", undefined, sameWeekdayNow)).toMatchObject({
+      date: "2026-07-08",
+      label: "weekday"
+    });
+    expect(publicBookingAvailabilityPreferenceFromMessage("wednesday", undefined, sameWeekdayNow)).toMatchObject({
+      date: "2026-07-08",
+      label: "weekday"
+    });
+    expect(publicBookingAvailabilityPreferenceFromMessage("الأربعاء الأسبوع الجاي", undefined, sameWeekdayNow)).toMatchObject({
+      date: "2026-07-15",
+      label: "weekday"
+    });
     expect(publicBookingAvailabilityPreferenceFromMessage("بعد 3", undefined, now)).toMatchObject({
       date: "",
       fromTime: "15:00",
@@ -262,6 +276,66 @@ describe("public consultation contract", () => {
     expect(bookingResult.message).toContain("أي يوم في الأسبوع الجاي");
     expect(bookingResult.needsAvailabilityPreference).toBe(true);
     expect(bookingResult.draft.availabilityPreference.date).toBe("");
+  });
+
+  it("keeps same-day weekday requests on today and shows nearest alternatives when today has no slots", async () => {
+    const slotSpy = vi
+      .spyOn(consultationAvailabilityService, "listPublicConsultationSlots")
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          id: "slot-2026-07-09T10:00:00.000Z",
+          startsAt: "2026-07-09T10:00:00.000Z",
+          endsAt: "2026-07-09T11:00:00.000Z",
+          mode: "ONLINE"
+        }
+      ]);
+
+    try {
+      const result = await handlePublicConsultationAssistant({
+        body: {
+          locale: "ar",
+          message: "الأربعاء",
+          draft: {
+            fullName: "محمود محمد",
+            phone: "01010123415",
+            serviceCategory: "legal-consultation",
+            summary: "عايز مراجعة من المكتب بخصوص مشكلة قانونية مهمة.",
+            preferredMode: "ONLINE"
+          }
+        },
+        request: new Request("https://example.test/api/public/consultations/assistant", {
+          headers: { "x-forwarded-for": "203.0.113.26" }
+        }),
+        requestId: "test-same-day-weekday-fallback"
+      });
+
+      const bookingResult = result as unknown as {
+        availableSlots: Array<{ startsAt: string }>;
+        message: string;
+        slotWindow: { alternatives: boolean; date: string };
+        draft: { availabilityPreference: { date: string } };
+      };
+
+      expect(slotSpy).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          date: "2026-07-08"
+        })
+      );
+      expect(slotSpy).toHaveBeenNthCalledWith(
+        2,
+        expect.not.objectContaining({
+          date: expect.any(String)
+        })
+      );
+      expect(bookingResult.draft.availabilityPreference.date).toBe("2026-07-08");
+      expect(bookingResult.slotWindow).toMatchObject({ alternatives: true, date: "2026-07-08" });
+      expect(bookingResult.availableSlots.map((slot) => slot.startsAt)).toEqual(["2026-07-09T10:00:00.000Z"]);
+      expect(bookingResult.message).toContain("أقرب");
+    } finally {
+      slotSpy.mockRestore();
+    }
   });
 
   it("keeps booking reservation writes guarded by a serializable transaction and pending duplicate checks", () => {
