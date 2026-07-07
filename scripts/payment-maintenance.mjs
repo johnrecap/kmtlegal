@@ -20,7 +20,9 @@ async function main() {
     await runOnce();
     const timer = setInterval(() => {
       runOnce().catch((error) => {
-        console.error("[payment-maintenance] failed", error);
+        reportFailure(error).catch((alertError) => {
+          console.error("[payment-maintenance] alert failed", alertError);
+        });
       });
     }, intervalSeconds * 1000);
     timer.unref?.();
@@ -161,9 +163,48 @@ function getDatabaseUrl() {
   return "postgresql://kmt_legal:kmt_legal_dev_password@localhost:5432/kmt_legal";
 }
 
+async function reportFailure(error) {
+  console.error("[payment-maintenance] failed", error);
+  await notifyMaintenanceFailure(error);
+}
+
+async function notifyMaintenanceFailure(error) {
+  const webhookUrl = process.env.PAYMENT_MAINTENANCE_ALERT_WEBHOOK_URL;
+  if (!webhookUrl) {
+    return;
+  }
+
+  const response = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      service: "kmtlegal-payment-maintenance",
+      ok: false,
+      ranAt: new Date().toISOString(),
+      error: safeErrorSummary(error)
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`alert webhook returned ${response.status}`);
+  }
+}
+
+function safeErrorSummary(error) {
+  if (!error || typeof error !== "object") {
+    return { name: "Error", message: "Unknown payment maintenance failure." };
+  }
+
+  return {
+    name: String(error.name || "Error").slice(0, 80),
+    code: error.code ? String(error.code).slice(0, 80) : undefined,
+    message: String(error.message || "Payment maintenance failed.").slice(0, 500)
+  };
+}
+
 main()
-  .catch((error) => {
-    console.error("[payment-maintenance] failed", error);
+  .catch(async (error) => {
+    await reportFailure(error);
     process.exitCode = 1;
   })
   .finally(async () => {

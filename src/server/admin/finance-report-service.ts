@@ -5,6 +5,7 @@ import { hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
 import { toPagination } from "@/server/http/pagination";
+import { canonicalPhoneForSearch } from "@/server/phone/phone-normalization";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
 import { currencyValues, paymentStatusValues } from "@/lib/legal-finance";
 
@@ -185,6 +186,7 @@ function paymentOrderBy(filters: AdminPaymentListQuery): Prisma.PaymentOrderByWi
 
 function paymentListWhere(filters: AdminPaymentListQuery): Prisma.PaymentWhereInput {
   const search = filters.q?.trim();
+  const canonicalPhone = canonicalPhoneForSearch(search);
 
   return {
     AND: [
@@ -202,6 +204,7 @@ function paymentListWhere(filters: AdminPaymentListQuery): Prisma.PaymentWhereIn
               { notes: { contains: search, mode: "insensitive" } },
               { client: { fullName: { contains: search, mode: "insensitive" } } },
               { client: { phone: { contains: search, mode: "insensitive" } } },
+              ...(canonicalPhone ? [{ client: { phoneCanonical: { contains: canonicalPhone } } }] : []),
               { client: { email: { contains: search, mode: "insensitive" } } },
               { case: { internalFileNumber: { contains: search, mode: "insensitive" } } },
               { case: { title: { contains: search, mode: "insensitive" } } }
@@ -368,6 +371,14 @@ function paymentMutationData(body: AdminPaymentWriteInput, invoiceNumber: string
   };
 }
 
+export function isGatewayManagedPaymentMethod(value: string | null | undefined) {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  if (!normalized) {
+    return false;
+  }
+  return /\b(paytabs|paymob|hosted checkout|gateway|webhook)\b/.test(normalized);
+}
+
 async function assertClientAndCase(body: AdminPaymentWriteInput) {
   const client = await prisma.client.findUnique({
     where: { id: body.clientId },
@@ -389,6 +400,34 @@ async function assertClientAndCase(body: AdminPaymentWriteInput) {
 
   if (!legalCase) {
     throw new ApiError(400, "VALIDATION_ERROR", "Case is invalid for the selected client.");
+  }
+}
+
+async function assertManualPaymentDoesNotDuplicateGatewayOrReceipt(body: AdminPaymentWriteInput, existingPaymentId?: string) {
+  if (body.status !== "PAID") {
+    return;
+  }
+
+  if (isGatewayManagedPaymentMethod(body.paymentMethod)) {
+    throw new ApiError(409, "CONFLICT", "Gateway payments must be recorded by the trusted payment webhook, not as a manual invoice.");
+  }
+
+  const receiptNumber = body.receiptNumber?.trim();
+  if (!receiptNumber) {
+    return;
+  }
+
+  const duplicate = await prisma.payment.findFirst({
+    where: {
+      clientId: body.clientId,
+      receiptNumber,
+      ...(existingPaymentId ? { id: { not: existingPaymentId } } : {})
+    },
+    select: { id: true, invoiceNumber: true }
+  });
+
+  if (duplicate) {
+    throw new ApiError(409, "CONFLICT", "A payment with this receipt number already exists for the selected client.");
   }
 }
 
@@ -500,6 +539,7 @@ export async function createAdminPayment(input: { actor: Principal; body: unknow
   assertFinanceManage(input.actor);
   const body = parseWithSchema(adminPaymentWriteSchema, input.body, "Payment payload is invalid.");
   await assertClientAndCase(body);
+  await assertManualPaymentDoesNotDuplicateGatewayOrReceipt(body);
   const issueDate = parseRequiredDate(body.issueDate, "issueDate");
   const requestedInvoiceNumber = body.invoiceNumber.trim();
 
@@ -558,12 +598,16 @@ export async function updateAdminPayment(input: { actor: Principal; paymentId: s
 
   const existing = await prisma.payment.findUnique({
     where: { id: paymentId },
-    select: { id: true, invoiceNumber: true, status: true, amount: true, currency: true, clientId: true, caseId: true }
+    select: { id: true, invoiceNumber: true, status: true, amount: true, currency: true, clientId: true, caseId: true, paymentAttemptId: true }
   });
 
   if (!existing) {
     throw new ApiError(404, "NOT_FOUND", "Payment was not found.");
   }
+  if (existing.paymentAttemptId) {
+    throw new ApiError(409, "CONFLICT", "Gateway-confirmed payments cannot be edited as manual finance records.");
+  }
+  await assertManualPaymentDoesNotDuplicateGatewayOrReceipt(body, paymentId);
 
   try {
     const payment = await prisma.payment.update({

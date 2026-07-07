@@ -277,6 +277,15 @@ describe("security, privacy, upload, and observability hardening", () => {
     expect(paymentServiceSource).toContain("canManageAdminPaymentOperations(input.actor)");
   });
 
+  it("keeps payment maintenance failures observable without sending stack traces", () => {
+    const maintenanceSource = fs.readFileSync(path.join(process.cwd(), "scripts/payment-maintenance.mjs"), "utf8");
+
+    expect(maintenanceSource).toContain("PAYMENT_MAINTENANCE_ALERT_WEBHOOK_URL");
+    expect(maintenanceSource).toContain("safeErrorSummary");
+    expect(maintenanceSource).toContain("message: String(error.message");
+    expect(maintenanceSource).not.toContain("error.stack");
+  });
+
   it("does not fall back to a dev database URL at production runtime", () => {
     expect(() => getDatabaseUrl({ APP_ENV: "production", NODE_ENV: "production" })).toThrow("DATABASE_URL");
     expect(() => getDatabaseUrl({ APP_ENV: "production", NODE_ENV: "production", npm_lifecycle_event: "build" })).toThrow("DATABASE_URL");

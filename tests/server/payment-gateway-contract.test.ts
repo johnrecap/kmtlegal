@@ -19,7 +19,12 @@ import {
   verifyPaymentStatusToken
 } from "@/server/payments/payment-receipt-service";
 import { adminPaymentGatewaySettingsSchema, activeProviderFromValue } from "@/server/payments/payment-settings-service";
-import { mapProviderPaymentStatus, paidAttemptWebhookConfirmationBlocker, paidWebhookPayloadProblem } from "@/server/payments/payment-service";
+import {
+  mapProviderPaymentStatus,
+  paidAttemptWebhookConfirmationBlocker,
+  paidWebhookPayloadProblem,
+  publicPaymentAttemptConsultationDto
+} from "@/server/payments/payment-service";
 import { adminConsultationPricingRuleWriteSchema, consultationPriceDto } from "@/server/payments/pricing-service";
 import { consultationBookingFlags, consultationBookingModeFromValue } from "@/server/consultations/consultation-booking-settings";
 
@@ -147,6 +152,31 @@ describe("payment gateway contract", () => {
     expect(verifyPaymentStatusToken({ attemptId, token: `${token}tampered` }, env)).toBeNull();
   });
 
+  it("keeps tokenless public payment status free of consultation details", () => {
+    const consultation = {
+      id: "44444444-4444-4444-8444-444444444444",
+      status: "PAYMENT_PENDING",
+      summary: "Sensitive legal dispute summary",
+      urgency: "URGENT",
+      preferredMode: "ONLINE",
+      serviceCategory: "claims-collections",
+      city: "Cairo"
+    };
+
+    const safe = publicPaymentAttemptConsultationDto(consultation, false);
+    expect(safe).toEqual({
+      id: consultation.id,
+      status: consultation.status
+    });
+    expect(JSON.stringify(safe)).not.toContain("Sensitive legal dispute summary");
+    expect(JSON.stringify(safe)).not.toContain("Cairo");
+
+    expect(publicPaymentAttemptConsultationDto(consultation, true)).toMatchObject({
+      summary: consultation.summary,
+      city: consultation.city
+    });
+  });
+
   it("blocks paid webhook confirmation when amount or currency does not match the attempt", () => {
     const attempt = { amount: new Prisma.Decimal("1500.00"), currency: "EGP" };
     const basePayload = {
@@ -162,6 +192,9 @@ describe("payment gateway contract", () => {
     expect(paidWebhookPayloadProblem({ payload: basePayload, attempt })).toBeNull();
     expect(paidWebhookPayloadProblem({ payload: { ...basePayload, amount: "1499.99" }, attempt })?.code).toBe("PAYMENT_AMOUNT_MISMATCH");
     expect(paidWebhookPayloadProblem({ payload: { ...basePayload, currency: "USD" }, attempt })?.code).toBe("PAYMENT_CURRENCY_MISMATCH");
+
+    const source = readFileSync(join(process.cwd(), "src/server/payments/payment-service.ts"), "utf8");
+    expect(source).toContain('await releaseFailedAttempt({ tx, attempt, status: "FAILED", failureCode: paidPayloadProblem.code })');
   });
 
   it("creates a Paymob hosted checkout intention without exposing secrets", async () => {

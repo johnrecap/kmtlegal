@@ -8,6 +8,7 @@ import {
   canReadAdminReports,
   financeReportDateRange,
   formatAdminInvoiceNumber,
+  isGatewayManagedPaymentMethod,
   nextAdminInvoiceNumberFromExisting
 } from "@/server/admin/finance-report-service";
 import { ROLES, type Principal } from "@/server/auth/policy";
@@ -86,6 +87,14 @@ describe("admin finance and reports contract", () => {
     expect(() => adminPaymentWriteSchema.parse({ ...input, invoiceNumber: "INV 2026 0002" })).toThrow();
     expect(() => adminPaymentWriteSchema.parse({ ...input, currency: "GBP" })).toThrow();
     expect(() => adminPaymentWriteSchema.parse({ ...input, amount: "0" })).toThrow();
+  });
+
+  it("separates manual finance payments from gateway-managed payment methods", () => {
+    expect(isGatewayManagedPaymentMethod("Paymob")).toBe(true);
+    expect(isGatewayManagedPaymentMethod("paytabs hosted checkout")).toBe(true);
+    expect(isGatewayManagedPaymentMethod("trusted webhook")).toBe(true);
+    expect(isGatewayManagedPaymentMethod("Instapay")).toBe(false);
+    expect(isGatewayManagedPaymentMethod("Bank transfer")).toBe(false);
   });
 
   it("formats generated invoice numbers from the issue-date year", () => {

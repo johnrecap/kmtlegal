@@ -68,9 +68,13 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 - [ ] Paid consultation webhook with matching amount and currency confirms the appointment.
 - [ ] Paid consultation webhook with a lower amount or different currency does not confirm the appointment and is visible for manual review.
 - [ ] Public payment status without a status token does not return client name, phone, account setup links, checkout URL, or receipt URL.
+- [ ] Public payment status without a status token does not return legal request summary, city, urgency, preferred mode, or service category.
 - [ ] Public payment status with a valid status token returns the allowed full result for the returning payer.
 - [ ] Expired payment attempt releases the temporary reserved appointment through `npm run jobs:payments`.
 - [ ] Admin finance CSV export respects current date/status/currency filters.
+- [ ] Admin finance payment operations filters work for payment attempts and webhook events.
+- [ ] Admin finance shows amount/currency mismatch, invalid signature, failed webhook, and expired attempt issues as manual-review items.
+- [ ] Manual paid records reject gateway-managed payment method names and duplicate client receipt numbers.
 - [ ] Content/case-study approval gate prevents premature publishing.
 - [ ] Public contact submission persists a `ContactMessage`, returns a safe reference, and can be read/marked reviewed through admin API.
 
@@ -90,6 +94,7 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 - [ ] Contact success cannot be accidentally submitted again without a deliberate reset/new-message action.
 - [ ] Contact form still succeeds while `SMTP_ENABLED=false`; no raw message, email, or phone appears in audit metadata.
 - [ ] Mobile smoke passes for `/`, `/services`, `/contact`, and `/book-consultation`.
+- [ ] Mobile payment smoke at 390px covers booking review, payment return pending/paid/failed/expired, receipt link, client payments, and admin finance filters.
 - [ ] PLAN-27 live screenshots, console logs, and network evidence are archived.
 
 Authenticated admin live smoke:
@@ -137,12 +142,14 @@ npx playwright test tests/e2e/live-admin-smoke.spec.ts
 - [ ] Nginx passes `X-Real-IP $remote_addr`; app does not trust client-supplied `X-Forwarded-For` in production.
 - [ ] Upload oversize `Content-Length` is rejected before multipart parsing.
 - [ ] Payment webhook and checkout audit metadata do not include client phone, email, raw provider payloads, or account setup tokens.
+- [ ] Payment maintenance alert payloads, if enabled, do not include stack traces, database URLs, raw webhook payloads, legal summaries, emails, phones, tokens, or secrets.
 
 ## Deployment Gates
 
 - [ ] `GET /api/health` returns 200 after migrations, seed, first Super Admin setup, installer lock, and `INSTALLER_ENABLED=false`.
 - [ ] VPS service runs in production mode, not `next dev`.
 - [ ] Payment maintenance runs as a recurring cron/PM2 process using `npm run jobs:payments` or `npm run jobs:payments:watch`.
+- [ ] If `PAYMENT_MAINTENANCE_ALERT_WEBHOOK_URL` is configured, a safe test failure reaches the internal alert destination.
 - [ ] Nginx proxies to the app and TLS works.
 - [ ] PostgreSQL backup exists before migration.
 - [ ] Backup is taken before applying the `ContactMessage` and `phoneCanonical` migration.

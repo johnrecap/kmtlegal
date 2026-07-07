@@ -1,6 +1,6 @@
 # KMT Legal Feature Inventory
 
-Last updated: 2026-07-05
+Last updated: 2026-07-07
 
 ## Public Site
 
@@ -42,7 +42,7 @@ Last updated: 2026-07-05
 - Admin dashboard, CRM clients, consultations, cases, calendar, sessions, tasks, documents, users, settings, audit log, messages, finance, and reports.
 - Admin consultation queue includes secretary review status, unreviewed/unassigned filters, post-booking review action, and next-request navigation.
 - Dashboard shell includes consultation review notifications for staff with `consultation.review.any`.
-- Finance now includes manual invoices plus gateway operations visibility: pricing rules, payment attempts, and webhook events.
+- Finance now includes manual invoices plus gateway operations visibility: pricing rules, payment attempts, webhook events, operational filters, replay, CSV export, and visible manual-review issue labels.
 - Finance settings include the active consultation booking mode plus active payment provider readiness, without storing provider or AI secrets.
 - Role/permission model protects admin and portal surfaces.
 
@@ -53,6 +53,8 @@ Last updated: 2026-07-05
 - `Payment` is created as the internal paid invoice after trusted gateway confirmation.
 - Paid gateway invoices can be viewed from the payment return page and client payments page through signed receipt links.
 - Reconciliation keys link provider transaction, attempt, payment/invoice, appointment, and consultation request.
+- Public tokenless payment status does not expose client identity, checkout/receipt/account links, or legal request details.
+- Manual paid finance records reject gateway-managed method labels and repeated receipt numbers for the same client.
 
 ## Content
 
@@ -69,3 +71,4 @@ Last updated: 2026-07-05
 - Internal analytics events with strict taxonomy and privacy-safe properties.
 - Payment events added for checkout creation and webhook success/failure.
 - Request IDs and audit metadata propagate across critical backend operations.
+- Payment maintenance can optionally send safe failure alerts through `PAYMENT_MAINTENANCE_ALERT_WEBHOOK_URL`.

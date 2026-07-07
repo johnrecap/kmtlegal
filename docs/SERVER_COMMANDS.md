@@ -47,6 +47,8 @@ npm run jobs:payments
 
 The payment maintenance script loads `.env.production.local`, `.env.local`, then `.env` automatically from the current app directory. If it returns Prisma `P1010`, confirm that `.env.production.local` contains the same production `DATABASE_URL` used by the deploy script and that the database user can access the selected database.
 
+Optional failure alerting can be enabled with `PAYMENT_MAINTENANCE_ALERT_WEBHOOK_URL` in `.env.production.local`. The alert payload is intentionally compact and excludes stack traces, database URLs, raw webhook payloads, legal summaries, emails, phone numbers, tokens, and secrets.
+
 For PM2-managed recurrence, run a separate process only after confirming `.env.production.local` is loaded for that process:
 
 ```bash
@@ -56,6 +58,7 @@ set -a
 set +a
 pm2 start npm --name kmtlegal-payment-maintenance -- run jobs:payments:watch
 pm2 save
+pm2 logs kmtlegal-payment-maintenance --lines 80 --nostream
 ```
 
 ## Cloudflare Public HTML Cache Rule

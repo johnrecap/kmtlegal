@@ -324,6 +324,17 @@ describe("product UI primitives", () => {
     expect(source).not.toContain("event.currentTarget.reset()");
   });
 
+  it("keeps admin finance wired as the payment operations center", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/finance/page.tsx"), "utf8");
+
+    expect(source).toContain("attemptQ");
+    expect(source).toContain("attemptStatus");
+    expect(source).toContain("webhookQ");
+    expect(source).toContain("webhookStatus");
+    expect(source).toContain("paymentIssueText");
+    expect(source).toContain("WebhookReplayButton");
+  });
+
   it("keeps the admin audit log page on client-friendly DTO fields", () => {
     const source = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/audit-log/page.tsx"), "utf8");
 

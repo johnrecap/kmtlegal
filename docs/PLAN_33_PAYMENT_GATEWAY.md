@@ -1,6 +1,6 @@
 # PLAN 33: Payment Gateway For Consultation Booking
 
-Last updated: 2026-07-04
+Last updated: 2026-07-07
 
 ## Goal
 
@@ -76,14 +76,29 @@ The public consultation entry point is controlled by a non-secret `SystemSetting
 - `PAYMOB_API_BASE_URL`
 - `PAYMOB_CHECKOUT_BASE_URL`
 
-Payment status links without a valid status token return only a safe public status. Client name, phone, checkout URL, receipt URL, and account setup links require the signed return link.
+Payment status links without a valid status token return only a safe public status. Client name, phone, checkout URL, receipt URL, account setup links, legal request summary, city, urgency, service category, and preferred mode require the signed return link.
+
+Optional maintenance alerting:
+
+- `PAYMENT_MAINTENANCE_ALERT_WEBHOOK_URL`
+
+When set, `npm run jobs:payments:watch` sends a compact failure alert with service name, time, and safe error name/code/message. It does not send stack traces, database URLs, tokens, raw webhook payloads, legal summaries, emails, or phone numbers.
+
+## Admin Operations Hardening
+
+- `/admin/finance` is the single payment operations center for manual invoices, pricing rules, gateway settings, payment attempts, webhook events, replay, and CSV export.
+- Payment attempts and webhook events can be filtered by status and search text from the finance page.
+- Amount/currency mismatches, expired attempts, invalid signatures, and failed webhook processing are shown as manual-review issues in finance.
+- Manual paid records cannot be labeled as gateway-managed methods such as PayTabs, Paymob, hosted checkout, gateway, or webhook.
+- A repeated manual receipt number for the same client is rejected.
+- Gateway-confirmed `Payment` rows remain tied to their `PaymentAttempt` and are not edited through the manual invoice form.
 
 ## Not In v1
 
 - Final commercial provider decision before merchant comparison is complete.
 - PayTabs direct API client beyond the URL-template bridge.
 - Refund/dispute operations UI.
-- Manual payment verification UI.
+- Full manual payment verification against a pending `PaymentAttempt`.
 - Settlement payout import/export.
 
 ## Required Before Live Launch
@@ -92,4 +107,5 @@ Payment status links without a valid status token return only a safe public stat
 2. Enter sandbox credentials for the selected provider; Paymob uses Hosted/Unified Checkout, while PayTabs can keep the template bridge until merchant API details are finalized.
 3. Create at least one active consultation pricing rule in production.
 4. Run provider sandbox tests for success/failure/duplicate/invalid-signature/replay.
-5. Run DB-backed staging smoke and production deployment smoke.
+5. Run the late-payment playbook and mobile 390px booking/payment return QA from `docs/PAYMENT_OPERATIONS_PLAYBOOK.md`.
+6. Run DB-backed staging smoke and production deployment smoke.

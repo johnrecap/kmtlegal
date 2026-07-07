@@ -8,6 +8,7 @@ import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
 import { toPagination } from "@/server/http/pagination";
 import { captureAnalyticsEventBestEffort } from "@/server/observability/analytics-service";
+import { canonicalPhoneForSearch } from "@/server/phone/phone-normalization";
 import { publicClientAccountSetupTarget } from "@/server/portal/client-account-setup-service";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
 import {
@@ -48,6 +49,7 @@ export const adminPaymentAttemptListQuerySchema = z.object({
 
 export const adminPaymentWebhookListQuerySchema = z.object({
   processingStatus: webhookProcessingStatusSchema.optional().or(z.literal("")),
+  q: z.string().trim().max(120).optional().or(z.literal("")),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(80).default(20)
 });
@@ -386,15 +388,21 @@ export async function listAdminPaymentAttempts(input: { actor: Principal; query?
 
   const filters = parseWithSchema(adminPaymentAttemptListQuerySchema, input.query ?? {}, "Payment attempt filters are invalid.");
   const pagination = toPagination(filters);
+  const search = filters.q?.trim();
+  const canonicalPhone = canonicalPhoneForSearch(search);
   const where: Prisma.PaymentAttemptWhereInput = {
     ...(filters.status ? { status: filters.status } : {}),
-    ...(filters.q
+    ...(search
       ? {
           OR: [
-            { providerSessionId: { contains: filters.q, mode: "insensitive" } },
-            { providerPaymentId: { contains: filters.q, mode: "insensitive" } },
-            { client: { fullName: { contains: filters.q, mode: "insensitive" } } },
-            { consultationRequest: { phone: { contains: filters.q, mode: "insensitive" } } }
+            { providerSessionId: { contains: search, mode: "insensitive" } },
+            { providerPaymentId: { contains: search, mode: "insensitive" } },
+            { failureCode: { contains: search, mode: "insensitive" } },
+            { client: { fullName: { contains: search, mode: "insensitive" } } },
+            { client: { phone: { contains: search, mode: "insensitive" } } },
+            ...(canonicalPhone ? [{ client: { phoneCanonical: { contains: canonicalPhone } } }] : []),
+            { consultationRequest: { phone: { contains: search, mode: "insensitive" } } },
+            ...(canonicalPhone ? [{ consultationRequest: { phoneCanonical: { contains: canonicalPhone } } }] : [])
           ]
         }
       : {})
@@ -425,8 +433,21 @@ export async function listAdminPaymentWebhookEvents(input: { actor: Principal; q
 
   const filters = parseWithSchema(adminPaymentWebhookListQuerySchema, input.query ?? {}, "Webhook filters are invalid.");
   const pagination = toPagination(filters);
+  const search = filters.q?.trim();
   const where: Prisma.PaymentWebhookEventWhereInput = {
-    ...(filters.processingStatus ? { processingStatus: filters.processingStatus } : {})
+    ...(filters.processingStatus ? { processingStatus: filters.processingStatus } : {}),
+    ...(search
+      ? {
+          OR: [
+            { provider: { contains: search, mode: "insensitive" } },
+            { eventId: { contains: search, mode: "insensitive" } },
+            { errorCode: { contains: search, mode: "insensitive" } },
+            { attempt: { client: { fullName: { contains: search, mode: "insensitive" } } } },
+            { attempt: { providerSessionId: { contains: search, mode: "insensitive" } } },
+            { attempt: { providerPaymentId: { contains: search, mode: "insensitive" } } }
+          ]
+        }
+      : {})
   };
 
   const [items, total] = await Promise.all([
@@ -562,13 +583,15 @@ async function applyWebhookPaymentState(input: {
     });
 
     if (paidPayloadProblem) {
-      await tx.paymentAttempt.update({
-        where: { id: attempt.id },
-        data: { failureCode: paidPayloadProblem.code }
+      await releaseFailedAttempt({ tx, attempt, status: "FAILED", failureCode: paidPayloadProblem.code });
+      return tx.paymentWebhookEvent.update({
+        where: { id: input.eventId },
+        data: {
+          processingStatus: "FAILED",
+          errorCode: paidPayloadProblem.code,
+          processedAt: new Date()
+        }
       });
-      throw new ApiError(409, "CONFLICT", paidPayloadProblem.message, [
-        { path: paidPayloadProblem.path, message: paidPayloadProblem.message, code: paidPayloadProblem.code.toLowerCase() }
-      ]);
     }
 
     if (input.payload.status === "PAID") {
@@ -930,7 +953,7 @@ function paymentAttemptDto(
       startsAt: attempt.appointment.startsAt.toISOString(),
       status: attempt.appointment.status
     },
-    consultation: attempt.consultationRequest,
+    consultation: publicPaymentAttemptConsultationDto(attempt.consultationRequest, includeSensitive),
     resumeDraft:
       includeSensitive && attempt.status !== "PAID"
         ? {
@@ -982,6 +1005,28 @@ function paymentAttemptDto(
               : null
         }
       : null
+  };
+}
+
+export function publicPaymentAttemptConsultationDto(
+  consultation: {
+    id: string;
+    status: string;
+    summary?: string | null;
+    urgency?: string | null;
+    preferredMode?: string | null;
+    serviceCategory?: string | null;
+    city?: string | null;
+  },
+  includeSensitive = false
+) {
+  if (includeSensitive) {
+    return consultation;
+  }
+
+  return {
+    id: consultation.id,
+    status: consultation.status
   };
 }
 

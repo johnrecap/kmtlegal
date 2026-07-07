@@ -422,6 +422,7 @@ model Client {
   deletedAt            DateTime?
 
   @@index([phone])
+  @@index([phoneCanonical])
   @@index([email])
   @@index([status])
   @@index([assignedLawyerId])
@@ -496,6 +497,7 @@ model ConsultationRequest {
   updatedAt         DateTime           @updatedAt
 
   @@index([phone])
+  @@index([phoneCanonical])
   @@index([status])
   @@index([assignedLawyerId])
   @@index([secretaryReviewedAt])

@@ -8,6 +8,13 @@ Accepted for v1 implementation, pending final merchant comparison.
 
 Implement a provider-neutral payment layer with PayTabs Egypt as the default fallback and Paymob as a selectable v1 Hosted/Unified Checkout provider. The final live provider must be confirmed only after merchant comparison with PayTabs, Paymob, Fawry, and Tap.
 
+As of 2026-07-07, the operating decision is:
+
+- Keep PayTabs as the technical default/fallback for new environments.
+- Keep Paymob available as a selectable provider once its required env values are configured.
+- Do not treat either provider as commercially final until KMT archives sandbox evidence and merchant terms for fees, EGP settlement, webhook signing, refunds, dashboard users, and support SLA.
+- Do not enable paid public booking before the selected provider passes sandbox success, failure, duplicate webhook, invalid signature, replay, expiry, and mismatch tests.
+
 ## Context
 
 KMT Legal needs clients to pay a consultation booking fee/deposit before a selected appointment becomes confirmed. The legal service context favors low PCI exposure, clear auditability, reliable confirmation, and Arabic-friendly recovery states.

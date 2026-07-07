@@ -57,6 +57,35 @@ type PaymentWebhookRow = Awaited<ReturnType<typeof listAdminPaymentWebhookEvents
 type PricingRuleRow = Awaited<ReturnType<typeof listAdminConsultationPricingRules>>[number];
 type PaymentGatewaySettings = Awaited<ReturnType<typeof getAdminPaymentGatewaySettings>>;
 
+const paymentAttemptStatusValues = ["CREATED", "PENDING", "PAID", "FAILED", "EXPIRED", "REFUNDED", "DISPUTED", "CANCELLED"] as const;
+const webhookProcessingStatusValues = ["PENDING", "PROCESSED", "FAILED", "IGNORED"] as const;
+
+const paymentAttemptStatusLabels: Record<string, string> = {
+  CREATED: "تم الإنشاء",
+  PENDING: "قيد الانتظار",
+  PAID: "مدفوع",
+  FAILED: "فشل",
+  EXPIRED: "انتهت المهلة",
+  REFUNDED: "مسترد",
+  DISPUTED: "اعتراض",
+  CANCELLED: "ملغي"
+};
+
+const webhookProcessingStatusLabels: Record<string, string> = {
+  PENDING: "قيد المعالجة",
+  PROCESSED: "تمت المعالجة",
+  FAILED: "فشل",
+  IGNORED: "تم تجاهله"
+};
+
+const paymentIssueLabels: Record<string, string> = {
+  PAYMENT_AMOUNT_MISMATCH: "المبلغ القادم من بوابة الدفع لا يطابق المبلغ المطلوب.",
+  PAYMENT_CURRENCY_MISMATCH: "عملة الدفع القادمة من البوابة لا تطابق العملة المطلوبة.",
+  ATTEMPT_EXPIRED: "انتهت مهلة الدفع وتم تحرير الموعد.",
+  INVALID_SIGNATURE: "توقيع إشعار بوابة الدفع غير صحيح.",
+  WEBHOOK_PROCESSING_FAILED: "إشعار الدفع لم يكتمل ويحتاج مراجعة."
+};
+
 function flattenSearchParams(searchParams: SearchParams) {
   return Object.fromEntries(
     Object.entries(searchParams).map(([key, value]) => [key, Array.isArray(value) ? value[0] : value ?? ""])
@@ -88,6 +117,19 @@ function webhookTone(status: string) {
   if (status === "FAILED") return "danger" as const;
   if (status === "IGNORED") return "neutral" as const;
   return "pending" as const;
+}
+
+function paymentIssueText(code?: string | null) {
+  if (!code) {
+    return "";
+  }
+  return paymentIssueLabels[code] ?? `تحتاج مراجعة: ${code}`;
+}
+
+function operationalFilterHref(query: Record<string, string>) {
+  const params = new URLSearchParams(query);
+  params.delete("page");
+  return params.toString() ? `/admin/finance?${params.toString()}` : "/admin/finance";
 }
 
 function summaryAmount(amount: number, currency?: string) {
@@ -389,6 +431,43 @@ function PaymentGatewayOperationsPanel({
     <div className="space-y-5">
       <Card>
         <CardHeader>
+          <CardTitle>متابعة تشغيل الدفع</CardTitle>
+          <CardDescription>فلترة سريعة لمحاولات الدفع وإشعارات البوابة، مع إبراز الحالات التي تحتاج مراجعة مالية.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form action="/admin/finance" method="get">
+            <FilterBar>
+              <SearchInput className="min-w-0 flex-1 sm:min-w-72" defaultValue={query.attemptQ ?? ""} name="attemptQ" placeholder="بحث في محاولات الدفع أو رقم الهاتف" />
+              <Select className="min-w-44" defaultValue={query.attemptStatus ?? ""} label="حالة محاولة الدفع" name="attemptStatus">
+                <option value="">كل المحاولات</option>
+                {paymentAttemptStatusValues.map((status) => (
+                  <option key={status} value={status}>
+                    {paymentAttemptStatusLabels[status]}
+                  </option>
+                ))}
+              </Select>
+              <SearchInput className="min-w-0 flex-1 sm:min-w-72" defaultValue={query.webhookQ ?? ""} name="webhookQ" placeholder="بحث في إشعارات البوابة" />
+              <Select className="min-w-44" defaultValue={query.webhookStatus ?? ""} label="حالة إشعار الدفع" name="webhookStatus">
+                <option value="">كل الإشعارات</option>
+                {webhookProcessingStatusValues.map((status) => (
+                  <option key={status} value={status}>
+                    {webhookProcessingStatusLabels[status]}
+                  </option>
+                ))}
+              </Select>
+              <Button type="submit" variant="secondary">
+                تطبيق
+              </Button>
+              <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={operationalFilterHref({})}>
+                مسح فلاتر التشغيل
+              </Link>
+            </FilterBar>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>قيمة الاستشارة ومعلومات الدفع</CardTitle>
           <CardDescription>السعر يأتي من قواعد المكتب فقط، والبوابة النشطة تستخدم للحجوزات الجديدة دون تغيير المحاولات القديمة.</CardDescription>
         </CardHeader>
@@ -453,12 +532,17 @@ function PaymentGatewayOperationsPanel({
                 <div key={attempt.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-semibold text-kmt-ink">{attempt.client.fullName}</p>
-                    <Badge tone={attemptTone(attempt.status)}>{attempt.status}</Badge>
+                    <Badge tone={attemptTone(attempt.status)}>{paymentAttemptStatusLabels[attempt.status] ?? attempt.status}</Badge>
                   </div>
                   <p className="mt-1 text-kmt-muted">
                     {formatMoney(attempt.amount.toString(), attempt.currency)} · {attempt.provider} · {formatDateTime(attempt.appointment.startsAt)}
                   </p>
                   <p className="mt-1 truncate text-xs text-kmt-muted">{attempt.providerSessionId || attempt.id}</p>
+                  {paymentIssueText(attempt.failureCode) ? (
+                    <div className="mt-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900" role="status">
+                      {paymentIssueText(attempt.failureCode)}
+                    </div>
+                  ) : null}
                 </div>
               ))
             ) : (
@@ -478,12 +562,17 @@ function PaymentGatewayOperationsPanel({
                 <div key={event.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
                   <div className="flex items-center justify-between gap-3">
                     <p className="truncate font-semibold text-kmt-ink">{event.eventId}</p>
-                    <Badge tone={webhookTone(event.processingStatus)}>{event.processingStatus}</Badge>
+                    <Badge tone={webhookTone(event.processingStatus)}>{webhookProcessingStatusLabels[event.processingStatus] ?? event.processingStatus}</Badge>
                   </div>
                   <p className="mt-1 text-kmt-muted">
                     {event.provider} · توقيع {event.signatureStatus} · replay {event.replayCount}
                   </p>
                   <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(event.receivedAt)}</p>
+                  {paymentIssueText(event.errorCode || (event.signatureStatus === "INVALID" ? "INVALID_SIGNATURE" : null)) ? (
+                    <div className="mt-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900" role="status">
+                      {paymentIssueText(event.errorCode || (event.signatureStatus === "INVALID" ? "INVALID_SIGNATURE" : null))}
+                    </div>
+                  ) : null}
                   {canManage ? <WebhookReplayButton eventId={event.id} /> : null}
                 </div>
               ))
@@ -513,8 +602,8 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
     getAdminFinanceOptions(guard.context.principal),
     listAdminConsultationPricingRules({ actor: guard.context.principal, query: { active: "" } }),
     getAdminPaymentGatewaySettings({ actor: guard.context.principal }),
-    listAdminPaymentAttempts({ actor: guard.context.principal, query: { pageSize: 8 } }),
-    listAdminPaymentWebhookEvents({ actor: guard.context.principal, query: { pageSize: 8 } })
+    listAdminPaymentAttempts({ actor: guard.context.principal, query: { pageSize: 8, status: query.attemptStatus ?? "", q: query.attemptQ ?? "" } }),
+    listAdminPaymentWebhookEvents({ actor: guard.context.principal, query: { pageSize: 8, processingStatus: query.webhookStatus ?? "", q: query.webhookQ ?? "" } })
   ]);
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
   const selectedCurrency = result.filters.currency || undefined;
