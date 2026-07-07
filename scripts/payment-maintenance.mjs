@@ -1,7 +1,9 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@prisma/client";
+import prismaClientPackage from "@prisma/client";
+
+const { PrismaClient } = prismaClientPackage;
 
 loadEnvFiles([".env.production.local", ".env.local", ".env"]);
 

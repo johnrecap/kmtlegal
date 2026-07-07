@@ -281,6 +281,8 @@ describe("security, privacy, upload, and observability hardening", () => {
     const maintenanceSource = fs.readFileSync(path.join(process.cwd(), "scripts/payment-maintenance.mjs"), "utf8");
 
     expect(maintenanceSource).toContain("PAYMENT_MAINTENANCE_ALERT_WEBHOOK_URL");
+    expect(maintenanceSource).toContain('import prismaClientPackage from "@prisma/client"');
+    expect(maintenanceSource).not.toContain('import { PrismaClient } from "@prisma/client"');
     expect(maintenanceSource).toContain("safeErrorSummary");
     expect(maintenanceSource).toContain("message: String(error.message");
     expect(maintenanceSource).not.toContain("error.stack");
