@@ -4,6 +4,8 @@ set -euo pipefail
 APP_DIR="${APP_DIR:-/www/wwwroot/kmtlegal}"
 BRANCH="${BRANCH:-main}"
 PM2_APP="${PM2_APP:-kmtlegal}"
+PM2_PAYMENT_MAINTENANCE_APP="${PM2_PAYMENT_MAINTENANCE_APP:-kmtlegal-payment-maintenance}"
+PAYMENT_MAINTENANCE_PM2_ENABLED="${PAYMENT_MAINTENANCE_PM2_ENABLED:-true}"
 PORT="${PORT:-3000}"
 HEALTH_PATH="${HEALTH_PATH:-/api/health}"
 ENV_FILE="${ENV_FILE:-${APP_DIR}/.env.production.local}"
@@ -655,7 +657,33 @@ verify_public_origin_matches_local() {
   run_public_origin_verify_once
 }
 
-log "Fetching ${BRANCH} from GitHub"
+restart_payment_maintenance_pm2() {
+  if [[ "${PAYMENT_MAINTENANCE_PM2_ENABLED}" != "true" ]]; then
+    log "Payment maintenance PM2 management is disabled"
+    return 0
+  fi
+
+  log "Running payment maintenance once"
+  npm run jobs:payments
+
+  if pm2 describe "${PM2_PAYMENT_MAINTENANCE_APP}" >/dev/null 2>&1; then
+    log "Restarting PM2 process ${PM2_PAYMENT_MAINTENANCE_APP}"
+    pm2 restart "${PM2_PAYMENT_MAINTENANCE_APP}" --update-env
+  else
+    log "Starting PM2 process ${PM2_PAYMENT_MAINTENANCE_APP}"
+    pm2 start npm --name "${PM2_PAYMENT_MAINTENANCE_APP}" --cwd "${APP_DIR}" -- run jobs:payments:watch
+  fi
+
+  sleep 2
+  pm2 describe "${PM2_PAYMENT_MAINTENANCE_APP}" >/dev/null 2>&1 ||
+    fail "PM2 process ${PM2_PAYMENT_MAINTENANCE_APP} was not found after start/restart"
+}
+
+origin_url="$(git remote get-url origin || true)"
+log "Fetching ${BRANCH} from origin (${origin_url:-unknown remote})"
+if [[ "${origin_url:-}" != "https://github.com/johnrecap/kmtlegal.git" && "${origin_url:-}" != "git@github.com:johnrecap/kmtlegal.git" ]]; then
+  log "Warning: production is expected to pull from GitHub. Current origin is ${origin_url:-unknown}."
+fi
 git fetch origin "${BRANCH}"
 
 local_commit="$(git rev-parse HEAD)"
@@ -734,6 +762,7 @@ wait_for_local_response
 
 install_public_cache_policy
 verify_public_origin_matches_local
+restart_payment_maintenance_pm2
 
 pm2 save
 

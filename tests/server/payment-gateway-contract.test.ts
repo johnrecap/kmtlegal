@@ -14,6 +14,7 @@ import { createHostedCheckout, verifyWebhookSignature } from "@/server/payments/
 import {
   createPaymentReceiptToken,
   createPaymentStatusToken,
+  paymentStatusTokenMaxAgeSeconds,
   publicPaymentReceiptUrl,
   verifyPaymentReceiptToken,
   verifyPaymentStatusToken
@@ -143,11 +144,14 @@ describe("payment gateway contract", () => {
   });
 
   it("signs public payment status links and rejects attempt id tampering", () => {
-    const env = testEnv({ PAYMENT_STATUS_SIGNING_SECRET: "status-secret-32-characters-long" });
+    const env = testEnv({ PAYMENT_STATUS_SIGNING_SECRET: "status-secret-32-characters-long", PAYMENT_STATUS_TOKEN_MAX_AGE_SECONDS: "1800" });
     const attemptId = "11111111-1111-4111-8111-111111111111";
-    const token = createPaymentStatusToken({ attemptId }, env);
+    const issuedAt = new Date("2026-07-07T00:00:00.000Z");
+    const token = createPaymentStatusToken({ attemptId, issuedAt }, env);
 
-    expect(verifyPaymentStatusToken({ attemptId, token }, env)).toMatchObject({ attemptId });
+    expect(paymentStatusTokenMaxAgeSeconds(env)).toBe(1800);
+    expect(verifyPaymentStatusToken({ attemptId, token, now: new Date("2026-07-07T00:29:59.000Z") }, env)).toMatchObject({ attemptId });
+    expect(verifyPaymentStatusToken({ attemptId, token, now: new Date("2026-07-07T00:30:00.000Z") }, env)).toBeNull();
     expect(verifyPaymentStatusToken({ attemptId: "33333333-3333-4333-8333-333333333333", token }, env)).toBeNull();
     expect(verifyPaymentStatusToken({ attemptId, token: `${token}tampered` }, env)).toBeNull();
   });
@@ -195,6 +199,25 @@ describe("payment gateway contract", () => {
 
     const source = readFileSync(join(process.cwd(), "src/server/payments/payment-service.ts"), "utf8");
     expect(source).toContain('await releaseFailedAttempt({ tx, attempt, status: "FAILED", failureCode: paidPayloadProblem.code })');
+  });
+
+  it("keeps webhook events immutable and blocks transaction relinking across attempts", () => {
+    const source = readFileSync(join(process.cwd(), "src/server/payments/payment-service.ts"), "utf8");
+
+    expect(source).toContain("recordWebhookPayloadMismatch");
+    expect(source).toContain("webhook_payload_hash_mismatch");
+    expect(source).toContain("payment.webhook_payload_mismatch");
+    expect(source).toContain("existingTransaction.attemptId !== input.attemptId");
+    expect(source).toContain("provider_transaction_attempt_mismatch");
+    expect(source).not.toContain("attemptId: input.attemptId,\n          rawStatus: input.rawStatus");
+  });
+
+  it("expires only the requested public payment status attempt and batches global expiry", () => {
+    const source = readFileSync(join(process.cwd(), "src/server/payments/payment-service.ts"), "utf8");
+
+    expect(source).toContain("expireOpenConsultationPaymentAttempts(new Date(), { attemptId })");
+    expect(source).toContain("take: limit");
+    expect(source).toContain('orderBy: { expiresAt: "asc" }');
   });
 
   it("creates a Paymob hosted checkout intention without exposing secrets", async () => {

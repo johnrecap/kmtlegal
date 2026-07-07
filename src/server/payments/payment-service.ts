@@ -55,6 +55,7 @@ export const adminPaymentWebhookListQuerySchema = z.object({
 });
 
 type PaymentClient = Prisma.TransactionClient;
+const expiredAttemptBatchSize = 100;
 
 export type CreateConsultationPaymentAttemptInput = {
   tx: PaymentClient;
@@ -88,13 +89,20 @@ export function canManageAdminPaymentOperations(actor: Principal) {
   return hasPermission(actor, "finance.manage.any");
 }
 
-export async function expireOpenConsultationPaymentAttempts(now = new Date()) {
+export async function expireOpenConsultationPaymentAttempts(
+  now = new Date(),
+  options: { attemptId?: string; limit?: number } = {}
+) {
+  const limit = Math.min(Math.max(options.limit ?? expiredAttemptBatchSize, 1), 500);
   const attempts = await prisma.paymentAttempt.findMany({
     where: {
+      ...(options.attemptId ? { id: options.attemptId } : {}),
       status: { in: ["CREATED", "PENDING"] },
       expiresAt: { lt: now }
     },
-    select: { id: true, appointmentId: true, consultationRequestId: true }
+    select: { id: true, appointmentId: true, consultationRequestId: true },
+    orderBy: { expiresAt: "asc" },
+    take: limit
   });
 
   if (!attempts.length) {
@@ -230,7 +238,7 @@ export async function createConsultationPaymentAttempt(input: CreateConsultation
 
 export async function getPublicPaymentAttemptStatus(input: { attemptId: string; token?: string | null }) {
   const attemptId = parseWithSchema(uuidSchema, input.attemptId, "Payment attempt id is invalid.");
-  await expireOpenConsultationPaymentAttempts();
+  await expireOpenConsultationPaymentAttempts(new Date(), { attemptId });
 
   const attempt = await prisma.paymentAttempt.findUnique({
     where: { id: attemptId },
@@ -274,6 +282,17 @@ export async function handlePaymentWebhook(input: { request: Request; rawBody: s
   const existing = await prisma.paymentWebhookEvent.findUnique({
     where: { provider_eventId: { provider, eventId } }
   });
+  if (existing && existing.payloadHash !== payloadHash) {
+    await recordWebhookPayloadMismatch({
+      event: existing,
+      payloadHash,
+      request: input.request,
+      requestId: input.requestId
+    });
+    throw new ApiError(409, "CONFLICT", "Payment webhook event payload does not match the original event.", [
+      { path: "eventId", message: "Duplicate payment webhook event has a different payload.", code: "webhook_payload_hash_mismatch" }
+    ]);
+  }
   if (existing?.processingStatus === "PROCESSED") {
     return { event: existing, idempotent: true };
   }
@@ -536,6 +555,35 @@ async function upsertWebhookEvent(input: {
   });
 }
 
+async function recordWebhookPayloadMismatch(input: {
+  event: {
+    id: string;
+    provider: string;
+    eventId: string;
+    payloadHash: string;
+    processingStatus: string;
+  };
+  payloadHash: string;
+  request: Request;
+  requestId: string;
+}) {
+  await appendAuditLogBestEffort({
+    action: "payment.webhook_payload_mismatch",
+    resourceType: "PaymentWebhookEvent",
+    resourceId: input.event.id,
+    clientId: null,
+    metadata: {
+      provider: input.event.provider,
+      eventId: input.event.eventId,
+      storedPayloadHash: input.event.payloadHash,
+      receivedPayloadHash: input.payloadHash,
+      processingStatus: input.event.processingStatus
+    },
+    request: input.request,
+    requestId: input.requestId
+  });
+}
+
 async function applyWebhookPaymentState(input: {
   eventId: string;
   provider: PaymentProviderName;
@@ -656,10 +704,19 @@ async function upsertPaymentTransaction(
     });
 
     if (existingTransaction) {
+      if (existingTransaction.attemptId !== input.attemptId) {
+        throw new ApiError(409, "CONFLICT", "Provider transaction is already linked to a different payment attempt.", [
+          {
+            path: "providerTransactionId",
+            message: "Provider transaction is already linked to a different payment attempt.",
+            code: "provider_transaction_attempt_mismatch"
+          }
+        ]);
+      }
+
       return tx.paymentTransaction.update({
         where: { id: existingTransaction.id },
         data: {
-          attemptId: input.attemptId,
           rawStatus: input.rawStatus,
           status: input.status,
           amount: input.amount,
@@ -955,7 +1012,7 @@ function paymentAttemptDto(
     },
     consultation: publicPaymentAttemptConsultationDto(attempt.consultationRequest, includeSensitive),
     resumeDraft:
-      includeSensitive && attempt.status !== "PAID"
+      includeSensitive && ["FAILED", "EXPIRED", "CANCELLED"].includes(attempt.status)
         ? {
             fullName: attempt.client.fullName,
             phone: attempt.client.phone,

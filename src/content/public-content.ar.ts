@@ -460,7 +460,57 @@ export const publicContentAr = {
     safeLinkNotice: "هذا الرابط يعرض حالة دفع عامة آمنة فقط. بيانات العميل وروابط الحساب تظهر فقط من رابط الرجوع الآمن القادم من بوابة الدفع.",
     pending: "لم نستلم تأكيد الدفع بعد.",
     countdown: "تتحقق الصفحة تلقائيا طالما حجز الموعد المؤقت ما زال ساريا.",
-    expired: "انتهت المهلة"
+    expired: "انتهت المهلة",
+    eyebrow: "حالة دفع حجز الاستشارة",
+    missingStatusTitle: "رابط الدفع غير مكتمل",
+    missingStatusDescription: "ارجع إلى صفحة الحجز وابدأ المحاولة مرة أخرى.",
+    labels: {
+      attemptId: "رقم محاولة الدفع",
+      status: "الحالة",
+      amount: "المبلغ",
+      appointment: "الموعد",
+      invoiceNumber: "رقم الفاتورة",
+      temporaryHoldExpiresAt: "انتهاء الحجز المؤقت",
+      clientName: "اسم العميل",
+      phone: "رقم الهاتف",
+      paidAmount: "المبلغ المدفوع",
+      receiptNumber: "رقم الإيصال",
+      unavailable: "غير متاح"
+    },
+    actions: {
+      pay: "استكمال الدفع",
+      receipt: "عرض / طباعة الفاتورة",
+      accountSetup: "إنشاء الحساب والدخول",
+      accountLogin: "تسجيل الدخول",
+      newBooking: "حجز موعد جديد"
+    },
+    paidConfirmation: {
+      title: "تم تأكيد الدفع والموعد",
+      description: "تم إصدار فاتورة الدفع تلقائيا وربطها بحجز الاستشارة.",
+      badge: "مدفوع"
+    },
+    statusTones: {
+      paid: {
+        title: "تم تأكيد الدفع",
+        description: "تم تأكيد موعد الاستشارة بعد وصول إشعار دفع موثوق من بوابة الدفع."
+      },
+      failed: {
+        title: "تعذر إكمال الدفع",
+        description: "لم يتم تأكيد الموعد. يمكنك الرجوع لصفحة الحجز واختيار موعد جديد أو التواصل مع المكتب."
+      },
+      expired: {
+        title: "انتهت مهلة الحجز المؤقت",
+        description: "تم تحرير الموعد المؤقت لأنه لم يصل تأكيد دفع موثوق خلال المهلة."
+      },
+      pending: {
+        title: "ننتظر تأكيد بوابة الدفع",
+        description: "لا يتم تأكيد الموعد من صفحة الرجوع. سنعرض التأكيد فقط بعد وصول إشعار دفع موثوق."
+      },
+      unknown: {
+        title: "تعذر قراءة حالة الدفع",
+        description: "تحقق من الرابط أو ابدأ محاولة حجز جديدة."
+      }
+    }
   },
   clientAccountSetup: {
     metadataTitle: "إنشاء حساب العميل | KMT Legal",

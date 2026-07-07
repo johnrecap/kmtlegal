@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
+import { paymentReservationMinutes } from "./payment-config";
 
 const uuidSchema = z.string().uuid();
 const tokenPayloadSchema = z.object({
@@ -11,8 +12,10 @@ const tokenPayloadSchema = z.object({
 });
 const statusTokenPayloadSchema = z.object({
   v: z.literal(1),
-  attemptId: uuidSchema
-});
+  attemptId: uuidSchema,
+  iat: z.number().int().nonnegative(),
+  exp: z.number().int().positive()
+}).refine((payload) => payload.exp > payload.iat);
 
 const LOCAL_RECEIPT_SIGNING_SECRET = "local-dev-only-payment-receipt-secret-do-not-use-in-production";
 const LOCAL_STATUS_SIGNING_SECRET = "local-dev-only-payment-status-secret-do-not-use-in-production";
@@ -38,10 +41,13 @@ export function createPaymentReceiptToken(input: { attemptId: string; paymentId:
   return `v1.${payload}.${signature}`;
 }
 
-export function createPaymentStatusToken(input: { attemptId: string }, env: NodeJS.ProcessEnv = process.env) {
+export function createPaymentStatusToken(input: { attemptId: string; issuedAt?: Date }, env: NodeJS.ProcessEnv = process.env) {
+  const issuedAtSeconds = toUnixSeconds(input.issuedAt ?? new Date());
   const payload = encodePayload({
     v: 1,
-    attemptId: uuidSchema.parse(input.attemptId)
+    attemptId: uuidSchema.parse(input.attemptId),
+    iat: issuedAtSeconds,
+    exp: issuedAtSeconds + paymentStatusTokenMaxAgeSeconds(env)
   });
   const signature = signPayload(payload, statusSigningSecret(env));
   return `v1.${payload}.${signature}`;
@@ -71,7 +77,7 @@ export function verifyPaymentReceiptToken(input: { attemptId: string; token: str
   return payload;
 }
 
-export function verifyPaymentStatusToken(input: { attemptId: string; token: string }, env: NodeJS.ProcessEnv = process.env) {
+export function verifyPaymentStatusToken(input: { attemptId: string; token: string; now?: Date }, env: NodeJS.ProcessEnv = process.env) {
   const attemptId = uuidSchema.safeParse(input.attemptId);
   if (!attemptId.success) {
     return null;
@@ -88,11 +94,19 @@ export function verifyPaymentStatusToken(input: { attemptId: string; token: stri
   }
 
   const payload = decodeStatusPayload(parts[1]);
-  if (!payload || payload.attemptId !== attemptId.data) {
+  if (!payload || payload.attemptId !== attemptId.data || payload.exp <= toUnixSeconds(input.now ?? new Date())) {
     return null;
   }
 
   return payload;
+}
+
+export function paymentStatusTokenMaxAgeSeconds(env: NodeJS.ProcessEnv = process.env) {
+  const configured = Number.parseInt(env.PAYMENT_STATUS_TOKEN_MAX_AGE_SECONDS ?? "", 10);
+  if (Number.isFinite(configured) && configured >= 1800 && configured <= 7200) {
+    return configured;
+  }
+  return Math.min((paymentReservationMinutes(env) + 60) * 60, 7200);
 }
 
 export async function getPublicConsultationPaymentReceipt(input: { attemptId: string; token: string }) {
@@ -211,6 +225,10 @@ function safeEqual(left: string, right: string) {
   const leftBuffer = Buffer.from(left);
   const rightBuffer = Buffer.from(right);
   return leftBuffer.length === rightBuffer.length && timingSafeEqual(leftBuffer, rightBuffer);
+}
+
+function toUnixSeconds(value: Date) {
+  return Math.floor(value.getTime() / 1000);
 }
 
 function receiptSigningSecret(env: NodeJS.ProcessEnv) {

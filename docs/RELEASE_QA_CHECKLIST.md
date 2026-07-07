@@ -142,6 +142,10 @@ npx playwright test tests/e2e/live-admin-smoke.spec.ts
 - [ ] Nginx passes `X-Real-IP $remote_addr`; app does not trust client-supplied `X-Forwarded-For` in production.
 - [ ] Upload oversize `Content-Length` is rejected before multipart parsing.
 - [ ] Payment webhook and checkout audit metadata do not include client phone, email, raw provider payloads, or account setup tokens.
+- [ ] Payment webhook routes accept trusted provider POST callbacks without browser `Origin/Referer`, while admin/API mutations still reject missing or cross-origin mutation headers.
+- [ ] Signed payment-status links expire and fall back to safe public status without client details, receipt links, checkout links, or account setup links.
+- [ ] Duplicate provider transaction ids cannot move a transaction to a different payment attempt, and duplicate webhook event ids with different payload hashes are flagged for review without overwriting the original event.
+- [ ] `kmtlegal-payment-maintenance` stays online under PM2 after deploy, and its restart counter does not increase across two checks about one minute apart.
 - [ ] Payment maintenance alert payloads, if enabled, do not include stack traces, database URLs, raw webhook payloads, legal summaries, emails, phones, tokens, or secrets.
 
 ## Deployment Gates

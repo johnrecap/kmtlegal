@@ -56,6 +56,7 @@ Total plans: 33
 ## Latest Public UI And Booking UX Follow-Up
 
 - Added post-confirmation secretary review workflow: free AI chat bookings create review alerts immediately after confirmation, paid bookings create alerts only after trusted webhook confirmation, and staff can clear the review queue from consultation details or the admin notification bell.
+- Hardened payment operations follow-up: trusted provider webhook routes bypass only the browser Origin guard while still relying on provider signatures, duplicate provider transactions cannot move between attempts, duplicate webhook event ids with different payload hashes are flagged without overwriting the original event, signed public payment-status links now expire, maintenance expiry runs in batches without overlapping watch cycles, and aaPanel deploy now starts/restarts the `kmtlegal-payment-maintenance` PM2 process.
 - Added post-confirmation client account setup: successful free AI bookings and paid webhook-confirmed bookings can expose a signed `/client-account/setup` link, letting the client choose email/password and immediately open the linked consultation inside `/client` without SMTP/OTP.
 - Tightened the public booking assistant review data: generic AI booking summaries are no longer accepted as the client's request description, stale generic summaries are cleaned from returned drafts, and the booking/payment review text now displays email state, initial area, and the client's actual summary.
 

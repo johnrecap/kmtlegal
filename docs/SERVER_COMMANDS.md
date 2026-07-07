@@ -38,7 +38,9 @@ cd /www/wwwroot/kmtlegal
 bash deploy/install/aapanel-pm2-update.sh
 ```
 
-Payment maintenance should run on the server after deploy and then on a recurring schedule:
+The aaPanel deploy script now runs payment maintenance once and starts or restarts the recurring PM2 process `kmtlegal-payment-maintenance` before `pm2 save`. Use the manual commands below only when you intentionally need to inspect or repair the maintenance process outside the deploy script.
+
+Payment maintenance can still be run manually on the server after deploy:
 
 ```bash
 cd /www/wwwroot/kmtlegal
@@ -49,7 +51,7 @@ The payment maintenance script loads `.env.production.local`, `.env.local`, then
 
 Optional failure alerting can be enabled with `PAYMENT_MAINTENANCE_ALERT_WEBHOOK_URL` in `.env.production.local`. The alert payload is intentionally compact and excludes stack traces, database URLs, raw webhook payloads, legal summaries, emails, phone numbers, tokens, and secrets.
 
-For PM2-managed recurrence, run a separate process only after confirming `.env.production.local` is loaded for that process:
+For PM2-managed recurrence repair, run a separate process only after confirming `.env.production.local` is loaded for that process:
 
 ```bash
 cd /www/wwwroot/kmtlegal
@@ -177,6 +179,7 @@ The script:
 - When `APP_ORIGIN` is set, verifies public `/api/health` reports the same `APP_RELEASE` as the local PM2 app, compares `/`, `/articles`, `/case-studies`, `/media`, and `/contact` against the local app build, verifies public `_next/static` assets return JavaScript/CSS instead of HTML errors, and fails if the public domain still serves stale homepage article/case-study detail links or stale demo content cards.
 - Also verifies that public pages no longer return `Cache-Control: no-store` or `X-Kmt-Proxy: next-no-cache`, and that sensitive app/API/login/install paths still return `Cache-Control: no-store`.
 - If public `/api/health` reaches the new release but public HTML still serves an old Next.js build, purges the aaPanel/Nginx proxy cache directory derived from `APP_ORIGIN` (`/www/wwwroot/<host>/proxy_cache_dir`), reloads Nginx when available, waits briefly, and retries public verification once.
+- Runs `npm run jobs:payments`, then starts or restarts `kmtlegal-payment-maintenance` with `npm run jobs:payments:watch` so reservation expiry and cleanup fixes are active after deploy.
 - Saves PM2 state only after the process passes the stability checks.
 
 Only override defaults when the server uses different names:
@@ -207,6 +210,8 @@ bash deploy/install/aapanel-pm2-update.sh
 ```
 
 Set `PUBLIC_CACHE_POLICY_ENABLED=false` only if you intentionally want to manage the public/sensitive `Cache-Control` split manually in aaPanel or Cloudflare.
+
+Set `PAYMENT_MAINTENANCE_PM2_ENABLED=false` only if another supervisor already owns the payment maintenance process.
 
 ## Manual aaPanel + PM2 Fallback
 

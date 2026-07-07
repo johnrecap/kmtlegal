@@ -329,10 +329,32 @@ describe("product UI primitives", () => {
 
     expect(source).toContain("attemptQ");
     expect(source).toContain("attemptStatus");
+    expect(source).toContain("attemptPage");
     expect(source).toContain("webhookQ");
     expect(source).toContain("webhookStatus");
+    expect(source).toContain("webhookPage");
+    expect(source).toContain("paymentOperationsPageSize = 20");
     expect(source).toContain("paymentIssueText");
+    expect(source).toContain("WEBHOOK_PAYLOAD_HASH_MISMATCH");
+    expect(source).not.toContain("pageSize: 8");
+    expect(source).not.toContain("attempts.slice(0, 8)");
+    expect(source).not.toContain("webhookEvents.slice(0, 8)");
     expect(source).toContain("WebhookReplayButton");
+  });
+
+  it("keeps public payment return text localized through content files", () => {
+    const returnPageSource = readFileSync(join(process.cwd(), "src/app/(public-ar)/payment/consultation/return/page.tsx"), "utf8");
+    const publicContentEn = readFileSync(join(process.cwd(), "src/content/public-content.en.ts"), "utf8");
+    const publicContentAr = readFileSync(join(process.cwd(), "src/content/public-content.ar.ts"), "utf8");
+
+    expect(returnPageSource).toContain("paymentReturnCopy.eyebrow");
+    expect(returnPageSource).toContain("copy.statusTones");
+    expect(returnPageSource).toContain("formatPaymentDate(result.appointment.startsAt, locale)");
+    expect(returnPageSource).not.toContain("formatCairoDate");
+    expect(publicContentEn).toContain("Payment confirmed");
+    expect(publicContentEn).toContain("Payment link is incomplete");
+    expect(publicContentAr).toContain("تم تأكيد الدفع");
+    expect(publicContentAr).toContain("رابط الدفع غير مكتمل");
   });
 
   it("keeps the admin audit log page on client-friendly DTO fields", () => {

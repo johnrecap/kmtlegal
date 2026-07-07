@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import fs from "node:fs";
+import path from "node:path";
 import {
   adminPaymentListQuerySchema,
   adminPaymentWriteSchema,
@@ -95,6 +97,21 @@ describe("admin finance and reports contract", () => {
     expect(isGatewayManagedPaymentMethod("trusted webhook")).toBe(true);
     expect(isGatewayManagedPaymentMethod("Instapay")).toBe(false);
     expect(isGatewayManagedPaymentMethod("Bank transfer")).toBe(false);
+  });
+
+  it("keeps paid manual receipt numbers globally guarded and secretary permissions unchanged", () => {
+    const financeSource = fs.readFileSync(path.join(process.cwd(), "src/server/admin/finance-report-service.ts"), "utf8");
+    const policy = JSON.parse(fs.readFileSync(path.join(process.cwd(), "src/server/auth/policy-data.json"), "utf8")) as {
+      rolePermissions: Record<string, string[]>;
+    };
+
+    expect(financeSource).toContain('receiptNumber,');
+    expect(financeSource).toContain('status: "PAID"');
+    expect(financeSource).not.toContain("clientId: body.clientId,\n      receiptNumber");
+
+    expect(policy.rolePermissions.Secretary).toEqual(
+      expect.arrayContaining(["finance.manage.any", "finance.read.any", "report.read.any"])
+    );
   });
 
   it("formats generated invoice numbers from the issue-date year", () => {

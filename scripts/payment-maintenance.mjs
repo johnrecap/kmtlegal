@@ -19,6 +19,9 @@ const prisma = new PrismaClient({
 const args = new Set(process.argv.slice(2));
 const watch = args.has("--watch");
 const intervalSeconds = boundedNumber(process.env.PAYMENT_MAINTENANCE_INTERVAL_SECONDS, 60, 3600, 300);
+const paymentMaintenanceBatchSize = boundedNumber(process.env.PAYMENT_MAINTENANCE_BATCH_SIZE, 1, 500, 100);
+const paymentMaintenanceMaxBatches = boundedNumber(process.env.PAYMENT_MAINTENANCE_MAX_BATCHES, 1, 20, 10);
+let runInProgress = false;
 
 async function main() {
   if (watch) {
@@ -40,17 +43,35 @@ async function main() {
 }
 
 async function runOnce() {
+  if (runInProgress) {
+    const now = new Date();
+    console.log(
+      JSON.stringify({
+        ok: true,
+        skipped: true,
+        reason: "already_running",
+        ranAt: now.toISOString()
+      })
+    );
+    return;
+  }
+
+  runInProgress = true;
   const now = new Date();
-  const expiredAttempts = await expireOpenPaymentAttempts(now);
-  const cleanup = await cleanupOldOperationalData(now);
-  console.log(
-    JSON.stringify({
-      ok: true,
-      expiredAttempts,
-      cleanup,
-      ranAt: now.toISOString()
-    })
-  );
+  try {
+    const expiredAttempts = await expireOpenPaymentAttempts(now);
+    const cleanup = await cleanupOldOperationalData(now);
+    console.log(
+      JSON.stringify({
+        ok: true,
+        expiredAttempts,
+        cleanup,
+        ranAt: now.toISOString()
+      })
+    );
+  } finally {
+    runInProgress = false;
+  }
 }
 
 async function shutdown(timer) {
@@ -60,36 +81,48 @@ async function shutdown(timer) {
 }
 
 async function expireOpenPaymentAttempts(now) {
-  const attempts = await prisma.paymentAttempt.findMany({
-    where: {
-      status: { in: ["CREATED", "PENDING"] },
-      expiresAt: { lt: now }
-    },
-    select: { id: true, appointmentId: true, consultationRequestId: true }
-  });
+  let expiredCount = 0;
 
-  if (!attempts.length) {
-    return 0;
+  for (let batch = 0; batch < paymentMaintenanceMaxBatches; batch += 1) {
+    const attempts = await prisma.paymentAttempt.findMany({
+      where: {
+        status: { in: ["CREATED", "PENDING"] },
+        expiresAt: { lt: now }
+      },
+      select: { id: true, appointmentId: true, consultationRequestId: true },
+      orderBy: { expiresAt: "asc" },
+      take: paymentMaintenanceBatchSize
+    });
+
+    if (!attempts.length) {
+      break;
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.paymentAttempt.updateMany({
+        where: { id: { in: attempts.map((attempt) => attempt.id) } },
+        data: { status: "EXPIRED", failureCode: "ATTEMPT_EXPIRED" }
+      });
+
+      await tx.appointment.updateMany({
+        where: { id: { in: attempts.map((attempt) => attempt.appointmentId) }, status: "RESERVED" },
+        data: { status: "CANCELLED", notes: "Payment reservation expired before trusted payment confirmation." }
+      });
+
+      await tx.consultationRequest.updateMany({
+        where: { id: { in: attempts.map((attempt) => attempt.consultationRequestId) }, status: "PAYMENT_PENDING" },
+        data: { status: "REVIEWING" }
+      });
+    });
+
+    expiredCount += attempts.length;
+
+    if (attempts.length < paymentMaintenanceBatchSize) {
+      break;
+    }
   }
 
-  await prisma.$transaction(async (tx) => {
-    await tx.paymentAttempt.updateMany({
-      where: { id: { in: attempts.map((attempt) => attempt.id) } },
-      data: { status: "EXPIRED", failureCode: "ATTEMPT_EXPIRED" }
-    });
-
-    await tx.appointment.updateMany({
-      where: { id: { in: attempts.map((attempt) => attempt.appointmentId) }, status: "RESERVED" },
-      data: { status: "CANCELLED", notes: "Payment reservation expired before trusted payment confirmation." }
-    });
-
-    await tx.consultationRequest.updateMany({
-      where: { id: { in: attempts.map((attempt) => attempt.consultationRequestId) }, status: "PAYMENT_PENDING" },
-      data: { status: "REVIEWING" }
-    });
-  });
-
-  return attempts.length;
+  return expiredCount;
 }
 
 async function cleanupOldOperationalData(now) {
@@ -176,7 +209,7 @@ function getDatabaseUrl() {
 }
 
 async function reportFailure(error) {
-  console.error("[payment-maintenance] failed", error);
+  console.error("[payment-maintenance] failed", safeErrorSummary(error));
   await notifyMaintenanceFailure(error);
 }
 

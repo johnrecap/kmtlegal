@@ -785,6 +785,7 @@ model PaymentAttempt {
   @@index([pricingRuleId])
   @@index([startsAt, endsAt])
   @@index([expiresAt])
+  @@index([status, expiresAt])
   @@map("payment_attempts")
 }
 

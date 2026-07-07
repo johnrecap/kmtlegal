@@ -7,6 +7,7 @@ import { getDatabaseUrl } from "@/server/db/prisma";
 import { getIpAddress } from "@/server/auth/session-store";
 import { redactMetadata } from "@/server/audit/redaction";
 import { evaluateMutationOrigin } from "@/server/security/origin-guard";
+import { shouldApplyApiMutationOriginGuard } from "@/middleware";
 
 describe("security, privacy, upload, and observability hardening", () => {
   it("publishes global browser security headers", async () => {
@@ -118,6 +119,23 @@ describe("security, privacy, upload, and observability hardening", () => {
         strictMissingOrigin: true
       })
     ).toMatchObject({ allowed: false, reason: "cross_origin" });
+  });
+
+  it("bypasses browser origin checks only for trusted payment webhook POST routes", () => {
+    expect(shouldApplyApiMutationOriginGuard("/api/webhooks/paytabs", "POST")).toBe(false);
+    expect(shouldApplyApiMutationOriginGuard("/api/webhooks/paymob", "POST")).toBe(false);
+    expect(shouldApplyApiMutationOriginGuard("/api/webhooks/paytabs", "GET")).toBe(true);
+    expect(shouldApplyApiMutationOriginGuard("/api/webhooks/stripe", "POST")).toBe(true);
+    expect(shouldApplyApiMutationOriginGuard("/api/admin/finance", "POST")).toBe(true);
+
+    expect(
+      evaluateMutationOrigin({
+        method: "POST",
+        requestUrl: "https://kmt.example/api/admin/finance",
+        appOrigin: "https://kmt.example",
+        strictMissingOrigin: true
+      })
+    ).toMatchObject({ allowed: false, reason: "missing_origin_rejected" });
   });
 
   it("redacts secrets, emails, phone numbers, and sensitive keys from logs", () => {
@@ -281,11 +299,16 @@ describe("security, privacy, upload, and observability hardening", () => {
     const maintenanceSource = fs.readFileSync(path.join(process.cwd(), "scripts/payment-maintenance.mjs"), "utf8");
 
     expect(maintenanceSource).toContain("PAYMENT_MAINTENANCE_ALERT_WEBHOOK_URL");
+    expect(maintenanceSource).toContain("PAYMENT_MAINTENANCE_BATCH_SIZE");
+    expect(maintenanceSource).toContain("runInProgress");
+    expect(maintenanceSource).toContain('reason: "already_running"');
+    expect(maintenanceSource).toContain("take: paymentMaintenanceBatchSize");
     expect(maintenanceSource).toContain('import prismaClientPackage from "@prisma/client"');
     expect(maintenanceSource).not.toContain('import { PrismaClient } from "@prisma/client"');
     expect(maintenanceSource).toContain('process.once("SIGTERM"');
     expect(maintenanceSource).not.toContain("timer.unref");
     expect(maintenanceSource).toContain("safeErrorSummary");
+    expect(maintenanceSource).toContain('console.error("[payment-maintenance] failed", safeErrorSummary(error))');
     expect(maintenanceSource).toContain("message: String(error.message");
     expect(maintenanceSource).not.toContain("error.stack");
   });

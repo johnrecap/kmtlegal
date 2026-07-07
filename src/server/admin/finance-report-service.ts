@@ -419,15 +419,15 @@ async function assertManualPaymentDoesNotDuplicateGatewayOrReceipt(body: AdminPa
 
   const duplicate = await prisma.payment.findFirst({
     where: {
-      clientId: body.clientId,
       receiptNumber,
+      status: "PAID",
       ...(existingPaymentId ? { id: { not: existingPaymentId } } : {})
     },
     select: { id: true, invoiceNumber: true }
   });
 
   if (duplicate) {
-    throw new ApiError(409, "CONFLICT", "A payment with this receipt number already exists for the selected client.");
+    throw new ApiError(409, "CONFLICT", "A paid manual payment with this receipt number already exists.");
   }
 }
 

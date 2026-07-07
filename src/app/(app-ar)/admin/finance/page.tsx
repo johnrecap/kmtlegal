@@ -59,6 +59,7 @@ type PaymentGatewaySettings = Awaited<ReturnType<typeof getAdminPaymentGatewaySe
 
 const paymentAttemptStatusValues = ["CREATED", "PENDING", "PAID", "FAILED", "EXPIRED", "REFUNDED", "DISPUTED", "CANCELLED"] as const;
 const webhookProcessingStatusValues = ["PENDING", "PROCESSED", "FAILED", "IGNORED"] as const;
+const paymentOperationsPageSize = 20;
 
 const paymentAttemptStatusLabels: Record<string, string> = {
   CREATED: "تم الإنشاء",
@@ -83,7 +84,9 @@ const paymentIssueLabels: Record<string, string> = {
   PAYMENT_CURRENCY_MISMATCH: "عملة الدفع القادمة من البوابة لا تطابق العملة المطلوبة.",
   ATTEMPT_EXPIRED: "انتهت مهلة الدفع وتم تحرير الموعد.",
   INVALID_SIGNATURE: "توقيع إشعار بوابة الدفع غير صحيح.",
-  WEBHOOK_PROCESSING_FAILED: "إشعار الدفع لم يكتمل ويحتاج مراجعة."
+  WEBHOOK_PROCESSING_FAILED: "إشعار الدفع لم يكتمل ويحتاج مراجعة.",
+  WEBHOOK_PAYLOAD_HASH_MISMATCH: "وصل إشعار دفع مكرر بنفس الرقم لكن بمحتوى مختلف، ويحتاج مراجعة.",
+  PROVIDER_TRANSACTION_ATTEMPT_MISMATCH: "رقم عملية الدفع مرتبط بمحاولة دفع أخرى، وتم منع تغيير السجل."
 };
 
 function flattenSearchParams(searchParams: SearchParams) {
@@ -130,6 +133,12 @@ function operationalFilterHref(query: Record<string, string>) {
   const params = new URLSearchParams(query);
   params.delete("page");
   return params.toString() ? `/admin/finance?${params.toString()}` : "/admin/finance";
+}
+
+function operationsPageHref(query: Record<string, string>, key: "attemptPage" | "webhookPage", page: number) {
+  const params = new URLSearchParams(query);
+  params.set(key, String(page));
+  return `/admin/finance?${params.toString()}`;
 }
 
 function summaryAmount(amount: number, currency?: string) {
@@ -364,7 +373,7 @@ function GatewayOperationsPanel({
         </CardHeader>
         <CardContent className="space-y-3">
           {attempts.length ? (
-            attempts.slice(0, 8).map((attempt) => (
+            attempts.map((attempt) => (
               <div key={attempt.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-semibold text-kmt-ink">{attempt.client.fullName}</p>
@@ -389,7 +398,7 @@ function GatewayOperationsPanel({
         </CardHeader>
         <CardContent className="space-y-3">
           {webhookEvents.length ? (
-            webhookEvents.slice(0, 8).map((event) => (
+            webhookEvents.map((event) => (
               <div key={event.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <p className="truncate font-semibold text-kmt-ink">{event.eventId}</p>
@@ -412,21 +421,36 @@ function GatewayOperationsPanel({
 
 function PaymentGatewayOperationsPanel({
   attempts,
+  attemptPage,
+  attemptPageSize,
+  attemptTotal,
   canManage,
   gatewaySettings,
   query,
   selectedPricingRule,
   pricingRules,
-  webhookEvents
+  webhookEvents,
+  webhookPage,
+  webhookPageSize,
+  webhookTotal
 }: {
   attempts: PaymentAttemptRow[];
+  attemptPage: number;
+  attemptPageSize: number;
+  attemptTotal: number;
   canManage: boolean;
   gatewaySettings: PaymentGatewaySettings;
   query: Record<string, string>;
   selectedPricingRule: PricingRuleRow | null;
   pricingRules: PricingRuleRow[];
   webhookEvents: PaymentWebhookRow[];
+  webhookPage: number;
+  webhookPageSize: number;
+  webhookTotal: number;
 }) {
+  const attemptTotalPages = Math.max(1, Math.ceil(attemptTotal / attemptPageSize));
+  const webhookTotalPages = Math.max(1, Math.ceil(webhookTotal / webhookPageSize));
+
   return (
     <div className="space-y-5">
       <Card>
@@ -524,11 +548,11 @@ function PaymentGatewayOperationsPanel({
         <Card>
           <CardHeader>
             <CardTitle>محاولات الدفع</CardTitle>
-            <CardDescription>آخر محاولات Hosted Checkout وحجز المواعيد المؤقت.</CardDescription>
+            <CardDescription>محاولات Hosted Checkout وحجز المواعيد المؤقت. المعروض {attempts.length} من {attemptTotal}.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {attempts.length ? (
-              attempts.slice(0, 8).map((attempt) => (
+              attempts.map((attempt) => (
                 <div key={attempt.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-semibold text-kmt-ink">{attempt.client.fullName}</p>
@@ -548,17 +572,36 @@ function PaymentGatewayOperationsPanel({
             ) : (
               <StateBlock tone="empty" title="لا توجد محاولات دفع" description="ستظهر محاولات الدفع هنا بعد إنشاء أول checkout." />
             )}
+            {attemptTotalPages > 1 ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-sm text-kmt-muted">
+                <span>
+                  صفحة {attemptPage} من {attemptTotalPages}
+                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {attemptPage > 1 ? (
+                    <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={operationsPageHref(query, "attemptPage", attemptPage - 1)}>
+                      السابق
+                    </Link>
+                  ) : null}
+                  {attemptPage < attemptTotalPages ? (
+                    <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={operationsPageHref(query, "attemptPage", attemptPage + 1)}>
+                      التالي
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
             <CardTitle>أحداث Webhook</CardTitle>
-            <CardDescription>حالة التوقيع والمعالجة وإعادة التشغيل الآمن.</CardDescription>
+            <CardDescription>حالة التوقيع والمعالجة وإعادة التشغيل الآمن. المعروض {webhookEvents.length} من {webhookTotal}.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {webhookEvents.length ? (
-              webhookEvents.slice(0, 8).map((event) => (
+              webhookEvents.map((event) => (
                 <div key={event.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
                   <div className="flex items-center justify-between gap-3">
                     <p className="truncate font-semibold text-kmt-ink">{event.eventId}</p>
@@ -579,6 +622,25 @@ function PaymentGatewayOperationsPanel({
             ) : (
               <StateBlock tone="empty" title="لا توجد Webhooks" description="ستظهر أحداث بوابة الدفع بعد أول إشعار من المزود." />
             )}
+            {webhookTotalPages > 1 ? (
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-sm text-kmt-muted">
+                <span>
+                  صفحة {webhookPage} من {webhookTotalPages}
+                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {webhookPage > 1 ? (
+                    <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={operationsPageHref(query, "webhookPage", webhookPage - 1)}>
+                      السابق
+                    </Link>
+                  ) : null}
+                  {webhookPage < webhookTotalPages ? (
+                    <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={operationsPageHref(query, "webhookPage", webhookPage + 1)}>
+                      التالي
+                    </Link>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
           </CardContent>
         </Card>
       </div>
@@ -597,13 +659,21 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
   }
 
   const query = flattenSearchParams((await searchParams) ?? {});
+  const attemptPage = Math.max(1, Number.parseInt(query.attemptPage ?? "1", 10) || 1);
+  const webhookPage = Math.max(1, Number.parseInt(query.webhookPage ?? "1", 10) || 1);
   const [result, options, pricingRules, paymentGatewaySettings, paymentAttempts, webhookEvents] = await Promise.all([
     listAdminPayments({ actor: guard.context.principal, query }),
     getAdminFinanceOptions(guard.context.principal),
     listAdminConsultationPricingRules({ actor: guard.context.principal, query: { active: "" } }),
     getAdminPaymentGatewaySettings({ actor: guard.context.principal }),
-    listAdminPaymentAttempts({ actor: guard.context.principal, query: { pageSize: 8, status: query.attemptStatus ?? "", q: query.attemptQ ?? "" } }),
-    listAdminPaymentWebhookEvents({ actor: guard.context.principal, query: { pageSize: 8, processingStatus: query.webhookStatus ?? "", q: query.webhookQ ?? "" } })
+    listAdminPaymentAttempts({
+      actor: guard.context.principal,
+      query: { page: attemptPage, pageSize: paymentOperationsPageSize, status: query.attemptStatus ?? "", q: query.attemptQ ?? "" }
+    }),
+    listAdminPaymentWebhookEvents({
+      actor: guard.context.principal,
+      query: { page: webhookPage, pageSize: paymentOperationsPageSize, processingStatus: query.webhookStatus ?? "", q: query.webhookQ ?? "" }
+    })
   ]);
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
   const selectedCurrency = result.filters.currency || undefined;
@@ -761,12 +831,18 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
 
         <PaymentGatewayOperationsPanel
           attempts={paymentAttempts.items}
+          attemptPage={paymentAttempts.page}
+          attemptPageSize={paymentAttempts.pageSize}
+          attemptTotal={paymentAttempts.total}
           canManage={options.canManage}
           gatewaySettings={paymentGatewaySettings}
           query={query}
           selectedPricingRule={selectedPricingRule}
           pricingRules={pricingRules}
           webhookEvents={webhookEvents.items}
+          webhookPage={webhookEvents.page}
+          webhookPageSize={webhookEvents.pageSize}
+          webhookTotal={webhookEvents.total}
         />
       </div>
     </DashboardShell>

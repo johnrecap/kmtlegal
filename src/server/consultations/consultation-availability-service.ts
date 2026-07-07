@@ -149,7 +149,7 @@ export async function listPublicConsultationSlots(input: {
   fromTime?: string;
   toTime?: string;
 } = {}) {
-  await expireOpenConsultationPaymentAttempts(input.now ?? new Date());
+  await expireOpenConsultationPaymentAttempts(input.now ?? new Date(), { limit: 500 });
   const availability = await getConsultationAvailability();
   const window = consultationSlotWindow(availability, input.now ?? new Date());
   const appointments = await prisma.appointment.findMany({

@@ -487,7 +487,57 @@ export const publicContentEn = {
     safeLinkNotice: "This link is showing a safe public payment status only. Client details and account links require the secure return link from the payment provider.",
     pending: "We have not received trusted payment confirmation yet.",
     countdown: "This page checks automatically while the temporary slot hold is active.",
-    expired: "Expired"
+    expired: "Expired",
+    eyebrow: "Consultation booking payment status",
+    missingStatusTitle: "Payment link is incomplete",
+    missingStatusDescription: "Return to the booking page and start a new attempt.",
+    labels: {
+      attemptId: "Payment attempt",
+      status: "Status",
+      amount: "Amount",
+      appointment: "Appointment",
+      invoiceNumber: "Invoice number",
+      temporaryHoldExpiresAt: "Temporary hold expires",
+      clientName: "Client name",
+      phone: "Phone number",
+      paidAmount: "Paid amount",
+      receiptNumber: "Receipt number",
+      unavailable: "Unavailable"
+    },
+    actions: {
+      pay: "Continue payment",
+      receipt: "View / print invoice",
+      accountSetup: "Create account and sign in",
+      accountLogin: "Sign in",
+      newBooking: "Book a new appointment"
+    },
+    paidConfirmation: {
+      title: "Payment and appointment confirmed",
+      description: "The payment invoice was created automatically and linked to the consultation booking.",
+      badge: "Paid"
+    },
+    statusTones: {
+      paid: {
+        title: "Payment confirmed",
+        description: "The consultation appointment was confirmed after a trusted payment notification from the provider."
+      },
+      failed: {
+        title: "Payment could not be completed",
+        description: "The appointment was not confirmed. You can return to booking and choose a new time or contact the office."
+      },
+      expired: {
+        title: "Temporary hold expired",
+        description: "The temporary appointment hold was released because trusted payment confirmation did not arrive in time."
+      },
+      pending: {
+        title: "Waiting for payment provider confirmation",
+        description: "The appointment is not confirmed from the return page. Confirmation appears only after a trusted payment notification arrives."
+      },
+      unknown: {
+        title: "Payment status could not be read",
+        description: "Check the link or start a new booking attempt."
+      }
+    }
   },
   clientAccountSetup: {
     metadataTitle: "Create Client Account | KMT Legal",

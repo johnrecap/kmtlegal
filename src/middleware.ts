@@ -14,7 +14,7 @@ export function middleware(request: NextRequest) {
     });
   }
 
-  if (pathname.startsWith("/api/")) {
+  if (shouldApplyApiMutationOriginGuard(pathname, request.method)) {
     const originDecision = evaluateMutationOrigin({
       method: request.method,
       requestUrl: request.url,
@@ -60,6 +60,14 @@ export function middleware(request: NextRequest) {
 
 function isProductionRuntime() {
   return process.env.APP_ENV === "production" || process.env.NODE_ENV === "production";
+}
+
+export function shouldApplyApiMutationOriginGuard(pathname: string, method: string) {
+  return pathname.startsWith("/api/") && !isTrustedPaymentWebhookMutation(pathname, method);
+}
+
+export function isTrustedPaymentWebhookMutation(pathname: string, method: string) {
+  return method.toUpperCase() === "POST" && (pathname === "/api/webhooks/paytabs" || pathname === "/api/webhooks/paymob");
 }
 
 export const config = {
