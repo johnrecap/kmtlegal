@@ -2,11 +2,13 @@
 
 This file is the project reference for local Git commands, server pull/deploy commands, and runtime commands. Use it when handing off a pushed change.
 
-## Current Git Target
+## Current Git Targets
 
 - Branch: `main`
-- Remote: `origin`
-- Repository: `https://gitlab.com/john-recap-group/kmtlegal.git`
+- Development remote: `origin` -> `https://gitlab.com/john-recap-group/kmtlegal.git`
+- Server pull remote: GitHub -> `https://github.com/johnrecap/kmtlegal.git`
+
+The current production server pulls from GitHub. When a change is pushed only to GitLab, also push the same `main` commit to GitHub before running the server deploy command.
 
 ## Mandatory Workflow For Every Change
 
@@ -26,6 +28,7 @@ git status
 git add -A
 git commit -m "describe the change"
 git push origin main
+git push github main
 ```
 
 Default server handoff after push:
@@ -124,6 +127,7 @@ If the commit already exists locally and only needs to be uploaded:
 
 ```bash
 git push origin main
+git push github main
 ```
 
 ## Local Pull
