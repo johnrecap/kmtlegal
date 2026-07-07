@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 
-loadEnvFiles([".env", ".env.local"]);
+loadEnvFiles([".env.production.local", ".env.local", ".env"]);
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({
