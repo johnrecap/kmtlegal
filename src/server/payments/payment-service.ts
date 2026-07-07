@@ -2,6 +2,7 @@ import { createHash } from "crypto";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { appendAuditLog, appendAuditLogBestEffort } from "@/server/audit/audit-service";
+import { redactMetadata, type RedactableJson } from "@/server/audit/redaction";
 import { createConsultationReviewNotifications } from "@/server/admin/notification-service";
 import { hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
@@ -272,6 +273,7 @@ export async function getPublicPaymentAttemptStatus(input: { attemptId: string; 
 export async function handlePaymentWebhook(input: { request: Request; rawBody: string; requestId: string; provider: PaymentProviderName }) {
   const payloadHash = createHash("sha256").update(input.rawBody).digest("hex");
   const body = parseWebhookJson(input.rawBody);
+  const payloadSnapshot = safeWebhookPayloadSnapshot(body);
   const provider = input.provider;
   const eventId = providerWebhookEventId(body, provider, payloadHash);
   const secret = paymentWebhookSecret(provider);
@@ -286,6 +288,7 @@ export async function handlePaymentWebhook(input: { request: Request; rawBody: s
     await recordWebhookPayloadMismatch({
       event: existing,
       payloadHash,
+      payloadSnapshot,
       request: input.request,
       requestId: input.requestId
     });
@@ -302,6 +305,7 @@ export async function handlePaymentWebhook(input: { request: Request; rawBody: s
       provider,
       eventId,
       payloadHash,
+      payloadSnapshot,
       signatureStatus,
       processingStatus: "FAILED",
       errorCode: "INVALID_SIGNATURE"
@@ -316,6 +320,7 @@ export async function handlePaymentWebhook(input: { request: Request; rawBody: s
     provider,
     eventId,
     payloadHash,
+    payloadSnapshot,
     signatureStatus,
     processingStatus: "PENDING",
     attemptId: normalized.attemptId,
@@ -526,6 +531,7 @@ async function upsertWebhookEvent(input: {
   provider: string;
   eventId: string;
   payloadHash: string;
+  payloadSnapshot: RedactableJson;
   signatureStatus: "VERIFIED" | "UNVERIFIED" | "INVALID";
   processingStatus: "PENDING" | "PROCESSED" | "FAILED" | "IGNORED";
   errorCode?: string;
@@ -538,6 +544,7 @@ async function upsertWebhookEvent(input: {
       provider: input.provider,
       eventId: input.eventId,
       payloadHash: input.payloadHash,
+      payloadSnapshot: input.payloadSnapshot as Prisma.InputJsonValue,
       signatureStatus: input.signatureStatus,
       processingStatus: input.processingStatus,
       errorCode: input.errorCode ?? null,
@@ -546,6 +553,7 @@ async function upsertWebhookEvent(input: {
     },
     update: {
       payloadHash: input.payloadHash,
+      payloadSnapshot: input.payloadSnapshot as Prisma.InputJsonValue,
       signatureStatus: input.signatureStatus,
       processingStatus: input.processingStatus,
       errorCode: input.errorCode ?? null,
@@ -564,6 +572,7 @@ async function recordWebhookPayloadMismatch(input: {
     processingStatus: string;
   };
   payloadHash: string;
+  payloadSnapshot: RedactableJson;
   request: Request;
   requestId: string;
 }) {
@@ -577,11 +586,16 @@ async function recordWebhookPayloadMismatch(input: {
       eventId: input.event.eventId,
       storedPayloadHash: input.event.payloadHash,
       receivedPayloadHash: input.payloadHash,
+      receivedPayloadSnapshot: input.payloadSnapshot,
       processingStatus: input.event.processingStatus
     },
     request: input.request,
     requestId: input.requestId
   });
+}
+
+export function safeWebhookPayloadSnapshot(payload: Record<string, unknown>): RedactableJson {
+  return redactMetadata(payload);
 }
 
 async function applyWebhookPaymentState(input: {

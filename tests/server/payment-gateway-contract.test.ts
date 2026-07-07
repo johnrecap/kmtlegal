@@ -24,7 +24,8 @@ import {
   mapProviderPaymentStatus,
   paidAttemptWebhookConfirmationBlocker,
   paidWebhookPayloadProblem,
-  publicPaymentAttemptConsultationDto
+  publicPaymentAttemptConsultationDto,
+  safeWebhookPayloadSnapshot
 } from "@/server/payments/payment-service";
 import { adminConsultationPricingRuleWriteSchema, consultationPriceDto } from "@/server/payments/pricing-service";
 import { consultationBookingFlags, consultationBookingModeFromValue } from "@/server/consultations/consultation-booking-settings";
@@ -203,13 +204,40 @@ describe("payment gateway contract", () => {
 
   it("keeps webhook events immutable and blocks transaction relinking across attempts", () => {
     const source = readFileSync(join(process.cwd(), "src/server/payments/payment-service.ts"), "utf8");
+    const schema = readFileSync(join(process.cwd(), "prisma/schema.prisma"), "utf8");
 
     expect(source).toContain("recordWebhookPayloadMismatch");
     expect(source).toContain("webhook_payload_hash_mismatch");
     expect(source).toContain("payment.webhook_payload_mismatch");
+    expect(source).toContain("safeWebhookPayloadSnapshot");
+    expect(source).toContain("receivedPayloadSnapshot");
+    expect(schema).toContain("payloadSnapshot  Json?");
     expect(source).toContain("existingTransaction.attemptId !== input.attemptId");
     expect(source).toContain("provider_transaction_attempt_mismatch");
     expect(source).not.toContain("attemptId: input.attemptId,\n          rawStatus: input.rawStatus");
+  });
+
+  it("stores only a redacted webhook payload snapshot for payment audit trails", () => {
+    const snapshot = safeWebhookPayloadSnapshot({
+      eventId: "evt-1",
+      fullName: "Sensitive Client",
+      email: "client@example.com",
+      phone: "+201001234567",
+      obj: {
+        id: "txn-1",
+        amount_cents: 150000,
+        billing_data: {
+          first_name: "Sensitive",
+          phone_number: "+201001234567"
+        }
+      }
+    });
+
+    expect(JSON.stringify(snapshot)).toContain("evt-1");
+    expect(JSON.stringify(snapshot)).toContain("150000");
+    expect(JSON.stringify(snapshot)).not.toContain("Sensitive Client");
+    expect(JSON.stringify(snapshot)).not.toContain("client@example.com");
+    expect(JSON.stringify(snapshot)).not.toContain("+201001234567");
   });
 
   it("expires only the requested public payment status attempt and batches global expiry", () => {

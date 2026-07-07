@@ -54,7 +54,8 @@ Last updated: 2026-07-07
 - Paid gateway invoices can be viewed from the payment return page and client payments page through signed receipt links.
 - Reconciliation keys link provider transaction, attempt, payment/invoice, appointment, and consultation request.
 - Public tokenless payment status does not expose client identity, checkout/receipt/account links, or legal request details.
-- Manual paid finance records reject gateway-managed method labels and repeated receipt numbers for the same client.
+- Payment webhook events keep a redacted payload snapshot plus normalized data and payload hash for audit without storing raw personal details.
+- Manual paid finance records reject gateway-managed method labels and repeated receipt numbers across manual paid records.
 
 ## Content
 

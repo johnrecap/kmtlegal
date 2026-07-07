@@ -29,7 +29,7 @@ async function main() {
     const timer = setInterval(() => {
       runOnce().catch((error) => {
         reportFailure(error).catch((alertError) => {
-          console.error("[payment-maintenance] alert failed", alertError);
+          console.error("[payment-maintenance] alert failed", safeErrorSummary(alertError));
         });
       });
     }, intervalSeconds * 1000);

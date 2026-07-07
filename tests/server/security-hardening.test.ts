@@ -309,6 +309,7 @@ describe("security, privacy, upload, and observability hardening", () => {
     expect(maintenanceSource).not.toContain("timer.unref");
     expect(maintenanceSource).toContain("safeErrorSummary");
     expect(maintenanceSource).toContain('console.error("[payment-maintenance] failed", safeErrorSummary(error))');
+    expect(maintenanceSource).toContain('console.error("[payment-maintenance] alert failed", safeErrorSummary(alertError))');
     expect(maintenanceSource).toContain("message: String(error.message");
     expect(maintenanceSource).not.toContain("error.stack");
   });

@@ -20,7 +20,7 @@ Last updated: 2026-07-07
 
 - `/admin/finance` remains the single operations center for manual invoices, gateway attempts, pricing rules, gateway settings, webhook events, replay, and CSV export.
 - Manual paid records must not use gateway-managed payment methods such as PayTabs, Paymob, hosted checkout, gateway, or webhook.
-- A repeated receipt number on any paid manual record is rejected to reduce accidental double-recording.
+- A repeated receipt number on any paid manual record is rejected by the application and the database to reduce accidental double-recording.
 - Gateway-confirmed payments are not edited through the manual invoice form. If a gateway record is wrong, investigate the linked attempt, transaction, and webhook event.
 
 ## Late Or Problem Payment Playbook
@@ -29,7 +29,7 @@ Last updated: 2026-07-07
 2. If the issue says amount or currency mismatch, do not confirm the appointment. Compare the provider dashboard record against the reserved amount/currency.
 3. If the attempt expired, the maintenance job should have cancelled the temporary appointment and returned the consultation to review. Ask the client to choose a new slot.
 4. If a webhook failed because of signature or processing, fix the provider/env issue first, then use the replay button only when the stored normalized event is safe to retry.
-5. If a webhook failed because the same provider event id arrived with a different payload hash, treat the original webhook event as the audit source of truth and compare the provider dashboard before any manual action.
+5. If a webhook failed because the same provider event id arrived with a different payload hash, treat the original webhook event as the audit source of truth and compare the provider dashboard before any manual action. The stored payload snapshot is redacted and only helps investigation; the provider dashboard remains the final external reference.
 6. If the client paid by Instapay or bank transfer, create a manual finance payment with the real receipt/reference. Do not label it as PayTabs or Paymob.
 7. If there is any doubt, keep the consultation in manual review and contact the client from the office channel.
 

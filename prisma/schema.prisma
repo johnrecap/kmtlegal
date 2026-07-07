@@ -824,6 +824,7 @@ model PaymentWebhookEvent {
   processingStatus PaymentWebhookProcessingStatus @default(PENDING)
   replayCount      Int                            @default(0)
   payloadHash      String
+  payloadSnapshot  Json?
   normalizedPayload Json?
   errorCode        String?
   receivedAt       DateTime                       @default(now())

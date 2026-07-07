@@ -101,13 +101,22 @@ describe("admin finance and reports contract", () => {
 
   it("keeps paid manual receipt numbers globally guarded and secretary permissions unchanged", () => {
     const financeSource = fs.readFileSync(path.join(process.cwd(), "src/server/admin/finance-report-service.ts"), "utf8");
+    const migrationSource = fs.readFileSync(
+      path.join(process.cwd(), "prisma/migrations/20260707062000_payment_audit_followup/migration.sql"),
+      "utf8"
+    );
     const policy = JSON.parse(fs.readFileSync(path.join(process.cwd(), "src/server/auth/policy-data.json"), "utf8")) as {
       rolePermissions: Record<string, string[]>;
     };
 
     expect(financeSource).toContain('receiptNumber,');
     expect(financeSource).toContain('status: "PAID"');
+    expect(financeSource).toContain("payments_manual_paid_receipt_number_unique_idx");
+    expect(financeSource).toContain("A paid manual payment with this receipt number already exists.");
     expect(financeSource).not.toContain("clientId: body.clientId,\n      receiptNumber");
+    expect(migrationSource).toContain('CREATE UNIQUE INDEX "payments_manual_paid_receipt_number_unique_idx"');
+    expect(migrationSource).toContain('"paymentAttemptId" IS NULL');
+    expect(migrationSource).toContain('"status" = \'PAID\'');
 
     expect(policy.rolePermissions.Secretary).toEqual(
       expect.arrayContaining(["finance.manage.any", "finance.read.any", "report.read.any"])

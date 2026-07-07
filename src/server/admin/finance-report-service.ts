@@ -433,10 +433,19 @@ async function assertManualPaymentDoesNotDuplicateGatewayOrReceipt(body: AdminPa
 
 function handlePaymentWriteError(error: unknown): never {
   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+    if (isManualReceiptNumberConflict(error)) {
+      throw new ApiError(409, "CONFLICT", "A paid manual payment with this receipt number already exists.");
+    }
     throw new ApiError(409, "CONFLICT", "Invoice number already exists.");
   }
 
   throw error;
+}
+
+function isManualReceiptNumberConflict(error: Prisma.PrismaClientKnownRequestError) {
+  const target = error.meta?.target;
+  const printableTarget = Array.isArray(target) ? target.join("|") : String(target ?? "");
+  return printableTarget.includes("receiptNumber") || printableTarget.includes("payments_manual_paid_receipt_number_unique_idx");
 }
 
 export async function listAdminPayments(input: { actor: Principal; query: unknown }) {

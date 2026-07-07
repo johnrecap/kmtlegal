@@ -1,5 +1,5 @@
 const SENSITIVE_KEY_PATTERN =
-  /(password|pass|secret|token|cookie|authorization|api[-_]?key|otp|totp|smtp|prompt|document|content|summary|caseSummary|legalSummary|rawResponse|rawPrompt|email|phone|mobile|address|message|fullName|clientName|contact)/i;
+  /(password|pass|secret|token|cookie|authorization|api[-_]?key|otp|totp|smtp|prompt|document|content|summary|caseSummary|legalSummary|rawResponse|rawPrompt|email|phone|mobile|address|message|fullName|clientName|first[-_]?name|last[-_]?name|billing[-_]?data|customer|contact)/i;
 
 const MAX_SAFE_STRING_LENGTH = 240;
 const EMAIL_VALUE_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
