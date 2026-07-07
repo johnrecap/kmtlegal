@@ -427,6 +427,40 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
   );
 }
 
+export function WebhookReplayButton({ eventId }: { eventId: string }) {
+  const router = useRouter();
+  const [message, setMessage] = useState<string | null>(null);
+  const [isBusy, setIsBusy] = useState(false);
+
+  async function replay() {
+    setMessage(null);
+    setIsBusy(true);
+
+    try {
+      const response = await fetch(`/api/admin/payments/webhooks/${eventId}/replay`, { method: "POST" });
+      if (!response.ok) {
+        setMessage(await readMessage(response));
+        return;
+      }
+      setMessage("تمت إعادة المعالجة.");
+      router.refresh();
+    } catch {
+      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      <Button disabled={isBusy} loading={isBusy} onClick={replay} size="sm" type="button" variant="secondary">
+        إعادة معالجة
+      </Button>
+      <StatusMessage message={message} />
+    </div>
+  );
+}
+
 export function ConsultationPricingRuleForm({
   pricingRule
 }: {

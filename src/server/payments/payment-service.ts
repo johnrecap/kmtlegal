@@ -24,7 +24,11 @@ import {
   paymentWebhookSecret,
   requireVerifiedWebhookSignature
 } from "./payment-config";
-import { publicPaymentReceiptUrl } from "./payment-receipt-service";
+import {
+  createPaymentStatusToken,
+  publicPaymentReceiptUrl,
+  verifyPaymentStatusToken
+} from "./payment-receipt-service";
 import { getActivePaymentGateway } from "./payment-settings-service";
 import type { PaymentProviderName } from "./payment-config";
 import type { ConsultationPriceSnapshot } from "./pricing-service";
@@ -71,6 +75,7 @@ export type CreateConsultationPaymentAttemptInput = {
   };
   price: ConsultationPriceSnapshot;
   request?: Request;
+  locale?: "ar" | "en";
 };
 
 export function canReadAdminPaymentOperations(actor: Principal) {
@@ -173,7 +178,9 @@ export async function createConsultationPaymentAttempt(input: CreateConsultation
       email: input.client.email,
       phone: input.client.phone
     },
-    request: input.request
+    request: input.request,
+    statusToken: createPaymentStatusToken({ attemptId: attempt.id }),
+    locale: input.locale
   });
 
   const updated = await input.tx.paymentAttempt.update({
@@ -219,7 +226,7 @@ export async function createConsultationPaymentAttempt(input: CreateConsultation
   return updated;
 }
 
-export async function getPublicPaymentAttemptStatus(input: { attemptId: string }) {
+export async function getPublicPaymentAttemptStatus(input: { attemptId: string; token?: string | null }) {
   const attemptId = parseWithSchema(uuidSchema, input.attemptId, "Payment attempt id is invalid.");
   await expireOpenConsultationPaymentAttempts();
 
@@ -228,7 +235,7 @@ export async function getPublicPaymentAttemptStatus(input: { attemptId: string }
     include: {
       client: { select: { id: true, fullName: true, phone: true, email: true, userId: true } },
       appointment: { select: { id: true, title: true, startsAt: true, status: true } },
-      consultationRequest: { select: { id: true, status: true } },
+      consultationRequest: { select: { id: true, status: true, summary: true, urgency: true, preferredMode: true, serviceCategory: true, city: true } },
       payment: {
         select: {
           id: true,
@@ -248,7 +255,8 @@ export async function getPublicPaymentAttemptStatus(input: { attemptId: string }
     throw new ApiError(404, "NOT_FOUND", "Payment attempt was not found.");
   }
 
-  return paymentAttemptDto(attempt);
+  const includeSensitive = Boolean(input.token && verifyPaymentStatusToken({ attemptId, token: input.token }));
+  return paymentAttemptDto(attempt, { includeSensitive });
 }
 
 export async function handlePaymentWebhook(input: { request: Request; rawBody: string; requestId: string; provider: PaymentProviderName }) {
@@ -307,7 +315,7 @@ export async function handlePaymentWebhook(input: { request: Request; rawBody: s
       where: { id: event.id },
       data: {
         processingStatus: "FAILED",
-        errorCode: error instanceof ApiError ? error.code : "WEBHOOK_PROCESSING_FAILED",
+        errorCode: paymentWebhookProcessingErrorCode(error),
         processedAt: new Date()
       }
     });
@@ -533,22 +541,35 @@ async function applyWebhookPaymentState(input: {
       throw new ApiError(409, "CONFLICT", "Payment webhook provider does not match the original payment attempt provider.");
     }
 
+    const paidPayloadProblem =
+      input.payload.status === "PAID" ? paidWebhookPayloadProblem({ payload: input.payload, attempt }) : null;
+
     const transaction = await upsertPaymentTransaction(tx, {
       eventId: input.eventId,
       attemptId: attempt.id,
       provider: input.provider,
       providerTransactionId: input.payload.providerTransactionId,
       rawStatus: input.payload.rawStatus || null,
-      status: paymentTransactionStatus(input.payload.status),
+      status: paidPayloadProblem ? "FAILED" : paymentTransactionStatus(input.payload.status),
       amount: attempt.amount,
       currency: attempt.currency,
-      paidAt: input.payload.status === "PAID" ? new Date() : null
+      paidAt: input.payload.status === "PAID" && !paidPayloadProblem ? new Date() : null
     });
 
     await tx.paymentWebhookEvent.update({
       where: { id: input.eventId },
       data: { attemptId: attempt.id, transactionId: transaction.id }
     });
+
+    if (paidPayloadProblem) {
+      await tx.paymentAttempt.update({
+        where: { id: attempt.id },
+        data: { failureCode: paidPayloadProblem.code }
+      });
+      throw new ApiError(409, "CONFLICT", paidPayloadProblem.message, [
+        { path: paidPayloadProblem.path, message: paidPayloadProblem.message, code: paidPayloadProblem.code.toLowerCase() }
+      ]);
+    }
 
     if (input.payload.status === "PAID") {
       await confirmPaidAttempt({ tx, attempt, transaction, request: input.request, requestId: input.requestId });
@@ -818,6 +839,55 @@ function paymentTransactionStatus(status: ReturnType<typeof mapProviderPaymentSt
   return "FAILED";
 }
 
+function paymentWebhookProcessingErrorCode(error: unknown) {
+  if (error instanceof ApiError) {
+    return error.details?.[0]?.code?.toUpperCase() || error.code;
+  }
+  return "WEBHOOK_PROCESSING_FAILED";
+}
+
+export function paidWebhookPayloadProblem(input: {
+  payload: NormalizedWebhookPayload;
+  attempt: { amount: Prisma.Decimal; currency: string };
+}) {
+  const payloadCurrency = input.payload.currency.trim().toUpperCase();
+  if (!payloadCurrency || payloadCurrency !== input.attempt.currency) {
+    return {
+      code: "PAYMENT_CURRENCY_MISMATCH",
+      path: "currency",
+      message: "Paid webhook currency does not match the reserved payment attempt."
+    };
+  }
+
+  const payloadAmountText = input.payload.amount.trim();
+  if (!payloadAmountText) {
+    return {
+      code: "PAYMENT_AMOUNT_MISMATCH",
+      path: "amount",
+      message: "Paid webhook amount is missing."
+    };
+  }
+
+  try {
+    const payloadAmount = new Prisma.Decimal(payloadAmountText);
+    if (!payloadAmount.equals(input.attempt.amount)) {
+      return {
+        code: "PAYMENT_AMOUNT_MISMATCH",
+        path: "amount",
+        message: "Paid webhook amount does not match the reserved payment attempt."
+      };
+    }
+  } catch {
+    return {
+      code: "PAYMENT_AMOUNT_MISMATCH",
+      path: "amount",
+      message: "Paid webhook amount is invalid."
+    };
+  }
+
+  return null;
+}
+
 function gatewayInvoiceNumber(attemptId: string, paidAt: Date) {
   return `CONS-${paidAt.getUTCFullYear()}-${attemptId.slice(0, 8).toUpperCase()}`;
 }
@@ -827,7 +897,7 @@ function paymentAttemptDto(
     include: {
       client: { select: { id: true; fullName: true; phone: true; email: true; userId: true } };
       appointment: { select: { id: true; title: true; startsAt: true; status: true } };
-      consultationRequest: { select: { id: true; status: true } };
+      consultationRequest: { select: { id: true; status: true; summary: true; urgency: true; preferredMode: true; serviceCategory: true; city: true } };
       payment: {
         select: {
           id: true;
@@ -841,15 +911,18 @@ function paymentAttemptDto(
         };
       };
     };
-  }>
+  }>,
+  options: { includeSensitive?: boolean } = {}
 ) {
+  const includeSensitive = options.includeSensitive === true;
   return {
     id: attempt.id,
     provider: attempt.provider,
     status: attempt.status,
     amount: attempt.amount.toString(),
     currency: attempt.currency,
-    checkoutUrl: attempt.checkoutUrl,
+    access: { verified: includeSensitive },
+    checkoutUrl: includeSensitive ? attempt.checkoutUrl : null,
     expiresAt: attempt.expiresAt.toISOString(),
     appointment: {
       id: attempt.appointment.id,
@@ -858,15 +931,36 @@ function paymentAttemptDto(
       status: attempt.appointment.status
     },
     consultation: attempt.consultationRequest,
+    resumeDraft:
+      includeSensitive && attempt.status !== "PAID"
+        ? {
+            fullName: attempt.client.fullName,
+            phone: attempt.client.phone,
+            email: attempt.client.email ?? "",
+            city: attempt.consultationRequest.city ?? "",
+            serviceCategory: attempt.consultationRequest.serviceCategory || attempt.serviceCategory,
+            urgency: attempt.consultationRequest.urgency,
+            preferredMode: attempt.consultationRequest.preferredMode || attempt.mode,
+            summary: attempt.consultationRequest.summary || "",
+            startsAt: "",
+            availabilityPreference: {
+              date: "",
+              label: "",
+              timeWindow: "",
+              fromTime: "",
+              toTime: ""
+            }
+          }
+        : null,
     client:
-      attempt.payment && attempt.status === "PAID"
+      includeSensitive && attempt.payment && attempt.status === "PAID"
         ? {
             fullName: attempt.client.fullName,
             phone: attempt.client.phone
           }
         : null,
     clientAccountSetup:
-      attempt.payment && attempt.status === "PAID" && attempt.payment.status === "PAID"
+      includeSensitive && attempt.payment && attempt.status === "PAID" && attempt.payment.status === "PAID"
         ? publicClientAccountSetupTarget({
             client: attempt.client,
             consultationId: attempt.consultationRequest.id
@@ -874,16 +968,16 @@ function paymentAttemptDto(
         : null,
     payment: attempt.payment
       ? {
-          id: attempt.payment.id,
-          invoiceNumber: attempt.payment.invoiceNumber,
-          receiptNumber: attempt.payment.receiptNumber,
+          id: includeSensitive ? attempt.payment.id : null,
+          invoiceNumber: includeSensitive ? attempt.payment.invoiceNumber : null,
+          receiptNumber: includeSensitive ? attempt.payment.receiptNumber : null,
           amount: attempt.payment.amount.toString(),
           currency: attempt.payment.currency,
           status: attempt.payment.status,
           paymentMethod: attempt.payment.paymentMethod,
           paidAt: attempt.payment.paidAt?.toISOString() ?? null,
           receiptUrl:
-            attempt.status === "PAID" && attempt.payment.status === "PAID"
+            includeSensitive && attempt.status === "PAID" && attempt.payment.status === "PAID"
               ? publicPaymentReceiptUrl({ attemptId: attempt.id, paymentId: attempt.payment.id })
               : null
         }

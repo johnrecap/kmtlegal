@@ -11,9 +11,15 @@ import {
   requireVerifiedWebhookSignature
 } from "@/server/payments/payment-config";
 import { createHostedCheckout, verifyWebhookSignature } from "@/server/payments/payment-provider";
-import { createPaymentReceiptToken, publicPaymentReceiptUrl, verifyPaymentReceiptToken } from "@/server/payments/payment-receipt-service";
+import {
+  createPaymentReceiptToken,
+  createPaymentStatusToken,
+  publicPaymentReceiptUrl,
+  verifyPaymentReceiptToken,
+  verifyPaymentStatusToken
+} from "@/server/payments/payment-receipt-service";
 import { adminPaymentGatewaySettingsSchema, activeProviderFromValue } from "@/server/payments/payment-settings-service";
-import { mapProviderPaymentStatus, paidAttemptWebhookConfirmationBlocker } from "@/server/payments/payment-service";
+import { mapProviderPaymentStatus, paidAttemptWebhookConfirmationBlocker, paidWebhookPayloadProblem } from "@/server/payments/payment-service";
 import { adminConsultationPricingRuleWriteSchema, consultationPriceDto } from "@/server/payments/pricing-service";
 import { consultationBookingFlags, consultationBookingModeFromValue } from "@/server/consultations/consultation-booking-settings";
 
@@ -129,6 +135,33 @@ describe("payment gateway contract", () => {
     } finally {
       vi.unstubAllEnvs();
     }
+  });
+
+  it("signs public payment status links and rejects attempt id tampering", () => {
+    const env = testEnv({ PAYMENT_STATUS_SIGNING_SECRET: "status-secret-32-characters-long" });
+    const attemptId = "11111111-1111-4111-8111-111111111111";
+    const token = createPaymentStatusToken({ attemptId }, env);
+
+    expect(verifyPaymentStatusToken({ attemptId, token }, env)).toMatchObject({ attemptId });
+    expect(verifyPaymentStatusToken({ attemptId: "33333333-3333-4333-8333-333333333333", token }, env)).toBeNull();
+    expect(verifyPaymentStatusToken({ attemptId, token: `${token}tampered` }, env)).toBeNull();
+  });
+
+  it("blocks paid webhook confirmation when amount or currency does not match the attempt", () => {
+    const attempt = { amount: new Prisma.Decimal("1500.00"), currency: "EGP" };
+    const basePayload = {
+      provider: "paytabs" as const,
+      attemptId: "11111111-1111-4111-8111-111111111111",
+      providerTransactionId: "txn-1",
+      rawStatus: "paid",
+      status: "PAID" as const,
+      amount: "1500.00",
+      currency: "EGP"
+    };
+
+    expect(paidWebhookPayloadProblem({ payload: basePayload, attempt })).toBeNull();
+    expect(paidWebhookPayloadProblem({ payload: { ...basePayload, amount: "1499.99" }, attempt })?.code).toBe("PAYMENT_AMOUNT_MISMATCH");
+    expect(paidWebhookPayloadProblem({ payload: { ...basePayload, currency: "USD" }, attempt })?.code).toBe("PAYMENT_CURRENCY_MISMATCH");
   });
 
   it("creates a Paymob hosted checkout intention without exposing secrets", async () => {

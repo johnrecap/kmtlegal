@@ -8,7 +8,7 @@ import {
   ClientSiteShell,
   clientPortalSecondaryActionClass
 } from "@/components/layout";
-import { Badge, ButtonLink } from "@/components/ui";
+import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
 import { appointmentStatusLabels, caseStatusLabels, formatDateTime, formatMoney, labelFrom, paymentStatusLabels } from "@/lib/legal-format";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
 import { getPortalDashboard } from "@/server/portal/client-portal-service";
@@ -28,6 +28,7 @@ function openBalance(payments: Awaited<ReturnType<typeof getPortalDashboard>>["p
 }
 
 type DashboardAppointment = Awaited<ReturnType<typeof getPortalDashboard>>["appointments"][number];
+type PortalDashboard = Awaited<ReturnType<typeof getPortalDashboard>>;
 
 function dashboardAppointmentStatus(appointment: DashboardAppointment) {
   const pendingReview = appointment.type === "CONSULTATION" && Boolean(appointment.consultationRequest) && !appointment.consultationRequest?.assignedLawyerId;
@@ -38,6 +39,48 @@ function dashboardAppointmentTone(appointment: DashboardAppointment) {
   return dashboardAppointmentStatus(appointment) === "قيد مراجعة المكتب" ? ("neutral" as const) : ("pending" as const);
 }
 
+function nextPortalStep(dashboard: PortalDashboard, balance: number) {
+  const duePayment = dashboard.payments.find((payment) => payment.status !== "PAID" && payment.status !== "CANCELLED");
+  if (duePayment && balance > 0) {
+    return {
+      icon: "payments",
+      title: "دفعة مستحقة",
+      description: `${duePayment.invoiceNumber} · ${formatMoney(duePayment.amount.toString(), duePayment.currency)}`,
+      href: "/client/payments",
+      action: "عرض المدفوعات"
+    };
+  }
+
+  const appointment = dashboard.appointments[0];
+  if (appointment) {
+    return {
+      icon: "event",
+      title: "موعد قريب",
+      description: `${appointment.title} · ${formatDateTime(appointment.startsAt)}`,
+      href: "/client/court-dates",
+      action: "عرض المواعيد"
+    };
+  }
+
+  if (dashboard.documentsCount === 0) {
+    return {
+      icon: "folder",
+      title: "مستنداتك غير مكتملة",
+      description: "ارفع المستندات التي طلبها المكتب أو أضف الملفات المهمة لبدء المراجعة.",
+      href: "/client/files",
+      action: "عرض الملفات"
+    };
+  }
+
+  return {
+    icon: "forum",
+    title: "تابع مع الفريق",
+    description: "استخدم رسائل البوابة أو المساعد لمعرفة آخر خطوة في ملفك.",
+    href: "/client/assistant",
+    action: "فتح المساعد"
+  };
+}
+
 export default async function ClientHomePage() {
   const guard = await requirePortalPage("/client");
   if (guard.status === "forbidden") {
@@ -46,6 +89,7 @@ export default async function ClientHomePage() {
 
   const dashboard = await getPortalDashboard(guard.context.principal);
   const balance = openBalance(dashboard.payments);
+  const nextStep = nextPortalStep(dashboard, balance);
 
   return (
     <ClientSiteShell navItems={clientNavForPath("/client")} title={`مرحبًا ${dashboard.client.fullName}`} userLabel={guard.context.user.name}>
@@ -56,6 +100,28 @@ export default async function ClientHomePage() {
           <ClientPortalMetric icon="folder" label="الملفات" value={String(dashboard.documentsCount)} meta="مستندات مرئية لك." />
           <ClientPortalMetric icon="payments" label="المستحقات" tone={balance > 0 ? "due" : "default"} value={formatMoney(balance)} meta="غير مدفوعة أو معلقة." />
         </div>
+
+        <ClientPortalPanel
+          action={
+            <ButtonLink className={clientPortalSecondaryActionClass} href={nextStep.href} size="sm" variant="secondary">
+              {nextStep.action}
+            </ButtonLink>
+          }
+          description={nextStep.description}
+          title="الخطوة التالية"
+        >
+          <ClientPortalRow>
+            <div className="flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-amber-300/30 bg-amber-300/10 text-amber-100" aria-hidden="true">
+                <MaterialSymbol name={nextStep.icon} />
+              </span>
+              <div>
+                <p className="font-semibold text-white">{nextStep.title}</p>
+                <p className="mt-1 text-sm leading-7 text-slate-300">{nextStep.description}</p>
+              </div>
+            </div>
+          </ClientPortalRow>
+        </ClientPortalPanel>
 
         <div className="grid gap-5 xl:grid-cols-2">
           <ClientPortalPanel

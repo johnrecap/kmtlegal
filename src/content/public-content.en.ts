@@ -454,6 +454,14 @@ export const publicContentEn = {
     checkoutCreated: "Payment page is ready. You will be redirected to the secure hosted checkout.",
     paymentRetry: "Try payment again",
     paymentStatus: "Payment status",
+    progressContact: "Contact",
+    progressDetails: "Details",
+    progressSlot: "Slot",
+    progressPayment: "Payment",
+    resumePaymentDraft: "We restored your previous details. You can choose a new time or edit the request without starting over.",
+    whatsappFallback: "The request could not be completed more than once. You can contact the office directly and we will help with booking.",
+    whatsappFallbackLabel: "Contact the office",
+    nextStepsAfterBooking: "What happens next: the team reviews the request, then contacts you to confirm the appointment or request missing details.",
     preferredSlot: "Preferred appointment time",
     preferredSlotHint: "Optional. Office booking slots are reviewed by the team.",
     consent: "I agree to use this data to review the request and contact me. I understand this assistant does not provide legal advice.",
@@ -474,6 +482,12 @@ export const publicContentEn = {
       { icon: "event_available", label: "Timing confirmation", description: "The team contacts you to confirm suitability and timing." },
       { icon: "lock", label: "Limited data", description: "Do not send documents in this public conversation." }
     ]
+  },
+  paymentReturn: {
+    safeLinkNotice: "This link is showing a safe public payment status only. Client details and account links require the secure return link from the payment provider.",
+    pending: "We have not received trusted payment confirmation yet.",
+    countdown: "This page checks automatically while the temporary slot hold is active.",
+    expired: "Expired"
   },
   clientAccountSetup: {
     metadataTitle: "Create Client Account | KMT Legal",

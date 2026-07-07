@@ -220,6 +220,14 @@ function decimalToNumber(value: Prisma.Decimal | number | null | undefined) {
   return Number(value.toString());
 }
 
+function csvCell(value: unknown) {
+  const text = String(value ?? "");
+  if (/[",\r\n]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
+}
+
 function andPaymentWhere(base: Prisma.PaymentWhereInput, extra: Prisma.PaymentWhereInput): Prisma.PaymentWhereInput {
   return { AND: [base, extra] };
 }
@@ -415,6 +423,58 @@ export async function listAdminPayments(input: { actor: Principal; query: unknow
   ]);
 
   return { items, total, summary, filters, page: pagination.page, pageSize: pagination.pageSize };
+}
+
+export async function exportAdminPaymentsCsv(input: { actor: Principal; query: unknown }) {
+  assertFinanceRead(input.actor);
+  const filters = normalizePaymentListQuery(input.query);
+  const where = paymentListWhere(filters);
+  const items = await prisma.payment.findMany({
+    where,
+    include: {
+      client: { select: { fullName: true } },
+      case: { select: { internalFileNumber: true, title: true } }
+    },
+    orderBy: paymentOrderBy(filters),
+    take: 5000
+  });
+
+  const rows = [
+    [
+      "invoiceNumber",
+      "client",
+      "case",
+      "issueDate",
+      "dueDate",
+      "amount",
+      "currency",
+      "status",
+      "paymentMethod",
+      "receiptNumber",
+      "paidAt",
+      "createdAt"
+    ],
+    ...items.map((payment) => [
+      payment.invoiceNumber,
+      payment.client.fullName,
+      payment.case ? `${payment.case.internalFileNumber} - ${payment.case.title}` : "",
+      payment.issueDate.toISOString(),
+      payment.dueDate?.toISOString() ?? "",
+      payment.amount.toString(),
+      payment.currency,
+      payment.status,
+      payment.paymentMethod ?? "",
+      payment.receiptNumber ?? "",
+      payment.paidAt?.toISOString() ?? "",
+      payment.createdAt.toISOString()
+    ])
+  ];
+
+  return {
+    filename: `kmt-finance-${new Date().toISOString().slice(0, 10)}.csv`,
+    content: rows.map((row) => row.map(csvCell).join(",")).join("\n"),
+    count: items.length
+  };
 }
 
 export async function getAdminPaymentDetail(input: { actor: Principal; paymentId: string }) {

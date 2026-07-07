@@ -1749,7 +1749,8 @@ export async function createPublicConsultationCheckout(input: {
         mode: checkoutBody.preferredMode
       },
       price,
-      request: input.request
+      request: input.request,
+      locale: body.locale
     });
 
     return { client, consultation, appointment, attempt };

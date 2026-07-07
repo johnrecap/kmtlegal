@@ -58,12 +58,29 @@ export function publicAppUrl(request?: Request, env: NodeJS.ProcessEnv = process
   return "http://localhost:3000";
 }
 
-export function paymentReturnUrl(attemptId: string, request?: Request) {
-  return `${publicAppUrl(request)}/payment/consultation/return?attemptId=${encodeURIComponent(attemptId)}`;
+export type PaymentReturnUrlOptions = {
+  token?: string | null;
+  locale?: "ar" | "en" | null;
+  status?: string | null;
+};
+
+export function paymentReturnUrl(attemptId: string, request?: Request, options: PaymentReturnUrlOptions = {}) {
+  const url = new URL(`${publicAppUrl(request)}/payment/consultation/return`);
+  url.searchParams.set("attemptId", attemptId);
+  if (options.token) {
+    url.searchParams.set("token", options.token);
+  }
+  if (options.locale) {
+    url.searchParams.set("locale", options.locale);
+  }
+  if (options.status) {
+    url.searchParams.set("status", options.status);
+  }
+  return url.toString();
 }
 
-export function paymentFailureUrl(attemptId: string, request?: Request) {
-  return `${publicAppUrl(request)}/payment/consultation/return?attemptId=${encodeURIComponent(attemptId)}&status=failed`;
+export function paymentFailureUrl(attemptId: string, request?: Request, options: Omit<PaymentReturnUrlOptions, "status"> = {}) {
+  return paymentReturnUrl(attemptId, request, { ...options, status: "failed" });
 }
 
 export function paymentWebhookUrl(provider: PaymentProviderName, request?: Request) {

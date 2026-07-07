@@ -263,6 +263,20 @@ describe("security, privacy, upload, and observability hardening", () => {
     expect(nextConfigSource).toContain('source: "/install/:path*"');
   });
 
+  it("keeps admin finance export and webhook replay behind authenticated finance services", () => {
+    const financeExportSource = fs.readFileSync(path.join(process.cwd(), "src/app/api/admin/finance/export/route.ts"), "utf8");
+    const webhookReplaySource = fs.readFileSync(path.join(process.cwd(), "src/app/api/admin/payments/webhooks/[eventId]/replay/route.ts"), "utf8");
+    const financeServiceSource = fs.readFileSync(path.join(process.cwd(), "src/server/admin/finance-report-service.ts"), "utf8");
+    const paymentServiceSource = fs.readFileSync(path.join(process.cwd(), "src/server/payments/payment-service.ts"), "utf8");
+
+    expect(financeExportSource).toContain("getAuthContextFromRequest");
+    expect(financeExportSource).toContain("exportAdminPaymentsCsv");
+    expect(webhookReplaySource).toContain("getAuthContextFromRequest");
+    expect(webhookReplaySource).toContain("replayAdminPaymentWebhookEvent");
+    expect(financeServiceSource).toContain("assertFinanceRead(input.actor)");
+    expect(paymentServiceSource).toContain("canManageAdminPaymentOperations(input.actor)");
+  });
+
   it("does not fall back to a dev database URL at production runtime", () => {
     expect(() => getDatabaseUrl({ APP_ENV: "production", NODE_ENV: "production" })).toThrow("DATABASE_URL");
     expect(() => getDatabaseUrl({ APP_ENV: "production", NODE_ENV: "production", npm_lifecycle_event: "build" })).toThrow("DATABASE_URL");

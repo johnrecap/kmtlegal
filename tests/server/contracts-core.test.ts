@@ -70,6 +70,15 @@ describe("server contract foundation", () => {
     expect(() => enforceRateLimit(limiter, "user-1")).toThrow(RateLimitApiError);
   });
 
+  it("prunes expired rate limit buckets", () => {
+    const limiter = new MemoryRateLimiter({ windowMs: 1_000, max: 2 });
+    expect(limiter.check("user-1", 0).allowed).toBe(true);
+    expect(limiter.size()).toBe(1);
+
+    expect(limiter.check("user-2", 1_001).allowed).toBe(true);
+    expect(limiter.size()).toBe(1);
+  });
+
   it("localizes user-facing API and product labels while preserving technical values", () => {
     expect(localizeApiMessage("Authentication required.")).toBe("يجب تسجيل الدخول للمتابعة.");
     expect(localizeApiMessage("Payment payload is invalid.")).toBe("الفاتورة غير مكتملة أو غير صحيحة.");

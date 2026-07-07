@@ -9,8 +9,13 @@ const tokenPayloadSchema = z.object({
   attemptId: uuidSchema,
   paymentId: uuidSchema
 });
+const statusTokenPayloadSchema = z.object({
+  v: z.literal(1),
+  attemptId: uuidSchema
+});
 
 const LOCAL_RECEIPT_SIGNING_SECRET = "local-dev-only-payment-receipt-secret-do-not-use-in-production";
+const LOCAL_STATUS_SIGNING_SECRET = "local-dev-only-payment-status-secret-do-not-use-in-production";
 
 export type PaymentReceiptView = Awaited<ReturnType<typeof getPublicConsultationPaymentReceipt>>;
 
@@ -33,6 +38,15 @@ export function createPaymentReceiptToken(input: { attemptId: string; paymentId:
   return `v1.${payload}.${signature}`;
 }
 
+export function createPaymentStatusToken(input: { attemptId: string }, env: NodeJS.ProcessEnv = process.env) {
+  const payload = encodePayload({
+    v: 1,
+    attemptId: uuidSchema.parse(input.attemptId)
+  });
+  const signature = signPayload(payload, statusSigningSecret(env));
+  return `v1.${payload}.${signature}`;
+}
+
 export function verifyPaymentReceiptToken(input: { attemptId: string; token: string }, env: NodeJS.ProcessEnv = process.env) {
   const attemptId = uuidSchema.safeParse(input.attemptId);
   if (!attemptId.success) {
@@ -49,7 +63,31 @@ export function verifyPaymentReceiptToken(input: { attemptId: string; token: str
     return null;
   }
 
-  const payload = decodePayload(parts[1]);
+  const payload = decodeReceiptPayload(parts[1]);
+  if (!payload || payload.attemptId !== attemptId.data) {
+    return null;
+  }
+
+  return payload;
+}
+
+export function verifyPaymentStatusToken(input: { attemptId: string; token: string }, env: NodeJS.ProcessEnv = process.env) {
+  const attemptId = uuidSchema.safeParse(input.attemptId);
+  if (!attemptId.success) {
+    return null;
+  }
+
+  const parts = input.token.split(".");
+  if (parts.length !== 3 || parts[0] !== "v1" || !parts[1] || !parts[2]) {
+    return null;
+  }
+
+  const expectedSignature = signPayload(parts[1], statusSigningSecret(env));
+  if (!safeEqual(parts[2], expectedSignature)) {
+    return null;
+  }
+
+  const payload = decodeStatusPayload(parts[1]);
   if (!payload || payload.attemptId !== attemptId.data) {
     return null;
   }
@@ -145,13 +183,21 @@ export async function getPublicConsultationPaymentReceipt(input: { attemptId: st
   };
 }
 
-function encodePayload(payload: z.infer<typeof tokenPayloadSchema>) {
+function encodePayload(payload: z.infer<typeof tokenPayloadSchema> | z.infer<typeof statusTokenPayloadSchema>) {
   return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
 }
 
-function decodePayload(value: string) {
+function decodeReceiptPayload(value: string) {
   try {
     return tokenPayloadSchema.parse(JSON.parse(Buffer.from(value, "base64url").toString("utf8")));
+  } catch {
+    return null;
+  }
+}
+
+function decodeStatusPayload(value: string) {
+  try {
+    return statusTokenPayloadSchema.parse(JSON.parse(Buffer.from(value, "base64url").toString("utf8")));
   } catch {
     return null;
   }
@@ -178,4 +224,17 @@ function receiptSigningSecret(env: NodeJS.ProcessEnv) {
   }
 
   return LOCAL_RECEIPT_SIGNING_SECRET;
+}
+
+function statusSigningSecret(env: NodeJS.ProcessEnv) {
+  const secret = env.PAYMENT_STATUS_SIGNING_SECRET || env.PAYMENT_RECEIPT_SIGNING_SECRET || env.AUTH_SECRET;
+  if (secret) {
+    return secret;
+  }
+
+  if (env.APP_ENV === "production" || env.NODE_ENV === "production") {
+    throw new Error("PAYMENT_STATUS_SIGNING_SECRET, PAYMENT_RECEIPT_SIGNING_SECRET, or AUTH_SECRET is required for payment status links.");
+  }
+
+  return LOCAL_STATUS_SIGNING_SECRET;
 }

@@ -19,10 +19,13 @@ type Bucket = {
 
 export class MemoryRateLimiter {
   private readonly buckets = new Map<string, Bucket>();
+  private lastPrunedAt = 0;
 
   constructor(private readonly rule: RateLimitRule) {}
 
   check(key: string, now = Date.now()): RateLimitResult {
+    this.pruneExpired(now);
+
     const current = this.buckets.get(key);
     const resetAt = current && current.resetAt > now ? current.resetAt : now + this.rule.windowMs;
     const count = current && current.resetAt > now ? current.count + 1 : 1;
@@ -37,12 +40,31 @@ export class MemoryRateLimiter {
     };
   }
 
+  size() {
+    return this.buckets.size;
+  }
+
   reset(key?: string) {
     if (key) {
       this.buckets.delete(key);
       return;
     }
     this.buckets.clear();
+    this.lastPrunedAt = 0;
+  }
+
+  private pruneExpired(now: number) {
+    const pruneEveryMs = Math.min(this.rule.windowMs, 60_000);
+    if (now - this.lastPrunedAt < pruneEveryMs) {
+      return;
+    }
+
+    for (const [key, bucket] of this.buckets.entries()) {
+      if (bucket.resetAt <= now) {
+        this.buckets.delete(key);
+      }
+    }
+    this.lastPrunedAt = now;
   }
 }
 

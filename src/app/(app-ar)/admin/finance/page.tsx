@@ -25,6 +25,7 @@ import {
   ConsultationPricingRuleForm,
   PaymentForm,
   PaymentGatewaySettingsForm,
+  WebhookReplayButton,
   type PricingRuleValue
 } from "@/features/admin/finance/finance-forms";
 import { currencyValues, paymentStatusValues } from "@/lib/legal-finance";
@@ -120,6 +121,16 @@ function listHref(
   }
   params.set("page", String(page));
   return `/admin/finance?${params.toString()}`;
+}
+
+function exportHref(query: Record<string, string>) {
+  const params = new URLSearchParams(query);
+  params.delete("page");
+  params.delete("pageSize");
+  params.delete("editPaymentId");
+  params.delete("editPricingRuleId");
+  const queryString = params.toString();
+  return queryString ? `/api/admin/finance/export?${queryString}` : "/api/admin/finance/export";
 }
 
 function editHref(paymentId: string, query: Record<string, string>) {
@@ -473,6 +484,7 @@ function PaymentGatewayOperationsPanel({
                     {event.provider} · توقيع {event.signatureStatus} · replay {event.replayCount}
                   </p>
                   <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(event.receivedAt)}</p>
+                  {canManage ? <WebhookReplayButton eventId={event.id} /> : null}
                 </div>
               ))
             ) : (
@@ -605,9 +617,14 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
 
             <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
               <p>{result.total} فاتورة داخل الفلاتر الحالية</p>
-              <p>
-                صفحة {result.page} من {totalPages}
-              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={exportHref(query)}>
+                  تصدير CSV
+                </Link>
+                <p>
+                  صفحة {result.page} من {totalPages}
+                </p>
+              </div>
             </div>
 
             <DataTable columns={columns(query)} rows={result.items} empty="لا توجد فواتير مطابقة للفلاتر الحالية." mobileRender={(row) => <PaymentMobileCard row={row} query={query} />} />

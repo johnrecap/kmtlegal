@@ -162,6 +162,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   const [readyToCheckout, setReadyToCheckout] = useState(false);
   const [paymentReview, setPaymentReview] = useState<PaymentReview | null>(null);
   const [freeTextTurnsAfterLanguage, setFreeTextTurnsAfterLanguage] = useState(0);
+  const [failureCount, setFailureCount] = useState(0);
   const [quickActionsDismissed, setQuickActionsDismissed] = useState(false);
   const showTrustRail = !chatLocale;
   const showQuickActions = Boolean(chatLocale) && !quickActionsDismissed && !flow && !availableSlots.length && !readyToConfirm && !readyToCheckout;
@@ -169,6 +170,59 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const resumeAttemptId = params.get("resumeAttemptId");
+    const token = params.get("token");
+    if (!resumeAttemptId || !token) {
+      return;
+    }
+
+    let stopped = false;
+    const restore = async () => {
+      const statusParams = new URLSearchParams({ attemptId: resumeAttemptId, token });
+      const response = await fetch(`/api/public/payments/status?${statusParams.toString()}`, { cache: "no-store" });
+      const body = (await response.json().catch(() => null)) as { data?: { resumeDraft?: Partial<BookingDraft> | null } } | null;
+      const resumeDraft = body?.data?.resumeDraft;
+      if (stopped || !response.ok || !resumeDraft) {
+        return;
+      }
+
+      const restoredLocale = params.get("locale") === "ar" || params.get("locale") === "en" ? (params.get("locale") as PublicLocale) : locale;
+      const restoredCopy = getPublicContent(restoredLocale).bookingChat;
+      const restoredDraft = normalizeDraft({
+        ...initialDraft,
+        serviceCategory: initialServiceCategory,
+        ...resumeDraft,
+        startsAt: ""
+      });
+
+      setChatLocale(restoredLocale);
+      setDraft(restoredDraft);
+      setFlow("booking");
+      setAvailableSlots([]);
+      setSlotWindow(null);
+      setSelectedSlot("");
+      setReadyToConfirm(false);
+      setReadyToCheckout(false);
+      setPaymentReview(null);
+      setQuickActionsDismissed(true);
+      setMessages([
+        { id: `assistant-greeting-${restoredLocale}`, role: "assistant", text: restoredCopy.greeting },
+        { id: `assistant-payment-resume-${restoredLocale}`, role: "assistant", text: restoredCopy.resumePaymentDraft, tone: "success" }
+      ]);
+    };
+
+    void restore();
+    return () => {
+      stopped = true;
+    };
+  }, [initialServiceCategory, isHydrated, locale]);
 
   useEffect(() => {
     const chatLog = logScrollRef.current;
@@ -183,6 +237,18 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
   function append(role: ChatMessage["role"], text: string, tone: ChatMessage["tone"] = "default", action?: Pick<ChatMessage, "actionHref" | "actionLabel">) {
     setMessages((current) => [...current, { id: `${role}-${Date.now()}-${current.length}`, role, text, tone, ...action }]);
+  }
+
+  function appendRecoverableError(message: string) {
+    append("assistant", message, "error");
+    const nextFailureCount = failureCount + 1;
+    setFailureCount(nextFailureCount);
+    if (nextFailureCount >= 2) {
+      append("assistant", copy.whatsappFallback, "default", {
+        actionHref: process.env.NEXT_PUBLIC_KMT_WHATSAPP_URL || "/contact",
+        actionLabel: copy.whatsappFallbackLabel
+      });
+    }
   }
 
   function appendClientAccountSetupMessage(action: ClientAccountSetupAction | null) {
@@ -301,16 +367,17 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       });
       const body = (await response.json().catch(() => ({}))) as AssistantApiBody;
       if (!response.ok) {
-        append("assistant", errorMessage(body, copy), "error");
+        appendRecoverableError(errorMessage(body, copy));
         return;
       }
+      setFailureCount(0);
       append("assistant", body.data?.message ?? copy.inquiryResult, "success");
       for (const appointment of body.data?.appointments ?? []) {
         append("assistant", `${appointment.title} · ${formatPublicDate(appointment.startsAt, activeLocale)} · ${appointment.status}`, "success");
       }
       setFlow(null);
     } catch {
-      append("assistant", copy.fallbackError, "error");
+      appendRecoverableError(copy.fallbackError);
     } finally {
       setIsBusy(false);
     }
@@ -353,16 +420,17 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       const body = (await response.json().catch(() => ({}))) as AssistantApiBody;
       if (!response.ok) {
         trackClientAnalyticsEvent("booking.submit_failed", { locale: activeLocale, status: response.status });
-        append("assistant", errorMessage(body, copy), "error");
+        appendRecoverableError(errorMessage(body, copy));
         return;
       }
 
       const data = body.data;
       if (!data) {
-        append("assistant", copy.fallbackError, "error");
+        appendRecoverableError(copy.fallbackError);
         return;
       }
 
+      setFailureCount(0);
       const updatedDraft = normalizeDraft({ ...nextDraft, ...data.draft });
       setDraft(updatedDraft);
       setAvailableSlots(data.availableSlots ?? []);
@@ -375,6 +443,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
       if (data.reference) {
         append("assistant", `${copy.successTitle} · ${copy.reference}: ${data.reference}`, "success");
+        append("assistant", copy.nextStepsAfterBooking, "success");
         if (data.appointment) {
           append("assistant", `${data.appointment.title} · ${formatPublicDate(data.appointment.startsAt, activeLocale)}`, "success");
         }
@@ -391,7 +460,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       }
     } catch {
       trackClientAnalyticsEvent("booking.submit_failed", { locale: activeLocale, status: "network" });
-      append("assistant", copy.fallbackError, "error");
+      appendRecoverableError(copy.fallbackError);
     } finally {
       setIsBusy(false);
     }
@@ -424,6 +493,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     if (!selectedSlot || !paymentReview || isBusy) return;
     setIsBusy(true);
     append("user", copy.payBooking);
+    const checkoutDraft = normalizeDraft({ ...draft, startsAt: selectedSlot });
 
     try {
       const response = await fetch("/api/public/consultations/checkout", {
@@ -432,7 +502,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         body: JSON.stringify({
           locale: activeLocale,
           message: copy.payBooking,
-          draft: normalizeDraft({ ...draft, startsAt: selectedSlot }),
+          draft: checkoutDraft,
           selectedSlot,
           consent: true,
           confirmPayment: true
@@ -441,10 +511,11 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       const body = (await response.json().catch(() => ({}))) as AssistantApiBody;
       if (!response.ok) {
         trackClientAnalyticsEvent("booking.submit_failed", { locale: activeLocale, status: response.status, step: "checkout" });
-        append("assistant", errorMessage(body, copy), "error");
+        appendRecoverableError(errorMessage(body, copy));
         return;
       }
 
+      setFailureCount(0);
       const attempt = body.data?.paymentAttempt;
       append("assistant", body.data?.message ?? copy.checkoutCreated, "success");
       if (body.data?.reference) {
@@ -460,7 +531,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       setPaymentReview(null);
     } catch {
       trackClientAnalyticsEvent("booking.submit_failed", { locale: activeLocale, status: "network", step: "checkout" });
-      append("assistant", copy.fallbackError, "error");
+      appendRecoverableError(copy.fallbackError);
     } finally {
       setIsBusy(false);
     }
@@ -508,6 +579,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
               <TrustRailItem icon="bolt" label={copy.fastResponse} />
             </div>
           ) : null}
+          {chatLocale ? <BookingProgress copy={copy} draft={draft} readyToCheckout={readyToCheckout} selectedSlot={selectedSlot} /> : null}
         </header>
 
         <div
@@ -607,6 +679,44 @@ function TrustRailItem({ icon, label }: { icon: string; label: string }) {
     <div className="inline-flex min-h-8 max-w-full items-center justify-center gap-1 rounded-full border border-kmt-gold/25 bg-[#12100c]/72 px-2 text-center shadow-[0_12px_26px_-24px_rgba(183,134,64,0.9)] transition-colors hover:border-kmt-gold/40 hover:bg-[#17130d]/82">
       <MaterialSymbol className="shrink-0 text-sm text-kmt-gold drop-shadow-[0_0_10px_rgba(183,134,64,0.26)]" name={icon} />
       <span className="min-w-0 truncate text-[0.68rem] font-medium leading-4 text-amber-50/90">{label}</span>
+    </div>
+  );
+}
+
+function BookingProgress({
+  copy,
+  draft,
+  readyToCheckout,
+  selectedSlot
+}: {
+  copy: BookingChatCopy;
+  draft: BookingDraft;
+  readyToCheckout: boolean;
+  selectedSlot: string;
+}) {
+  const steps = [
+    { label: copy.progressContact, done: Boolean(draft.fullName.trim() && draft.phone.trim()) },
+    { label: copy.progressDetails, done: Boolean(draft.serviceCategory.trim() && draft.summary.trim().length >= 20) },
+    { label: copy.progressSlot, done: Boolean(selectedSlot || draft.startsAt) },
+    { label: copy.progressPayment, done: readyToCheckout }
+  ];
+
+  return (
+    <div className="mt-5 grid grid-cols-4 gap-2" aria-label={copy.paymentStatus}>
+      {steps.map((step, index) => (
+        <div
+          key={step.label}
+          className={cn(
+            "flex min-h-9 items-center justify-center gap-1 rounded-full border px-2 text-center text-[0.68rem] font-semibold leading-4 transition-colors",
+            step.done ? "border-kmt-gold bg-kmt-gold text-[#120d07]" : "border-white/12 bg-white/[0.04] text-amber-50/68"
+          )}
+        >
+          <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-current text-[0.6rem]" aria-hidden="true">
+            {step.done ? <MaterialSymbol className="text-[0.8rem]" name="check_circle" /> : index + 1}
+          </span>
+          <span className="min-w-0 truncate">{step.label}</span>
+        </div>
+      ))}
     </div>
   );
 }

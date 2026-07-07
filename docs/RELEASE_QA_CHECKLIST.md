@@ -45,6 +45,7 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 - [ ] PostgreSQL is running.
 - [ ] `DATABASE_URL` points to the intended database.
 - [ ] `npm run qa:db` passes against real PostgreSQL.
+- [ ] `npm run jobs:payments` completes once against the intended database.
 - [ ] Demo seeded document has a backing file under private `UPLOADS_DIR`.
 - [ ] Production bootstrap seed does not create demo users.
 
@@ -64,6 +65,12 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 - [ ] TOTP/Email OTP/staff 2FA reset routes return `FEATURE_DISABLED`.
 - [ ] Installer preflight/bootstrap/finish require setup token and lock after first Super Admin.
 - [ ] Finance invoice/payment basics create/update and client own payment view.
+- [ ] Paid consultation webhook with matching amount and currency confirms the appointment.
+- [ ] Paid consultation webhook with a lower amount or different currency does not confirm the appointment and is visible for manual review.
+- [ ] Public payment status without a status token does not return client name, phone, account setup links, checkout URL, or receipt URL.
+- [ ] Public payment status with a valid status token returns the allowed full result for the returning payer.
+- [ ] Expired payment attempt releases the temporary reserved appointment through `npm run jobs:payments`.
+- [ ] Admin finance CSV export respects current date/status/currency filters.
 - [ ] Content/case-study approval gate prevents premature publishing.
 - [ ] Public contact submission persists a `ContactMessage`, returns a safe reference, and can be read/marked reviewed through admin API.
 
@@ -114,6 +121,7 @@ npx playwright test tests/e2e/live-admin-smoke.spec.ts
 ## Security And Privacy Gates
 
 - [ ] Production env matches `deploy/env.production.example`.
+- [ ] `PAYMENT_STATUS_SIGNING_SECRET` or `PAYMENT_RECEIPT_SIGNING_SECRET`/`AUTH_SECRET` is set before enabling paid booking.
 - [ ] `KMT_DEMO_PASSWORD` and `KMT_DEMO_TOTP_SECRET` are empty in production.
 - [ ] `STAFF_2FA_MODE=disabled`; TOTP is not enabled in this release.
 - [ ] `INSTALLER_ENABLED=false` after first setup and installer lock.
@@ -128,11 +136,13 @@ npx playwright test tests/e2e/live-admin-smoke.spec.ts
 - [ ] `/stitch-clone/*` returns 404 in production unless `ENABLE_STITCH_CLONE=true`.
 - [ ] Nginx passes `X-Real-IP $remote_addr`; app does not trust client-supplied `X-Forwarded-For` in production.
 - [ ] Upload oversize `Content-Length` is rejected before multipart parsing.
+- [ ] Payment webhook and checkout audit metadata do not include client phone, email, raw provider payloads, or account setup tokens.
 
 ## Deployment Gates
 
 - [ ] `GET /api/health` returns 200 after migrations, seed, first Super Admin setup, installer lock, and `INSTALLER_ENABLED=false`.
 - [ ] VPS service runs in production mode, not `next dev`.
+- [ ] Payment maintenance runs as a recurring cron/PM2 process using `npm run jobs:payments` or `npm run jobs:payments:watch`.
 - [ ] Nginx proxies to the app and TLS works.
 - [ ] PostgreSQL backup exists before migration.
 - [ ] Backup is taken before applying the `ContactMessage` and `phoneCanonical` migration.

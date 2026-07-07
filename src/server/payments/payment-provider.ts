@@ -25,6 +25,8 @@ export type HostedCheckoutInput = {
   };
   request?: Request;
   provider?: PaymentProviderName;
+  statusToken?: string | null;
+  locale?: "ar" | "en" | null;
 };
 
 export type HostedCheckoutResult = {
@@ -66,7 +68,7 @@ function createPaytabsHostedCheckout(input: HostedCheckoutInput): HostedCheckout
 
   return {
     provider: "paytabs",
-    checkoutUrl: paymentReturnUrl(input.attemptId, input.request),
+    checkoutUrl: paymentReturnUrl(input.attemptId, input.request, statusReturnOptions(input)),
     providerSessionId: input.attemptId
   };
 }
@@ -80,6 +82,8 @@ async function createPaymobHostedCheckout(input: HostedCheckoutInput): Promise<H
   }
 
   const amountMinor = decimalAmountToMinorUnits(input.amount);
+  const returnUrl = paymentReturnUrl(input.attemptId, input.request, statusReturnOptions(input));
+  const failureUrl = paymentFailureUrl(input.attemptId, input.request, statusReturnOptions(input));
   const payload = {
     amount: amountMinor,
     currency: input.currency,
@@ -96,11 +100,11 @@ async function createPaymobHostedCheckout(input: HostedCheckoutInput): Promise<H
     customer: paymobCustomer(input.customer),
     extras: {
       attemptId: input.attemptId,
-      returnUrl: paymentReturnUrl(input.attemptId, input.request),
-      failureUrl: paymentFailureUrl(input.attemptId, input.request)
+      returnUrl,
+      failureUrl
     },
     notification_url: paymentWebhookUrl("paymob", input.request),
-    redirection_url: paymentReturnUrl(input.attemptId, input.request)
+    redirection_url: returnUrl
   };
 
   const response = await fetch(`${paymobApiBaseUrl()}/v1/intention/`, {
@@ -229,18 +233,27 @@ export function mapProviderPaymentStatus(status: string) {
 }
 
 function renderCheckoutTemplate(template: string, input: HostedCheckoutInput) {
+  const returnUrl = paymentReturnUrl(input.attemptId, input.request, statusReturnOptions(input));
+  const failureUrl = paymentFailureUrl(input.attemptId, input.request, statusReturnOptions(input));
   const replacements: Record<string, string> = {
     attemptId: input.attemptId,
     amount: input.amount,
     currency: input.currency,
-    returnUrl: paymentReturnUrl(input.attemptId, input.request),
-    failureUrl: paymentFailureUrl(input.attemptId, input.request),
+    returnUrl,
+    failureUrl,
     webhookUrl: paymentWebhookUrl("paytabs", input.request)
   };
 
   return template.replace(/\{(attemptId|amount|currency|returnUrl|failureUrl|webhookUrl)\}/g, (_, key: string) =>
     encodeURIComponent(replacements[key] ?? "")
   );
+}
+
+function statusReturnOptions(input: HostedCheckoutInput) {
+  return {
+    token: input.statusToken,
+    locale: input.locale
+  };
 }
 
 function normalizeSignature(value: string) {

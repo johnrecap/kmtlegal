@@ -427,6 +427,14 @@ export const publicContentAr = {
     checkoutCreated: "صفحة الدفع جاهزة. سيتم تحويلك إلى صفحة الدفع الآمنة.",
     paymentRetry: "إعادة محاولة الدفع",
     paymentStatus: "حالة الدفع",
+    progressContact: "التواصل",
+    progressDetails: "التفاصيل",
+    progressSlot: "الموعد",
+    progressPayment: "الدفع",
+    resumePaymentDraft: "استعدنا بياناتك السابقة. يمكنك اختيار موعد جديد أو تعديل البيانات بدون البدء من الصفر.",
+    whatsappFallback: "تعذر إكمال الطلب أكثر من مرة. يمكنك التواصل مع المكتب مباشرة وسنساعدك في الحجز.",
+    whatsappFallbackLabel: "التواصل مع المكتب",
+    nextStepsAfterBooking: "ما الذي يحدث بعد ذلك: سيراجع الفريق الطلب، ثم يتواصل معك لتأكيد الموعد أو طلب أي بيانات ناقصة.",
     preferredSlot: "الموعد المفضل",
     preferredSlotHint: "اختياري. مواعيد المكتب تخضع لمراجعة الفريق.",
     consent: "أوافق على استخدام البيانات لمراجعة الطلب والتواصل معي، وأفهم أن هذا المساعد لا يقدم استشارة قانونية.",
@@ -447,6 +455,12 @@ export const publicContentAr = {
       { icon: "event_available", label: "تأكيد الموعد", description: "يتواصل الفريق معك لتأكيد الملاءمة والتوقيت." },
       { icon: "lock", label: "بيانات محدودة", description: "لا ترسل مستندات داخل هذه المحادثة العامة." }
     ]
+  },
+  paymentReturn: {
+    safeLinkNotice: "هذا الرابط يعرض حالة دفع عامة آمنة فقط. بيانات العميل وروابط الحساب تظهر فقط من رابط الرجوع الآمن القادم من بوابة الدفع.",
+    pending: "لم نستلم تأكيد الدفع بعد.",
+    countdown: "تتحقق الصفحة تلقائيا طالما حجز الموعد المؤقت ما زال ساريا.",
+    expired: "انتهت المهلة"
   },
   clientAccountSetup: {
     metadataTitle: "إنشاء حساب العميل | KMT Legal",

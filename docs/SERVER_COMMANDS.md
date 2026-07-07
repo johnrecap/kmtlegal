@@ -6,7 +6,7 @@ This file is the project reference for local Git commands, server pull/deploy co
 
 - Branch: `main`
 - Remote: `origin`
-- Repository: `https://github.com/johnrecap/kmtlegal.git`
+- Repository: `https://gitlab.com/john-recap-group/kmtlegal.git`
 
 ## Mandatory Workflow For Every Change
 
@@ -33,6 +33,24 @@ Default server handoff after push:
 ```bash
 cd /www/wwwroot/kmtlegal
 bash deploy/install/aapanel-pm2-update.sh
+```
+
+Payment maintenance should run on the server after deploy and then on a recurring schedule:
+
+```bash
+cd /www/wwwroot/kmtlegal
+npm run jobs:payments
+```
+
+For PM2-managed recurrence, run a separate process only after confirming `.env.production.local` is loaded for that process:
+
+```bash
+cd /www/wwwroot/kmtlegal
+set -a
+. ./.env.production.local
+set +a
+pm2 start npm --name kmtlegal-payment-maintenance -- run jobs:payments:watch
+pm2 save
 ```
 
 ## Cloudflare Public HTML Cache Rule

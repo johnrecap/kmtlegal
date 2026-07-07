@@ -198,6 +198,14 @@ export function productionReadinessIssues(env: NodeJS.ProcessEnv = process.env) 
     });
   }
 
+  if (!env.PAYMENT_STATUS_SIGNING_SECRET && !env.PAYMENT_RECEIPT_SIGNING_SECRET) {
+    issues.push({
+      code: "PAYMENT_STATUS_SIGNING_SECRET_RECOMMENDED",
+      severity: "warning",
+      message: "PAYMENT_STATUS_SIGNING_SECRET is recommended for signed payment return/status links; receipt signing secret or AUTH_SECRET is used as a fallback."
+    });
+  }
+
   if (env.ANALYTICS_ENABLED === "false") {
     issues.push({
       code: "ANALYTICS_DISABLED",

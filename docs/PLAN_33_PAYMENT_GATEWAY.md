@@ -65,6 +65,7 @@ The public consultation entry point is controlled by a non-secret `SystemSetting
 - `PAYMENT_ATTEMPT_EXPIRY_MINUTES=15`
 - `PAYMENT_REQUIRE_WEBHOOK_SIGNATURE=true` in production
 - `PAYMENT_RECEIPT_SIGNING_SECRET` for signed public receipt links; `AUTH_SECRET` is the server-side fallback.
+- `PAYMENT_STATUS_SIGNING_SECRET` for signed payment return/status links; `PAYMENT_RECEIPT_SIGNING_SECRET` and then `AUTH_SECRET` are server-side fallbacks.
 - `CLIENT_ACCOUNT_SETUP_SIGNING_SECRET` for post-consultation account setup links; `AUTH_SECRET` is the server-side fallback.
 - `PAYMENT_WEBHOOK_SECRET` / `PAYTABS_WEBHOOK_SECRET`
 - `PAYMENT_HOSTED_CHECKOUT_URL_TEMPLATE` or `PAYTABS_HOSTED_CHECKOUT_URL_TEMPLATE`
@@ -74,6 +75,8 @@ The public consultation entry point is controlled by a non-secret `SystemSetting
 - `PAYMOB_PAYMENT_METHOD_IDS`
 - `PAYMOB_API_BASE_URL`
 - `PAYMOB_CHECKOUT_BASE_URL`
+
+Payment status links without a valid status token return only a safe public status. Client name, phone, checkout URL, receipt URL, and account setup links require the signed return link.
 
 ## Not In v1
 

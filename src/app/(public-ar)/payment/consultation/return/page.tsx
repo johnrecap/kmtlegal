@@ -4,28 +4,36 @@ import { MaterialSymbol } from "@/components/ui";
 import { getPublicContent, navForPath } from "@/content/public-content";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/legal-format";
+import { PaymentStatusPoller } from "@/features/public-site/payment-status-poller";
 import { getPublicPaymentAttemptStatus } from "@/server/payments/payment-service";
 
 export const dynamic = "force-dynamic";
 
-const accountSetupCopy = getPublicContent("ar").clientAccountSetup;
-
 type PaymentReturnPageProps = {
   searchParams?: Promise<{
     attemptId?: string;
+    token?: string;
+    locale?: string;
   }>;
 };
 
 export default async function ConsultationPaymentReturnPage({ searchParams }: PaymentReturnPageProps) {
   const params = await searchParams;
   const attemptId = params?.attemptId ?? "";
-  const result = attemptId ? await getPaymentStatus(attemptId) : null;
+  const token = params?.token ?? "";
+  const locale = params?.locale === "en" ? "en" : "ar";
+  const content = getPublicContent(locale);
+  const accountSetupCopy = content.clientAccountSetup;
+  const paymentReturnCopy = content.paymentReturn;
+  const result = attemptId ? await getPaymentStatus(attemptId, token) : null;
   const tone = statusTone(result?.status);
   const isPaid = result?.status === "PAID" && result.payment;
+  const isPending = result?.status === "CREATED" || result?.status === "PENDING";
+  const bookingHref = resumeBookingHref(result, token, locale);
 
   return (
-    <PublicShell currentPath="/payment/consultation/return" locale="ar" navItems={navForPath("/", "ar")}>
-      <section className="mx-auto min-h-[68vh] max-w-[940px] px-4 py-16 sm:px-6 lg:px-10" dir="rtl">
+    <PublicShell currentPath="/payment/consultation/return" locale={locale} navItems={navForPath("/", locale)}>
+      <section className="mx-auto min-h-[68vh] max-w-[940px] px-4 py-16 sm:px-6 lg:px-10" dir={locale === "ar" ? "rtl" : "ltr"}>
         <div className="rounded-[1.75rem] border border-kmt-gold/30 bg-[#100d08] p-6 shadow-[0_34px_120px_-68px_rgba(183,134,64,0.58)] sm:p-8">
           <div className="flex items-start gap-4">
             <span className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-full border", tone.iconClass)}>
@@ -42,12 +50,32 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
             <div className="mt-8 space-y-5">
               {isPaid ? <PaidConfirmation result={result} /> : null}
 
+              {!result.access.verified ? (
+                <p className="rounded-2xl border border-amber-300/25 bg-amber-950/20 px-4 py-3 text-sm leading-7 text-amber-50/82">
+                  {paymentReturnCopy.safeLinkNotice}
+                </p>
+              ) : null}
+
+              {isPending ? (
+                <PaymentStatusPoller
+                  attemptId={result.id}
+                  token={token}
+                  expiresAt={result.expiresAt}
+                  initialStatus={result.status}
+                  labels={{
+                    pending: paymentReturnCopy.pending,
+                    countdown: paymentReturnCopy.countdown,
+                    expired: paymentReturnCopy.expired
+                  }}
+                />
+              ) : null}
+
               <dl className="grid gap-3 text-sm text-amber-50/86 sm:grid-cols-2">
                 <StatusItem label="رقم محاولة الدفع" value={result.id} dir="ltr" />
                 <StatusItem label="الحالة" value={result.status} />
                 <StatusItem label="المبلغ" value={formatMoney(result.amount, result.currency)} />
                 <StatusItem label="الموعد" value={formatCairoDate(result.appointment.startsAt)} />
-                {result.payment ? <StatusItem label="رقم الفاتورة" value={result.payment.invoiceNumber} dir="ltr" /> : null}
+                {result.payment ? <StatusItem label="رقم الفاتورة" value={result.payment.invoiceNumber ?? "N/A"} dir="ltr" /> : null}
                 <StatusItem label="انتهاء الحجز المؤقت" value={formatCairoDate(result.expiresAt)} />
               </dl>
             </div>
@@ -79,7 +107,7 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
                 {result.clientAccountSetup.status === "setup_available" ? accountSetupCopy.submit : accountSetupCopy.login}
               </Link>
             ) : null}
-            <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 px-5 text-sm font-semibold text-amber-50 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold" href="/ar/book-consultation">
+            <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 px-5 text-sm font-semibold text-amber-50 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold" href={bookingHref}>
               <MaterialSymbol name="event_available" />
               حجز موعد جديد
             </Link>
@@ -90,12 +118,30 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
   );
 }
 
-async function getPaymentStatus(attemptId: string) {
+async function getPaymentStatus(attemptId: string, token?: string | null) {
   try {
-    return await getPublicPaymentAttemptStatus({ attemptId });
+    return await getPublicPaymentAttemptStatus({ attemptId, token });
   } catch {
     return null;
   }
+}
+
+function resumeBookingHref(
+  result: Awaited<ReturnType<typeof getPaymentStatus>>,
+  token: string,
+  locale: "ar" | "en"
+) {
+  const basePath = locale === "ar" ? "/ar/book-consultation" : "/book-consultation";
+  if (!result?.access.verified || !token || !["FAILED", "EXPIRED", "CANCELLED"].includes(result.status)) {
+    return basePath;
+  }
+
+  const params = new URLSearchParams({
+    resumeAttemptId: result.id,
+    token,
+    locale
+  });
+  return `${basePath}?${params.toString()}`;
 }
 
 function PaidConfirmation({ result }: { result: NonNullable<Awaited<ReturnType<typeof getPaymentStatus>>> }) {
