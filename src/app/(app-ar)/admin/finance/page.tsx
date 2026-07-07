@@ -59,6 +59,8 @@ type PaymentGatewaySettings = Awaited<ReturnType<typeof getAdminPaymentGatewaySe
 
 const paymentAttemptStatusValues = ["CREATED", "PENDING", "PAID", "FAILED", "EXPIRED", "REFUNDED", "DISPUTED", "CANCELLED"] as const;
 const webhookProcessingStatusValues = ["PENDING", "PROCESSED", "FAILED", "IGNORED"] as const;
+const webhookProviderValues = ["paytabs", "paymob"] as const;
+const webhookMoneyStatusValues = ["MATCHED", "AMOUNT_MISMATCH", "CURRENCY_MISMATCH", "MISSING_ATTEMPT", "NOT_PAID", "NEEDS_REVIEW"] as const;
 const paymentOperationsPageSize = 20;
 
 const paymentAttemptStatusLabels: Record<string, string> = {
@@ -77,6 +79,20 @@ const webhookProcessingStatusLabels: Record<string, string> = {
   PROCESSED: "تمت المعالجة",
   FAILED: "فشل",
   IGNORED: "تم تجاهله"
+};
+
+const webhookProviderLabels: Record<string, string> = {
+  paytabs: "PayTabs",
+  paymob: "Paymob"
+};
+
+const webhookMoneyStatusLabels: Record<string, string> = {
+  MATCHED: "مطابق",
+  AMOUNT_MISMATCH: "فرق مبلغ",
+  CURRENCY_MISMATCH: "فرق عملة",
+  MISSING_ATTEMPT: "بدون محاولة",
+  NOT_PAID: "لم يصل كمدفوع",
+  NEEDS_REVIEW: "يحتاج مراجعة"
 };
 
 const paymentIssueLabels: Record<string, string> = {
@@ -120,6 +136,13 @@ function webhookTone(status: string) {
   if (status === "FAILED") return "danger" as const;
   if (status === "IGNORED") return "neutral" as const;
   return "pending" as const;
+}
+
+function webhookMoneyTone(status: string) {
+  if (status === "MATCHED") return "active" as const;
+  if (status === "NOT_PAID") return "neutral" as const;
+  if (status === "MISSING_ATTEMPT") return "danger" as const;
+  return status.includes("MISMATCH") || status === "NEEDS_REVIEW" ? ("danger" as const) : ("pending" as const);
 }
 
 function paymentIssueText(code?: string | null) {
@@ -398,18 +421,28 @@ function GatewayOperationsPanel({
         </CardHeader>
         <CardContent className="space-y-3">
           {webhookEvents.length ? (
-            webhookEvents.map((event) => (
-              <div key={event.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="truncate font-semibold text-kmt-ink">{event.eventId}</p>
-                  <Badge tone={webhookTone(event.processingStatus)}>{event.processingStatus}</Badge>
+            webhookEvents.map((event) => {
+              const money = event.moneyComparison;
+              return (
+                <div key={event.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="truncate font-semibold text-kmt-ink">{event.eventId}</p>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <Badge tone={webhookMoneyTone(money.status)}>{webhookMoneyStatusLabels[money.status] ?? money.status}</Badge>
+                      <Badge tone={webhookTone(event.processingStatus)}>{event.processingStatus}</Badge>
+                    </div>
+                  </div>
+                  <p className="mt-1 text-kmt-muted">
+                    {event.provider} · توقيع {event.signatureStatus} · replay {event.replayCount}
+                  </p>
+                  <p className="mt-1 text-xs text-kmt-muted">
+                    المطلوب من العميل: {money.expectedAmount && money.expectedCurrency ? formatMoney(money.expectedAmount, money.expectedCurrency) : "غير مرتبط"} · الواصل من الويب هوك:{" "}
+                    {money.receivedAmount && money.receivedCurrency ? formatMoney(money.receivedAmount, money.receivedCurrency) : "غير موجود"}
+                  </p>
+                  <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(event.receivedAt)}</p>
                 </div>
-                <p className="mt-1 text-kmt-muted">
-                  {event.provider} · توقيع {event.signatureStatus} · replay {event.replayCount}
-                </p>
-                <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(event.receivedAt)}</p>
-              </div>
-            ))
+              );
+            })
           ) : (
             <StateBlock tone="empty" title="لا توجد Webhooks" description="ستظهر أحداث بوابة الدفع بعد أول إشعار من المزود." />
           )}
@@ -476,6 +509,22 @@ function PaymentGatewayOperationsPanel({
                 {webhookProcessingStatusValues.map((status) => (
                   <option key={status} value={status}>
                     {webhookProcessingStatusLabels[status]}
+                  </option>
+                ))}
+              </Select>
+              <Select className="min-w-36" defaultValue={query.webhookProvider ?? ""} label="بوابة الدفع" name="webhookProvider">
+                <option value="">كل البوابات</option>
+                {webhookProviderValues.map((provider) => (
+                  <option key={provider} value={provider}>
+                    {webhookProviderLabels[provider]}
+                  </option>
+                ))}
+              </Select>
+              <Select className="min-w-44" defaultValue={query.webhookMoneyStatus ?? ""} label="مطابقة الأموال" name="webhookMoneyStatus">
+                <option value="">كل حالات المطابقة</option>
+                {webhookMoneyStatusValues.map((status) => (
+                  <option key={status} value={status}>
+                    {webhookMoneyStatusLabels[status]}
                   </option>
                 ))}
               </Select>
@@ -601,24 +650,50 @@ function PaymentGatewayOperationsPanel({
           </CardHeader>
           <CardContent className="space-y-3">
             {webhookEvents.length ? (
-              webhookEvents.map((event) => (
-                <div key={event.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="truncate font-semibold text-kmt-ink">{event.eventId}</p>
-                    <Badge tone={webhookTone(event.processingStatus)}>{webhookProcessingStatusLabels[event.processingStatus] ?? event.processingStatus}</Badge>
-                  </div>
-                  <p className="mt-1 text-kmt-muted">
-                    {event.provider} · توقيع {event.signatureStatus} · replay {event.replayCount}
-                  </p>
-                  <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(event.receivedAt)}</p>
-                  {paymentIssueText(event.errorCode || (event.signatureStatus === "INVALID" ? "INVALID_SIGNATURE" : null)) ? (
-                    <div className="mt-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900" role="status">
-                      {paymentIssueText(event.errorCode || (event.signatureStatus === "INVALID" ? "INVALID_SIGNATURE" : null))}
+              webhookEvents.map((event) => {
+                const money = event.moneyComparison;
+                const moneyIssue = money.differenceAmount && money.differenceAmount !== "0" ? `فرق القيمة: ${formatMoney(money.differenceAmount, money.expectedCurrency ?? money.receivedCurrency ?? "EGP")}` : "";
+                return (
+                  <div key={event.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="truncate font-semibold text-kmt-ink">{event.eventId}</p>
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <Badge tone={webhookMoneyTone(money.status)}>{webhookMoneyStatusLabels[money.status] ?? money.status}</Badge>
+                        <Badge tone={webhookTone(event.processingStatus)}>{webhookProcessingStatusLabels[event.processingStatus] ?? event.processingStatus}</Badge>
+                      </div>
                     </div>
-                  ) : null}
-                  {canManage ? <WebhookReplayButton eventId={event.id} /> : null}
-                </div>
-              ))
+                    <p className="mt-1 text-kmt-muted">
+                      {event.provider} · توقيع {event.signatureStatus} · replay {event.replayCount}
+                    </p>
+                    <div className="mt-3 grid gap-2 rounded border border-kmt-border bg-kmt-surface-muted px-3 py-2 text-xs leading-5 text-kmt-muted sm:grid-cols-2">
+                      <p>
+                        <span className="font-semibold text-kmt-ink">المبلغ المطلوب من العميل: </span>
+                        {money.expectedAmount && money.expectedCurrency ? formatMoney(money.expectedAmount, money.expectedCurrency) : "غير مرتبط بمحاولة دفع"}
+                      </p>
+                      <p>
+                        <span className="font-semibold text-kmt-ink">المبلغ الواصل من الويب هوك: </span>
+                        {money.receivedAmount && money.receivedCurrency ? formatMoney(money.receivedAmount, money.receivedCurrency) : "غير موجود في الإشعار"}
+                      </p>
+                      <p>
+                        <span className="font-semibold text-kmt-ink">حالة البوابة: </span>
+                        {money.providerStatus ?? "غير محددة"}
+                      </p>
+                      <p>
+                        <span className="font-semibold text-kmt-ink">نتيجة المطابقة: </span>
+                        {webhookMoneyStatusLabels[money.status] ?? money.status}
+                        {moneyIssue ? ` · ${moneyIssue}` : ""}
+                      </p>
+                    </div>
+                    <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(event.receivedAt)}</p>
+                    {paymentIssueText(event.errorCode || (event.signatureStatus === "INVALID" ? "INVALID_SIGNATURE" : null)) ? (
+                      <div className="mt-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900" role="status">
+                        {paymentIssueText(event.errorCode || (event.signatureStatus === "INVALID" ? "INVALID_SIGNATURE" : null))}
+                      </div>
+                    ) : null}
+                    {canManage ? <WebhookReplayButton eventId={event.id} /> : null}
+                  </div>
+                );
+              })
             ) : (
               <StateBlock tone="empty" title="لا توجد Webhooks" description="ستظهر أحداث بوابة الدفع بعد أول إشعار من المزود." />
             )}
@@ -672,7 +747,14 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
     }),
     listAdminPaymentWebhookEvents({
       actor: guard.context.principal,
-      query: { page: webhookPage, pageSize: paymentOperationsPageSize, processingStatus: query.webhookStatus ?? "", q: query.webhookQ ?? "" }
+      query: {
+        page: webhookPage,
+        pageSize: paymentOperationsPageSize,
+        provider: query.webhookProvider ?? "",
+        processingStatus: query.webhookStatus ?? "",
+        moneyStatus: query.webhookMoneyStatus ?? "",
+        q: query.webhookQ ?? ""
+      }
     })
   ]);
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));

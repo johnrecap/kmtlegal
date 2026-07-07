@@ -8,6 +8,7 @@ Last updated: 2026-07-07
 - Paymob remains selectable from admin only after its server-side environment values are complete.
 - The final commercial live provider is not considered approved until KMT has merchant/sandbox evidence for fees, EGP settlement, webhook signing, refunds, dashboard access, and support response time.
 - Paid booking must stay off for public launch until sandbox success, failure, duplicate webhook, invalid signature, replay, and expiry evidence is archived.
+- Live provider evidence is intentionally deferred while the site is not production-ready. Keep `AI_CHAT_PAID` disabled until KMT is ready to connect and test the real provider sandbox.
 
 ## Public Payment Status Privacy
 
@@ -19,6 +20,8 @@ Last updated: 2026-07-07
 ## Admin Finance Operations
 
 - `/admin/finance` remains the single operations center for manual invoices, gateway attempts, pricing rules, gateway settings, webhook events, replay, and CSV export.
+- Webhook rows show a money reconciliation summary: the amount/currency requested from the client on the payment attempt, the amount/currency received from the gateway webhook, the provider status, and the reconciliation result.
+- Use the gateway filter to isolate Paymob or PayTabs events. Use the money reconciliation filter to find matched payments, amount mismatches, currency mismatches, missing attempts, not-paid events, and events needing review.
 - Manual paid records must not use gateway-managed payment methods such as PayTabs, Paymob, hosted checkout, gateway, or webhook.
 - A repeated receipt number on any paid manual record is rejected by the application and the database to reduce accidental double-recording.
 - Gateway-confirmed payments are not edited through the manual invoice form. If a gateway record is wrong, investigate the linked attempt, transaction, and webhook event.

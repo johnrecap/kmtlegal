@@ -24,6 +24,7 @@ import {
   mapProviderPaymentStatus,
   paidAttemptWebhookConfirmationBlocker,
   paidWebhookPayloadProblem,
+  paymentWebhookMoneyComparison,
   publicPaymentAttemptConsultationDto,
   safeWebhookPayloadSnapshot
 } from "@/server/payments/payment-service";
@@ -200,6 +201,25 @@ describe("payment gateway contract", () => {
 
     const source = readFileSync(join(process.cwd(), "src/server/payments/payment-service.ts"), "utf8");
     expect(source).toContain('await releaseFailedAttempt({ tx, attempt, status: "FAILED", failureCode: paidPayloadProblem.code })');
+  });
+
+  it("compares client-requested money with provider webhook money for finance review", () => {
+    const attempt = { amount: new Prisma.Decimal("1500.00"), currency: "EGP" };
+    const normalizedPayload = {
+      provider: "paymob",
+      attemptId: "11111111-1111-4111-8111-111111111111",
+      providerTransactionId: "txn-1",
+      rawStatus: "paid",
+      status: "PAID",
+      amount: "1500.00",
+      currency: "EGP"
+    };
+
+    expect(paymentWebhookMoneyComparison({ normalizedPayload, attempt }).status).toBe("MATCHED");
+    expect(paymentWebhookMoneyComparison({ normalizedPayload: { ...normalizedPayload, amount: "1400.00" }, attempt }).status).toBe("AMOUNT_MISMATCH");
+    expect(paymentWebhookMoneyComparison({ normalizedPayload: { ...normalizedPayload, currency: "USD" }, attempt }).status).toBe("CURRENCY_MISMATCH");
+    expect(paymentWebhookMoneyComparison({ normalizedPayload, attempt: null }).status).toBe("MISSING_ATTEMPT");
+    expect(paymentWebhookMoneyComparison({ normalizedPayload: { ...normalizedPayload, status: "FAILED" }, attempt }).status).toBe("NOT_PAID");
   });
 
   it("keeps webhook events immutable and blocks transaction relinking across attempts", () => {

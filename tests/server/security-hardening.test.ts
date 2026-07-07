@@ -314,6 +314,20 @@ describe("security, privacy, upload, and observability hardening", () => {
     expect(maintenanceSource).not.toContain("error.stack");
   });
 
+  it("runs payment predeploy checks before production migrations", () => {
+    const packageJson = fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8");
+    const deployScript = fs.readFileSync(path.join(process.cwd(), "deploy/install/aapanel-pm2-update.sh"), "utf8");
+    const predeploySource = fs.readFileSync(path.join(process.cwd(), "scripts/payment-predeploy-check.mjs"), "utf8");
+
+    expect(packageJson).toContain('"predeploy:payments": "node scripts/payment-predeploy-check.mjs"');
+    expect(deployScript.indexOf("npm run predeploy:payments")).toBeGreaterThan(-1);
+    expect(deployScript.indexOf("npm run predeploy:payments")).toBeLessThan(deployScript.indexOf("npm run db:migrate"));
+    expect(predeploySource).toContain('lower(btrim("receiptNumber"))');
+    expect(predeploySource).toContain('"paymentAttemptId" IS NULL');
+    expect(predeploySource).toContain("[payment-predeploy-check] failed");
+    expect(predeploySource).not.toContain("error.stack");
+  });
+
   it("does not fall back to a dev database URL at production runtime", () => {
     expect(() => getDatabaseUrl({ APP_ENV: "production", NODE_ENV: "production" })).toThrow("DATABASE_URL");
     expect(() => getDatabaseUrl({ APP_ENV: "production", NODE_ENV: "production", npm_lifecycle_event: "build" })).toThrow("DATABASE_URL");

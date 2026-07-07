@@ -125,6 +125,13 @@ Total plans: 33
 - Updated Vitest 4 configuration to use OXC automatic React JSX transform for TSX tests.
 - Verification passed: `cmd /c npm run security:audit`, `cmd /c npm run security:audit:all`, `cmd /c npm run security:secrets`, `cmd /c npm run db:validate`, `cmd /c npm run typecheck`, `cmd /c npm run lint`, `cmd /c npm run test`, `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; cmd /c npm run build`, and `cmd /c npm run test:e2e:smoke`.
 
+## Latest Payment Operations Follow-Up
+
+- Deferred real PayTabs/Paymob merchant sandbox evidence until the site is closer to production, while keeping paid booking disabled as the launch gate.
+- Added admin finance webhook money reconciliation so staff can filter Paymob/PayTabs events and compare the client-requested attempt amount/currency against the amount/currency received from the provider webhook.
+- Added `npm run predeploy:payments` and wired it into the aaPanel deploy script before `npm run db:migrate` to catch duplicate paid manual receipt numbers before the database unique index migration blocks deployment.
+- Focused verification passed: `cmd /c npm run typecheck` and `cmd /c npx vitest run tests/server/payment-gateway-contract.test.ts tests/server/security-hardening.test.ts tests/ui/product-components.test.tsx`.
+
 ## Remaining Count
 
 - Fully not started: 0 plans.

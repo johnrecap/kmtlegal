@@ -332,10 +332,15 @@ describe("product UI primitives", () => {
     expect(source).toContain("attemptPage");
     expect(source).toContain("webhookQ");
     expect(source).toContain("webhookStatus");
+    expect(source).toContain("webhookProvider");
+    expect(source).toContain("webhookMoneyStatus");
     expect(source).toContain("webhookPage");
     expect(source).toContain("paymentOperationsPageSize = 20");
     expect(source).toContain("paymentIssueText");
     expect(source).toContain("WEBHOOK_PAYLOAD_HASH_MISMATCH");
+    expect(source).toContain("المبلغ المطلوب من العميل");
+    expect(source).toContain("المبلغ الواصل من الويب هوك");
+    expect(source).toContain("مطابقة الأموال");
     expect(source).not.toContain("pageSize: 8");
     expect(source).not.toContain("attempts.slice(0, 8)");
     expect(source).not.toContain("webhookEvents.slice(0, 8)");

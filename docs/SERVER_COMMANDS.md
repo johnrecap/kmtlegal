@@ -51,6 +51,15 @@ The payment maintenance script loads `.env.production.local`, `.env.local`, then
 
 Optional failure alerting can be enabled with `PAYMENT_MAINTENANCE_ALERT_WEBHOOK_URL` in `.env.production.local`. The alert payload is intentionally compact and excludes stack traces, database URLs, raw webhook payloads, legal summaries, emails, phone numbers, tokens, and secrets.
 
+Payment predeploy checks run automatically before `npm run db:migrate` inside `deploy/install/aapanel-pm2-update.sh`. They currently block deployment if duplicate paid manual receipt numbers exist before the database unique index is applied:
+
+```bash
+cd /www/wwwroot/kmtlegal
+npm run predeploy:payments
+```
+
+If a non-production emergency deploy needs to bypass only this preflight, set `PAYMENT_PREDEPLOY_CHECK_ENABLED=false` for that deploy. Do not bypass it for a paid production launch without first resolving the duplicate receipt numbers it reports.
+
 For PM2-managed recurrence repair, run a separate process only after confirming `.env.production.local` is loaded for that process:
 
 ```bash

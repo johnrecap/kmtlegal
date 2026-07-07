@@ -735,6 +735,11 @@ fi
 log "Verifying Next.js static assets"
 verify_next_static_manifest
 
+if [[ "${PAYMENT_PREDEPLOY_CHECK_ENABLED:-true}" != "false" ]]; then
+  log "Running payment predeploy checks"
+  npm run predeploy:payments
+fi
+
 log "Applying database migrations"
 npm run db:migrate
 

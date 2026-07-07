@@ -73,8 +73,10 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 - [ ] Expired payment attempt releases the temporary reserved appointment through `npm run jobs:payments`.
 - [ ] Admin finance CSV export respects current date/status/currency filters.
 - [ ] Admin finance payment operations filters work for payment attempts and webhook events.
+- [ ] Admin finance webhook money reconciliation shows requested client amount/currency, provider webhook amount/currency, provider status, and the reconciliation result; Paymob-only filtering works.
 - [ ] Admin finance shows amount/currency mismatch, invalid signature, failed webhook, and expired attempt issues as manual-review items.
 - [ ] Manual paid records reject gateway-managed payment method names and duplicate client receipt numbers.
+- [ ] `npm run predeploy:payments` reports `ok:true` before `npm run db:migrate` on the deployment database.
 - [ ] Content/case-study approval gate prevents premature publishing.
 - [ ] Public contact submission persists a `ContactMessage`, returns a safe reference, and can be read/marked reviewed through admin API.
 

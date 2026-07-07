@@ -39,6 +39,8 @@ export { mapProviderPaymentStatus } from "./payment-provider";
 
 const paymentAttemptStatusSchema = z.enum(["CREATED", "PENDING", "PAID", "FAILED", "EXPIRED", "REFUNDED", "DISPUTED", "CANCELLED"]);
 const webhookProcessingStatusSchema = z.enum(["PENDING", "PROCESSED", "FAILED", "IGNORED"]);
+const paymentProviderSchema = z.enum(["paytabs", "paymob"]);
+const webhookMoneyStatusSchema = z.enum(["MATCHED", "AMOUNT_MISMATCH", "CURRENCY_MISMATCH", "MISSING_ATTEMPT", "NOT_PAID", "NEEDS_REVIEW"]);
 const confirmablePaidAttemptStatuses = ["CREATED", "PENDING"] as const;
 
 export const adminPaymentAttemptListQuerySchema = z.object({
@@ -49,7 +51,9 @@ export const adminPaymentAttemptListQuerySchema = z.object({
 });
 
 export const adminPaymentWebhookListQuerySchema = z.object({
+  provider: paymentProviderSchema.optional().or(z.literal("")),
   processingStatus: webhookProcessingStatusSchema.optional().or(z.literal("")),
+  moneyStatus: webhookMoneyStatusSchema.optional().or(z.literal("")),
   q: z.string().trim().max(120).optional().or(z.literal("")),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(80).default(20)
@@ -459,7 +463,9 @@ export async function listAdminPaymentWebhookEvents(input: { actor: Principal; q
   const pagination = toPagination(filters);
   const search = filters.q?.trim();
   const where: Prisma.PaymentWebhookEventWhereInput = {
+    ...(filters.provider ? { provider: filters.provider } : {}),
     ...(filters.processingStatus ? { processingStatus: filters.processingStatus } : {}),
+    ...(filters.moneyStatus ? paymentWebhookMoneyStatusWhere(filters.moneyStatus) : {}),
     ...(search
       ? {
           OR: [
@@ -496,7 +502,127 @@ export async function listAdminPaymentWebhookEvents(input: { actor: Principal; q
     prisma.paymentWebhookEvent.count({ where })
   ]);
 
-  return { items, total, filters, page: pagination.page, pageSize: pagination.pageSize };
+  return {
+    items: items.map((event) => ({
+      ...event,
+      moneyComparison: paymentWebhookMoneyComparison({
+        normalizedPayload: event.normalizedPayload,
+        attempt: event.attempt,
+        errorCode: event.errorCode,
+        processingStatus: event.processingStatus,
+        signatureStatus: event.signatureStatus
+      })
+    })),
+    total,
+    filters,
+    page: pagination.page,
+    pageSize: pagination.pageSize
+  };
+}
+
+function paymentWebhookMoneyStatusWhere(status: z.infer<typeof webhookMoneyStatusSchema>): Prisma.PaymentWebhookEventWhereInput {
+  if (status === "MATCHED") {
+    return {
+      attemptId: { not: null },
+      processingStatus: "PROCESSED",
+      errorCode: null,
+      normalizedPayload: { path: ["status"], equals: "PAID" }
+    };
+  }
+  if (status === "AMOUNT_MISMATCH") {
+    return { errorCode: "PAYMENT_AMOUNT_MISMATCH" };
+  }
+  if (status === "CURRENCY_MISMATCH") {
+    return { errorCode: "PAYMENT_CURRENCY_MISMATCH" };
+  }
+  if (status === "MISSING_ATTEMPT") {
+    return { attemptId: null };
+  }
+  if (status === "NOT_PAID") {
+    return { normalizedPayload: { path: ["status"], not: "PAID" } };
+  }
+
+  return {
+    OR: [
+      { processingStatus: "FAILED" },
+      { signatureStatus: "INVALID" },
+      { errorCode: { not: null } },
+      { attemptId: null }
+    ]
+  };
+}
+
+export function paymentWebhookMoneyComparison(input: {
+  normalizedPayload: Prisma.JsonValue | null;
+  attempt?: { amount: Prisma.Decimal | string | number; currency: string } | null;
+  errorCode?: string | null;
+  processingStatus?: string;
+  signatureStatus?: string;
+}) {
+  const normalized = parseStoredNormalizedPayload(input.normalizedPayload);
+  const expectedAmount = input.attempt ? decimalText(input.attempt.amount) : null;
+  const expectedCurrency = input.attempt?.currency ?? null;
+  const receivedAmount = normalized?.amount?.trim() || null;
+  const receivedCurrency = normalized?.currency?.trim().toUpperCase() || null;
+  const providerStatus = normalized?.status ?? null;
+
+  if (input.errorCode === "PAYMENT_AMOUNT_MISMATCH") {
+    return moneyComparisonResult("AMOUNT_MISMATCH", expectedAmount, expectedCurrency, receivedAmount, receivedCurrency, providerStatus);
+  }
+  if (input.errorCode === "PAYMENT_CURRENCY_MISMATCH") {
+    return moneyComparisonResult("CURRENCY_MISMATCH", expectedAmount, expectedCurrency, receivedAmount, receivedCurrency, providerStatus);
+  }
+  if (!input.attempt) {
+    return moneyComparisonResult("MISSING_ATTEMPT", expectedAmount, expectedCurrency, receivedAmount, receivedCurrency, providerStatus);
+  }
+  if (input.signatureStatus === "INVALID" || input.processingStatus === "FAILED" || input.errorCode) {
+    return moneyComparisonResult("NEEDS_REVIEW", expectedAmount, expectedCurrency, receivedAmount, receivedCurrency, providerStatus);
+  }
+  if (providerStatus !== "PAID") {
+    return moneyComparisonResult("NOT_PAID", expectedAmount, expectedCurrency, receivedAmount, receivedCurrency, providerStatus);
+  }
+  if (!receivedAmount) {
+    return moneyComparisonResult("AMOUNT_MISMATCH", expectedAmount, expectedCurrency, receivedAmount, receivedCurrency, providerStatus);
+  }
+  if (!receivedCurrency || receivedCurrency !== expectedCurrency) {
+    return moneyComparisonResult("CURRENCY_MISMATCH", expectedAmount, expectedCurrency, receivedAmount, receivedCurrency, providerStatus);
+  }
+
+  try {
+    const difference = new Prisma.Decimal(receivedAmount).minus(new Prisma.Decimal(expectedAmount ?? "0"));
+    return {
+      ...moneyComparisonResult(difference.equals(0) ? "MATCHED" : "AMOUNT_MISMATCH", expectedAmount, expectedCurrency, receivedAmount, receivedCurrency, providerStatus),
+      differenceAmount: difference.toString()
+    };
+  } catch {
+    return moneyComparisonResult("AMOUNT_MISMATCH", expectedAmount, expectedCurrency, receivedAmount, receivedCurrency, providerStatus);
+  }
+}
+
+function moneyComparisonResult(
+  status: z.infer<typeof webhookMoneyStatusSchema>,
+  expectedAmount: string | null,
+  expectedCurrency: string | null,
+  receivedAmount: string | null,
+  receivedCurrency: string | null,
+  providerStatus: ReturnType<typeof mapProviderPaymentStatus> | null
+) {
+  return {
+    status,
+    expectedAmount,
+    expectedCurrency,
+    receivedAmount,
+    receivedCurrency,
+    providerStatus,
+    differenceAmount: null as string | null
+  };
+}
+
+function decimalText(value: Prisma.Decimal | string | number) {
+  if (value instanceof Prisma.Decimal) {
+    return value.toString();
+  }
+  return new Prisma.Decimal(String(value)).toString();
 }
 
 function consultationAttemptIdempotencyKey(input: {

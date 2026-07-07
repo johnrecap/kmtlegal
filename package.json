@@ -21,6 +21,7 @@
     "qa:release": "node scripts/plan23-local-qa.mjs --include-e2e --include-db --include-security-audit --include-secret-scan --release-gate",
     "jobs:payments": "node scripts/payment-maintenance.mjs",
     "jobs:payments:watch": "node scripts/payment-maintenance.mjs --watch",
+    "predeploy:payments": "node scripts/payment-predeploy-check.mjs",
     "security:audit": "npm audit --audit-level=high --omit=dev",
     "security:audit:all": "npm audit --audit-level=moderate",
     "security:secrets": "node scripts/security-secret-scan.mjs",
