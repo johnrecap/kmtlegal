@@ -58,8 +58,11 @@ set -a
 set +a
 pm2 start npm --name kmtlegal-payment-maintenance -- run jobs:payments:watch
 pm2 save
+pm2 status kmtlegal-payment-maintenance
 pm2 logs kmtlegal-payment-maintenance --lines 80 --nostream
 ```
+
+After restart, check `pm2 status kmtlegal-payment-maintenance` twice around one minute apart. The process should stay `online` and the restart counter should not keep increasing. If the counter increases every few seconds, the watch process is exiting and PM2 is only relaunching it.
 
 ## Cloudflare Public HTML Cache Rule
 

@@ -283,6 +283,8 @@ describe("security, privacy, upload, and observability hardening", () => {
     expect(maintenanceSource).toContain("PAYMENT_MAINTENANCE_ALERT_WEBHOOK_URL");
     expect(maintenanceSource).toContain('import prismaClientPackage from "@prisma/client"');
     expect(maintenanceSource).not.toContain('import { PrismaClient } from "@prisma/client"');
+    expect(maintenanceSource).toContain('process.once("SIGTERM"');
+    expect(maintenanceSource).not.toContain("timer.unref");
     expect(maintenanceSource).toContain("safeErrorSummary");
     expect(maintenanceSource).toContain("message: String(error.message");
     expect(maintenanceSource).not.toContain("error.stack");

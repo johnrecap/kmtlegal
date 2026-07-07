@@ -3,7 +3,10 @@ import { resolve } from "node:path";
 import { PrismaPg } from "@prisma/adapter-pg";
 import prismaClientPackage from "@prisma/client";
 
-const { PrismaClient } = prismaClientPackage;
+const PrismaClient = prismaClientPackage.PrismaClient ?? prismaClientPackage.default?.PrismaClient;
+if (typeof PrismaClient !== "function") {
+  throw new Error("PrismaClient export is unavailable. Run prisma generate before starting payment maintenance.");
+}
 
 loadEnvFiles([".env.production.local", ".env.local", ".env"]);
 
@@ -27,7 +30,8 @@ async function main() {
         });
       });
     }, intervalSeconds * 1000);
-    timer.unref?.();
+    process.once("SIGTERM", () => shutdown(timer));
+    process.once("SIGINT", () => shutdown(timer));
     await new Promise(() => undefined);
     return;
   }
@@ -47,6 +51,12 @@ async function runOnce() {
       ranAt: now.toISOString()
     })
   );
+}
+
+async function shutdown(timer) {
+  clearInterval(timer);
+  await prisma.$disconnect();
+  process.exit(0);
 }
 
 async function expireOpenPaymentAttempts(now) {
