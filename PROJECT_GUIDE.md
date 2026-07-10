@@ -10,9 +10,18 @@ For a current-state PRD and external model review brief, use `docs/KMT_LEGAL_CUR
 ## Current Status
 
 - `PLAN-00` through `PLAN-34` are implemented as code, tests, plans, or handoff artifacts where local infrastructure allows.
+- The public `/privacy` and `/ar/privacy` routes provide a bilingual, responsive privacy and job-applicant notice covering the verified Meta recruitment intake, email CV flow, website forms, client services, privacy rights, retention criteria, Meta processing, and first-party analytics boundaries.
 - `PLAN-04` still needs a real PostgreSQL runtime check: run migrations and seed against a running `DATABASE_URL`, then rerun seed to verify idempotency.
 - DB-backed E2E flows need PostgreSQL plus seed data before they can run end to end.
 - PLAN-34 makes Paymob the prepared primary provider, keeps PayTabs disabled standby, leaves paid booking disabled, adds expiring minimized receipts, PostgreSQL rate limiting, async scrypt, required production ClamAV scanning, optional privacy-safe Sentry, locale/error/accessibility/image hardening, and behavior-preserving module decomposition. DB-backed/provider/live deployment evidence remains a release gate.
+
+## Recent Changes
+
+- 2026-07-10 - Expanded the public privacy and job-applicant notice.
+  - Changed: bilingual public content, semantic privacy-page rendering, footer labels, UI tests, and Playwright responsive coverage.
+  - Behavior: `/privacy` and `/ar/privacy` now expose a direct Meta-ready notice with applicant data categories, purposes, access, retention criteria, rights contacts, Meta links, and Arabic RTL support.
+  - Verification: typecheck and lint passed; 35 Vitest files with 235 tests passed; ten focused Playwright privacy scenarios passed across desktop/mobile and English/Arabic, including sitemap coverage; production build passed with `ALLOW_BUILD_WITHOUT_DATABASE_URL=true`.
+  - Release: no database, dependency, environment, push, or deployment change was made.
 
 ## Install
 

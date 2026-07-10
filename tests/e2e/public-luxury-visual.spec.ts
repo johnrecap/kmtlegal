@@ -9,6 +9,7 @@ const publicVisualPages = [
   { path: "/media", name: "media", expectedDir: "ltr" },
   { path: "/contact", name: "contact", expectedDir: "ltr" },
   { path: "/book-consultation", name: "book-consultation", expectedDir: "ltr" },
+  { path: "/privacy", name: "privacy", expectedDir: "ltr" },
   { path: "/ar", name: "home-ar", expectedDir: "rtl" },
   { path: "/ar/services", name: "services-ar", expectedDir: "rtl" },
   { path: "/ar/team", name: "team-ar", expectedDir: "rtl" },
@@ -16,7 +17,8 @@ const publicVisualPages = [
   { path: "/ar/case-studies", name: "case-studies-ar", expectedDir: "rtl" },
   { path: "/ar/media", name: "media-ar", expectedDir: "rtl" },
   { path: "/ar/contact", name: "contact-ar", expectedDir: "rtl" },
-  { path: "/ar/book-consultation", name: "book-consultation-ar", expectedDir: "rtl" }
+  { path: "/ar/book-consultation", name: "book-consultation-ar", expectedDir: "rtl" },
+  { path: "/ar/privacy", name: "privacy-ar", expectedDir: "rtl" }
 ];
 
 const publicVisualViewports = [
@@ -49,7 +51,8 @@ const publicCrawlSeedPages = [
   "/ar",
   "/ar/services",
   "/ar/contact",
-  "/ar/book-consultation"
+  "/ar/book-consultation",
+  "/ar/privacy"
 ];
 
 const publicHeroImagePages = [

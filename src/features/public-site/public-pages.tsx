@@ -712,16 +712,90 @@ export async function BookConsultationPageView({ locale }: { locale: PublicLocal
 export function PrivacyPageView({ locale }: { locale: PublicLocale }) {
   const content = getPublicContent(locale);
   const copy = content.privacyPage;
+  const updatedAt = formatPublicPolicyDate(copy.lastUpdated, locale);
 
   return (
     <PublicShell currentPath={localizedPublicHref("/privacy", locale)} locale={locale} navItems={navForPath("/privacy", locale)}>
-      <PublicSection eyebrow={copy.eyebrow} title={copy.title} description={copy.description}>
-        <div className={cn(publicPanel, "space-y-8 p-6 text-sm leading-8")}>
-          {copy.blocks.map((block) => (
-            <PolicyBlock key={block.title} title={block.title}>
-              {block.body}
-            </PolicyBlock>
-          ))}
+      <PublicSection eyebrow={copy.eyebrow} title={copy.title} description={copy.description} headingLevel="h1">
+        <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
+          <aside className={cn(publicPanel, "p-5 lg:sticky lg:top-28")}>
+            <nav aria-label={copy.contentsLabel}>
+              <h2 className="text-lg font-semibold text-white">{copy.contentsLabel}</h2>
+              <ol className="mt-4 space-y-2 text-sm">
+                {copy.sections.map((section) => (
+                  <li key={section.id}>
+                    <a
+                      className={cn(
+                        "flex min-h-10 items-center gap-2 rounded-md px-2 py-1.5 text-slate-300 transition-colors hover:bg-white/5 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
+                      )}
+                      href={`#${section.id}`}
+                    >
+                      <span>{section.title}</span>
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          </aside>
+
+          <article className={cn(publicPanel, "p-5 text-sm leading-8 sm:p-8")} data-testid="privacy-policy">
+            <div className="rounded-lg border border-kmt-gold/30 bg-kmt-gold/10 p-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="text-xl font-semibold text-white">{copy.summaryTitle}</h2>
+                <p className="text-xs text-amber-100">
+                  {copy.lastUpdatedLabel}: <time dateTime={copy.lastUpdated}>{updatedAt}</time>
+                </p>
+              </div>
+              <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+                {copy.summaryItems.map((item) => (
+                  <div key={item.label}>
+                    <dt className="text-xs font-semibold text-kmt-gold">{item.label}</dt>
+                    <dd className="mt-1 leading-7 text-slate-200">{item.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+
+            <div className="mt-8 space-y-10">
+              {copy.sections.map((section) => (
+                <section key={section.id} className="scroll-mt-28 border-t border-white/10 pt-8" id={section.id}>
+                  <h2 className="text-2xl font-semibold leading-tight text-white">{section.title}</h2>
+                  <div className={cn("mt-4 space-y-4", publicMutedText)}>
+                    {section.paragraphs.map((paragraph) => (
+                      <p key={paragraph}>{paragraph}</p>
+                    ))}
+                    {section.bullets.length > 0 ? (
+                      <ul className="list-disc space-y-2 ps-5 marker:text-kmt-gold">
+                        {section.bullets.map((item) => (
+                          <li key={item}>{item}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    {section.links.length > 0 ? (
+                      <ul className="flex flex-wrap gap-3 pt-1">
+                        {section.links.map((link) => {
+                          const external = link.href.startsWith("http");
+
+                          return (
+                            <li key={link.href}>
+                              <a
+                                className="inline-flex min-h-11 items-center rounded-md border border-kmt-gold/35 px-3 py-2 font-semibold text-amber-100 transition-colors hover:border-kmt-gold hover:bg-kmt-gold/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
+                                href={link.href}
+                                rel={external ? "noreferrer" : undefined}
+                                target={external ? "_blank" : undefined}
+                              >
+                                <bdi>{link.label}</bdi>
+                              </a>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : null}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </article>
         </div>
       </PublicSection>
     </PublicShell>
@@ -834,4 +908,11 @@ function PolicyBlock({ title, children }: { title: string; children: string }) {
       <p className={cn("mt-3", publicMutedText)}>{children}</p>
     </section>
   );
+}
+
+function formatPublicPolicyDate(value: string, locale: PublicLocale) {
+  return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", {
+    dateStyle: "long",
+    timeZone: "UTC"
+  }).format(new Date(`${value}T00:00:00Z`));
 }

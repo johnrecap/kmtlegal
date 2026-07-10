@@ -233,7 +233,7 @@ export const publicContentEn = {
     contactTitle: "Contact Us",
     hours: "Sunday - Thursday, 9:00 AM - 6:00 PM",
     copyright: "© 2026 KMT Legal. All rights reserved.",
-    privacy: "Privacy",
+    privacy: "Privacy Policy",
     terms: "Terms",
     languageSwitchLabel: "العربية"
   },
@@ -569,15 +569,165 @@ export const publicContentEn = {
   },
   privacyPage: {
     metadataTitle: "Privacy Policy | KMT Legal",
-    metadataDescription: "KMT Legal privacy policy for consultation, contact, and file data.",
-    eyebrow: "Privacy",
-    title: "How We Handle Your Data",
-    description: "This page explains how data is used in contact and consultation services and requires periodic legal review under office policies.",
-    blocks: [
-      { title: "Data We Receive", body: "We may receive name, phone number, email, city, request summary, and preferred contact method when a consultation or contact form is submitted." },
-      { title: "Purpose Of Use", body: "We use the data to review the request, contact you, organize appointments, and improve internal workflow. Client data and documents are not published on public pages." },
-      { title: "Artificial Intelligence", body: "The system may use automated tools to organize the request initially. Outputs are assistive only, require lawyer review, and are not final legal advice." },
-      { title: "Legal Files", body: "Legal files are shared later only through protected channels approved by the office, not through public website forms." }
+    metadataDescription: "How KMT Legal handles website, consultation, client, and job-applicant data, including applications submitted through Meta.",
+    eyebrow: "Privacy notice",
+    title: "Privacy Policy and Applicant Notice",
+    description: "A clear account of the information KMT Legal receives, why it is used, who may access it, and how to exercise your privacy rights.",
+    lastUpdatedLabel: "Last updated",
+    lastUpdated: "2026-07-10",
+    summaryTitle: "Key information",
+    contentsLabel: "On this page",
+    summaryItems: [
+      { label: "Responsible entity", value: "KMT Legal" },
+      { label: "Who this covers", value: "Website visitors, clients, consultation requesters, and job applicants" },
+      { label: "Recruitment contact", value: "careers@kmtlegal.org" },
+      { label: "General privacy contact", value: "contact@kmtlegal.com" }
+    ],
+    sections: [
+      {
+        id: "who-we-are",
+        title: "1. Who is responsible for your data",
+        paragraphs: [
+          "KMT Legal is responsible for deciding how personal data covered by this notice is used. Recruitment questions and applicant privacy requests can be sent to the careers address below. General website and client privacy questions can be sent to the general contact address."
+        ],
+        bullets: [],
+        links: [
+          { label: "careers@kmtlegal.org", href: "mailto:careers@kmtlegal.org" },
+          { label: "contact@kmtlegal.com", href: "mailto:contact@kmtlegal.com" }
+        ]
+      },
+      {
+        id: "scope",
+        title: "2. Scope of this notice",
+        paragraphs: [
+          "This notice covers job applications submitted through a Meta Instant Form and CVs sent by email. It also covers personal data submitted through KMT Legal website contact and consultation services, client accounts, protected document services, and the limited technical data needed to operate those services.",
+          "Meta processes information on Facebook and Instagram under its own terms and privacy policy. This notice explains KMT Legal's use after information is submitted or made available to the office."
+        ],
+        bullets: [],
+        links: []
+      },
+      {
+        id: "data-we-collect",
+        title: "3. Personal data we collect",
+        paragraphs: [
+          "For the Executive Legal Coordinator recruitment campaign, KMT Legal receives the information you choose to submit in the Meta form and the CV you send by email. A CV may contain additional education, employment, language, and professional information that you decide to provide.",
+          "Website contact and consultation services may also receive contact details, a city, a message or matter summary, preferred contact or meeting details, account information, and documents submitted later through protected channels."
+        ],
+        bullets: [
+          "Full name, phone number, and email address.",
+          "Law degree or legal-education status.",
+          "English-language and Microsoft Office proficiency.",
+          "Legal or administrative experience.",
+          "Ability to work on site in the New Administrative Capital.",
+          "Availability to start work.",
+          "CV content and correspondence about the application."
+        ],
+        links: []
+      },
+      {
+        id: "sources",
+        title: "4. Where the data comes from",
+        paragraphs: [
+          "We receive data directly from you, from the Meta Instant Form you submit on Facebook or Instagram, from emails and attachments you send to KMT Legal, and from forms or protected services you choose to use on this website."
+        ],
+        bullets: [],
+        links: []
+      },
+      {
+        id: "purposes-and-basis",
+        title: "5. Why we use the data and the basis for use",
+        paragraphs: [
+          "Applicant data is used to review suitability for the advertised role, verify the information relevant to that review, arrange interviews or assessments, communicate about the application, and keep the records needed to manage the recruitment process.",
+          "Website and client data is used to respond to messages, review consultation requests, organize appointments, operate client accounts, protect the service, and comply with applicable obligations. We process information you choose to submit to take the requested steps, and we request separate consent where consent is required for a distinct purpose.",
+          "Applicant data is not used to market legal services unless the person gives separate, explicit consent for that purpose."
+        ],
+        bullets: [],
+        links: []
+      },
+      {
+        id: "access-and-sharing",
+        title: "6. Who may access the data",
+        paragraphs: [
+          "Access inside KMT Legal is limited to authorized people who need the information for recruitment, legal-service intake, client support, administration, security, or technical operation.",
+          "Data may be handled by service providers necessary to deliver the relevant channel, such as Meta for the Instant Form and the email, hosting, database, or protected-storage services used by KMT Legal. They may use the data only for the service or purpose for which it was provided, subject to applicable requirements.",
+          "KMT Legal does not sell applicant or client personal data."
+        ],
+        bullets: [],
+        links: []
+      },
+      {
+        id: "meta-and-transfers",
+        title: "7. Meta and processing outside Egypt",
+        paragraphs: [
+          "Meta receives and processes information when you use Facebook, Instagram, or an Instant Form. Because Meta operates globally, its processing or storage may take place outside Egypt according to Meta's own privacy policy.",
+          "KMT Legal will make any other international transfer only where it is necessary for the relevant service and subject to the requirements that apply to that transfer."
+        ],
+        bullets: [],
+        links: [
+          { label: "Meta Privacy Policy", href: "https://www.facebook.com/privacy/policy/" },
+          { label: "Meta Lead Ad Terms", href: "https://www.facebook.com/ads/leadgen/tos" }
+        ]
+      },
+      {
+        id: "retention",
+        title: "8. How long we keep data",
+        paragraphs: [
+          "We keep personal data only for as long as it is needed for the purpose described in this notice, to complete the relevant recruitment or service process, and for any reasonable follow-up, dispute, security, or legal requirement that applies.",
+          "An unsuccessful application is not kept for unrelated future vacancies unless the applicant separately agrees. When data is no longer needed, it is deleted or securely disposed of, subject to any lawful need to retain a limited record and the practical deletion cycle of protected backups."
+        ],
+        bullets: [],
+        links: []
+      },
+      {
+        id: "security",
+        title: "9. How we protect data",
+        paragraphs: [
+          "KMT Legal uses organizational and technical measures appropriate to the data and service, including limited access, protected accounts and sessions, validation, private document storage, and privacy-aware logging. No online or email system can guarantee absolute security, so please use the designated channels and avoid sending unnecessary sensitive information."
+        ],
+        bullets: [],
+        links: []
+      },
+      {
+        id: "rights",
+        title: "10. Your choices and privacy rights",
+        paragraphs: [
+          "Subject to applicable law, you may ask whether KMT Legal holds personal data about you and request access, correction, or deletion. You may also withdraw consent where processing depends on consent, object or request a restriction where the law provides for it, and raise a complaint.",
+          "Send enough information to identify the relevant application or request, but do not email passwords, national identification numbers, or financial data. We may need to verify identity before acting and may retain information where a legal exception or obligation applies."
+        ],
+        bullets: [],
+        links: [
+          { label: "Applicant privacy request", href: "mailto:careers@kmtlegal.org?subject=Applicant%20privacy%20request" },
+          { label: "Personal Data Protection Center", href: "https://pdpc.gov.eg" }
+        ]
+      },
+      {
+        id: "minors-and-minimization",
+        title: "11. Minors and unnecessary sensitive data",
+        paragraphs: [
+          "The advertised professional role and its Meta campaign are not directed to minors. Do not submit a national identification number, financial details, health data, or other sensitive information that is not necessary for the recruitment process. If additional information is lawfully required at a later stage, KMT Legal will request it through an appropriate channel."
+        ],
+        bullets: [],
+        links: []
+      },
+      {
+        id: "cookies-and-analytics",
+        title: "12. Cookies and analytics",
+        paragraphs: [
+          "The public privacy page and recruitment notice do not require login. The platform uses a necessary session cookie after sign-in and first-party operational analytics for limited events. Those analytics are designed not to include names, email addresses, phone numbers, addresses, legal summaries, document contents, or file names.",
+          "The repository does not include a marketing pixel or advertising-cookie integration for the public website. Meta's own cookies and tracking on Facebook and Instagram are governed by Meta's policies."
+        ],
+        bullets: [],
+        links: []
+      },
+      {
+        id: "changes",
+        title: "13. Changes to this notice",
+        paragraphs: [
+          "We may update this notice when the services, recruitment process, providers, or applicable requirements change. The current version and its latest update date will remain available on this page. Material changes will be communicated through an appropriate channel when required."
+        ],
+        bullets: [],
+        links: []
+      }
     ]
   },
   termsPage: {

@@ -12,13 +12,14 @@ const publicSmokePages = [
   "/book-consultation",
   "/login",
   "/privacy",
+  "/ar/privacy",
   "/terms",
   "/product-system",
   "/stitch-clone/home"
 ];
 
-const publicResponsivePages = ["/", "/services", "/team", "/articles", "/case-studies", "/media", "/contact", "/book-consultation"];
-const arabicResponsivePages = ["/ar", "/ar/services", "/ar/contact", "/ar/book-consultation"];
+const publicResponsivePages = ["/", "/services", "/team", "/articles", "/case-studies", "/media", "/contact", "/book-consultation", "/privacy"];
+const arabicResponsivePages = ["/ar", "/ar/services", "/ar/contact", "/ar/book-consultation", "/ar/privacy"];
 
 const publicLuxurySurfacePages = [
   { path: "/services", expectedDir: "ltr", testIds: ["public-directory-filter", "public-directory-card"] },
@@ -142,6 +143,36 @@ test.describe("MVP smoke without database", () => {
     const url = new URL(page.url());
     expect(url.pathname).toBe("/login");
     expect(url.searchParams.get("next")).toBe("/client");
+  });
+
+  test("privacy notice exposes applicant disclosures, contacts, and keyboard-accessible sections", async ({ page }) => {
+    const response = await page.goto("/ar/privacy", { waitUntil: "domcontentloaded" });
+
+    expect(response?.status()).toBeLessThan(400);
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.getByRole("heading", { level: 1, name: "سياسة الخصوصية وبيانات المتقدمين للوظائف" })).toBeVisible();
+    await expect(page.getByTestId("privacy-policy")).toBeVisible();
+    await expect(page.getByRole("link", { name: "careers@kmtlegal.org" }).first()).toHaveAttribute("href", "mailto:careers@kmtlegal.org");
+    await expect(page.getByRole("link", { name: "سياسة خصوصية Meta" })).toHaveAttribute("href", "https://www.facebook.com/privacy/policy/");
+
+    const firstSectionLink = page.locator('a[href="#who-we-are"]').first();
+    await firstSectionLink.focus();
+    await expect(firstSectionLink).toBeFocused();
+    await firstSectionLink.click();
+    await expect(page).toHaveURL(/#who-we-are$/);
+    await expect(page.locator("#who-we-are")).toBeVisible();
+
+    const footerPrivacyLink = page.locator('footer a[href="/ar/privacy"]').last();
+    await expect(footerPrivacyLink).toHaveText("سياسة الخصوصية");
+  });
+
+  test("sitemap includes the English and Arabic privacy notice routes", async ({ request }) => {
+    const response = await request.get("/sitemap.xml");
+    const xml = await response.text();
+
+    expect(response.status()).toBeLessThan(400);
+    expect(xml).toContain("/privacy");
+    expect(xml).toContain("/ar/privacy");
   });
 
   test("public mobile header keeps the language switch visible", async ({ page }) => {

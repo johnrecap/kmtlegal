@@ -7,7 +7,7 @@ import { PublicShell } from "@/components/layout";
 import { ButtonLink } from "@/components/ui";
 import { getPublicContent, navForPath } from "@/content/public-content";
 import { DetailCta, PageHero, PublicSection, TrustStrip } from "@/features/public-site/public-components";
-import { HomePageView } from "@/features/public-site/public-pages";
+import { HomePageView, PrivacyPageView, privacyMetadata } from "@/features/public-site/public-pages";
 
 describe("public website UI", () => {
   it("renders public shell navigation with English default labels and active page", () => {
@@ -54,6 +54,35 @@ describe("public website UI", () => {
     expect(html).toContain("English");
     expect(html).toContain("دخول العميل");
     expect(html).toContain("href=\"/login?next=/client\"");
+  });
+
+  it("renders the English applicant privacy notice with semantic structure and verified links", () => {
+    const html = renderToStaticMarkup(<PrivacyPageView locale="en" />);
+    const metadata = privacyMetadata("en");
+
+    expect(html).toContain("data-testid=\"privacy-policy\"");
+    expect(html).toContain("<h1");
+    expect(html).toContain("Privacy Policy and Applicant Notice</h1>");
+    expect(html).toContain("dateTime=\"2026-07-10\"");
+    expect(html).toContain("href=\"#data-we-collect\"");
+    expect(html).toContain("id=\"data-we-collect\"");
+    expect(html).toContain("mailto:careers@kmtlegal.org");
+    expect(html).toContain("https://www.facebook.com/privacy/policy/");
+    expect(html).toContain("https://pdpc.gov.eg");
+    expect(html).not.toMatch(/TODO|placeholder/i);
+    expect(metadata.alternates?.canonical).toBe("/privacy");
+    expect(metadata.alternates?.languages).toEqual({ en: "/privacy", ar: "/ar/privacy", "x-default": "/privacy" });
+  });
+
+  it("renders the Arabic applicant privacy notice in structural RTL", () => {
+    const html = renderToStaticMarkup(<PrivacyPageView locale="ar" />);
+
+    expect(html).toContain("dir=\"rtl\"");
+    expect(html).toContain("lang=\"ar\"");
+    expect(html).toContain("سياسة الخصوصية وبيانات المتقدمين للوظائف</h1>");
+    expect(html).toContain("إمكانية العمل حضوريًا في العاصمة الإدارية الجديدة");
+    expect(html).toContain("careers@kmtlegal.org");
+    expect(html).toContain("سياسة خصوصية Meta");
   });
 
   it("keeps the Arabic homepage CTA and section eyebrows clean", async () => {

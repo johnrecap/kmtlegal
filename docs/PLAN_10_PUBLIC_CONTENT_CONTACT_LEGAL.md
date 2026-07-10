@@ -14,6 +14,9 @@
   - `/contact`
 - Legal pages:
   - `/privacy`
+    - English-default privacy and job-applicant notice.
+    - Arabic RTL notice at `/ar/privacy`.
+    - Meta Instant Form recruitment scope, CV-by-email handling, retention criteria, rights contacts, Meta links, semantic headings, and an in-page contents list.
   - `/terms`
 - Public read-only API contracts:
   - `/api/public/services`
@@ -38,8 +41,10 @@
 
 - `tests/server/public-content.test.ts`
 - `tests/ui/public-pages.test.tsx`
+- `tests/e2e/mvp-smoke.spec.ts`
+- `tests/e2e/public-luxury-visual.spec.ts`
 
 ## Still Open
 
-- Legal/privacy copy should receive final legal review before production release.
+- The public privacy notice uses verified project behavior and official Meta/PDPC references, but its published legal wording should still receive final human legal review before production release.
 - Admin UI for reviewing `ContactMessage` entries can be added on top of the implemented admin read/status API.

@@ -35,7 +35,8 @@ export function PublicSection({
   children,
   className,
   align = "start",
-  surface = "default"
+  surface = "default",
+  headingLevel = "h2"
 }: {
   eyebrow?: string;
   title: string;
@@ -44,6 +45,7 @@ export function PublicSection({
   className?: string;
   align?: "start" | "center";
   surface?: "default" | "muted" | "transparent";
+  headingLevel?: "h1" | "h2";
 }) {
   const surfaceClass =
     surface === "transparent"
@@ -52,13 +54,14 @@ export function PublicSection({
         ? publicSectionMutedSurface
         : publicSectionSurface;
   const isCentered = align === "center";
+  const Heading = headingLevel;
 
   return (
     <section className={cn(surfaceClass, className)}>
       <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:px-10 lg:py-16">
         <div className={cn("max-w-3xl", isCentered ? "mx-auto text-center" : undefined)}>
           {eyebrow ? <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p> : null}
-          <h2 className="mt-2 text-3xl font-semibold leading-tight text-white md:text-4xl">{title}</h2>
+          <Heading className="mt-2 text-3xl font-semibold leading-tight text-white md:text-4xl">{title}</Heading>
           {description ? <p className={cn("mt-4 text-base leading-8", publicMutedText)}>{description}</p> : null}
         </div>
         <div className="mt-8">{children}</div>
