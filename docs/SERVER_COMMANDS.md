@@ -38,6 +38,30 @@ cd /www/wwwroot/kmtlegal
 bash deploy/install/aapanel-pm2-update.sh
 ```
 
+PLAN-34 requires ClamAV before that deploy can become healthy. On Debian/Ubuntu aaPanel hosts, install/start it once and confirm the socket path before deploying:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y clamav clamav-daemon
+sudo systemctl enable --now clamav-daemon
+sudo clamdscan --ping
+sudo ls -l /run/clamav/clamd.ctl
+```
+
+In `.env.production.local`, keep paid booking disabled and stage the providers as follows:
+
+```dotenv
+PAYMENT_PROVIDER=paymob
+PAYTABS_ENABLED=false
+PAYMOB_REQUEST_TIMEOUT_MS=10000
+MALWARE_SCAN_MODE=required
+CLAMAV_SOCKET_PATH=/run/clamav/clamd.ctl
+SENTRY_ENABLED=false
+NEXT_PUBLIC_SENTRY_ENABLED=false
+```
+
+Do not set `consultation.booking` to `AI_CHAT_PAID` during this deploy. Sentry must remain disabled until its DSN, auth token, org, and project are configured together.
+
 The aaPanel deploy script now runs payment maintenance once and starts or restarts the recurring PM2 process `kmtlegal-payment-maintenance` before `pm2 save`. Use the manual commands below only when you intentionally need to inspect or repair the maintenance process outside the deploy script.
 
 Payment maintenance can still be run manually on the server after deploy:
@@ -174,6 +198,8 @@ The script:
 - Pulls with `git pull --ff-only origin main` when the server checkout is behind.
 - Fails if tracked files on the server are modified.
 - Loads the production environment file and fails if `DATABASE_URL` is missing.
+- Runs production readiness with Paymob-first settings and requires a reachable ClamAV daemon before `/api/health` can become ready.
+- Requires `/api/health` itself to return success after restart; `REQUIRE_HEALTH_READY=false` is reserved for controlled first-bootstrap work and must not be used for a normal production update.
 - Sets `APP_RELEASE` to the exact deployed Git commit so `/api/health` can prove which release the PM2 process and public domain are serving.
 - Installs dependencies with build-time packages using `npm ci --include=dev`.
 - Preserves the previous `.next/static` assets for open browser tabs and cached HTML.
@@ -252,6 +278,8 @@ curl -fsSI http://127.0.0.1:3000/api/health || curl -fsSI http://127.0.0.1:3000/
 pm2 save
 pm2 list
 ```
+
+After deploy, verify ClamAV and the application health together. Use the official EICAR test string only in a controlled test upload and delete the rejected local test file afterward; the app must return `MALWARE_DETECTED` and must not create a `Document` row.
 
 If `npm run db:migrate` fails with `P1010: User was denied access`, do not restart PM2 yet. First confirm the loaded `DATABASE_URL` points at the aaPanel PostgreSQL database and user:
 

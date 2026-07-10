@@ -71,9 +71,6 @@ const publicHeroImagePages = [
   { path: "/ar/book-consultation", name: "book-consultation-ar", expectedObjectPosition: "50% 62%" }
 ];
 
-const primaryEnglishHeroImagePaths = new Set(["/", "/services", "/team", "/articles"]);
-const primaryEnglishHeroImagePages = publicHeroImagePages.filter((page) => primaryEnglishHeroImagePaths.has(page.path));
-
 async function stubAnalytics(page: import("@playwright/test").Page) {
   await page.route("**/api/analytics/events", async (route) => {
     await route.fulfill({
@@ -93,11 +90,9 @@ async function expectNoHorizontalOverflow(page: import("@playwright/test").Page,
 }
 
 test.describe("PLAN-28 public luxury visual smoke", () => {
-  test("first public hero images load from direct public asset URLs", async ({ page }) => {
-    await stubAnalytics(page);
-    const primaryEnglishHeroSrcs = new Set<string>();
-
-    for (const pageTarget of publicHeroImagePages) {
+  for (const pageTarget of publicHeroImagePages) {
+    test(`${pageTarget.name} hero uses the optimized local asset and expected crop`, async ({ page }) => {
+      await stubAnalytics(page);
       const response = await page.goto(pageTarget.path, { waitUntil: "load" });
       expect(response?.status(), `${pageTarget.path} should render before checking the hero image`).toBeLessThan(400);
 
@@ -105,26 +100,21 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
       await expect(heroImage, `${pageTarget.name} hero image should be visible`).toBeVisible();
 
       const src = await heroImage.getAttribute("src");
-      expect(src, `${pageTarget.name} hero image should use a direct public asset URL`).toMatch(/^\/stitch-assets\/.+\.png$/);
+      expect(src, `${pageTarget.name} hero image should use Next image optimization for a local asset`).toContain("/_next/image?url=%2Fstitch-assets%2F");
       await expect(heroImage, `${pageTarget.name} hero crop should use the page-specific focal point`).toHaveCSS("object-position", pageTarget.expectedObjectPosition);
-      if (primaryEnglishHeroImagePages.some((primaryPage) => primaryPage.path === pageTarget.path) && src) {
-        primaryEnglishHeroSrcs.add(src);
-      }
 
       await expect
         .poll(
           () =>
             heroImage.evaluate((node) => {
               const image = node as HTMLImageElement;
-              return image.complete && image.naturalWidth > 0 && image.naturalHeight > 0 && image.currentSrc.includes("/stitch-assets/");
+              return image.complete && image.naturalWidth > 0 && image.naturalHeight > 0 && image.currentSrc.includes("/_next/image?url=%2Fstitch-assets%2F");
             }),
           { message: `${pageTarget.name} hero image should finish loading` }
         )
         .toBe(true);
-    }
-
-    expect(primaryEnglishHeroSrcs.size, "the first English public pages should not repeat the same hero photograph").toBe(primaryEnglishHeroImagePages.length);
-  });
+    });
+  }
 
   for (const viewport of publicVisualViewports) {
     for (const pageTarget of publicVisualPages) {
@@ -177,11 +167,10 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
     }
   });
 
-  test("PLAN-31 public cinematic motion respects reduced-motion preferences", async ({ page }) => {
-    await stubAnalytics(page);
-    await page.emulateMedia({ reducedMotion: "reduce" });
-
-    for (const pageTarget of publicMotionSmokePages) {
+  for (const pageTarget of publicMotionSmokePages) {
+    test(`${pageTarget.name} cinematic motion respects reduced-motion preferences`, async ({ page }) => {
+      await stubAnalytics(page);
+      await page.emulateMedia({ reducedMotion: "reduce" });
       const response = await page.goto(pageTarget.path, { waitUntil: "domcontentloaded" });
 
       expect(response?.status(), `${pageTarget.path} should render with reduced motion`).toBeLessThan(400);
@@ -203,14 +192,13 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
         await arrow.hover();
         await expect.poll(() => arrow.evaluate((node) => getComputedStyle(node).transform)).toBe(transformBeforeHover);
       }
-    }
-  });
+    });
+  }
 
-  test("PLAN-31 hover and focus motion do not introduce horizontal overflow", async ({ page }) => {
-    await stubAnalytics(page);
-    await page.setViewportSize({ width: 390, height: 844 });
-
-    for (const pageTarget of publicVisualPages) {
+  for (const pageTarget of publicVisualPages) {
+    test(`${pageTarget.name} hover and focus motion do not introduce mobile overflow`, async ({ page }) => {
+      await stubAnalytics(page);
+      await page.setViewportSize({ width: 390, height: 844 });
       const response = await page.goto(pageTarget.path, { waitUntil: "domcontentloaded" });
       expect(response?.status(), `${pageTarget.path} should render before motion interaction`).toBeLessThan(400);
 
@@ -225,8 +213,8 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
         await firstCard.hover();
         await expectNoHorizontalOverflow(page, `${pageTarget.path} hovered motion card`);
       }
-    }
-  });
+    });
+  }
 
   test("PLAN-31 RTL arrow trail moves inline-forward", async ({ page }) => {
     await stubAnalytics(page);

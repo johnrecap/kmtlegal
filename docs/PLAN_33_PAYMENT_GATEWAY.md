@@ -1,6 +1,6 @@
 # PLAN 33: Payment Gateway For Consultation Booking
 
-Last updated: 2026-07-07
+Last updated: 2026-07-10
 
 ## Goal
 
@@ -45,7 +45,7 @@ The public consultation entry point is controlled by a non-secret `SystemSetting
 
 - Booking mode for new public consultation requests: `SystemSetting` key `consultation.booking`, defaulting to `AI_CHAT_PAID`.
 - Price: server-side `PricingService` only.
-- Active gateway for new attempts: `SystemSetting` key `payment.gateway`, falling back to `PAYMENT_PROVIDER`.
+- Active gateway for new attempts: Paymob through `SystemSetting` key `payment.gateway`, falling back to `PAYMENT_PROVIDER=paymob`. Disabled providers are ignored.
 - Payment success: verified/idempotent webhook only.
 - Receipt display: signed receipt token plus a paid `PaymentAttempt` and paid `Payment`.
 - Appointment confirmation: `PaymentWebhookService` after paid provider state.
@@ -61,7 +61,8 @@ The public consultation entry point is controlled by a non-secret `SystemSetting
 
 ## Environment
 
-- `PAYMENT_PROVIDER=paytabs`
+- `PAYMENT_PROVIDER=paymob`
+- `PAYTABS_ENABLED=false`; PayTabs stays historical/standby and cannot create new attempts.
 - `PAYMENT_ATTEMPT_EXPIRY_MINUTES=15`
 - `PAYMENT_REQUIRE_WEBHOOK_SIGNATURE=true` in production
 - `PAYMENT_RECEIPT_SIGNING_SECRET` for signed public receipt links; `AUTH_SECRET` is the server-side fallback.
@@ -75,6 +76,10 @@ The public consultation entry point is controlled by a non-secret `SystemSetting
 - `PAYMOB_PAYMENT_METHOD_IDS`
 - `PAYMOB_API_BASE_URL`
 - `PAYMOB_CHECKOUT_BASE_URL`
+- `PAYMOB_REQUEST_TIMEOUT_MS=10000`
+- `PAYMENT_RECEIPT_TOKEN_MAX_AGE_SECONDS=604800`
+
+Production callback, webhook, return, and receipt URLs use canonical `APP_ORIGIN`; forwarded request origins are not accepted as the production source of truth. Public receipt tokens are versioned, signed, expiring tokens and public receipts exclude client phone/email and legal consultation summaries.
 
 Payment status links without a valid status token return only a safe public status. Client name, phone, checkout URL, receipt URL, account setup links, legal request summary, city, urgency, service category, and preferred mode require the signed return link.
 
@@ -95,7 +100,7 @@ When set, `npm run jobs:payments:watch` sends a compact failure alert with servi
 
 ## Not In v1
 
-- Final commercial provider decision before merchant comparison is complete.
+- Automatic provider fallback or retry that could create a second checkout.
 - PayTabs direct API client beyond the URL-template bridge.
 - Refund/dispute operations UI.
 - Full manual payment verification against a pending `PaymentAttempt`.
@@ -103,9 +108,11 @@ When set, `npm run jobs:payments:watch` sends a compact failure alert with servi
 
 ## Required Before Live Launch
 
-1. Finish provider merchant comparison and update ADR.
-2. Enter sandbox credentials for the selected provider; Paymob uses Hosted/Unified Checkout, while PayTabs can keep the template bridge until merchant API details are finalized.
+1. Finish the Paymob merchant/sandbox checklist and archive approval evidence.
+2. Enter Paymob sandbox credentials; leave `PAYTABS_ENABLED=false`.
 3. Create at least one active consultation pricing rule in production.
 4. Run provider sandbox tests for success/failure/duplicate/invalid-signature/replay.
 5. Run the late-payment playbook and mobile 390px booking/payment return QA from `docs/PAYMENT_OPERATIONS_PLAYBOOK.md`.
 6. Run DB-backed staging smoke and production deployment smoke.
+
+`AI_CHAT_PAID` remains disabled during PLAN-34 deployment. Configuring Paymob is preparation only and must not change the current free-booking mode.

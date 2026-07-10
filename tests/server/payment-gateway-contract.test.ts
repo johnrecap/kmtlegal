@@ -35,7 +35,7 @@ describe("payment gateway contract", () => {
   it("keeps payment provider config bounded and production signatures required", () => {
     expect(paymentProvider(testEnv({ PAYMENT_PROVIDER: "PayTabs" }))).toBe("paytabs");
     expect(paymentProvider(testEnv({ PAYMENT_PROVIDER: "paymob" }))).toBe("paymob");
-    expect(paymentProvider(testEnv())).toBe("paytabs");
+    expect(paymentProvider(testEnv())).toBe("paymob");
     expect(() => paymentProvider(testEnv({ PAYMENT_PROVIDER: "stripe" }))).toThrow();
     expect(paymentReservationMinutes(testEnv({ PAYMENT_ATTEMPT_EXPIRY_MINUTES: "15" }))).toBe(15);
     expect(paymentReservationMinutes(testEnv({ PAYMENT_ATTEMPT_EXPIRY_MINUTES: "1" }))).toBe(15);
@@ -64,6 +64,17 @@ describe("payment gateway contract", () => {
         })
       )
     ).not.toThrow();
+  });
+
+  it("keeps PayTabs unavailable for new attempts unless its explicit standby flag is enabled", () => {
+    const configured = {
+      PAYTABS_HOSTED_CHECKOUT_URL_TEMPLATE: "https://payments.test/{attemptId}",
+      PAYTABS_WEBHOOK_SECRET: "historical-webhook-secret"
+    };
+    expect(() => assertProviderReadyForActivation("paytabs", testEnv(configured))).toThrowError(
+      expect.objectContaining({ code: "PAYMENT_PROVIDER_DISABLED" })
+    );
+    expect(() => assertProviderReadyForActivation("paytabs", testEnv({ ...configured, PAYTABS_ENABLED: "true" }))).not.toThrow();
   });
 
   it("reads stored payment gateway settings with env fallback", () => {
@@ -125,14 +136,16 @@ describe("payment gateway contract", () => {
   });
 
   it("signs public payment receipt links and rejects tampered tokens", () => {
-    const env = testEnv({ PAYMENT_RECEIPT_SIGNING_SECRET: "receipt-secret-32-characters-long" });
+    const env = testEnv({ PAYMENT_RECEIPT_SIGNING_SECRET: "receipt-secret-32-characters-long", PAYMENT_RECEIPT_TOKEN_MAX_AGE_SECONDS: "3600" });
     const attemptId = "11111111-1111-4111-8111-111111111111";
     const paymentId = "22222222-2222-4222-8222-222222222222";
-    const token = createPaymentReceiptToken({ attemptId, paymentId }, env);
+    const issuedAt = new Date("2026-07-07T00:00:00.000Z");
+    const token = createPaymentReceiptToken({ attemptId, paymentId, issuedAt }, env);
 
-    expect(verifyPaymentReceiptToken({ attemptId, token }, env)).toMatchObject({ attemptId, paymentId });
-    expect(verifyPaymentReceiptToken({ attemptId: "33333333-3333-4333-8333-333333333333", token }, env)).toBeNull();
-    expect(verifyPaymentReceiptToken({ attemptId, token: `${token}tampered` }, env)).toBeNull();
+    expect(verifyPaymentReceiptToken({ attemptId, token, now: new Date("2026-07-07T00:59:59.000Z") }, env)).toMatchObject({ attemptId, paymentId });
+    expect(verifyPaymentReceiptToken({ attemptId, token, now: new Date("2026-07-07T01:00:00.000Z") }, env)).toBeNull();
+    expect(verifyPaymentReceiptToken({ attemptId: "33333333-3333-4333-8333-333333333333", token, now: issuedAt }, env)).toBeNull();
+    expect(verifyPaymentReceiptToken({ attemptId, token: `${token}tampered`, now: issuedAt }, env)).toBeNull();
 
     vi.stubEnv("PAYMENT_RECEIPT_SIGNING_SECRET", "receipt-secret-32-characters-long");
     try {

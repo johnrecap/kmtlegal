@@ -157,7 +157,7 @@ async function seedProductionBootstrap() {
     create: {
       key: "payment.gateway",
       value: {
-        activeProvider: process.env.PAYMENT_PROVIDER ?? "paytabs"
+        activeProvider: process.env.PAYMENT_PROVIDER ?? "paymob"
       }
     },
     update: {}
@@ -590,7 +590,7 @@ async function seedOperationalData(users) {
     where: { key: "payment.gateway" },
     create: {
       key: "payment.gateway",
-      value: { activeProvider: process.env.PAYMENT_PROVIDER ?? "paytabs" },
+      value: { activeProvider: process.env.PAYMENT_PROVIDER ?? "paymob" },
       updatedById: users.superAdmin.id
     },
     update: {}

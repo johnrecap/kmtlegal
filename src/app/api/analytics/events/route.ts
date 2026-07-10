@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   const requestId = getRequestId(request);
 
   try {
-    enforceRateLimit(rateLimiters.analytics, getIpAddress(request) ?? "unknown");
+    await enforceRateLimit(rateLimiters.analytics, getIpAddress(request) ?? "unknown");
     const body = await request.json().catch(() => null);
     const event = parseClientAnalyticsEvent(body);
     const context = await getAuthContextFromRequest(request).catch(() => null);

@@ -14,13 +14,13 @@ import {
 } from "@/server/auth/two-factor";
 
 describe("auth password helpers", () => {
-  it("hashes and verifies passwords without plaintext storage", () => {
-    const hash = hashPassword("CorrectHorseBatteryStaple");
+  it("hashes and verifies passwords without plaintext storage", async () => {
+    const hash = await hashPassword("CorrectHorseBatteryStaple");
 
     expect(hash).toMatch(/^scrypt\$/);
     expect(hash).not.toContain("CorrectHorseBatteryStaple");
-    expect(verifyPassword("CorrectHorseBatteryStaple", hash)).toBe(true);
-    expect(verifyPassword("wrong-password", hash)).toBe(false);
+    await expect(verifyPassword("CorrectHorseBatteryStaple", hash)).resolves.toBe(true);
+    await expect(verifyPassword("wrong-password", hash)).resolves.toBe(false);
   });
 });
 

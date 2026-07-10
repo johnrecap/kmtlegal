@@ -251,7 +251,7 @@ export async function createOrContinueClientConversation(input: {
   requestId?: string;
 }) {
   const clientId = assertClientConversationAccess(input.actor);
-  enforceRateLimit(rateLimiters.conversation, `client:${input.actor.id}`);
+  await enforceRateLimit(rateLimiters.conversation, `client:${input.actor.id}`);
   const body = parseWithSchema(clientConversationCreateSchema, input.body, "Conversation message payload is invalid.");
 
   const updatedThread = await prisma.$transaction(async (tx) => {
@@ -317,7 +317,7 @@ export async function replyClientConversation(input: {
   requestId?: string;
 }) {
   const clientId = assertClientConversationAccess(input.actor);
-  enforceRateLimit(rateLimiters.conversation, `client:${input.actor.id}`);
+  await enforceRateLimit(rateLimiters.conversation, `client:${input.actor.id}`);
   const thread = await findClientThreadOrThrow(input.actor, input.threadId);
   assertThreadIsReplyable(thread.status);
   const body = normalizeMessageBody(input.body);
@@ -396,7 +396,7 @@ export async function replyAdminConversation(input: {
   requestId?: string;
 }) {
   assertAdminConversationReply(input.actor);
-  enforceRateLimit(rateLimiters.conversation, `staff:${input.actor.id}`);
+  await enforceRateLimit(rateLimiters.conversation, `staff:${input.actor.id}`);
   const thread = await findAdminThreadOrThrow(input.threadId);
   assertThreadIsReplyable(thread.status);
   const body = normalizeMessageBody(input.body);

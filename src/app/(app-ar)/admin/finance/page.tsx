@@ -26,8 +26,23 @@ import {
   PaymentForm,
   PaymentGatewaySettingsForm,
   WebhookReplayButton,
-  type PricingRuleValue
 } from "@/features/admin/finance/finance-forms";
+import {
+  attemptTone,
+  editHref,
+  exportHref,
+  flattenSearchParams,
+  listHref,
+  operationalFilterHref,
+  operationsPageHref,
+  paymentFormValue,
+  pricingRuleEditHref,
+  pricingRuleFormValue,
+  statusTone,
+  webhookMoneyTone,
+  webhookTone,
+  type FinanceSearchParams as SearchParams
+} from "@/features/admin/finance/finance-page-helpers";
 import { currencyValues, paymentStatusValues } from "@/lib/legal-finance";
 import { formatDate, formatDateTime, formatMoney, labelFrom, paymentStatusLabels } from "@/lib/legal-format";
 import {
@@ -49,7 +64,6 @@ export const metadata: Metadata = {
   description: "إدارة الفواتير اليدوية وسجلات الدفع الأساسية داخل لوحة المكتب."
 };
 
-type SearchParams = Record<string, string | string[] | undefined>;
 type PaymentRow = Awaited<ReturnType<typeof listAdminPayments>>["items"][number];
 type PaymentDetail = Awaited<ReturnType<typeof getAdminPaymentDetail>>;
 type PaymentAttemptRow = Awaited<ReturnType<typeof listAdminPaymentAttempts>>["items"][number];
@@ -105,63 +119,11 @@ const paymentIssueLabels: Record<string, string> = {
   PROVIDER_TRANSACTION_ATTEMPT_MISMATCH: "رقم عملية الدفع مرتبط بمحاولة دفع أخرى، وتم منع تغيير السجل."
 };
 
-function flattenSearchParams(searchParams: SearchParams) {
-  return Object.fromEntries(
-    Object.entries(searchParams).map(([key, value]) => [key, Array.isArray(value) ? value[0] : value ?? ""])
-  );
-}
-
-function statusTone(status: string) {
-  if (status === "PAID") {
-    return "active" as const;
-  }
-  if (status === "OVERDUE") {
-    return "danger" as const;
-  }
-  if (status === "CANCELLED") {
-    return "closed" as const;
-  }
-  return status === "DRAFT" ? ("neutral" as const) : ("pending" as const);
-}
-
-function attemptTone(status: string) {
-  if (status === "PAID") return "active" as const;
-  if (["FAILED", "EXPIRED", "CANCELLED", "DISPUTED"].includes(status)) return "danger" as const;
-  if (status === "REFUNDED") return "closed" as const;
-  return "pending" as const;
-}
-
-function webhookTone(status: string) {
-  if (status === "PROCESSED") return "active" as const;
-  if (status === "FAILED") return "danger" as const;
-  if (status === "IGNORED") return "neutral" as const;
-  return "pending" as const;
-}
-
-function webhookMoneyTone(status: string) {
-  if (status === "MATCHED") return "active" as const;
-  if (status === "NOT_PAID") return "neutral" as const;
-  if (status === "MISSING_ATTEMPT") return "danger" as const;
-  return status.includes("MISMATCH") || status === "NEEDS_REVIEW" ? ("danger" as const) : ("pending" as const);
-}
-
 function paymentIssueText(code?: string | null) {
   if (!code) {
     return "";
   }
   return paymentIssueLabels[code] ?? `تحتاج مراجعة: ${code}`;
-}
-
-function operationalFilterHref(query: Record<string, string>) {
-  const params = new URLSearchParams(query);
-  params.delete("page");
-  return params.toString() ? `/admin/finance?${params.toString()}` : "/admin/finance";
-}
-
-function operationsPageHref(query: Record<string, string>, key: "attemptPage" | "webhookPage", page: number) {
-  const params = new URLSearchParams(query);
-  params.set(key, String(page));
-  return `/admin/finance?${params.toString()}`;
 }
 
 function summaryAmount(amount: number, currency?: string) {
@@ -170,85 +132,6 @@ function summaryAmount(amount: number, currency?: string) {
   }
 
   return `${new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 2 }).format(amount)} مجموع خام`;
-}
-
-function listHref(
-  filters: {
-    q?: string;
-    status?: string;
-    currency?: string;
-    clientId?: string;
-    caseId?: string;
-    dateFrom?: string;
-    dateTo?: string;
-    sortBy?: string;
-    sortDirection?: string;
-    pageSize?: number;
-  },
-  page: number
-) {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(filters)) {
-    if (value) {
-      params.set(key, String(value));
-    }
-  }
-  params.set("page", String(page));
-  return `/admin/finance?${params.toString()}`;
-}
-
-function exportHref(query: Record<string, string>) {
-  const params = new URLSearchParams(query);
-  params.delete("page");
-  params.delete("pageSize");
-  params.delete("editPaymentId");
-  params.delete("editPricingRuleId");
-  const queryString = params.toString();
-  return queryString ? `/api/admin/finance/export?${queryString}` : "/api/admin/finance/export";
-}
-
-function editHref(paymentId: string, query: Record<string, string>) {
-  const params = new URLSearchParams(query);
-  params.set("editPaymentId", paymentId);
-  return `/admin/finance?${params.toString()}`;
-}
-
-function pricingRuleEditHref(ruleId: string, query: Record<string, string>) {
-  const params = new URLSearchParams(query);
-  params.set("editPricingRuleId", ruleId);
-  return `/admin/finance?${params.toString()}`;
-}
-
-function paymentFormValue(payment: PaymentDetail) {
-  return {
-    id: payment.id,
-    invoiceNumber: payment.invoiceNumber,
-    clientId: payment.clientId,
-    caseId: payment.caseId,
-    issueDate: payment.issueDate.toISOString(),
-    dueDate: payment.dueDate?.toISOString() ?? null,
-    amount: payment.amount.toString(),
-    currency: payment.currency,
-    status: payment.status,
-    paymentMethod: payment.paymentMethod,
-    receiptNumber: payment.receiptNumber,
-    paidAt: payment.paidAt?.toISOString() ?? null,
-    notes: payment.notes
-  };
-}
-
-function pricingRuleFormValue(rule: PricingRuleRow): PricingRuleValue {
-  return {
-    id: rule.id,
-    serviceCategory: rule.serviceCategory,
-    mode: rule.mode,
-    amount: rule.amount.toString(),
-    currency: rule.currency,
-    active: rule.active,
-    effectiveFrom: rule.effectiveFrom.toISOString(),
-    version: rule.version,
-    label: rule.label
-  };
 }
 
 function columns(query: Record<string, string>): Array<DataTableColumn<PaymentRow>> {

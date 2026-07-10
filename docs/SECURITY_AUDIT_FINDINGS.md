@@ -1,6 +1,6 @@
 # Security Audit Findings
 
-Date: 2026-07-02
+Date: 2026-07-10
 
 Command run:
 
@@ -18,6 +18,7 @@ Result: passed release gate after controlled dependency remediation.
 | `postcss` nested under `next` | Moderate | npm audit advisory for CSS stringify escaping | Remediated by pinning `postcss@8.5.10` and applying a matching npm override. |
 | `@hono/node-server` through `@prisma/dev` / `prisma` | Moderate | npm audit advisory for repeated-slash static middleware bypass | Remediated with npm override `@hono/node-server@1.19.13`. |
 | `vitest` / `vite` / `esbuild` | Moderate to critical in dev tooling | npm audit advisories affecting the development server toolchain | Remediated by upgrading `vitest` to `^4.1.9`. |
+| `@opentelemetry/core` through `@sentry/nextjs` | Moderate | W3C Baggage propagation could allocate unbounded memory in the previously installed Sentry dependency tree. | Remediated by the controlled upgrade from `@sentry/nextjs@10.42.0` to `10.64.0`; no forced audit rewrite was used. |
 
 ## Decision
 

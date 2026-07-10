@@ -29,6 +29,7 @@ import {
   type PublicConsultationSlot
 } from "./consultation-availability-service";
 import { getPublicConsultationBookingMode } from "./consultation-booking-settings";
+import { addCairoDays, cairoDateString, cairoWeekday } from "./consultation-date-utils";
 import { publicConsultationReference } from "./consultation-service";
 
 const OFFICE_TIMEZONE = CONSULTATION_TIMEZONE;
@@ -188,7 +189,7 @@ const GENERIC_BOOKING_SUMMARY_TOKENS = new Set([
 export async function handlePublicConsultationAssistant(input: { body: unknown; request: Request; requestId: string }) {
   const body = parseWithSchema(publicConsultationAssistantSchema, input.body, "Consultation assistant payload is invalid.");
   const limitKey = getIpAddress(input.request) ?? canonicalPhone(body.phone || "") ?? "anonymous";
-  enforceRateLimit(rateLimiters.ai, `public-consultation-assistant:${limitKey}`);
+  await enforceRateLimit(rateLimiters.ai, `public-consultation-assistant:${limitKey}`);
 
   if (isLegalAdviceRequest(body.message)) {
     return scopedPublicAssistantReply(body.locale, isLegalAdviceRequest(body.message));
@@ -350,7 +351,7 @@ export async function handleClientConsultationAssistant(input: { actor: Principa
   const body = parseWithSchema(clientConsultationAssistantSchema, input.body, "Client assistant payload is invalid.");
   assertClientPortalAccess(input.actor);
 
-  enforceRateLimit(rateLimiters.ai, `client-consultation-assistant:${input.actor.id}`);
+  await enforceRateLimit(rateLimiters.ai, `client-consultation-assistant:${input.actor.id}`);
   const intent = clientOrganizerIntentFromMessage(body.message);
 
   if (intent === "out_of_scope" || intent === "forbidden_data") {
@@ -1199,32 +1200,6 @@ function availabilityWindowDto(value?: AvailabilityPreference, alternatives = fa
   };
 }
 
-function cairoDateString(date: Date) {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: OFFICE_TIMEZONE,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).formatToParts(date);
-  const value = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
-  return `${value("year")}-${value("month")}-${value("day")}`;
-}
-
-function addCairoDays(date: string, offset: number) {
-  const base = new Date(`${date}T12:00:00+03:00`);
-  base.setUTCDate(base.getUTCDate() + offset);
-  return cairoDateString(base);
-}
-
-function cairoWeekday(date: string) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: OFFICE_TIMEZONE,
-    weekday: "short"
-  }).formatToParts(new Date(`${date}T12:00:00+03:00`));
-  const day = parts.find((part) => part.type === "weekday")?.value ?? "Sun";
-  return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(day);
-}
-
 function toAsciiDigits(value: string) {
   return value
     .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
@@ -1675,7 +1650,7 @@ export async function createPublicConsultationCheckout(input: {
     startsAt: body.selectedSlot || body.startsAt || body.draft?.startsAt || ""
   });
   const limitKey = getIpAddress(input.request) ?? canonicalPhone(draft.phone || "") ?? "anonymous";
-  enforceRateLimit(rateLimiters.booking, `public-consultation-checkout:${limitKey}`);
+  await enforceRateLimit(rateLimiters.booking, `public-consultation-checkout:${limitKey}`);
   const checkoutBody = {
     ...body,
     ...draft,

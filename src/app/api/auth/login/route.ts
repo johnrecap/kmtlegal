@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await parseJsonRequest(request, loginSchema, "البريد الإلكتروني وكلمة المرور مطلوبان.");
-    enforceRateLimit(rateLimiters.login, `${body.email}:${getIpAddress(request) ?? "unknown"}`);
+    await enforceRateLimit(rateLimiters.login, `${body.email}:${getIpAddress(request) ?? "unknown"}`);
 
     const result = await loginWithPassword({
       email: body.email,

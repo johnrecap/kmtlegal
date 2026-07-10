@@ -2,7 +2,7 @@ import { createHash } from "crypto";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { appendAuditLog, appendAuditLogBestEffort } from "@/server/audit/audit-service";
-import { redactMetadata, type RedactableJson } from "@/server/audit/redaction";
+import type { RedactableJson } from "@/server/audit/redaction";
 import { createConsultationReviewNotifications } from "@/server/admin/notification-service";
 import { hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
@@ -34,8 +34,10 @@ import {
 import { getActivePaymentGateway } from "./payment-settings-service";
 import type { PaymentProviderName } from "./payment-config";
 import type { ConsultationPriceSnapshot } from "./pricing-service";
+import { isPaymentUuid, parseStoredNormalizedPayload, safeWebhookPayloadSnapshot } from "./payment-webhook-safety";
 
 export { mapProviderPaymentStatus } from "./payment-provider";
+export { safeWebhookPayloadSnapshot } from "./payment-webhook-safety";
 
 const paymentAttemptStatusSchema = z.enum(["CREATED", "PENDING", "PAID", "FAILED", "EXPIRED", "REFUNDED", "DISPUTED", "CANCELLED"]);
 const webhookProcessingStatusSchema = z.enum(["PENDING", "PROCESSED", "FAILED", "IGNORED"]);
@@ -675,7 +677,7 @@ async function upsertWebhookEvent(input: {
       processingStatus: input.processingStatus,
       errorCode: input.errorCode ?? null,
       normalizedPayload: input.normalizedPayload ? (input.normalizedPayload as Prisma.InputJsonValue) : undefined,
-      attemptId: isUuid(input.attemptId) ? input.attemptId : null
+      attemptId: isPaymentUuid(input.attemptId) ? input.attemptId : null
     },
     update: {
       payloadHash: input.payloadHash,
@@ -684,7 +686,7 @@ async function upsertWebhookEvent(input: {
       processingStatus: input.processingStatus,
       errorCode: input.errorCode ?? null,
       normalizedPayload: input.normalizedPayload ? (input.normalizedPayload as Prisma.InputJsonValue) : undefined,
-      attemptId: isUuid(input.attemptId) ? input.attemptId : undefined
+      attemptId: isPaymentUuid(input.attemptId) ? input.attemptId : undefined
     }
   });
 }
@@ -718,10 +720,6 @@ async function recordWebhookPayloadMismatch(input: {
     request: input.request,
     requestId: input.requestId
   });
-}
-
-export function safeWebhookPayloadSnapshot(payload: Record<string, unknown>): RedactableJson {
-  return redactMetadata(payload);
 }
 
 async function applyWebhookPaymentState(input: {
@@ -1225,31 +1223,4 @@ export function publicPaymentAttemptConsultationDto(
     id: consultation.id,
     status: consultation.status
   };
-}
-
-function parseStoredNormalizedPayload(value: Prisma.JsonValue | null): NormalizedWebhookPayload | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return null;
-  }
-
-  const body = value as Record<string, unknown>;
-  const status = typeof body.status === "string" ? body.status : "";
-  const attemptId = typeof body.attemptId === "string" ? body.attemptId : "";
-  if (!attemptId || !status) {
-    return null;
-  }
-
-  return {
-    provider: typeof body.provider === "string" && ["paytabs", "paymob"].includes(body.provider) ? (body.provider as PaymentProviderName) : "paytabs",
-    attemptId,
-    providerTransactionId: typeof body.providerTransactionId === "string" ? body.providerTransactionId : null,
-    rawStatus: typeof body.rawStatus === "string" ? body.rawStatus : "",
-    status: mapProviderPaymentStatus(status),
-    amount: typeof body.amount === "string" ? body.amount : "",
-    currency: typeof body.currency === "string" ? body.currency : "EGP"
-  };
-}
-
-function isUuid(value: unknown) {
-  return typeof value === "string" && uuidSchema.safeParse(value).success;
 }

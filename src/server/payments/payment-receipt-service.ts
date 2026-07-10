@@ -6,10 +6,12 @@ import { paymentReservationMinutes } from "./payment-config";
 
 const uuidSchema = z.string().uuid();
 const tokenPayloadSchema = z.object({
-  v: z.literal(1),
+  v: z.literal(2),
   attemptId: uuidSchema,
-  paymentId: uuidSchema
-});
+  paymentId: uuidSchema,
+  iat: z.number().int().nonnegative(),
+  exp: z.number().int().positive()
+}).refine((payload) => payload.exp > payload.iat);
 const statusTokenPayloadSchema = z.object({
   v: z.literal(1),
   attemptId: uuidSchema,
@@ -31,14 +33,20 @@ export function publicPaymentReceiptUrl(input: { attemptId: string; paymentId: s
   return `/payment/consultation/receipt?${params.toString()}`;
 }
 
-export function createPaymentReceiptToken(input: { attemptId: string; paymentId: string }, env: NodeJS.ProcessEnv = process.env) {
+export function createPaymentReceiptToken(
+  input: { attemptId: string; paymentId: string; issuedAt?: Date },
+  env: NodeJS.ProcessEnv = process.env
+) {
+  const issuedAtSeconds = toUnixSeconds(input.issuedAt ?? new Date());
   const payload = encodePayload({
-    v: 1,
+    v: 2,
     attemptId: uuidSchema.parse(input.attemptId),
-    paymentId: uuidSchema.parse(input.paymentId)
+    paymentId: uuidSchema.parse(input.paymentId),
+    iat: issuedAtSeconds,
+    exp: issuedAtSeconds + paymentReceiptTokenMaxAgeSeconds(env)
   });
   const signature = signPayload(payload, receiptSigningSecret(env));
-  return `v1.${payload}.${signature}`;
+  return `v2.${payload}.${signature}`;
 }
 
 export function createPaymentStatusToken(input: { attemptId: string; issuedAt?: Date }, env: NodeJS.ProcessEnv = process.env) {
@@ -53,14 +61,17 @@ export function createPaymentStatusToken(input: { attemptId: string; issuedAt?: 
   return `v1.${payload}.${signature}`;
 }
 
-export function verifyPaymentReceiptToken(input: { attemptId: string; token: string }, env: NodeJS.ProcessEnv = process.env) {
+export function verifyPaymentReceiptToken(
+  input: { attemptId: string; token: string; now?: Date },
+  env: NodeJS.ProcessEnv = process.env
+) {
   const attemptId = uuidSchema.safeParse(input.attemptId);
   if (!attemptId.success) {
     return null;
   }
 
   const parts = input.token.split(".");
-  if (parts.length !== 3 || parts[0] !== "v1" || !parts[1] || !parts[2]) {
+  if (parts.length !== 3 || parts[0] !== "v2" || !parts[1] || !parts[2]) {
     return null;
   }
 
@@ -70,7 +81,7 @@ export function verifyPaymentReceiptToken(input: { attemptId: string; token: str
   }
 
   const payload = decodeReceiptPayload(parts[1]);
-  if (!payload || payload.attemptId !== attemptId.data) {
+  if (!payload || payload.attemptId !== attemptId.data || payload.exp <= toUnixSeconds(input.now ?? new Date())) {
     return null;
   }
 
@@ -109,6 +120,14 @@ export function paymentStatusTokenMaxAgeSeconds(env: NodeJS.ProcessEnv = process
   return Math.min((paymentReservationMinutes(env) + 60) * 60, 7200);
 }
 
+export function paymentReceiptTokenMaxAgeSeconds(env: NodeJS.ProcessEnv = process.env) {
+  const configured = Number.parseInt(env.PAYMENT_RECEIPT_TOKEN_MAX_AGE_SECONDS ?? "", 10);
+  if (Number.isFinite(configured) && configured >= 3_600 && configured <= 2_592_000) {
+    return configured;
+  }
+  return 604_800;
+}
+
 export async function getPublicConsultationPaymentReceipt(input: { attemptId: string; token: string }) {
   const verified = verifyPaymentReceiptToken(input);
   if (!verified) {
@@ -126,9 +145,9 @@ export async function getPublicConsultationPaymentReceipt(input: { attemptId: st
       }
     },
     include: {
-      client: { select: { fullName: true, phone: true, email: true } },
+      client: { select: { fullName: true } },
       appointment: { select: { id: true, title: true, startsAt: true, endsAt: true, mode: true, status: true } },
-      consultationRequest: { select: { id: true, serviceCategory: true, preferredMode: true, summary: true } },
+      consultationRequest: { select: { id: true, serviceCategory: true, preferredMode: true } },
       paymentAttempt: {
         select: {
           id: true,
@@ -160,16 +179,13 @@ export async function getPublicConsultationPaymentReceipt(input: { attemptId: st
     issueDate: payment.issueDate.toISOString(),
     paidAt: payment.paidAt?.toISOString() ?? null,
     client: {
-      name: payment.client.fullName,
-      phone: payment.client.phone,
-      email: payment.client.email
+      name: payment.client.fullName
     },
     consultation: payment.consultationRequest
       ? {
           id: payment.consultationRequest.id,
           serviceCategory: payment.consultationRequest.serviceCategory,
-          preferredMode: payment.consultationRequest.preferredMode,
-          summary: payment.consultationRequest.summary
+          preferredMode: payment.consultationRequest.preferredMode
         }
       : null,
     appointment: payment.appointment

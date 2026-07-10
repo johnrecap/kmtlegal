@@ -49,8 +49,6 @@ export function ConsultationPaymentReceiptDocument({ receipt }: { receipt: Payme
           <section className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
             <ReceiptPanel title="بيانات العميل">
               <ReceiptRow label="اسم العميل" value={receipt.client.name} />
-              <ReceiptRow label="رقم الهاتف" value={receipt.client.phone} dir="ltr" />
-              {receipt.client.email ? <ReceiptRow label="البريد الإلكتروني" value={receipt.client.email} dir="ltr" /> : null}
             </ReceiptPanel>
 
             <ReceiptPanel title="بيانات الدفع">

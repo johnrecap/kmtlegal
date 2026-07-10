@@ -82,4 +82,13 @@ describe("route manifest contract", () => {
     expect(routes).not.toContain("/api/admin/invoices");
     expect(contract).toContain("Portal MVP is server-rendered except implemented JSON routes");
   });
+
+  it("does not mask unknown admin or portal paths with catch-all routes", () => {
+    const appRoot = path.join(process.cwd(), "src", "app", "(app-ar)");
+    expect(fs.existsSync(path.join(appRoot, "admin", "[...section]", "page.tsx"))).toBe(false);
+    expect(fs.existsSync(path.join(appRoot, "portal", "[...section]", "page.tsx"))).toBe(false);
+    expect(fs.existsSync(path.join(appRoot, "loading.tsx"))).toBe(true);
+    expect(fs.existsSync(path.join(appRoot, "error.tsx"))).toBe(true);
+    expect(fs.existsSync(path.join(appRoot, "not-found.tsx"))).toBe(true);
+  });
 });

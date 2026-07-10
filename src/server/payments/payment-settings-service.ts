@@ -18,6 +18,7 @@ import {
   SUPPORTED_PAYMENT_PROVIDERS,
   assertProviderReadyForActivation,
   normalizePaymentProvider,
+  paymentProviderEnabled,
   paymentProvider,
   paymentProviderReadiness,
   type PaymentProviderName
@@ -172,12 +173,18 @@ export async function updateAdminPaymentGatewaySettings(input: {
   };
 }
 
-export function activeProviderFromValue(value: Prisma.JsonValue | null | undefined): PaymentProviderName {
+export function activeProviderFromValue(
+  value: Prisma.JsonValue | null | undefined,
+  env: NodeJS.ProcessEnv = process.env
+): PaymentProviderName {
   if (value && typeof value === "object" && !Array.isArray(value)) {
     const configured = (value as Record<string, unknown>).activeProvider;
     if (typeof configured === "string") {
       try {
-        return normalizePaymentProvider(configured);
+        const provider = normalizePaymentProvider(configured);
+        if (paymentProviderEnabled(provider, env)) {
+          return provider;
+        }
       } catch {
         // Fall back below if a legacy or manually edited setting contains an unsupported provider.
       }
@@ -185,7 +192,8 @@ export function activeProviderFromValue(value: Prisma.JsonValue | null | undefin
   }
 
   try {
-    return paymentProvider();
+    const provider = paymentProvider(env);
+    return paymentProviderEnabled(provider, env) ? provider : DEFAULT_PAYMENT_PROVIDER;
   } catch {
     return DEFAULT_PAYMENT_PROVIDER;
   }
@@ -196,6 +204,11 @@ function providerReadinessDto(provider: PaymentProviderName) {
   return {
     provider,
     label: provider === "paymob" ? "Paymob" : "PayTabs",
+    enabled: readiness.enabled,
+    activationStatus: (!readiness.enabled ? "standby_disabled" : readiness.configured ? "ready" : "missing_config") as
+      | "standby_disabled"
+      | "ready"
+      | "missing_config",
     configured: readiness.configured,
     missing: readiness.missing,
     checkoutMode: readiness.checkoutMode

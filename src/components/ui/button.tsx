@@ -64,11 +64,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   return (
     <button
       ref={ref}
+      aria-busy={loading || undefined}
       className={buttonClasses({ variant, size, className })}
       disabled={isDisabled}
       {...props}
     >
-      {loading ? <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> : leadingIcon}
+      {loading ? <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none" /> : leadingIcon}
       <span>{children}</span>
       {trailingIcon}
     </button>

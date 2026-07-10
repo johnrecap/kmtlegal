@@ -284,6 +284,14 @@ STORAGE_DRIVER=vps-filesystem
 UPLOADS_DIR=$(dotenv_value "${UPLOADS_DIR}")
 MAX_UPLOAD_MB=5
 ALLOWED_UPLOAD_TYPES=application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png
+MALWARE_SCAN_MODE=required
+CLAMAV_SOCKET_PATH=/run/clamav/clamd.ctl
+CLAMAV_TIMEOUT_MS=10000
+
+PAYMENT_PROVIDER=paymob
+PAYTABS_ENABLED=false
+PAYMOB_REQUEST_TIMEOUT_MS=10000
+PAYMENT_RECEIPT_TOKEN_MAX_AGE_SECONDS=604800
 
 SMTP_ENABLED=false
 SMTP_HOST=
@@ -302,6 +310,13 @@ AI_MAX_TOKENS=1200
 AI_TEMPERATURE=0.2
 
 ANALYTICS_ENABLED=true
+SENTRY_ENABLED=false
+SENTRY_DSN=
+SENTRY_AUTH_TOKEN=
+SENTRY_ORG=
+SENTRY_PROJECT=
+NEXT_PUBLIC_SENTRY_ENABLED=false
+NEXT_PUBLIC_SENTRY_DSN=
 ENABLE_STITCH_CLONE=false
 EOF
 
@@ -333,6 +348,13 @@ export STORAGE_DRIVER=vps-filesystem
 export UPLOADS_DIR
 export MAX_UPLOAD_MB=5
 export ALLOWED_UPLOAD_TYPES=application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png
+export MALWARE_SCAN_MODE=required
+export CLAMAV_SOCKET_PATH=/run/clamav/clamd.ctl
+export CLAMAV_TIMEOUT_MS=10000
+export PAYMENT_PROVIDER=paymob
+export PAYTABS_ENABLED=false
+export PAYMOB_REQUEST_TIMEOUT_MS=10000
+export PAYMENT_RECEIPT_TOKEN_MAX_AGE_SECONDS=604800
 export SMTP_ENABLED=false
 export SMTP_HOST=
 export SMTP_PORT=587
@@ -348,6 +370,8 @@ export AI_TIMEOUT_MS=30000
 export AI_MAX_TOKENS=1200
 export AI_TEMPERATURE=0.2
 export ANALYTICS_ENABLED=true
+export SENTRY_ENABLED=false
+export NEXT_PUBLIC_SENTRY_ENABLED=false
 export ENABLE_STITCH_CLONE=false
 
 npm ci

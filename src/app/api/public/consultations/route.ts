@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       locale === "ar" ? "بيانات طلب الاستشارة غير مكتملة." : "Consultation request data is incomplete."
     );
     await assertManualReviewBookingEnabled();
-    enforceRateLimit(rateLimiters.booking, `${canonicalPhone(body.phone) ?? body.phone}:${body.email || "no-email"}:${getIpAddress(request) ?? "unknown"}`);
+    await enforceRateLimit(rateLimiters.booking, `${canonicalPhone(body.phone) ?? body.phone}:${body.email || "no-email"}:${getIpAddress(request) ?? "unknown"}`);
 
     try {
       const consultation = await createPublicConsultation({ body, request, requestId, organizerMode: "manual" });

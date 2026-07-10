@@ -1,10 +1,10 @@
 # Payment Provider Evaluation
 
-Last verified: 2026-07-03
+Last verified: 2026-07-10
 
 ## Position
 
-PayTabs Egypt and Paymob are now both supported in the v1 technical layer, with one active provider selected from the admin finance settings. PayTabs remains the default fallback, not the final commercial decision. Before production go-live, KMT Legal must compare real merchant offers from PayTabs, Paymob, Fawry, and Tap using the checklist below.
+Paymob is the primary/default provider for new payment attempts. PayTabs remains in the technical layer for historical signed webhook processing and as a future standby, but `PAYTABS_ENABLED=false` prevents admin activation and new PayTabs attempts. There is no automatic fallback. Before enabling paid booking, KMT Legal must complete the Paymob sandbox and merchant checks below.
 
 The v1 technical architecture is provider-neutral: `PricingService -> active provider -> PaymentAttempt -> Hosted Checkout -> verified webhook -> appointment confirmation`. Existing attempts keep their original provider even after the admin switches the active provider for new bookings.
 
@@ -12,8 +12,8 @@ The v1 technical architecture is provider-neutral: `PricingService -> active pro
 
 | Provider | Why It Matters | Current Fit | Must Confirm With Merchant |
 | --- | --- | --- | --- |
-| PayTabs Egypt | Official Egypt page lists local currency settlement, merchant dashboard, onboarding, online payments, PayLinks, invoices, APIs, Direct API, Mobile SDK, and iFrame options. Docs list Hosted Payment among API integration types. | Supported as default fallback through the hosted-checkout URL-template bridge. | Exact Egypt contract, fee tiers, EGP settlement schedule, webhook/IPN signing details, refund process, dashboard users, sandbox credentials, and direct API request shape if replacing the bridge. |
-| Paymob | Strong Egyptian PSP candidate and should be evaluated seriously for local payment methods. Public developer docs were JS-gated during review, so merchant documentation verification is required. | Supported as a Hosted/Unified Checkout adapter and can be selected from admin after env readiness passes. | Cards, wallets, Meeza, Aman/Masary/kiosk support, HMAC/callback contract, refunds, settlement, dashboard, support SLA, payment-method IDs, and exact live/sandbox base URLs. |
+| PayTabs Egypt | Official Egypt page lists local currency settlement, merchant dashboard, onboarding, online payments, PayLinks, invoices, APIs, Direct API, Mobile SDK, and iFrame options. Docs list Hosted Payment among API integration types. | Historical webhook support and disabled standby only; unavailable for new attempts while `PAYTABS_ENABLED=false`. | Re-evaluate only if KMT explicitly approves a future fallback release. Confirm contract, signing, refund, settlement, and direct API details first. |
+| Paymob | Primary Egyptian PSP for this rollout. | Implemented as the default Hosted/Unified Checkout adapter with bounded request timeout, HMAC webhook verification, canonical `APP_ORIGIN` callbacks, and no retry/failover. | Cards, wallets, Meeza, Aman/Masary/kiosk support, HMAC/callback contract, refunds, settlement, dashboard, support SLA, payment-method IDs, and exact live/sandbox base URLs. |
 | FawryPay | Official developer guide lists Pay By Link, Express Checkout, Fawry-hosted checkout link, REST APIs, cards, 3D Secure, e-wallet, reference number, ValU, and installments. | Strong if KMT wants cash/reference-number behavior for clients who avoid cards. | Whether hosted checkout is available for legal-service deposits, reference expiry, reconciliation exports, refund/manual verification operations. |
 | Tap | Official developer docs mention local/regional/global methods across MENA including Fawry, Visa, Mastercard, and more. | Worth a fast merchant comparison; not selected by default. | Egypt onboarding, EGP settlement, payment-method availability in Egypt, hosted checkout/webhook signing, support and refund workflow. |
 | Stripe | Official global availability does not list Egypt as a supported country/region for direct Stripe merchant accounts; UAE, UK, and US are listed. | Not default for an Egyptian entity. | Only viable if KMT has a legal entity and bank account in a Stripe-supported country/region. |

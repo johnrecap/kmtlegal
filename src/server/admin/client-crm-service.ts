@@ -522,7 +522,7 @@ export async function createOrLinkClientPortalAccount(input: { actor: Principal;
     throw new ApiError(409, "CONFLICT", "Email is already linked to another client.");
   }
 
-  const passwordHash = hashPassword(body.password);
+  const passwordHash = await hashPassword(body.password);
   const result = await prisma.$transaction(async (tx) => {
     const user = existingUser
       ? await tx.user.update({
@@ -696,10 +696,11 @@ export async function resetClientPortalAccountPassword(input: { actor: Principal
     throw new ApiError(409, "CONFLICT", "Linked account is not a client account.");
   }
 
+  const passwordHash = await hashPassword(body.password);
   await prisma.$transaction(async (tx) => {
     await tx.user.update({
       where: { id: client.user!.id },
-      data: { passwordHash: hashPassword(body.password), status: "ACTIVE" }
+      data: { passwordHash, status: "ACTIVE" }
     });
 
     if (body.revokeSessions) {

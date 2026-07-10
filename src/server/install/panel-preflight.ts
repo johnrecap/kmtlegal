@@ -45,6 +45,7 @@ export function panelPreflightChecks(
     check("uploads_dir_configured", uploadsDir.length > 0, "UPLOADS_DIR is configured."),
     check("uploads_dir_private", isPrivateUploadPath(uploadsDir, cwd), "UPLOADS_DIR is outside public webroot/public_html."),
     check("storage_driver", env.STORAGE_DRIVER === "vps-filesystem", "STORAGE_DRIVER=vps-filesystem."),
+    check("malware_scan_required", env.MALWARE_SCAN_MODE === "required", "MALWARE_SCAN_MODE=required for production uploads."),
     check("smtp_disabled", env.SMTP_ENABLED !== "true", "SMTP_ENABLED is false/disabled."),
     check("staff_2fa_disabled", env.STAFF_2FA_MODE !== "totp", "STAFF_2FA_MODE is disabled."),
     check("installer_token", Boolean(env.INSTALLER_SETUP_TOKEN?.trim()), "INSTALLER_SETUP_TOKEN is configured.")

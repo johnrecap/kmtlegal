@@ -1,4 +1,6 @@
-import { RateLimitApiError } from "@/server/http/errors";
+import { createHash } from "node:crypto";
+import { prisma } from "@/server/db/prisma";
+import { ApiError, RateLimitApiError } from "@/server/http/errors";
 
 export type RateLimitRule = {
   windowMs: number;
@@ -21,7 +23,10 @@ export class MemoryRateLimiter {
   private readonly buckets = new Map<string, Bucket>();
   private lastPrunedAt = 0;
 
-  constructor(private readonly rule: RateLimitRule) {}
+  constructor(
+    readonly scope: string,
+    readonly rule: RateLimitRule
+  ) {}
 
   check(key: string, now = Date.now()): RateLimitResult {
     this.pruneExpired(now);
@@ -68,21 +73,70 @@ export class MemoryRateLimiter {
   }
 }
 
-export function enforceRateLimit(limiter: MemoryRateLimiter, key: string) {
-  const result = limiter.check(key);
+function shouldUseSharedStore(env: NodeJS.ProcessEnv = process.env) {
+  return env.APP_ENV === "production" || env.NODE_ENV === "production" || env.RATE_LIMIT_STORAGE === "postgres";
+}
+
+function hashRateLimitKey(scope: string, key: string) {
+  return createHash("sha256").update(`${scope}\0${key}`).digest("hex");
+}
+
+async function checkSharedRateLimit(limiter: MemoryRateLimiter, key: string, now = Date.now()): Promise<RateLimitResult> {
+  const windowStartMs = Math.floor(now / limiter.rule.windowMs) * limiter.rule.windowMs;
+  const windowStart = new Date(windowStartMs);
+  const resetAt = new Date(windowStartMs + limiter.rule.windowMs);
+  const keyHash = hashRateLimitKey(limiter.scope, key);
+
+  try {
+    const counter = await prisma.rateLimitCounter.upsert({
+      where: {
+        scope_keyHash_windowStart: {
+          scope: limiter.scope,
+          keyHash,
+          windowStart
+        }
+      },
+      create: {
+        scope: limiter.scope,
+        keyHash,
+        windowStart,
+        count: 1,
+        expiresAt: resetAt
+      },
+      update: { count: { increment: 1 } },
+      select: { count: true }
+    });
+
+    return {
+      allowed: counter.count <= limiter.rule.max,
+      limit: limiter.rule.max,
+      remaining: Math.max(0, limiter.rule.max - counter.count),
+      resetAt
+    };
+  } catch {
+    throw new ApiError(503, "SERVICE_UNAVAILABLE", "Request protection is temporarily unavailable. Try again later.");
+  }
+}
+
+export async function enforceRateLimit(limiter: MemoryRateLimiter, key: string) {
+  const result = shouldUseSharedStore() ? await checkSharedRateLimit(limiter, key) : limiter.check(key);
   if (!result.allowed) {
-    throw new RateLimitApiError("تم إرسال طلبات كثيرة. حاول مرة أخرى بعد قليل.");
+    throw new RateLimitApiError("Too many requests. Try again later.");
   }
   return result;
 }
 
+export async function pruneExpiredRateLimits(now = new Date()) {
+  return prisma.rateLimitCounter.deleteMany({ where: { expiresAt: { lte: now } } });
+}
+
 export const rateLimiters = {
-  login: new MemoryRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 }),
-  twoFactor: new MemoryRateLimiter({ windowMs: 10 * 60 * 1000, max: 8 }),
-  booking: new MemoryRateLimiter({ windowMs: 10 * 60 * 1000, max: 5 }),
-  contact: new MemoryRateLimiter({ windowMs: 10 * 60 * 1000, max: 5 }),
-  conversation: new MemoryRateLimiter({ windowMs: 60 * 1000, max: 12 }),
-  upload: new MemoryRateLimiter({ windowMs: 10 * 60 * 1000, max: 20 }),
-  ai: new MemoryRateLimiter({ windowMs: 10 * 60 * 1000, max: 20 }),
-  analytics: new MemoryRateLimiter({ windowMs: 60 * 1000, max: 60 })
+  login: new MemoryRateLimiter("login", { windowMs: 15 * 60 * 1000, max: 10 }),
+  twoFactor: new MemoryRateLimiter("two-factor", { windowMs: 10 * 60 * 1000, max: 8 }),
+  booking: new MemoryRateLimiter("booking", { windowMs: 10 * 60 * 1000, max: 5 }),
+  contact: new MemoryRateLimiter("contact", { windowMs: 10 * 60 * 1000, max: 5 }),
+  conversation: new MemoryRateLimiter("conversation", { windowMs: 60 * 1000, max: 12 }),
+  upload: new MemoryRateLimiter("upload", { windowMs: 10 * 60 * 1000, max: 20 }),
+  ai: new MemoryRateLimiter("ai", { windowMs: 10 * 60 * 1000, max: 20 }),
+  analytics: new MemoryRateLimiter("analytics", { windowMs: 60 * 1000, max: 60 })
 };

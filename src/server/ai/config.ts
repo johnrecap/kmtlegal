@@ -18,9 +18,9 @@ export function getAIProviderConfig(): AIProviderConfig {
     baseUrl: process.env.AI_BASE_URL || defaultBaseUrlForProvider(provider),
     apiKey: process.env.AI_API_KEY || undefined,
     model: process.env.AI_MODEL || defaultModelForProvider(provider),
-    timeoutMs: numberFromEnv("AI_TIMEOUT_MS", 30_000),
-    maxTokens: numberFromEnv("AI_MAX_TOKENS", 1200),
-    temperature: numberFromEnv("AI_TEMPERATURE", 0.2)
+    timeoutMs: boundedNumberFromEnv("AI_TIMEOUT_MS", 30_000, 1_000, 60_000),
+    maxTokens: Math.trunc(boundedNumberFromEnv("AI_MAX_TOKENS", 1200, 100, 8_000)),
+    temperature: boundedNumberFromEnv("AI_TEMPERATURE", 0.2, 0, 2)
   };
 }
 
@@ -32,9 +32,9 @@ function normalizeProvider(value: string | undefined): AIProviderName {
   return "mock";
 }
 
-function numberFromEnv(key: string, fallback: number) {
+function boundedNumberFromEnv(key: string, fallback: number, minimum: number, maximum: number) {
   const value = Number(process.env[key]);
-  return Number.isFinite(value) && value >= 0 ? value : fallback;
+  return Number.isFinite(value) && value >= minimum && value <= maximum ? value : fallback;
 }
 
 function defaultBaseUrlForProvider(provider: AIProviderName) {

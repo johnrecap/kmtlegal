@@ -161,7 +161,7 @@ function manualReviewOrganizer(body: PublicConsultationRequestInput): Consultati
 export async function organizeConsultation(body: PublicConsultationRequestInput, requestId: string, aiLimitKey?: string): Promise<ConsultationOrganizerResult> {
   try {
     if (aiLimitKey) {
-      enforceRateLimit(rateLimiters.ai, `consultation:${aiLimitKey}`);
+      await enforceRateLimit(rateLimiters.ai, `consultation:${aiLimitKey}`);
     }
 
     const [classification, intakeSummary] = await Promise.all([

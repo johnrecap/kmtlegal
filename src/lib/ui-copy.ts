@@ -7,6 +7,45 @@ export const commonUiCopy = {
   serverUnavailable: "لا يمكن الوصول إلى الخادم الآن. حاول مرة أخرى بعد قليل."
 } as const;
 
+export const paymentGatewayUiCopy = {
+  primaryProvider: "بوابة الدفع الأساسية",
+  standbyProvider: "احتياطي غير مفعل",
+  ready: "جاهزة",
+  missingConfiguration: "ناقص إعدادات",
+  disabledOptionSuffix: "احتياطي غير مفعل",
+  disabledProviderHint: "PayTabs محفوظة كاحتياطي ولا يمكن اختيارها للحجوزات الجديدة في هذا الإصدار."
+} as const;
+
+export const consultationAvailabilityUiCopy = {
+  days: ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"],
+  modes: { ONLINE: "عن بُعد", PHONE: "هاتف", OFFICE: "المكتب" },
+  saved: "تم حفظ أوقات الاستشارات.",
+  saveFailed: "تعذر حفظ أوقات الاستشارات.",
+  connectionFailed: "تعذر حفظ أوقات الاستشارات. تحقق من الاتصال وحاول مرة أخرى.",
+  rulesTitle: "قواعد حجز الاستشارات",
+  duration: "مدة الاستشارة بالدقائق",
+  leadTime: "الحد الأدنى قبل الموعد بالساعات",
+  bookingWindow: "عدد الأيام الظاهرة للعميل",
+  timezone: "المنطقة الزمنية",
+  enabledDays: "أيام العمل المفعلة",
+  weeklyHours: "مواعيد الاستشارات الأسبوعية",
+  start: "البداية",
+  end: "النهاية",
+  availableMethods: "طرق الاستشارة المتاحة",
+  save: "حفظ أوقات الاستشارات"
+} as const;
+
+export const protectedRecoveryUiCopy = {
+  loadingTitle: "جارٍ تحميل الصفحة",
+  loadingDescription: "لحظات ويتم تجهيز البيانات المطلوبة.",
+  errorTitle: "تعذر تحميل هذه الصفحة",
+  errorDescription: "لم تتغير بياناتك. حاول مرة أخرى، وإذا استمرت المشكلة تواصل مع مسؤول النظام.",
+  retry: "إعادة المحاولة",
+  notFoundTitle: "الصفحة غير موجودة",
+  notFoundDescription: "الرابط الذي فتحته غير صحيح أو لم يعد متاحًا لحسابك.",
+  backToDashboard: "العودة إلى الرئيسية"
+} as const;
+
 export const roleDisplayLabels: Record<string, string> = {
   "Super Admin": "مدير النظام",
   "Office Admin": "مدير المكتب",
@@ -34,6 +73,9 @@ const apiExactMessages: Record<string, string> = {
   "Request validation failed.": "البيانات المرسلة غير مكتملة أو غير صحيحة.",
   "Too many requests.": "تم إرسال طلبات كثيرة. حاول مرة أخرى بعد قليل.",
   "Too many requests. Try again later.": "تم إرسال طلبات كثيرة. حاول مرة أخرى بعد قليل.",
+  "Request protection is temporarily unavailable. Try again later.": "حماية الطلبات غير متاحة مؤقتًا. حاول مرة أخرى بعد قليل.",
+  "File security scanning is temporarily unavailable. Try again later.": "فحص أمان الملفات غير متاح مؤقتًا. حاول رفع الملف مرة أخرى بعد قليل.",
+  "The uploaded file failed the security scan and was rejected.": "تم رفض الملف المرفوع لأنه لم يجتز فحص الأمان.",
   "Contact form data is incomplete.": "بيانات نموذج التواصل غير مكتملة.",
   "Consultation request data is incomplete.": "بيانات طلب الاستشارة غير مكتملة.",
   "An unexpected server error occurred.": "حدث خطأ غير متوقع في الخادم. حاول مرة أخرى لاحقًا.",

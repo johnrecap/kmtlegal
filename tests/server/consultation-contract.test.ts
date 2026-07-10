@@ -279,6 +279,8 @@ describe("public consultation contract", () => {
   });
 
   it("keeps same-day weekday requests on today and shows nearest alternatives when today has no slots", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-08T06:00:00.000Z"));
     const slotSpy = vi
       .spyOn(consultationAvailabilityService, "listPublicConsultationSlots")
       .mockResolvedValueOnce([])
@@ -335,6 +337,7 @@ describe("public consultation contract", () => {
       expect(bookingResult.message).toContain("أقرب");
     } finally {
       slotSpy.mockRestore();
+      vi.useRealTimers();
     }
   });
 

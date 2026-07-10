@@ -134,7 +134,7 @@ async function cleanupOldOperationalData(now) {
   const analyticsCutoff = daysAgo(now, analyticsRetentionDays);
   const webhookCutoff = daysAgo(now, webhookRetentionDays);
 
-  const [sessions, analyticsEvents, webhookEvents] = await prisma.$transaction([
+  const [sessions, analyticsEvents, webhookEvents, rateLimitCounters] = await prisma.$transaction([
     prisma.session.deleteMany({
       where: {
         OR: [
@@ -151,13 +151,15 @@ async function cleanupOldOperationalData(now) {
         receivedAt: { lt: webhookCutoff },
         processingStatus: { in: ["PROCESSED", "IGNORED"] }
       }
-    })
+    }),
+    prisma.rateLimitCounter.deleteMany({ where: { expiresAt: { lte: now } } })
   ]);
 
   return {
     sessions: sessions.count,
     analyticsEvents: analyticsEvents.count,
-    webhookEvents: webhookEvents.count
+    webhookEvents: webhookEvents.count,
+    rateLimitCounters: rateLimitCounters.count
   };
 }
 

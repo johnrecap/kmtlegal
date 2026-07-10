@@ -95,6 +95,14 @@ export function productionReadinessIssues(env: NodeJS.ProcessEnv = process.env) 
     });
   }
 
+  if (env.MALWARE_SCAN_MODE !== "required") {
+    issues.push({
+      code: "MALWARE_SCAN_REQUIRED",
+      severity: "error",
+      message: "MALWARE_SCAN_MODE=required is mandatory for production document uploads."
+    });
+  }
+
   const configuredTypes = new Set(
     (env.ALLOWED_UPLOAD_TYPES ?? "")
       .split(",")
@@ -174,12 +182,20 @@ export function productionReadinessIssues(env: NodeJS.ProcessEnv = process.env) 
   }
 
   try {
-    const readiness = paymentProviderReadiness(paymentProvider(env), env);
+    const provider = paymentProvider(env);
+    const readiness = paymentProviderReadiness(provider, env);
+    if (provider !== "paymob") {
+      issues.push({
+        code: "PAYMENT_PROVIDER_PAYMOB_REQUIRED",
+        severity: "error",
+        message: "PAYMENT_PROVIDER must remain paymob for this release."
+      });
+    }
     if (!readiness.configured) {
       issues.push({
-        code: "PAYMENT_PROVIDER_CONFIG_INCOMPLETE",
-        severity: "error",
-        message: `Payment provider ${readiness.provider} is missing required server-side configuration.`
+        code: "PAYMENT_PROVIDER_CONFIG_STAGED_INCOMPLETE",
+        severity: "warning",
+        message: `Payment provider ${readiness.provider} is staged but missing server-side configuration; paid booking must remain disabled.`
       });
     }
   } catch {
@@ -187,6 +203,14 @@ export function productionReadinessIssues(env: NodeJS.ProcessEnv = process.env) 
       code: "PAYMENT_PROVIDER_UNSUPPORTED",
       severity: "error",
       message: "PAYMENT_PROVIDER must be paytabs or paymob."
+    });
+  }
+
+  if (env.PAYTABS_ENABLED === "true") {
+    issues.push({
+      code: "PAYTABS_ENABLED_UNSUPPORTED",
+      severity: "error",
+      message: "PayTabs must remain disabled as a standby provider in this release."
     });
   }
 
@@ -211,6 +235,22 @@ export function productionReadinessIssues(env: NodeJS.ProcessEnv = process.env) 
       code: "ANALYTICS_DISABLED",
       severity: "warning",
       message: "Privacy-safe analytics is disabled; production observability coverage will be reduced."
+    });
+  }
+
+  if (env.SENTRY_ENABLED === "true" && (!env.SENTRY_DSN || !env.SENTRY_AUTH_TOKEN || !env.SENTRY_ORG || !env.SENTRY_PROJECT)) {
+    issues.push({
+      code: "SENTRY_CONFIG_INCOMPLETE",
+      severity: "error",
+      message: "Enabled Sentry monitoring requires SENTRY_DSN, SENTRY_AUTH_TOKEN, SENTRY_ORG, and SENTRY_PROJECT."
+    });
+  }
+
+  if (env.SENTRY_ENABLED === "true" && env.NEXT_PUBLIC_SENTRY_ENABLED !== "true") {
+    issues.push({
+      code: "SENTRY_CLIENT_FLAG_MISMATCH",
+      severity: "warning",
+      message: "Server Sentry is enabled while client Sentry remains disabled."
     });
   }
 

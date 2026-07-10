@@ -1,12 +1,13 @@
 # Payment Operations Playbook
 
-Last updated: 2026-07-07
+Last updated: 2026-07-10
 
 ## Current Live Decision
 
-- Technical default remains PayTabs because the code already supports it as the fallback hosted-checkout path.
-- Paymob remains selectable from admin only after its server-side environment values are complete.
-- The final commercial live provider is not considered approved until KMT has merchant/sandbox evidence for fees, EGP settlement, webhook signing, refunds, dashboard access, and support response time.
+- Paymob is the technical primary/default for all new attempts.
+- PayTabs is disabled standby (`PAYTABS_ENABLED=false`) and remains available only for historical signed webhook verification until a future explicit activation decision.
+- There is no automatic retry through another provider and no automatic failover.
+- Paymob is not considered approved for paid production booking until KMT has merchant/sandbox evidence for fees, EGP settlement, webhook signing, refunds, dashboard access, and support response time.
 - Paid booking must stay off for public launch until sandbox success, failure, duplicate webhook, invalid signature, replay, and expiry evidence is archived.
 - Live provider evidence is intentionally deferred while the site is not production-ready. Keep `AI_CHAT_PAID` disabled until KMT is ready to connect and test the real provider sandbox.
 
@@ -14,6 +15,7 @@ Last updated: 2026-07-07
 
 - A public status request without a valid status token returns only safe payment and appointment state.
 - Signed public status links expire. After expiry, the same attempt falls back to safe public status without client details, receipt links, checkout links, or account setup links.
+- Signed receipt links use an expiring v2 token and the public receipt excludes phone, email, and legal consultation summary.
 - Client name, phone, checkout URL, receipt URL, account setup link, legal request summary, city, urgency, service category, and preferred mode require the signed return/status token.
 - The return page is still not payment truth. Appointment confirmation requires a trusted webhook or an approved internal finance action.
 

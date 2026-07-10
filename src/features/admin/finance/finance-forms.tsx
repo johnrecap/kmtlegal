@@ -5,6 +5,7 @@ import { type FormEvent, useState } from "react";
 import { Button, Select, StateBlock, TextInput, Textarea } from "@/components/ui";
 import { currencyValues, paymentStatusValues } from "@/lib/legal-finance";
 import { labelFrom, paymentStatusLabels } from "@/lib/legal-format";
+import { paymentGatewayUiCopy } from "@/lib/ui-copy";
 
 type ClientOption = {
   id: string;
@@ -42,6 +43,8 @@ type PaymentValue = {
 type PaymentProviderOption = {
   provider: "paytabs" | "paymob";
   label: string;
+  enabled: boolean;
+  activationStatus: "standby_disabled" | "ready" | "missing_config";
   configured: boolean;
   missing: string[];
   checkoutMode: string;
@@ -327,7 +330,7 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
   const [activeProvider, setActiveProvider] = useState(settings.activeProvider);
   const [bookingMode, setBookingMode] = useState(settings.bookingMode);
   const selectedProvider = settings.providers.find((provider) => provider.provider === activeProvider) ?? settings.providers[0];
-  const paidChatReady = Boolean(selectedProvider?.configured && settings.hasActivePricingRule);
+  const paidChatReady = Boolean(selectedProvider?.enabled && selectedProvider.configured && settings.hasActivePricingRule);
   const blocksPaidChatSave = bookingMode === "AI_CHAT_PAID" && !paidChatReady;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -386,8 +389,8 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
         onChange={(event) => setActiveProvider(event.target.value as PaymentGatewaySettingsValue["activeProvider"])}
       >
         {settings.providers.map((provider) => (
-          <option key={provider.provider} value={provider.provider}>
-            {provider.label}
+          <option disabled={!provider.enabled} key={provider.provider} value={provider.provider}>
+            {provider.label}{provider.enabled ? "" : ` — ${paymentGatewayUiCopy.disabledOptionSuffix}`}
           </option>
         ))}
       </Select>
@@ -396,12 +399,20 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
           <div key={provider.provider} className="rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-semibold text-kmt-ink">{provider.label}</span>
-              <span className={provider.configured ? "text-emerald-700" : "text-amber-700"}>
-                {provider.configured ? "جاهزة" : "ناقص إعدادات"}
+              <span className={provider.enabled && provider.configured ? "text-emerald-700" : "text-amber-700"}>
+                {!provider.enabled
+                  ? paymentGatewayUiCopy.standbyProvider
+                  : provider.configured
+                    ? paymentGatewayUiCopy.ready
+                    : paymentGatewayUiCopy.missingConfiguration}
               </span>
             </div>
             <p className="mt-1 text-xs text-kmt-muted">
-              {provider.configured ? `وضع التشغيل: ${provider.checkoutMode}` : `المطلوب: ${provider.missing.join(", ")}`}
+              {!provider.enabled
+                ? paymentGatewayUiCopy.disabledProviderHint
+                : provider.configured
+                  ? `وضع التشغيل: ${provider.checkoutMode}`
+                  : `المطلوب: ${provider.missing.join(", ")}`}
             </p>
           </div>
         ))}

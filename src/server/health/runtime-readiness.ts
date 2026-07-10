@@ -2,7 +2,15 @@ import { promises as fs } from "node:fs";
 import type { PrismaClient } from "@prisma/client";
 import { ROLES } from "@/server/auth/policy";
 import { productionReadinessIssues } from "@/server/config/production-readiness";
+import { consultationBookingModeFromValue } from "@/server/consultations/consultation-booking-settings";
 import { getInstallerLockPath, isInstallerEnabled } from "@/server/install/installer-env";
+import {
+  normalizePaymentProvider,
+  paymentProvider,
+  paymentProviderEnabled,
+  paymentProviderReadiness
+} from "@/server/payments/payment-config";
+import { malwareScanMode, pingClamAv } from "@/server/storage/malware-scan";
 
 export type RuntimeReadinessCheck = {
   id: string;
@@ -18,10 +26,12 @@ export type RuntimeReadinessReport = {
   checks: RuntimeReadinessCheck[];
 };
 
-type RuntimeReadinessPrismaClient = Pick<PrismaClient, "$queryRaw" | "role" | "user" | "systemSetting">;
+type RuntimeReadinessPrismaClient = Pick<PrismaClient, "$queryRaw" | "role" | "user" | "systemSetting" | "consultationPricingRule">;
 
 type DatabaseReadinessOptions = {
   requireBootstrap: boolean;
+  includePaymentRuntime?: boolean;
+  env?: NodeJS.ProcessEnv;
   prismaClient?: RuntimeReadinessPrismaClient;
 };
 
@@ -52,8 +62,25 @@ export async function getApplicationReadiness(env: NodeJS.ProcessEnv = process.e
     message: issue.message
   }));
 
-  const databaseChecks = await databaseReadinessChecks({ requireBootstrap: true });
-  return readinessSummary([...environmentChecks, ...databaseChecks]);
+  const [databaseChecks, malwareCheck] = await Promise.all([
+    databaseReadinessChecks({ requireBootstrap: true, includePaymentRuntime: true, env }),
+    malwareScannerReadinessCheck(env)
+  ]);
+  return readinessSummary([...environmentChecks, ...databaseChecks, malwareCheck]);
+}
+
+async function malwareScannerReadinessCheck(env: NodeJS.ProcessEnv): Promise<RuntimeReadinessCheck> {
+  if (malwareScanMode(env) !== "required") {
+    return blockingCheck("storage.malware_scan", "Malware scanner", "Production malware scanning must be required.");
+  }
+
+  try {
+    return (await pingClamAv(env))
+      ? passingCheck("storage.malware_scan", "Malware scanner", "ClamAV accepted a health probe.")
+      : blockingCheck("storage.malware_scan", "Malware scanner", "ClamAV returned an unexpected health response.");
+  } catch {
+    return blockingCheck("storage.malware_scan", "Malware scanner", "ClamAV is not reachable from the app process.");
+  }
 }
 
 export async function databaseReadinessChecks(options: DatabaseReadinessOptions) {
@@ -98,7 +125,58 @@ export async function databaseReadinessChecks(options: DatabaseReadinessOptions)
     checks.push(...(await bootstrapReadinessChecks(prismaClient)));
   }
 
+  if (options.includePaymentRuntime) {
+    checks.push(...(await paymentRuntimeReadinessChecks(prismaClient, options.env ?? process.env)));
+  }
+
   return checks;
+}
+
+export async function paymentRuntimeReadinessChecks(
+  prismaClient: RuntimeReadinessPrismaClient,
+  env: NodeJS.ProcessEnv = process.env
+) {
+  try {
+    const [gatewaySetting, bookingSetting, activePricingRuleCount] = await Promise.all([
+      prismaClient.systemSetting.findUnique({ where: { key: "payment.gateway" }, select: { value: true } }),
+      prismaClient.systemSetting.findUnique({ where: { key: "consultation.booking" }, select: { value: true } }),
+      prismaClient.consultationPricingRule.count({ where: { active: true } })
+    ]);
+    const activeProvider = storedPaymentProvider(gatewaySetting?.value, env);
+    const bookingMode = consultationBookingModeFromValue(bookingSetting?.value);
+    const providerReadiness = paymentProviderReadiness(activeProvider, env);
+    const paidBooking = bookingMode === "AI_CHAT_PAID";
+
+    return [
+      activeProvider === "paymob" && paymentProviderEnabled(activeProvider, env)
+        ? passingCheck("payment.provider", "Payment provider", "Paymob is the active provider for new payment attempts.")
+        : blockingCheck("payment.provider", "Payment provider", "Paymob must be the active provider and PayTabs must remain disabled."),
+      providerReadiness.configured
+        ? passingCheck("payment.configuration", "Payment configuration", "The active Paymob provider is configured.")
+        : paidBooking
+          ? blockingCheck("payment.configuration", "Payment configuration", "Paid booking requires complete Paymob configuration.")
+          : warningCheck("payment.configuration", "Payment configuration", "Paymob is staged but paid booking remains disabled."),
+      !paidBooking || activePricingRuleCount > 0
+        ? passingCheck("payment.pricing", "Payment pricing", paidBooking ? "An active consultation price exists." : "Paid booking is disabled.")
+        : blockingCheck("payment.pricing", "Payment pricing", "Paid booking requires an active consultation price.")
+    ];
+  } catch {
+    return [blockingCheck("payment.runtime", "Payment runtime", "Payment runtime settings could not be verified.")];
+  }
+}
+
+function storedPaymentProvider(value: unknown, env: NodeJS.ProcessEnv) {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    const configured = (value as Record<string, unknown>).activeProvider;
+    if (typeof configured === "string") {
+      try {
+        return normalizePaymentProvider(configured);
+      } catch {
+        return paymentProvider(env);
+      }
+    }
+  }
+  return paymentProvider(env);
 }
 
 async function loadPrismaClient(): Promise<RuntimeReadinessPrismaClient> {
@@ -190,4 +268,8 @@ function passingCheck(id: string, label: string, message: string): RuntimeReadin
 
 function blockingCheck(id: string, label: string, message: string): RuntimeReadinessCheck {
   return { id, ok: false, blocking: true, label, message };
+}
+
+function warningCheck(id: string, label: string, message: string): RuntimeReadinessCheck {
+  return { id, ok: false, blocking: false, label, message };
 }

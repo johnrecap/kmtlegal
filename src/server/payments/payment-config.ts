@@ -3,7 +3,7 @@ import { ApiError } from "@/server/http/errors";
 export const SUPPORTED_PAYMENT_PROVIDERS = ["paytabs", "paymob"] as const;
 export type PaymentProviderName = (typeof SUPPORTED_PAYMENT_PROVIDERS)[number];
 
-export const DEFAULT_PAYMENT_PROVIDER: PaymentProviderName = "paytabs";
+export const DEFAULT_PAYMENT_PROVIDER: PaymentProviderName = "paymob";
 
 export function paymentProvider(env: NodeJS.ProcessEnv = process.env) {
   return normalizePaymentProvider(env.PAYMENT_PROVIDER);
@@ -22,6 +22,10 @@ export function normalizePaymentProvider(value?: string | null): PaymentProvider
 
 export function isSupportedPaymentProvider(value: string): value is PaymentProviderName {
   return (SUPPORTED_PAYMENT_PROVIDERS as readonly string[]).includes(value);
+}
+
+export function paymentProviderEnabled(provider: PaymentProviderName, env: NodeJS.ProcessEnv = process.env) {
+  return provider === "paymob" || env.PAYTABS_ENABLED === "true";
 }
 
 export function paymentReservationMinutes(env: NodeJS.ProcessEnv = process.env) {
@@ -45,9 +49,14 @@ export function requireVerifiedWebhookSignature(env: NodeJS.ProcessEnv = process
 }
 
 export function publicAppUrl(request?: Request, env: NodeJS.ProcessEnv = process.env) {
-  const configured = env.APP_URL || env.NEXT_PUBLIC_APP_URL || env.PUBLIC_APP_URL;
+  const isProduction = env.APP_ENV === "production" || env.NODE_ENV === "production";
+  const configured = env.APP_ORIGIN || (!isProduction ? env.APP_URL || env.NEXT_PUBLIC_APP_URL || env.PUBLIC_APP_URL : undefined);
   if (configured) {
     return configured.replace(/\/$/, "");
+  }
+
+  if (isProduction) {
+    throw new Error("APP_ORIGIN is required for production payment URLs.");
   }
 
   if (request) {
@@ -107,6 +116,14 @@ export function paymobPaymentMethodIds(env: NodeJS.ProcessEnv = process.env) {
     .map((value) => (/^\d+$/.test(value) ? Number(value) : value));
 }
 
+export function paymobRequestTimeoutMs(env: NodeJS.ProcessEnv = process.env) {
+  const configured = Number.parseInt(env.PAYMOB_REQUEST_TIMEOUT_MS ?? "", 10);
+  if (Number.isFinite(configured) && configured >= 3_000 && configured <= 30_000) {
+    return configured;
+  }
+  return 10_000;
+}
+
 export function paymentProviderReadiness(provider: PaymentProviderName, env: NodeJS.ProcessEnv = process.env) {
   if (provider === "paymob") {
     const required: Array<[string, string | undefined]> = [
@@ -121,18 +138,24 @@ export function paymentProviderReadiness(provider: PaymentProviderName, env: Nod
 
     return {
       provider,
+      enabled: true,
       configured: missing.length === 0,
       missing,
       checkoutMode: "paymob-unified-checkout"
     };
   }
 
-  const missing = paytabsHostedCheckoutTemplate(env).includes("CHANGE_ME") || !paytabsHostedCheckoutTemplate(env)
-    ? ["PAYTABS_HOSTED_CHECKOUT_URL_TEMPLATE"]
-    : [];
+  const required: Array<[string, string | undefined]> = [
+    ["PAYTABS_HOSTED_CHECKOUT_URL_TEMPLATE", paytabsHostedCheckoutTemplate(env)],
+    ["PAYTABS_WEBHOOK_SECRET", env.PAYTABS_WEBHOOK_SECRET || env.PAYMENT_WEBHOOK_SECRET]
+  ];
+  const missing = required
+    .filter(([, value]) => !value || String(value).includes("CHANGE_ME"))
+    .map(([key]) => key);
 
   return {
     provider,
+    enabled: paymentProviderEnabled(provider, env),
     configured: missing.length === 0,
     missing,
     checkoutMode: "hosted-checkout-url-template"
@@ -140,6 +163,12 @@ export function paymentProviderReadiness(provider: PaymentProviderName, env: Nod
 }
 
 export function assertProviderReadyForActivation(provider: PaymentProviderName, env: NodeJS.ProcessEnv = process.env) {
+  if (!paymentProviderEnabled(provider, env)) {
+    throw new ApiError(409, "PAYMENT_PROVIDER_DISABLED", "Payment provider is disabled for new payment attempts.", [
+      { path: "activeProvider", message: `${provider} is configured as a disabled standby provider.`, code: "payment_provider_disabled" }
+    ]);
+  }
+
   const readiness = paymentProviderReadiness(provider, env);
   if (readiness.configured) {
     return;
@@ -153,6 +182,10 @@ export function assertProviderReadyForActivation(provider: PaymentProviderName, 
 }
 
 export function assertLiveProviderConfigured(provider: PaymentProviderName = paymentProvider(), env: NodeJS.ProcessEnv = process.env) {
+  if (!paymentProviderEnabled(provider, env)) {
+    throw new ApiError(503, "SERVICE_UNAVAILABLE", "Payment provider is disabled for new payment attempts.");
+  }
+
   const readiness = paymentProviderReadiness(provider, env);
   if (readiness.configured) {
     return;

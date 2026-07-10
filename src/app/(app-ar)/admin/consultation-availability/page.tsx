@@ -13,8 +13,8 @@ import { adminNavForPath } from "../admin-navigation";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Consultation Availability | KMT Legal",
-  description: "Manage weekly consultation booking availability for the public booking assistant."
+  title: "أوقات حجز الاستشارات | KMT Legal",
+  description: "إدارة أوقات الحجز الأسبوعية التي تظهر في مساعد حجز الاستشارات."
 };
 
 export default async function AdminConsultationAvailabilityPage() {

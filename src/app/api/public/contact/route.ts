@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       publicContactMessageSchema,
       locale === "ar" ? "بيانات نموذج التواصل غير مكتملة." : "Contact form data is incomplete."
     );
-    enforceRateLimit(rateLimiters.contact, `${body.email}:${canonicalPhone(body.phone) ?? "no-phone"}:${getIpAddress(request) ?? "unknown"}`);
+    await enforceRateLimit(rateLimiters.contact, `${body.email}:${canonicalPhone(body.phone) ?? "no-phone"}:${getIpAddress(request) ?? "unknown"}`);
 
     const message = await createPublicContactMessage({
       body,

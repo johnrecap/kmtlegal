@@ -5,6 +5,7 @@ import {
   paymobApiBaseUrl,
   paymobCheckoutBaseUrl,
   paymobPaymentMethodIds,
+  paymobRequestTimeoutMs,
   paytabsHostedCheckoutTemplate,
   paymentFailureUrl,
   paymentProvider,
@@ -107,14 +108,28 @@ async function createPaymobHostedCheckout(input: HostedCheckoutInput): Promise<H
     redirection_url: returnUrl
   };
 
-  const response = await fetch(`${paymobApiBaseUrl()}/v1/intention/`, {
-    method: "POST",
-    headers: {
-      Authorization: `Token ${process.env.PAYMOB_SECRET_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), paymobRequestTimeoutMs());
+  let response: Response;
+
+  try {
+    response = await fetch(`${paymobApiBaseUrl()}/v1/intention/`, {
+      method: "POST",
+      headers: {
+        Authorization: `Token ${process.env.PAYMOB_SECRET_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new ApiError(504, "SERVICE_UNAVAILABLE", "Paymob checkout creation timed out.");
+    }
+    throw new ApiError(502, "SERVICE_UNAVAILABLE", "Paymob checkout creation failed.");
+  } finally {
+    clearTimeout(timeout);
+  }
 
   const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
   if (!response.ok) {

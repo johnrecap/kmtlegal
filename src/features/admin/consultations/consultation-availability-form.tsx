@@ -4,6 +4,7 @@ import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Card, CardContent, CardHeader, CardTitle, MaterialSymbol, TextInput } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { consultationAvailabilityUiCopy as copy, localizeApiMessage } from "@/lib/ui-copy";
 import type { ConsultationAvailability, ConsultationMode } from "@/server/consultations/consultation-availability-service";
 
 type AvailabilityResponse = {
@@ -16,11 +17,10 @@ type AvailabilityResponse = {
   };
 };
 
-const dayLabels = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const modeOptions: Array<{ value: ConsultationMode; label: string }> = [
-  { value: "ONLINE", label: "Online" },
-  { value: "PHONE", label: "Phone" },
-  { value: "OFFICE", label: "Office" }
+  { value: "ONLINE", label: copy.modes.ONLINE },
+  { value: "PHONE", label: copy.modes.PHONE },
+  { value: "OFFICE", label: copy.modes.OFFICE }
 ];
 
 export function ConsultationAvailabilityForm({ initialValue }: { initialValue: ConsultationAvailability }) {
@@ -44,18 +44,17 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
       });
       const body = (await response.json().catch(() => ({}))) as AvailabilityResponse;
       if (!response.ok || !body.data?.value) {
-        const message = body.error?.requestId
-          ? `${body.error.message ?? "Availability could not be saved."} (${body.error.requestId})`
-          : body.error?.message ?? "Availability could not be saved.";
+        const localizedError = body.error?.message ? localizeApiMessage(body.error.message, "ar") : copy.saveFailed;
+        const message = body.error?.requestId ? `${localizedError} (${body.error.requestId})` : localizedError;
         setStatus({ tone: "error", message });
         return;
       }
 
       setValue(body.data.value);
-      setStatus({ tone: "success", message: "Consultation availability was saved." });
+      setStatus({ tone: "success", message: copy.saved });
       router.refresh();
     } catch {
-      setStatus({ tone: "error", message: "Availability could not be saved. Check the connection and try again." });
+      setStatus({ tone: "error", message: copy.connectionFailed });
     } finally {
       setIsSaving(false);
     }
@@ -65,12 +64,12 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
     <form className="space-y-5" onSubmit={submit}>
       <Card>
         <CardHeader>
-          <CardTitle>Consultation booking rules</CardTitle>
+          <CardTitle>{copy.rulesTitle}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <TextInput
-              label="Consultation duration"
+              label={copy.duration}
               min={15}
               max={240}
               name="slotDurationMinutes"
@@ -79,7 +78,7 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
               onChange={(event) => updateNumber("slotDurationMinutes", event.target.value)}
             />
             <TextInput
-              label="Minimum lead time"
+              label={copy.leadTime}
               min={0}
               max={168}
               name="minLeadHours"
@@ -88,7 +87,7 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
               onChange={(event) => updateNumber("minLeadHours", event.target.value)}
             />
             <TextInput
-              label="Days shown to client"
+              label={copy.bookingWindow}
               min={1}
               max={60}
               name="bookingWindowDays"
@@ -98,14 +97,14 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
             />
           </div>
           <p className="mt-4 text-sm leading-6 text-kmt-muted">
-            Timezone: {value.timezone}. Enabled working days: {enabledCount}.
+            {copy.timezone}: {value.timezone}. {copy.enabledDays}: {enabledCount}.
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>Weekly consultation hours</CardTitle>
+          <CardTitle>{copy.weeklyHours}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -119,11 +118,11 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
                       type="checkbox"
                       onChange={(event) => updateDay(index, { enabled: event.target.checked })}
                     />
-                    <span>{dayLabels[day.weekday]}</span>
+                    <span>{copy.days[day.weekday]}</span>
                   </label>
                   <TextInput
                     disabled={!day.enabled}
-                    label="Start"
+                    label={copy.start}
                     name={`start-${day.weekday}`}
                     type="time"
                     value={day.start}
@@ -131,14 +130,14 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
                   />
                   <TextInput
                     disabled={!day.enabled}
-                    label="End"
+                    label={copy.end}
                     name={`end-${day.weekday}`}
                     type="time"
                     value={day.end}
                     onChange={(event) => updateDay(index, { end: event.target.value })}
                   />
                   <div className="space-y-2">
-                    <p className="text-sm font-semibold text-kmt-ink">Available methods</p>
+                    <p className="text-sm font-semibold text-kmt-ink">{copy.availableMethods}</p>
                     <div className="flex flex-wrap gap-2">
                       {modeOptions.map((mode) => (
                         <label
@@ -181,7 +180,7 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
       <div className="flex flex-wrap justify-end gap-3">
         <Button loading={isSaving} type="submit">
           <MaterialSymbol name="save" />
-          Save availability
+          {copy.save}
         </Button>
       </div>
     </form>

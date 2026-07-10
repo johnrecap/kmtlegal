@@ -42,6 +42,7 @@ describe("security, privacy, upload, and observability hardening", () => {
       const productionCsp = contentSecurityPolicy();
 
       expect(productionCsp).toContain("script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com");
+      expect(productionCsp).toContain("script-src-attr 'none'");
       expect(productionCsp).toContain("connect-src 'self' https://cloudflareinsights.com");
       expect(productionCsp).toContain("upgrade-insecure-requests");
     } finally {
@@ -50,6 +51,25 @@ describe("security, privacy, upload, and observability hardening", () => {
       } else {
         Reflect.deleteProperty(process.env, "NODE_ENV");
       }
+    }
+  });
+
+  it("adds only the configured Sentry ingest origin to connect-src", () => {
+    const require = createRequire(path.resolve(process.cwd(), "tests/server/security-hardening.test.ts"));
+    const { contentSecurityPolicy } = require("../../security-headers.cjs") as { contentSecurityPolicy: () => string };
+    const previousEnabled = process.env.NEXT_PUBLIC_SENTRY_ENABLED;
+    const previousDsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+
+    try {
+      process.env.NEXT_PUBLIC_SENTRY_ENABLED = "true";
+      process.env.NEXT_PUBLIC_SENTRY_DSN = "https://public@example.ingest.sentry.io/123";
+      expect(contentSecurityPolicy()).toContain("https://example.ingest.sentry.io");
+      expect(contentSecurityPolicy()).not.toContain("public@");
+    } finally {
+      if (previousEnabled === undefined) delete process.env.NEXT_PUBLIC_SENTRY_ENABLED;
+      else process.env.NEXT_PUBLIC_SENTRY_ENABLED = previousEnabled;
+      if (previousDsn === undefined) delete process.env.NEXT_PUBLIC_SENTRY_DSN;
+      else process.env.NEXT_PUBLIC_SENTRY_DSN = previousDsn;
     }
   });
 
@@ -231,7 +251,13 @@ describe("security, privacy, upload, and observability hardening", () => {
       STAFF_2FA_MODE: "disabled",
       INSTALLER_ENABLED: "false",
       AI_PROVIDER: "mock",
-      PAYTABS_HOSTED_CHECKOUT_URL_TEMPLATE: "https://payments.example/checkout/{attemptId}",
+      MALWARE_SCAN_MODE: "required",
+      PAYMENT_PROVIDER: "paymob",
+      PAYMOB_SECRET_KEY: "paymob-secret",
+      PAYMOB_PUBLIC_KEY: "paymob-public",
+      PAYMOB_HMAC_SECRET: "paymob-hmac",
+      PAYMOB_PAYMENT_METHOD_IDS: "123",
+      PAYTABS_ENABLED: "false",
       PAYMENT_RECEIPT_SIGNING_SECRET: "0123456789abcdef0123456789abcdef",
       ANALYTICS_ENABLED: "true"
     });

@@ -68,6 +68,7 @@ export async function getInstallerPreflight(token: string, input: { hostingMode?
     check("database_url", Boolean(process.env.DATABASE_URL), "DATABASE_URL is configured."),
     check("uploads_dir", Boolean(process.env.UPLOADS_DIR), "UPLOADS_DIR is configured."),
     check("storage_driver", process.env.STORAGE_DRIVER === "vps-filesystem", "STORAGE_DRIVER=vps-filesystem"),
+    check("malware_scan_required", process.env.MALWARE_SCAN_MODE === "required", "MALWARE_SCAN_MODE=required"),
     check("staff_2fa_disabled", process.env.STAFF_2FA_MODE !== "totp", "STAFF_2FA_MODE is disabled."),
     check("smtp_disabled", process.env.SMTP_ENABLED !== "true", "SMTP is disabled for this release."),
     ...panelPreflightChecks(input.hostingMode ?? "terminal-vps"),
@@ -108,6 +109,7 @@ export async function bootstrapFirstSuperAdmin(input: { token: string; body: unk
     throw new ApiError(409, "CONFLICT", "A user with this email already exists.");
   }
 
+  const passwordHash = await hashPassword(body.admin.password);
   const result = await prisma.$transaction(async (tx) => {
     const activeSuperAdminCount = await tx.user.count({
       where: {
@@ -123,7 +125,7 @@ export async function bootstrapFirstSuperAdmin(input: { token: string; body: unk
       data: {
         name: body.admin.name,
         email: body.admin.email,
-        passwordHash: hashPassword(body.admin.password),
+        passwordHash,
         roleId: role.id,
         status: "ACTIVE",
         locale: body.admin.locale

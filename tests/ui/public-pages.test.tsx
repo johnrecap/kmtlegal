@@ -29,7 +29,7 @@ describe("public website UI", () => {
     expect(html).toContain("Client Login");
     expect(html).toContain("href=\"/login?next=/client\"");
     expect(html).toContain("العربية");
-    expect(html).toContain("bg-[#070604]/95");
+    expect(html).toContain("bg-[color:var(--kmt-public-header)]");
     expect(html).toContain("event_available");
     expect(html).toContain("account_circle");
     expect(html).toContain("/brand/kmt-logo-mark.webp");
@@ -91,9 +91,8 @@ describe("public website UI", () => {
     expect(html).toContain("Reviewed by the office before any legal step");
     expect(html).toContain("object-cover");
     expect(html).toContain("data-testid=\"public-page-hero-image\"");
-    expect(html).toContain("loading=\"eager\"");
-    expect(html).toContain("src=\"/image.png\"");
-    expect(html).not.toContain("/_next/image");
+    expect(html).toContain("data-nimg=\"fill\"");
+    expect(html).toContain("/_next/image?url=%2Fimage.png");
     expect(html).toContain("opacity-95");
     expect(html).toContain("ltr:bg-gradient-to-r");
     expect(html).toContain("rtl:bg-gradient-to-l");
@@ -130,7 +129,7 @@ describe("public website UI", () => {
         </PublicSection>
       );
 
-    expect(html).toContain("bg-[#0c1116]");
+    expect(html).toContain("bg-[var(--kmt-public-surface-muted)]");
     expect(html).toContain("mx-auto text-center");
     expect(html).toContain("Start with the Consultation Assistant");
     expect(html).toContain("Request a Consultation");

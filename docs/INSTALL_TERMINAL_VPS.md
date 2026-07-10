@@ -20,7 +20,7 @@ sudo bash deploy/install/install.sh
 ```
 
 3. Enter domain and TLS email.
-4. Let the installer configure Node.js, PostgreSQL, Nginx, Certbot, systemd, env file, uploads, build, migrations, and seed.
+4. Let the installer configure Node.js, PostgreSQL, ClamAV, Nginx, Certbot, systemd, env file, uploads, build, migrations, and seed.
 5. Open the printed `/install?token=...` URL.
 6. Create the first Super Admin without TOTP.
 7. Lock the installer.
@@ -35,6 +35,8 @@ sudo kmt-legal-disable-installer
 ```bash
 curl -f https://your-domain.example/api/health
 ```
+
+The health report must include a passing `storage.malware_scan` check. The installer sets Paymob as the prepared provider, PayTabs as disabled standby, and Sentry as disabled; it does not enable paid booking.
 
 ## Do Not Use This Path When
 

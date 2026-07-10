@@ -80,6 +80,15 @@ export function alternatePublicLanguages(pathname: string) {
   };
 }
 
+export function availableAlternatePublicLanguages(pathname: string, locales: readonly PublicLocale[]) {
+  const all = alternatePublicLanguages(pathname);
+  const languages: Record<string, string> = {};
+  if (locales.includes("en")) languages.en = all.en;
+  if (locales.includes("ar")) languages.ar = all.ar;
+  languages["x-default"] = locales.includes("en") ? all.en : all.ar;
+  return languages;
+}
+
 export function localeFromSearchParams(searchParams: URLSearchParams): PublicLocale {
   return normalizePublicLocale(searchParams.get("locale"));
 }

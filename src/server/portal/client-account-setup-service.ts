@@ -272,7 +272,7 @@ export async function completePublicClientAccountSetup(input: { body: unknown; r
     throw new ApiError(409, "CONFLICT", "Email is already linked to another client.");
   }
 
-  const passwordHash = hashPassword(body.password);
+  const passwordHash = await hashPassword(body.password);
   const user = await prisma.$transaction(async (tx) => {
     const freshClient = await tx.client.findUnique({
       where: { id: context.client.id },

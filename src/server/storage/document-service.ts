@@ -7,6 +7,7 @@ import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
 import { captureAnalyticsEventBestEffort, fileSizeBucket, safeFileType } from "@/server/observability/analytics-service";
 import { generateDocumentFileKey } from "./file-keys";
 import { documentDownloadHeaders } from "./download-headers";
+import { assertMalwareScanSafe } from "./malware-scan";
 import { assertUploadAllowed } from "./upload-policy";
 import { deletePrivateFileBestEffort, readPrivateFile, savePrivateFile } from "./vps-storage";
 
@@ -39,6 +40,7 @@ export async function uploadDocument(input: {
   const fields = parseWithSchema(documentUploadFieldsSchema, input.fields, "Document upload fields are invalid.");
   assertDocumentUploadPermission(input.actor, fields);
   assertUploadAllowed(input.file);
+  await assertMalwareScanSafe(input.file.bytes);
 
   const ownerClientId =
     input.actor.clientId && hasPermission(input.actor, "document.upload.self") && !hasPermission(input.actor, "document.manage.any")

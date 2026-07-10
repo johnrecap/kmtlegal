@@ -73,6 +73,14 @@
   --kmt-border: #e2e8f0;
   --kmt-focus: 0 0 0 3px rgb(153 123 68 / 18%);
   --kmt-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --kmt-public-canvas: #060504;
+  --kmt-public-surface: #07090b;
+  --kmt-public-surface-muted: #0c1116;
+  --kmt-public-header: #070604;
+  --kmt-public-panel: rgb(255 255 255 / 3.5%);
+  --kmt-public-text: #f8f3ea;
+  --kmt-public-muted: #cbd5e1;
+  --kmt-public-gold: #c79a52;
 }
 
 body {

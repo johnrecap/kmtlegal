@@ -16,6 +16,7 @@ describe("product UI primitives", () => {
     );
 
     expect(html).toContain("disabled");
+    expect(html).toContain("aria-busy=\"true\"");
     expect(html).toContain("حفظ الطلب");
   });
 

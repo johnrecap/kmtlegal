@@ -1,5 +1,6 @@
 function contentSecurityPolicy() {
   const isProduction = process.env.NODE_ENV === "production";
+  const sentryOrigin = getSentryOrigin();
   const directives = [
     "default-src 'self'",
     "base-uri 'self'",
@@ -10,9 +11,11 @@ function contentSecurityPolicy() {
     "font-src 'self' data:",
     "style-src 'self' 'unsafe-inline'",
     `script-src 'self' 'unsafe-inline'${isProduction ? " https://static.cloudflareinsights.com" : " 'unsafe-eval'"}`,
-    `connect-src 'self'${isProduction ? " https://cloudflareinsights.com" : " ws: wss:"}`,
+    "script-src-attr 'none'",
+    `connect-src 'self'${isProduction ? " https://cloudflareinsights.com" : " ws: wss:"}${sentryOrigin ? ` ${sentryOrigin}` : ""}`,
     "media-src 'self'",
     "worker-src 'self' blob:",
+    "frame-src 'none'",
     "manifest-src 'self'"
   ];
 
@@ -21,6 +24,15 @@ function contentSecurityPolicy() {
   }
 
   return directives.join("; ");
+}
+
+function getSentryOrigin() {
+  if (process.env.NEXT_PUBLIC_SENTRY_ENABLED !== "true" || !process.env.NEXT_PUBLIC_SENTRY_DSN) return "";
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SENTRY_DSN).origin;
+  } catch {
+    return "";
+  }
 }
 
 function securityHeaders() {

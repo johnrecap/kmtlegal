@@ -9,10 +9,10 @@ For a current-state PRD and external model review brief, use `docs/KMT_LEGAL_CUR
 
 ## Current Status
 
-- `PLAN-00` through `PLAN-28` are implemented as code, tests, plans, or handoff artifacts where local infrastructure allows.
+- `PLAN-00` through `PLAN-34` are implemented as code, tests, plans, or handoff artifacts where local infrastructure allows.
 - `PLAN-04` still needs a real PostgreSQL runtime check: run migrations and seed against a running `DATABASE_URL`, then rerun seed to verify idempotency.
 - DB-backed E2E flows need PostgreSQL plus seed data before they can run end to end.
-- PLAN-25 adds a no-code VPS installer. PLAN-26 adds panel-aware setup planning for Terminal VPS, aaPanel, and conditional cPanel support. PLAN-27 local remediation covers public 404 link prevention, content-source consistency, CSP/favicon, login copy, localized auth errors, booking/contact UX, admin Arabic copy cleanup, safe admin AI display, and admin overflow constraints; broader static/mobile/live smoke plus atomic deploy evidence still needs to be run before production release. PLAN-28 implements the public-only dark luxury legal redesign and intentionally leaves admin, portal, product-system, shared UI primitives, and Stitch clone outside the redesign scope.
+- PLAN-34 makes Paymob the prepared primary provider, keeps PayTabs disabled standby, leaves paid booking disabled, adds expiring minimized receipts, PostgreSQL rate limiting, async scrypt, required production ClamAV scanning, optional privacy-safe Sentry, locale/error/accessibility/image hardening, and behavior-preserving module decomposition. DB-backed/provider/live deployment evidence remains a release gate.
 
 ## Install
 
@@ -37,6 +37,9 @@ Important local defaults:
 - `AI_PROVIDER=mock`
 - `ANALYTICS_ENABLED=true`
 - `STAFF_2FA_MODE=disabled`
+- `PAYMENT_PROVIDER=paymob` and `PAYTABS_ENABLED=false`
+- `MALWARE_SCAN_MODE=disabled` locally; production must use `required` with a reachable ClamAV daemon.
+- `SENTRY_ENABLED=false` until DSN, auth token, org, and project values are supplied.
 
 ## Local Database
 
@@ -126,6 +129,7 @@ Relevant files:
 - `docs/RELEASE_QA_CHECKLIST.md`
 
 Production uploads must live outside `public/`, for example `/var/lib/kmt-legal/uploads`, and must not be served directly by Nginx. The app streams downloads only after authorization.
+Production uploads also require `MALWARE_SCAN_MODE=required`; `/api/health` fails closed if ClamAV cannot answer its probe.
 
 For first setup on a fresh Ubuntu VPS:
 
@@ -154,6 +158,7 @@ Production readiness is exposed at `/api/health`. It returns `200` only after en
 
 - Docker CLI is not installed, so local `docker compose up -d db` could not be run here.
 - DB-backed smoke for login -> staff 2FA -> admin, booking -> convert -> portal, and upload/download still requires PostgreSQL plus seed data.
-- `npm run security:audit` currently reports release-blocking dependency vulnerabilities; resolve `docs/SECURITY_AUDIT_FINDINGS.md` before production release.
+- `npm run security:audit` should be rerun on the release host; current dependency findings are tracked in `docs/SECURITY_AUDIT_FINDINGS.md`.
 - Staff TOTP is intentionally deferred; do not enable `STAFF_2FA_MODE=totp` until a future Staff 2FA Rework plan is implemented and tested.
 - PLAN-27 live-site QA remediation is partially implemented locally; do not claim production readiness until broader static/mobile smoke, DB-backed staging checks, and deployed-site evidence pass.
+- PLAN-34 local static gates pass, but real PostgreSQL migrations/DB E2E, Paymob sandbox, real ClamAV EICAR verification, and post-deploy live/mobile/admin evidence are still required.

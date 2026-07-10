@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { unstable_noStore as noStore } from "next/cache";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -36,7 +37,7 @@ import {
   publicPanelHover
 } from "@/features/public-site/public-components";
 import { cn } from "@/lib/cn";
-import { alternatePublicLanguages, localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
+import { alternatePublicLanguages, availableAlternatePublicLanguages, localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 import {
   listPublishedArticleCards,
   listPublishedCaseStudyCards,
@@ -48,13 +49,19 @@ import { getPublicConsultationBookingMode } from "@/server/consultations/consult
 type FeaturedArticle = Awaited<ReturnType<typeof listPublishedArticleCards>>[number];
 type FeaturedCaseStudy = Awaited<ReturnType<typeof listPublishedCaseStudyCards>>[number];
 
-export function publicPageMetadata(locale: PublicLocale, pathname: string, title: string, description: string): Metadata {
+export function publicPageMetadata(
+  locale: PublicLocale,
+  pathname: string,
+  title: string,
+  description: string,
+  availableLocales: readonly PublicLocale[] = ["en", "ar"]
+): Metadata {
   return {
     title,
     description,
     alternates: {
       canonical: localizedPublicHref(pathname, locale),
-      languages: alternatePublicLanguages(pathname)
+      languages: availableLocales.length === 2 ? alternatePublicLanguages(pathname) : availableAlternatePublicLanguages(pathname, availableLocales)
     }
   };
 }
@@ -95,10 +102,17 @@ export function articlesMetadata(locale: PublicLocale) {
 }
 
 export async function articleDetailMetadata(locale: PublicLocale, slug: string): Promise<Metadata> {
-  const article = await loadArticle(locale, slug);
+  const alternateLocale = locale === "ar" ? "en" : "ar";
+  const [article, alternateArticle] = await Promise.all([loadArticle(locale, slug), loadArticle(alternateLocale, slug)]);
   if (!article) return {};
 
-  return publicPageMetadata(locale, `/articles/${article.slug}`, `${article.title} | KMT Legal`, article.excerpt);
+  return publicPageMetadata(
+    locale,
+    `/articles/${article.slug}`,
+    `${article.title} | KMT Legal`,
+    article.excerpt,
+    alternateArticle ? ["en", "ar"] : [locale]
+  );
 }
 
 export function caseStudiesMetadata(locale: PublicLocale) {
@@ -107,10 +121,17 @@ export function caseStudiesMetadata(locale: PublicLocale) {
 }
 
 export async function caseStudyDetailMetadata(locale: PublicLocale, slug: string): Promise<Metadata> {
-  const study = await loadCaseStudy(locale, slug);
+  const alternateLocale = locale === "ar" ? "en" : "ar";
+  const [study, alternateStudy] = await Promise.all([loadCaseStudy(locale, slug), loadCaseStudy(alternateLocale, slug)]);
   if (!study) return {};
 
-  return publicPageMetadata(locale, `/case-studies/${study.slug}`, `${study.title} | KMT Legal`, study.summary);
+  return publicPageMetadata(
+    locale,
+    `/case-studies/${study.slug}`,
+    `${study.title} | KMT Legal`,
+    study.summary,
+    alternateStudy ? ["en", "ar"] : [locale]
+  );
 }
 
 export function mediaMetadata(locale: PublicLocale) {
@@ -259,7 +280,9 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
         <div className="grid gap-4 md:grid-cols-3">
           {content.lawyers.map((lawyer) => (
             <Link key={lawyer.slug} className={cn(publicPanel, publicPanelHover, publicMotionImageCard, "block overflow-hidden")} href={localizedPublicHref(`/team/${lawyer.slug}`, locale)}>
-              <img alt={lawyer.name} className={cn("h-56 w-full object-cover opacity-90", publicMotionImage)} src={lawyer.image} />
+              <div className="relative h-56 w-full">
+                <Image alt={lawyer.name} className={cn("object-cover opacity-90", publicMotionImage)} fill sizes="(min-width: 768px) 33vw, 100vw" src={lawyer.image} />
+              </div>
               <div className="p-5">
                 <h3 className="text-xl font-semibold text-white">{lawyer.name}</h3>
                 <p className={cn("mt-1 text-sm", publicMutedText)}>{lawyer.title}</p>
@@ -419,7 +442,9 @@ export function TeamDetailPageView({ locale, slug }: { locale: PublicLocale; slu
     <PublicShell currentPath={localizedPublicHref(`/team/${lawyer.slug}`, locale)} locale={locale} navItems={navForPath("/team", locale)}>
       <PublicSection eyebrow={lawyer.title} title={lawyer.name} description={lawyer.bio}>
         <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-          <img alt={lawyer.name} className="h-[460px] w-full rounded-lg border border-kmt-gold/25 object-cover opacity-90" src={lawyer.image} />
+          <div className="relative h-[460px] w-full overflow-hidden rounded-lg border border-kmt-gold/25">
+            <Image alt={lawyer.name} className="object-cover opacity-90" fill sizes="(min-width: 1024px) 360px, 100vw" src={lawyer.image} />
+          </div>
           <div className={cn(publicPanel, "p-6")}>
             <h2 className="text-2xl font-semibold text-white">{copy.specialtiesTitle}</h2>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -482,12 +507,18 @@ export async function ArticlesPageView({ locale }: { locale: PublicLocale }) {
 
 export async function ArticleDetailPageView({ locale, slug }: { locale: PublicLocale; slug: string }) {
   const content = getPublicContent(locale);
-  const article = await loadArticle(locale, slug);
+  const alternateLocale = locale === "ar" ? "en" : "ar";
+  const [article, alternateArticle] = await Promise.all([loadArticle(locale, slug), loadArticle(alternateLocale, slug)]);
   if (!article) notFound();
   const copy = content.articleDetail;
 
   return (
-    <PublicShell currentPath={localizedPublicHref(`/articles/${article.slug}`, locale)} locale={locale} navItems={navForPath("/articles", locale)}>
+    <PublicShell
+      currentPath={localizedPublicHref(`/articles/${article.slug}`, locale)}
+      languageHref={alternateArticle ? localizedPublicHref(`/articles/${alternateArticle.slug}`, alternateLocale) : null}
+      locale={locale}
+      navItems={navForPath("/articles", locale)}
+    >
       <PublicSection eyebrow={article.readTime} title={article.title} description={article.excerpt}>
         <article className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className={cn(publicPanel, "p-6")}>
@@ -537,12 +568,18 @@ export async function CaseStudiesPageView({ locale }: { locale: PublicLocale }) 
 
 export async function CaseStudyDetailPageView({ locale, slug }: { locale: PublicLocale; slug: string }) {
   const content = getPublicContent(locale);
-  const study = await loadCaseStudy(locale, slug);
+  const alternateLocale = locale === "ar" ? "en" : "ar";
+  const [study, alternateStudy] = await Promise.all([loadCaseStudy(locale, slug), loadCaseStudy(alternateLocale, slug)]);
   if (!study) notFound();
   const copy = content.caseStudyDetail;
 
   return (
-    <PublicShell currentPath={localizedPublicHref(`/case-studies/${study.slug}`, locale)} locale={locale} navItems={navForPath("/case-studies", locale)}>
+    <PublicShell
+      currentPath={localizedPublicHref(`/case-studies/${study.slug}`, locale)}
+      languageHref={alternateStudy ? localizedPublicHref(`/case-studies/${alternateStudy.slug}`, alternateLocale) : null}
+      locale={locale}
+      navItems={navForPath("/case-studies", locale)}
+    >
       <PublicSection eyebrow={copy.eyebrow} title={study.title} description={study.summary}>
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <article className={cn(publicPanel, "p-6")}>

@@ -351,6 +351,21 @@ The smallest useful MVP includes public website, consultation intake with AI Pro
 - Advanced analytics and forecasting.
 - Multi-tenant SaaS billing.
 
+### Deferred Product Opportunities After PLAN-34
+
+These items are intentionally documentation-only. They require separate product approval, specifications, acceptance criteria, and delivery plans before implementation.
+
+- Client next-action center for each matter.
+- Email and WhatsApp reminders with client notification preferences.
+- Permission-scoped OCR and document search.
+- Document versions, comments, approvals, and electronic-signature handoff.
+- Conflict checks during client and matter intake.
+- Refund, dispute, chargeback, void, and settlement reconciliation operations.
+- Operational dashboards for overdue work, unassigned requests, collections, and matters without a next action.
+- Human-reviewed AI summaries for documents and matter timelines; no autonomous legal advice.
+- English localization for protected admin and client surfaces.
+- Unified client and matter activity timeline.
+
 ## Acceptance Criteria for Product Readiness
 - All MVP routes exist in the routing plan.
 - Every protected route/action has server-side auth and permission checks.

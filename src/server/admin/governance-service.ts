@@ -298,13 +298,14 @@ export async function createAdminUser(input: { actor: Principal; body: unknown; 
     throw new ApiError(409, "CONFLICT", "A user with this email already exists.");
   }
 
+  const passwordHash = await hashPassword(body.password);
   const user = await prisma.$transaction(async (tx) => {
     const created = await tx.user.create({
       data: {
         email: body.email,
         name: body.name,
         phone: body.phone || null,
-        passwordHash: hashPassword(body.password),
+        passwordHash,
         roleId: nextRole.id,
         status: body.status,
         locale: body.locale,
@@ -512,10 +513,11 @@ export async function updateAdminUserPassword(input: {
   }
 
   const now = new Date();
+  const passwordHash = await hashPassword(body.password);
   await prisma.$transaction(async (tx) => {
     await tx.user.update({
       where: { id: existing.id },
-      data: { passwordHash: hashPassword(body.password) }
+      data: { passwordHash }
     });
 
     if (body.revokeSessions) {

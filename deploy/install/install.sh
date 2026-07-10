@@ -40,7 +40,7 @@ INSTALLER_TOKEN="$(openssl rand -hex 32)"
 
 echo "Installing OS packages..."
 apt-get update
-apt-get install -y ca-certificates curl gnupg nginx postgresql postgresql-contrib rsync openssl certbot python3-certbot-nginx
+apt-get install -y ca-certificates curl gnupg nginx postgresql postgresql-contrib rsync openssl certbot python3-certbot-nginx clamav clamav-daemon
 
 node_supported() {
   node -e '
@@ -92,6 +92,8 @@ rsync -a --delete \
   --exclude "_workspace" \
   ./ "${APP_DIR}/"
 chown -R "${APP_USER}:${APP_USER}" "${APP_DIR}"
+usermod -a -G clamav "${APP_USER}"
+systemctl enable --now clamav-daemon
 
 cat > "${ENV_FILE}" <<EOF
 NODE_ENV=production
@@ -114,6 +116,14 @@ STORAGE_DRIVER=vps-filesystem
 UPLOADS_DIR=${UPLOADS_DIR}
 MAX_UPLOAD_MB=5
 ALLOWED_UPLOAD_TYPES=application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png
+MALWARE_SCAN_MODE=required
+CLAMAV_SOCKET_PATH=/run/clamav/clamd.ctl
+CLAMAV_TIMEOUT_MS=10000
+
+PAYMENT_PROVIDER=paymob
+PAYTABS_ENABLED=false
+PAYMOB_REQUEST_TIMEOUT_MS=10000
+PAYMENT_RECEIPT_TOKEN_MAX_AGE_SECONDS=604800
 
 SMTP_ENABLED=false
 SMTP_HOST=
@@ -132,6 +142,13 @@ AI_MAX_TOKENS=1200
 AI_TEMPERATURE=0.2
 
 ANALYTICS_ENABLED=true
+SENTRY_ENABLED=false
+SENTRY_DSN=
+SENTRY_AUTH_TOKEN=
+SENTRY_ORG=
+SENTRY_PROJECT=
+NEXT_PUBLIC_SENTRY_ENABLED=false
+NEXT_PUBLIC_SENTRY_DSN=
 ENABLE_STITCH_CLONE=false
 EOF
 chmod 640 "${ENV_FILE}"
@@ -140,12 +157,13 @@ chown root:"${APP_USER}" "${ENV_FILE}"
 cat > "${SERVICE_FILE}" <<EOF
 [Unit]
 Description=KMT Legal Next.js application
-After=network.target postgresql.service
+After=network.target postgresql.service clamav-daemon.service
 
 [Service]
 Type=simple
 User=${APP_USER}
 Group=${APP_USER}
+SupplementaryGroups=clamav
 WorkingDirectory=${APP_DIR}
 EnvironmentFile=${ENV_FILE}
 Environment=NEXT_TELEMETRY_DISABLED=1

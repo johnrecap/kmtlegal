@@ -13,7 +13,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await parseJsonRequest(request, publicClientAccountSetupSchema, "Client account setup payload is invalid.");
-    enforceRateLimit(rateLimiters.login, `${body.email}:${getIpAddress(request) ?? "unknown"}`);
+    await enforceRateLimit(rateLimiters.login, `${body.email}:${getIpAddress(request) ?? "unknown"}`);
 
     const result = await completePublicClientAccountSetup({
       body,

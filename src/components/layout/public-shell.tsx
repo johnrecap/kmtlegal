@@ -69,27 +69,30 @@ export function PublicShell({
   children,
   className,
   locale = "en",
-  currentPath = "/"
+  currentPath = "/",
+  languageHref: languageHrefOverride
 }: {
   navItems: PublicNavItem[];
   children: ReactNode;
   className?: string;
   locale?: PublicLocale;
   currentPath?: string;
+  languageHref?: string | null;
 }) {
   const content = getPublicContent(locale);
   const shell = content.shell;
   const direction = publicLocaleDirection(locale);
-  const languageHref = locale === "ar" ? stripPublicLocalePrefix(currentPath) : `${publicLocalePrefix("ar")}${stripPublicLocalePrefix(currentPath) === "/" ? "" : stripPublicLocalePrefix(currentPath)}`;
+  const defaultLanguageHref = locale === "ar" ? stripPublicLocalePrefix(currentPath) : `${publicLocalePrefix("ar")}${stripPublicLocalePrefix(currentPath) === "/" ? "" : stripPublicLocalePrefix(currentPath)}`;
+  const languageHref = languageHrefOverride === undefined ? defaultLanguageHref : languageHrefOverride;
 
   return (
     <div
-      className={cn("min-h-screen bg-[#060504] text-[#f8f3ea] selection:bg-kmt-gold/30 selection:text-white", className)}
+      className={cn("min-h-screen bg-[var(--kmt-public-canvas)] text-[var(--kmt-public-text)] selection:bg-kmt-gold/30 selection:text-white", className)}
       data-testid="public-shell"
       dir={direction}
       lang={locale}
     >
-      <header className="sticky top-0 z-50 border-b border-kmt-gold/20 bg-[#070604]/95 shadow-[0_12px_40px_rgba(0,0,0,0.34)] backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-kmt-gold/20 bg-[color:var(--kmt-public-header)] shadow-[0_12px_40px_rgba(0,0,0,0.34)] backdrop-blur-xl">
         <div className="mx-auto flex min-h-[76px] max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
           <PublicBrand locale={locale} />
           <nav aria-label={shell.mainNavLabel} className="hidden items-stretch gap-1 lg:flex">
@@ -109,14 +112,18 @@ export function PublicShell({
             ))}
           </nav>
           <div className="flex shrink-0 items-center gap-2">
-            <a
-              className={cn("hidden min-h-10 items-center border border-white/15 px-3 text-xs font-semibold text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold sm:inline-flex", publicMotionButton, publicMotionCta)}
-              data-testid="public-language-switch"
-              href={languageHref}
-              hrefLang={locale === "ar" ? "en" : "ar"}
-            >
-              {shell.languageSwitchLabel}
-            </a>
+            {languageHref ? (
+              <a
+                aria-label={shell.languageSwitchLabel}
+                className={cn("inline-flex h-11 w-11 items-center justify-center border border-white/15 text-xs font-semibold text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold sm:h-10 sm:w-auto sm:px-3", publicMotionButton, publicMotionCta)}
+                data-testid="public-language-switch"
+                href={languageHref}
+                hrefLang={locale === "ar" ? "en" : "ar"}
+              >
+                <MaterialSymbol className="text-lg sm:hidden" name="translate" />
+                <span className="sr-only sm:not-sr-only">{shell.languageSwitchLabel}</span>
+              </a>
+            ) : null}
             <ClientLoginLink label={shell.clientLoginCta} />
             <ConsultationLink className="px-3 sm:px-4" label={shell.consultationCta} locale={locale} />
           </div>
@@ -139,8 +146,8 @@ export function PublicShell({
           </div>
         </nav>
       </header>
-      <main className="bg-[#060504]">{children}</main>
-      <footer className="border-t border-kmt-gold/20 bg-[#070604] text-stone-300">
+      <main className="bg-[var(--kmt-public-canvas)]">{children}</main>
+      <footer className="border-t border-kmt-gold/20 bg-[var(--kmt-public-header)] text-stone-300">
         <section className="border-b border-white/10 bg-[linear-gradient(90deg,rgba(153,123,68,0.20),rgba(153,123,68,0.05)_38%,rgba(0,0,0,0)_72%)]">
           <div className="mx-auto grid max-w-[1200px] gap-5 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_auto] lg:items-center lg:px-10">
             <div className="max-w-2xl">

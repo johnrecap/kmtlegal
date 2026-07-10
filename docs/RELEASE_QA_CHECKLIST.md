@@ -143,6 +143,11 @@ npx playwright test tests/e2e/live-admin-smoke.spec.ts
 - [ ] `/stitch-clone/*` returns 404 in production unless `ENABLE_STITCH_CLONE=true`.
 - [ ] Nginx passes `X-Real-IP $remote_addr`; app does not trust client-supplied `X-Forwarded-For` in production.
 - [ ] Upload oversize `Content-Length` is rejected before multipart parsing.
+- [ ] `MALWARE_SCAN_MODE=required`, ClamAV answers `clamdscan --ping`, and `/api/health` reports `storage.malware_scan` healthy.
+- [ ] Controlled EICAR upload returns `MALWARE_DETECTED`, writes no private file, and creates no `Document` row.
+- [ ] `PAYMENT_PROVIDER=paymob`, `PAYTABS_ENABLED=false`, and admin shows PayTabs as disabled standby.
+- [ ] `consultation.booking` remains free during PLAN-34 deploy; `AI_CHAT_PAID` is not enabled.
+- [ ] Sentry remains disabled unless DSN/auth token/org/project are configured together; a controlled enabled test sends no request body, cookies, headers, email, phone, or client identity.
 - [ ] Payment webhook and checkout audit metadata do not include client phone, email, raw provider payloads, or account setup tokens.
 - [ ] Payment webhook routes accept trusted provider POST callbacks without browser `Origin/Referer`, while admin/API mutations still reject missing or cross-origin mutation headers.
 - [ ] Signed payment-status links expire and fall back to safe public status without client details, receipt links, checkout links, or account setup links.
@@ -164,6 +169,8 @@ npx playwright test tests/e2e/live-admin-smoke.spec.ts
 - [ ] Upload directory backup exists before release.
 - [ ] Rollback target is known.
 - [ ] Post-deploy smoke passes.
+- [ ] Unknown `/admin/*` and `/portal/*` paths return the localized not-found recovery state instead of a placeholder or redirect to `/client`.
+- [ ] Public mobile language switch is visible at 390px and article/case-study alternates never link to a missing localized detail.
 - [ ] `npm run qa:release` result is archived with this checklist.
 
 ## Current Workspace Notes
@@ -171,6 +178,7 @@ npx playwright test tests/e2e/live-admin-smoke.spec.ts
 - Docker CLI is not installed in this workspace, so local PostgreSQL via `docker compose up -d db` could not be executed here.
 - DB-backed E2E must be run after PostgreSQL and seed data are available.
 - `npm run security:audit` and `npm run security:audit:all` pass after the controlled dependency remediation.
+- PLAN-34's Sentry integration resolves to `@sentry/nextjs@10.64.0`; the controlled update removed the inherited OpenTelemetry advisory and both dependency audit commands report zero vulnerabilities.
 - PLAN-24 remains open until `qa:db`, `qa:release`, and VPS smoke are complete.
 - PLAN-27 local remediation has passed `typecheck`, full `test`, `build`, and non-DB smoke E2E in this workspace.
 - PLAN-27 remains open until full public/static/mobile smoke, DB-backed staging checks, and deployed-site evidence pass.

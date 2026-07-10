@@ -55,7 +55,8 @@ export async function loginWithPassword({
     include: authUserInclude
   });
 
-  if (!user || user.status !== "ACTIVE" || !verifyPassword(password, user.passwordHash)) {
+  const passwordMatches = user?.status === "ACTIVE" ? await verifyPassword(password, user.passwordHash) : false;
+  if (!user || user.status !== "ACTIVE" || !passwordMatches) {
     await appendAuditLog({
       actorId: user?.id,
       action: "auth.login_failed",

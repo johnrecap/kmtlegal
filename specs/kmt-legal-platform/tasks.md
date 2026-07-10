@@ -480,3 +480,35 @@ Acceptance:
 - Client assistant reads appointments from authenticated `clientId` only.
 - Client portal pages reuse scoped portal services and do not issue unscoped client data queries.
 - DB-backed secretary/client login and AI booking smoke remains required on a migrated PostgreSQL target before release sign-off.
+
+## Milestone 26 - PLAN-34 Audit Remediation And Paymob-First Hardening
+- [x] T268 Create PLAN-34 and lock Paymob-first, PayTabs-standby, free-booking, ClamAV-required, and Sentry-disabled defaults.
+- [x] T269 Make `APP_ORIGIN` the production callback origin and align env, seed, runtime settings, and readiness on Paymob.
+- [x] T270 Add `PAYTABS_ENABLED=false`, block new PayTabs attempts/admin activation, and preserve historical signed webhook processing.
+- [x] T271 Add bounded Paymob request timeout and deterministic provider error mapping without automatic retries or failover.
+- [x] T272 Replace public receipt tokens with expiring v2 tokens and remove contact/legal-summary fields from public receipts.
+- [x] T273 Replace synchronous password hashing with async scrypt across login, installer, CRM, governance, and account setup.
+- [x] T274 Replace process-local throttling with privacy-safe PostgreSQL fixed-window counters and cleanup.
+- [x] T275 Add required production ClamAV INSTREAM scanning, health/preflight checks, safe errors, and EICAR coverage.
+- [x] T276 Add privacy-safe optional Sentry integration, release tagging, source-map configuration, and App Router error boundaries.
+- [x] T277 Classify malformed AI output as `AI_OUTPUT_INVALID` and bound AI numeric env configuration.
+- [x] T278 Make sitemap/hreflang and detail-page language switching aware of actual localized content.
+- [x] T279 Restore the mobile language switch and localize consultation availability and touched protected UI states.
+- [x] T280 Remove unknown admin/portal catch-all masking and add localized loading, error, and not-found recovery states.
+- [x] T281 Harden production CSP, Sentry connect-src handling, sensitive payment URL logging, and security smoke coverage.
+- [x] T282 Add Button loading accessibility, consolidate design tokens, and optimize local public imagery.
+- [x] T283 Split date-dependent and multi-page visual tests into deterministic independent scenarios.
+- [x] T284 Add characterization coverage and decompose oversized consultation, payment, booking-chat, and finance modules without contract changes.
+- [ ] T285 Run schema, migration, type, lint, unit, build, security, browser, DB-backed, ClamAV, and provider-safe verification.
+- [x] T286 Update PLAN-33, provider evaluation, release checklist, implementation status, project guide, server commands, and env examples.
+- [ ] T287 Deploy the hardened build without enabling `AI_CHAT_PAID`, then archive live public/admin/mobile/health evidence.
+- [x] T288 Commit and push PLAN-34 to `origin/main` and hand off the aaPanel PM2 update command.
+
+Acceptance:
+- Paymob is the active/default provider and PayTabs is visibly disabled as standby.
+- No automatic provider fallback can create a second checkout attempt.
+- Free booking mode remains unchanged during deployment.
+- Payment receipts expire and expose only receipt-safe data.
+- Production uploads cannot bypass malware scanning.
+- The live release has no failed health checks, CSP errors, horizontal overflow, broken locale links, or failing automated gates.
+- Deferred product opportunities are documented but not implemented.

@@ -8,6 +8,7 @@ PM2_PAYMENT_MAINTENANCE_APP="${PM2_PAYMENT_MAINTENANCE_APP:-kmtlegal-payment-mai
 PAYMENT_MAINTENANCE_PM2_ENABLED="${PAYMENT_MAINTENANCE_PM2_ENABLED:-true}"
 PORT="${PORT:-3000}"
 HEALTH_PATH="${HEALTH_PATH:-/api/health}"
+REQUIRE_HEALTH_READY="${REQUIRE_HEALTH_READY:-true}"
 ENV_FILE="${ENV_FILE:-${APP_DIR}/.env.production.local}"
 STATIC_BACKUP_DIR="${STATIC_BACKUP_DIR:-${APP_DIR}/.next-static-previous}"
 PM2_START_TIMEOUT_SECONDS="${PM2_START_TIMEOUT_SECONDS:-30}"
@@ -71,6 +72,29 @@ node -e '
   console.log(`Database target: ${url.username}@${url.hostname}:${url.port || "5432"}${url.pathname}`);
 '
 
+if [[ "${MALWARE_SCAN_MODE:-}" != "required" ]]; then
+  fail "MALWARE_SCAN_MODE=required is mandatory for the production deploy"
+fi
+
+log "Checking ClamAV before build"
+node - <<'NODE'
+const net = require("node:net");
+const timeoutMs = 3000;
+const socket = process.env.CLAMAV_HOST
+  ? net.createConnection({ host: process.env.CLAMAV_HOST, port: Number(process.env.CLAMAV_PORT || 3310) })
+  : net.createConnection(process.env.CLAMAV_SOCKET_PATH || "/run/clamav/clamd.ctl");
+let response = "";
+const fail = (message) => { console.error(message); socket.destroy(); process.exit(1); };
+socket.setTimeout(timeoutMs, () => fail("ClamAV preflight timed out"));
+socket.on("error", (error) => fail(`ClamAV preflight failed: ${error.message}`));
+socket.on("connect", () => socket.end("zPING\0"));
+socket.on("data", (chunk) => { response += chunk.toString("utf8"); });
+socket.on("close", () => {
+  if (response.replace(/\0/g, "").trim() !== "PONG") fail(`Unexpected ClamAV response: ${response.trim() || "empty"}`);
+  console.log("ClamAV preflight: PONG");
+});
+NODE
+
 pm2_app_status() {
   pm2 jlist | node -e '
     let input = "";
@@ -124,8 +148,12 @@ wait_for_pm2_online() {
 }
 
 check_local_response() {
-  curl -fsSI "http://127.0.0.1:${PORT}${HEALTH_PATH}" >/dev/null 2>&1 ||
-    curl -fsSI "http://127.0.0.1:${PORT}/" >/dev/null 2>&1
+  if [[ "${REQUIRE_HEALTH_READY}" == "true" ]]; then
+    curl -fsS "http://127.0.0.1:${PORT}${HEALTH_PATH}" >/dev/null 2>&1
+  else
+    curl -fsSI "http://127.0.0.1:${PORT}${HEALTH_PATH}" >/dev/null 2>&1 ||
+      curl -fsSI "http://127.0.0.1:${PORT}/" >/dev/null 2>&1
+  fi
 }
 
 wait_for_local_response() {
@@ -141,7 +169,7 @@ wait_for_local_response() {
   done
 
   print_pm2_diagnostics
-  fail "Local app did not respond on http://127.0.0.1:${PORT}${HEALTH_PATH} or /"
+  fail "Local app did not pass the readiness check at http://127.0.0.1:${PORT}${HEALTH_PATH}"
 }
 
 verify_next_static_manifest() {

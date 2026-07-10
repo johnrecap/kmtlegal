@@ -19,14 +19,14 @@ import {
   publicMotionPanelEnter
 } from "@/features/public-site/public-motion";
 
-export const publicSectionSurface = "bg-[#07090b] text-white";
-export const publicSectionMutedSurface = "bg-[#0c1116] text-white";
+export const publicSectionSurface = "bg-[var(--kmt-public-surface)] text-white";
+export const publicSectionMutedSurface = "bg-[var(--kmt-public-surface-muted)] text-white";
 export const publicBorder = "border-white/10";
 export const publicPanel =
-  "rounded-lg border border-white/10 bg-white/[0.035] text-white shadow-[0_24px_80px_rgba(0,0,0,0.28)]";
+  "rounded-lg border border-white/10 bg-[var(--kmt-public-panel)] text-white shadow-[0_24px_80px_rgba(0,0,0,0.28)]";
 export const publicPanelHover = cn(publicMotionCardBeam, "kmt-motion-card transition-colors hover:border-kmt-gold/70 hover:bg-white/[0.055]");
-export const publicMutedText = "text-slate-300";
-export const publicGoldText = "text-[#c79a52]";
+export const publicMutedText = "text-[var(--kmt-public-muted)]";
+export const publicGoldText = "text-[var(--kmt-public-gold)]";
 
 export function PublicSection({
   eyebrow,
@@ -92,13 +92,14 @@ export function PageHero({
 
   return (
     <section className={cn("relative isolate overflow-hidden bg-kmt-navy text-white", heroHeight)}>
-      <img
+      <Image
         alt=""
         aria-hidden="true"
-        className={cn("kmt-motion-hero-image absolute inset-0 h-full w-full object-cover", imageOpacity, imagePosition)}
+        className={cn("kmt-motion-hero-image object-cover", imageOpacity, imagePosition)}
         data-testid="public-page-hero-image"
-        decoding="async"
-        loading={isCompact ? "lazy" : "eager"}
+        fill
+        priority={!isCompact}
+        sizes="100vw"
         src={image}
       />
       <div className={cn("absolute inset-0", ambientOverlay)} />

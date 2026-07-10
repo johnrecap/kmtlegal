@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     }
     actor = context.principal;
 
-    enforceRateLimit(rateLimiters.upload, `${context.principal.id}:${getIpAddress(request) ?? "unknown"}`);
+    await enforceRateLimit(rateLimiters.upload, `${context.principal.id}:${getIpAddress(request) ?? "unknown"}`);
     assertMultipartContentLengthAllowed(request.headers.get("content-length"));
 
     const formData = await request.formData().catch(() => null);

@@ -50,7 +50,8 @@ describe("server contract foundation", () => {
         apiKey: "key",
         prompt: "raw legal prompt",
         safe: "ok"
-      }
+      },
+      checkoutUrl: "https://pay.example/checkout?token=secret"
     });
 
     expect(redacted).toEqual({
@@ -60,18 +61,19 @@ describe("server contract foundation", () => {
         apiKey: "[REDACTED]",
         prompt: "[REDACTED]",
         safe: "ok"
-      }
+      },
+      checkoutUrl: "[REDACTED]"
     });
   });
 
-  it("enforces rate limit buckets", () => {
-    const limiter = new MemoryRateLimiter({ windowMs: 60_000, max: 1 });
-    expect(enforceRateLimit(limiter, "user-1").allowed).toBe(true);
-    expect(() => enforceRateLimit(limiter, "user-1")).toThrow(RateLimitApiError);
+  it("enforces rate limit buckets", async () => {
+    const limiter = new MemoryRateLimiter("test", { windowMs: 60_000, max: 1 });
+    await expect(enforceRateLimit(limiter, "user-1")).resolves.toMatchObject({ allowed: true });
+    await expect(enforceRateLimit(limiter, "user-1")).rejects.toThrow(RateLimitApiError);
   });
 
   it("prunes expired rate limit buckets", () => {
-    const limiter = new MemoryRateLimiter({ windowMs: 1_000, max: 2 });
+    const limiter = new MemoryRateLimiter("test-prune", { windowMs: 1_000, max: 2 });
     expect(limiter.check("user-1", 0).allowed).toBe(true);
     expect(limiter.size()).toBe(1);
 

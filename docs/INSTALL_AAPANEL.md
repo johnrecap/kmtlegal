@@ -10,6 +10,7 @@ Use this path when the server is a VPS managed through aaPanel.
 - Domain and SSL configured in aaPanel.
 - Reverse proxy from the domain to the app port.
 - Private uploads path outside the website root.
+- ClamAV daemon installed through the VPS/aaPanel operating-system tools, with a socket reachable by the PM2 app user.
 
 ## Planned Flow
 
@@ -45,6 +46,7 @@ bash deploy/install/aapanel-pm2-update.sh
 ```
 
 The update script loads `/www/wwwroot/kmtlegal/.env.production.local` before running the build, Prisma migrations, and PM2 restart. Keep the production `DATABASE_URL` in that file pointed at the aaPanel PostgreSQL database.
+It also requires `MALWARE_SCAN_MODE=required` and a successful ClamAV `PING` before building. Configure `CLAMAV_SOCKET_PATH` when the server does not use `/run/clamav/clamd.ctl`.
 
 Defaults:
 

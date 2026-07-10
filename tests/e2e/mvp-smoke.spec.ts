@@ -144,6 +144,17 @@ test.describe("MVP smoke without database", () => {
     expect(url.searchParams.get("next")).toBe("/client");
   });
 
+  test("public mobile header keeps the language switch visible", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    const languageSwitch = page.getByTestId("public-language-switch");
+    await expect(languageSwitch).toBeVisible();
+    await expect(languageSwitch).toHaveAttribute("href", "/ar");
+    await languageSwitch.click();
+    await page.waitForURL("/ar");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  });
+
   test.describe("public mobile responsiveness", () => {
     test.use({ viewport: { width: 390, height: 844 } });
 

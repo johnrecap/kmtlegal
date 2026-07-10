@@ -112,5 +112,9 @@ function parseJsonContent(content: string) {
     .replace(/```$/i, "")
     .trim();
 
-  return JSON.parse(withoutFence);
+  try {
+    return JSON.parse(withoutFence);
+  } catch {
+    throw new ApiError(502, "AI_OUTPUT_INVALID", "AI provider response did not contain valid JSON output.");
+  }
 }
