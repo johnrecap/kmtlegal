@@ -17,6 +17,11 @@ For a current-state PRD and external model review brief, use `docs/KMT_LEGAL_CUR
 
 ## Recent Changes
 
+- 2026-07-10 - Standardized Git delivery on GitHub only.
+  - Changed: local `origin` now targets `https://github.com/johnrecap/kmtlegal.git`; the duplicate remote and obsolete dual-push instructions were removed.
+  - Behavior: development pushes and production server pulls now use the same `origin/main` source of truth.
+  - Verification: repository search contains no obsolete remote references, and local `main` tracks GitHub `origin/main`.
+
 - 2026-07-10 - Expanded the public privacy and job-applicant notice.
   - Changed: bilingual public content, semantic privacy-page rendering, footer labels, UI tests, and Playwright responsive coverage.
   - Behavior: `/privacy` and `/ar/privacy` now expose a direct Meta-ready notice with applicant data categories, purposes, access, retention criteria, rights contacts, Meta links, and Arabic RTL support.

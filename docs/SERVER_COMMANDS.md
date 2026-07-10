@@ -5,10 +5,9 @@ This file is the project reference for local Git commands, server pull/deploy co
 ## Current Git Targets
 
 - Branch: `main`
-- Development remote: `origin` -> `https://gitlab.com/john-recap-group/kmtlegal.git`
-- Server pull remote: GitHub -> `https://github.com/johnrecap/kmtlegal.git`
+- Development and production remote: `origin` -> `https://github.com/johnrecap/kmtlegal.git`
 
-The current production server pulls from GitHub. When a change is pushed only to GitLab, also push the same `main` commit to GitHub before running the server deploy command.
+GitHub is the single source of truth for local pushes and production server pulls.
 
 ## Mandatory Workflow For Every Change
 
@@ -28,7 +27,6 @@ git status
 git add -A
 git commit -m "describe the change"
 git push origin main
-git push github main
 ```
 
 Default server handoff after push:
@@ -170,7 +168,6 @@ If the commit already exists locally and only needs to be uploaded:
 
 ```bash
 git push origin main
-git push github main
 ```
 
 ## Local Pull
