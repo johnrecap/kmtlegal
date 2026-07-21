@@ -1,8 +1,28 @@
 # KMT Legal Spec Kit Plan Index
 
+## Current source-of-truth update — 2026-07-22
+
+The repository now tracks **36 plan IDs (`PLAN-00` through `PLAN-35`)**. The detailed narrative
+below is a legacy PLAN-27-era index retained for history; current completion truth lives in
+`docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md` and executable sequencing lives in
+`specs/kmt-legal-platform/tasks.md`.
+
+PLAN-35 is the current planned admin-operations remediation package:
+
+- Specification: `specs/kmt-legal-platform/plan-35-admin-operations-remediation/spec.md`
+- Technical plan and decisions: `plan.md`, `research.md`, and `data-model.md` in that directory
+- Clean planning analysis: `analyze.md` with zero unresolved critical/high/medium findings and one
+  explicitly accepted payment-reconciliation residual
+- Affected contract: `contracts/admin-operations-contract.md`
+- Reproducible gates: `quickstart.md` and the 51-item delivery checklist under `checklists/`
+- Canonical execution list: `tasks.md` with external IDs `PLAN-35/T001` through `PLAN-35/T128`
+
+The master task list contains one PLAN-35 roll-up only; detailed tasks must not be copied here or
+into another plan.
+
 ## PLAN-27 Update
 
-The active Spec Kit set now contains 28 plans: PLAN-00 through PLAN-27. PLAN-24 covers remediation/production readiness, PLAN-25 covers the no-code VPS installer, first Super Admin bootstrap, disabled TOTP, disabled SMTP, and installer lock, PLAN-26 covers panel-aware installer compatibility for Terminal VPS, aaPanel, and conditional cPanel hosting, and PLAN-27 covers live-site QA remediation for broken public links, content-source consistency, static asset integrity, CSP/Cloudflare Insights, favicon, production login copy, localized auth errors, booking/contact success UX, authenticated admin chunk/copy/overflow remediation, and deployed smoke evidence. PLAN-27 is partially implemented locally; deployed/staging evidence is still required before closing it.
+At the time of this legacy snapshot, the active set contained 28 plans: PLAN-00 through PLAN-27. PLAN-24 covered remediation/production readiness, PLAN-25 covered the no-code VPS installer and first Super Admin bootstrap, PLAN-26 covered panel-aware installer compatibility, and PLAN-27 covered live-site QA remediation. Consult the current update above for PLAN-28 through PLAN-35.
 
 تاريخ الإصدار: 2026-06-23
 
@@ -10,7 +30,7 @@ The active Spec Kit set now contains 28 plans: PLAN-00 through PLAN-27. PLAN-24 
 
 ## القرار المختصر
 
-The current active project set is **28 Spec Kit plans**:
+The legacy snapshot represented **28 Spec Kit plans**; the current tracked set is stated at the top of this file:
 
 - **خطة حوكمة واحدة** تضبط طريقة استخدام Spec Kit ومصادر الحقيقة.
 - **23 خطة تنفيذ** تغطي foundation، Stitch clone، عقود data/auth/API، ثم feature slices رأسية.
@@ -775,6 +795,6 @@ PLAN-00
 
 ## ملخص عدد الخطط
 
-العدد المعتمد: **28 خطة**.
+Legacy snapshot count: **28 plans**. Current source-of-truth count: **36 plan IDs**.
 
 هذا العدد كبير عمدًا لأن المنصة واسعة وحساسة، ولأن Spec Kit يكون أقوى عندما تكون كل خطة قابلة للقبول والاختبار بدل خطة واحدة ضخمة تفقد التفاصيل.

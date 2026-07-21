@@ -512,3 +512,16 @@ Acceptance:
 - Production uploads cannot bypass malware scanning.
 - The live release has no failed health checks, CSP errors, horizontal overflow, broken locale links, or failing automated gates.
 - Deferred product opportunities are documented but not implemented.
+
+## Milestone 27 - PLAN-35 Admin Operations Remediation
+
+- [ ] T289 Execute the canonical PLAN-35 task set in `specs/kmt-legal-platform/plan-35-admin-operations-remediation/tasks.md` by accepted `PLAN-35/T###` IDs and dependency/file-owner order; do not duplicate its detailed tasks in this master list.
+
+Acceptance:
+
+- PLAN-35 remains `Planned` until product tasks are explicitly accepted and implemented.
+- The feature specification, plan, clean analyze report, research, data model, affected contract,
+  quickstart, checklists, and task list remain the detailed source of truth.
+- Status may advance only through evidenced local, PostgreSQL, browser, responsive/RTL/accessibility,
+  and live gates defined by the feature quickstart.
+- Skipped or blocked environment checks are recorded truthfully and never counted as passing.
