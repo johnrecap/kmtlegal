@@ -2,7 +2,7 @@
 
 **Date**: 2026-07-22
 **Status**: `PHASE-9-LOCAL-VERIFIED`
-**Implementation state**: Local implementation is complete through T111, and Phase 9 T113–T122/T126–T127 is locally verified. T057, T072, T083, and T094's browser/database scenarios are authored and collection-verified, but authenticated PostgreSQL execution remains owned by T068/T081/T091/T101. T016/G35-4D, T028, the database-backed portion of T039, T042's authenticated page/API cells, T052, T068, T081, T091, T101, T112, and T123–T125 remain deferred evidence under FR-035. T128 remains the repository handoff.
+**Implementation state**: Local implementation is complete through T111, and Phase 9 T113–T122/T126–T128 is locally verified and handed off. T057, T072, T083, and T094's browser/database scenarios are authored and collection-verified, but authenticated PostgreSQL execution remains owned by T068/T081/T091/T101. T016/G35-4D, T028, the database-backed portion of T039, T042's authenticated page/API cells, T052, T068, T081, T091, T101, T112, and T123–T125 remain deferred evidence under FR-035.
 
 ## Gate Result
 
@@ -47,7 +47,7 @@ contract, broken local Markdown link, or duplicated detailed master task was fou
 | Role/user governance | T082–T091 | T082–T090 local lane verified; T090 activated roles; T091 remains the complete DB/authenticated 19×5 gate |
 | Command center and storage truth | T092–T106 | T092–T100/T102–T106 local lane verified; T094 is authored/collection-only and T101 remains authenticated end-to-end acceptance |
 | UI/RTL/accessibility convergence | T107–T112 | T107–T111 local; protected authenticated acceptance remains T112 |
-| Release evidence and convergence | T113–T128 | T113–T122/T126–T127 local; T123–T125/T128 remain open |
+| Release evidence and convergence | T113–T128 | T113–T122/T126–T128 local/handoff complete; T123–T125 remain open |
 
 This ordering removes the former circular acceptance condition: T042/T052 test only the original
 fifteen executable destinations. T066 activated `contacts.list` and `notifications.list`, and T079
@@ -387,13 +387,14 @@ the constitution, 23 affected methods, nineteen admin destinations, and the sing
 It found zero unresolved `CRITICAL`, `HIGH`, or `MEDIUM` findings. Converge found no new unowned gap
 and appended no task; the exact disposition is recorded in
 `docs/evidence/PLAN_35_ANALYZE_CONVERGE.md`. Existing T016/T028/T039/T042/T052/T068/T081/T091/T101/
-T112/T123–T125 continue to own unavailable environment evidence, and T128 owns repository handoff.
+T112/T123–T125 continue to own unavailable environment evidence. T128 records the repository and
+aaPanel/PM2 handoff.
 
 ## Conclusion
 
 PLAN-35 remains internally consistent and conflict-controlled with zero unresolved `CRITICAL`,
 `HIGH`, or `MEDIUM` findings in the completed local lanes. Product work through T111 and Phase 9
-T113–T122/T126–T127 are locally complete. T016, T028, the database-backed part of T039, T042's
+T113–T122/T126–T128 are locally complete and handed off. T016, T028, the database-backed part of T039, T042's
 authenticated cells, T052, T068, T081, T091, T101, T112, and T123–T125 remain explicitly open;
-T128 remains the final repository handoff. Neither collected-only authentication cells nor the
-production-connected database are used as acceptance evidence.
+neither collected-only authentication cells nor the production-connected database are used as
+acceptance evidence.

@@ -13,7 +13,7 @@ fallback page.
 
 | Gate | Required environment | Result | Counts as achieved | Evidence |
 | --- | --- | --- | --- | --- |
-| `local` | Local source tree; schema/client generation only; no database connection | `PASS` | `yes` | Phase 9 QA-convergence command matrix below |
+| `local` | Local source tree; schema/client generation only; no database connection | `PASS` | `yes` | Phase 9 QA-convergence command matrix on `91793d1dfb0e1e72bb3fcbc9707ac96d1bfeb911` |
 | `database` | Disposable migrated PostgreSQL with explicit fixture opt-in | `BLOCKED` | `no` | No disposable PostgreSQL is installed or configured; T016/T028/T039/T068/T081/T091/T123 remain open |
 | `authenticated-browser` | Five safe disposable staff storage states and isolated data | `BLOCKED` | `no` | Local shared-shell checks pass, but protected admin scenarios are skipped; T042/T052/T068/T081/T091/T101/T112/T124 remain open |
 | `live-read-only` | External `KMT_LIVE_*` credentials against the deployed site | `SKIPPED` | `no` | Credentials were not provided; the hardened spec is collected only and T125 remains open |
@@ -25,15 +25,17 @@ fallback page.
 | `c706f75` | Local, no DB | Full Vitest | `PASS` | 52 files / 359 tests through US7 | `test-results/plan35/visual/us7-local-shared-shell.json`, 2026-07-22 Cairo |
 | `c706f75` | Local, no DB | Typecheck, lint, guarded build | `PASS` | Type safety, lint, 72 static pages | US7 evidence JSON, 2026-07-22 Cairo |
 | `c706f75` | Local fallback shell | PLAN-35 Playwright | `PASS` with 13 authenticated scenarios `SKIPPED` | 17 responsive/RTL/keyboard/visual checks only | `test-results/plan35/visual/us7-local-shared-shell.json` |
-| Verified tree based on `c706f75` | Local, `DATABASE_URL` absent | `npm run qa:local` with `ALLOW_BUILD_WITHOUT_DATABASE_URL=true` | `PASS` | Schema validate/generate, typecheck, lint, 53 Vitest files / 366 tests, guarded build / 72 pages | Terminal output, 2026-07-22 Cairo |
-| Verified tree based on `c706f75` | Local fallback shell, `DATABASE_URL` absent | `npm run test:e2e:plan35` | `PASS` with 13 authenticated scenarios `SKIPPED` | 17 responsive/RTL/keyboard/visual checks; no Browser-Verified claim | Playwright report and reviewed PLAN-35 baselines, 2026-07-22 Cairo |
-| Verified tree based on `c706f75` | Local collection only | `npx playwright test tests/e2e/live-admin-smoke.spec.ts --list` | `SKIPPED` for acceptance | 2 read-only live scenarios collected; credentials not supplied | Terminal output, 2026-07-22 Cairo |
-| Verified tree based on `c706f75` | Local collection only | `npx playwright test tests/e2e/plan35-db-backed.spec.ts --list` | `BLOCKED` for acceptance | 5 database-backed scenarios collected; no disposable PostgreSQL | Terminal output, 2026-07-22 Cairo |
-| Verified tree based on `c706f75` | Local, no DB | `git diff --check` and QA harness syntax/JSON parsing | `PASS` | Diff hygiene, `scripts/plan23-local-qa.mjs`, `package.json` | Terminal output, 2026-07-22 Cairo |
+| `91793d1dfb0e1e72bb3fcbc9707ac96d1bfeb911` | Local, `DATABASE_URL` absent | `npm run qa:local` with `ALLOW_BUILD_WITHOUT_DATABASE_URL=true` | `PASS` | Schema validate/generate, typecheck, lint, 53 Vitest files / 366 tests, guarded build / 72 pages | Terminal output, 2026-07-22 Cairo |
+| `91793d1dfb0e1e72bb3fcbc9707ac96d1bfeb911` | Local fallback shell, `DATABASE_URL` absent | `npm run test:e2e:plan35` | `PASS` with 13 authenticated scenarios `SKIPPED` | 17 responsive/RTL/keyboard/visual checks; no Browser-Verified claim | Playwright report and reviewed PLAN-35 baselines, 2026-07-22 Cairo |
+| `91793d1dfb0e1e72bb3fcbc9707ac96d1bfeb911` | Local collection only | `npx playwright test tests/e2e/live-admin-smoke.spec.ts --list` | `SKIPPED` for acceptance | 2 read-only live scenarios collected; credentials not supplied | Terminal output, 2026-07-22 Cairo |
+| `91793d1dfb0e1e72bb3fcbc9707ac96d1bfeb911` | Local collection only | `npx playwright test tests/e2e/plan35-db-backed.spec.ts --list` | `BLOCKED` for acceptance | 5 database-backed scenarios collected; no disposable PostgreSQL | Terminal output, 2026-07-22 Cairo |
+| `91793d1dfb0e1e72bb3fcbc9707ac96d1bfeb911` | Local, no DB | `git diff --check` and QA harness syntax/JSON parsing | `PASS` | Diff hygiene, `scripts/plan23-local-qa.mjs`, `package.json` | Terminal output, 2026-07-22 Cairo |
 
 Passing fallback checks above prove local UI and contracts only. The skipped authenticated scenarios
-do not contribute to the gate ledger's browser row. A final verified commit SHA replaces the
-working-tree revision label after the tested implementation is committed.
+do not contribute to the gate ledger's browser row. Commit
+`91793d1dfb0e1e72bb3fcbc9707ac96d1bfeb911` is the exact implementation tree used for the final full
+local and Playwright runs; the following evidence-only handoff commit does not change runtime code or
+the QA harness.
 
 ## Contract and requirement traceability
 

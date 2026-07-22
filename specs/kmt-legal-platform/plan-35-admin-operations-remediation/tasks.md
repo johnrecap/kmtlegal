@@ -349,7 +349,7 @@ completed gate.
 - [ ] T125 [US8] Run `tests/e2e/live-admin-smoke.spec.ts` read-only with external `KMT_LIVE_*` credentials through the repository Playwright harness and record sanitized expected outcomes in `docs/evidence/PLAN_35_ADMIN_OPERATIONS.md`; impact: missing credentials are `BLOCKED/SKIPPED`, never `Live-Accepted`.
 - [x] T126 [US8] Update `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md`, `docs/KMT_LEGAL_SPEC_KIT_PLAN_INDEX.md`, and the single PLAN-35 roll-up in `specs/kmt-legal-platform/tasks.md` to the highest evidenced state; impact: detailed feature tasks are not duplicated and legacy plan history is preserved.
 - [x] T127 [US8] Rerun Spec Kit analyze, record the final finding disposition in `docs/evidence/PLAN_35_ANALYZE_CONVERGE.md`, fix every new `CRITICAL/HIGH`, fix or explicitly accept each `MEDIUM`, then run converge until the same file records that no task was appended; impact: implementation and planning artifacts finish consistent.
-- [ ] T128 [US8] Commit the verified accepted task set, push `main` to `origin/main`, and hand off `cd /www/wwwroot/kmtlegal` plus `bash deploy/install/aapanel-pm2-update.sh`; impact: repository and aaPanel/PM2 deployment owner receive one traceable release handoff.
+- [x] T128 [US8] Commit the verified accepted task set, push `main` to `origin/main`, and hand off `cd /www/wwwroot/kmtlegal` plus `bash deploy/install/aapanel-pm2-update.sh`; impact: repository and aaPanel/PM2 deployment owner receive one traceable release handoff.
 
 **Checkpoint G35-9**: All claimed gates have exact evidence; analyze/converge are clean; status is
 truthful; deployment handoff is ready.
