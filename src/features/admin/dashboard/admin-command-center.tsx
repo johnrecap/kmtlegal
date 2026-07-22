@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge, StateBlock, buttonClasses } from "@/components/ui";
+import { Badge, SearchInput, StateBlock, buttonClasses } from "@/components/ui";
 import {
   canAccessAdminRoute,
   getAdminRoutePolicy,
@@ -110,13 +110,12 @@ export function AdminCommandCenter({
 function ClientSearch() {
   return (
     <form action="/admin/clients" aria-label={plan35DashboardUiCopy.clientSearchLabel} className="flex min-w-0 flex-col gap-3 rounded-lg border border-kmt-border bg-white p-4 sm:flex-row" method="get" role="search">
-      <label className="sr-only" htmlFor="dashboard-client-search">{plan35DashboardUiCopy.clientSearchLabel}</label>
-      <input
-        className="min-h-11 min-w-0 flex-1 rounded border border-kmt-border bg-white px-3 text-kmt-ink outline-none placeholder:text-kmt-muted focus:border-kmt-gold focus:ring-2 focus:ring-kmt-gold/25"
+      <SearchInput
+        ariaLabel={plan35DashboardUiCopy.clientSearchLabel}
+        className="min-w-0 flex-1"
         id="dashboard-client-search"
         name="q"
         placeholder={plan35DashboardUiCopy.clientSearchPlaceholder}
-        type="search"
       />
       <button className={buttonClasses({ variant: "secondary" })} type="submit">{plan35DashboardUiCopy.search}</button>
     </form>

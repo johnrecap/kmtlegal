@@ -5,7 +5,7 @@ import { AdminNotificationBell } from "@/features/admin/notifications/admin-noti
 import { Badge, Button, ButtonLink, DataRecordCard, DataTable, FilterBar, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { caseStatusLabels, formatDateTime, labelFrom, priorityLabels } from "@/lib/legal-format";
-import { plan35ManualCaseUiCopy as manualCaseCopy } from "@/lib/ui-copy";
+import { plan35AdminListAccessibilityCopy, plan35ManualCaseUiCopy as manualCaseCopy } from "@/lib/ui-copy";
 import {
   getAdminCaseFilterOptions,
   listAdminCases
@@ -214,8 +214,8 @@ export default async function AdminCasesPage({ searchParams }: { searchParams?: 
     >
       <div className="space-y-5">
         <form action="/admin/cases" method="get">
-          <FilterBar>
-            <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث برقم الملف أو العميل أو نوع القضية" />
+          <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.cases.filters}>
+            <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.cases.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث برقم الملف أو العميل أو نوع القضية" />
             <Select className="min-w-44" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
               <option value="">كل الحالات</option>
               {caseStatusOptions.map((status) => (
@@ -275,7 +275,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams?: 
           </p>
         </div>
 
-        <DataTable columns={columns} rows={result.items} empty="لا توجد قضايا مطابقة للفلاتر الحالية." mobileRender={(row) => <CaseMobileCard row={row} />} />
+        <DataTable caption={plan35AdminListAccessibilityCopy.cases.table} columns={columns} rows={result.items} empty="لا توجد قضايا مطابقة للفلاتر الحالية." mobileRender={(row) => <CaseMobileCard row={row} />} />
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/cases">

@@ -6,6 +6,7 @@ import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitl
 import { buttonClasses } from "@/components/ui/button";
 import { TaskCreateForm, TaskUpdateForm } from "@/features/admin/task-documents/task-document-forms";
 import { formatDate, labelFrom, taskPriorityLabels, taskStatusLabels } from "@/lib/legal-format";
+import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
 import {
   canCreateAdminTask,
   getAdminTaskOptions,
@@ -152,8 +153,8 @@ export default async function AdminTasksPage({ searchParams }: { searchParams?: 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
         <div className="space-y-5">
           <form action="/admin/tasks" method="get">
-            <FilterBar>
-              <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث في المهام أو رقم القضية أو المسؤول" />
+            <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.tasks.filters}>
+              <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.tasks.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث في المهام أو رقم القضية أو المسؤول" />
               <Select className="min-w-36" defaultValue={result.filters.view} label="النطاق" name="view">
                 <option value="all">كل النطاق</option>
                 <option value="mine">مهامي</option>

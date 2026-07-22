@@ -5,6 +5,7 @@ import { AdminNotificationBell } from "@/features/admin/notifications/admin-noti
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, TextInput, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { formatDateTime } from "@/lib/legal-format";
+import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
 import { listAdminAuditLogs } from "@/server/admin/governance-service";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../admin-navigation";
@@ -205,8 +206,8 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
     >
       <div className="space-y-5">
         <form action="/admin/audit-log" method="get">
-          <FilterBar>
-            <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="بحث في الإجراء أو المورد أو المنفذ" />
+          <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.auditLog.filters}>
+            <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.auditLog.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="بحث في الإجراء أو المورد أو المنفذ" />
             <Select className="min-w-48" defaultValue={result.filters.actorId ?? ""} label="المنفذ" name="actorId">
               <option value="">كل المنفذين</option>
               {result.filterOptions.actors.map((actor: AuditFilterActor) => (
@@ -261,7 +262,7 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
           </p>
         </div>
 
-        <DataTable columns={columns} rows={result.items} empty="لا توجد أحداث تدقيق مطابقة للفلاتر الحالية." mobileRender={(row) => <AuditMobileCard row={row} />} />
+        <DataTable caption={plan35AdminListAccessibilityCopy.auditLog.table} columns={columns} rows={result.items} empty="لا توجد أحداث تدقيق مطابقة للفلاتر الحالية." mobileRender={(row) => <AuditMobileCard row={row} />} />
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/audit-log">

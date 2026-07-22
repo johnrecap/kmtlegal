@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
-import { Button, Select, TextInput, Textarea } from "@/components/ui";
+import { Button, InlineFeedback, Select, TextInput, Textarea } from "@/components/ui";
 import {
   articleStatusLabels,
   articleStatusValues,
@@ -20,6 +20,11 @@ type ApiMessage = {
   error?: {
     message?: string;
   };
+};
+
+type ActionMessage = {
+  tone: "success" | "error";
+  text: string;
 };
 
 type ArticleValue = {
@@ -104,28 +109,26 @@ async function sendJson(path: string, method: "POST" | "PATCH", payload: unknown
   });
 }
 
-function FormMessage({ message }: { message: string | null }) {
-  return message ? (
-    <div className="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-sm leading-6 text-blue-900" role="status">
-      {message}
-    </div>
-  ) : null;
+function ActionFeedback({ message }: { message: ActionMessage | null }) {
+  return message ? <InlineFeedback title={message.text} tone={message.tone} /> : null;
 }
 
 function CheckboxField({
   defaultChecked,
   disabled,
+  idPrefix,
   label,
   name
 }: {
   defaultChecked?: boolean;
   disabled?: boolean;
+  idPrefix: string;
   label: string;
   name: string;
 }) {
   return (
     <label className="flex items-start gap-3 rounded border border-kmt-border bg-white px-3 py-2 text-sm font-semibold leading-6 text-kmt-ink">
-      <input className="mt-1 h-4 w-4 accent-kmt-navy" defaultChecked={defaultChecked} disabled={disabled} name={name} type="checkbox" />
+      <input className="mt-1 h-4 w-4 accent-kmt-navy" defaultChecked={defaultChecked} disabled={disabled} id={`${idPrefix}-${name}`} name={name} type="checkbox" />
       <span>{label}</span>
     </label>
   );
@@ -145,7 +148,7 @@ function allowedSocialDraftStatuses(canApprove: boolean) {
 
 export function ArticleForm({ article, canApprove }: { article?: ArticleValue; canApprove: boolean }) {
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const isEdit = Boolean(article?.id);
 
@@ -168,17 +171,17 @@ export function ArticleForm({ article, canApprove }: { article?: ArticleValue; c
       });
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
 
       if (!isEdit) {
         event.currentTarget.reset();
       }
-      setMessage(isEdit ? "تم حفظ المقال." : "تم إنشاء المقال.");
+      setMessage({ tone: "success", text: isEdit ? "تم حفظ المقال." : "تم إنشاء المقال." });
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -186,38 +189,38 @@ export function ArticleForm({ article, canApprove }: { article?: ArticleValue; c
 
   return (
     <form className="grid gap-4" onSubmit={submit}>
-      <TextInput defaultValue={article?.title ?? ""} disabled={isBusy} label="عنوان المقال" name="title" required />
-      <TextInput defaultValue={article?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case مثل contract-risk-basics." label="معرّف الرابط (Slug)" name="slug" required />
+      <TextInput defaultValue={article?.title ?? ""} disabled={isBusy} idPrefix={`article-${article?.id ?? "create"}`} label="عنوان المقال" name="title" required />
+      <TextInput defaultValue={article?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case مثل contract-risk-basics." idPrefix={`article-${article?.id ?? "create"}`} label="معرّف الرابط (Slug)" name="slug" required />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Select defaultValue={article?.locale ?? "en"} disabled={isBusy} label="لغة المحتوى" name="locale">
+        <Select defaultValue={article?.locale ?? "en"} disabled={isBusy} idPrefix={`article-${article?.id ?? "create"}`} label="لغة المحتوى" name="locale">
           <option value="en">English</option>
           <option value="ar">العربية</option>
         </Select>
-        <TextInput defaultValue={article?.category ?? ""} disabled={isBusy} label="التصنيف" name="category" required />
+        <TextInput defaultValue={article?.category ?? ""} disabled={isBusy} idPrefix={`article-${article?.id ?? "create"}`} label="التصنيف" name="category" required />
       </div>
-      <Textarea defaultValue={article?.excerpt ?? ""} disabled={isBusy} label="الملخص" name="excerpt" required />
-      <Textarea className="min-h-48" defaultValue={article?.content ?? ""} disabled={isBusy} label="المحتوى" name="content" required />
+      <Textarea defaultValue={article?.excerpt ?? ""} disabled={isBusy} idPrefix={`article-${article?.id ?? "create"}`} label="الملخص" name="excerpt" required />
+      <Textarea className="min-h-48" defaultValue={article?.content ?? ""} disabled={isBusy} idPrefix={`article-${article?.id ?? "create"}`} label="المحتوى" name="content" required />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Select defaultValue={article?.status ?? "DRAFT"} disabled={isBusy} label="الحالة" name="status">
+        <Select defaultValue={article?.status ?? "DRAFT"} disabled={isBusy} idPrefix={`article-${article?.id ?? "create"}`} label="الحالة" name="status">
           {allowedArticleStatuses(canApprove).map((status) => (
             <option key={status} value={status}>
               {labelFrom(articleStatusLabels, status)}
             </option>
           ))}
         </Select>
-        <TextInput defaultValue={toDateInput(article?.publishedAt)} disabled={isBusy} label="تاريخ النشر" name="publishedAt" type="date" />
+        <TextInput defaultValue={toDateInput(article?.publishedAt)} disabled={isBusy} idPrefix={`article-${article?.id ?? "create"}`} label="تاريخ النشر" name="publishedAt" type="date" />
       </div>
       <Button loading={isBusy} type="submit">
         {isEdit ? "حفظ المقال" : "إنشاء مقال"}
       </Button>
-      <FormMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }
 
 export function CaseStudyForm({ study, canApprove }: { study?: CaseStudyValue; canApprove: boolean }) {
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const isEdit = Boolean(study?.id);
 
@@ -243,17 +246,17 @@ export function CaseStudyForm({ study, canApprove }: { study?: CaseStudyValue; c
       });
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
 
       if (!isEdit) {
         event.currentTarget.reset();
       }
-      setMessage(isEdit ? "تم حفظ دراسة الحالة." : "تم إنشاء دراسة الحالة.");
+      setMessage({ tone: "success", text: isEdit ? "تم حفظ دراسة الحالة." : "تم إنشاء دراسة الحالة." });
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -261,41 +264,41 @@ export function CaseStudyForm({ study, canApprove }: { study?: CaseStudyValue; c
 
   return (
     <form className="grid gap-4" onSubmit={submit}>
-      <TextInput defaultValue={study?.title ?? ""} disabled={isBusy} label="عنوان دراسة الحالة" name="title" required />
-      <TextInput defaultValue={study?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case." label="معرّف الرابط (Slug)" name="slug" required />
+      <TextInput defaultValue={study?.title ?? ""} disabled={isBusy} idPrefix={`case-study-${study?.id ?? "create"}`} label="عنوان دراسة الحالة" name="title" required />
+      <TextInput defaultValue={study?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case." idPrefix={`case-study-${study?.id ?? "create"}`} label="معرّف الرابط (Slug)" name="slug" required />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Select defaultValue={study?.locale ?? "en"} disabled={isBusy} label="لغة المحتوى" name="locale">
+        <Select defaultValue={study?.locale ?? "en"} disabled={isBusy} idPrefix={`case-study-${study?.id ?? "create"}`} label="لغة المحتوى" name="locale">
           <option value="en">English</option>
           <option value="ar">العربية</option>
         </Select>
-        <TextInput defaultValue={study?.category ?? ""} disabled={isBusy} label="التصنيف" name="category" required />
+        <TextInput defaultValue={study?.category ?? ""} disabled={isBusy} idPrefix={`case-study-${study?.id ?? "create"}`} label="التصنيف" name="category" required />
       </div>
-      <Textarea defaultValue={study?.challenge ?? ""} disabled={isBusy} label="التحدي" name="challenge" required />
-      <Textarea defaultValue={study?.approach ?? ""} disabled={isBusy} label="طريقة التعامل" name="approach" required />
-      <Textarea defaultValue={study?.generalOutcome ?? ""} disabled={isBusy} label="النتيجة العامة" name="generalOutcome" required />
-      <Textarea defaultValue={study?.lessons ?? ""} disabled={isBusy} label="الدروس" name="lessons" required />
-      <CheckboxField defaultChecked={study?.isAnonymized ?? false} disabled={isBusy} label="تمت مراجعة إخفاء الهوية ولا توجد أسماء عملاء أو أرقام قضايا أو بيانات اتصال." name="isAnonymized" />
+      <Textarea defaultValue={study?.challenge ?? ""} disabled={isBusy} idPrefix={`case-study-${study?.id ?? "create"}`} label="التحدي" name="challenge" required />
+      <Textarea defaultValue={study?.approach ?? ""} disabled={isBusy} idPrefix={`case-study-${study?.id ?? "create"}`} label="طريقة التعامل" name="approach" required />
+      <Textarea defaultValue={study?.generalOutcome ?? ""} disabled={isBusy} idPrefix={`case-study-${study?.id ?? "create"}`} label="النتيجة العامة" name="generalOutcome" required />
+      <Textarea defaultValue={study?.lessons ?? ""} disabled={isBusy} idPrefix={`case-study-${study?.id ?? "create"}`} label="الدروس" name="lessons" required />
+      <CheckboxField defaultChecked={study?.isAnonymized ?? false} disabled={isBusy} idPrefix={`case-study-${study?.id ?? "create"}`} label="تمت مراجعة إخفاء الهوية ولا توجد أسماء عملاء أو أرقام قضايا أو بيانات اتصال." name="isAnonymized" />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Select defaultValue={study?.status ?? "DRAFT"} disabled={isBusy} label="الحالة" name="status">
+        <Select defaultValue={study?.status ?? "DRAFT"} disabled={isBusy} idPrefix={`case-study-${study?.id ?? "create"}`} label="الحالة" name="status">
           {allowedCaseStudyStatuses(canApprove).map((status) => (
             <option key={status} value={status}>
               {labelFrom(caseStudyStatusLabels, status)}
             </option>
           ))}
         </Select>
-        <TextInput defaultValue={toDateInput(study?.publishedAt)} disabled={isBusy} label="تاريخ النشر" name="publishedAt" type="date" />
+        <TextInput defaultValue={toDateInput(study?.publishedAt)} disabled={isBusy} idPrefix={`case-study-${study?.id ?? "create"}`} label="تاريخ النشر" name="publishedAt" type="date" />
       </div>
       <Button loading={isBusy} type="submit">
         {isEdit ? "حفظ دراسة الحالة" : "إنشاء دراسة حالة"}
       </Button>
-      <FormMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }
 
 export function SocialDraftForm({ draft, canApprove }: { draft?: SocialDraftValue; canApprove: boolean }) {
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const isEdit = Boolean(draft?.id);
 
@@ -317,17 +320,17 @@ export function SocialDraftForm({ draft, canApprove }: { draft?: SocialDraftValu
       });
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
 
       if (!isEdit) {
         event.currentTarget.reset();
       }
-      setMessage(isEdit ? "تم حفظ مسودة السوشيال." : "تم إنشاء مسودة السوشيال.");
+      setMessage({ tone: "success", text: isEdit ? "تم حفظ مسودة السوشيال." : "تم إنشاء مسودة السوشيال." });
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -335,16 +338,16 @@ export function SocialDraftForm({ draft, canApprove }: { draft?: SocialDraftValu
 
   return (
     <form className="grid gap-4" onSubmit={submit}>
-      <TextInput defaultValue={draft?.title ?? ""} disabled={isBusy} label="عنوان داخلي" name="title" required />
+      <TextInput defaultValue={draft?.title ?? ""} disabled={isBusy} idPrefix={`social-draft-${draft?.id ?? "create"}`} label="عنوان داخلي" name="title" required />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Select defaultValue={draft?.platform ?? "linkedin"} disabled={isBusy} label="المنصة" name="platform">
+        <Select defaultValue={draft?.platform ?? "linkedin"} disabled={isBusy} idPrefix={`social-draft-${draft?.id ?? "create"}`} label="المنصة" name="platform">
           {socialPlatformValues.map((platform) => (
             <option key={platform} value={platform}>
               {labelFrom(socialPlatformLabels, platform)}
             </option>
           ))}
         </Select>
-        <Select defaultValue={draft?.status ?? "DRAFT"} disabled={isBusy} label="الحالة" name="status">
+        <Select defaultValue={draft?.status ?? "DRAFT"} disabled={isBusy} idPrefix={`social-draft-${draft?.id ?? "create"}`} label="الحالة" name="status">
           {allowedSocialDraftStatuses(canApprove).map((status) => (
             <option key={status} value={status}>
               {labelFrom(socialDraftStatusLabels, status)}
@@ -352,23 +355,23 @@ export function SocialDraftForm({ draft, canApprove }: { draft?: SocialDraftValu
           ))}
         </Select>
       </div>
-      <Textarea className="min-h-36" defaultValue={draft?.content ?? ""} disabled={isBusy} label="المحتوى" name="content" required />
+      <Textarea className="min-h-36" defaultValue={draft?.content ?? ""} disabled={isBusy} idPrefix={`social-draft-${draft?.id ?? "create"}`} label="المحتوى" name="content" required />
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextInput defaultValue={draft?.sourceType ?? ""} disabled={isBusy} label="نوع المصدر" name="sourceType" />
-        <TextInput defaultValue={draft?.sourceId ?? ""} disabled={isBusy} label="معرف المصدر" name="sourceId" />
+        <TextInput defaultValue={draft?.sourceType ?? ""} disabled={isBusy} idPrefix={`social-draft-${draft?.id ?? "create"}`} label="نوع المصدر" name="sourceType" />
+        <TextInput defaultValue={draft?.sourceId ?? ""} disabled={isBusy} idPrefix={`social-draft-${draft?.id ?? "create"}`} label="معرف المصدر" name="sourceId" />
       </div>
-      <TextInput defaultValue={toDateTimeInput(draft?.scheduledAt)} disabled={isBusy} label="موعد الجدولة" name="scheduledAt" type="datetime-local" />
+      <TextInput defaultValue={toDateTimeInput(draft?.scheduledAt)} disabled={isBusy} idPrefix={`social-draft-${draft?.id ?? "create"}`} label="موعد الجدولة" name="scheduledAt" type="datetime-local" />
       <Button loading={isBusy} type="submit">
         {isEdit ? "حفظ المسودة" : "إنشاء مسودة"}
       </Button>
-      <FormMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }
 
 export function AiSocialDraftForm() {
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -389,15 +392,15 @@ export function AiSocialDraftForm() {
       });
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
 
       form.reset();
-      setMessage("تم توليد مسودة بالذكاء الاصطناعي وحفظها في حالة مراجعة قانونية.");
+      setMessage({ tone: "success", text: "تم توليد مسودة بالذكاء الاصطناعي وحفظها في حالة مراجعة قانونية." });
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -405,30 +408,30 @@ export function AiSocialDraftForm() {
 
   return (
     <form className="grid gap-4" onSubmit={submit}>
-      <TextInput disabled={isBusy} label="عنوان المسودة" name="title" required />
+      <TextInput disabled={isBusy} idPrefix="ai-social-draft" label="عنوان المسودة" name="title" required />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Select defaultValue="linkedin" disabled={isBusy} label="المنصة" name="platform">
+        <Select defaultValue="linkedin" disabled={isBusy} idPrefix="ai-social-draft" label="المنصة" name="platform">
           {socialPlatformValues.map((platform) => (
             <option key={platform} value={platform}>
               {labelFrom(socialPlatformLabels, platform)}
             </option>
           ))}
         </Select>
-        <Select defaultValue="ar" disabled={isBusy} label="اللغة" name="locale">
+        <Select defaultValue="ar" disabled={isBusy} idPrefix="ai-social-draft" label="اللغة" name="locale">
           <option value="ar">العربية</option>
           <option value="en">الإنجليزية</option>
         </Select>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <input name="sourceType" type="hidden" value="manual" />
-        <TextInput defaultValue={sourceTypeDisplayLabel("manual")} disabled label="نوع المصدر" name="sourceTypeDisplay" />
-        <TextInput disabled={isBusy} label="معرف المصدر" name="sourceId" />
+        <TextInput defaultValue={sourceTypeDisplayLabel("manual")} disabled idPrefix="ai-social-draft" label="نوع المصدر" name="sourceTypeDisplay" />
+        <TextInput disabled={isBusy} idPrefix="ai-social-draft" label="معرف المصدر" name="sourceId" />
       </div>
-      <Textarea className="min-h-32" disabled={isBusy} label="المادة الخام للمسودة" name="sourceText" required />
+      <Textarea className="min-h-32" disabled={isBusy} idPrefix="ai-social-draft" label="المادة الخام للمسودة" name="sourceText" required />
       <Button loading={isBusy} type="submit" variant="secondary">
         توليد المسودة
       </Button>
-      <FormMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }

@@ -20,6 +20,7 @@ debug.log
 # tests and reports
 test-results/
 playwright-report/
+.playwright/
 coverage/
 *.tsbuildinfo
 

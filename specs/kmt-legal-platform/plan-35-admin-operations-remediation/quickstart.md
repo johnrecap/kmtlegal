@@ -259,6 +259,13 @@ be reported as locally implemented but not checkpoint-accepted or DB-verified.
 - Use Playwright `toHaveScreenshot` with animations disabled, stable
   `[data-visual-dynamic]` masks, and `maxDiffPixelRatio: 0.01`.
 
+Local no-database execution on 2026-07-22 completed T107–T111: all 60 shared consumers have an exact
+disposition and named regression, 67 focused UI tests and all 359 unit/contract tests passed, and
+the shared RTL shell passed 17 browser checks across the five required viewports. The reviewed
+fallback snapshots fix the missing menu glyph and preserve `KMT Legal` as one bidirectional unit.
+This evidence does not close T112: the 13 authenticated scenarios were skipped, so protected admin
+pages still require disposable login states and authenticated visual review without production data.
+
 ## 6. Local verification gate (G35-6)
 
 ```powershell

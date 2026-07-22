@@ -186,6 +186,7 @@ const icons: Record<string, IconNode> = {
     </>
   ),
   logout: <path {...strokeProps} d="M10 5H6v14h4M13 8l4 4-4 4M17 12H9" />,
+  menu: <path {...strokeProps} d="M5 7h14M5 12h14M5 17h14" />,
   mail: (
     <>
       <rect {...strokeProps} x="4" y="6" width="16" height="12" rx="2" />

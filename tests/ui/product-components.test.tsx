@@ -5,11 +5,19 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ClientPortalMetric, ClientPortalPanel, ClientSiteShell, DashboardShell, clientPortalTableClass } from "@/components/layout";
 import { ClientPortalSelect } from "@/components/layout/client-portal-select";
-import { Badge, Button, DataRecordCard, DataTable, Select, StateBlock, Tabs, TextInput } from "@/components/ui";
+import { Badge, Button, DataRecordCard, DataTable, MaterialSymbol, Select, StateBlock, Tabs, TextInput } from "@/components/ui";
 import { adminNavForPath } from "@/app/(app-ar)/admin/admin-navigation";
 import { PLAN35_ROLE_FIXTURES } from "../fixtures/plan35-role-fixtures";
 
 describe("product UI primitives", () => {
+  it("renders the mobile navigation menu icon instead of the unknown-icon fallback", () => {
+    const menuIcon = renderToStaticMarkup(<MaterialSymbol name="menu" />);
+    const fallbackIcon = renderToStaticMarkup(<MaterialSymbol name="unknown-icon" />);
+
+    expect(menuIcon).not.toBe(fallbackIcon.replace("unknown-icon", "menu"));
+    expect(menuIcon).toContain('d="M5 7h14M5 12h14M5 17h14"');
+  });
+
   it("renders button states and accessible text", () => {
     const html = renderToStaticMarkup(
       <Button disabled loading>

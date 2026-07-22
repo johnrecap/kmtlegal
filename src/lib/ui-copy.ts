@@ -192,6 +192,41 @@ export const plan35AdminRecoveryCopy = {
   caseReferenceRetry: "إنشاء محاولة جديدة وإعادة الإرسال"
 } as const;
 
+export const plan35AdminListAccessibilityCopy = {
+  auditLog: { filters: "فلاتر سجل التدقيق", search: "البحث في سجل التدقيق", table: "أحداث سجل التدقيق" },
+  calendar: { filters: "فلاتر مواعيد التقويم" },
+  cases: { filters: "فلاتر القضايا", search: "البحث في القضايا", table: "قائمة القضايا" },
+  clients: { filters: "فلاتر العملاء", search: "البحث في العملاء", table: "قائمة العملاء" },
+  consultations: { filters: "فلاتر طلبات الاستشارة", search: "البحث في طلبات الاستشارة", table: "طلبات الاستشارة" },
+  content: { filters: "فلاتر المحتوى", search: "البحث في المحتوى", table: "قائمة المحتوى" },
+  documents: { filters: "فلاتر المستندات", search: "البحث في المستندات", table: "قائمة المستندات" },
+  tasks: { filters: "فلاتر المهام", search: "البحث في المهام" },
+  users: { filters: "فلاتر المستخدمين", search: "البحث في المستخدمين", table: "قائمة المستخدمين" },
+  userDetail: { sessionsTable: "جلسات المستخدم", auditTable: "أحداث تدقيق المستخدم" },
+  finance: {
+    operationsFilters: "فلاتر عمليات الدفع",
+    attemptsSearch: "البحث في محاولات الدفع",
+    webhooksSearch: "البحث في إشعارات بوابة الدفع",
+    invoicesFilters: "فلاتر الفواتير",
+    invoicesSearch: "البحث في الفواتير",
+    invoicesTable: "قائمة الفواتير"
+  },
+  messages: { filters: "فلاتر محادثات العملاء", search: "البحث في محادثات العملاء", table: "محادثات العملاء" },
+  reports: { filters: "فلاتر التقارير المالية", paymentsTable: "أحدث المدفوعات ضمن التقرير" },
+  productSystem: {
+    casesFilters: "فلاتر نموذج القضايا",
+    casesSearch: "البحث في نموذج القضايا",
+    casesTable: "نموذج قائمة القضايا",
+    clientsFilters: "فلاتر نموذج العملاء",
+    clientsSearch: "البحث في نموذج العملاء",
+    clientsTable: "نموذج سجل العملاء",
+    documentsFilters: "فلاتر نموذج المستندات",
+    documentsSearch: "البحث في نموذج المستندات",
+    documentsTable: "نموذج مكتبة المستندات",
+    auditTable: "نموذج سجل التدقيق"
+  }
+} as const;
+
 export const plan35ContactInboxUiCopy = {
   eyebrow: "لوحة المكتب",
   title: "رسائل التواصل",

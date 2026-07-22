@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
-import { Button, Select, StateBlock, TextInput, Textarea } from "@/components/ui";
+import { Button, InlineFeedback, Select, StateBlock, TextInput, Textarea } from "@/components/ui";
 import {
   documentCategoryLabels,
   documentStatusLabels,
@@ -96,21 +96,12 @@ function toDateLocal(value?: string | Date | null) {
   return local.toISOString().slice(0, 10);
 }
 
-function StatusMessage({ message }: { message: ActionMessage | null }) {
+function ActionFeedback({ message }: { message: ActionMessage | null }) {
   if (!message) {
     return null;
   }
 
-  const className =
-    message.tone === "error"
-      ? "rounded border border-red-200 bg-red-50 px-3 py-2 text-sm leading-6 text-kmt-danger"
-      : "rounded border border-blue-200 bg-blue-50 px-3 py-2 text-sm leading-6 text-blue-900";
-
-  return (
-    <div className={className} role={message.tone === "error" ? "alert" : "status"}>
-      {message.text}
-    </div>
-  );
+  return <InlineFeedback title={message.text} tone={message.tone} />;
 }
 
 function successMessage(text: string): ActionMessage {
@@ -183,17 +174,17 @@ export function TaskCreateForm({
 
   return (
     <form className="grid gap-4" onSubmit={submit}>
-      <TextInput disabled={isBusy} label="عنوان المهمة" name="title" required />
-      <Textarea disabled={isBusy} label="الوصف" name="description" />
+      <TextInput disabled={isBusy} idPrefix="task-create" label="عنوان المهمة" name="title" required />
+      <Textarea disabled={isBusy} idPrefix="task-create" label="الوصف" name="description" />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Select defaultValue="NEW" disabled={isBusy} label="الحالة" name="status">
+        <Select defaultValue="NEW" disabled={isBusy} idPrefix="task-create" label="الحالة" name="status">
           {taskStatusOptions.map((status) => (
             <option key={status} value={status}>
               {labelFrom(taskStatusLabels, status)}
             </option>
           ))}
         </Select>
-        <Select defaultValue="NORMAL" disabled={isBusy} label="الأولوية" name="priority">
+        <Select defaultValue="NORMAL" disabled={isBusy} idPrefix="task-create" label="الأولوية" name="priority">
           {taskPriorityOptions.map((priority) => (
             <option key={priority} value={priority}>
               {labelFrom(taskPriorityLabels, priority)}
@@ -202,16 +193,16 @@ export function TaskCreateForm({
         </Select>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Select disabled={isBusy} label="المسؤول" name="assignedToId">
+        <Select disabled={isBusy} idPrefix="task-create" label="المسؤول" name="assignedToId">
           {assignees.map((assignee) => (
             <option key={assignee.id} value={assignee.id}>
               {assignee.name}
             </option>
           ))}
         </Select>
-        <TextInput disabled={isBusy} label="تاريخ الاستحقاق" name="dueDate" type="date" />
+        <TextInput disabled={isBusy} idPrefix="task-create" label="تاريخ الاستحقاق" name="dueDate" type="date" />
       </div>
-      <Select defaultValue={defaultCaseId ?? ""} disabled={isBusy} label="القضية" name="caseId">
+      <Select defaultValue={defaultCaseId ?? ""} disabled={isBusy} idPrefix="task-create" label="القضية" name="caseId">
         <option value="">بدون قضية</option>
         {cases.map((legalCase) => (
           <option key={legalCase.id} value={legalCase.id}>
@@ -222,7 +213,7 @@ export function TaskCreateForm({
       <Button loading={isBusy} type="submit">
         إنشاء المهمة
       </Button>
-      <StatusMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }
@@ -263,17 +254,17 @@ export function TaskUpdateForm({
 
   return (
     <form className="mt-3 grid gap-3 rounded border border-kmt-border bg-slate-50 p-3" onSubmit={submit}>
-      <TextInput defaultValue={task.title ?? ""} disabled={isBusy} label="العنوان" name="title" required />
-      <Textarea defaultValue={task.description ?? ""} disabled={isBusy} label="الوصف" name="description" />
+      <TextInput defaultValue={task.title ?? ""} disabled={isBusy} idPrefix={`task-update-${task.id}`} label="العنوان" name="title" required />
+      <Textarea defaultValue={task.description ?? ""} disabled={isBusy} idPrefix={`task-update-${task.id}`} label="الوصف" name="description" />
       <div className="grid gap-3 sm:grid-cols-2">
-        <Select defaultValue={task.status ?? "NEW"} disabled={isBusy} label="الحالة" name="status">
+        <Select defaultValue={task.status ?? "NEW"} disabled={isBusy} idPrefix={`task-update-${task.id}`} label="الحالة" name="status">
           {taskStatusOptions.map((status) => (
             <option key={status} value={status}>
               {labelFrom(taskStatusLabels, status)}
             </option>
           ))}
         </Select>
-        <Select defaultValue={task.priority ?? "NORMAL"} disabled={isBusy} label="الأولوية" name="priority">
+        <Select defaultValue={task.priority ?? "NORMAL"} disabled={isBusy} idPrefix={`task-update-${task.id}`} label="الأولوية" name="priority">
           {taskPriorityOptions.map((priority) => (
             <option key={priority} value={priority}>
               {labelFrom(taskPriorityLabels, priority)}
@@ -282,16 +273,16 @@ export function TaskUpdateForm({
         </Select>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
-        <Select defaultValue={task.assignedToId ?? ""} disabled={isBusy} label="المسؤول" name="assignedToId">
+        <Select defaultValue={task.assignedToId ?? ""} disabled={isBusy} idPrefix={`task-update-${task.id}`} label="المسؤول" name="assignedToId">
           {assignees.map((assignee) => (
             <option key={assignee.id} value={assignee.id}>
               {assignee.name}
             </option>
           ))}
         </Select>
-        <TextInput defaultValue={toDateLocal(task.dueDate)} disabled={isBusy} label="تاريخ الاستحقاق" name="dueDate" type="date" />
+        <TextInput defaultValue={toDateLocal(task.dueDate)} disabled={isBusy} idPrefix={`task-update-${task.id}`} label="تاريخ الاستحقاق" name="dueDate" type="date" />
       </div>
-      <Select defaultValue={task.caseId ?? ""} disabled={isBusy} label="القضية" name="caseId">
+      <Select defaultValue={task.caseId ?? ""} disabled={isBusy} idPrefix={`task-update-${task.id}`} label="القضية" name="caseId">
         <option value="">بدون قضية</option>
         {cases.map((legalCase) => (
           <option key={legalCase.id} value={legalCase.id}>
@@ -302,7 +293,7 @@ export function TaskUpdateForm({
       <Button loading={isBusy} size="sm" type="submit" variant="secondary">
         حفظ المهمة
       </Button>
-      <StatusMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }
@@ -356,7 +347,7 @@ export function AdminDocumentUploadForm({
 
   return (
     <form className="grid gap-4" onSubmit={upload}>
-      <Select defaultValue={defaultCaseId ?? ""} disabled={isUploading} label="القضية" name="caseId">
+      <Select defaultValue={defaultCaseId ?? ""} disabled={isUploading} idPrefix="document-upload" label="القضية" name="caseId">
         <option value="">بدون قضية</option>
         {cases.map((legalCase) => (
           <option key={legalCase.id} value={legalCase.id}>
@@ -364,7 +355,7 @@ export function AdminDocumentUploadForm({
           </option>
         ))}
       </Select>
-      <Select disabled={isUploading} label="العميل المالك" name="ownerClientId">
+      <Select disabled={isUploading} idPrefix="document-upload" label="العميل المالك" name="ownerClientId">
         <option value="">غير محدد</option>
         {clients.map((client) => (
           <option key={client.id} value={client.id}>
@@ -373,14 +364,14 @@ export function AdminDocumentUploadForm({
         ))}
       </Select>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Select defaultValue="OTHER" disabled={isUploading} label="التصنيف" name="category">
+        <Select defaultValue="OTHER" disabled={isUploading} idPrefix="document-upload" label="التصنيف" name="category">
           {documentCategoryOptions.map((category) => (
             <option key={category} value={category}>
               {labelFrom(documentCategoryLabels, category)}
             </option>
           ))}
         </Select>
-        <Select defaultValue="STAFF_ONLY" disabled={isUploading} label="الظهور" name="visibility">
+        <Select defaultValue="STAFF_ONLY" disabled={isUploading} idPrefix="document-upload" label="الظهور" name="visibility">
           {documentVisibilityOptions.map((visibility) => (
             <option key={visibility} value={visibility}>
               {labelFrom(documentVisibilityLabels, visibility)}
@@ -389,24 +380,25 @@ export function AdminDocumentUploadForm({
         </Select>
       </div>
       <div className="space-y-2">
-        <label className="block text-sm font-semibold text-kmt-ink" htmlFor="admin-document-file">
+        <label className="block text-sm font-semibold text-kmt-ink" htmlFor="document-upload-file">
           الملف
         </label>
         <input
-          id="admin-document-file"
+          id="document-upload-file"
           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
           className="w-full rounded border border-slate-300 bg-white px-3 py-2.5 text-sm"
           disabled={isUploading}
           name="file"
           required
           type="file"
+          aria-describedby="document-upload-file-hint"
         />
-        <p className="text-sm leading-6 text-kmt-muted">الحد الأقصى 5MB. الأنواع المسموحة: PDF, DOC, DOCX, JPG, PNG.</p>
+        <p className="text-sm leading-6 text-kmt-muted" id="document-upload-file-hint">الحد الأقصى 5MB. الأنواع المسموحة: PDF, DOC, DOCX, JPG, PNG.</p>
       </div>
       <Button loading={isUploading} type="submit">
         رفع المستند
       </Button>
-      <StatusMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }
@@ -451,21 +443,21 @@ export function DocumentActionForm({ document, canManage }: { document: Document
   return (
     <form className="mt-3 grid gap-3 rounded border border-kmt-border bg-slate-50 p-3" onSubmit={submit}>
       <div className="grid gap-3 sm:grid-cols-3">
-        <Select defaultValue={document.status} disabled={isBusy} label="الحالة" name="status">
+        <Select defaultValue={document.status} disabled={isBusy} idPrefix={`document-action-${document.id}`} label="الحالة" name="status">
           {documentStatusOptions.map((status) => (
             <option key={status} value={status}>
               {labelFrom(documentStatusLabels, status)}
             </option>
           ))}
         </Select>
-        <Select defaultValue={document.category} disabled={isBusy} label="التصنيف" name="category">
+        <Select defaultValue={document.category} disabled={isBusy} idPrefix={`document-action-${document.id}`} label="التصنيف" name="category">
           {documentCategoryOptions.map((category) => (
             <option key={category} value={category}>
               {labelFrom(documentCategoryLabels, category)}
             </option>
           ))}
         </Select>
-        <Select defaultValue={document.visibility} disabled={isBusy} label="الظهور" name="visibility">
+        <Select defaultValue={document.visibility} disabled={isBusy} idPrefix={`document-action-${document.id}`} label="الظهور" name="visibility">
           {documentVisibilityOptions.map((visibility) => (
             <option key={visibility} value={visibility}>
               {labelFrom(documentVisibilityLabels, visibility)}
@@ -473,11 +465,11 @@ export function DocumentActionForm({ document, canManage }: { document: Document
           ))}
         </Select>
       </div>
-      <Textarea disabled={isBusy} label="ملاحظة داخلية" name="note" />
+      <Textarea disabled={isBusy} idPrefix={`document-action-${document.id}`} label="ملاحظة داخلية" name="note" />
       <Button loading={isBusy} size="sm" type="submit" variant="secondary">
         حفظ المستند
       </Button>
-      <StatusMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }
@@ -518,16 +510,16 @@ export function DocumentDeleteForm({ documentId, canManage }: { documentId: stri
   }
 
   return (
-    <form className="mt-3 space-y-3 rounded border border-red-200 bg-red-50 p-3" onSubmit={submit}>
-      <Textarea disabled={isBusy} label="سبب الحذف" name="reason" />
+    <form className="mt-3 space-y-3 rounded border border-kmt-danger-border bg-kmt-danger-surface p-3" onSubmit={submit}>
+      <Textarea disabled={isBusy} idPrefix={`document-delete-${documentId}`} label="سبب الحذف" name="reason" />
       <label className="flex items-start gap-2 text-sm leading-6 text-kmt-ink">
-        <input className="mt-1 h-4 w-4 rounded border-slate-300 text-kmt-danger focus:ring-kmt-gold" disabled={isBusy} name="confirmDelete" required type="checkbox" />
+        <input className="mt-1 h-4 w-4 rounded border-slate-300 text-kmt-danger focus:ring-kmt-gold" disabled={isBusy} id={`document-delete-${documentId}-confirmDelete`} name="confirmDelete" required type="checkbox" />
         <span>أؤكد حذف المستند من القوائم النشطة. الملف لا يتم نشره أو عرضه بعد الحذف.</span>
       </label>
       <Button loading={isBusy} size="sm" type="submit" variant="danger">
         حذف المستند
       </Button>
-      <StatusMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }

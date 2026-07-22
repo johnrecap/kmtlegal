@@ -5,6 +5,7 @@ import { AdminNotificationBell } from "@/features/admin/notifications/admin-noti
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { conversationStatusLabels, formatDateTime, labelFrom } from "@/lib/legal-format";
+import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { listAdminConversations, listConversationAssignees } from "@/server/conversations/conversation-service";
 import { adminNavForPath } from "../admin-navigation";
@@ -149,8 +150,8 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
     >
       <div className="min-w-0 space-y-5">
         <form action="/admin/messages" method="get">
-          <FilterBar>
-            <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالعميل أو الهاتف أو نص الرسالة" />
+          <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.messages.filters}>
+            <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.messages.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالعميل أو الهاتف أو نص الرسالة" />
             <Select className="min-w-44" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
               <option value="">كل الحالات</option>
               {Object.entries(conversationStatusLabels).map(([value, label]) => (
@@ -181,6 +182,7 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
         </div>
 
         <DataTable
+          caption={plan35AdminListAccessibilityCopy.messages.table}
           columns={columns}
           rows={result.items}
           empty="لا توجد محادثات عملاء مطابقة للفلاتر الحالية."

@@ -6,7 +6,7 @@ import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Selec
 import { buttonClasses } from "@/components/ui/button";
 import { ClientCreateForm } from "@/features/admin/clients/client-crm-forms";
 import { clientStatusLabels, formatDateTime, labelFrom } from "@/lib/legal-format";
-import { commonUiCopy, sourceTypeDisplayLabel } from "@/lib/ui-copy";
+import { commonUiCopy, plan35AdminListAccessibilityCopy, sourceTypeDisplayLabel } from "@/lib/ui-copy";
 import {
   getAdminClientFilterOptions,
   listAdminClients
@@ -183,8 +183,8 @@ export default async function AdminClientsPage({ searchParams }: { searchParams?
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
         <div className="space-y-5">
           <form action="/admin/clients" method="get">
-            <FilterBar>
-              <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالاسم أو الهاتف أو البريد" />
+            <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.clients.filters}>
+              <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.clients.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالاسم أو الهاتف أو البريد" />
               <Select className="min-w-40" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
                 <option value="">كل الحالات</option>
                 {Object.entries(clientStatusLabels).map(([value, label]) => (
@@ -235,6 +235,7 @@ export default async function AdminClientsPage({ searchParams }: { searchParams?
           </div>
 
           <DataTable
+            caption={plan35AdminListAccessibilityCopy.clients.table}
             columns={columns}
             rows={result.items}
             empty="لا توجد ملفات عملاء مطابقة للفلاتر الحالية."

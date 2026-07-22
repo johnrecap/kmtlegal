@@ -1,0 +1,76 @@
+{
+  "plan": "PLAN-35",
+  "story": "US7",
+  "scope": "accessible-arabic-rtl-local-shared-shell",
+  "recordedAt": "2026-07-22T10:46:00+03:00",
+  "status": "local-call-sites-complete-authenticated-visual-acceptance-deferred",
+  "completedTasks": ["T107", "T108", "T109", "T110", "T111"],
+  "openTasks": ["T112 authenticated admin-page visual and journey acceptance"],
+  "databaseInstalled": false,
+  "databaseConnectionUsed": false,
+  "productionDatabaseUsed": false,
+  "sharedConsumerDisposition": {
+    "artifact": "test-results/plan35/shared-ui-consumer-disposition.json",
+    "consumerCount": 60,
+    "blockedCount": 0
+  },
+  "viewports": [
+    "1440x900",
+    "1023x768",
+    "1024x768",
+    "390x844",
+    "320x568"
+  ],
+  "visualContract": {
+    "surface": "/product-system fallback shared shell",
+    "platform": "Chromium on Win32",
+    "animations": "disabled",
+    "dynamicMask": "[data-visual-dynamic]",
+    "maxDiffPixelRatio": 0.01,
+    "reviewed": true,
+    "snapshots": [
+      "tests/e2e/plan35-admin-operations.spec.ts-snapshots/product-system-fallback-1440x900-chromium-win32.png",
+      "tests/e2e/plan35-admin-operations.spec.ts-snapshots/product-system-fallback-1023x768-chromium-win32.png",
+      "tests/e2e/plan35-admin-operations.spec.ts-snapshots/product-system-fallback-1024x768-chromium-win32.png",
+      "tests/e2e/plan35-admin-operations.spec.ts-snapshots/product-system-fallback-390x844-chromium-win32.png",
+      "tests/e2e/plan35-admin-operations.spec.ts-snapshots/product-system-fallback-320x568-chromium-win32.png"
+    ]
+  },
+  "fixedVisualFindings": [
+    "The mobile menu now renders its intended internal SVG instead of the unknown-icon error fallback.",
+    "The mixed Arabic/English product title preserves KMT Legal as one bidirectional wrapping unit at 320px.",
+    "The 1023px mobile and 1024px desktop navigation sides of the lg boundary are deterministic.",
+    "Mobile tables render readable record cards without document-level horizontal overflow."
+  ],
+  "commands": [
+    {
+      "command": "npm test -- <10 named T017/T107-T111 compatibility files>",
+      "result": "pass",
+      "summary": "10 files, 67 tests passed"
+    },
+    {
+      "command": "npm test",
+      "result": "pass",
+      "summary": "52 files, 359 tests passed"
+    },
+    { "command": "npm run typecheck", "result": "pass" },
+    { "command": "npm run lint", "result": "pass", "summary": "No warnings or errors" },
+    {
+      "command": "ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build",
+      "result": "pass",
+      "summary": "Next.js build completed with 72 static pages and no database connection"
+    },
+    {
+      "command": "node scripts/run-playwright-with-server.mjs tests/e2e/plan35-admin-operations.spec.ts --workers=1",
+      "result": "local-pass-authenticated-skipped",
+      "summary": "17 shared-shell tests passed and 13 authenticated scenarios were skipped"
+    },
+    { "command": "git diff --check", "result": "pass" }
+  ],
+  "convergence": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "deferredEvidence": "T112 remains open because fallback screenshots do not prove protected admin pages or authenticated journeys. Safe disposable login states and data are required; production data is excluded."
+  }
+}

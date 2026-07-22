@@ -9,6 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  InlineFeedback,
   Select,
   StateBlock,
   TextInput,
@@ -49,6 +50,11 @@ type ApiErrorBody = {
   };
 };
 
+type ActionMessage = {
+  tone: "success" | "error";
+  text: string;
+};
+
 const statusOptions = [
   { value: "LEAD", label: "عميل محتمل" },
   { value: "ACTIVE", label: "نشط" },
@@ -59,6 +65,10 @@ const statusOptions = [
 async function readMessage(response: Response) {
   const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
   return body.error?.message ?? "تعذر تنفيذ الإجراء الآن.";
+}
+
+function ActionFeedback({ message }: { message: ActionMessage | null }) {
+  return message ? <InlineFeedback title={message.text} tone={message.tone} /> : null;
 }
 
 function payloadFromForm(form: HTMLFormElement) {
@@ -76,7 +86,7 @@ function payloadFromForm(form: HTMLFormElement) {
 
 export function ClientCreateForm({ lawyers }: { lawyers: LawyerOption[] }) {
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   async function createClient(event: FormEvent<HTMLFormElement>) {
@@ -92,20 +102,20 @@ export function ClientCreateForm({ lawyers }: { lawyers: LawyerOption[] }) {
       });
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
 
       const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
       const clientId = body.data?.id;
-      setMessage("تم إنشاء ملف العميل.");
+      setMessage({ tone: "success", text: "تم إنشاء ملف العميل." });
       if (clientId) {
         router.push(`/admin/clients/${clientId}`);
       } else {
         router.refresh();
       }
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -119,25 +129,25 @@ export function ClientCreateForm({ lawyers }: { lawyers: LawyerOption[] }) {
       </CardHeader>
       <CardContent>
         <form className="grid gap-4" onSubmit={createClient}>
-          <TextInput label="الاسم الكامل" name="fullName" required />
-          <TextInput label="الهاتف" name="phone" required />
-          <TextInput label="البريد الإلكتروني" name="email" type="email" />
+          <TextInput idPrefix="client-create" label="الاسم الكامل" name="fullName" required />
+          <TextInput idPrefix="client-create" label="الهاتف" name="phone" required />
+          <TextInput idPrefix="client-create" label="البريد الإلكتروني" name="email" type="email" />
           <div className="grid gap-4 sm:grid-cols-2">
-            <TextInput label="المدينة" name="city" />
+            <TextInput idPrefix="client-create" label="المدينة" name="city" />
             <div>
               <input name="source" type="hidden" value="manual" />
-              <TextInput defaultValue={sourceTypeDisplayLabel("manual")} disabled label="المصدر" name="sourceDisplay" />
+              <TextInput defaultValue={sourceTypeDisplayLabel("manual")} disabled idPrefix="client-create" label="المصدر" name="sourceDisplay" />
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Select defaultValue="LEAD" label="الحالة" name="status">
+            <Select defaultValue="LEAD" idPrefix="client-create" label="الحالة" name="status">
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </Select>
-            <Select label="المحامي المسؤول" name="assignedLawyerId">
+            <Select idPrefix="client-create" label="المحامي المسؤول" name="assignedLawyerId">
               <option value="">غير معين</option>
               {lawyers.map((lawyer) => (
                 <option key={lawyer.id} value={lawyer.id}>
@@ -149,11 +159,7 @@ export function ClientCreateForm({ lawyers }: { lawyers: LawyerOption[] }) {
           <Button loading={isBusy} type="submit">
             إنشاء العميل
           </Button>
-          {message ? (
-            <div className="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-sm leading-6 text-blue-900" role="status">
-              {message}
-            </div>
-          ) : null}
+          <ActionFeedback message={message} />
         </form>
       </CardContent>
     </Card>
@@ -172,7 +178,7 @@ export function ClientActionPanel({
   canManageAccount: boolean;
 }) {
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   if (!canManage) {
@@ -197,14 +203,14 @@ export function ClientActionPanel({
       });
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
 
-      setMessage(successMessage);
+      setMessage({ tone: "success", text: successMessage });
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -272,19 +278,19 @@ export function ClientActionPanel({
         </CardHeader>
         <CardContent>
           <form className="grid gap-4" onSubmit={saveClient}>
-            <TextInput defaultValue={client.fullName} disabled={isBusy} label="الاسم الكامل" name="fullName" required />
-            <TextInput defaultValue={client.phone} disabled={isBusy} label="الهاتف" name="phone" required />
-            <TextInput defaultValue={client.email ?? ""} disabled={isBusy} label="البريد الإلكتروني" name="email" type="email" />
-            <TextInput defaultValue={client.city ?? ""} disabled={isBusy} label="المدينة" name="city" />
+            <TextInput defaultValue={client.fullName} disabled={isBusy} idPrefix={`client-edit-${client.id}`} label="الاسم الكامل" name="fullName" required />
+            <TextInput defaultValue={client.phone} disabled={isBusy} idPrefix={`client-edit-${client.id}`} label="الهاتف" name="phone" required />
+            <TextInput defaultValue={client.email ?? ""} disabled={isBusy} idPrefix={`client-edit-${client.id}`} label="البريد الإلكتروني" name="email" type="email" />
+            <TextInput defaultValue={client.city ?? ""} disabled={isBusy} idPrefix={`client-edit-${client.id}`} label="المدينة" name="city" />
             {client.source === "manual" ? (
               <div>
                 <input name="source" type="hidden" value="manual" />
-                <TextInput defaultValue={sourceTypeDisplayLabel(client.source)} disabled label="المصدر" name="sourceDisplay" />
+                <TextInput defaultValue={sourceTypeDisplayLabel(client.source)} disabled idPrefix={`client-edit-${client.id}`} label="المصدر" name="sourceDisplay" />
               </div>
             ) : (
-              <TextInput defaultValue={client.source ?? ""} disabled={isBusy} label="المصدر" name="source" />
+              <TextInput defaultValue={client.source ?? ""} disabled={isBusy} idPrefix={`client-edit-${client.id}`} label="المصدر" name="source" />
             )}
-            <Select defaultValue={client.status} disabled={isBusy} label="الحالة" name="status">
+            <Select defaultValue={client.status} disabled={isBusy} idPrefix={`client-edit-${client.id}`} label="الحالة" name="status">
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -306,7 +312,7 @@ export function ClientActionPanel({
         </CardHeader>
         <CardContent>
           <form className="grid gap-3 sm:grid-cols-[1fr_auto]" onSubmit={assignClient}>
-            <Select defaultValue={client.assignedLawyerId ?? ""} disabled={isBusy} label="المحامي المسؤول" name="assignedLawyerId">
+            <Select defaultValue={client.assignedLawyerId ?? ""} disabled={isBusy} idPrefix={`client-assign-${client.id}`} label="المحامي المسؤول" name="assignedLawyerId">
               <option value="">غير معين</option>
               {lawyers.map((lawyer) => (
                 <option key={lawyer.id} value={lawyer.id}>
@@ -335,9 +341,9 @@ export function ClientActionPanel({
                   <p className="text-kmt-muted">الحالة: {client.user.status}</p>
                 </div>
                 <form className="grid gap-3" onSubmit={resetClientAccountPassword}>
-                  <TextInput disabled={isBusy} label="كلمة مرور جديدة" minLength={10} name="password" required type="password" />
+                  <TextInput disabled={isBusy} idPrefix={`client-account-password-${client.id}`} label="كلمة مرور جديدة" minLength={10} name="password" required type="password" />
                   <label className="flex items-center gap-2 text-sm text-kmt-muted">
-                    <input className="h-4 w-4 rounded border-kmt-border" defaultChecked name="revokeSessions" type="checkbox" />
+                    <input className="h-4 w-4 rounded border-kmt-border" defaultChecked id={`client-account-password-${client.id}-revokeSessions`} name="revokeSessions" type="checkbox" />
                     إنهاء جلسات العميل الحالية
                   </label>
                   <Button loading={isBusy} type="submit" variant="secondary">
@@ -347,9 +353,9 @@ export function ClientActionPanel({
               </div>
             ) : (
               <form className="grid gap-3" onSubmit={createClientAccount}>
-                <TextInput defaultValue={client.email ?? ""} disabled={isBusy} label="البريد الإلكتروني" name="email" required type="email" />
-                <TextInput disabled={isBusy} label="كلمة المرور" minLength={10} name="password" required type="password" />
-                <Select defaultValue="ar" disabled={isBusy} label="لغة الحساب" name="locale">
+                <TextInput defaultValue={client.email ?? ""} disabled={isBusy} idPrefix={`client-account-create-${client.id}`} label="البريد الإلكتروني" name="email" required type="email" />
+                <TextInput disabled={isBusy} idPrefix={`client-account-create-${client.id}`} label="كلمة المرور" minLength={10} name="password" required type="password" />
+                <Select defaultValue="ar" disabled={isBusy} idPrefix={`client-account-create-${client.id}`} label="لغة الحساب" name="locale">
                   <option value="ar">العربية</option>
                   <option value="en">English</option>
                 </Select>
@@ -369,7 +375,7 @@ export function ClientActionPanel({
         </CardHeader>
         <CardContent>
           <form className="space-y-3" onSubmit={archiveClient}>
-            <Textarea disabled={isBusy || isArchived} label="سبب الأرشفة" name="reason" />
+            <Textarea disabled={isBusy || isArchived} idPrefix={`client-archive-${client.id}`} label="سبب الأرشفة" name="reason" />
             <Button disabled={isArchived} loading={isBusy} type="submit" variant="danger">
               أرشفة
             </Button>
@@ -377,11 +383,7 @@ export function ClientActionPanel({
         </CardContent>
       </Card>
 
-      {message ? (
-        <div className="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-sm leading-6 text-blue-900" role="status">
-          {message}
-        </div>
-      ) : null}
+      <ActionFeedback message={message} />
     </div>
   );
 }

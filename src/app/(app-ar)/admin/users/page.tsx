@@ -6,7 +6,7 @@ import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Selec
 import { buttonClasses } from "@/components/ui/button";
 import { AdminUserCreateForm } from "@/features/admin/governance/governance-forms";
 import { formatDateTime } from "@/lib/legal-format";
-import { roleDisplayLabel } from "@/lib/ui-copy";
+import { plan35AdminListAccessibilityCopy, roleDisplayLabel } from "@/lib/ui-copy";
 import { canCreateAdminUsers, getAdminUserOptions, listAdminUsers } from "@/server/admin/governance-service";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../admin-navigation";
@@ -143,8 +143,8 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
         {canCreateAdminUsers(guard.context.principal) ? <AdminUserCreateForm roles={options.roles} /> : null}
 
         <form action="/admin/users" method="get">
-          <FilterBar>
-            <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="بحث بالاسم أو البريد أو الهاتف" />
+          <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.users.filters}>
+            <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.users.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="بحث بالاسم أو البريد أو الهاتف" />
             <Select className="min-w-44" defaultValue={result.filters.roleId ?? ""} label="الدور" name="roleId">
               <option value="">كل الأدوار</option>
               {options.roles.map((role) => (
@@ -185,7 +185,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
           </p>
         </div>
 
-        <DataTable columns={columns} rows={result.items} empty="لا توجد حسابات مطابقة للفلاتر الحالية." mobileRender={(row) => <UserMobileCard row={row} />} />
+        <DataTable caption={plan35AdminListAccessibilityCopy.users.table} columns={columns} rows={result.items} empty="لا توجد حسابات مطابقة للفلاتر الحالية." mobileRender={(row) => <UserMobileCard row={row} />} />
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/users">

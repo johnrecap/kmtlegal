@@ -6,6 +6,7 @@ import { AdminNotificationBell } from "@/features/admin/notifications/admin-noti
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { consultationStatusLabels, formatDateTime, labelFrom, modeLabels, urgencyLabels } from "@/lib/legal-format";
+import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { listAdminConsultations } from "@/server/admin/consultation-review-service";
 import { adminNavForPath } from "../admin-navigation";
@@ -206,8 +207,8 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
     >
       <div className="min-w-0 space-y-5">
         <form action="/admin/consultations" method="get">
-          <FilterBar>
-            <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالاسم أو الهاتف أو نص طلب العميل" />
+          <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.consultations.filters}>
+            <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.consultations.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالاسم أو الهاتف أو نص طلب العميل" />
             <Select className="min-w-44" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
               <option value="">كل الحالات</option>
               {Object.entries(consultationStatusLabels).map(([value, label]) => (
@@ -247,6 +248,7 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
         </div>
 
         <DataTable
+          caption={plan35AdminListAccessibilityCopy.consultations.table}
           columns={columns}
           rows={result.items}
           empty="لا توجد طلبات استشارة مطابقة للفلاتر الحالية."

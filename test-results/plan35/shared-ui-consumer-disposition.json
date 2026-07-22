@@ -1,0 +1,674 @@
+{
+  "plan": "PLAN-35",
+  "task": "T111",
+  "recordedAt": "2026-07-22T10:35:00+03:00",
+  "status": "complete",
+  "contractProviders": [
+    "src/components/ui/badge.tsx",
+    "src/components/ui/button.tsx",
+    "src/components/ui/data-table.tsx",
+    "src/components/ui/field.tsx",
+    "src/components/ui/filter-bar.tsx",
+    "src/components/ui/index.ts",
+    "src/components/ui/inline-feedback.tsx",
+    "src/components/ui/search-input.tsx",
+    "src/components/ui/skeleton.tsx",
+    "src/components/ui/state.tsx",
+    "src/components/ui/toast.tsx",
+    "src/lib/design-system/tokens.ts",
+    "src/app/globals.css",
+    "tailwind.config.ts"
+  ],
+  "consumers": [
+    {
+      "path": "src/app/(app-ar)/admin/audit-log/page.tsx",
+      "contracts": [
+        "Button",
+        "DataTable",
+        "DataTableColumn",
+        "FilterBar",
+        "SearchInput",
+        "Select",
+        "TextInput",
+        "button"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/calendar/page.tsx",
+      "contracts": [
+        "Button",
+        "FilterBar",
+        "Select",
+        "StateBlock",
+        "TextInput"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/cases/[caseId]/page.tsx",
+      "contracts": [
+        "ButtonLink",
+        "StateBlock"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/cases/page.tsx",
+      "contracts": [
+        "Button",
+        "ButtonLink",
+        "DataTable",
+        "DataTableColumn",
+        "FilterBar",
+        "SearchInput",
+        "Select",
+        "StateBlock",
+        "button"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/clients/[clientId]/page.tsx",
+      "contracts": [
+        "ButtonLink",
+        "StateBlock"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/clients/page.tsx",
+      "contracts": [
+        "Button",
+        "DataTable",
+        "DataTableColumn",
+        "FilterBar",
+        "SearchInput",
+        "Select",
+        "StateBlock",
+        "button"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/consultations/[consultationId]/page.tsx",
+      "contracts": [
+        "ButtonLink",
+        "StateBlock"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/consultations/page.tsx",
+      "contracts": [
+        "Button",
+        "DataTable",
+        "DataTableColumn",
+        "FilterBar",
+        "SearchInput",
+        "Select",
+        "button"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/content/page.tsx",
+      "contracts": [
+        "Button",
+        "DataTable",
+        "DataTableColumn",
+        "FilterBar",
+        "SearchInput",
+        "Select",
+        "StateBlock",
+        "button"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/documents/page.tsx",
+      "contracts": [
+        "Button",
+        "DataTable",
+        "FilterBar",
+        "SearchInput",
+        "Select",
+        "StateBlock",
+        "button"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/finance/page.tsx",
+      "contracts": [
+        "Button",
+        "DataTable",
+        "DataTableColumn",
+        "FilterBar",
+        "SearchInput",
+        "Select",
+        "StateBlock",
+        "TextInput",
+        "button"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/messages/[threadId]/page.tsx",
+      "contracts": [
+        "button"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/messages/page.tsx",
+      "contracts": [
+        "Button",
+        "DataTable",
+        "DataTableColumn",
+        "FilterBar",
+        "SearchInput",
+        "Select",
+        "button"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/reports/page.tsx",
+      "contracts": [
+        "Button",
+        "DataTable",
+        "DataTableColumn",
+        "FilterBar",
+        "InlineFeedback",
+        "Select",
+        "StateBlock",
+        "TextInput",
+        "button"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/tasks/page.tsx",
+      "contracts": [
+        "Button",
+        "FilterBar",
+        "SearchInput",
+        "Select",
+        "StateBlock",
+        "button"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/users/[userId]/page.tsx",
+      "contracts": [
+        "DataTable",
+        "DataTableColumn"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/users/page.tsx",
+      "contracts": [
+        "Button",
+        "DataTable",
+        "DataTableColumn",
+        "FilterBar",
+        "SearchInput",
+        "Select",
+        "button"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/client/cases/[caseId]/page.tsx",
+      "contracts": [
+        "ButtonLink"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/client/cases/page.tsx",
+      "contracts": [
+        "DataTable",
+        "DataTableColumn",
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/client/court-dates/page.tsx",
+      "contracts": [
+        "DataTable",
+        "DataTableColumn",
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/client/files/page.tsx",
+      "contracts": [
+        "DataTable",
+        "DataTableColumn",
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/client/page.tsx",
+      "contracts": [
+        "ButtonLink"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/client/payments/page.tsx",
+      "contracts": [
+        "DataTable",
+        "DataTableColumn",
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/error.tsx",
+      "contracts": [
+        "StateBlock"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/loading.tsx",
+      "contracts": [
+        "StateBlock"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/not-found.tsx",
+      "contracts": [
+        "ButtonLink",
+        "StateBlock"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/product-system/_components/product-system-demo.tsx",
+      "contracts": [
+        "Badge",
+        "Button",
+        "DataTable",
+        "FilterBar",
+        "SearchInput",
+        "Select",
+        "StateBlock",
+        "TextInput",
+        "Textarea",
+        "Toast"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/components/domain/legal-cards.tsx",
+      "contracts": [
+        "Button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/components/layout/admin-shell-state.tsx",
+      "contracts": [
+        "Button",
+        "ButtonLink",
+        "StateBlock"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/components/layout/dashboard-mobile-nav.tsx",
+      "contracts": [
+        "buttonClasses"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/components/layout/dashboard-shell-view.tsx",
+      "contracts": [
+        "buttonClasses"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/features/admin/cases/case-action-forms.tsx",
+      "contracts": [
+        "InlineFeedback",
+        "Select",
+        "StateBlock",
+        "TextInput",
+        "Textarea"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/features/admin/cases/manual-case-form.tsx",
+      "contracts": [
+        "ButtonLink",
+        "InlineFeedback",
+        "Select",
+        "StateBlock",
+        "TextInput",
+        "Textarea"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/admin-manual-case-form.test.tsx"
+    },
+    {
+      "path": "src/features/admin/clients/client-crm-forms.tsx",
+      "contracts": [
+        "InlineFeedback",
+        "Select",
+        "StateBlock",
+        "TextInput",
+        "Textarea"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/features/admin/consultations/consultation-action-panel.tsx",
+      "contracts": [
+        "InlineFeedback",
+        "Select",
+        "TextInput",
+        "Textarea"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/features/admin/consultations/consultation-availability-form.tsx",
+      "contracts": [
+        "InlineFeedback",
+        "TextInput"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/features/admin/contact-messages/contact-message-inbox.tsx",
+      "contracts": [
+        "Button",
+        "DataTable",
+        "DataTableColumn",
+        "FilterBar",
+        "SearchInput",
+        "Select",
+        "StateBlock",
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/admin-contact-message-inbox.test.tsx"
+    },
+    {
+      "path": "src/features/admin/content/content-forms.tsx",
+      "contracts": [
+        "InlineFeedback",
+        "Select",
+        "TextInput",
+        "Textarea"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/features/admin/dashboard/admin-command-center.tsx",
+      "contracts": [
+        "Badge",
+        "SearchInput",
+        "StateBlock",
+        "buttonClasses"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-command-center.test.tsx"
+    },
+    {
+      "path": "src/features/admin/dashboard/dashboard-priority-list.tsx",
+      "contracts": [
+        "Badge",
+        "StateBlock",
+        "buttonClasses"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/features/admin/finance/finance-forms.tsx",
+      "contracts": [
+        "InlineFeedback",
+        "Select",
+        "StateBlock",
+        "TextInput",
+        "Textarea"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/features/admin/governance/governance-forms.tsx",
+      "contracts": [
+        "ButtonLink",
+        "InlineFeedback",
+        "Select",
+        "StateBlock",
+        "TextInput"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/features/admin/governance/role-permission-form.tsx",
+      "contracts": [
+        "Button",
+        "InlineFeedback"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/admin-role-permission-form.test.tsx"
+    },
+    {
+      "path": "src/features/admin/messages/admin-message-thread-panel.tsx",
+      "contracts": [
+        "Button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/features/admin/notifications/admin-notification-popover.tsx",
+      "contracts": [
+        "Button",
+        "StateBlock",
+        "buttonClasses"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/admin-notification-center.test.tsx"
+    },
+    {
+      "path": "src/features/admin/task-documents/task-document-forms.tsx",
+      "contracts": [
+        "InlineFeedback",
+        "Select",
+        "StateBlock",
+        "TextInput",
+        "Textarea"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/features/auth/login-form.tsx",
+      "contracts": [
+        "TextInput"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/features/client/client-assistant-panel.tsx",
+      "contracts": [
+        "Button",
+        "Textarea"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/features/client/client-team-chat-panel.tsx",
+      "contracts": [
+        "Button",
+        "Textarea"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/features/install/install-wizard.tsx",
+      "contracts": [
+        "TextInput"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/features/payments/consultation-payment-receipt-document.tsx",
+      "contracts": [
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/features/payments/receipt-print-button.tsx",
+      "contracts": [
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/features/portal/profile-form.tsx",
+      "contracts": [
+        "TextInput"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/features/public-site/booking-stepper.tsx",
+      "contracts": [
+        "Select",
+        "TextInput",
+        "Textarea"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/public-pages.test.tsx"
+    },
+    {
+      "path": "src/features/public-site/consultation-assistant-panel.tsx",
+      "contracts": [
+        "Button",
+        "Select",
+        "TextInput",
+        "Textarea"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/public-pages.test.tsx"
+    },
+    {
+      "path": "src/features/public-site/consultation-booking-chat.tsx",
+      "contracts": [
+        "TextInput"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/public-pages.test.tsx"
+    },
+    {
+      "path": "src/features/public-site/contact-form.tsx",
+      "contracts": [
+        "Select",
+        "TextInput",
+        "Textarea"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/public-pages.test.tsx"
+    },
+    {
+      "path": "src/features/public-site/directory-filter.tsx",
+      "contracts": [
+        "ButtonLink",
+        "TextInput"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/public-pages.test.tsx"
+    },
+    {
+      "path": "src/features/public-site/public-pages.tsx",
+      "contracts": [
+        "ButtonLink"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/public-pages.test.tsx"
+    },
+    {
+      "path": "src/server/auth/page-guards.tsx",
+      "contracts": [
+        "StateBlock"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    }
+  ],
+  "connectedSurfaces": [
+    {
+      "path": "src/app/(app-ar)/admin/page.tsx",
+      "disposition": "delegates to the migrated admin command center"
+    },
+    {
+      "path": "src/features/admin/notifications/admin-notification-bell.tsx",
+      "disposition": "delegates notification behavior to the classified notification popover"
+    }
+  ],
+  "blocked": []
+}

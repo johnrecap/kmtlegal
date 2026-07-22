@@ -8,6 +8,7 @@ import {
   CalendarAppointmentForm
 } from "@/features/admin/cases/case-action-forms";
 import { appointmentStatusLabels, appointmentTypeLabels, formatDate, formatDateTime, labelFrom, modeLabels } from "@/lib/legal-format";
+import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
 import {
   getAdminCaseFilterOptions,
   canManageCalendarAppointment,
@@ -125,7 +126,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
         <div className="space-y-5">
           <form action="/admin/calendar" method="get">
-            <FilterBar>
+            <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.calendar.filters}>
               <TextInput className="min-w-40" defaultValue={dateInput(result.from)} label="من" name="from" type="date" />
               <TextInput className="min-w-40" defaultValue={dateInput(result.to)} label="إلى" name="to" type="date" />
               <Select className="min-w-44" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">

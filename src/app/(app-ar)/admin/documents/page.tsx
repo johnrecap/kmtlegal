@@ -29,6 +29,7 @@ import {
   formatDateTime,
   labelFrom
 } from "@/lib/legal-format";
+import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
 import {
   getAdminDocumentOptions,
   listAdminDocuments
@@ -194,8 +195,9 @@ export default async function AdminDocumentsPage({ searchParams }: { searchParam
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
         <div className="space-y-5">
           <form action="/admin/documents" method="get">
-            <FilterBar>
+            <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.documents.filters}>
               <SearchInput
+                ariaLabel={plan35AdminListAccessibilityCopy.documents.search}
                 className="min-w-0 flex-1 sm:min-w-80"
                 defaultValue={result.filters.q ?? ""}
                 name="q"
@@ -265,6 +267,7 @@ export default async function AdminDocumentsPage({ searchParams }: { searchParam
           </div>
 
           <DataTable
+            caption={plan35AdminListAccessibilityCopy.documents.table}
             columns={[
               {
                 key: "file",

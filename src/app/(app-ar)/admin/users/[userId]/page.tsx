@@ -5,7 +5,7 @@ import { AdminNotificationBell } from "@/features/admin/notifications/admin-noti
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
 import { AdminUserActionPanel } from "@/features/admin/governance/governance-forms";
 import { formatDateTime } from "@/lib/legal-format";
-import { permissionDisplayLabel, plan35UserGovernanceUiCopy, roleDisplayLabel } from "@/lib/ui-copy";
+import { permissionDisplayLabel, plan35AdminListAccessibilityCopy, plan35UserGovernanceUiCopy, roleDisplayLabel } from "@/lib/ui-copy";
 import { canManageClientAccounts } from "@/server/admin/client-crm-service";
 import { canChangeAdminUserPassword, getAdminUserDetail, getAdminUserOptions } from "@/server/admin/governance-service";
 import { auditActionOptionLabel, auditResourceLabel } from "@/server/audit/audit-event-catalog";
@@ -172,7 +172,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               <CardDescription>جلسات الدخول الأخيرة بدون عرض token أو بيانات سرية.</CardDescription>
             </CardHeader>
             <CardContent>
-              <DataTable columns={sessionColumns} rows={user.safeSessions} empty="لا توجد جلسات مسجلة." mobileRender={(row) => <SessionMobileCard row={row} />} />
+              <DataTable caption={plan35AdminListAccessibilityCopy.userDetail.sessionsTable} columns={sessionColumns} rows={user.safeSessions} empty="لا توجد جلسات مسجلة." mobileRender={(row) => <SessionMobileCard row={row} />} />
             </CardContent>
           </Card>
 
@@ -182,7 +182,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               <CardDescription>أحدث الإجراءات التي نفذها هذا الحساب.</CardDescription>
             </CardHeader>
             <CardContent>
-              <DataTable columns={auditColumns} rows={user.safeAuditRows} empty="لا توجد أحداث تدقيق مرتبطة بهذا المستخدم." mobileRender={(row) => <AuditMobileCard row={row} />} />
+              <DataTable caption={plan35AdminListAccessibilityCopy.userDetail.auditTable} columns={auditColumns} rows={user.safeAuditRows} empty="لا توجد أحداث تدقيق مرتبطة بهذا المستخدم." mobileRender={(row) => <AuditMobileCard row={row} />} />
             </CardContent>
           </Card>
 

@@ -139,6 +139,12 @@ safe authorized destination or no action.
 - Contact and notification surfaces reuse the existing design tokens, responsive breakpoints, RTL
   direction, keyboard semantics, accessible status announcements, and retry/error patterns. No new
   UI or animation dependency was added.
+- Repeated admin forms preserve stable submission names while deterministic ID prefixes keep labels,
+  help, and errors unique. Operational filters, searches, and tables use centralized Arabic
+  accessible names, captions, scoped headers, semantic feedback, and mobile record alternatives.
+- Local shared-shell baselines cover `1440x900`, `1023x768`, `1024x768`, `390x844`, and `320x568`.
+  They are fallback evidence only; protected admin-page visual acceptance remains open in T112 until
+  safe authenticated states exist, and production data is never used for that verification.
 
 ## Environment Boundaries
 

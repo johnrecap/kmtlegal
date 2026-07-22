@@ -13,6 +13,7 @@ import {
   DataRecordCard,
   DataTable,
   FilterBar,
+  InlineFeedback,
   MetricCard,
   Select,
   StateBlock,
@@ -30,6 +31,7 @@ import {
   paymentStatusLabels,
   taskStatusLabels
 } from "@/lib/legal-format";
+import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
 import { getAdminReports } from "@/server/admin/finance-report-service";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../admin-navigation";
@@ -206,7 +208,7 @@ export default async function AdminReportsPage({ searchParams }: { searchParams?
     >
       <div className="space-y-6">
         <form action="/admin/reports" method="get">
-          <FilterBar>
+          <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.reports.filters}>
             <TextInput className="min-w-36" defaultValue={report.filters.dateFrom ?? ""} label="من" name="dateFrom" type="date" />
             <TextInput className="min-w-36" defaultValue={report.filters.dateTo ?? ""} label="إلى" name="dateTo" type="date" />
             <Select className="min-w-36" defaultValue={report.filters.currency ?? ""} label="العملة" name="currency">
@@ -224,9 +226,7 @@ export default async function AdminReportsPage({ searchParams }: { searchParams?
         </form>
 
         {!selectedCurrency ? (
-          <div className="rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
-            التقارير المالية تعرض مجموعًا خامًا عند اختيار كل العملات. اختر عملة واحدة لقراءة مالية قابلة للمقارنة.
-          </div>
+          <InlineFeedback title="التقارير المالية تعرض مجموعًا خامًا عند اختيار كل العملات. اختر عملة واحدة لقراءة مالية قابلة للمقارنة." tone="warning" />
         ) : null}
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -297,6 +297,7 @@ export default async function AdminReportsPage({ searchParams }: { searchParams?
           </CardHeader>
           <CardContent>
             <DataTable
+              caption={plan35AdminListAccessibilityCopy.reports.paymentsTable}
               columns={recentPaymentColumns}
               rows={report.recentPayments}
               empty="لا توجد فواتير داخل نطاق التقرير الحالي."

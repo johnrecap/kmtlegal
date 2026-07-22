@@ -7,6 +7,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  DataRecordCard,
   DataTable,
   DialogFrame,
   FilterBar,
@@ -22,11 +23,12 @@ import {
 } from "@/components/ui";
 import { DashboardShell, ProductThemeProvider } from "@/components/layout";
 import { AIOrganizerPanel, DocumentCard, ServiceCard, TaskCard } from "@/components/domain";
+import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
 
 export type ProductSystemScreen = "dashboard" | "clients" | "cases" | "documents" | "settings";
 
 const screenMeta: Record<ProductSystemScreen, { eyebrow: string; title: string }> = {
-  dashboard: { eyebrow: "نظام الواجهة", title: "نظام واجهة KMT Legal" },
+  dashboard: { eyebrow: "نظام الواجهة", title: "نظام واجهة KMT\u00A0Legal" },
   clients: { eyebrow: "CRM العملاء", title: "إدارة العملاء" },
   cases: { eyebrow: "تشغيل القضايا", title: "إدارة القضايا والجلسات" },
   documents: { eyebrow: "المستندات", title: "إدارة المستندات" },
@@ -201,8 +203,8 @@ function DashboardScreen() {
             { value: "closed", label: "مغلقة", badge: <Badge tone="closed">36</Badge> }
           ]}
         />
-        <FilterBar>
-          <SearchInput className="min-w-64 flex-1" placeholder="ابحث برقم القضية أو اسم العميل" />
+        <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.productSystem.casesFilters}>
+          <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.productSystem.casesSearch} className="min-w-64 flex-1" placeholder="ابحث برقم القضية أو اسم العميل" />
           <Select aria-label="حالة القضية" className="max-w-48" label="حالة القضية" name="caseStatus" defaultValue="all">
             <option value="all">كل الحالات</option>
             <option value="active">نشطة</option>
@@ -291,8 +293,8 @@ function ClientsScreen() {
           </div>
           <Button leadingIcon={<MaterialSymbol className="text-[18px]" name="person_add" />}>عميل جديد</Button>
         </div>
-        <FilterBar>
-          <SearchInput className="min-w-64 flex-1" placeholder="ابحث باسم العميل أو جهة الاتصال" />
+        <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.productSystem.clientsFilters}>
+          <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.productSystem.clientsSearch} className="min-w-64 flex-1" placeholder="ابحث باسم العميل أو جهة الاتصال" />
           <Select className="max-w-48" label="نوع العميل" name="clientType" defaultValue="all">
             <option value="all">كل العملاء</option>
             <option value="company">شركات</option>
@@ -305,6 +307,7 @@ function ClientsScreen() {
           </Select>
         </FilterBar>
         <DataTable
+          caption={plan35AdminListAccessibilityCopy.productSystem.clientsTable}
           columns={[
             { key: "name", header: "العميل", render: (row) => <span className="font-medium">{row.name}</span> },
             { key: "contact", header: "جهة الاتصال", render: (row) => row.contact },
@@ -314,6 +317,18 @@ function ClientsScreen() {
             { key: "status", header: "الحالة", render: (row) => statusBadge(row.status) }
           ]}
           rows={clientRows}
+          mobileRender={(row) => (
+            <DataRecordCard
+              title={row.name}
+              description={row.contact}
+              badges={statusBadge(row.status)}
+              fields={[
+                { label: "التصنيف", value: row.segment },
+                { label: "قضايا مفتوحة", value: row.openCases },
+                { label: "آخر نشاط", value: row.lastActivity, className: "sm:col-span-2" }
+              ]}
+            />
+          )}
         />
       </section>
 
@@ -392,8 +407,8 @@ function DocumentsScreen() {
             </div>
             <Button leadingIcon={<MaterialSymbol className="text-[18px]" name="upload_file" />}>رفع مستند</Button>
           </div>
-          <FilterBar>
-            <SearchInput className="min-w-64 flex-1" placeholder="ابحث باسم المستند أو العميل" />
+          <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.productSystem.documentsFilters}>
+            <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.productSystem.documentsSearch} className="min-w-64 flex-1" placeholder="ابحث باسم المستند أو العميل" />
             <Select className="max-w-48" label="نوع الملف" name="documentType" defaultValue="all">
               <option value="all">كل الأنواع</option>
               <option value="pdf">PDF</option>
@@ -402,6 +417,7 @@ function DocumentsScreen() {
             </Select>
           </FilterBar>
           <DataTable
+            caption={plan35AdminListAccessibilityCopy.productSystem.documentsTable}
             columns={[
               { key: "title", header: "المستند", render: (row) => <span className="font-medium">{row.title}</span> },
               { key: "owner", header: "المالك", render: (row) => row.owner },
@@ -411,6 +427,18 @@ function DocumentsScreen() {
               { key: "status", header: "الحالة", render: (row) => statusBadge(row.status) }
             ]}
             rows={documentRows}
+            mobileRender={(row) => (
+              <DataRecordCard
+                title={row.title}
+                description={row.owner}
+                badges={statusBadge(row.status)}
+                fields={[
+                  { label: "النوع", value: row.type },
+                  { label: "الحجم", value: row.size },
+                  { label: "تاريخ الرفع", value: row.uploadedAt, className: "sm:col-span-2" }
+                ]}
+              />
+            )}
           />
         </div>
 
@@ -485,6 +513,7 @@ function SettingsScreen() {
           <p className="mt-1 text-sm leading-6 text-kmt-muted">شكل الجدول الذي سيستخدم لاحقا لأحداث الصلاحيات والإعدادات.</p>
         </div>
         <DataTable
+          caption={plan35AdminListAccessibilityCopy.productSystem.auditTable}
           columns={[
             { key: "action", header: "الإجراء", render: (row) => <span className="font-medium">{row.action}</span> },
             { key: "actor", header: "المنفذ", render: (row) => row.actor },
@@ -492,6 +521,16 @@ function SettingsScreen() {
             { key: "time", header: "الوقت", render: (row) => row.time }
           ]}
           rows={auditRows}
+          mobileRender={(row) => (
+            <DataRecordCard
+              title={row.action}
+              description={row.target}
+              fields={[
+                { label: "المنفذ", value: row.actor },
+                { label: "الوقت", value: row.time }
+              ]}
+            />
+          )}
         />
       </section>
     </div>
@@ -501,6 +540,7 @@ function SettingsScreen() {
 function CasesTable({ compact = false }: { compact?: boolean }) {
   return (
     <DataTable
+      caption={plan35AdminListAccessibilityCopy.productSystem.casesTable}
       columns={[
         {
           key: "number",
@@ -522,6 +562,18 @@ function CasesTable({ compact = false }: { compact?: boolean }) {
         }
       ]}
       rows={caseRows}
+      mobileRender={(row) => (
+        <DataRecordCard
+          title={row.number}
+          description={row.client}
+          badges={statusBadge(row.status)}
+          fields={[
+            { label: "الخدمة", value: row.service },
+            { label: "المحامي", value: row.lawyer },
+            { label: "الخطوة التالية", value: row.nextStep, className: "sm:col-span-2" }
+          ]}
+        />
+      )}
     />
   );
 }

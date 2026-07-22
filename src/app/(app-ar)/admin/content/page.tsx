@@ -16,7 +16,7 @@ import {
   socialPlatformValues
 } from "@/lib/legal-content";
 import { formatDateTime, labelFrom } from "@/lib/legal-format";
-import { plan35AdminRestrictedActionCopy, sourceTypeDisplayLabel } from "@/lib/ui-copy";
+import { plan35AdminListAccessibilityCopy, plan35AdminRestrictedActionCopy, sourceTypeDisplayLabel } from "@/lib/ui-copy";
 import {
   canApproveArticles,
   canApproveCaseStudies,
@@ -353,8 +353,8 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
           <div className="space-y-5">
             <form action="/admin/content" method="get">
               <input name="tab" type="hidden" value={activeTab} />
-              <FilterBar>
-                <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="البحث في المحتوى..." />
+              <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.content.filters}>
+                <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.content.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="البحث في المحتوى..." />
                 <Select className="min-w-44" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
                   <option value="">كل الحالات</option>
                   {statusOptions(activeTab).map(([value, label]) => (
@@ -407,6 +407,7 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
             </div>
 
             <DataTable
+              caption={plan35AdminListAccessibilityCopy.content.table}
               columns={columns(activeTab)}
               rows={rows}
               empty="لا توجد عناصر مطابقة للفلاتر الحالية."

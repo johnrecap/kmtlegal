@@ -9,6 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  InlineFeedback,
   Select,
   StateBlock,
   TextInput,
@@ -68,21 +69,12 @@ function toDateTimeLocal(value: string | Date) {
   return local.toISOString().slice(0, 16);
 }
 
-function StatusMessage({ message }: { message: ActionMessage | null }) {
+function ActionFeedback({ message }: { message: ActionMessage | null }) {
   if (!message) {
     return null;
   }
 
-  const className =
-    message.tone === "error"
-      ? "rounded border border-red-200 bg-red-50 px-3 py-2 text-sm leading-6 text-kmt-danger"
-      : "rounded border border-blue-200 bg-blue-50 px-3 py-2 text-sm leading-6 text-blue-900";
-
-  return (
-    <div className={className} role={message.tone === "error" ? "alert" : "status"}>
-      {message.text}
-    </div>
-  );
+  return <InlineFeedback title={message.text} tone={message.tone} />;
 }
 
 function useJsonAction() {
@@ -161,22 +153,22 @@ export function CaseStatusForm({
       </CardHeader>
       <CardContent>
         <form className="grid gap-4" onSubmit={submit}>
-          <Select defaultValue={currentStatus} disabled={isBusy} label="الحالة الجديدة" name="status">
+          <Select defaultValue={currentStatus} disabled={isBusy} idPrefix={`case-status-${caseId}`} label="الحالة الجديدة" name="status">
             {caseStatusOptions.map((status) => (
               <option key={status} value={status}>
                 {labelFrom(caseStatusLabels, status)}
               </option>
             ))}
           </Select>
-          <Textarea disabled={isBusy} label="سبب التغيير" name="reason" />
+          <Textarea disabled={isBusy} idPrefix={`case-status-${caseId}`} label="سبب التغيير" name="reason" />
           <label className="flex items-start gap-2 text-sm leading-6 text-kmt-ink">
-            <input className="mt-1 h-4 w-4 rounded border-slate-300 text-kmt-navy focus:ring-kmt-gold" disabled={isBusy} name="confirmStatusChange" required type="checkbox" />
+            <input className="mt-1 h-4 w-4 rounded border-slate-300 text-kmt-navy focus:ring-kmt-gold" disabled={isBusy} id={`case-status-${caseId}-confirmStatusChange`} name="confirmStatusChange" required type="checkbox" />
             <span>أؤكد أن تغيير الحالة تمت مراجعته وأنه مناسب لملف القضية.</span>
           </label>
           <Button loading={isBusy} type="submit">
             حفظ الحالة
           </Button>
-          <StatusMessage message={message} />
+          <ActionFeedback message={message} />
         </form>
       </CardContent>
     </Card>
@@ -228,17 +220,17 @@ export function CaseSessionForm({
       </CardHeader>
       <CardContent>
         <form className="grid gap-4" onSubmit={submit}>
-          <TextInput defaultValue={defaultCourtName ?? ""} disabled={isBusy} label="المحكمة" name="courtName" />
+          <TextInput defaultValue={defaultCourtName ?? ""} disabled={isBusy} idPrefix={`case-session-${caseId}`} label="المحكمة" name="courtName" />
           <div className="grid gap-4 sm:grid-cols-2">
-            <TextInput disabled={isBusy} label="تاريخ الجلسة" name="sessionDate" required type="datetime-local" />
-            <TextInput disabled={isBusy} label="الجلسة القادمة" name="nextSessionDate" type="datetime-local" />
+            <TextInput disabled={isBusy} idPrefix={`case-session-${caseId}`} label="تاريخ الجلسة" name="sessionDate" required type="datetime-local" />
+            <TextInput disabled={isBusy} idPrefix={`case-session-${caseId}`} label="الجلسة القادمة" name="nextSessionDate" type="datetime-local" />
           </div>
-          <Textarea disabled={isBusy} label="القرار أو النتيجة" name="decision" />
-          <Textarea disabled={isBusy} label="الإجراء القادم" name="nextAction" />
+          <Textarea disabled={isBusy} idPrefix={`case-session-${caseId}`} label="القرار أو النتيجة" name="decision" />
+          <Textarea disabled={isBusy} idPrefix={`case-session-${caseId}`} label="الإجراء القادم" name="nextAction" />
           <Button loading={isBusy} type="submit">
             إضافة الجلسة
           </Button>
-          <StatusMessage message={message} />
+          <ActionFeedback message={message} />
         </form>
       </CardContent>
     </Card>
@@ -284,23 +276,23 @@ export function CalendarAppointmentForm({ cases, defaultCaseId }: { cases: CaseO
       </CardHeader>
       <CardContent>
         <form className="grid gap-4" onSubmit={submit}>
-          <Select defaultValue={defaultCaseId} disabled={isBusy} label="القضية" name="caseId" required>
+          <Select defaultValue={defaultCaseId} disabled={isBusy} idPrefix="calendar-appointment" label="القضية" name="caseId" required>
             {cases.map((legalCase) => (
               <option key={legalCase.id} value={legalCase.id}>
                 {legalCase.internalFileNumber} - {legalCase.client.fullName}
               </option>
             ))}
           </Select>
-          <TextInput disabled={isBusy} label="عنوان الموعد" name="title" required />
+          <TextInput disabled={isBusy} idPrefix="calendar-appointment" label="عنوان الموعد" name="title" required />
           <div className="grid gap-4 sm:grid-cols-2">
-            <Select defaultValue="COURT_SESSION" disabled={isBusy} label="نوع الموعد" name="type">
+            <Select defaultValue="COURT_SESSION" disabled={isBusy} idPrefix="calendar-appointment" label="نوع الموعد" name="type">
               {appointmentTypeOptions.map((type) => (
                 <option key={type} value={type}>
                   {labelFrom(appointmentTypeLabels, type)}
                 </option>
               ))}
             </Select>
-            <Select defaultValue="COURT" disabled={isBusy} label="طريقة الموعد" name="mode">
+            <Select defaultValue="COURT" disabled={isBusy} idPrefix="calendar-appointment" label="طريقة الموعد" name="mode">
               {appointmentModeOptions.map((mode) => (
                 <option key={mode} value={mode}>
                   {labelFrom(modeLabels, mode)}
@@ -309,15 +301,15 @@ export function CalendarAppointmentForm({ cases, defaultCaseId }: { cases: CaseO
             </Select>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <TextInput disabled={isBusy} label="وقت الموعد" name="startsAt" required type="datetime-local" />
-            <TextInput defaultValue="60" disabled={isBusy} label="المدة بالدقائق" name="durationMinutes" type="number" />
+            <TextInput disabled={isBusy} idPrefix="calendar-appointment" label="وقت الموعد" name="startsAt" required type="datetime-local" />
+            <TextInput defaultValue="60" disabled={isBusy} idPrefix="calendar-appointment" label="المدة بالدقائق" name="durationMinutes" type="number" />
           </div>
-          <TextInput disabled={isBusy} label="المكان أو الرابط" name="location" />
-          <Textarea disabled={isBusy} label="ملاحظات" name="notes" />
+          <TextInput disabled={isBusy} idPrefix="calendar-appointment" label="المكان أو الرابط" name="location" />
+          <Textarea disabled={isBusy} idPrefix="calendar-appointment" label="ملاحظات" name="notes" />
           <Button loading={isBusy} type="submit">
             إنشاء الموعد
           </Button>
-          <StatusMessage message={message} />
+          <ActionFeedback message={message} />
         </form>
       </CardContent>
     </Card>
@@ -347,24 +339,24 @@ export function AppointmentRescheduleForm({ appointmentId, status, startsAt, mod
   return (
     <form className="mt-3 grid gap-3 rounded border border-kmt-border bg-slate-50 p-3" onSubmit={submit}>
       <div className="grid gap-3 sm:grid-cols-2">
-        <TextInput defaultValue={toDateTimeLocal(startsAt)} disabled={isBusy || isClosed} label="موعد جديد" name="startsAt" required type="datetime-local" />
-        <TextInput defaultValue="60" disabled={isBusy || isClosed} label="المدة بالدقائق" name="durationMinutes" type="number" />
+        <TextInput defaultValue={toDateTimeLocal(startsAt)} disabled={isBusy || isClosed} idPrefix={`appointment-reschedule-${appointmentId}`} label="موعد جديد" name="startsAt" required type="datetime-local" />
+        <TextInput defaultValue="60" disabled={isBusy || isClosed} idPrefix={`appointment-reschedule-${appointmentId}`} label="المدة بالدقائق" name="durationMinutes" type="number" />
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
-        <Select defaultValue={mode} disabled={isBusy || isClosed} label="الطريقة" name="mode">
+        <Select defaultValue={mode} disabled={isBusy || isClosed} idPrefix={`appointment-reschedule-${appointmentId}`} label="الطريقة" name="mode">
           {appointmentModeOptions.map((option) => (
             <option key={option} value={option}>
               {labelFrom(modeLabels, option)}
             </option>
           ))}
         </Select>
-        <TextInput defaultValue={location ?? ""} disabled={isBusy || isClosed} label="المكان أو الرابط" name="location" />
+        <TextInput defaultValue={location ?? ""} disabled={isBusy || isClosed} idPrefix={`appointment-reschedule-${appointmentId}`} label="المكان أو الرابط" name="location" />
       </div>
-      <Textarea disabled={isBusy || isClosed} label="سبب إعادة الجدولة" name="reason" />
+      <Textarea disabled={isBusy || isClosed} idPrefix={`appointment-reschedule-${appointmentId}`} label="سبب إعادة الجدولة" name="reason" />
       <Button disabled={isClosed} loading={isBusy} size="sm" type="submit" variant="secondary">
         إعادة الجدولة
       </Button>
-      <StatusMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }

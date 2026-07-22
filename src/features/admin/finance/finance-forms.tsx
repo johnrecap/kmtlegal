@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
-import { Button, Select, StateBlock, TextInput, Textarea } from "@/components/ui";
+import { Button, InlineFeedback, Select, StateBlock, TextInput, Textarea } from "@/components/ui";
 import { currencyValues, paymentStatusValues } from "@/lib/legal-finance";
 import { labelFrom, paymentStatusLabels } from "@/lib/legal-format";
 import { paymentGatewayUiCopy } from "@/lib/ui-copy";
@@ -77,6 +77,11 @@ type ApiErrorBody = {
   error?: {
     message?: string;
   };
+};
+
+type ActionMessage = {
+  tone: "success" | "error";
+  text: string;
 };
 
 async function readMessage(response: Response) {
@@ -162,16 +167,8 @@ async function sendJson(path: string, method: "POST" | "PATCH", payload: unknown
   });
 }
 
-function StatusMessage({ message }: { message: string | null }) {
-  if (!message) {
-    return null;
-  }
-
-  return (
-    <div className="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-sm leading-6 text-blue-900" role="status">
-      {message}
-    </div>
-  );
+function ActionFeedback({ message }: { message: ActionMessage | null }) {
+  return message ? <InlineFeedback title={message.text} tone={message.tone} /> : null;
 }
 
 export function PaymentForm({
@@ -186,7 +183,7 @@ export function PaymentForm({
   mode?: "create" | "edit";
 }) {
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const isEdit = mode === "edit" && payment?.id;
 
@@ -208,7 +205,7 @@ export function PaymentForm({
       );
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
 
@@ -216,10 +213,10 @@ export function PaymentForm({
         form.reset();
       }
 
-      setMessage(isEdit ? "تم حفظ الفاتورة." : "تم إنشاء الفاتورة.");
+      setMessage({ tone: "success", text: isEdit ? "تم حفظ الفاتورة." : "تم إنشاء الفاتورة." });
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -231,6 +228,7 @@ export function PaymentForm({
         <TextInput
           defaultValue={payment?.invoiceNumber ?? ""}
           disabled={isBusy}
+          idPrefix={`payment-${payment?.id ?? "create"}`}
           label="رقم الفاتورة"
           name="invoiceNumber"
           placeholder="INV-2026-0002"
@@ -247,7 +245,7 @@ export function PaymentForm({
         </div>
       )}
       <div className="grid gap-4 sm:grid-cols-2">
-        <Select defaultValue={payment?.clientId ?? ""} disabled={isBusy} label="العميل" name="clientId" required>
+        <Select defaultValue={payment?.clientId ?? ""} disabled={isBusy} idPrefix={`payment-${payment?.id ?? "create"}`} label="العميل" name="clientId" required>
           <option value="">اختر العميل</option>
           {clients.map((client) => (
             <option key={client.id} value={client.id}>
@@ -255,7 +253,7 @@ export function PaymentForm({
             </option>
           ))}
         </Select>
-        <Select defaultValue={payment?.caseId ?? ""} disabled={isBusy} label="القضية" name="caseId">
+        <Select defaultValue={payment?.caseId ?? ""} disabled={isBusy} idPrefix={`payment-${payment?.id ?? "create"}`} label="القضية" name="caseId">
           <option value="">بدون قضية</option>
           {cases.map((legalCase) => (
             <option key={legalCase.id} value={legalCase.id}>
@@ -268,17 +266,19 @@ export function PaymentForm({
         <TextInput
           defaultValue={toDateInput(payment?.issueDate) || todayInput()}
           disabled={isBusy}
+          idPrefix={`payment-${payment?.id ?? "create"}`}
           label="تاريخ الإصدار"
           name="issueDate"
           required
           type="date"
         />
-        <TextInput defaultValue={toDateInput(payment?.dueDate)} disabled={isBusy} label="تاريخ الاستحقاق" name="dueDate" type="date" />
+        <TextInput defaultValue={toDateInput(payment?.dueDate)} disabled={isBusy} idPrefix={`payment-${payment?.id ?? "create"}`} label="تاريخ الاستحقاق" name="dueDate" type="date" />
       </div>
       <div className="grid gap-4 sm:grid-cols-3">
         <TextInput
           defaultValue={payment?.amount ? String(payment.amount) : ""}
           disabled={isBusy}
+          idPrefix={`payment-${payment?.id ?? "create"}`}
           inputMode="decimal"
           label="القيمة"
           min="0.01"
@@ -287,14 +287,14 @@ export function PaymentForm({
           step="0.01"
           type="number"
         />
-        <Select defaultValue={payment?.currency ?? "EGP"} disabled={isBusy} label="العملة" name="currency">
+        <Select defaultValue={payment?.currency ?? "EGP"} disabled={isBusy} idPrefix={`payment-${payment?.id ?? "create"}`} label="العملة" name="currency">
           {currencyValues.map((currency) => (
             <option key={currency} value={currency}>
               {currency}
             </option>
           ))}
         </Select>
-        <Select defaultValue={payment?.status ?? "DRAFT"} disabled={isBusy} label="الحالة" name="status">
+        <Select defaultValue={payment?.status ?? "DRAFT"} disabled={isBusy} idPrefix={`payment-${payment?.id ?? "create"}`} label="الحالة" name="status">
           {paymentStatusValues.map((status) => (
             <option key={status} value={status}>
               {labelFrom(paymentStatusLabels, status)}
@@ -303,29 +303,30 @@ export function PaymentForm({
         </Select>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextInput defaultValue={payment?.paymentMethod ?? ""} disabled={isBusy} label="طريقة الدفع" name="paymentMethod" />
-        <TextInput defaultValue={payment?.receiptNumber ?? ""} disabled={isBusy} label="رقم الإيصال" name="receiptNumber" />
+        <TextInput defaultValue={payment?.paymentMethod ?? ""} disabled={isBusy} idPrefix={`payment-${payment?.id ?? "create"}`} label="طريقة الدفع" name="paymentMethod" />
+        <TextInput defaultValue={payment?.receiptNumber ?? ""} disabled={isBusy} idPrefix={`payment-${payment?.id ?? "create"}`} label="رقم الإيصال" name="receiptNumber" />
       </div>
       <TextInput
         defaultValue={toDateTimeInput(payment?.paidAt)}
         disabled={isBusy}
         hint="يقبل هذا الحقل فقط عندما تكون الحالة مدفوعة."
+        idPrefix={`payment-${payment?.id ?? "create"}`}
         label="تاريخ الدفع"
         name="paidAt"
         type="datetime-local"
       />
-      <Textarea defaultValue={payment?.notes ?? ""} disabled={isBusy} label="ملاحظات داخلية" name="notes" />
+      <Textarea defaultValue={payment?.notes ?? ""} disabled={isBusy} idPrefix={`payment-${payment?.id ?? "create"}`} label="ملاحظات داخلية" name="notes" />
       <Button loading={isBusy} type="submit">
         {isEdit ? "حفظ الفاتورة" : "إنشاء فاتورة"}
       </Button>
-      <StatusMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }
 
 export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGatewaySettingsValue }) {
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const [activeProvider, setActiveProvider] = useState(settings.activeProvider);
   const [bookingMode, setBookingMode] = useState(settings.bookingMode);
@@ -346,14 +347,14 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
       });
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
 
-      setMessage("تم حفظ إعدادات الحجز والدفع.");
+      setMessage({ tone: "success", text: "تم حفظ إعدادات الحجز والدفع." });
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -363,6 +364,7 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
     <form className="grid gap-4" onSubmit={submit}>
       <Select
         disabled={isBusy}
+        idPrefix="payment-gateway-settings"
         label="وضع استقبال طلب الاستشارة"
         name="bookingMode"
         value={bookingMode}
@@ -383,6 +385,7 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
       </div>
       <Select
         disabled={isBusy}
+        idPrefix="payment-gateway-settings"
         label="بوابة الدفع النشطة"
         name="activeProvider"
         value={activeProvider}
@@ -399,7 +402,7 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
           <div key={provider.provider} className="rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="font-semibold text-kmt-ink">{provider.label}</span>
-              <span className={provider.enabled && provider.configured ? "text-emerald-700" : "text-amber-700"}>
+              <span className={provider.enabled && provider.configured ? "text-kmt-success-strong" : "text-kmt-warning-strong"}>
                 {!provider.enabled
                   ? paymentGatewayUiCopy.standbyProvider
                   : provider.configured
@@ -418,7 +421,7 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
         ))}
       </div>
       <div className="rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6">
-        <p className={settings.hasActivePricingRule ? "font-semibold text-emerald-700" : "font-semibold text-amber-700"}>
+        <p className={settings.hasActivePricingRule ? "font-semibold text-kmt-success-strong" : "font-semibold text-kmt-warning-strong"}>
           {settings.hasActivePricingRule ? "يوجد سعر استشارة نشط." : "لا يوجد سعر استشارة نشط."}
         </p>
         <p className="mt-1 text-xs text-kmt-muted">
@@ -426,21 +429,19 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
         </p>
       </div>
       {blocksPaidChatSave ? (
-        <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-900" role="alert">
-          لا يمكن تفعيل شات الحجز مع الدفع قبل تجهيز بوابة الدفع المختارة وإنشاء سعر استشارة نشط.
-        </div>
+        <InlineFeedback title="لا يمكن تفعيل شات الحجز مع الدفع قبل تجهيز بوابة الدفع المختارة وإنشاء سعر استشارة نشط." tone="warning" />
       ) : null}
       <Button disabled={blocksPaidChatSave || isBusy} loading={isBusy} type="submit">
         حفظ إعدادات الحجز والدفع
       </Button>
-      <StatusMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }
 
 export function WebhookReplayButton({ eventId }: { eventId: string }) {
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   async function replay() {
@@ -450,13 +451,13 @@ export function WebhookReplayButton({ eventId }: { eventId: string }) {
     try {
       const response = await fetch(`/api/admin/payments/webhooks/${eventId}/replay`, { method: "POST" });
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
-      setMessage("تمت إعادة المعالجة.");
+      setMessage({ tone: "success", text: "تمت إعادة المعالجة." });
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -467,7 +468,7 @@ export function WebhookReplayButton({ eventId }: { eventId: string }) {
       <Button disabled={isBusy} loading={isBusy} onClick={replay} size="sm" type="button" variant="secondary">
         إعادة معالجة
       </Button>
-      <StatusMessage message={message} />
+      <ActionFeedback message={message} />
     </div>
   );
 }
@@ -478,7 +479,7 @@ export function ConsultationPricingRuleForm({
   pricingRule?: PricingRuleValue;
 }) {
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const isEdit = Boolean(pricingRule?.id);
 
@@ -496,7 +497,7 @@ export function ConsultationPricingRuleForm({
       );
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
 
@@ -504,10 +505,10 @@ export function ConsultationPricingRuleForm({
         form.reset();
       }
 
-      setMessage(isEdit ? "تم حفظ سعر الاستشارة." : "تم إنشاء سعر الاستشارة.");
+      setMessage({ tone: "success", text: isEdit ? "تم حفظ سعر الاستشارة." : "تم إنشاء سعر الاستشارة." });
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -518,6 +519,7 @@ export function ConsultationPricingRuleForm({
       <TextInput
         defaultValue={pricingRule?.label ?? ""}
         disabled={isBusy}
+        idPrefix={`consultation-pricing-${pricingRule?.id ?? "create"}`}
         label="اسم السعر الداخلي"
         name="label"
         placeholder="عربون استشارة عامة"
@@ -526,11 +528,12 @@ export function ConsultationPricingRuleForm({
         <TextInput
           defaultValue={pricingRule?.serviceCategory ?? ""}
           disabled={isBusy}
+          idPrefix={`consultation-pricing-${pricingRule?.id ?? "create"}`}
           label="تصنيف الخدمة"
           name="serviceCategory"
           placeholder="اتركه فارغًا لسعر عام"
         />
-        <Select defaultValue={pricingRule?.mode ?? ""} disabled={isBusy} label="طريقة الاستشارة" name="mode">
+        <Select defaultValue={pricingRule?.mode ?? ""} disabled={isBusy} idPrefix={`consultation-pricing-${pricingRule?.id ?? "create"}`} label="طريقة الاستشارة" name="mode">
           <option value="">كل الطرق</option>
           <option value="PHONE">هاتف</option>
           <option value="ONLINE">أونلاين</option>
@@ -541,6 +544,7 @@ export function ConsultationPricingRuleForm({
         <TextInput
           defaultValue={pricingRule?.amount ? String(pricingRule.amount) : ""}
           disabled={isBusy}
+          idPrefix={`consultation-pricing-${pricingRule?.id ?? "create"}`}
           inputMode="decimal"
           label="قيمة الحجز"
           min="0.01"
@@ -549,7 +553,7 @@ export function ConsultationPricingRuleForm({
           step="0.01"
           type="number"
         />
-        <Select defaultValue={pricingRule?.currency ?? "EGP"} disabled={isBusy} label="العملة" name="currency">
+        <Select defaultValue={pricingRule?.currency ?? "EGP"} disabled={isBusy} idPrefix={`consultation-pricing-${pricingRule?.id ?? "create"}`} label="العملة" name="currency">
           {currencyValues.map((currency) => (
             <option key={currency} value={currency}>
               {currency}
@@ -559,6 +563,7 @@ export function ConsultationPricingRuleForm({
         <TextInput
           defaultValue={String(pricingRule?.version ?? 1)}
           disabled={isBusy}
+          idPrefix={`consultation-pricing-${pricingRule?.id ?? "create"}`}
           label="الإصدار"
           min="1"
           name="version"
@@ -569,19 +574,20 @@ export function ConsultationPricingRuleForm({
       <TextInput
         defaultValue={toDateTimeInput(pricingRule?.effectiveFrom) || toDateTimeInput(new Date().toISOString())}
         disabled={isBusy}
+        idPrefix={`consultation-pricing-${pricingRule?.id ?? "create"}`}
         label="يبدأ من"
         name="effectiveFrom"
         required
         type="datetime-local"
       />
       <label className="flex items-center gap-3 rounded border border-kmt-border bg-white px-3 py-2 text-sm font-semibold text-kmt-ink">
-        <input className="h-4 w-4 accent-kmt-navy" defaultChecked={pricingRule?.active ?? true} disabled={isBusy} name="active" type="checkbox" />
+        <input className="h-4 w-4 accent-kmt-navy" defaultChecked={pricingRule?.active ?? true} disabled={isBusy} id={`consultation-pricing-${pricingRule?.id ?? "create"}-active`} name="active" type="checkbox" />
         <span>سعر نشط</span>
       </label>
       <Button loading={isBusy} type="submit">
         {isEdit ? "حفظ سعر الاستشارة" : "إنشاء سعر استشارة"}
       </Button>
-      <StatusMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }

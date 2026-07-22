@@ -345,11 +345,35 @@ command-center cases are authored and collection-verified only; T101 remains ope
 execution. Converge found no new local remediation task because T101 already owns the remaining
 authenticated end-to-end evidence.
 
+## US7 Local Implementation Convergence — 2026-07-22
+
+| Severity | Open | Disposition |
+|---|---:|---|
+| `CRITICAL` | 0 | None |
+| `HIGH` | 0 | None. Authenticated admin-page visual acceptance remains explicitly owned by T112. |
+| `MEDIUM` | 0 | Duplicate form IDs, unnamed filters/search/tables, missing mobile record alternatives, ad-hoc feedback colors, the missing mobile-menu glyph, mixed Arabic/English title wrapping, and Playwright evidence-directory deletion were fixed. |
+
+T107–T111 now migrate repeated task/document, case, client, consultation, availability, content,
+finance, governance, list, report, demo, and command-center consumers onto the Foundation UI
+contracts. Stable `name` attributes are preserved while repeated instances receive deterministic
+ID prefixes. Feedback uses the shared alert/status surface, list copy is centralized, tables have
+captions and mobile record alternatives, and all 60 shared primitive/token consumers are recorded
+as migrated or backward-compatible with a named passing test. Playwright transient output is kept
+outside the tracked PLAN-35 evidence directory.
+
+Local verification passed without installing or contacting PostgreSQL: 67 focused compatibility
+tests, all 359 unit/contract tests across 52 files, typecheck, warning-free lint, the guarded build
+across 72 static pages, and 17 responsive/keyboard/RTL/visual browser checks at `1440x900`,
+`1023x768`, `1024x768`, `390x844`, and `320x568`. Five deterministic fallback baselines were
+reviewed. The 13 authenticated scenarios were skipped, not passed; T112 remains open for protected
+admin-page screenshots and journey acceptance with safe disposable login states.
+
 ## Conclusion
 
 PLAN-35 remains internally consistent and conflict-controlled with zero unresolved `CRITICAL`,
 `HIGH`, or `MEDIUM` findings in the completed local lanes. US1, the US2 shell/policy work, US3
-T053–T067, US4 T069–T080, US5 T082–T090, and US6 T092–T100/T102–T106 are locally complete, while
+T053–T067, US4 T069–T080, US5 T082–T090, US6 T092–T100/T102–T106, and US7 T107–T111 are locally
+complete, while
 T016, T028, the database-backed part of T039, T042's authenticated cells, T052, T068, T081, T091,
-and T101 remain explicitly open. Neither collected-only authentication cells nor the
+T101, and T112 remain explicitly open. Neither collected-only authentication cells nor the
 production-connected database are used as acceptance evidence.

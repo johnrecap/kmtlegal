@@ -45,7 +45,7 @@ import {
 } from "@/features/admin/finance/finance-page-helpers";
 import { currencyValues, paymentStatusValues } from "@/lib/legal-finance";
 import { formatDate, formatDateTime, formatMoney, labelFrom, paymentStatusLabels } from "@/lib/legal-format";
-import { plan35AdminRestrictedActionCopy } from "@/lib/ui-copy";
+import { plan35AdminListAccessibilityCopy, plan35AdminRestrictedActionCopy } from "@/lib/ui-copy";
 import {
   getAdminFinanceOptions,
   getAdminPaymentDetail,
@@ -376,8 +376,8 @@ function PaymentGatewayOperationsPanel({
         </CardHeader>
         <CardContent>
           <form action="/admin/finance" method="get">
-            <FilterBar>
-              <SearchInput className="min-w-0 flex-1 sm:min-w-72" defaultValue={query.attemptQ ?? ""} name="attemptQ" placeholder="بحث في محاولات الدفع أو رقم الهاتف" />
+            <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.finance.operationsFilters}>
+              <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.finance.attemptsSearch} className="min-w-0 flex-1 sm:min-w-72" defaultValue={query.attemptQ ?? ""} name="attemptQ" placeholder="بحث في محاولات الدفع أو رقم الهاتف" />
               <Select className="min-w-44" defaultValue={query.attemptStatus ?? ""} label="حالة محاولة الدفع" name="attemptStatus">
                 <option value="">كل المحاولات</option>
                 {paymentAttemptStatusValues.map((status) => (
@@ -386,7 +386,7 @@ function PaymentGatewayOperationsPanel({
                   </option>
                 ))}
               </Select>
-              <SearchInput className="min-w-0 flex-1 sm:min-w-72" defaultValue={query.webhookQ ?? ""} name="webhookQ" placeholder="بحث في إشعارات البوابة" />
+              <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.finance.webhooksSearch} className="min-w-0 flex-1 sm:min-w-72" defaultValue={query.webhookQ ?? ""} name="webhookQ" placeholder="بحث في إشعارات البوابة" />
               <Select className="min-w-44" defaultValue={query.webhookStatus ?? ""} label="حالة إشعار الدفع" name="webhookStatus">
                 <option value="">كل الإشعارات</option>
                 {webhookProcessingStatusValues.map((status) => (
@@ -682,8 +682,8 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
           <div className="space-y-5">
             <form action="/admin/finance" method="get">
-              <FilterBar>
-                <SearchInput className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث برقم الفاتورة أو العميل أو الإيصال" />
+              <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.finance.invoicesFilters}>
+                <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.finance.invoicesSearch} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث برقم الفاتورة أو العميل أو الإيصال" />
                 <Select className="min-w-40" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
                   <option value="">كل الحالات</option>
                   {paymentStatusValues.map((status) => (
@@ -747,7 +747,7 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
               </div>
             </div>
 
-            <DataTable columns={columns(query)} rows={result.items} empty="لا توجد فواتير مطابقة للفلاتر الحالية." mobileRender={(row) => <PaymentMobileCard row={row} query={query} />} />
+            <DataTable caption={plan35AdminListAccessibilityCopy.finance.invoicesTable} columns={columns(query)} rows={result.items} empty="لا توجد فواتير مطابقة للفلاتر الحالية." mobileRender={(row) => <PaymentMobileCard row={row} query={query} />} />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/finance">

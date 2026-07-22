@@ -23,6 +23,14 @@ const expectedNotificationTitles = (process.env.PLAN35_US3_NOTIFICATION_TITLES ?
   .split("|")
   .map((value) => value.trim())
   .filter(Boolean);
+const accessibilityViewports = [
+  { width: 1440, height: 900 },
+  { width: 1023, height: 768 },
+  { width: 1024, height: 768 },
+  { width: 390, height: 844 },
+  { width: 320, height: 568 }
+] as const;
+const visualSurfaceName = officeAdminStorageState ? "admin-office" : "product-system-fallback";
 
 if (officeAdminStorageState) test.use({ storageState: officeAdminStorageState });
 
@@ -131,12 +139,24 @@ test.describe("PLAN-35 admin responsive accessibility characterization", () => {
     expect(await visibleCount(dashboardNavigation(page))).toBeGreaterThan(0);
   });
 
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 1023, height: 768 }, { width: 1024, height: 768 }, { width: 390, height: 844 }, { width: 320, height: 568 }]) {
+  for (const viewport of accessibilityViewports) {
     test(`does not create document overflow at ${viewport.width}x${viewport.height}`, async ({ page }) => {
       await page.setViewportSize(viewport);
       await loadSurface(page);
       const size = await page.evaluate(() => ({ client: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
       expect(size.scroll).toBeLessThanOrEqual(size.client + 1);
+    });
+
+    test(`matches the deterministic shared shell at ${viewport.width}x${viewport.height}`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      await loadSurface(page);
+      await expect(page).toHaveScreenshot(`${visualSurfaceName}-${viewport.width}x${viewport.height}.png`, {
+        animations: "disabled",
+        fullPage: true,
+        mask: [page.locator("[data-visual-dynamic]")],
+        maxDiffPixelRatio: 0.01
+      });
     });
   }
 });

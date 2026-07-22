@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, CardContent, CardHeader, CardTitle, MaterialSymbol, TextInput } from "@/components/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle, InlineFeedback, MaterialSymbol, TextInput } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { consultationAvailabilityUiCopy as copy, localizeApiMessage } from "@/lib/ui-copy";
 import type { ConsultationAvailability, ConsultationMode } from "@/server/consultations/consultation-availability-service";
@@ -69,6 +69,7 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <TextInput
+              idPrefix="consultation-availability-rules"
               label={copy.duration}
               min={15}
               max={240}
@@ -78,6 +79,7 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
               onChange={(event) => updateNumber("slotDurationMinutes", event.target.value)}
             />
             <TextInput
+              idPrefix="consultation-availability-rules"
               label={copy.leadTime}
               min={0}
               max={168}
@@ -87,6 +89,7 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
               onChange={(event) => updateNumber("minLeadHours", event.target.value)}
             />
             <TextInput
+              idPrefix="consultation-availability-rules"
               label={copy.bookingWindow}
               min={1}
               max={60}
@@ -115,6 +118,7 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
                     <input
                       checked={day.enabled}
                       className="h-4 w-4 rounded border-slate-300 text-kmt-navy focus:ring-kmt-gold/30"
+                      id={`consultation-availability-${day.weekday}-enabled`}
                       type="checkbox"
                       onChange={(event) => updateDay(index, { enabled: event.target.checked })}
                     />
@@ -122,6 +126,7 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
                   </label>
                   <TextInput
                     disabled={!day.enabled}
+                    idPrefix={`consultation-availability-${day.weekday}`}
                     label={copy.start}
                     name={`start-${day.weekday}`}
                     type="time"
@@ -130,6 +135,7 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
                   />
                   <TextInput
                     disabled={!day.enabled}
+                    idPrefix={`consultation-availability-${day.weekday}`}
                     label={copy.end}
                     name={`end-${day.weekday}`}
                     type="time"
@@ -150,6 +156,7 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
                           <input
                             checked={day.modes.includes(mode.value)}
                             disabled={!day.enabled}
+                            id={`consultation-availability-${day.weekday}-${mode.value.toLowerCase()}`}
                             type="checkbox"
                             onChange={(event) => toggleMode(index, mode.value, event.target.checked)}
                           />
@@ -165,17 +172,7 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
         </CardContent>
       </Card>
 
-      {status.message ? (
-        <p
-          className={cn(
-            "rounded border px-4 py-3 text-sm",
-            status.tone === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-red-200 bg-red-50 text-red-900"
-          )}
-          role={status.tone === "error" ? "alert" : "status"}
-        >
-          {status.message}
-        </p>
-      ) : null}
+      {status.message ? <InlineFeedback title={status.message} tone={status.tone === "success" ? "success" : "error"} /> : null}
 
       <div className="flex flex-wrap justify-end gap-3">
         <Button loading={isSaving} type="submit">

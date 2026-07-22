@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
-import { Button, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, Select, StateBlock, TextInput } from "@/components/ui";
+import { Button, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, InlineFeedback, Select, StateBlock, TextInput } from "@/components/ui";
 import { formatDateTime } from "@/lib/legal-format";
 import {
   plan35StorageDiagnosticUiCopy,
@@ -16,6 +16,11 @@ type ApiMessage = {
   error?: {
     message?: string;
   };
+};
+
+type ActionMessage = {
+  tone: "success" | "error";
+  text: string;
 };
 
 type RoleOption = {
@@ -65,9 +70,13 @@ function checkedValue(formData: FormData, key: string) {
   return formData.get(key) === "on";
 }
 
+function ActionFeedback({ message }: { message: ActionMessage | null }) {
+  return message ? <InlineFeedback title={message.text} tone={message.tone} /> : null;
+}
+
 export function AdminUserCreateForm({ roles }: { roles: RoleOption[] }) {
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   async function createUser(event: FormEvent<HTMLFormElement>) {
@@ -80,12 +89,12 @@ export function AdminUserCreateForm({ roles }: { roles: RoleOption[] }) {
     setMessage(null);
 
     if (password.length < MIN_PASSWORD_LENGTH) {
-      setMessage(`كلمة المرور يجب ألا تقل عن ${MIN_PASSWORD_LENGTH} أحرف.`);
+      setMessage({ tone: "error", text: `كلمة المرور يجب ألا تقل عن ${MIN_PASSWORD_LENGTH} أحرف.` });
       return;
     }
 
     if (password !== confirmPassword) {
-      setMessage("تأكيد كلمة المرور غير مطابق.");
+      setMessage({ tone: "error", text: "تأكيد كلمة المرور غير مطابق." });
       return;
     }
 
@@ -106,15 +115,15 @@ export function AdminUserCreateForm({ roles }: { roles: RoleOption[] }) {
       });
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
 
       form.reset();
-      setMessage("تم إنشاء الحساب. لا يتم إرسال بريد تلقائيًا لأن SMTP غير مفعل في هذه النسخة.");
+      setMessage({ tone: "success", text: "تم إنشاء الحساب. لا يتم إرسال بريد تلقائيًا لأن SMTP غير مفعل في هذه النسخة." });
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -129,36 +138,36 @@ export function AdminUserCreateForm({ roles }: { roles: RoleOption[] }) {
       <CardContent>
         <form className="grid gap-4" onSubmit={createUser}>
           <div className="grid gap-4 md:grid-cols-2">
-            <TextInput disabled={isBusy} label="الاسم" name="name" required />
-            <TextInput disabled={isBusy} label="البريد الإلكتروني" name="email" required type="email" />
+            <TextInput disabled={isBusy} idPrefix="admin-user-create" label="الاسم" name="name" required />
+            <TextInput disabled={isBusy} idPrefix="admin-user-create" label="البريد الإلكتروني" name="email" required type="email" />
           </div>
           <div className="grid gap-4 md:grid-cols-3">
-            <TextInput disabled={isBusy} label="الهاتف" name="phone" />
-            <Select disabled={isBusy} label="الدور" name="roleId" required>
+            <TextInput disabled={isBusy} idPrefix="admin-user-create" label="الهاتف" name="phone" />
+            <Select disabled={isBusy} idPrefix="admin-user-create" label="الدور" name="roleId" required>
               {roles.map((role) => (
                 <option key={role.id} value={role.id}>
                   {roleDisplayLabel(role.name)}
                 </option>
               ))}
             </Select>
-            <Select defaultValue="ACTIVE" disabled={isBusy} label="الحالة" name="status">
+            <Select defaultValue="ACTIVE" disabled={isBusy} idPrefix="admin-user-create" label="الحالة" name="status">
               <option value="ACTIVE">نشط</option>
               <option value="INVITED">مدعو</option>
               <option value="SUSPENDED">موقوف</option>
             </Select>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
-            <Select defaultValue="ar" disabled={isBusy} label="اللغة" name="locale">
+            <Select defaultValue="ar" disabled={isBusy} idPrefix="admin-user-create" label="اللغة" name="locale">
               <option value="ar">العربية</option>
               <option value="en">English</option>
             </Select>
-            <TextInput autoComplete="new-password" disabled={isBusy} label="كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
-            <TextInput autoComplete="new-password" disabled={isBusy} label="تأكيد كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
+            <TextInput autoComplete="new-password" disabled={isBusy} idPrefix="admin-user-create" label="كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
+            <TextInput autoComplete="new-password" disabled={isBusy} idPrefix="admin-user-create" label="تأكيد كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
           </div>
           <Button loading={isBusy} type="submit">
             إنشاء الحساب
           </Button>
-          <FormMessage message={message} />
+          <ActionFeedback message={message} />
         </form>
       </CardContent>
     </Card>
@@ -180,7 +189,7 @@ export function AdminUserActionPanel({
 }) {
   const router = useRouter();
   const [user, setUser] = useState(initialUser);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   async function saveUser(event: FormEvent<HTMLFormElement>) {
@@ -204,7 +213,7 @@ export function AdminUserActionPanel({
       });
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
 
@@ -221,10 +230,10 @@ export function AdminUserActionPanel({
         locale: payload.data?.locale ?? current.locale,
         updatedAt: payload.data?.updatedAt ?? current.updatedAt
       }));
-      setMessage(plan35UserGovernanceUiCopy.saveSucceeded);
+      setMessage({ tone: "success", text: plan35UserGovernanceUiCopy.saveSucceeded });
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -242,18 +251,18 @@ export function AdminUserActionPanel({
       });
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
 
       const body = (await response.json().catch(() => ({}))) as ClientProfileCreateResponse;
-      setMessage("تم إنشاء ملف العميل وربطه بحساب الدخول.");
+      setMessage({ tone: "success", text: "تم إنشاء ملف العميل وربطه بحساب الدخول." });
       router.refresh();
       if (body.data?.id) {
         router.push(`/admin/clients/${body.data.id}`);
       }
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -268,25 +277,25 @@ export function AdminUserActionPanel({
         </CardHeader>
         <CardContent>
           <form className="grid gap-4" onSubmit={saveUser}>
-            <TextInput defaultValue={user.name} disabled={isBusy} label="الاسم" name="name" required />
-            <TextInput defaultValue={user.email} disabled label="البريد الإلكتروني" name="email" type="email" />
-            <TextInput defaultValue={user.phone ?? ""} disabled={isBusy} label="الهاتف" name="phone" />
+            <TextInput defaultValue={user.name} disabled={isBusy} idPrefix={`admin-user-${user.id}`} label="الاسم" name="name" required />
+            <TextInput defaultValue={user.email} disabled idPrefix={`admin-user-${user.id}`} label="البريد الإلكتروني" name="email" type="email" />
+            <TextInput defaultValue={user.phone ?? ""} disabled={isBusy} idPrefix={`admin-user-${user.id}`} label="الهاتف" name="phone" />
             <div className="grid gap-4 sm:grid-cols-2">
-              <Select defaultValue={user.roleId} disabled={isBusy} label="الدور" name="roleId">
+              <Select defaultValue={user.roleId} disabled={isBusy} idPrefix={`admin-user-${user.id}`} label="الدور" name="roleId">
                 {roles.map((role) => (
                   <option key={role.id} value={role.id}>
                     {roleDisplayLabel(role.name)}
                   </option>
                 ))}
               </Select>
-              <Select defaultValue={user.status} disabled={isBusy} label="الحالة" name="status">
+              <Select defaultValue={user.status} disabled={isBusy} idPrefix={`admin-user-${user.id}`} label="الحالة" name="status">
                 <option value="INVITED">مدعو</option>
                 <option value="ACTIVE">نشط</option>
                 <option value="SUSPENDED">موقوف</option>
                 <option value="DELETED">محذوف</option>
               </Select>
             </div>
-            <Select defaultValue={user.locale} disabled={isBusy} label="اللغة" name="locale">
+            <Select defaultValue={user.locale} disabled={isBusy} idPrefix={`admin-user-${user.id}`} label="اللغة" name="locale">
               <option value="ar">العربية</option>
               <option value="en">English</option>
             </Select>
@@ -336,18 +345,14 @@ export function AdminUserActionPanel({
 
       {canChangePassword ? <AdminUserPasswordForm userId={user.id} /> : null}
 
-      {message ? (
-        <div className="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-sm leading-6 text-blue-900" role="status">
-          {message}
-        </div>
-      ) : null}
+      <ActionFeedback message={message} />
     </div>
   );
 }
 
 function AdminUserPasswordForm({ userId }: { userId: string }) {
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   async function changePassword(event: FormEvent<HTMLFormElement>) {
@@ -360,12 +365,12 @@ function AdminUserPasswordForm({ userId }: { userId: string }) {
     setMessage(null);
 
     if (password.length < MIN_PASSWORD_LENGTH) {
-      setMessage(`كلمة المرور يجب ألا تقل عن ${MIN_PASSWORD_LENGTH} أحرف.`);
+      setMessage({ tone: "error", text: `كلمة المرور يجب ألا تقل عن ${MIN_PASSWORD_LENGTH} أحرف.` });
       return;
     }
 
     if (password !== confirmPassword) {
-      setMessage("تأكيد كلمة المرور غير مطابق.");
+      setMessage({ tone: "error", text: "تأكيد كلمة المرور غير مطابق." });
       return;
     }
 
@@ -381,15 +386,15 @@ function AdminUserPasswordForm({ userId }: { userId: string }) {
       });
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
 
       form.reset();
-      setMessage("تم تغيير كلمة المرور وتسجيل العملية.");
+      setMessage({ tone: "success", text: "تم تغيير كلمة المرور وتسجيل العملية." });
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -403,13 +408,13 @@ function AdminUserPasswordForm({ userId }: { userId: string }) {
       </CardHeader>
       <CardContent>
         <form className="grid gap-4" onSubmit={changePassword}>
-          <TextInput autoComplete="new-password" disabled={isBusy} label="كلمة المرور الجديدة" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
-          <TextInput autoComplete="new-password" disabled={isBusy} label="تأكيد كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
-          <CheckboxField defaultChecked disabled={isBusy} label="إنهاء الجلسات الحالية لهذا المستخدم بعد تغيير كلمة المرور" name="revokeSessions" />
+          <TextInput autoComplete="new-password" disabled={isBusy} idPrefix={`admin-user-password-${userId}`} label="كلمة المرور الجديدة" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
+          <TextInput autoComplete="new-password" disabled={isBusy} idPrefix={`admin-user-password-${userId}`} label="تأكيد كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
+          <CheckboxField defaultChecked disabled={isBusy} idPrefix={`admin-user-password-${userId}`} label="إنهاء الجلسات الحالية لهذا المستخدم بعد تغيير كلمة المرور" name="revokeSessions" />
           <Button loading={isBusy} type="submit" variant="secondary">
             تغيير كلمة المرور
           </Button>
-          <FormMessage message={message} />
+          <ActionFeedback message={message} />
         </form>
       </CardContent>
     </Card>
@@ -418,7 +423,7 @@ function AdminUserPasswordForm({ userId }: { userId: string }) {
 
 export function OfficeProfileSettingForm({ value }: { value: SettingValue }) {
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   async function save(event: FormEvent<HTMLFormElement>) {
@@ -441,13 +446,13 @@ export function OfficeProfileSettingForm({ value }: { value: SettingValue }) {
       });
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
-      setMessage("تم حفظ بيانات المكتب.");
+      setMessage({ tone: "success", text: "تم حفظ بيانات المكتب." });
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -455,19 +460,19 @@ export function OfficeProfileSettingForm({ value }: { value: SettingValue }) {
 
   return (
     <form className="grid gap-4" onSubmit={save}>
-      <TextInput defaultValue={String(value.firmName ?? "KMT Legal")} disabled={isBusy} label="اسم المكتب" name="firmName" required />
+      <TextInput defaultValue={String(value.firmName ?? "KMT Legal")} disabled={isBusy} idPrefix="office-profile" label="اسم المكتب" name="firmName" required />
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextInput defaultValue={String(value.publicPhone ?? "")} disabled={isBusy} label="هاتف عام" name="publicPhone" />
-        <TextInput defaultValue={String(value.publicEmail ?? "")} disabled={isBusy} label="بريد عام" name="publicEmail" type="email" />
+        <TextInput defaultValue={String(value.publicPhone ?? "")} disabled={isBusy} idPrefix="office-profile" label="هاتف عام" name="publicPhone" />
+        <TextInput defaultValue={String(value.publicEmail ?? "")} disabled={isBusy} idPrefix="office-profile" label="بريد عام" name="publicEmail" type="email" />
       </div>
-      <Select defaultValue={String(value.primaryLocale ?? "ar")} disabled={isBusy} label="اللغة الأساسية" name="primaryLocale">
+      <Select defaultValue={String(value.primaryLocale ?? "ar")} disabled={isBusy} idPrefix="office-profile" label="اللغة الأساسية" name="primaryLocale">
         <option value="ar">العربية</option>
         <option value="en">English</option>
       </Select>
       <Button loading={isBusy} type="submit">
         حفظ
       </Button>
-      <FormMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }
@@ -562,7 +567,7 @@ function JsonBooleanSettingForm({
   value: SettingValue;
 }) {
   const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   async function save(event: FormEvent<HTMLFormElement>) {
@@ -584,13 +589,13 @@ function JsonBooleanSettingForm({
       });
 
       if (!response.ok) {
-        setMessage(await readMessage(response));
+        setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
-      setMessage(successMessage);
+      setMessage({ tone: "success", text: successMessage });
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
       setIsBusy(false);
     }
@@ -599,12 +604,12 @@ function JsonBooleanSettingForm({
   return (
     <form className="grid gap-4" onSubmit={save}>
       {fields.map(([name, label]) => (
-        <CheckboxField key={name} defaultChecked={Boolean(value[name])} disabled={isBusy} label={label} name={name} />
+        <CheckboxField key={name} defaultChecked={Boolean(value[name])} disabled={isBusy} idPrefix={`setting-${settingKey.replace(/[^A-Za-z0-9_-]/g, "-")}`} label={label} name={name} />
       ))}
       <Button loading={isBusy} type="submit">
         حفظ
       </Button>
-      <FormMessage message={message} />
+      <ActionFeedback message={message} />
     </form>
   );
 }
@@ -612,26 +617,20 @@ function JsonBooleanSettingForm({
 function CheckboxField({
   defaultChecked,
   disabled,
+  idPrefix,
   label,
   name
 }: {
   defaultChecked: boolean;
   disabled?: boolean;
+  idPrefix: string;
   label: string;
   name: string;
 }) {
   return (
     <label className="flex items-center gap-3 rounded border border-kmt-border bg-white px-3 py-2 text-sm font-semibold text-kmt-ink">
-      <input className="h-4 w-4 accent-kmt-navy" defaultChecked={defaultChecked} disabled={disabled} name={name} type="checkbox" />
+      <input className="h-4 w-4 accent-kmt-navy" defaultChecked={defaultChecked} disabled={disabled} id={`${idPrefix}-${name}`} name={name} type="checkbox" />
       <span>{label}</span>
     </label>
   );
-}
-
-function FormMessage({ message }: { message: string | null }) {
-  return message ? (
-    <div className="rounded border border-blue-200 bg-blue-50 px-3 py-2 text-sm leading-6 text-blue-900" role="status">
-      {message}
-    </div>
-  ) : null;
 }
