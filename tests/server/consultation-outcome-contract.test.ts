@@ -9,6 +9,7 @@ import {
   consultationStateChangedError,
   consultationOutcomeViewSchema,
   reopenConsultationInputSchema,
+  scheduleConsultationInputSchema,
   toAdminConsultationListItem
 } from "@/server/admin/consultation-outcome-service";
 import {
@@ -23,9 +24,10 @@ const actor = (roleName: string, permissions: string[] = []): Principal => ({
 });
 
 describe("PLAN-36 outcome contract", () => {
-  it("accepts exactly the seven shareable outcome views", () => {
+  it("accepts exactly the eight shareable outcome views", () => {
     expect(CONSULTATION_OUTCOME_VIEWS).toEqual([
       "current",
+      "overdue_unbooked",
       "awaiting_result",
       "missed",
       "successful",
@@ -105,6 +107,25 @@ describe("PLAN-36 outcome contract", () => {
     ).toThrow();
   });
 
+  it("validates the atomic initial-scheduling payload", () => {
+    const parsed = scheduleConsultationInputSchema.parse({
+      assignedLawyerId: "36000000-0000-4000-8000-000000000002",
+      startsAt: "2026-07-23T10:00:00.000Z",
+      durationMinutes: "45",
+      mode: "PHONE",
+      location: "",
+      expectedOutcomeVersion: "3"
+    });
+
+    expect(parsed).toMatchObject({
+      durationMinutes: 45,
+      mode: "PHONE",
+      expectedOutcomeVersion: 3
+    });
+    expect(() => scheduleConsultationInputSchema.parse({ ...parsed, durationMinutes: 241 })).toThrow();
+    expect(() => scheduleConsultationInputSchema.parse({ ...parsed, mode: "COURT" })).toThrow();
+  });
+
   it("guards legacy actions without allowing a missed request to bypass reopen", () => {
     expect(() => assertExistingConsultationMutationAllowed("assign", "PENDING")).not.toThrow();
     expect(() => assertExistingConsultationMutationAllowed("review", "AWAITING_RESULT")).not.toThrow();
@@ -140,7 +161,8 @@ describe("PLAN-36 outcome contract", () => {
   });
 
   it("returns the documented nested secretary-review projection without internal notes", () => {
-    const reviewedAt = new Date("2026-07-22T08:00:00.000Z");
+    const reviewedAt = new Date("2026-07-19T08:00:00.000Z");
+    const asOf = new Date("2026-07-22T08:00:00.000Z");
     const item = toAdminConsultationListItem({
       id: "36000000-0000-4000-8000-000000000010",
       fullName: "Test applicant",
@@ -166,7 +188,7 @@ describe("PLAN-36 outcome contract", () => {
       appointments: [],
       createdAt: reviewedAt,
       updatedAt: reviewedAt
-    } as never);
+    } as never, asOf);
 
     expect(item.secretaryReview).toEqual({
       reviewedAt,
@@ -177,6 +199,10 @@ describe("PLAN-36 outcome contract", () => {
     });
     expect(item).not.toHaveProperty("secretaryReviewNote");
     expect(item).not.toHaveProperty("outcomeNote");
+    expect(item.operationalTiming).toEqual({
+      isOverdueUnbooked: true,
+      overdueAt: new Date("2026-07-22T08:00:00.000Z")
+    });
   });
 
   it("exposes the three stable lifecycle errors", () => {

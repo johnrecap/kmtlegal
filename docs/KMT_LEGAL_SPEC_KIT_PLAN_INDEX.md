@@ -2,18 +2,30 @@
 
 ## Current source-of-truth update — 2026-07-22
 
+Highest evidenced PLAN-37 state: `Local-Verified`
+
 Highest evidenced PLAN-36 state: `Local-Verified`
 
 Highest evidenced PLAN-35 state: `Local-Verified`
 
-The repository now tracks **37 plan IDs (`PLAN-00` through `PLAN-36`)**. The detailed narrative
+The repository now tracks **38 plan IDs (`PLAN-00` through `PLAN-37`)**. The detailed narrative
 below is a legacy PLAN-27-era index retained for history; current completion truth lives in
 `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md` and executable sequencing lives in
 `specs/kmt-legal-platform/tasks.md`.
 
-PLAN-36 is the active consultation-outcome implementation package. It is locally verified without
-a database; its staging/disposable database, authenticated-browser, deploy, and live gates remain
-open:
+PLAN-37 is the active overdue-unbooked consultation recovery package. It is locally verified
+without a database and does not change Prisma; its staging/server reconciliation,
+authenticated-browser, deploy, and live gates remain open:
+
+- Specification: `specs/kmt-legal-platform/plan-37-consultation-overdue-unbooked/spec.md`
+- Technical decisions: `plan.md`, `research.md`, and `data-model.md` in that directory
+- API/worker/UI contract: `contracts/consultation-overdue-unbooked-contract.md`
+- Quality gates: the 16-item requirements checklist, 30-item delivery checklist, and clean `analyze.md`
+- Canonical execution list: `tasks.md` with external IDs `PLAN-37/T001` through `PLAN-37/T018`
+- Reproducible local, browser, staging/server, deploy, and live boundaries: `quickstart.md`
+
+PLAN-36 remains locally verified without a database; its staging/disposable database,
+authenticated-browser, deploy, and live gates remain open:
 
 - Specification: `specs/kmt-legal-platform/plan-36-consultation-outcome-lifecycle/spec.md`
 - Technical decisions: `plan.md`, `research.md`, and `data-model.md` in that directory
@@ -34,12 +46,12 @@ PLAN-35 remains locally verified with its previously deferred evidence unchanged
 - Sanitized release evidence: `docs/evidence/PLAN_35_ADMIN_OPERATIONS.md`
 - Final analyze/converge disposition: `docs/evidence/PLAN_35_ANALYZE_CONVERGE.md`
 
-The master task list contains one PLAN-35 roll-up only. PLAN-36 execution remains in its independent
-package; neither plan's detailed tasks are copied into the other.
+The master task list contains one PLAN-35 roll-up only. PLAN-36 and PLAN-37 execution remain in
+their independent packages; no detailed task set is copied into another plan.
 
 ## PLAN-27 Update
 
-At the time of this legacy snapshot, the active set contained 28 plans: PLAN-00 through PLAN-27. PLAN-24 covered remediation/production readiness, PLAN-25 covered the no-code VPS installer and first Super Admin bootstrap, PLAN-26 covered panel-aware installer compatibility, and PLAN-27 covered live-site QA remediation. Consult the current update above for PLAN-28 through PLAN-36.
+At the time of this legacy snapshot, the active set contained 28 plans: PLAN-00 through PLAN-27. PLAN-24 covered remediation/production readiness, PLAN-25 covered the no-code VPS installer and first Super Admin bootstrap, PLAN-26 covered panel-aware installer compatibility, and PLAN-27 covered live-site QA remediation. Consult the current update above for PLAN-28 through PLAN-37.
 
 تاريخ الإصدار: 2026-06-23
 
@@ -812,6 +824,6 @@ PLAN-00
 
 ## ملخص عدد الخطط
 
-Legacy snapshot count: **28 plans**. Current source-of-truth count: **37 plan IDs**.
+Legacy snapshot count: **28 plans**. Current source-of-truth count: **38 plan IDs**.
 
 هذا العدد كبير عمدًا لأن المنصة واسعة وحساسة، ولأن Spec Kit يكون أقوى عندما تكون كل خطة قابلة للقبول والاختبار بدل خطة واحدة ضخمة تفقد التفاصيل.

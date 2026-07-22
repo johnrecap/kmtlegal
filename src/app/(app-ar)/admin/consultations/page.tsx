@@ -9,7 +9,8 @@ import { consultationServiceCategoryLabel, consultationStatusLabels, formatDateT
 import {
   consultationOutcomeReasonLabel,
   plan35AdminListAccessibilityCopy,
-  plan36ConsultationOutcomeCopy
+  plan36ConsultationOutcomeCopy,
+  plan37ConsultationOverdueCopy
 } from "@/lib/ui-copy";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { listAdminConsultations } from "@/server/admin/consultation-review-service";
@@ -58,6 +59,13 @@ function outcomeTone(status: string) {
 
 function consultationReviewBadges(row: ConsultationRow): ReactNode {
   const badges: ReactNode[] = [];
+  if (row.operationalTiming.isOverdueUnbooked) {
+    badges.push(
+      <Badge key="overdue-unbooked" tone="danger">
+        {plan36ConsultationOutcomeCopy.tabs.overdue_unbooked}
+      </Badge>
+    );
+  }
   if (row.outcomeStatus === "PENDING" && row.status === "SCHEDULED" && !row.secretaryReviewedAt) {
     badges.push(
       <Badge key="secretary-review" tone="pending">
@@ -118,7 +126,7 @@ function viewHref(filters: Parameters<typeof listHref>[0], view: ConsultationOut
   return listHref({
     ...filters,
     view,
-    review: view === "current" ? filters.review : ""
+    review: view === "current" || view === "overdue_unbooked" ? filters.review : ""
   }, 1);
 }
 
@@ -169,7 +177,14 @@ const columns: Array<DataTableColumn<ConsultationRow>> = [
         </p>
       </div>
     ) : (
-      <span className="text-sm text-kmt-muted">{plan36ConsultationOutcomeCopy.list.noPrimaryAppointment}</span>
+      <div className="text-sm text-kmt-muted">
+        <span>{plan36ConsultationOutcomeCopy.list.noPrimaryAppointment}</span>
+        {row.operationalTiming.isOverdueUnbooked && row.operationalTiming.overdueAt ? (
+          <p className="mt-1 text-xs text-kmt-danger">
+            {plan37ConsultationOverdueCopy.list.overdueSince}: {formatDateTime(row.operationalTiming.overdueAt)}
+          </p>
+        ) : null}
+      </div>
     )
   },
   {
@@ -184,7 +199,7 @@ const columns: Array<DataTableColumn<ConsultationRow>> = [
   },
   {
     key: "created",
-    header: "تاريخ الطلب",
+    header: plan37ConsultationOverdueCopy.list.creationDate,
     render: (row) => formatDateTime(row.createdAt)
   },
   {
@@ -227,12 +242,16 @@ function ConsultationMobileCard({ row }: { row: ConsultationRow }) {
             ? `${formatDateTime(row.primaryAppointment.startsAt)} — ${formatDateTime(row.primaryAppointment.endsAt)}`
             : plan36ConsultationOutcomeCopy.list.noPrimaryAppointment
         },
+        ...(row.operationalTiming.isOverdueUnbooked && row.operationalTiming.overdueAt ? [{
+          label: plan37ConsultationOverdueCopy.list.overdueSince,
+          value: formatDateTime(row.operationalTiming.overdueAt)
+        }] : []),
         ...(row.outcomeBy ? [{ label: plan36ConsultationOutcomeCopy.list.resultBy, value: row.outcomeBy.name }] : []),
         ...(row.outcomeReasonCode ? [{
           label: plan36ConsultationOutcomeCopy.list.resultReason,
           value: consultationOutcomeReasonLabel(row.outcomeReasonCode) ?? ""
         }] : []),
-        { label: "تاريخ الطلب", value: formatDateTime(row.createdAt) }
+        { label: plan37ConsultationOverdueCopy.list.creationDate, value: formatDateTime(row.createdAt) }
       ]}
       action={
         <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={`/admin/consultations/${row.id}`}>
@@ -254,6 +273,9 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
     query: flattenSearchParams((await searchParams) ?? {})
   });
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
+  const operationalActionView = result.filters.view === "overdue_unbooked"
+    ? "overdue_unbooked"
+    : "current";
 
   return (
     <DashboardShell
@@ -289,6 +311,10 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
           ))}
         </nav>
 
+        <p className="rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6 text-kmt-muted">
+          {plan37ConsultationOverdueCopy.list.definitions[result.filters.view]}
+        </p>
+
         <form action="/admin/consultations" method="get">
           <input name="view" type="hidden" value={result.filters.view} />
           <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.consultations.filters}>
@@ -318,10 +344,10 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
 
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
           <div className="flex flex-wrap gap-2">
-            <Link className={buttonClasses({ variant: result.filters.view === "current" && result.filters.assigned === "unassigned" ? "primary" : "secondary", size: "sm" })} href={listHref({ view: "current", assigned: "unassigned" }, 1)}>
+            <Link className={buttonClasses({ variant: result.filters.view === operationalActionView && result.filters.assigned === "unassigned" ? "primary" : "secondary", size: "sm" })} href={listHref({ view: operationalActionView, assigned: "unassigned" }, 1)}>
               {result.unassignedTotal} يحتاج تعيين محامي
             </Link>
-            <Link className={buttonClasses({ variant: result.filters.view === "current" && result.filters.review === "unreviewed" ? "primary" : "secondary", size: "sm" })} href={listHref({ view: "current", review: "unreviewed" }, 1)}>
+            <Link className={buttonClasses({ variant: result.filters.view === operationalActionView && result.filters.review === "unreviewed" ? "primary" : "secondary", size: "sm" })} href={listHref({ view: operationalActionView, review: "unreviewed" }, 1)}>
               {result.unreviewedTotal} يحتاج مراجعة السكرتيرة
             </Link>
           </div>

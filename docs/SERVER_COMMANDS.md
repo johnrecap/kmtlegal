@@ -1,5 +1,31 @@
 # Server Commands
 
+## PLAN-37 overdue-unbooked consultation deployment
+
+PLAN-37 adds no Prisma migration and no new PM2 process. Use the existing protected aaPanel/PM2
+update command; it already creates and validates the database backup, applies any still-pending
+earlier migrations, runs `npm run jobs:payments` once, and then restarts and observes the existing
+Next.js and `kmtlegal-payment-maintenance` processes:
+
+```bash
+cd /www/wwwroot/kmtlegal
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+That one-shot maintenance run now also performs the PLAN-37 work before restart:
+
+1. Keeps active no-primary requests `PENDING`; once they are at least 72 hours old, it upserts the
+   overdue alert without classifying them as missed.
+2. Reconciles legacy `CONVERTED + PENDING` no-primary rows to `AWAITING_RESULT` and equivalent
+   rejected rows to `CANCELLED`, once and with nullable appointment audit context.
+3. Leaves the recurring 60-second cycle in the existing maintenance process; never create a second
+   consultation worker.
+
+After deployment, inspect representative existing records and compare the consultation list,
+dashboard, and notification counts at one captured time. Do not create production fixtures. Confirm
+both PM2 processes remain `online`, pass local health, and keep stable restart counters for longer
+than one full worker cycle. Local PLAN-37 validation intentionally runs without `DATABASE_URL`.
+
 ## PLAN-36 consultation outcome deployment
 
 The aaPanel/PM2 update script now performs the PLAN-36 database and worker steps in this order:

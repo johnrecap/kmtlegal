@@ -21,6 +21,7 @@ const convergenceFormFiles = [
   "src/features/admin/consultations/consultation-availability-form.tsx",
   "src/features/admin/consultations/consultation-outcome-form.tsx",
   "src/features/admin/consultations/consultation-reopen-form.tsx",
+  "src/features/admin/consultations/consultation-schedule-form.tsx",
   "src/features/admin/content/content-forms.tsx",
   "src/features/admin/finance/finance-forms.tsx",
   "src/features/admin/governance/governance-forms.tsx"

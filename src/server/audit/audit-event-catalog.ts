@@ -28,6 +28,7 @@ export const PLAN35_AUDIT_ACTIONS = {
 } as const;
 
 export const PLAN36_AUDIT_ACTIONS = {
+  scheduled: "consultation.primary_appointment_schedule",
   awaitingResult: "consultation.outcome.awaiting_result",
   missed: "consultation.outcome.missed",
   confirmed: "consultation.outcome.confirmed",
@@ -57,10 +58,14 @@ const plan36AuditSafeKeys = [
   "outcomeVersion",
   "source",
   "primaryAppointmentId",
-  "assignedLawyerId"
+  "assignedLawyerId",
+  "startsAt",
+  "endsAt",
+  "mode"
 ] as const;
 
 export const PLAN36_AUDIT_SAFE_METADATA_KEYS = {
+  [PLAN36_AUDIT_ACTIONS.scheduled]: plan36AuditSafeKeys,
   [PLAN36_AUDIT_ACTIONS.awaitingResult]: plan36AuditSafeKeys,
   [PLAN36_AUDIT_ACTIONS.missed]: plan36AuditSafeKeys,
   [PLAN36_AUDIT_ACTIONS.confirmed]: plan36AuditSafeKeys,
@@ -267,6 +272,7 @@ const auditEventDefinitions: Record<string, AuditEventDefinition> = {
   "consultation.convert_to_case": { label: "تم تحويل استشارة إلى قضية", category: "القضايا", severity: "مهم", summary: () => "تم تحويل طلب استشارة إلى ملف قضية." },
   "consultation.create_public": { label: "تم استقبال طلب استشارة", category: "العملاء", severity: "عادي", summary: () => "تم استقبال طلب استشارة من الموقع." },
   "consultation.assistant_book": { label: "تم حجز استشارة عبر المساعد", category: "المواعيد", severity: "مهم", summary: ({ metadata }) => withDateSummary("تم حجز موعد استشارة عبر المساعد", metadata.startsAt) },
+  [PLAN36_AUDIT_ACTIONS.scheduled]: { label: "تمت جدولة طلب استشارة", category: "المواعيد", severity: "مهم", summary: ({ metadata }) => withDateSummary("تمت جدولة موعد الاستشارة وإسناد المحامي", metadata.startsAt) },
   "consultation.reject": { label: "تم رفض استشارة", category: "العملاء", severity: "مهم", summary: () => "تم رفض طلب استشارة بعد المراجعة." },
   [PLAN36_AUDIT_ACTIONS.awaitingResult]: { label: "استشارة بانتظار النتيجة", category: "المواعيد", severity: "مهم", summary: () => "انتهى موعد الاستشارة وأصبحت النتيجة بانتظار التأكيد." },
   [PLAN36_AUDIT_ACTIONS.missed]: { label: "طلب استشارة فائت", category: "المواعيد", severity: "مهم", summary: () => "انتهى موعد طلب الاستشارة دون إسناد أو مراجعة." },

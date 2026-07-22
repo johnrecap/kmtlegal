@@ -10,6 +10,7 @@ import {
   reviewConsultationSchema
 } from "@/server/admin/consultation-review-service";
 import { unreviewedConsultationWhere } from "@/server/admin/notification-service";
+import { consultationOutcomeViewWhere } from "@/server/admin/consultation-outcome-service";
 import { ROLES, type Principal } from "@/server/auth/policy";
 import { ApiError } from "@/server/http/errors";
 
@@ -97,23 +98,26 @@ describe("admin consultation review contract", () => {
   });
 
   it("scopes secretary review notifications to scheduled unreviewed consultations", () => {
-    expect(unreviewedConsultationWhere(officeAdmin)).toEqual({
+    const asOf = new Date("2026-07-22T10:00:00.000Z");
+    const current = consultationOutcomeViewWhere("current", asOf);
+
+    expect(unreviewedConsultationWhere(officeAdmin, asOf)).toEqual({
       AND: [
         {},
         {
           status: "SCHEDULED",
           secretaryReviewedAt: null,
-          outcomeStatus: "PENDING"
+          ...current
         }
       ]
     });
-    expect(unreviewedConsultationWhere(assignedLawyer)).toEqual({
+    expect(unreviewedConsultationWhere(assignedLawyer, asOf)).toEqual({
       AND: [
         { assignedLawyerId: assignedLawyer.id },
         {
           status: "SCHEDULED",
           secretaryReviewedAt: null,
-          outcomeStatus: "PENDING"
+          ...current
         }
       ]
     });

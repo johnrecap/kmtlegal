@@ -89,6 +89,107 @@ describe("PLAN-36 historical reconciliation policy", () => {
     });
   });
 
+  it("reconciles legacy converted and rejected requests without inventing a primary appointment", () => {
+    expect(
+      determineHistoricalOutcome(
+        row({ workflowStatus: "CONVERTED", primaryAppointment: null }),
+        now
+      )
+    ).toEqual({
+      status: "AWAITING_RESULT",
+      reasonCode: "BACKFILL_CONVERTED_WITHOUT_PRIMARY"
+    });
+    expect(
+      determineHistoricalOutcome(
+        row({ workflowStatus: "REJECTED", primaryAppointment: null }),
+        now
+      )
+    ).toEqual({
+      status: "CANCELLED",
+      reasonCode: "BACKFILL_CONSULTATION_REJECTED"
+    });
+  });
+
+  it.each([
+    ["CONVERTED", "AWAITING_RESULT", "awaitingResult", 1],
+    ["REJECTED", "CANCELLED", "cancelled", 0]
+  ] as const)("transitions legacy %s no-primary data once with one audit", async (
+    workflowStatus,
+    targetOutcome,
+    summaryCounter,
+    expectedNotificationUpserts
+  ) => {
+    const state = {
+      id: "36000000-0000-4000-8000-000000000090",
+      clientId: null,
+      status: workflowStatus,
+      assignedLawyerId: null,
+      secretaryReviewedAt: null,
+      outcomeStatus: "PENDING",
+      outcomeVersion: 4,
+      createdAt: new Date("2026-06-20T10:00:00.000Z"),
+      appointments: [] as Array<never>
+    };
+    const audits: unknown[] = [];
+    let notificationUpserts = 0;
+    const tx = {
+      consultationRequest: {
+        findUnique: async () => ({ ...state, appointments: [] }),
+        updateMany: async () => {
+          if (state.outcomeStatus !== "PENDING") return { count: 0 };
+          state.outcomeStatus = targetOutcome;
+          state.outcomeVersion += 1;
+          return { count: 1 };
+        }
+      },
+      appointment: { update: async () => ({}) },
+      notification: {
+        updateMany: async () => ({ count: 1 }),
+        upsert: async () => {
+          notificationUpserts += 1;
+          return {};
+        }
+      },
+      auditLog: {
+        create: async ({ data }: { data: unknown }) => {
+          audits.push(data);
+          return data;
+        }
+      }
+    };
+    const client = {
+      consultationRequest: {
+        count: async () => state.outcomeStatus === "PENDING" ? 1 : 0,
+        findMany: async ({ where }: { where: Record<string, unknown> }) =>
+          "OR" in where && state.outcomeStatus === "PENDING"
+            ? [{ ...state, appointments: [] }]
+            : []
+      },
+      $transaction: async (operation: (client: typeof tx) => Promise<unknown>) => operation(tx)
+    };
+
+    const first = await reconcileConsultationOutcomes({
+      client,
+      now,
+      source: "RECONCILIATION",
+      notificationRecipientIds: ["36000000-0000-4000-8000-000000000091"]
+    });
+    const second = await reconcileConsultationOutcomes({
+      client,
+      now,
+      source: "RECONCILIATION",
+      notificationRecipientIds: ["36000000-0000-4000-8000-000000000091"]
+    });
+
+    expect(first.transitioned).toBe(1);
+    expect(first[summaryCounter]).toBe(1);
+    expect(second.transitioned).toBe(0);
+    expect(state.outcomeStatus).toBe(targetOutcome);
+    expect(state.outcomeVersion).toBe(5);
+    expect(audits).toHaveLength(1);
+    expect(notificationUpserts).toBe(expectedNotificationUpserts);
+  });
+
   it("starts with a privacy-safe structured counter shape", () => {
     expect(emptyConsultationOutcomeMaintenanceSummary()).toEqual({
       scanned: 0,
@@ -99,7 +200,9 @@ describe("PLAN-36 historical reconciliation policy", () => {
       noShow: 0,
       cancelled: 0,
       lostRace: 0,
-      missingPrimary: 0
+      missingPrimary: 0,
+      overdueUnbooked: 0,
+      overdueNotificationsCreatedOrRefreshed: 0
     });
   });
 
@@ -174,6 +277,53 @@ describe("PLAN-36 historical reconciliation policy", () => {
     expect(second).toMatchObject({ scanned: 0, transitioned: 0, missed: 0, lostRace: 0 });
     expect(audits).toHaveLength(1);
     expect(notificationResolutions).toBe(1);
+  });
+
+  it("uses one notification identity across repeated overdue-unbooked cycles", async () => {
+    const consultationId = "36000000-0000-4000-8000-000000000080";
+    const recipientId = "36000000-0000-4000-8000-000000000081";
+    const notificationKeys = new Set<string>();
+    const client = {
+      consultationRequest: {
+        count: async () => 1,
+        findMany: async ({ where }: { where: Record<string, unknown> }) =>
+          "OR" in where ? [] : [{ id: consultationId }]
+      },
+      notification: {
+        upsert: async ({ where }: { where: Record<string, unknown> }) => {
+          notificationKeys.add(JSON.stringify(where));
+          return {};
+        }
+      },
+      $transaction: async () => {
+        throw new Error("No lifecycle transition is expected for an overdue unbooked request.");
+      }
+    };
+
+    const first = await reconcileConsultationOutcomes({
+      client,
+      now,
+      source: "WORKER",
+      notificationRecipientIds: [recipientId]
+    });
+    const second = await reconcileConsultationOutcomes({
+      client,
+      now,
+      source: "WORKER",
+      notificationRecipientIds: [recipientId]
+    });
+
+    expect(first).toMatchObject({
+      transitioned: 0,
+      overdueUnbooked: 1,
+      overdueNotificationsCreatedOrRefreshed: 1
+    });
+    expect(second).toMatchObject({
+      transitioned: 0,
+      overdueUnbooked: 1,
+      overdueNotificationsCreatedOrRefreshed: 1
+    });
+    expect(notificationKeys.size).toBe(1);
   });
 
   it("counts a lost race without writing audit or notifications", async () => {

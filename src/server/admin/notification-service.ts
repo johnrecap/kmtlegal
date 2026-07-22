@@ -139,7 +139,10 @@ function canReviewProjectedConsultation(actor: Principal, consultation: { assign
   return hasPermission(actor, "consultation.review.assigned") && consultation.assignedLawyerId === actor.id;
 }
 
-export function unreviewedConsultationWhere(actor: Principal): Prisma.ConsultationRequestWhereInput {
+export function unreviewedConsultationWhere(
+  actor: Principal,
+  asOf = new Date()
+): Prisma.ConsultationRequestWhereInput {
   const scope = consultationReviewScope(actor);
   if (!scope) {
     throw new ApiError(403, "PERMISSION_DENIED", "Consultation review permission is required.");
@@ -151,7 +154,7 @@ export function unreviewedConsultationWhere(actor: Principal): Prisma.Consultati
       {
         status: "SCHEDULED",
         secretaryReviewedAt: null,
-        ...consultationOutcomeViewWhere("current")
+        ...consultationOutcomeViewWhere("current", asOf)
       }
     ]
   };
@@ -287,11 +290,15 @@ export async function listAdminNotifications(input: {
   actor: Principal;
   query?: unknown;
   client?: NotificationCenterClient;
+  asOf?: Date;
 }): Promise<NotificationCenterSnapshot> {
   assertNotificationRead(input.actor);
   const query = parseWithSchema(adminNotificationQuerySchema, input.query ?? {}, "Notification query is invalid.");
   const client = input.client ?? prisma;
-  const unreviewedWhere = consultationReviewScope(input.actor) ? unreviewedConsultationWhere(input.actor) : null;
+  const asOf = input.asOf ?? new Date();
+  const unreviewedWhere = consultationReviewScope(input.actor)
+    ? unreviewedConsultationWhere(input.actor, asOf)
+    : null;
 
   const [notifications, consultations] = await Promise.all([
     client.notification.findMany({

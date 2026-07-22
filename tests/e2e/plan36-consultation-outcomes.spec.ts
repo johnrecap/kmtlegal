@@ -10,6 +10,7 @@ const conflictStartsAt = process.env.PLAN36_CONFLICT_STARTS_AT_LOCAL;
 const availableStartsAt = process.env.PLAN36_REOPEN_STARTS_AT_LOCAL;
 const expectedViews = [
   "current",
+  "overdue_unbooked",
   "awaiting_result",
   "missed",
   "successful",
@@ -40,7 +41,7 @@ test.describe("PLAN-36 consultation outcome queues", () => {
         expect(search.get("page")).toBe("1");
       }
 
-      await tabs.nth(2).click();
+      await tabs.nth(3).click();
       await expect(page).toHaveURL(/view=missed/);
       expect(await documentOverflow(page)).toBeLessThanOrEqual(1);
       expect(browserErrors).toEqual([]);

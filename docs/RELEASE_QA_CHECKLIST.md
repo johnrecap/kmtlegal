@@ -1,6 +1,6 @@
 # Release QA Checklist
 
-Date: 2026-06-25
+Date: 2026-07-22
 
 ## Local Gates
 
@@ -46,6 +46,10 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 - [ ] PLAN-36 additive migration applies on staging or disposable PostgreSQL without destructive data changes.
 - [ ] One-shot reconciliation runs after migration and before application/worker restart; repeated execution produces no duplicate outcome audit or notification.
 - [ ] Historical completed, no-show, cancelled, rejected, ended-unassigned, ended-reviewed/assigned, future, and missing-primary scenarios match the PLAN-36 mapping.
+- [x] PLAN-37 introduces no Prisma schema or migration change and was locally verified without `DATABASE_URL`.
+- [ ] At one captured server/staging `asOf`, active no-primary requests younger than 72 hours are current and requests at/after the exact threshold are overdue while remaining `PENDING`.
+- [ ] Legacy converted pending no-primary rows reconcile once to `AWAITING_RESULT`; rejected equivalents reconcile once to `CANCELLED`; repeated cycles add no duplicate audit or notification.
+- [ ] PLAN-37 list, dashboard, and notification counts agree on representative existing data after the protected one-shot reconciliation.
 
 - [ ] PostgreSQL is running.
 - [ ] `DATABASE_URL` points to the intended database.
@@ -120,6 +124,26 @@ npx playwright test tests/e2e/live-admin-smoke.spec.ts
 - [ ] Admin consultation review hides legacy English mock AI placeholders/raw JSON and uses Arabic labels.
 - [ ] Mobile smoke passes for `/admin`, `/admin/clients`, and `/admin/content` at `390x844` without page-level horizontal scroll.
 - [ ] Fresh admin evidence is archived under `test-results/live-admin-qa-<date>`.
+
+## PLAN-37 Overdue-Unbooked Consultation Gates
+
+Local no-database evidence:
+
+- [x] Exact before/equality/after 72-hour policy, current/overdue predicates, and one `asOf` snapshot pass focused tests.
+- [x] Atomic schedule happy path, non-future time, stale version, existing primary, lawyer/client conflict, and denied Lawyer/Marketing roles pass focused tests.
+- [x] Converted/rejected no-primary reconciliation, manual converted outcome, race handling, and notification identity tests pass.
+- [x] Focused PLAN-37 suite passes 75/75; full Vitest passes 424/424 across 60 files.
+- [x] Typecheck, warning-free lint, secret scan, and the guarded 72-page no-DB production build pass.
+- [x] Three PLAN-37 Playwright scenarios are collected and executed as safe skips when authenticated disposable state/fixtures are absent; these skips do not count as browser acceptance.
+
+Authenticated/disposable acceptance (still open):
+
+- [ ] Eight tabs appear in the approved RTL order on desktop/mobile, preserve search/filters, reset pagination, explain the active view, and have no overflow/console/hydration errors.
+- [ ] A disposable overdue request preserves all entered schedule fields after `APPOINTMENT_CONFLICT`, then schedules successfully with a free future Cairo slot.
+- [ ] A stale editor receives `CONSULTATION_STATE_CHANGED`, refreshes, and cannot create a duplicate primary appointment.
+- [ ] Secretary, Office Admin, and Super Admin can schedule; Lawyer and Marketing Staff cannot.
+- [ ] No production fixture, credential, client text, or legal data is used for acceptance.
+- [ ] The existing aaPanel deploy runs one reconciliation before restart and both existing PM2 processes stay stable beyond one 60-second cycle; no PLAN-37 worker is added.
 
 ## PLAN-35 Admin Operations Gates
 

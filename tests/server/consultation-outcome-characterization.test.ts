@@ -16,7 +16,7 @@ describe("PLAN-36 connected-surface characterization", () => {
   it("moves the synthetic review queue onto the canonical pending outcome", () => {
     const notificationService = source("src/server/admin/notification-service.ts");
 
-    expect(notificationService).toContain('consultationOutcomeViewWhere("current")');
+    expect(notificationService).toContain('consultationOutcomeViewWhere("current"');
   });
 
   it("wires shareable outcome views and counts into the consultation list", () => {

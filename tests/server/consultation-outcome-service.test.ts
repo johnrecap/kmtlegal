@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  CONSULTATION_OUTCOME_VIEWS,
+  CONSULTATION_OVERDUE_UNBOOKED_MS,
   appointmentStatusForConsultationOutcome,
   classifyConsultationOutcome,
+  consultationOperationalTiming,
   consultationOutcomeViewWhere,
   primaryConsultationAppointmentQuery
 } from "@/server/admin/consultation-outcome-service";
@@ -74,13 +77,81 @@ describe("PLAN-36 outcome domain", () => {
     expect(appointmentStatusForConsultationOutcome("MISSED")).toBeNull();
   });
 
-  it("builds one canonical predicate for every outcome view", () => {
-    expect(consultationOutcomeViewWhere("current")).toEqual({ outcomeStatus: "PENDING" });
-    expect(consultationOutcomeViewWhere("awaiting_result")).toEqual({ outcomeStatus: "AWAITING_RESULT" });
-    expect(consultationOutcomeViewWhere("missed")).toEqual({ outcomeStatus: "MISSED" });
-    expect(consultationOutcomeViewWhere("successful")).toEqual({ outcomeStatus: "SUCCESSFUL" });
-    expect(consultationOutcomeViewWhere("no_show")).toEqual({ outcomeStatus: "NO_SHOW" });
-    expect(consultationOutcomeViewWhere("cancelled")).toEqual({ outcomeStatus: "CANCELLED" });
-    expect(consultationOutcomeViewWhere("all")).toEqual({});
+  it("builds mutually exclusive current and overdue-unbooked predicates from one asOf", () => {
+    const cutoff = new Date(now.getTime() - CONSULTATION_OVERDUE_UNBOOKED_MS);
+    const primary = { type: "CONSULTATION", caseId: null };
+    const activeStatuses = { in: ["NEW", "REVIEWING", "PAYMENT_PENDING", "SCHEDULED"] };
+
+    expect(CONSULTATION_OUTCOME_VIEWS).toEqual([
+      "current",
+      "overdue_unbooked",
+      "awaiting_result",
+      "missed",
+      "successful",
+      "no_show",
+      "cancelled",
+      "all"
+    ]);
+    expect(consultationOutcomeViewWhere("current", now)).toEqual({
+      outcomeStatus: "PENDING",
+      OR: [
+        {
+          AND: [
+            { appointments: { some: { ...primary, endsAt: { gt: now } } } },
+            { appointments: { none: { ...primary, endsAt: { lte: now } } } }
+          ]
+        },
+        {
+          AND: [
+            { appointments: { none: primary } },
+            { status: activeStatuses },
+            { createdAt: { gt: cutoff } }
+          ]
+        }
+      ]
+    });
+    expect(consultationOutcomeViewWhere("overdue_unbooked", now)).toEqual({
+      outcomeStatus: "PENDING",
+      status: activeStatuses,
+      createdAt: { lte: cutoff },
+      appointments: { none: primary }
+    });
+    expect(consultationOutcomeViewWhere("awaiting_result", now)).toEqual({ outcomeStatus: "AWAITING_RESULT" });
+    expect(consultationOutcomeViewWhere("missed", now)).toEqual({ outcomeStatus: "MISSED" });
+    expect(consultationOutcomeViewWhere("successful", now)).toEqual({ outcomeStatus: "SUCCESSFUL" });
+    expect(consultationOutcomeViewWhere("no_show", now)).toEqual({ outcomeStatus: "NO_SHOW" });
+    expect(consultationOutcomeViewWhere("cancelled", now)).toEqual({ outcomeStatus: "CANCELLED" });
+    expect(consultationOutcomeViewWhere("all", now)).toEqual({});
+  });
+
+  it("uses the exact 72-hour boundary for operational timing without changing outcome", () => {
+    const createdAt = new Date(now.getTime() - CONSULTATION_OVERDUE_UNBOOKED_MS);
+    const input = {
+      createdAt,
+      status: "NEW",
+      outcomeStatus: "PENDING",
+      hasPrimaryAppointment: false
+    } as const;
+
+    expect(consultationOperationalTiming(input, new Date(now.getTime() - 1))).toEqual({
+      isOverdueUnbooked: false,
+      overdueAt: now
+    });
+    expect(consultationOperationalTiming(input, now)).toEqual({
+      isOverdueUnbooked: true,
+      overdueAt: now
+    });
+    expect(consultationOperationalTiming(input, new Date(now.getTime() + 1))).toEqual({
+      isOverdueUnbooked: true,
+      overdueAt: now
+    });
+    expect(consultationOperationalTiming({ ...input, hasPrimaryAppointment: true }, now)).toEqual({
+      isOverdueUnbooked: false,
+      overdueAt: null
+    });
+    expect(consultationOperationalTiming({ ...input, status: "CONVERTED" }, now)).toEqual({
+      isOverdueUnbooked: false,
+      overdueAt: null
+    });
   });
 });

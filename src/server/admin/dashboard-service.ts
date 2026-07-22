@@ -30,6 +30,7 @@ export const DASHBOARD_METRIC_KEYS = [
   "appointments.today",
   "tasks.overdue",
   "consultations.unreviewed",
+  "consultations.overdue_unbooked",
   "consultations.awaiting_result",
   "consultations.missed",
   "contacts.new",
@@ -244,6 +245,16 @@ const DASHBOARD_METRIC_SPECS: readonly DashboardMetricSpec[] = [
     href: () => "/admin/consultations?status=SCHEDULED&review=unreviewed",
     scope: (actor) => hasPermission(actor, "consultation.review.any") ? "office-wide" : "actor-assigned",
     load: loadConsultations
+  },
+  {
+    key: "consultations.overdue_unbooked",
+    permissions: ["consultation.review.any", "appointment.manage.any"],
+    requireAllPermissions: true,
+    timeframe: "as-of-generated-at",
+    tokenStem: "admin.dashboard.metrics.overdueUnbookedConsultations",
+    href: () => "/admin/consultations?view=overdue_unbooked",
+    scope: () => "office-wide",
+    load: (context) => loadConsultationOutcomeCount(context, "overdue_unbooked")
   },
   {
     key: "consultations.awaiting_result",
@@ -550,12 +561,12 @@ async function loadConsultations(context: DashboardLoadContext): Promise<Dashboa
 
 async function loadConsultationOutcomeCount(
   context: DashboardLoadContext,
-  view: Extract<ConsultationOutcomeView, "awaiting_result" | "missed">
+  view: Extract<ConsultationOutcomeView, "overdue_unbooked" | "awaiting_result" | "missed">
 ): Promise<DashboardDomainPayload> {
   const where: Prisma.ConsultationRequestWhereInput = {
     AND: [
       consultationScopeWhereForPrincipal(context.actor),
-      consultationOutcomeViewWhere(view)
+      consultationOutcomeViewWhere(view, context.generatedAt)
     ]
   };
   return { count: await context.client.consultationRequest.count({ where }) };
@@ -672,7 +683,11 @@ function hasAnyPermission(actor: Principal, permissions: readonly PermissionKey[
 }
 
 function hasMetricPermissions(actor: Principal, spec: DashboardMetricSpec) {
-  if (spec.key === "consultations.awaiting_result" || spec.key === "consultations.missed") {
+  if (
+    spec.key === "consultations.overdue_unbooked" ||
+    spec.key === "consultations.awaiting_result" ||
+    spec.key === "consultations.missed"
+  ) {
     return canManageConsultationOutcome(actor);
   }
   return spec.requireAllPermissions

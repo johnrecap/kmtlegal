@@ -6,10 +6,12 @@ import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Inli
 import {
   commonUiCopy,
   localizeApiMessage,
-  plan36ConsultationOutcomeCopy as outcomeCopy
+  plan36ConsultationOutcomeCopy as outcomeCopy,
+  plan37ConsultationOverdueCopy as overdueCopy
 } from "@/lib/ui-copy";
 import { ConsultationOutcomeForm } from "./consultation-outcome-form";
 import { ConsultationReopenForm } from "./consultation-reopen-form";
+import { ConsultationScheduleForm } from "./consultation-schedule-form";
 
 type LawyerOption = {
   id: string;
@@ -54,6 +56,7 @@ export function ConsultationActionPanel({
   canAssign: canAssignConsultation,
   canManageOutcome,
   canReopen,
+  canSchedule,
   lawyers
 }: {
   consultationId: string;
@@ -67,6 +70,7 @@ export function ConsultationActionPanel({
   canAssign: boolean;
   canManageOutcome: boolean;
   canReopen: boolean;
+  canSchedule: boolean;
   lawyers: LawyerOption[];
 }) {
   const router = useRouter();
@@ -159,6 +163,22 @@ export function ConsultationActionPanel({
 
   return (
     <div className="space-y-4">
+      {canSchedule ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{overdueCopy.scheduleForm.title}</CardTitle>
+            <CardDescription>{overdueCopy.scheduleForm.description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ConsultationScheduleForm
+              consultationId={consultationId}
+              lawyers={lawyers}
+              outcomeVersion={outcomeVersion}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
+
       {canRecordOutcome ? (
         <Card>
           <CardHeader>

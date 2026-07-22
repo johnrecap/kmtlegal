@@ -2,23 +2,25 @@
 
 Last updated: 2026-07-22
 
-This is the main tracking file for 37 Spec Kit plan IDs (`PLAN-00` through `PLAN-36`).
+This is the main tracking file for 38 Spec Kit plan IDs (`PLAN-00` through `PLAN-37`).
+
+Highest evidenced PLAN-37 state: `Local-Verified`
 
 Highest evidenced PLAN-36 state: `Local-Verified`
 
 Highest evidenced PLAN-35 state: `Local-Verified`
 
-PLAN-35 remains `Local-Verified`; none of its deferred database, authenticated-browser, or live
-evidence has been reclassified by PLAN-36.
+PLAN-35 and PLAN-36 remain `Local-Verified`; none of their deferred database,
+authenticated-browser, deploy, or live evidence has been reclassified by PLAN-37.
 
 ## Summary
 
-Total plans: 37
+Total plans: 38
 
 | Status | Count |
 | --- | ---: |
 | Done | 27 |
-| In progress / partial / planned | 10 |
+| In progress / partial / planned | 11 |
 | Not started | 0 |
 
 ## Current Execution State
@@ -62,6 +64,15 @@ Total plans: 37
 | PLAN-34 Audit Remediation And Paymob-First Hardening | In progress / deployment-blocked | Paymob is now the default/only activatable provider for new attempts; PayTabs is disabled standby with historical webhook compatibility. Added canonical production callback origins, bounded Paymob timeout/error mapping, expiring minimized receipt tokens, async scrypt, PostgreSQL fixed-window throttling and cleanup, required ClamAV INSTREAM scanning/readiness, optional privacy-scrubbed Sentry, bounded AI config/output errors, locale-aware sitemap/detail alternates, mobile language switching, Arabic availability UI, protected recovery states, CSP SRI/`script-src-attr`, accessible loading buttons, Next/Image optimization, deterministic visual/date tests, and pure-helper decomposition for booking/payment/finance modules. | Apply migrations on real PostgreSQL, configure and verify ClamAV with EICAR on the VPS, run DB-backed E2E and Paymob sandbox tests, keep `AI_CHAT_PAID` disabled, deploy through aaPanel/PM2, then archive live health/public/admin/mobile evidence. Sentry remains disabled until production credentials are supplied. |
 | PLAN-35 Admin Operations Remediation | In progress / `Local-Verified`; database, authenticated-browser, and live acceptance deferred | Local product lanes through T111 plus Phase 9 contract, harness, source-of-truth, release-evidence, local-gate, analyze/converge, and repository handoff T113–T122/T126–T128 are complete. The current API inventory covers 23 method/path rows, the release ledger distinguishes pass/block/skip, and Converge appended no new task. | T016/G35-4D, T028, the DB-backed part of T039, T042's authenticated role cells, T052, T068, T081, T091, T101, T112, and T123–T125 remain open. No production database was contacted or may be used for this evidence. |
 | PLAN-36 Consultation Outcome Lifecycle | In progress / `Local-Verified`; database, authenticated-browser, deploy, and live acceptance deferred | Added the six-state consultation outcome lifecycle, additive Prisma migration, canonical primary-booking selection, optimistic versioning, atomic manual outcome/correction and missed-request reopen APIs, lifecycle guards for legacy consultation actions, idempotent 60-second maintenance classification, deduplicated notifications, dashboard counts, calendar effective states, seven shareable RTL tabs, mobile cards, Cairo time formatting and calendar boundaries, safe localized result/reopen forms and fallbacks, explicit stale-serialization mapping, full primary-client conflict checks, contract-complete DTOs, and hardened aaPanel backup/reconcile/two-process PM2 stability handoff. Local no-DB verification passed all 404 tests across 59 files, focused 72/72 PLAN-36 tests across 11 files, Prisma validate/generate, typecheck, lint, secret scan, 72-page guarded build, shell/Node syntax checks, collection of four gated Playwright flows including stale-version recovery/correction coverage, and a final zero-finding Converge pass. | Apply the additive migration and run reconciliation on an authorized staging/disposable PostgreSQL database, execute the authenticated desktop/mobile mutation flows with synthetic fixtures, deploy through the aaPanel/PM2 script, verify both PM2 processes beyond one worker cycle, complete non-mutating live acceptance, then rotate the previously shared admin credential and revoke old sessions. No local or production database was contacted for PLAN-36 verification. |
+| PLAN-37 Consultation Overdue-Unbooked Recovery | In progress / `Local-Verified`; authenticated-browser, staging/server reconciliation, deploy, and live acceptance deferred | Split active no-primary requests at an exact 72-hour boundary while keeping them `PENDING`, added the eighth shareable RTL queue and one captured `asOf`, exposed operational timing, added dual-permission atomic schedule-and-assign with client/lawyer conflict checks and optimistic versioning, repaired converted/rejected legacy no-primary states in the existing worker, added deduplicated overdue alerts and dashboard count, corrected the creation-date label, and added Cairo overdue presentation plus responsive recovery UI. No Prisma schema or migration changed. Local no-DB verification passed 75 focused tests across 9 files, all 424 tests across 60 files, typecheck, warning-free lint, secret scan, the guarded 72-page build, and Playwright collection/execution with all 3 authenticated scenarios safely skipped because disposable credentials/fixtures were absent. | Run the existing one-shot reconciliation only after a verified server/staging backup, validate representative existing rows and count consistency without production fixtures, execute the three authenticated desktop/mobile scenarios on disposable data, deploy through the existing aaPanel/PM2 script, and verify app/worker stability beyond one 60-second cycle. No local or production database was contacted for PLAN-37 verification. |
+
+## Latest PLAN-37 Consultation Overdue-Unbooked Recovery
+
+- “الحالية” now means a pending request whose canonical primary appointment has not ended, or an active no-primary request younger than 72 full hours. At the exact boundary, an active no-primary request moves to “متأخرة بدون موعد” while remaining `PENDING`; it is never mislabeled `MISSED`.
+- The list API returns one `asOf`, eight mutually exclusive operational views/counts, and `operationalTiming`. Desktop/mobile UI now says “تاريخ إنشاء الطلب” and shows “متأخر منذ” only after the threshold, in Cairo time.
+- Authorized Secretary, Office Admin, and Super Admin operators can create the primary appointment, link/create the client, assign a lawyer, record secretary review, increment the outcome version, resolve the overdue alert, and write a safe audit event in one serializable transaction. Lawyer/Marketing roles, stale versions, existing primary appointments, past times, and lawyer/client conflicts are rejected.
+- The existing maintenance process now reconciles `CONVERTED + PENDING` without a primary appointment to `AWAITING_RESULT`, reconciles the equivalent rejected row to `CANCELLED`, and upserts one overdue alert identity per recipient/request. Final success/no-show/cancellation remains manual.
+- No database, migration, new PM2 process, Paymob, 2FA, or Prisma upgrade was introduced. Database/browser/live acceptance remains explicitly deferred; the local evidence is 75/75 focused tests, 424/424 full tests, typecheck, lint, secret scan, a 72-page no-DB build, and three safely skipped authenticated Playwright scenarios.
 
 ## Latest PLAN-36 Consultation Outcome Lifecycle
 
@@ -235,7 +246,7 @@ Total plans: 37
 ## Remaining Count
 
 - Fully not started: 0 plans.
-- Partially open/planned: 9 plans.
+- Partially open/planned: 11 plans.
 - Done: 27 plans.
 
 ## Immediate Next Steps

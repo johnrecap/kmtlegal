@@ -13,6 +13,7 @@ import { ApiError } from "@/server/http/errors";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
 import {
   CONSULTATION_OUTCOME_VIEWS,
+  consultationOperationalTiming,
   consultationOutcomeViewWhere,
   primaryConsultationAppointmentQuery,
   appointmentStatusForConsultationOutcome,
@@ -133,7 +134,7 @@ export function toPrimaryConsultationAppointmentDto(
   };
 }
 
-export function toAdminConsultationListItem(row: AdminConsultationListRow) {
+export function toAdminConsultationListItem(row: AdminConsultationListRow, asOf = new Date()) {
   const primaryAppointment = row.appointments[0] ?? null;
   return {
     id: row.id,
@@ -172,6 +173,15 @@ export function toAdminConsultationListItem(row: AdminConsultationListRow) {
       version: row.outcomeVersion
     },
     primaryAppointment: toPrimaryConsultationAppointmentDto(primaryAppointment, row.outcomeStatus),
+    operationalTiming: consultationOperationalTiming(
+      {
+        createdAt: row.createdAt,
+        status: row.status,
+        outcomeStatus: row.outcomeStatus,
+        hasPrimaryAppointment: Boolean(primaryAppointment)
+      },
+      asOf
+    ),
     convertedCase: row.convertedCase,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -179,7 +189,7 @@ export function toAdminConsultationListItem(row: AdminConsultationListRow) {
   };
 }
 
-export function toAdminConsultationDetail(row: AdminConsultationDetailRow) {
+export function toAdminConsultationDetail(row: AdminConsultationDetailRow, asOf = new Date()) {
   const primaryAppointment =
     row.appointments.find((appointment) => appointment.type === "CONSULTATION" && appointment.caseId === null) ?? null;
   return {
@@ -192,7 +202,16 @@ export function toAdminConsultationDetail(row: AdminConsultationDetailRow) {
       note: row.outcomeNote,
       version: row.outcomeVersion
     },
-    primaryAppointment: toPrimaryConsultationAppointmentDto(primaryAppointment, row.outcomeStatus)
+    primaryAppointment: toPrimaryConsultationAppointmentDto(primaryAppointment, row.outcomeStatus),
+    operationalTiming: consultationOperationalTiming(
+      {
+        createdAt: row.createdAt,
+        status: row.status,
+        outcomeStatus: row.outcomeStatus,
+        hasPrimaryAppointment: Boolean(primaryAppointment)
+      },
+      asOf
+    )
   };
 }
 
@@ -209,12 +228,13 @@ export async function getPrimaryConsultationAppointment(
 export async function countConsultationOutcomeViews(
   baseWhere: Prisma.ConsultationRequestWhereInput,
   client: OutcomeCountClient = prisma,
-  baseWhereByView: Partial<Record<ConsultationOutcomeView, Prisma.ConsultationRequestWhereInput>> = {}
+  baseWhereByView: Partial<Record<ConsultationOutcomeView, Prisma.ConsultationRequestWhereInput>> = {},
+  asOf = new Date()
 ) {
   const entries = await Promise.all(
     CONSULTATION_OUTCOME_VIEWS.map(async (view) => {
       const where: Prisma.ConsultationRequestWhereInput = {
-        AND: [baseWhereByView[view] ?? baseWhere, consultationOutcomeViewWhere(view)]
+        AND: [baseWhereByView[view] ?? baseWhere, consultationOutcomeViewWhere(view, asOf)]
       };
       return [view, await client.consultationRequest.count({ where })] as const;
     })
@@ -250,8 +270,11 @@ export async function setConsultationOutcome(input: {
         select: {
           id: true,
           clientId: true,
+          status: true,
           assignedLawyerId: true,
           outcomeStatus: true,
+          outcomeReasonCode: true,
+          convertedCase: { select: { id: true } },
           outcomeVersion: true
         }
       });
@@ -263,12 +286,22 @@ export async function setConsultationOutcome(input: {
         throw consultationReopenRequiredError();
       }
 
+      const currentIsFinal = isFinalOutcome(consultation.outcomeStatus);
       const primaryAppointment = await getPrimaryConsultationAppointment(consultationId, tx);
-      if (!primaryAppointment || primaryAppointment.endsAt.getTime() > now.getTime()) {
+      const isConvertedLegacyWithoutPrimary =
+        !primaryAppointment &&
+        consultation.status === "CONVERTED" &&
+        Boolean(consultation.convertedCase) &&
+        ((consultation.outcomeStatus === "AWAITING_RESULT" &&
+          consultation.outcomeReasonCode === "BACKFILL_CONVERTED_WITHOUT_PRIMARY") ||
+          currentIsFinal);
+      if (
+        (!primaryAppointment && !isConvertedLegacyWithoutPrimary) ||
+        (primaryAppointment && primaryAppointment.endsAt.getTime() > now.getTime())
+      ) {
         throw consultationOutcomeNotReadyError();
       }
 
-      const currentIsFinal = isFinalOutcome(consultation.outcomeStatus);
       if (consultation.outcomeStatus !== "AWAITING_RESULT" && !currentIsFinal) {
         throw consultationOutcomeNotReadyError();
       }
@@ -311,10 +344,12 @@ export async function setConsultationOutcome(input: {
       if (!appointmentStatus) {
         throw consultationOutcomeNotReadyError();
       }
-      await tx.appointment.update({
-        where: { id: primaryAppointment.id },
-        data: { status: appointmentStatus }
-      });
+      if (primaryAppointment) {
+        await tx.appointment.update({
+          where: { id: primaryAppointment.id },
+          data: { status: appointmentStatus }
+        });
+      }
       await syncConsultationOutcomeNotifications({
         client: tx,
         consultationId,
@@ -330,14 +365,14 @@ export async function setConsultationOutcome(input: {
         resourceId: consultationId,
         clientId: consultation.clientId,
         lawyerId: consultation.assignedLawyerId,
-        appointmentId: primaryAppointment.id,
+        appointmentId: primaryAppointment?.id ?? null,
         metadata: {
           fromOutcome: consultation.outcomeStatus,
           toOutcome: body.status,
           reasonCode: body.reasonCode,
           outcomeVersion: nextVersion,
           source: "ADMIN",
-          primaryAppointmentId: primaryAppointment.id
+          ...(primaryAppointment ? { primaryAppointmentId: primaryAppointment.id } : {})
         },
         request: input.request,
         requestId: input.requestId

@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
-import { Badge, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, StateBlock } from "@/components/ui";
+import { Badge, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, InlineFeedback, StateBlock } from "@/components/ui";
 import { ConsultationActionPanel } from "@/features/admin/consultations/consultation-action-panel";
 import { consultationServiceCategoryLabel, consultationStatusLabels, formatDateTime, labelFrom, modeLabels, urgencyLabels } from "@/lib/legal-format";
-import { consultationOutcomeReasonLabel, plan36ConsultationOutcomeCopy } from "@/lib/ui-copy";
+import { consultationOutcomeReasonLabel, plan36ConsultationOutcomeCopy, plan37ConsultationOverdueCopy } from "@/lib/ui-copy";
 import { getAdminConsultationDetail, listAssignableLawyers } from "@/server/admin/consultation-review-service";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { publicConsultationReference } from "@/server/consultations/consultation-service";
@@ -259,6 +259,13 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
                   <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-kmt-ink">{consultation.outcomeNote}</p>
                 </div>
               ) : null}
+              {consultation.outcomeReasonCode === "BACKFILL_CONVERTED_WITHOUT_PRIMARY" ? (
+                <InlineFeedback
+                  className="mt-4"
+                  title={plan37ConsultationOverdueCopy.scheduleForm.legacyConverted}
+                  tone="info"
+                />
+              ) : null}
             </CardContent>
           </Card>
 
@@ -285,7 +292,13 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
                 <DetailItem label="تصنيف داخلي مبدئي" value={consultationServiceCategoryLabel(consultation.serviceCategory)} />
                 <DetailItem label="طريقة التواصل" value={labelFrom(modeLabels, consultation.preferredMode)} />
                 <DetailItem label="رقم المرجع" value={<span dir="ltr">{publicConsultationReference(consultation.id)}</span>} />
-                <DetailItem label="تاريخ الطلب" value={formatDateTime(consultation.createdAt)} />
+                <DetailItem label={plan37ConsultationOverdueCopy.list.creationDate} value={formatDateTime(consultation.createdAt)} />
+                {consultation.operationalTiming.isOverdueUnbooked && consultation.operationalTiming.overdueAt ? (
+                  <DetailItem
+                    label={plan37ConsultationOverdueCopy.list.overdueSince}
+                    value={formatDateTime(consultation.operationalTiming.overdueAt)}
+                  />
+                ) : null}
                 <DetailItem label="المحامي المسؤول" value={consultation.assignedLawyer?.name} />
                 <DetailItem label="العميل المرتبط" value={consultation.client?.fullName} />
                 <DetailItem
@@ -371,6 +384,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
           canAssign={consultation.canAssign}
           canManageOutcome={consultation.canManageOutcome}
           canReopen={consultation.canReopen}
+          canSchedule={consultation.canSchedule}
           lawyers={lawyers}
         />
       </div>

@@ -54,6 +54,7 @@ import {
 import { appointmentScopeWhereForPrincipal, caseScopeWhereForPrincipal } from "@/server/admin/case-operations-service";
 import { clientScopeWhereForPrincipal } from "@/server/admin/client-crm-service";
 import { consultationScopeWhereForPrincipal } from "@/server/admin/consultation-review-service";
+import { consultationOutcomeViewWhere } from "@/server/admin/consultation-outcome-service";
 import { taskScopeWhereForPrincipal } from "@/server/admin/task-document-service";
 import { PLAN35_PRINCIPALS } from "../fixtures/plan35-role-fixtures";
 
@@ -124,6 +125,7 @@ describe("admin dashboard canonical scope contract", () => {
       "appointments.today",
       "tasks.overdue",
       "consultations.unreviewed",
+      "consultations.overdue_unbooked",
       "consultations.awaiting_result",
       "consultations.missed",
       "contacts.new",
@@ -185,6 +187,7 @@ describe("admin dashboard canonical scope contract", () => {
       "appointments.today": "/admin/calendar?from=2026-07-21T21:00:00.000Z&to=2026-07-22T21:00:00.000Z",
       "tasks.overdue": "/admin/tasks?view=overdue&sortBy=dueDate&sortDirection=asc",
       "consultations.unreviewed": "/admin/consultations?status=SCHEDULED&review=unreviewed",
+      "consultations.overdue_unbooked": "/admin/consultations?view=overdue_unbooked",
       "consultations.awaiting_result": "/admin/consultations?view=awaiting_result",
       "consultations.missed": "/admin/consultations?view=missed",
       "contacts.new": "/admin/contact-messages?status=NEW&sortBy=createdAt&sortDirection=asc",
@@ -326,9 +329,10 @@ describe("admin dashboard canonical scope contract", () => {
     ]);
   });
 
-  it("uses canonical role-scoped outcome predicates for the two actionable consultation cards", async () => {
+  it("uses canonical role-scoped outcome predicates for the three actionable consultation cards", async () => {
     databaseMocks.consultationCount
       .mockResolvedValueOnce(2)
+      .mockResolvedValueOnce(6)
       .mockResolvedValueOnce(4)
       .mockResolvedValueOnce(3);
 
@@ -336,6 +340,11 @@ describe("admin dashboard canonical scope contract", () => {
       now: new Date("2026-07-22T10:00:00.000Z")
     });
 
+    expect(snapshot.metrics.find(({ key }) => key === "consultations.overdue_unbooked")).toMatchObject({
+      state: "ready",
+      value: 6,
+      href: "/admin/consultations?view=overdue_unbooked"
+    });
     expect(snapshot.metrics.find(({ key }) => key === "consultations.awaiting_result")).toMatchObject({
       state: "ready",
       value: 4,
@@ -350,6 +359,17 @@ describe("admin dashboard canonical scope contract", () => {
     const consultationCountQueries = (
       databaseMocks.consultationCount.mock.calls as unknown as Array<[{ where: unknown }]>
     ).map(([query]) => query);
+    expect(consultationCountQueries).toContainEqual({
+      where: {
+        AND: [
+          {},
+          consultationOutcomeViewWhere(
+            "overdue_unbooked",
+            new Date("2026-07-22T10:00:00.000Z")
+          )
+        ]
+      }
+    });
     expect(consultationCountQueries).toContainEqual({ where: { AND: [{}, { outcomeStatus: "AWAITING_RESULT" }] } });
     expect(consultationCountQueries).toContainEqual({ where: { AND: [{}, { outcomeStatus: "MISSED" }] } });
   });

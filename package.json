@@ -32,6 +32,7 @@
     "test:e2e:smoke": "node scripts/run-playwright-with-server.mjs tests/e2e/mvp-smoke.spec.ts",
     "test:e2e:plan35": "node scripts/run-playwright-with-server.mjs tests/e2e/plan35-admin-operations.spec.ts --workers=1",
     "test:e2e:plan36": "node scripts/run-playwright-with-server.mjs tests/e2e/plan36-consultation-outcomes.spec.ts --workers=1",
+    "test:e2e:plan37": "node scripts/run-playwright-with-server.mjs tests/e2e/plan37-consultation-overdue-unbooked.spec.ts --workers=1",
     "test:e2e:db": "node scripts/run-playwright-with-server.mjs tests/e2e/db-backed.spec.ts tests/e2e/plan35-db-backed.spec.ts --workers=1",
     "test:e2e:live-admin": "playwright test tests/e2e/live-admin-smoke.spec.ts --workers=1",
     "db:validate": "prisma validate",

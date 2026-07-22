@@ -5,6 +5,7 @@ import { uuidSchema } from "@/server/validation/schemas";
 
 export const CONSULTATION_OUTCOME_VIEWS = [
   "current",
+  "overdue_unbooked",
   "awaiting_result",
   "missed",
   "successful",
@@ -12,6 +13,22 @@ export const CONSULTATION_OUTCOME_VIEWS = [
   "cancelled",
   "all"
 ] as const;
+
+export const CONSULTATION_OVERDUE_UNBOOKED_HOURS = 72;
+export const CONSULTATION_OVERDUE_UNBOOKED_MS =
+  CONSULTATION_OVERDUE_UNBOOKED_HOURS * 60 * 60 * 1_000;
+
+export const ACTIVE_UNBOOKED_CONSULTATION_STATUSES = [
+  "NEW",
+  "REVIEWING",
+  "PAYMENT_PENDING",
+  "SCHEDULED"
+] as const;
+
+export const PRIMARY_CONSULTATION_APPOINTMENT_WHERE = {
+  type: "CONSULTATION" as const,
+  caseId: null
+};
 
 export const consultationOutcomeViewSchema = z.enum(CONSULTATION_OUTCOME_VIEWS);
 export type ConsultationOutcomeView = z.infer<typeof consultationOutcomeViewSchema>;
@@ -69,8 +86,20 @@ export const reopenConsultationInputSchema = z
   })
   .strict();
 
+export const scheduleConsultationInputSchema = z
+  .object({
+    assignedLawyerId: uuidSchema,
+    startsAt: z.string().datetime(),
+    durationMinutes: z.coerce.number().int().min(15).max(240),
+    mode: z.enum(["OFFICE", "PHONE", "ONLINE"]),
+    location: z.string().trim().max(180).optional().or(z.literal("")),
+    expectedOutcomeVersion: z.coerce.number().int().min(0)
+  })
+  .strict();
+
 export type ConsultationOutcomeInput = z.infer<typeof consultationOutcomeInputSchema>;
 export type ReopenConsultationInput = z.infer<typeof reopenConsultationInputSchema>;
+export type ScheduleConsultationInput = z.infer<typeof scheduleConsultationInputSchema>;
 
 export type ConsultationOutcomeValue =
   | "PENDING"
@@ -116,26 +145,103 @@ export function appointmentStatusForConsultationOutcome(outcome: ConsultationOut
 }
 
 export function consultationOutcomeViewWhere(
-  view: ConsultationOutcomeView
+  view: ConsultationOutcomeView,
+  asOf = new Date()
 ): Prisma.ConsultationRequestWhereInput {
   const statusByView: Partial<Record<ConsultationOutcomeView, ConsultationOutcomeValue>> = {
-    current: "PENDING",
     awaiting_result: "AWAITING_RESULT",
     missed: "MISSED",
     successful: "SUCCESSFUL",
     no_show: "NO_SHOW",
     cancelled: "CANCELLED"
   };
+
+  if (view === "current") {
+    return {
+      outcomeStatus: "PENDING",
+      OR: [
+        {
+          AND: [
+            {
+              appointments: {
+                some: {
+                  ...PRIMARY_CONSULTATION_APPOINTMENT_WHERE,
+                  endsAt: { gt: asOf }
+                }
+              }
+            },
+            {
+              appointments: {
+                none: {
+                  ...PRIMARY_CONSULTATION_APPOINTMENT_WHERE,
+                  endsAt: { lte: asOf }
+                }
+              }
+            }
+          ]
+        },
+        {
+          AND: [
+            { appointments: { none: PRIMARY_CONSULTATION_APPOINTMENT_WHERE } },
+            { status: { in: [...ACTIVE_UNBOOKED_CONSULTATION_STATUSES] } },
+            {
+              createdAt: {
+                gt: new Date(asOf.getTime() - CONSULTATION_OVERDUE_UNBOOKED_MS)
+              }
+            }
+          ]
+        }
+      ]
+    };
+  }
+
+  if (view === "overdue_unbooked") {
+    return {
+      outcomeStatus: "PENDING",
+      status: { in: [...ACTIVE_UNBOOKED_CONSULTATION_STATUSES] },
+      createdAt: {
+        lte: new Date(asOf.getTime() - CONSULTATION_OVERDUE_UNBOOKED_MS)
+      },
+      appointments: { none: PRIMARY_CONSULTATION_APPOINTMENT_WHERE }
+    };
+  }
+
   const outcomeStatus = statusByView[view];
   return outcomeStatus ? { outcomeStatus } : {};
+}
+
+export function consultationOperationalTiming(
+  input: {
+    createdAt: Date;
+    status: string;
+    outcomeStatus: ConsultationOutcomeValue;
+    hasPrimaryAppointment: boolean;
+  },
+  asOf = new Date()
+) {
+  const isActiveWorkflow = (ACTIVE_UNBOOKED_CONSULTATION_STATUSES as readonly string[]).includes(
+    input.status
+  );
+  if (
+    input.hasPrimaryAppointment ||
+    input.outcomeStatus !== "PENDING" ||
+    !isActiveWorkflow
+  ) {
+    return { isOverdueUnbooked: false, overdueAt: null };
+  }
+
+  const overdueAt = new Date(input.createdAt.getTime() + CONSULTATION_OVERDUE_UNBOOKED_MS);
+  return {
+    isOverdueUnbooked: overdueAt.getTime() <= asOf.getTime(),
+    overdueAt
+  };
 }
 
 export function primaryConsultationAppointmentQuery(consultationRequestId: string) {
   return {
     where: {
       consultationRequestId,
-      type: "CONSULTATION" as const,
-      caseId: null
+      ...PRIMARY_CONSULTATION_APPOINTMENT_WHERE
     },
     orderBy: [{ startsAt: "asc" as const }, { id: "asc" as const }]
   };

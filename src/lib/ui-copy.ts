@@ -84,6 +84,7 @@ export const plan35DashboardMetricCopy = {
   "appointments.today": { label: "مواعيد اليوم", definition: "المواعيد النشطة المجدولة اليوم بتوقيت القاهرة." },
   "tasks.overdue": { label: "المهام المتأخرة", definition: "المهام غير المكتملة التي تجاوزت موعد استحقاقها." },
   "consultations.unreviewed": { label: "استشارات تنتظر المراجعة", definition: "طلبات الاستشارة المجدولة التي لم يراجعها الفريق بعد." },
+  "consultations.overdue_unbooked": { label: "متأخرة بدون موعد", definition: "طلبات استشارة مرّت 72 ساعة كاملة على إنشائها ولم يُحجز لها موعد أساسي بعد." },
   "consultations.awaiting_result": { label: "بانتظار النتيجة", definition: "الاستشارات التي انتهى موعدها وتحتاج تأكيد النتيجة يدويًا." },
   "consultations.missed": { label: "طلبات فائتة", definition: "الطلبات التي انتهى موعدها دون إسناد محامٍ ودون مراجعة." },
   "contacts.new": { label: "رسائل تواصل جديدة", definition: "رسائل التواصل الموجودة حاليًا في حالة جديدة." },
@@ -321,6 +322,7 @@ export const plan36ConsultationOutcomeCopy = {
   },
   tabs: {
     current: "الحالية",
+    overdue_unbooked: "متأخرة بدون موعد",
     awaiting_result: "بانتظار النتيجة",
     missed: "الفائتة",
     successful: "الناجحة",
@@ -354,6 +356,7 @@ export const plan36ConsultationOutcomeCopy = {
     BACKFILL_APPOINTMENT_NO_SHOW: "مطابقة عدم حضور مسجل سابقًا",
     BACKFILL_APPOINTMENT_CANCELLED: "مطابقة موعد ملغى سابقًا",
     BACKFILL_CONSULTATION_REJECTED: "مطابقة طلب مرفوض سابقًا",
+    BACKFILL_CONVERTED_WITHOUT_PRIMARY: "طلب قديم محوّل إلى قضية دون موعد استشارة أساسي",
     BACKFILL_ENDED_UNASSIGNED_UNREVIEWED: "مطابقة طلب منتهٍ دون إسناد أو مراجعة",
     BACKFILL_ENDED_ASSIGNED_OR_REVIEWED: "مطابقة طلب منتهٍ يحتاج تأكيد النتيجة",
     OTHER: "سبب آخر"
@@ -442,6 +445,40 @@ export const plan36ConsultationOutcomeCopy = {
     failed: "تعذر حفظ التغيير. احتفظنا بالبيانات المدخلة؛ راجعها وحاول مرة أخرى.",
     refresh: "تغير الطلب بعد فتح الصفحة. حدّث الصفحة وراجع أحدث حالة قبل المحاولة.",
     conflict: "يوجد تعارض في الموعد. اختر وقتًا أو محاميًا آخر ثم حاول مرة أخرى."
+  }
+} as const;
+
+export const plan37ConsultationOverdueCopy = {
+  appointmentTitle(reference: string) {
+    return `موعد استشارة ${reference}`;
+  },
+  list: {
+    creationDate: "تاريخ إنشاء الطلب",
+    overdueSince: "متأخر منذ",
+    definitions: {
+      current: "طلبات لها موعد أساسي لم ينتهِ، أو طلبات بلا موعد لم تمر على إنشائها 72 ساعة كاملة.",
+      overdue_unbooked: "طلبات نشطة مرّت 72 ساعة كاملة على إنشائها ولم يُحجز لها موعد أساسي بعد.",
+      awaiting_result: "طلبات انتهى موعدها أو حُوّلت قديمًا وتنتظر تأكيد النتيجة يدويًا.",
+      missed: "طلبات انتهى موعدها دون إسناد محامٍ ودون مراجعة.",
+      successful: "استشارات أكد الفريق نجاحها يدويًا.",
+      no_show: "استشارات أكد الفريق أن العميل لم يحضرها.",
+      cancelled: "استشارات أو طلبات أُغلقت كملغاة.",
+      all: "كل طلبات الاستشارة ضمن نطاق صلاحياتك، بصرف النظر عن حالتها."
+    }
+  },
+  scheduleForm: {
+    title: "جدولة الطلب وإسناد محامٍ",
+    description: "أنشئ الموعد الأساسي واربط العميل وأسند المحامي في خطوة واحدة. ستُحفظ العملية كاملة أو لن يُحفظ منها شيء عند التعارض.",
+    submit: "حفظ الموعد والإسناد",
+    unavailable: "لا يوجد محامون نشطون متاحون للإسناد حاليًا.",
+    legacyConverted: "هذا طلب قديم حُوّل إلى قضية دون موعد استشارة أساسي. سجّل النتيجة الفعلية يدويًا دون إنشاء موعد وهمي."
+  },
+  feedback: {
+    scheduling: "جارٍ حفظ الموعد وإسناد المحامي.",
+    scheduled: "تم إنشاء الموعد الأساسي وإسناد المحامي ومراجعة الطلب.",
+    failed: "تعذر حفظ الجدولة. احتفظنا بالبيانات المدخلة؛ راجعها وحاول مرة أخرى.",
+    conflict: "يوجد تعارض للمحامي أو العميل في هذا الوقت. اختر محاميًا أو وقتًا آخر ثم أعد المحاولة.",
+    stale: "تغيّر الطلب بعد فتح الصفحة. حدّث الصفحة وراجع أحدث حالة قبل إعادة المحاولة."
   }
 } as const;
 
@@ -764,12 +801,16 @@ const apiExactMessages: Record<string, string> = {
   "Choose a different final consultation outcome.": "اختر نتيجة نهائية مختلفة عن الحالة الحالية.",
   "Consultation outcome payload is invalid.": "بيانات نتيجة الاستشارة غير مكتملة أو غير صحيحة.",
   "Consultation reopen payload is invalid.": "بيانات إعادة فتح الاستشارة غير مكتملة أو غير صحيحة.",
+  "Consultation schedule payload is invalid.": "بيانات جدولة الاستشارة غير مكتملة أو غير صحيحة.",
   "A categorized correction reason is required.": "اختر سببًا مصنفًا لتصحيح النتيجة.",
   "A categorized consultation outcome reason is required.": "اختر سببًا مصنفًا لنتيجة الاستشارة.",
   "The reopened consultation must start in the future.": "يجب أن يبدأ الموعد الجديد في وقت مستقبلي بتوقيت القاهرة.",
+  "The consultation appointment must start in the future.": "يجب أن يبدأ موعد الاستشارة في وقت مستقبلي بتوقيت القاهرة.",
   "Assigned lawyer is invalid.": "المحامي المختار غير متاح للإسناد.",
   "Consultation outcome management requires consultation review and appointment management permissions.": "تسجيل نتيجة الاستشارة يتطلب صلاحية مراجعة الاستشارات وإدارة المواعيد.",
   "Consultation rejection requires consultation review and appointment management permissions.": "رفض طلب الاستشارة يتطلب صلاحية مراجعة الاستشارات وإدارة المواعيد.",
+  "Consultation scheduling requires consultation review and appointment management permissions.": "جدولة طلب الاستشارة تتطلب صلاحية مراجعة الاستشارات وإدارة المواعيد معًا.",
+  "The unreviewed filter is available only for current or overdue unbooked consultations.": "فلتر الطلبات غير المراجعة متاح داخل تبويبي الحالية ومتأخرة بدون موعد فقط.",
   "The unreviewed filter is available only for current consultations.": "فلتر الطلبات غير المراجعة متاح داخل تبويب الاستشارات الحالية فقط.",
   "An active existing client is required.": plan35ManualCaseUiCopy.validation.clientRequired,
   "An active eligible lawyer is required.": plan35ManualCaseUiCopy.validation.lawyerRequired,
@@ -866,6 +907,7 @@ const apiSubjectLabels: Record<string, string> = {
   "Contact message status": "حالة رسالة التواصل",
   "Consultation outcome": "نتيجة الاستشارة",
   "Consultation reopen": "إعادة فتح الاستشارة",
+  "Consultation schedule": "جدولة الاستشارة",
   "Conversion": "بيانات التحويل",
   "Document": "المستند",
   "Document delete": "حذف المستند",

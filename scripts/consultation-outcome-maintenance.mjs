@@ -13,6 +13,8 @@ const TERMINAL_APPOINTMENT_OUTCOMES = {
   NO_SHOW: ["NO_SHOW", "BACKFILL_APPOINTMENT_NO_SHOW"],
   CANCELLED: ["CANCELLED", "BACKFILL_APPOINTMENT_CANCELLED"]
 };
+const OVERDUE_UNBOOKED_MS = 72 * 60 * 60 * 1_000;
+const ACTIVE_UNBOOKED_WORKFLOW_STATUSES = ["NEW", "REVIEWING", "PAYMENT_PENDING", "SCHEDULED"];
 
 export function emptyConsultationOutcomeMaintenanceSummary() {
   return {
@@ -24,7 +26,9 @@ export function emptyConsultationOutcomeMaintenanceSummary() {
     noShow: 0,
     cancelled: 0,
     lostRace: 0,
-    missingPrimary: 0
+    missingPrimary: 0,
+    overdueUnbooked: 0,
+    overdueNotificationsCreatedOrRefreshed: 0
   };
 }
 
@@ -32,16 +36,21 @@ export function determineHistoricalOutcome(row, now = new Date(), source = "RECO
   if (row.outcomeStatus !== "PENDING") {
     return null;
   }
-  if (!row.primaryAppointment) {
-    return { skipReason: "MISSING_PRIMARY_APPOINTMENT" };
-  }
-
   if (row.workflowStatus === "REJECTED") {
     return {
       status: "CANCELLED",
       reasonCode: "BACKFILL_CONSULTATION_REJECTED",
-      appointmentStatus: "CANCELLED"
+      ...(row.primaryAppointment ? { appointmentStatus: "CANCELLED" } : {})
     };
+  }
+  if (!row.primaryAppointment && row.workflowStatus === "CONVERTED") {
+    return {
+      status: "AWAITING_RESULT",
+      reasonCode: "BACKFILL_CONVERTED_WITHOUT_PRIMARY"
+    };
+  }
+  if (!row.primaryAppointment) {
+    return { skipReason: "MISSING_PRIMARY_APPOINTMENT" };
   }
 
   const terminal = TERMINAL_APPOINTMENT_OUTCOMES[row.primaryAppointment.status];
@@ -90,6 +99,12 @@ export async function reconcileConsultationOutcomes({
         OR: [
           { status: "REJECTED" },
           {
+            AND: [
+              { status: "CONVERTED" },
+              { appointments: { none: PRIMARY_APPOINTMENT_WHERE } }
+            ]
+          },
+          {
             appointments: {
               some: {
                 ...PRIMARY_APPOINTMENT_WHERE,
@@ -137,6 +152,15 @@ export async function reconcileConsultationOutcomes({
     if (rows.length < batchSize) break;
   }
 
+  const overdue = await syncOverdueUnbookedNotifications({
+    client,
+    now,
+    recipientIds: recipients,
+    limit: batchSize * maxBatches
+  });
+  summary.overdueUnbooked = overdue.eligible;
+  summary.overdueNotificationsCreatedOrRefreshed = overdue.createdOrRefreshed;
+
   return summary;
 }
 
@@ -183,7 +207,11 @@ async function reconcileOneConsultation({ client, row, now, source, notification
         });
         if (updated.count !== 1) return "LOST_RACE";
 
-        if (decision.appointmentStatus && primaryAppointment.status !== decision.appointmentStatus) {
+        if (
+          decision.appointmentStatus &&
+          primaryAppointment &&
+          primaryAppointment.status !== decision.appointmentStatus
+        ) {
           await tx.appointment.update({
             where: { id: primaryAppointment.id },
             data: { status: decision.appointmentStatus }
@@ -200,19 +228,19 @@ async function reconcileOneConsultation({ client, row, now, source, notification
         await tx.auditLog.create({
           data: {
             actorId: null,
-            action: auditActionForOutcome(decision.status, source),
+            action: auditActionForOutcome(decision.status, source, decision.reasonCode),
             resourceType: "ConsultationRequest",
             resourceId: current.id,
             clientId: current.clientId,
             lawyerId: current.assignedLawyerId,
-            appointmentId: primaryAppointment.id,
+            appointmentId: primaryAppointment?.id ?? null,
             metadata: {
               fromOutcome: "PENDING",
               toOutcome: decision.status,
               reasonCode: decision.reasonCode,
               outcomeVersion: current.outcomeVersion + 1,
               source,
-              primaryAppointmentId: primaryAppointment.id,
+              ...(primaryAppointment ? { primaryAppointmentId: primaryAppointment.id } : {}),
               ...(current.assignedLawyerId ? { assignedLawyerId: current.assignedLawyerId } : {})
             }
           }
@@ -329,8 +357,66 @@ async function syncOutcomeNotifications({ client, consultationId, outcomeStatus,
   );
 }
 
-function auditActionForOutcome(status, source) {
-  if (source === "RECONCILIATION" || ["SUCCESSFUL", "NO_SHOW", "CANCELLED"].includes(status)) {
+async function syncOverdueUnbookedNotifications({ client, now, recipientIds, limit }) {
+  const cutoff = new Date(now.getTime() - OVERDUE_UNBOOKED_MS);
+  const rows = await client.consultationRequest.findMany({
+    where: {
+      outcomeStatus: "PENDING",
+      status: { in: ACTIVE_UNBOOKED_WORKFLOW_STATUSES },
+      createdAt: { lte: cutoff },
+      appointments: { none: PRIMARY_APPOINTMENT_WHERE }
+    },
+    select: { id: true },
+    orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    take: limit
+  });
+
+  await Promise.all(
+    rows.flatMap((row) =>
+      recipientIds.map((userId) =>
+        client.notification.upsert({
+          where: {
+            userId_type_resourceType_resourceId: {
+              userId,
+              type: "CONSULTATION",
+              resourceType: "ConsultationRequest",
+              resourceId: row.id
+            }
+          },
+          update: {
+            title: runtimeCopy.notifications.overdueTitle,
+            body: runtimeCopy.notifications.overdueBody,
+            actionUrl: `/admin/consultations/${row.id}`,
+            readAt: null
+          },
+          create: {
+            userId,
+            type: "CONSULTATION",
+            title: runtimeCopy.notifications.overdueTitle,
+            body: runtimeCopy.notifications.overdueBody,
+            resourceType: "ConsultationRequest",
+            resourceId: row.id,
+            actionUrl: `/admin/consultations/${row.id}`,
+            readAt: null,
+            createdAt: now
+          }
+        })
+      )
+    )
+  );
+
+  return {
+    eligible: rows.length,
+    createdOrRefreshed: rows.length * recipientIds.length
+  };
+}
+
+function auditActionForOutcome(status, source, reasonCode) {
+  if (
+    source === "RECONCILIATION" ||
+    reasonCode?.startsWith("BACKFILL_") ||
+    ["SUCCESSFUL", "NO_SHOW", "CANCELLED"].includes(status)
+  ) {
     return "consultation.outcome.backfilled";
   }
   if (status === "AWAITING_RESULT") return "consultation.outcome.awaiting_result";
