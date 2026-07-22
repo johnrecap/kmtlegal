@@ -2,12 +2,15 @@
 
 ## Current source-of-truth update — 2026-07-22
 
+Highest evidenced PLAN-35 state: `Local-Verified`
+
 The repository now tracks **36 plan IDs (`PLAN-00` through `PLAN-35`)**. The detailed narrative
 below is a legacy PLAN-27-era index retained for history; current completion truth lives in
 `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md` and executable sequencing lives in
 `specs/kmt-legal-platform/tasks.md`.
 
-PLAN-35 is the current planned admin-operations remediation package:
+PLAN-35 is the current locally verified admin-operations remediation package; its database,
+authenticated-browser, and live acceptance gates remain open:
 
 - Specification: `specs/kmt-legal-platform/plan-35-admin-operations-remediation/spec.md`
 - Technical plan and decisions: `plan.md`, `research.md`, and `data-model.md` in that directory
@@ -16,6 +19,8 @@ PLAN-35 is the current planned admin-operations remediation package:
 - Affected contract: `contracts/admin-operations-contract.md`
 - Reproducible gates: `quickstart.md` and the 51-item delivery checklist under `checklists/`
 - Canonical execution list: `tasks.md` with external IDs `PLAN-35/T001` through `PLAN-35/T128`
+- Sanitized release evidence: `docs/evidence/PLAN_35_ADMIN_OPERATIONS.md`
+- Final analyze/converge disposition: `docs/evidence/PLAN_35_ANALYZE_CONVERGE.md`
 
 The master task list contains one PLAN-35 roll-up only; detailed tasks must not be copied here or
 into another plan.

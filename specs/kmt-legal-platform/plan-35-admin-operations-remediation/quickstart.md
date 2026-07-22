@@ -362,6 +362,20 @@ Planned -> Implemented -> Local-Verified -> DB-Verified -> Browser-Verified -> L
 
 `Blocked`, `Skipped`, and `Deferred` are annotations, never substitutes for the next verified state.
 
+### Phase 9 local execution snapshot — 2026-07-22
+
+- With `DATABASE_URL` absent, `npm run qa:local` passed schema validation/client generation,
+  typecheck, warning-free lint, all 366 Vitest tests across 53 files, and the guarded 72-page build.
+- `npm run test:e2e:plan35` passed 17 local responsive/RTL/keyboard/visual checks. Its 13 protected
+  authenticated scenarios were skipped and therefore do not grant `Browser-Verified`.
+- The hardened read-only live spec collected two scenarios but was not executed because external
+  `KMT_LIVE_*` credentials were not provided. The database-backed spec collected five scenarios but
+  was not executed because no disposable PostgreSQL target exists.
+- `git diff --check`, the QA harness syntax check, and `package.json` parsing passed. Exact command
+  evidence and deferred gates are indexed in `docs/evidence/PLAN_35_ADMIN_OPERATIONS.md`.
+- The production-connected database was not contacted and is not an acceptable substitute for any
+  blocked PLAN-35 gate.
+
 ## 11. Converge and handoff (G35-9)
 
 - Rerun Spec Kit analyze against the implemented artifacts.

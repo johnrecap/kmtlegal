@@ -328,27 +328,27 @@ completed gate.
 
 ### Contract and harness tests first
 
-- [ ] T113 [P] [US8] Extend `tests/server/route-manifest-contract.test.ts` and `tests/server/plan35-contract-inventory.test.ts` for every implemented PLAN-35 method, stable error, permission, and consumer href; impact: planned markers are removed only with real implementations.
-- [ ] T114 [P] [US8] Add local/DB/browser/live evidence-state assertions and skip-is-not-pass behavior to `tests/server/plan35-release-evidence.test.ts`; impact: status automation cannot inflate unavailable checks.
-- [ ] T115 [US8] Harden `tests/e2e/live-admin-smoke.spec.ts` so PLAN-35 routes require 200 or a documented redirect/outcome rather than merely `<500`; impact: live smoke becomes meaningful while remaining read-only in production.
+- [x] T113 [P] [US8] Extend `tests/server/route-manifest-contract.test.ts` and `tests/server/plan35-contract-inventory.test.ts` for every implemented PLAN-35 method, stable error, permission, and consumer href; impact: planned markers are removed only with real implementations.
+- [x] T114 [P] [US8] Add local/DB/browser/live evidence-state assertions and skip-is-not-pass behavior to `tests/server/plan35-release-evidence.test.ts`; impact: status automation cannot inflate unavailable checks.
+- [x] T115 [US8] Harden `tests/e2e/live-admin-smoke.spec.ts` so PLAN-35 routes require 200 or a documented redirect/outcome rather than merely `<500`; impact: live smoke becomes meaningful while remaining read-only in production.
 
 ### Source-of-truth synchronization
 
-- [ ] T116 [US8] Reconcile implemented PLAN-35 methods, schemas, permissions, and errors in `specs/kmt-legal-platform/contracts/openapi-plan.md`; impact: the platform API contract stops advertising nonexistent operations or wrong `reports.read.any` spelling.
-- [ ] T117 [US8] Reconcile entities, no-schema/data-only migration decision, scopes, and state rules in `specs/kmt-legal-platform/data-model.md` and `specs/kmt-legal-platform/backend-plan.md`; impact: architecture docs match runtime ownership and transaction behavior.
-- [ ] T118 [US8] Reconcile route registry, responsive shell, command center, states, and Arabic UI rules in `specs/kmt-legal-platform/frontend-plan.md`; impact: frontend plan matches delivered navigation/components rather than legacy placeholders.
-- [ ] T119 [US8] Add PLAN-35 focused, DB, role, accessibility, visual, live, and skip semantics to `specs/kmt-legal-platform/test-plan.md` and `specs/kmt-legal-platform/quality-gates.md`; impact: release gates become reproducible.
-- [ ] T120 [US8] Wire `tests/e2e/plan35-db-backed.spec.ts` and `tests/e2e/plan35-admin-operations.spec.ts` into `scripts/plan23-local-qa.mjs` and the relevant `package.json` QA commands without changing existing command meaning; impact: standard release runs cannot omit PLAN-35.
-- [ ] T121 [US8] Update `docs/RELEASE_QA_CHECKLIST.md` and create sanitized evidence index `docs/evidence/PLAN_35_ADMIN_OPERATIONS.md`; impact: every claim links to commit/environment/command/result/artifact.
+- [x] T116 [US8] Reconcile implemented PLAN-35 methods, schemas, permissions, and errors in `specs/kmt-legal-platform/contracts/openapi-plan.md`; impact: the platform API contract stops advertising nonexistent operations or wrong `reports.read.any` spelling.
+- [x] T117 [US8] Reconcile entities, no-schema/data-only migration decision, scopes, and state rules in `specs/kmt-legal-platform/data-model.md` and `specs/kmt-legal-platform/backend-plan.md`; impact: architecture docs match runtime ownership and transaction behavior.
+- [x] T118 [US8] Reconcile route registry, responsive shell, command center, states, and Arabic UI rules in `specs/kmt-legal-platform/frontend-plan.md`; impact: frontend plan matches delivered navigation/components rather than legacy placeholders.
+- [x] T119 [US8] Add PLAN-35 focused, DB, role, accessibility, visual, live, and skip semantics to `specs/kmt-legal-platform/test-plan.md` and `specs/kmt-legal-platform/quality-gates.md`; impact: release gates become reproducible.
+- [x] T120 [US8] Wire `tests/e2e/plan35-db-backed.spec.ts` and `tests/e2e/plan35-admin-operations.spec.ts` into `scripts/plan23-local-qa.mjs` and the relevant `package.json` QA commands without changing existing command meaning; impact: standard release runs cannot omit PLAN-35.
+- [x] T121 [US8] Update `docs/RELEASE_QA_CHECKLIST.md` and create sanitized evidence index `docs/evidence/PLAN_35_ADMIN_OPERATIONS.md`; impact: every claim links to commit/environment/command/result/artifact.
 
 ### Verification and release truth
 
-- [ ] T122 [US8] Run the full local gate from `specs/kmt-legal-platform/plan-35-admin-operations-remediation/quickstart.md`: schema validate/generate, typecheck, lint, all Vitest, build, focused browser, and `git diff --check`; impact: `Local-Verified` is granted only on an all-green exact commit.
+- [x] T122 [US8] Run the full local gate from `specs/kmt-legal-platform/plan-35-admin-operations-remediation/quickstart.md`: schema validate/generate, typecheck, lint, all Vitest, build, focused browser, and `git diff --check`; impact: `Local-Verified` is granted only on an all-green exact commit.
 - [ ] T123 [US8] On a disposable PostgreSQL database run `npm run qa:db` and `npm run test:e2e:db` including `tests/e2e/plan35-db-backed.spec.ts`, then record clean migration/double-seed, editable/empty role, active-session/final-Super, concurrent appointment, case replay/rollback, and queue/governance results in `docs/evidence/PLAN_35_ADMIN_OPERATIONS.md`; impact: `DB-Verified` is blocked by any skip.
 - [ ] T124 [US8] Run `node scripts/run-playwright-with-server.mjs tests/e2e/plan35-admin-operations.spec.ts` for the five-role desktop/mobile, accessibility, deterministic screenshot, console/network, and drill-down matrix, storing artifacts under `test-results/plan35/browser/` and indexing them in `docs/evidence/PLAN_35_ADMIN_OPERATIONS.md`; impact: `Browser-Verified` requires usable responsive evidence.
 - [ ] T125 [US8] Run `tests/e2e/live-admin-smoke.spec.ts` read-only with external `KMT_LIVE_*` credentials through the repository Playwright harness and record sanitized expected outcomes in `docs/evidence/PLAN_35_ADMIN_OPERATIONS.md`; impact: missing credentials are `BLOCKED/SKIPPED`, never `Live-Accepted`.
-- [ ] T126 [US8] Update `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md`, `docs/KMT_LEGAL_SPEC_KIT_PLAN_INDEX.md`, and the single PLAN-35 roll-up in `specs/kmt-legal-platform/tasks.md` to the highest evidenced state; impact: detailed feature tasks are not duplicated and legacy plan history is preserved.
-- [ ] T127 [US8] Rerun Spec Kit analyze, record the final finding disposition in `docs/evidence/PLAN_35_ANALYZE_CONVERGE.md`, fix every new `CRITICAL/HIGH`, fix or explicitly accept each `MEDIUM`, then run converge until the same file records that no task was appended; impact: implementation and planning artifacts finish consistent.
+- [x] T126 [US8] Update `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md`, `docs/KMT_LEGAL_SPEC_KIT_PLAN_INDEX.md`, and the single PLAN-35 roll-up in `specs/kmt-legal-platform/tasks.md` to the highest evidenced state; impact: detailed feature tasks are not duplicated and legacy plan history is preserved.
+- [x] T127 [US8] Rerun Spec Kit analyze, record the final finding disposition in `docs/evidence/PLAN_35_ANALYZE_CONVERGE.md`, fix every new `CRITICAL/HIGH`, fix or explicitly accept each `MEDIUM`, then run converge until the same file records that no task was appended; impact: implementation and planning artifacts finish consistent.
 - [ ] T128 [US8] Commit the verified accepted task set, push `main` to `origin/main`, and hand off `cd /www/wwwroot/kmtlegal` plus `bash deploy/install/aapanel-pm2-update.sh`; impact: repository and aaPanel/PM2 deployment owner receive one traceable release handoff.
 
 **Checkpoint G35-9**: All claimed gates have exact evidence; analyze/converge are clean; status is

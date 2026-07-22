@@ -116,6 +116,41 @@ npx playwright test tests/e2e/live-admin-smoke.spec.ts
 - [ ] Mobile smoke passes for `/admin`, `/admin/clients`, and `/admin/content` at `390x844` without page-level horizontal scroll.
 - [ ] Fresh admin evidence is archived under `test-results/live-admin-qa-<date>`.
 
+## PLAN-35 Admin Operations Gates
+
+Canonical evidence index: `docs/evidence/PLAN_35_ADMIN_OPERATIONS.md`.
+
+Local contract and implementation evidence:
+
+- [x] All 23 PLAN-35 affected method/path/permission/error/consumer rows pass the bidirectional
+  route/OpenAPI inventory.
+- [x] `npm run db:validate` and `npm run db:generate` pass without connecting to PostgreSQL.
+- [x] `npm run typecheck`, `npm run lint`, and full `npm run test` pass.
+- [x] `ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build` passes and is labeled local-only.
+- [x] `npm run test:e2e:plan35` passes its local shared-shell checks; authenticated skips are recorded
+  and do not count toward Browser-Verified.
+- [x] `git diff --check` passes.
+
+Disposable database and authenticated acceptance (remain open without the required environment):
+
+- [ ] `DATABASE_URL` identifies a disposable nonproduction PostgreSQL target; production is excluded.
+- [ ] `npm run qa:db` runs migration, double seed, legacy DB E2E, and
+  `tests/e2e/plan35-db-backed.spec.ts` with no required skip.
+- [ ] Five disposable staff personas execute all nineteen navigation/page/API route rows (95 cells).
+- [ ] Authenticated command-center, contact, notification, manual-case, role/session, accessibility,
+  RTL, console/network, and deterministic screenshot scenarios pass at all five required viewports.
+- [ ] Read-only `npm run test:e2e:live-admin` runs with external `KMT_LIVE_*` credentials and every
+  protected document/API probe returns its exact documented outcome.
+
+Evidence rules:
+
+- [x] `PASS`, `FAIL`, `BLOCKED`, and `SKIPPED` are distinct; skip/collection/missing infrastructure
+  never advances the release state.
+- [x] Allowed progression is contiguous:
+  `Local-Verified -> DB-Verified -> Browser-Verified -> Live-Accepted`.
+- [x] No production migration, seed, fixture mutation, concurrency run, credential, or client/legal
+  data is used for PLAN-35 acceptance.
+
 ## Accessibility Gates
 
 - [ ] Public, login, booking, portal, and admin pages have meaningful headings.

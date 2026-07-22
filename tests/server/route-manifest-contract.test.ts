@@ -2,6 +2,60 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+type Plan35Operation = {
+  method: string;
+  apiPath: string;
+  authorization: string[];
+  stableErrors: string[];
+  consumerHref: string;
+};
+
+function markdownSection(source: string, startHeading: string, endHeading: string) {
+  const start = source.indexOf(startHeading);
+  const end = source.indexOf(endHeading, start + startHeading.length);
+  if (start < 0 || end < 0) throw new Error(`Could not parse ${startHeading}`);
+  return source.slice(start, end);
+}
+
+function markdownCells(line: string) {
+  return line.split("|").slice(1, -1).map((cell) => cell.trim());
+}
+
+function codeTokens(value: string) {
+  return [...value.matchAll(/`([^`]+)`/g)].map((match) => match[1]);
+}
+
+function parsePlan35Operations(source: string): Plan35Operation[] {
+  return markdownSection(source, "## PLAN-35 Admin Operations Matrix", "## Request and Response Rules")
+    .split(/\r?\n/)
+    .flatMap((line) => {
+      const row = markdownCells(line);
+      const method = row[0]?.match(/^`(GET|POST|PATCH|PUT|DELETE)`$/)?.[1];
+      const [apiPath] = codeTokens(row[1] ?? "");
+      const [consumerHref] = codeTokens(row[5] ?? "");
+      if (!method || !apiPath || !consumerHref || row.length !== 6) return [];
+      return [{
+        method,
+        apiPath,
+        authorization: codeTokens(row[3] ?? "").filter((token) => /^[a-z][A-Za-z]*\.[a-z][A-Za-z]*\.[a-z][A-Za-z]*$/.test(token)),
+        stableErrors: codeTokens(row[4] ?? "").filter((token) => /^[A-Z][A-Z0-9_]+$/.test(token)),
+        consumerHref
+      }];
+    });
+}
+
+function routeFileFor(apiPath: string) {
+  const genericPath = apiPath === "/api/admin/settings/storage.policy"
+    ? "/api/admin/settings/[key]"
+    : apiPath.replaceAll(/\{([^}]+)\}/g, "[$1]");
+  return path.join(process.cwd(), "src", "app", ...genericPath.split("/").filter(Boolean), "route.ts");
+}
+
+function routeMethods(file: string) {
+  return [...fs.readFileSync(file, "utf8").matchAll(/export\s+async\s+function\s+(GET|POST|PATCH|PUT|DELETE)\s*\(/g)]
+    .map((match) => match[1]);
+}
+
 function apiRoutes() {
   const root = path.join(process.cwd(), "src", "app", "api");
   const routes: string[] = [];
@@ -118,5 +172,38 @@ describe("route manifest contract", () => {
     expect(contract).toContain("`PATCH /api/admin/cases/{caseId}`");
     expect(contract).toContain("`case.create.any`");
     expect(policy.permissions).toContain("case.create.any");
+  });
+
+  it("keeps every implemented PLAN-35 method, permission, stable error, and consumer documented", () => {
+    const openApi = fs.readFileSync(
+      path.join(process.cwd(), "specs/kmt-legal-platform/contracts/openapi-plan.md"),
+      "utf8"
+    );
+    const operations = parsePlan35Operations(openApi);
+    const operationKeys = operations.map(({ method, apiPath }) => `${method} ${apiPath}`);
+
+    expect(operations).toHaveLength(23);
+    expect(new Set(operationKeys).size).toBe(23);
+    for (const operation of operations) {
+      const file = routeFileFor(operation.apiPath);
+      expect(fs.existsSync(file), `${operation.method} ${operation.apiPath}`).toBe(true);
+      expect(routeMethods(file), `${operation.method} ${operation.apiPath}`).toContain(operation.method);
+      expect(operation.consumerHref).toMatch(/^\/(login|admin(?:\/|$))/);
+    }
+
+    const domainErrors = Object.fromEntries(
+      operations
+        .filter(({ stableErrors }) => stableErrors.length > 0)
+        .map(({ method, apiPath, stableErrors }) => [`${method} ${apiPath}`, stableErrors])
+    );
+    expect(domainErrors).toEqual({
+      "POST /api/admin/calendar": ["APPOINTMENT_CONFLICT"],
+      "POST /api/admin/calendar/{appointmentId}/reschedule": ["APPOINTMENT_CONFLICT"],
+      "POST /api/admin/consultations/{consultationId}/assign": ["APPOINTMENT_CONFLICT"],
+      "POST /api/admin/cases": ["CASE_REFERENCE_CONFLICT"],
+      "PATCH /api/admin/settings/storage.policy": ["SETTING_READ_ONLY"]
+    });
+    expect(openApi).not.toContain("reports.read.any");
+    expect(openApi).toContain("report.read.any");
   });
 });

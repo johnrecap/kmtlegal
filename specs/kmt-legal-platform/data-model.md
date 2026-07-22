@@ -30,12 +30,13 @@
 
 ### Role
 - Purpose: Named access bundle.
-- Fields: `id`, `name unique`, `description`.
+- Fields: `id`, `name unique`, `description`, `status`, `createdAt`, `updatedAt`.
 - Relationships: has RolePermission, Users.
 - Ownership: super admin.
 - Permissions: `role.manage.any`.
 - Lifecycle: active/disabled.
-- Validation: cannot delete last super-admin-capable role.
+- Validation: `Guest`, `Client`, and exact `Super Admin` are protected; inactive roles are read-only;
+  the final active exact Super Admin account cannot be removed from its governance path.
 - Indexes: name.
 - Audit: role create/update/delete.
 - Soft delete: optional disabled state preferred.
@@ -61,7 +62,8 @@
 - Ownership: super admin.
 - Permissions: `role.manage.any`.
 - Lifecycle: assigned/removed.
-- Validation: unique roleId+permissionId.
+- Validation: unique roleId+permissionId; an editable role may intentionally have zero rows and that
+  empty persisted assignment remains authoritative after RBAC bootstrap.
 - Indexes: roleId, permissionId.
 - Audit: assignment/removal.
 - Soft delete: no.
@@ -137,7 +139,7 @@
 - Fields: `id`, `internalFileNumber unique`, `clientId`, `assignedLawyerId`, `title`, `caseType`, `courtName`, `externalCaseNumber optional`, `status`, `priority`, `summary`, `nextSessionAt optional`, `createdAt`, `updatedAt`, `deletedAt`.
 - Relationships: Client, assigned lawyer, CaseParties, CaseSessions, Documents, Tasks, InternalNotes, Payments.
 - Ownership: client own simplified read, assigned lawyer, admin any.
-- Permissions: `case.read.own`, `case.read.assigned`, `case.read.any`, `case.update.assigned`, `case.update.any`.
+- Permissions: `case.read.own`, `case.read.assigned`, `case.read.any`, `case.create.any`, `case.update.assigned`, `case.update.any`.
 - Lifecycle: new/under_review/active/awaiting_judgment/completed/closed/archived.
 - Validation: internal file number unique, valid status transitions.
 - Indexes: internalFileNumber, clientId, assignedLawyerId, status, priority, nextSessionAt, createdAt.
@@ -347,12 +349,51 @@
 - Ownership: super admin.
 - Permissions: `settings.manage.any`.
 - Lifecycle: active.
-- Validation: schema per setting key; secrets must not be stored here.
+- Validation: schema per setting key; secrets must not be stored here. Environment-owned
+  `storage.policy` is excluded from editable setting responses and is represented only by a safe
+  read-only runtime diagnostic.
 - Indexes: key.
 - Audit: every update.
 - Installer: `installer.completed` records first-setup completion metadata; `/var/lib/kmt-legal/install.lock` is the filesystem lock that prevents rerun.
 - Soft delete: no.
 - Retention: setting history via audit.
+
+## PLAN-35 Admin Operations Reconciliation
+
+PLAN-35 reuses the persistent entities above plus the existing `ContactMessage`; it adds no Prisma
+model, field, enum, or relationship. `prisma/schema.prisma` therefore has no PLAN-35 structural
+change. Migration `20260722120000_plan_35_admin_operations` is data-only: it upserts
+`case.create.any`, the own-notification grants, and the conditional RBAC bootstrap marker. A marked
+repeat seed updates the catalog but does not restore removed/empty role assignments or reactivate an
+inactive role.
+
+- **User/Session**: admin list/create/detail/update responses use explicit safe DTOs. Password hashes,
+  encrypted TOTP/recovery material, session token hashes, and whole credential records are forbidden.
+  Login and session resolution require an active, nondeleted user, an active role, and a live
+  session. Role/access-status changes revoke affected sessions atomically and preserve the final
+  active exact Super Admin.
+- **Appointment**: blocking states are `RESERVED`, `SCHEDULED`, and `RESCHEDULED`; time ranges are
+  half-open. Conflict lookup, mutable scope reread, write, and required admin/conversion audit share
+  one serializable transaction. Database-only create/conversion callbacks may use bounded replay;
+  existing-row updates and paid provider work are single-attempt.
+- **LegalCase/CaseParty**: manual create uses the client UUID `requestToken` as `LegalCase.id` and
+  binds replay to actor plus a canonical SHA-256 request hash in the direct creation audit. Case,
+  ordered initial parties, and audit commit together. Core edit conditionally claims `updatedAt`;
+  only `case.update.any` may change the assignee.
+- **ContactMessage**: states remain `NEW`, `REVIEWED`, and `ARCHIVED`. Conditional transition and
+  one redacted audit share a transaction; same-state replay is idempotent, while invalid reopen,
+  conflicting target, stale claim, or audit failure changes nothing.
+- **Notification/ConsultationRequest**: records remain separate and are projected into one bounded,
+  deduplicated notification center. Counts use complete permission-scoped sets before pagination;
+  generic reads are recipient-only, and consultation review remains a separate business transition.
+- **Derived models**: `AdminRoutePolicy`, `DashboardSnapshotV1`, and
+  `StorageRuntimeDiagnostic` are application DTOs, not tables. Storage diagnostics are derived once
+  from effective environment/filesystem/scanner state and never expose a path or secret.
+
+Canonical scope ownership is shared with destination services: dashboard task, appointment, case,
+consultation, client, document, and contact counts must reuse the same predicates as their lists.
+Database-backed proof remains open until a disposable PostgreSQL target is available; production
+data is never migration, seed, mutation, or contention test data.
 
 ## ERD Description
 - User has one Role and many authored records.
@@ -390,7 +431,7 @@
 - Restore: soft-deleted records restored only by authorized admins with audit.
 
 ## Seed Data Plan
-- Roles: Guest, Client, Lawyer, Office Admin, Marketing Staff, Super Admin.
+- Roles: Guest, Client, Lawyer, Secretary, Office Admin, Marketing Staff, Super Admin.
 - Permissions: seeded from `resource.action.scope`.
 - Users: one safe demo account per protected role, with non-real names and credentials documented only in quickstart.
 - Staff seed accounts may include legacy local/dev 2FA data, but production bootstrap and installer never create demo users or TOTP setup.

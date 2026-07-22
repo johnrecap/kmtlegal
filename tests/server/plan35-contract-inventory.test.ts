@@ -13,6 +13,7 @@ import { canonicalApiErrorCode } from "@/server/http/errors";
 
 const featureRoot = path.join(process.cwd(), "specs", "kmt-legal-platform", "plan-35-admin-operations-remediation");
 const contractPath = path.join(featureRoot, "contracts", "admin-operations-contract.md");
+const platformOpenApiPath = path.join(process.cwd(), "specs", "kmt-legal-platform", "contracts", "openapi-plan.md");
 
 type AffectedRoute = { method: string; apiPath: string; planned: boolean; authorization: string };
 type ContractRoute = {
@@ -24,6 +25,7 @@ type ContractRoute = {
   exactRole?: string;
   staffFallback: boolean;
 };
+type PlatformOperation = AffectedRoute & { stableErrors: string[]; consumerHref: string };
 
 function section(source: string, startHeading: string, endHeading: string) {
   const start = source.indexOf(startHeading);
@@ -81,6 +83,26 @@ function parseAdminRoutes(source: string): ContractRoute[] {
     });
 }
 
+function parsePlatformOperations(source: string): PlatformOperation[] {
+  return section(source, "## PLAN-35 Admin Operations Matrix", "## Request and Response Rules")
+    .split(/\r?\n/)
+    .flatMap((line) => {
+      const row = cells(line);
+      const method = row[0]?.match(/^`(GET|POST|PATCH|PUT|DELETE)`$/)?.[1];
+      const [apiPath] = tokens(row[1] ?? "");
+      const [consumerHref] = tokens(row[5] ?? "");
+      if (!method || !apiPath || !consumerHref || row.length !== 6) return [];
+      return [{
+        method,
+        apiPath,
+        planned: false,
+        authorization: row[3],
+        stableErrors: tokens(row[4] ?? "").filter((token) => /^[A-Z][A-Z0-9_]+$/.test(token)),
+        consumerHref
+      }];
+    });
+}
+
 function routeFile(apiPath: string) {
   const generic = apiPath === "/api/admin/settings/storage.policy"
     ? "/api/admin/settings/[key]"
@@ -95,8 +117,10 @@ function exportedMethods(file: string) {
 
 describe("PLAN-35 affected contract inventory", () => {
   const contract = fs.readFileSync(contractPath, "utf8");
+  const platformOpenApi = fs.readFileSync(platformOpenApiPath, "utf8");
   const affected = parseAffectedRoutes(contract);
   const routes = parseAdminRoutes(contract);
+  const platformOperations = parsePlatformOperations(platformOpenApi);
 
   it("parses one unique affected method/path row with no remaining planned operation", () => {
     const operations = affected.map(({ method, apiPath }) => `${method} ${apiPath}`);
@@ -117,6 +141,39 @@ describe("PLAN-35 affected contract inventory", () => {
     for (const [file, rows] of byFile) {
       for (const method of exportedMethods(file)) expect(rows.map(({ method }) => method)).toContain(method);
     }
+  });
+
+  it("matches the platform OpenAPI operation, authorization, error, and consumer map bidirectionally", () => {
+    const affectedByOperation = new Map(affected.map((row) => [`${row.method} ${row.apiPath}`, row]));
+    const platformByOperation = new Map(platformOperations.map((row) => [`${row.method} ${row.apiPath}`, row]));
+    expect(platformOperations).toHaveLength(23);
+    expect([...platformByOperation.keys()].sort()).toEqual([...affectedByOperation.keys()].sort());
+
+    for (const [operation, documented] of platformByOperation) {
+      const feature = affectedByOperation.get(operation);
+      expect(feature, operation).toBeDefined();
+      expect(tokens(documented.authorization).filter(isPermission).sort(), operation)
+        .toEqual(tokens(feature?.authorization ?? "").filter(isPermission).sort());
+      expect(documented.consumerHref, operation).toMatch(/^\/(login|admin(?:\/|$))/);
+      if (documented.consumerHref.startsWith("/admin")) {
+        expect(
+          ADMIN_ROUTE_POLICIES.some(({ href }) => documented.consumerHref === href || documented.consumerHref.startsWith(`${href}/`)),
+          `${operation} -> ${documented.consumerHref}`
+        ).toBe(true);
+      }
+    }
+
+    expect(Object.fromEntries(
+      platformOperations
+        .filter(({ stableErrors }) => stableErrors.length > 0)
+        .map(({ method, apiPath, stableErrors }) => [`${method} ${apiPath}`, stableErrors])
+    )).toEqual({
+      "POST /api/admin/calendar": ["APPOINTMENT_CONFLICT"],
+      "POST /api/admin/calendar/{appointmentId}/reschedule": ["APPOINTMENT_CONFLICT"],
+      "POST /api/admin/consultations/{consultationId}/assign": ["APPOINTMENT_CONFLICT"],
+      "POST /api/admin/cases": ["CASE_REFERENCE_CONFLICT"],
+      "PATCH /api/admin/settings/storage.policy": ["SETTING_READ_ONLY"]
+    });
   });
 
   it("keeps every contract permission in the canonical catalog", () => {

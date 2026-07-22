@@ -29,6 +29,7 @@ if (releaseGate) {
 
 if (includeE2e) {
   optionalChecks.push(["npm", ["run", "test:e2e:smoke"]]);
+  optionalChecks.push(["npm", ["run", "test:e2e:plan35"]]);
 }
 
 if (includeDb) {

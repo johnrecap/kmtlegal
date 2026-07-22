@@ -181,6 +181,33 @@ Pass only if:
 - RTL arrow movement is inline-forward in Arabic, and reduced-motion disables sweep, beam, lift, zoom, tilt, spotlight, and arrow shift.
 - `npm run typecheck`, `npm run lint`, `npm run test`, `ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build`, and focused public visual smoke pass or any blocker is documented.
 
+## Gate 6G: PLAN-35 Admin Operations Evidence Ready
+
+Pass only if the claimed state, not merely the implementation, satisfies its contiguous evidence
+boundary:
+
+- All 23 affected methods, authorization rules, stable domain errors, and protected consumer hrefs
+  match the feature contract, platform OpenAPI plan, actual handlers, and route registry.
+- The nineteen-route registry uses `report.read.any` (never `reports.read.any`) and navigation never
+  substitutes for page/API/service authorization.
+- `npm run db:validate`, `npm run db:generate`, typecheck, lint, full Vitest, guarded local build,
+  focused PLAN-35 browser checks, and diff hygiene pass on the recorded local revision before
+  `Local-Verified` is claimed.
+- `DB-Verified` additionally requires a disposable PostgreSQL run of migrate, seed, seed, legacy DB
+  acceptance, and `tests/e2e/plan35-db-backed.spec.ts`; a missing/production-connected database is
+  `BLOCKED` and cannot satisfy this gate.
+- `Browser-Verified` additionally requires all five disposable staff personas, all 95 route cells,
+  authenticated journeys, accessibility/RTL, console/network, and deterministic five-viewport
+  evidence. Collection or skipped authentication cases do not pass.
+- `Live-Accepted` additionally requires read-only external `KMT_LIVE_*` execution with exact 200 or
+  explicitly documented redirect outcomes. A `<500` assertion, absent credentials, or skipped spec
+  does not pass.
+- `docs/evidence/PLAN_35_ADMIN_OPERATIONS.md` records the exact environment/command/result/artifact,
+  and `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md`, the plan index, and the one master roll-up all stop
+  at the highest contiguous passed state.
+- No production client/legal data, production mutation, migration, seed, or contention run is used
+  as acceptance evidence.
+
 ## Gate 7: Legal Data Protection Ready
 Pass only if:
 - Internal notes cannot be exposed to clients.

@@ -132,6 +132,34 @@
 - Interaction overflow guard: hover/focus states for V2 CTAs and card beams do not create page-level horizontal overflow at `390px`.
 - Visual smoke: `/`, `/services`, `/contact`, `/book-consultation`, `/ar`, `/ar/services`, `/ar/contact`, and `/ar/book-consultation` show visibly stronger cinematic public motion hooks without decorative lines under headings.
 
+## PLAN-35 Admin Operations Tests
+
+- **Focused/unit/contract**: canonical scope parity; half-open appointment conflicts and retry modes;
+  stable error/copy mapping; all 23 affected method/path/permission/error/consumer rows; all nineteen
+  route IDs; contact transition idempotency/audit; notification counts/dedupe/cursor/safe href;
+  manual-case replay/rollback; role/user/session governance; dashboard DTO/order/failure isolation;
+  storage diagnostic redaction; shared Arabic accessibility contracts.
+- **Local gate**: `npm run db:validate`, `npm run db:generate`, `npm run typecheck`, `npm run lint`,
+  full Vitest, guarded no-database production build, `npm run test:e2e:plan35`, and
+  `git diff --check`. Browser output with authenticated cases skipped proves only the shared local
+  shell; it does not produce Browser-Verified status.
+- **Disposable PostgreSQL gate**: `npm run qa:db` runs migrate, seed twice, the legacy DB spec, and
+  `tests/e2e/plan35-db-backed.spec.ts`. It must prove permission/bootstrap durability, empty and
+  inactive roles, active sessions/final Super Admin, concurrent appointment outcomes, manual-case
+  replay/rollback, contact/notification state, governance persistence, and bounded query evidence.
+  `DATABASE_URL` must identify a disposable nonproduction target.
+- **Authenticated browser gate**: `npm run test:e2e:plan35` with five safe storage states and explicit
+  disposable-fixture opt-ins covers all 95 role/route cells, command-center/drill-down parity,
+  contact/notification/manual-case journeys, keyboard/RTL, console/network failures, and deterministic
+  screenshots at `1440x900`, `1023x768`, `1024x768`, `390x844`, and `320x568`.
+- **Live read-only gate**: `npm run test:e2e:live-admin` uses external `KMT_LIVE_*` credentials and
+  requires exact `200` document/API outcomes (or a specifically documented redirect). It performs no
+  PLAN-35 business mutation and never accepts a generic status below 500.
+- **Evidence semantics**: every row records commit, environment, command, `PASS | FAIL | BLOCKED |
+  SKIPPED`, scope, artifact, and Cairo time. Only contiguous `PASS` gates advance
+  `Local-Verified -> DB-Verified -> Browser-Verified -> Live-Accepted`. Collection, a skipped test,
+  missing credentials, or missing database is never a pass. Production data is not test data.
+
 ## Visual Regression Tests
 - Stitch clone at `390x844` and `1440x900` where references exist.
 - Stitch clone requires `_workspace/stitch-clone/{screen-name}/04_visual-diff-report.md` and `06_acceptance.md` for each screen.
@@ -202,7 +230,10 @@ npm run security:secrets
 npm run security:audit
 ```
 
-`qa:db` requires `DATABASE_URL` and runs migrate + seed + seed + DB-backed E2E. `qa:release` adds E2E smoke, DB gate, dependency audit, and secret scan.
+`qa:local:e2e` includes the PLAN-35 local browser spec. `qa:db` requires `DATABASE_URL` and runs
+migrate + seed + seed + both the legacy and PLAN-35 DB-backed specs. `qa:release` adds E2E smoke,
+PLAN-35 browser coverage, the DB gate, dependency audit, and secret scan. Skipped PLAN-35 cells remain
+non-acceptance evidence.
 
 ## UAT Checklist
 - English public site reads naturally on default routes.

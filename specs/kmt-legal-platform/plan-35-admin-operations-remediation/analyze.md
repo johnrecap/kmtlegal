@@ -1,8 +1,8 @@
 # PLAN-35 Spec Kit Analyze Report
 
 **Date**: 2026-07-22
-**Status**: `US6-LOCAL-VERIFIED`
-**Implementation state**: T001–T015, T017–T027, T029–T041, T043–T051, T053–T067, T069–T080, T082–T090, T092–T100, and T102–T106 are implemented and locally verified. T057, T072, T083, and T094's browser/database scenarios are authored and collection-verified, but their authenticated PostgreSQL execution remains part of T068/T081/T091/T101. T016/G35-4D, T028, the database-backed portion of T039, T042's authenticated page/API cells, T052, T068, T081, T091, and T101 remain deferred evidence under FR-035.
+**Status**: `PHASE-9-LOCAL-VERIFIED`
+**Implementation state**: Local implementation is complete through T111, and Phase 9 T113–T122/T126–T127 is locally verified. T057, T072, T083, and T094's browser/database scenarios are authored and collection-verified, but authenticated PostgreSQL execution remains owned by T068/T081/T091/T101. T016/G35-4D, T028, the database-backed portion of T039, T042's authenticated page/API cells, T052, T068, T081, T091, T101, T112, and T123–T125 remain deferred evidence under FR-035. T128 remains the repository handoff.
 
 ## Gate Result
 
@@ -14,8 +14,7 @@
 
 The constitution, specification, clarification decisions, plan, research, data model, contract,
 quickstart, both checklists, task list, connected-impact map, and file-owner lanes are mutually
-consistent. Implementation may start only after the user explicitly accepts concrete
-`PLAN-35/T###` IDs.
+consistent. Further evidence may advance the state only through the explicitly named open tasks.
 
 ## Artifact Inventory
 
@@ -47,8 +46,8 @@ contract, broken local Markdown link, or duplicated detailed master task was fou
 | Manual case create/edit | T069–T081 | T069–T080 locally verified; T072 authored/collection-only; T079 activated `cases.create` after service, API, and page; T081 remains DB/browser acceptance |
 | Role/user governance | T082–T091 | T082–T090 local lane verified; T090 activated roles; T091 remains the complete DB/authenticated 19×5 gate |
 | Command center and storage truth | T092–T106 | T092–T100/T102–T106 local lane verified; T094 is authored/collection-only and T101 remains authenticated end-to-end acceptance |
-| UI/RTL/accessibility convergence | T107–T112 | Five exact viewports plus all shared-consumer dispositions |
-| Release evidence and convergence | T113–T128 | Local, DB, browser, live, analyze/converge, commit/push handoff |
+| UI/RTL/accessibility convergence | T107–T112 | T107–T111 local; protected authenticated acceptance remains T112 |
+| Release evidence and convergence | T113–T128 | T113–T122/T126–T127 local; T123–T125/T128 remain open |
 
 This ordering removes the former circular acceptance condition: T042/T052 test only the original
 fifteen executable destinations. T066 activated `contacts.list` and `notifications.list`, and T079
@@ -368,12 +367,33 @@ across 72 static pages, and 17 responsive/keyboard/RTL/visual browser checks at 
 reviewed. The 13 authenticated scenarios were skipped, not passed; T112 remains open for protected
 admin-page screenshots and journey acceptance with safe disposable login states.
 
+## Phase 9 Local QA And Delivery Convergence — 2026-07-22
+
+| Severity | Open | Disposition |
+|---|---:|---|
+| `CRITICAL` | 0 | None |
+| `HIGH` | 0 | None. Database, authenticated-browser, and live gates are visibly blocked/skipped and cannot advance release state. |
+| `MEDIUM` | 0 | OpenAPI/feature-contract drift, release-state ambiguity, QA-harness omission, live `<500` acceptance, and stale roll-up documentation were fixed. |
+
+T113–T121 now provide a bidirectional 23-operation platform contract, exact domain-error and
+permission checks, skip-is-not-pass release assertions, a hardened read-only live smoke, standard
+local/DB/live commands, synchronized platform plans, and sanitized release evidence. T122 passed
+with `DATABASE_URL` absent: schema validation/client generation, typecheck, warning-free lint, all
+366 Vitest tests across 53 files, the guarded 72-page build, 17 local PLAN-35 Playwright checks, and
+diff hygiene. Thirteen protected authenticated scenarios remained skipped.
+
+Final Analyze covered 38 functional requirements, 13 success criteria, 128 unique sequential tasks,
+the constitution, 23 affected methods, nineteen admin destinations, and the single master roll-up.
+It found zero unresolved `CRITICAL`, `HIGH`, or `MEDIUM` findings. Converge found no new unowned gap
+and appended no task; the exact disposition is recorded in
+`docs/evidence/PLAN_35_ANALYZE_CONVERGE.md`. Existing T016/T028/T039/T042/T052/T068/T081/T091/T101/
+T112/T123–T125 continue to own unavailable environment evidence, and T128 owns repository handoff.
+
 ## Conclusion
 
 PLAN-35 remains internally consistent and conflict-controlled with zero unresolved `CRITICAL`,
-`HIGH`, or `MEDIUM` findings in the completed local lanes. US1, the US2 shell/policy work, US3
-T053–T067, US4 T069–T080, US5 T082–T090, US6 T092–T100/T102–T106, and US7 T107–T111 are locally
-complete, while
-T016, T028, the database-backed part of T039, T042's authenticated cells, T052, T068, T081, T091,
-T101, and T112 remain explicitly open. Neither collected-only authentication cells nor the
+`HIGH`, or `MEDIUM` findings in the completed local lanes. Product work through T111 and Phase 9
+T113–T122/T126–T127 are locally complete. T016, T028, the database-backed part of T039, T042's
+authenticated cells, T052, T068, T081, T091, T101, T112, and T123–T125 remain explicitly open;
+T128 remains the final repository handoff. Neither collected-only authentication cells nor the
 production-connected database are used as acceptance evidence.

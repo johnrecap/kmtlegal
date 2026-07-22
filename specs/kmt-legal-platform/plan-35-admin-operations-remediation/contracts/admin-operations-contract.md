@@ -46,17 +46,17 @@ Errors use:
 | `POST /api/auth/login` | Current, hardened | Generic rejection and no session for non-active/deleted user or inactive role | Public credential exchange; valid active principal only |
 | `GET /api/auth/me` | Current, hardened representative | No auth context for revoked/expired session or non-active/deleted user/inactive role | Current valid session and active principal |
 | `GET /api/admin/dashboard` | Current, extended | Purpose-built role-scoped snapshot with independent widget states | Any authenticated staff; every metric/section applies its domain permission and scope |
-| `GET /api/admin/calendar` | Current, scope-aligned | Uses canonical appointment visibility | `appointment.manage.any` or `appointment.read.assigned` |
-| `POST /api/admin/calendar` | Current, extended | Atomic same-lawyer overlap rejection | Existing create rules; `appointment.manage.any` for arbitrary staff operation |
-| `POST /api/admin/calendar/{appointmentId}/reschedule` | Current, extended | Atomic overlap rejection excluding self | Existing object scope plus appointment management rule |
-| `POST /api/admin/consultations/{consultationId}/assign` | Current, extended | Linked active appointment is conflict-checked before lawyer assignment | Existing consultation assignment capability/object scope |
+| `GET /api/admin/calendar` | Current, scope-aligned | Uses canonical appointment visibility | `appointment.manage.any`, `appointment.read.assigned`, or `case.read.assigned` |
+| `POST /api/admin/calendar` | Current, extended | Atomic same-lawyer overlap rejection | `session.manage.any` or `session.manage.assigned` with case scope |
+| `POST /api/admin/calendar/{appointmentId}/reschedule` | Current, extended | Atomic overlap rejection excluding self | `appointment.manage.any` or `session.manage.assigned` with object scope |
+| `POST /api/admin/consultations/{consultationId}/assign` | Current, extended | Linked active appointment is conflict-checked before lawyer assignment | `consultation.review.any` |
 | `GET /api/admin/contact-messages` | Current, extended | Existing query contract plus minimized stable DTO | `contact.read.any` or `contact.manage.any` |
 | `PATCH /api/admin/contact-messages/{messageId}` | Current, extended | Enforced state machine and idempotent same-state behavior | `contact.manage.any` |
-| `GET /api/admin/notifications` | Current, extended | Unified generic/review projection and truthful counts | `notification.read.self`; consultation items additionally require review scope |
+| `GET /api/admin/notifications` | Current, extended | Unified generic/review projection and truthful counts | `notification.read.self`; consultation items additionally require `consultation.review.any` or `consultation.review.assigned` |
 | `POST /api/admin/notifications/{notificationId}/read` | Current, extended | Owner-only idempotent generic mark-read | `notification.read.self` |
-| `GET /api/admin/cases` | Current, scope-aligned | Uses canonical case visibility; advertises create action only when allowed | Existing case read capability |
+| `GET /api/admin/cases` | Current, scope-aligned | Uses canonical case visibility; advertises create action only when allowed | `case.read.any` or `case.read.assigned` |
 | `POST /api/admin/cases` | Implemented by PLAN-35 | Manual, audited, idempotent case create | `case.create.any` |
-| `GET /api/admin/cases/{caseId}` | Current | Existing scoped detail | Existing case read capability |
+| `GET /api/admin/cases/{caseId}` | Current | Existing scoped detail | `case.read.any` or `case.read.assigned` with object scope |
 | `PATCH /api/admin/cases/{caseId}` | Implemented by PLAN-35 | Core-field edit only; status remains separate | `case.update.any` or `case.update.assigned` with object scope |
 | `GET /api/admin/roles` | Implemented by PLAN-35 | Protected/editable role matrix and canonical permission catalog | Exact active Super Admin plus `role.manage.any` and `permission.manage.any` |
 | `PATCH /api/admin/roles/{roleId}/permissions` | Implemented by PLAN-35 | Atomic replacement with stale-write protection and audit | Exact active Super Admin plus `role.manage.any` and `permission.manage.any` |
@@ -64,7 +64,7 @@ Errors use:
 | `POST /api/admin/users` | Current, hardened | Purpose-built create DTO; protected-role assignment restricted | Exact active Super Admin and `user.manage.any` |
 | `GET /api/admin/users/{userId}` | Current, hardened | Purpose-built safe detail DTO only | `user.manage.any`; exact active Super Admin required for a protected-role target |
 | `PATCH /api/admin/users/{userId}` | Current, hardened | Atomic final-Super-Admin guard, session revocation, safe DTO | `user.manage.any`; exact active Super Admin required for a protected-role target/assignment |
-| `GET /api/admin/settings` | Current, extended | Includes safe effective storage diagnostic | Existing settings access |
+| `GET /api/admin/settings` | Current, extended | Includes safe effective storage diagnostic | `settings.manage.any` |
 | `PATCH /api/admin/settings/storage.policy` | Current generic key route, constrained | Rejects environment-owned storage mutation | `settings.manage.any`, then `409 SETTING_READ_ONLY` |
 
 ## GET `/api/admin/dashboard`

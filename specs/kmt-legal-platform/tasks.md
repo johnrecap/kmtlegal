@@ -515,11 +515,14 @@ Acceptance:
 
 ## Milestone 27 - PLAN-35 Admin Operations Remediation
 
+Highest evidenced PLAN-35 state: `Local-Verified`
+
 - [ ] T289 Execute the canonical PLAN-35 task set in `specs/kmt-legal-platform/plan-35-admin-operations-remediation/tasks.md` by accepted `PLAN-35/T###` IDs and dependency/file-owner order; do not duplicate its detailed tasks in this master list.
 
 Acceptance:
 
-- PLAN-35 remains `Planned` until product tasks are explicitly accepted and implemented.
+- PLAN-35 product and local QA lanes are implemented and `Local-Verified`; T289 stays open until the
+  canonical DB, authenticated-browser, live, and final acceptance tasks are completed.
 - The feature specification, plan, clean analyze report, research, data model, affected contract,
   quickstart, checklists, and task list remain the detailed source of truth.
 - Status may advance only through evidenced local, PostgreSQL, browser, responsive/RTL/accessibility,

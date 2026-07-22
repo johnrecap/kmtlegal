@@ -14,7 +14,7 @@
 | Appointments | schedule/calendar | Appointment | calendar/appointments | date/conflict | appointment.* | reminder job later | conflict tests |
 | Tasks | task board | Task | tasks CRUD | task schemas | task.* | overdue job later | service tests |
 | Content/Social | articles/studies/drafts | Article, CaseStudy, SocialPostDraft, AiProviderRun | content CRUD/approval | content schemas | content.*, caseStudy.*, socialDraft.* | AI Gateway, audit | workflow tests |
-| Finance | invoice basics/reports | Payment | finance/reports | invoice schemas | finance.*, reports.* | audit | service tests |
+| Finance | invoice basics/reports | Payment | finance/reports | invoice schemas | finance.*, report.* | audit | service tests |
 | Email | Deferred SMTP/templates | EmailMessage | internal helper | email template schemas | internal/system | disabled metadata | service tests |
 | Users/Settings/Audit | governance | User, Role, SystemSetting, AuditLog | users/settings/audit | role/settings schemas | user.*, settings.*, audit.* | audit | privilege tests |
 | Telemetry | events/logging | AuditLog plus event sink | internal service | event schemas | system | no PII checks | unit/static |
@@ -33,7 +33,7 @@
 - Dormant 2FA attempt fields remain in schema for a future Staff 2FA Rework but are not active in this release.
 
 ## Authorization Plan
-- Roles: Guest, Client, Lawyer, Office Admin, Marketing Staff, Super Admin.
+- Roles: Guest, Client, Lawyer, Secretary, Office Admin, Marketing Staff, Super Admin.
 - Permission keys: `resource.action.scope`.
 - Enforcement points: route layout guard, server action guard, route handler guard, repository scoping.
 - Object-level checks:
@@ -70,6 +70,32 @@
 | emailNotification | domain event | userId/type | limited retry | eventId | mark failed and expose operational error | delivery logs |
 | documentProcessingPlaceholder | upload later | documentId | N/A MVP | documentId | mark processing skipped | future |
 | contentSchedulePlaceholder | approved scheduled draft | draftId | N/A MVP | draftId | no external publish | future |
+
+## PLAN-35 Admin Operations Reconciliation
+
+| Boundary | Authoritative module | Contract |
+| --- | --- | --- |
+| Route discovery | `src/lib/admin-route-policy.ts` | Nineteen typed destinations; desktop, mobile, quick actions, and page guards share metadata while API/service authorization remains authoritative |
+| Canonical work scopes | Existing admin destination services | Dashboard list/count loaders import task, case/appointment, consultation, client, document, and contact predicates instead of recreating them |
+| Appointment conflicts | `src/server/appointments/appointment-conflict-service.ts` | Half-open overlap, active status set, public-unassigned symmetry, self-exclusion, serializable callback, and writer-specific retry policy |
+| Contact queue | `src/server/admin/contact-message-service.ts` | Bounded minimized reads and conditional audited `NEW -> REVIEWED/ARCHIVED -> ARCHIVED` transitions |
+| Notification center | `src/server/admin/notification-service.ts` | Complete-set counts, cross-source dedupe, opaque cursor, safe capability/object-scope href, owner-only generic read |
+| Manual cases | `src/server/admin/manual-case-service.ts` | `case.create.any`, UUID/hash/actor replay, atomic case/party/audit create, optimistic audited core edit |
+| Role governance | `src/server/admin/role-permission-service.ts` | Exact active Super Admin plus both governance permissions, protected/inactive roles, empty assignments, optimistic atomic replacement |
+| User/session governance | `src/server/admin/governance-service.ts`, auth/session services | Safe DTOs, delegated permission ceilings, active-principal checks, affected-session revocation, final-Super protection |
+| Command center | `src/server/admin/dashboard-service.ts` | Versioned purpose-built DTO, Cairo boundaries, fixed bounded queues/actions, independent ready/unavailable loaders |
+| Storage truth | `src/server/storage/runtime-diagnostic.ts` | One-shot redacted environment-owned diagnostic; `storage.policy` database row is neither returned nor writable |
+
+PLAN-35 is a no-schema change. Its sole migration is data-only permission/bootstrap work. Required
+audits are written inside the same transaction as contact, role, manual-case, admin appointment, and
+consultation conversion mutations. External checkout work is never automatically replayed. Stable
+domain errors are `APPOINTMENT_CONFLICT`, `CASE_REFERENCE_CONFLICT`, and `SETTING_READ_ONLY`, mapped
+to localized UI copy without exposing raw exceptions or permission keys.
+
+Local unit/contract/type/lint/build verification does not prove PostgreSQL isolation or persistence.
+Migration, double seed, concurrency, role/session, and query-plan checks require a disposable
+PostgreSQL database; missing infrastructure is `BLOCKED`, never a pass, and production data is
+excluded.
 
 ## Error Handling
 - Throw domain errors from services and translate at boundary.

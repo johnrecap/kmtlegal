@@ -39,6 +39,9 @@ All API Route Handlers and Server Actions must follow these standards:
 - `PERMISSION_DENIED`
 - `NOT_FOUND`
 - `CONFLICT`
+- `APPOINTMENT_CONFLICT`
+- `CASE_REFERENCE_CONFLICT`
+- `SETTING_READ_ONLY`
 - `RATE_LIMITED`
 - `FILE_TOO_LARGE`
 - `UNSUPPORTED_FILE_TYPE`
@@ -113,12 +116,12 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 | --- | --- | --- | --- | --- |
 | GET | `/api/admin/consultations` | Review queue | Staff | consultation.review.any / assigned |
 | GET | `/api/admin/consultations/{id}` | Consultation detail | Staff | consultation.review.any / assigned |
-| PATCH | `/api/admin/consultations/{id}/assign` | Assign lawyer | Admin | consultation.assign.any |
+| POST | `/api/admin/consultations/{id}/assign` | Assign lawyer and conflict-check a linked active appointment | Admin | consultation.review.any |
 | PATCH | `/api/admin/consultations/{id}/reject` | Reject request | Admin | consultation.review.any |
 | POST | `/api/admin/consultations/{id}/convert` | Convert to client/case | Admin | consultation.convert.any |
 | POST | `/api/admin/consultations/{id}/review` | Mark secretary review complete and resolve consultation notifications | Secretary/Admin | consultation.review.any |
-| GET | `/api/admin/notifications` | Read current user's in-app notifications and consultation review count | Staff | notification.read.self / consultation.review.any |
-| POST | `/api/admin/notifications/{notificationId}/read` | Mark one current-user notification as read | Staff | notification.read.self / consultation.review.any |
+| GET | `/api/admin/notifications` | Read current user's in-app notifications and permission-scoped consultation review count | Staff | notification.read.self; consultation.review.any / assigned only for review rows |
+| POST | `/api/admin/notifications/{notificationId}/read` | Mark one current-user generic notification as read | Staff | notification.read.self |
 | GET | `/api/admin/consultation-availability` | Read weekly public consultation booking availability | Secretary/Admin | appointment.manage.any |
 | PATCH | `/api/admin/consultation-availability` | Update weekly public consultation booking availability | Secretary/Admin | appointment.manage.any |
 
@@ -151,7 +154,7 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 ### Admin Clients and Cases
 | Method | Path | Purpose | Auth | Permission |
 | --- | --- | --- | --- | --- |
-| GET | `/api/admin/dashboard` | Dashboard metrics | Staff | dashboard.read.any |
+| GET | `/api/admin/dashboard` | Role-scoped command-center snapshot | Authenticated staff | Per-widget domain permission and canonical scope; no dashboard-wide permission |
 | GET | `/api/admin/clients` | CRM list | Staff | client.read.any / assigned |
 | POST | `/api/admin/clients` | Create client | Admin | client.create.any |
 | GET | `/api/admin/clients/{id}` | Client detail | Staff | client.read.any / assigned |
@@ -169,9 +172,9 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 ### Admin Calendar and Tasks
 | Method | Path | Purpose | Auth | Permission |
 | --- | --- | --- | --- | --- |
-| GET | `/api/admin/calendar` | Calendar events | Staff | appointment.read.any / assigned |
-| POST | `/api/admin/calendar` | Create appointment | Staff | appointment.manage.any |
-| POST | `/api/admin/calendar/{appointmentId}/reschedule` | Reschedule/update appointment | Staff | appointment.manage.any / assigned |
+| GET | `/api/admin/calendar` | Calendar events | Staff | appointment.manage.any / appointment.read.assigned / case.read.assigned |
+| POST | `/api/admin/calendar` | Create a case appointment with atomic overlap protection | Staff | session.manage.any / session.manage.assigned |
+| POST | `/api/admin/calendar/{appointmentId}/reschedule` | Reschedule with atomic overlap protection | Staff | appointment.manage.any / session.manage.assigned |
 | GET | `/api/admin/tasks` | Task board/list | Staff | task.read.any / assigned |
 | POST | `/api/admin/tasks` | Create task | Staff | task.manage.any / assigned |
 | PATCH | `/api/admin/tasks/{id}` | Update task | Staff | task.manage.any / assigned |
@@ -193,18 +196,20 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 ### Users, Roles, Settings, Audit
 | Method | Path | Purpose | Auth | Permission |
 | --- | --- | --- | --- | --- |
-| GET | `/api/admin/users` | Users list | Super Admin | user.manage.any |
+| GET | `/api/admin/users` | Users list | Super Admin/delegated manager within target ceiling | user.manage.any |
 | POST | `/api/admin/users` | Create user email account with Super Admin-set password | Exact Super Admin | user.manage.any |
-| PATCH | `/api/admin/users/{id}` | Update user/status/role | Super Admin | user.manage.any |
+| GET | `/api/admin/users/{id}` | Safe user detail DTO | Super Admin/delegated manager within target ceiling | user.manage.any |
+| PATCH | `/api/admin/users/{id}` | Update user/status/role | Super Admin/delegated manager within current and next-role ceilings | user.manage.any |
 | POST | `/api/admin/users/{id}/password` | Change any user password | Exact Super Admin | user.manage.any |
 | POST | `/api/admin/users/{id}/client-profile` | Create or link a CRM client profile for an unlinked Client-role account | Staff | client.account.manage |
 | POST | `/api/admin/users/{id}/2fa/reset` | Disabled staff 2FA reset placeholder | Super Admin | N/A |
-| GET | `/api/admin/roles` | Roles and permissions | Super Admin | role.manage.any |
-| PATCH | `/api/admin/roles/{id}/permissions` | Update role permissions | Super Admin | role.manage.any |
+| GET | `/api/admin/roles` | Protected/editable role and permission matrix | Exact active Super Admin | role.manage.any + permission.manage.any |
+| PATCH | `/api/admin/roles/{id}/permissions` | Atomically replace editable-role permissions | Exact active Super Admin | role.manage.any + permission.manage.any |
 | GET | `/api/admin/settings` | Settings | Super Admin | settings.manage.any |
 | PATCH | `/api/admin/settings/{key}` | Update setting | Super Admin | settings.manage.any |
+| PATCH | `/api/admin/settings/storage.policy` | Reject environment-owned storage mutation | Super Admin | settings.manage.any; always SETTING_READ_ONLY after authorization |
 | GET | `/api/admin/audit-log` | Audit search with client-friendly presentation DTO | Super Admin | audit.read.any |
-| GET | `/api/admin/contact-messages` | Contact message review queue | Staff | contact.read.any |
+| GET | `/api/admin/contact-messages` | Contact message review queue | Staff | contact.read.any / contact.manage.any |
 | PATCH | `/api/admin/contact-messages/{messageId}` | Mark contact message reviewed or archived | Staff | contact.manage.any |
 | GET | `/api/admin/messages` | Client team-message inbox | Secretary/Admin | conversation.read.any |
 | GET | `/api/admin/messages/{threadId}` | Client team-message detail | Secretary/Admin | conversation.read.any |
@@ -225,7 +230,7 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 | GET | `/api/admin/payments/attempts` | List gateway payment attempts and slot reservations | Admin | finance.read.any |
 | GET | `/api/admin/payments/webhooks` | List payment webhook events and processing status | Admin | finance.read.any |
 | POST | `/api/admin/payments/webhooks/{eventId}/replay` | Replay safe normalized webhook processing | Admin | finance.manage.any |
-| GET | `/api/admin/reports` | MVP reports summary | Admin | reports.read.any |
+| GET | `/api/admin/reports` | MVP reports summary | Admin | report.read.any |
 
 Manual invoice/payment DTO fields: `invoiceNumber`, `clientId`, `caseId?`, `issueDate`, `dueDate?`, `amount`, `currency`, `status`, `paymentMethod?`, `receiptNumber?`, `paidAt?`, `notes?`, `createdById`, timestamps. Gateway v1 adds `ConsultationPricingRule`, `PaymentAttempt`, `PaymentTransaction`, and `PaymentWebhookEvent`; refunds/disputes are modeled but not operationalized in v1.
 
@@ -291,6 +296,39 @@ Normalized provider response:
 ```
 
 Supported tasks: consultation classification, intake summary, document checklist suggestion, anonymous case study draft, social post draft. If a provider does not support OpenAI-compatible HTTP, implement it as a `local` or `custom` adapter behind the same gateway. OpenCode is treated as `local`/`custom` unless it exposes an OpenAI-compatible HTTP API.
+
+## PLAN-35 Admin Operations Matrix
+
+This matrix is the platform-level release contract for all 23 affected PLAN-35 methods. Common
+`AUTH_REQUIRED`, `PERMISSION_DENIED`, `VALIDATION_ERROR`, safe `NOT_FOUND`, and no-store conventions
+remain defined above; the error column names additional stable domain errors. Consumer hrefs are
+implemented protected pages, not authorization substitutes.
+
+| Method | Path | Purpose | Authorization | Stable domain errors | Consumer href |
+| --- | --- | --- | --- | --- | --- |
+| `POST` | `/api/auth/login` | Start a session for an active principal | Public credential exchange; active user and role only | — | `/login` |
+| `GET` | `/api/auth/me` | Resolve the current live principal | Current live session; active user and role | — | `/admin` |
+| `GET` | `/api/admin/dashboard` | Return `DashboardSnapshotV1` | Authenticated staff; each widget applies its own domain scope | — | `/admin` |
+| `GET` | `/api/admin/calendar` | List canonical visible appointments | `appointment.manage.any`, `appointment.read.assigned`, or `case.read.assigned` | — | `/admin/calendar` |
+| `POST` | `/api/admin/calendar` | Create a conflict-safe case appointment | `session.manage.any` or `session.manage.assigned` with case scope | `APPOINTMENT_CONFLICT` | `/admin/calendar` |
+| `POST` | `/api/admin/calendar/{appointmentId}/reschedule` | Reschedule without overlap | `appointment.manage.any` or `session.manage.assigned` with object scope | `APPOINTMENT_CONFLICT` | `/admin/calendar` |
+| `POST` | `/api/admin/consultations/{consultationId}/assign` | Assign a lawyer and protect the linked appointment | `consultation.review.any` | `APPOINTMENT_CONFLICT` | `/admin/consultations` |
+| `GET` | `/api/admin/contact-messages` | Read the bounded contact inbox | `contact.read.any` or `contact.manage.any` | — | `/admin/contact-messages` |
+| `PATCH` | `/api/admin/contact-messages/{messageId}` | Transition contact state atomically | `contact.manage.any` | — | `/admin/contact-messages` |
+| `GET` | `/api/admin/notifications` | Read the complete notification projection | `notification.read.self`; review rows also require `consultation.review.any` or `consultation.review.assigned` | — | `/admin/notifications` |
+| `POST` | `/api/admin/notifications/{notificationId}/read` | Mark an owned generic notification read | `notification.read.self` | — | `/admin/notifications` |
+| `GET` | `/api/admin/cases` | List scoped cases | `case.read.any` or `case.read.assigned` | — | `/admin/cases` |
+| `POST` | `/api/admin/cases` | Create an audited manual case | `case.create.any` | `CASE_REFERENCE_CONFLICT` | `/admin/cases/new` |
+| `GET` | `/api/admin/cases/{caseId}` | Read scoped case detail | `case.read.any` or `case.read.assigned` | — | `/admin/cases` |
+| `PATCH` | `/api/admin/cases/{caseId}` | Edit approved case core fields | `case.update.any` or `case.update.assigned` with object scope | — | `/admin/cases` |
+| `GET` | `/api/admin/roles` | Read the role-permission matrix | Exact active Super Admin plus `role.manage.any` and `permission.manage.any` | — | `/admin/roles` |
+| `PATCH` | `/api/admin/roles/{roleId}/permissions` | Replace editable-role permissions | Exact active Super Admin plus `role.manage.any` and `permission.manage.any` | — | `/admin/roles` |
+| `GET` | `/api/admin/users` | List safe admin-user DTOs | `user.manage.any`; delegated target ceiling applies | — | `/admin/users` |
+| `POST` | `/api/admin/users` | Create an admin-managed account | Exact active Super Admin plus `user.manage.any` | — | `/admin/users` |
+| `GET` | `/api/admin/users/{userId}` | Read a safe user detail DTO | `user.manage.any`; protected-target ceiling applies | — | `/admin/users` |
+| `PATCH` | `/api/admin/users/{userId}` | Update user access and revoke affected sessions | `user.manage.any`; target/assignment ceiling and final-Super guard apply | — | `/admin/users` |
+| `GET` | `/api/admin/settings` | Read safe settings and runtime storage diagnostic | `settings.manage.any` | — | `/admin/settings` |
+| `PATCH` | `/api/admin/settings/storage.policy` | Reject runtime storage-policy edits | `settings.manage.any` | `SETTING_READ_ONLY` | `/admin/settings` |
 
 ## Request and Response Rules
 - Do not return password hashes, session tokens, full internal notes to clients, private file keys to unauthorized users, raw AI prompts, provider raw responses, API keys, legal summaries, or document contents.

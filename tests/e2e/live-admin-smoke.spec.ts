@@ -6,16 +6,24 @@ const liveAdminPassword = process.env.KMT_LIVE_ADMIN_PASSWORD ?? "";
 
 const adminPages = [
   "/admin",
+  "/admin/consultation-availability",
   "/admin/consultations",
   "/admin/clients",
+  "/admin/messages",
   "/admin/cases",
-  "/admin/content",
-  "/admin/finance",
+  "/admin/cases/new",
+  "/admin/calendar",
+  "/admin/tasks",
   "/admin/documents",
+  "/admin/finance",
   "/admin/reports",
+  "/admin/content",
+  "/admin/contact-messages",
+  "/admin/notifications",
   "/admin/users",
-  "/admin/audit-log",
-  "/admin/settings"
+  "/admin/roles",
+  "/admin/settings",
+  "/admin/audit-log"
 ];
 
 const mobileAdminPages = [
@@ -28,7 +36,27 @@ const mobileAdminPages = [
   "/admin/documents",
   "/admin/users"
 ];
-const apiChecks = ["/api/auth/me", "/api/admin/dashboard", "/api/admin/consultations", "/api/admin/content"];
+const apiChecks = [
+  "/api/auth/me",
+  "/api/admin/dashboard",
+  "/api/admin/consultation-availability",
+  "/api/admin/consultations",
+  "/api/admin/clients",
+  "/api/admin/messages",
+  "/api/admin/cases",
+  "/api/admin/calendar",
+  "/api/admin/tasks",
+  "/api/admin/documents",
+  "/api/admin/finance",
+  "/api/admin/reports",
+  "/api/admin/content",
+  "/api/admin/contact-messages",
+  "/api/admin/notifications",
+  "/api/admin/users",
+  "/api/admin/roles",
+  "/api/admin/settings",
+  "/api/admin/audit-log"
+];
 const blockedConsolePatterns = [
   /ChunkLoadError/i,
   /Application error/i,
@@ -52,6 +80,7 @@ test.describe("live admin release smoke", () => {
     for (const apiPath of apiChecks) {
       const response = await page.request.get(liveUrl(apiPath));
       expect(response.status(), `${apiPath} should return 200 after admin login`).toBe(200);
+      expect(new URL(response.url()).pathname, `${apiPath} should not redirect to another document`).toBe(apiPath);
     }
 
     expect(issues()).toEqual([]);
@@ -97,10 +126,16 @@ async function loginAsAdmin(page: Page) {
 async function visitAdminPage(page: Page, path: string) {
   const response = await page.goto(liveUrl(path), { waitUntil: "domcontentloaded" });
 
-  expect(response?.status(), `${path} should return a successful document response`).toBeLessThan(500);
+  expectPlan35DocumentOutcome(response, path);
   await expect(page.locator("body")).toBeVisible();
   await expect(page.locator("body")).not.toContainText("Application error");
   await page.waitForTimeout(750);
+}
+
+function expectPlan35DocumentOutcome(response: Response | null, path: string) {
+  expect(response, `${path} should return a document response`).not.toBeNull();
+  expect(response?.status(), `${path} should return the documented authenticated 200 outcome`).toBe(200);
+  expect(new URL(response!.url()).pathname, `${path} should not redirect to another document`).toBe(path);
 }
 
 async function expectAdminClientsMobileSurface(page: Page) {

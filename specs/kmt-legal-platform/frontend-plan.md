@@ -200,11 +200,12 @@ Protected-surface guard:
 | `/portal/appointments` | Client | Own appointments | AppointmentCard | own appointments | appointment.read.own | empty/error | appointment_viewed | render |
 | `/portal/payments` | Client | Invoice/payment records | PaymentRecordCard | own payments | payment.read.own | empty | payment_viewed | render |
 | `/portal/profile` | Client | Profile | ClientProfileForm | profile update | user.update.self | validation | profile_updated | form |
-| `/admin` | Staff | Operations overview | metrics/tables | admin summary | dashboard.read.any | empty/error | admin_dashboard_viewed | E2E |
+| `/admin` | Staff | Role-aware command center | AdminCommandCenter, bounded queues/actions | DashboardSnapshotV1 | authenticated staff; per-widget domain scope | empty/partial/error | admin_dashboard_viewed | E2E |
 | `/admin/consultations` | Staff | Review queue | DataTable, filters | consultations | consultation.review | empty/error | consultation_queue_viewed | E2E |
 | `/admin/clients` | Admin | CRM | DataTable, filters | clients | client.read.any | empty/error | client_filter_used | integration |
 | `/admin/clients/[id]` | Admin | Client detail | profile/tabs | client detail | client.read.any | not-found | client_viewed | render |
 | `/admin/cases` | Staff | Case list | DataTable | cases | case.read.any/assigned | empty/error | case_filter_used | integration |
+| `/admin/cases/new` | Secretary/Admin | Manual audited case create | ManualCaseForm | cases POST | case.create.any | validation/pending/conflict/success | case_created | E2E |
 | `/admin/cases/[id]` | Staff | Internal case | tabs, timeline, docs, tasks | case detail | case.read/update | 403/404 | case_updated | E2E |
 | `/admin/calendar` | Staff | Sessions | calendar/list | appointments | appointment.read/manage | empty/error | calendar_viewed | render |
 | `/admin/tasks` | Staff | Kanban | TaskKanbanBoard | tasks | task.read/manage | empty/error | task_updated | E2E |
@@ -213,10 +214,48 @@ Protected-surface guard:
 | `/admin/content/articles` | Marketing | Articles admin | table/editor | article CRUD | content.create/update | validation | article_published | integration |
 | `/admin/content/case-studies` | Marketing | Case studies admin | table/review | caseStudy CRUD | caseStudy.create/approve | approval required | case_study_approved | E2E |
 | `/admin/finance` | Admin | Invoice basics | table/cards | invoices/payments | finance.read | empty | finance_viewed | render |
-| `/admin/reports` | Admin | Reports | charts/tables | report summary | reports.read | empty | report_viewed | render |
+| `/admin/reports` | Admin | Reports | charts/tables | report summary | report.read.any | empty | report_viewed | render |
+| `/admin/contact-messages` | Secretary/Admin | Contact triage inbox | ContactMessageInbox | contact messages | contact.read.any/manage.any | loading/empty/error/success | contact_reviewed | E2E |
+| `/admin/notifications` | Staff | Complete notification center | NotificationPopover/center list | notifications | notification.read.self | loading/empty/error/exhausted | notification_read | E2E |
+| `/admin/messages` | Secretary/Admin | Client team-message inbox | DataTable, filters | messages | conversation.read.any/manage.any | empty/error | message_viewed | integration |
 | `/admin/users` | Super Admin | Users/roles | table/forms | users/roles | user.manage | denied | user_role_changed | integration |
+| `/admin/roles` | Exact Super Admin | Role-permission governance | RolePermissionForm | role matrix | role.manage.any + permission.manage.any | read-only/dirty/stale/success/error | role_permissions_updated | E2E |
 | `/admin/settings` | Super Admin | Settings | forms | settings | settings.manage | validation | setting_updated | integration |
 | `/admin/audit-log` | Super Admin | Audit search | AuditLogTable | audit logs | audit.read.any | empty | audit_searched | render |
+
+## PLAN-35 Admin Workspace Reconciliation
+
+`src/lib/admin-route-policy.ts` is the canonical registry for these nineteen IDs, in order:
+`dashboard.home`, `consultations.availability`, `consultations.list`, `clients.list`,
+`messages.list`, `cases.list`, `cases.create`, `calendar.list`, `tasks.list`, `documents.list`,
+`finance.list`, `reports.list`, `content.home`, `contacts.list`, `notifications.list`, `users.list`,
+`roles.list`, `settings.home`, and `audit.list`. Each entry owns its Arabic label token, Material
+Symbol, group, href, active matcher, and permission predicate. Navigation visibility mirrors but
+never replaces page/API/service authorization; exact static actions win before longest-prefix child
+inheritance.
+
+- The authenticated admin layout sends the client only filtered navigation metadata and a safe user
+  label. Loading, denied, error, and not-found boundaries preserve that usable shell and do not
+  serialize raw permissions or exception digests.
+- Desktop uses grouped navigation. Below `lg`, a native modal `<dialog>` opens from logical
+  inline-start in RTL, contains focus, makes the background inert, locks scroll, closes on Escape or
+  navigation, restores focus, and keeps controls at least 44px. The tested boundary is mobile at
+  1023px and desktop at 1024px.
+- `AdminCommandCenter` renders the exact permission-filtered `DashboardSnapshotV1`: seven ordered
+  metric definitions, at most six rows in each of five ordered priority queues, up to five
+  route-registry quick actions, safe recent activity, Cairo time semantics, and independent
+  `ready | unavailable` recovery states. It adds no chart or state library.
+- Shared fields keep stable submission names while generating unique control/help/error IDs. Tables
+  expose captions and column scopes; filters/search regions are distinctly named; mobile records do
+  not force document overflow; feedback uses shared alert/status semantics and design tokens.
+- Protected UI remains Arabic-first and RTL. Mixed Arabic/English identifiers use direction
+  isolation, semantic enums/errors resolve through `src/lib/ui-copy.ts`, and raw permission keys,
+  internal errors, or English provider/service messages never become visible copy.
+
+Required browser viewports are `1440x900`, `1023x768`, `1024x768`, `390x844`, and `320x568` with
+keyboard, focus, reduced-motion, deterministic screenshot, and horizontal-overflow checks. Local
+fallback shell screenshots are useful evidence but do not replace authenticated protected-page
+acceptance.
 
 ## UX Flows
 
