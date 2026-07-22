@@ -2,8 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
-import { Button, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, Select, StateBlock, TextInput, Textarea } from "@/components/ui";
-import { plan35UserGovernanceUiCopy, roleDisplayLabel, technicalValueDisplayLabel } from "@/lib/ui-copy";
+import { Button, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, Select, StateBlock, TextInput } from "@/components/ui";
+import { formatDateTime } from "@/lib/legal-format";
+import {
+  plan35StorageDiagnosticUiCopy,
+  plan35UserGovernanceUiCopy,
+  roleDisplayLabel,
+  technicalValueDisplayLabel
+} from "@/lib/ui-copy";
+import type { StorageRuntimeDiagnostic } from "@/server/storage/runtime-diagnostic";
 
 type ApiMessage = {
   error?: {
@@ -477,54 +484,57 @@ export function SecurityStaff2faSettingForm({ value }: { value: SettingValue }) 
   );
 }
 
-export function StoragePolicySettingForm({ value }: { value: SettingValue }) {
-  const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
-  const [isBusy, setIsBusy] = useState(false);
-
-  async function save(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    setIsBusy(true);
-    setMessage(null);
-
-    try {
-      const response = await fetch("/api/admin/settings/storage.policy", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          key: "storage.policy",
-          driver: "vps-filesystem",
-          uploadsDir: textValue(formData, "uploadsDir"),
-          maxUploadMb: textValue(formData, "maxUploadMb"),
-          allowedTypes: textValue(formData, "allowedTypes")
-        })
-      });
-
-      if (!response.ok) {
-        setMessage(await readMessage(response));
-        return;
-      }
-      setMessage("تم حفظ سياسة التخزين.");
-      router.refresh();
-    } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
-    } finally {
-      setIsBusy(false);
-    }
-  }
-
+export function StorageRuntimeDiagnosticPanel({
+  diagnostic
+}: {
+  diagnostic: StorageRuntimeDiagnostic;
+}) {
+  const copy = plan35StorageDiagnosticUiCopy;
+  const tone = diagnostic.status === "configured" ? "success" : diagnostic.status === "degraded" ? "warning" : "error";
   return (
-    <form className="grid gap-4" onSubmit={save}>
-      <TextInput defaultValue="vps-filesystem" disabled label="نوع التخزين" name="driver" />
-      <TextInput defaultValue={String(value.uploadsDir ?? "/var/lib/kmt-legal/uploads")} disabled={isBusy} label="مسار التخزين الخاص" name="uploadsDir" required />
-      <TextInput defaultValue={String(value.maxUploadMb ?? 5)} disabled={isBusy} label="أقصى حجم بالميجابايت" max={5} min={1} name="maxUploadMb" type="number" />
-      <Textarea defaultValue={String(value.allowedTypes ?? "")} disabled={isBusy} label="أنواع الملفات المسموحة" name="allowedTypes" />
-      <Button loading={isBusy} type="submit">
-        حفظ
-      </Button>
-      <FormMessage message={message} />
-    </form>
+    <div className="space-y-5" data-testid="storage-runtime-diagnostic">
+      <StateBlock
+        description={copy.remediation[diagnostic.status]}
+        title={copy[diagnostic.status]}
+        tone={tone}
+      />
+      <dl className="grid gap-3 text-sm sm:grid-cols-2">
+        <DiagnosticValue label={copy.source} value={copy.sourceEnvironment} />
+        <DiagnosticValue label={copy.status} value={copy[diagnostic.status]} />
+        <DiagnosticValue label={copy.driver} value={diagnostic.driver} ltr />
+        <DiagnosticValue label={copy.maxUpload} value={`${diagnostic.maxUploadMb} MB`} ltr />
+        <DiagnosticValue label={copy.uploadsPathConfigured} value={diagnostic.uploadsPathConfigured ? copy.yes : copy.no} />
+        <DiagnosticValue label={copy.rootStatus} value={copy.rootStatuses[diagnostic.rootStatus]} />
+        <DiagnosticValue label={copy.scannerMode} value={copy.scannerModes[diagnostic.scannerMode]} />
+        <DiagnosticValue label={copy.scannerStatus} value={copy.scannerStatuses[diagnostic.scannerStatus]} />
+        <DiagnosticValue className="sm:col-span-2" label={copy.allowedTypes} value={diagnostic.allowedTypes.join(", ")} ltr />
+        <DiagnosticValue className="sm:col-span-2" label={copy.checkedAt} value={formatDateTime(diagnostic.checkedAt)} dynamic />
+      </dl>
+      <p className="text-sm font-semibold text-kmt-muted">{copy.readOnly}</p>
+    </div>
+  );
+}
+
+function DiagnosticValue({
+  label,
+  value,
+  ltr = false,
+  dynamic = false,
+  className
+}: {
+  label: string;
+  value: string;
+  ltr?: boolean;
+  dynamic?: boolean;
+  className?: string;
+}) {
+  return (
+    <div className={`rounded-lg border border-kmt-border bg-kmt-canvas p-3 ${className ?? ""}`}>
+      <dt className="text-kmt-muted">{label}</dt>
+      <dd className="mt-1 break-words font-semibold text-kmt-ink" data-visual-dynamic={dynamic || undefined} dir={ltr ? "ltr" : undefined}>
+        {value}
+      </dd>
+    </div>
   );
 }
 

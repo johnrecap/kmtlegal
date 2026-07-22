@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
-import { adminSettingUpdateSchema, updateAdminSetting } from "@/server/admin/governance-service";
+import { plan35ApiErrorSourceMessages } from "@/lib/ui-copy";
+import {
+  adminSettingUpdateSchema,
+  assertAdminSettingsManagePermission,
+  updateAdminSetting
+} from "@/server/admin/governance-service";
 import { getAuthContextFromRequest } from "@/server/auth/session-store";
-import { errorToResponse, getRequestId, jsonError } from "@/server/http/errors";
+import { ApiError, errorToResponse, getRequestId, jsonError } from "@/server/http/errors";
 import { parseJsonRequest } from "@/server/validation/schemas";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +19,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ke
     const context = await getAuthContextFromRequest(request);
     if (!context) {
       return jsonError(401, "UNAUTHENTICATED", "Authentication required.", requestId);
+    }
+    assertAdminSettingsManagePermission(context.principal);
+    if (key === "storage.policy") {
+      throw new ApiError(409, "SETTING_READ_ONLY", plan35ApiErrorSourceMessages.SETTING_READ_ONLY);
     }
 
     const body = await parseJsonRequest(request, adminSettingUpdateSchema, "Setting payload is invalid.");

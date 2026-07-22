@@ -6,9 +6,10 @@ import {
   EmailPolicySettingForm,
   OfficeProfileSettingForm,
   SecurityStaff2faSettingForm,
-  StoragePolicySettingForm
+  StorageRuntimeDiagnosticPanel
 } from "@/features/admin/governance/governance-forms";
 import { formatDateTime } from "@/lib/legal-format";
+import { plan35StorageDiagnosticUiCopy } from "@/lib/ui-copy";
 import { listAdminSettings } from "@/server/admin/governance-service";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../admin-navigation";
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
   description: "إعدادات تشغيل وحوكمة KMT Legal."
 };
 
-type SettingRow = Awaited<ReturnType<typeof listAdminSettings>>[number];
+type SettingRow = Awaited<ReturnType<typeof listAdminSettings>>["settings"][number];
 
 function SettingForm({ setting }: { setting: SettingRow }) {
   switch (setting.key) {
@@ -28,8 +29,6 @@ function SettingForm({ setting }: { setting: SettingRow }) {
       return <OfficeProfileSettingForm value={setting.value} />;
     case "security.staff2fa":
       return <SecurityStaff2faSettingForm value={setting.value} />;
-    case "storage.policy":
-      return <StoragePolicySettingForm value={setting.value} />;
     case "email.policy":
       return <EmailPolicySettingForm value={setting.value} />;
     default:
@@ -43,7 +42,7 @@ export default async function AdminSettingsPage() {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }
 
-  const settings = await listAdminSettings(guard.context.principal);
+  const { settings, storageRuntimeDiagnostic } = await listAdminSettings(guard.context.principal);
 
   return (
     <DashboardShell
@@ -56,6 +55,15 @@ export default async function AdminSettingsPage() {
       notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="grid gap-5 xl:grid-cols-2">
+        <Card className="xl:col-span-2">
+          <CardHeader>
+            <CardTitle>{plan35StorageDiagnosticUiCopy.title}</CardTitle>
+            <CardDescription>{plan35StorageDiagnosticUiCopy.description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <StorageRuntimeDiagnosticPanel diagnostic={storageRuntimeDiagnostic} />
+          </CardContent>
+        </Card>
         {settings.map((setting) => (
           <Card key={setting.key}>
             <CardHeader>

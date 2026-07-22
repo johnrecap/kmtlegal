@@ -265,7 +265,11 @@ final five-role browser acceptance because it changes authorization fixtures and
 
 Compose bounded priority queues, direct authorized actions, metric definitions, and independent
 widget fallbacks from the stabilized services, then expose exact one-shot storage diagnostics.
-Depends on Phases 2–6 and the US5 governance-file handoff.
+Depends on the locally implemented Phases 2–6 contracts and the US5 governance-file handoff.
+Under FR-035, T092–T100 and T102–T105 may be implemented and locally verified after T090 while
+T091 remains open for disposable-PostgreSQL and authenticated 19-by-5 evidence. T094 may be
+authored and collection-verified only; T101/T106 may record local evidence but cannot close the US6
+checkpoint until T091 and their authenticated/database-dependent cells pass.
 
 ### Phase 8 — Accessibility, RTL, localization, and responsive convergence (US7)
 

@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
+import { plan35ApiErrorSourceMessages } from "@/lib/ui-copy";
 import { appendAuditLog } from "@/server/audit/audit-service";
 import { auditActionOptionLabel, auditFilterOption, auditResourceLabel, toAdminAuditLogDto, type AuditFilterOption } from "@/server/audit/audit-event-catalog";
 import { redactMetadata } from "@/server/audit/redaction";
@@ -8,6 +9,10 @@ import { hasPermission, ROLES, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
 import { toPagination } from "@/server/http/pagination";
+import {
+  getStorageRuntimeDiagnostic,
+  type StorageRuntimeDiagnostic
+} from "@/server/storage/runtime-diagnostic";
 import { emailSchema, localeSchema, parseWithSchema, uuidSchema } from "@/server/validation/schemas";
 
 const userStatusSchema = z.enum(["INVITED", "ACTIVE", "SUSPENDED", "DELETED"]);
@@ -85,13 +90,6 @@ const securityStaff2faSettingSchema = z.object({
   superAdminResetOnly: z.coerce.boolean().default(true)
 });
 
-const storagePolicySettingSchema = z.object({
-  driver: z.literal("vps-filesystem"),
-  uploadsDir: z.string().trim().min(2).max(240),
-  maxUploadMb: z.coerce.number().int().min(1).max(5),
-  allowedTypes: z.string().trim().min(3).max(500)
-});
-
 const emailPolicySettingSchema = z.object({
   mode: z.enum(["disabled", "dev", "smtp"]),
   fromLabel: z.string().trim().min(2).max(120),
@@ -102,7 +100,6 @@ const emailPolicySettingSchema = z.object({
 export const adminSettingUpdateSchema = z.discriminatedUnion("key", [
   officeProfileSettingSchema.extend({ key: z.literal("office.profile") }),
   securityStaff2faSettingSchema.extend({ key: z.literal("security.staff2fa") }),
-  storagePolicySettingSchema.extend({ key: z.literal("storage.policy") }),
   emailPolicySettingSchema.extend({ key: z.literal("email.policy") })
 ]);
 
@@ -276,11 +273,6 @@ export const settingDefinitions = [
     description: "قواعد تشغيل 2FA للموظفين وإعادة الضبط."
   },
   {
-    key: "storage.policy",
-    label: "سياسة التخزين",
-    description: "تذكير تشغيلي بمسار التخزين الخاص على الـVPS وحدود الرفع."
-  },
-  {
     key: "email.policy",
     label: "سياسة البريد",
     description: "إعدادات غير سرية تخص نمط البريد والتنبيهات."
@@ -299,12 +291,6 @@ const defaultSettingValues: Record<(typeof settingDefinitions)[number]["key"], R
     totpPrimary: false,
     emailOtpFallback: false,
     superAdminResetOnly: true
-  },
-  "storage.policy": {
-    driver: "vps-filesystem",
-    uploadsDir: "/var/lib/kmt-legal/uploads",
-    maxUploadMb: 5,
-    allowedTypes: "application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
   },
   "email.policy": {
     mode: "disabled",
@@ -354,7 +340,7 @@ function assertPasswordChangePermission(actor: Principal) {
   }
 }
 
-function assertSettingsManagePermission(actor: Principal) {
+export function assertAdminSettingsManagePermission(actor: Principal) {
   if (!canManageAdminSettings(actor)) {
     throw new ApiError(403, "PERMISSION_DENIED", "Settings management permission is required.");
   }
@@ -892,8 +878,6 @@ function normalizeSettingValue(key: SettingKey, value: unknown) {
       return parseWithSchema(officeProfileSettingSchema, value, "Office profile setting is invalid.");
     case "security.staff2fa":
       return parseWithSchema(securityStaff2faSettingSchema, value, "Staff 2FA setting is invalid.");
-    case "storage.policy":
-      return parseWithSchema(storagePolicySettingSchema, value, "Storage policy setting is invalid.");
     case "email.policy":
       return parseWithSchema(emailPolicySettingSchema, value, "Email policy setting is invalid.");
     default:
@@ -905,16 +889,28 @@ function valueForDefinition(key: SettingKey, value: unknown) {
   return normalizeSettingValue(key, { ...defaultSettingValues[key], ...(typeof value === "object" && value ? value : {}) });
 }
 
-export async function listAdminSettings(actor: Principal) {
-  assertSettingsManagePermission(actor);
-  const rows = await prisma.systemSetting.findMany({
-    where: { key: { in: settingDefinitions.map((definition) => definition.key) } },
-    include: { updatedBy: { select: { id: true, name: true, email: true } } },
-    orderBy: { key: "asc" }
-  });
+type AdminSettingsListOptions = {
+  client?: Pick<typeof prisma, "systemSetting">;
+  loadStorageRuntimeDiagnostic?: () => Promise<StorageRuntimeDiagnostic>;
+};
+
+export async function listAdminSettings(
+  actor: Principal,
+  options: AdminSettingsListOptions = {}
+) {
+  assertAdminSettingsManagePermission(actor);
+  const client = options.client ?? prisma;
+  const [rows, storageRuntimeDiagnostic] = await Promise.all([
+    client.systemSetting.findMany({
+      where: { key: { in: settingDefinitions.map((definition) => definition.key) } },
+      include: { updatedBy: { select: { id: true, name: true, email: true } } },
+      orderBy: { key: "asc" }
+    }),
+    (options.loadStorageRuntimeDiagnostic ?? getStorageRuntimeDiagnostic)()
+  ]);
   const byKey = new Map(rows.map((row) => [row.key, row]));
 
-  return settingDefinitions.map((definition) => {
+  const settings = settingDefinitions.map((definition) => {
     const row = byKey.get(definition.key);
     const value = valueForDefinition(definition.key, row?.value);
     return {
@@ -924,11 +920,17 @@ export async function listAdminSettings(actor: Principal) {
       updatedBy: row?.updatedBy ?? null
     };
   });
+
+  return { settings, storageRuntimeDiagnostic };
 }
 
 export async function updateAdminSetting(input: { actor: Principal; key: string; body: unknown; request?: Request }) {
-  assertSettingsManagePermission(input.actor);
-  const key = parseWithSchema(settingKeySchema, input.key, "Setting key is invalid.") as SettingKey;
+  assertAdminSettingsManagePermission(input.actor);
+  const routeKey = parseWithSchema(settingKeySchema, input.key, "Setting key is invalid.");
+  if (routeKey === "storage.policy") {
+    throw new ApiError(409, "SETTING_READ_ONLY", plan35ApiErrorSourceMessages.SETTING_READ_ONLY);
+  }
+  const key = routeKey as SettingKey;
   if (key === "email.policy") {
     throw new ApiError(403, "FEATURE_DISABLED", "SMTP/email policy management is disabled for this release.");
   }

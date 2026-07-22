@@ -1,0 +1,86 @@
+{
+  "plan": "PLAN-35",
+  "story": "US6",
+  "scope": "role-aware-admin-command-center",
+  "recordedAt": "2026-07-22T09:32:27+03:00",
+  "status": "local-complete-authenticated-e2e-deferred",
+  "completedTasks": ["T092-T100"],
+  "openTasks": ["T101 authenticated end-to-end execution"],
+  "productionDatabaseUsed": false,
+  "databaseConnectionUsed": false,
+  "expectedRed": {
+    "result": "observed-before-implementation",
+    "summary": "The characterization suite exposed the legacy dashboard shape, missing versioned unions and role-adaptive UI, coupled loader behavior, and missing deterministic Cairo/queue contracts before the implementation was added."
+  },
+  "commands": [
+    {
+      "command": "npm run test -- tests/server/admin-dashboard.test.ts tests/ui/admin-command-center.test.tsx",
+      "result": "pass",
+      "summary": "2 files, 13 tests passed"
+    },
+    {
+      "command": "npm run test -- <10 US6 dashboard/storage/route/security files>",
+      "result": "pass",
+      "summary": "10 files, 95 tests passed"
+    },
+    {
+      "command": "npm run test",
+      "result": "pass",
+      "summary": "50 files, 353 tests passed"
+    },
+    { "command": "npm run typecheck", "result": "pass" },
+    { "command": "npm run lint", "result": "pass", "summary": "No ESLint warnings or errors" },
+    {
+      "command": "ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build",
+      "result": "pass",
+      "summary": "Production build completed 72 static pages; prebuild generated Prisma Client only and did not connect to a database"
+    },
+    {
+      "command": "npx playwright test tests/e2e/plan35-admin-operations.spec.ts tests/e2e/plan35-db-backed.spec.ts --list",
+      "result": "pass",
+      "summary": "30 tests collected, including six US6 role/payload/drill-down/partial-failure scenarios"
+    },
+    {
+      "command": "US6 authenticated Playwright execution",
+      "result": "deferred",
+      "summary": "T101 remains open because safe disposable authenticated states and a disposable database are unavailable; collection is not acceptance and production data was not used"
+    },
+    { "command": "git diff --check", "result": "pass" }
+  ],
+  "contract": {
+    "version": 1,
+    "metricKeys": [
+      "appointments.today",
+      "tasks.overdue",
+      "consultations.unreviewed",
+      "contacts.new",
+      "documents.under-review",
+      "cases.active",
+      "clients.active"
+    ],
+    "prioritySectionKeys": [
+      "tasks.overdue",
+      "appointments.today",
+      "consultations.unreviewed",
+      "contacts.new",
+      "documents.under-review"
+    ],
+    "quickActionRouteIds": [
+      "cases.create",
+      "calendar.list",
+      "contacts.list",
+      "content.home",
+      "roles.list"
+    ],
+    "queueLimit": 6,
+    "timeZone": "Africa/Cairo",
+    "partialFailure": "independent ready/unavailable metric and priority-section unions",
+    "privacy": "purpose-built display DTOs; no raw loader errors or full legal records"
+  },
+  "convergence": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "deferredEvidence": "T101 owns authenticated five-role payload, page, destination-filter, and injected partial-failure parity"
+  }
+}

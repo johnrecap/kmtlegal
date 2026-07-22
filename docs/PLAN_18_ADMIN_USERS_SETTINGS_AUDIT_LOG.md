@@ -1,12 +1,18 @@
 # PLAN-18 Admin Users, Settings & Audit Log
 
-Last updated: 2026-06-24
+Last updated: 2026-07-22
 
 Status: Done
 
 ## PLAN-25 Superseding Note
 
 User creation and password changes are Super Admin-only. Staff 2FA reset UI/API is disabled in the current release, and admin user screens must not show 2FA columns, filters, or reset actions. TOTP returns in a future Staff 2FA Rework only.
+
+## PLAN-35 Storage Superseding Note
+
+`storage.policy` is no longer an editable or authoritative system setting. Effective upload and
+scanner behavior comes from the server environment. `/admin/settings` shows a safe, read-only,
+one-shot runtime diagnostic and rejects legacy `storage.policy` updates.
 
 ## Scope Delivered
 
@@ -24,11 +30,13 @@ PLAN-18 adds the Super Admin governance surfaces for staff/user administration, 
   - Password change panel only for exact `Super Admin`.
   - Staff 2FA reset action using the existing Super Admin reset contract.
 - `/admin/settings`
-  - Four allowlisted setting groups only:
+  - Three generic setting groups only:
     - `office.profile`
     - `security.staff2fa`
-    - `storage.policy`
     - `email.policy`
+  - A separate read-only storage diagnostic reports effective driver, upload limit/type allowlist,
+    configured-path presence, root writability class, scanner mode/reachability, and check time
+    without exposing the path, host, secrets, or legacy setting metadata.
   - `email.policy` is read-only/disabled for this release. It documents the deferred SMTP state but has no save UI.
   - Settings are non-secret operational policy values. Production secrets remain environment variables.
 - `/admin/audit-log`
@@ -47,6 +55,10 @@ PLAN-18 adds the Super Admin governance surfaces for staff/user administration, 
 - `GET /api/admin/settings`
 - `PATCH /api/admin/settings/{key}`
 - `GET /api/admin/audit-log`
+
+The settings read contract is now `{ settings, storageRuntimeDiagnostic }`. The generic settings
+array excludes `storage.policy`, and its dynamic PATCH route returns `409 SETTING_READ_ONLY` after
+the normal settings-management authorization check.
 
 All new PLAN-18 contracts use the existing request validation, error response, request id, session, RBAC, and audit primitives.
 The audit log read contract maps stored `AuditLog` records to a presentation DTO instead of returning raw Prisma rows.
@@ -90,7 +102,8 @@ No new Prisma migration was required. PLAN-18 reuses existing tables:
 - Role assignment is limited to active non-Guest roles.
 - Staff users get a `RESET_REQUIRED` 2FA credential when moved into a staff role and no staff 2FA credential exists.
 - Super Admin-created staff accounts also get `RESET_REQUIRED` 2FA so they must finish TOTP setup before normal staff access.
-- `storage.policy` is locked to `vps-filesystem` and `maxUploadMb <= 5`.
+- Legacy `storage.policy` rows are ignored by reads and writes are rejected; VPS storage policy,
+  upload limit/type allowlist, root, and scanner behavior are derived from environment/runtime state.
 - `SystemSetting` is not used for SMTP passwords, API keys, or other production secrets.
 - SMTP configuration UI/backend is disabled in this release; env placeholders remain documented for a future activation plan.
 

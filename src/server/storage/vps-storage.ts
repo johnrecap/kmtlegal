@@ -17,8 +17,8 @@ export class StoragePathError extends ApiError {
   }
 }
 
-export function getUploadsRoot() {
-  return process.env.UPLOADS_DIR ?? "/var/lib/kmt-legal/uploads";
+export function getUploadsRoot(env: NodeJS.ProcessEnv = process.env) {
+  return env.UPLOADS_DIR ?? "/var/lib/kmt-legal/uploads";
 }
 
 export function resolveUploadsRoot(uploadRoot = getUploadsRoot()) {

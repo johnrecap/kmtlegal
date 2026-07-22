@@ -37,10 +37,10 @@ export class UploadValidationError extends ApiError {
   }
 }
 
-export function getUploadPolicy(): UploadPolicy {
-  const maxUploadMb = Number.parseInt(process.env.MAX_UPLOAD_MB ?? String(DEFAULT_MAX_UPLOAD_MB), 10);
+export function getUploadPolicy(env: NodeJS.ProcessEnv = process.env): UploadPolicy {
+  const maxUploadMb = Number.parseInt(env.MAX_UPLOAD_MB ?? String(DEFAULT_MAX_UPLOAD_MB), 10);
   const maxBytes = (Number.isFinite(maxUploadMb) && maxUploadMb > 0 ? maxUploadMb : DEFAULT_MAX_UPLOAD_MB) * 1024 * 1024;
-  const allowedMimeTypes = (process.env.ALLOWED_UPLOAD_TYPES ?? DEFAULT_ALLOWED_UPLOAD_TYPES.join(","))
+  const allowedMimeTypes = (env.ALLOWED_UPLOAD_TYPES ?? DEFAULT_ALLOWED_UPLOAD_TYPES.join(","))
     .split(",")
     .map((entry) => entry.trim())
     .filter(Boolean);

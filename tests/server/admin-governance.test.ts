@@ -11,10 +11,12 @@ import {
   canManageAdminSettings,
   canManageAdminUsers,
   canReadAdminAuditLog,
+  listAdminSettings,
   rolePermissionsWithinCeiling,
   settingDefinitions,
   toAdminUserDetail,
   toAdminUserListItem,
+  updateAdminSetting,
   updateAdminUser
 } from "@/server/admin/governance-service";
 import { auditActionOptionLabel, auditResourceLabel, toAdminAuditLogDto } from "@/server/audit/audit-event-catalog";
@@ -467,25 +469,20 @@ describe("admin governance contract", () => {
     expect(auditHarness.revokedSessions()).toBe(0);
   });
 
-  it("keeps settings updates inside the documented allowlist", () => {
+  it("keeps environment-owned storage outside the editable setting allowlist", () => {
     expect(settingDefinitions.map((definition) => definition.key)).toEqual([
       "office.profile",
       "security.staff2fa",
-      "storage.policy",
       "email.policy"
     ]);
 
-    const storageSetting = adminSettingUpdateSchema.parse({
+    expect(() => adminSettingUpdateSchema.parse({
       key: "storage.policy",
       driver: "vps-filesystem",
       uploadsDir: "/var/lib/kmt-legal/uploads",
       maxUploadMb: "5",
       allowedTypes: "application/pdf,image/png"
-    });
-    expect(storageSetting.key).toBe("storage.policy");
-    if (storageSetting.key === "storage.policy") {
-      expect(storageSetting.maxUploadMb).toBe(5);
-    }
+    })).toThrow();
 
     const securitySetting = adminSettingUpdateSchema.parse({
       key: "security.staff2fa",
@@ -503,15 +500,69 @@ describe("admin governance contract", () => {
     }
 
     expect(() => adminSettingUpdateSchema.parse({ key: "smtp.secret", apiKey: "do-not-store" })).toThrow();
-    expect(() =>
-      adminSettingUpdateSchema.parse({
-        key: "storage.policy",
-        driver: "s3",
-        uploadsDir: "/var/lib/kmt-legal/uploads",
-        maxUploadMb: 10,
-        allowedTypes: "application/pdf"
-      })
-    ).toThrow();
+  });
+
+  it("returns the exact settings wrapper without any legacy storage row fields", async () => {
+    const legacyUpdatedAt = new Date("2026-07-21T09:00:00.000Z");
+    const storageRuntimeDiagnostic = {
+      source: "environment" as const,
+      status: "configured" as const,
+      driver: "vps-filesystem" as const,
+      maxUploadMb: 5,
+      allowedTypes: ["application/pdf"],
+      uploadsPathConfigured: true,
+      rootStatus: "valid-writable" as const,
+      scannerMode: "required" as const,
+      scannerStatus: "reachable" as const,
+      checkedAt: "2026-07-22T10:00:00.000Z",
+      editable: false as const
+    };
+    const snapshot = await listAdminSettings(governanceDelegate, {
+      client: {
+        systemSetting: {
+          findMany: vi.fn(async () => [
+            {
+              id: "setting-storage",
+              key: "storage.policy",
+              value: { uploadsDir: "/private/legacy/secret-path" },
+              updatedAt: legacyUpdatedAt,
+              updatedBy: { id: "legacy-user", name: "Legacy Admin", email: "legacy@example.invalid" }
+            },
+            {
+              id: "setting-office",
+              key: "office.profile",
+              value: { firmName: "KMT Legal", publicPhone: "", publicEmail: "", primaryLocale: "ar" },
+              updatedAt: legacyUpdatedAt,
+              updatedBy: null
+            }
+          ])
+        }
+      } as never,
+      loadStorageRuntimeDiagnostic: vi.fn(async () => storageRuntimeDiagnostic)
+    });
+
+    expect(Object.keys(snapshot)).toEqual(["settings", "storageRuntimeDiagnostic"]);
+    expect(snapshot.settings.map((setting) => setting.key)).toEqual([
+      "office.profile",
+      "security.staff2fa",
+      "email.policy"
+    ]);
+    expect(snapshot.storageRuntimeDiagnostic).toEqual(storageRuntimeDiagnostic);
+    expect(JSON.stringify(snapshot)).not.toMatch(/storage\.policy|secret-path|legacy-user|Legacy Admin|legacy@example\.invalid/);
+  });
+
+  it("rejects every legacy storage-policy mutation before database access", async () => {
+    await expect(updateAdminSetting({
+      actor: officeAdmin,
+      key: "storage.policy",
+      body: {}
+    })).rejects.toMatchObject({ status: 403, code: "PERMISSION_DENIED" });
+
+    await expect(updateAdminSetting({
+      actor: governanceDelegate,
+      key: "storage.policy",
+      body: { key: "storage.policy", uploadsDir: "/private/attempted-change" }
+    })).rejects.toMatchObject({ status: 409, code: "SETTING_READ_ONLY" });
   });
 
   it("validates audit log search and bounded pagination", () => {

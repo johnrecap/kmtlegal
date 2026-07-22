@@ -101,6 +101,83 @@ export const plan35DashboardScopeCopy = {
   "actor-owned": "السجلات الخاصة بك"
 } as const;
 
+export const plan35DashboardSectionCopy = {
+  "tasks.overdue": { title: "مهام متأخرة تحتاج إجراء", empty: "لا توجد مهام متأخرة ضمن نطاقك." },
+  "appointments.today": { title: "مواعيد اليوم", empty: "لا توجد مواعيد نشطة اليوم ضمن نطاقك." },
+  "consultations.unreviewed": { title: "استشارات تنتظر المراجعة", empty: "لا توجد استشارات مجدولة تنتظر المراجعة." },
+  "contacts.new": { title: "رسائل تواصل جديدة", empty: "لا توجد رسائل تواصل جديدة." },
+  "documents.under-review": { title: "مستندات تحت المراجعة", empty: "لا توجد مستندات تنتظر المراجعة." }
+} as const;
+
+export const plan35DashboardUiCopy = {
+  eyebrow: "لوحة المكتب",
+  shellTitle: "نظرة تشغيلية",
+  metadataTitle: "مركز قيادة المكتب | KMT Legal",
+  metadataDescription: "أعمال ومؤشرات تشغيلية مرتبة حسب صلاحيات فريق KMT Legal.",
+  title: "مركز قيادة المكتب",
+  description: "ابدأ بالأعمال الأكثر إلحاحًا ضمن صلاحياتك، ثم انتقل مباشرة إلى القائمة المطابقة.",
+  quickActionsTitle: "إجراءات سريعة",
+  clientSearchLabel: "البحث السريع في العملاء",
+  clientSearchPlaceholder: "ابحث بالاسم أو الهاتف أو البريد",
+  search: "بحث",
+  priorityTitle: "العمل المطلوب الآن",
+  priorityDescription: "قوائم محدودة ومرتبة حسب الأولوية والوقت.",
+  metricsTitle: "مؤشرات التشغيل",
+  metricsDescription: "كل مؤشر يوضح المدة والنطاق ويفتح القائمة المطابقة.",
+  recentActivityTitle: "النشاط الأخير",
+  openDestination: "فتح القائمة المطابقة",
+  retrySection: "إعادة محاولة تحميل هذا القسم",
+  metricUnavailable: "تعذر حساب هذا المؤشر الآن. افتح القائمة المطابقة أو أعد تحميل الصفحة.",
+  sectionUnavailable: "تعذر تحميل هذا القسم وحده. بقية مركز القيادة ما زال متاحًا.",
+  generatedAt: "آخر تحديث",
+  timeframe: "الفترة",
+  scope: "النطاق",
+  consultationReviewBadge: "تنتظر المراجعة",
+  consultationActivityBadge: "طلب استشارة",
+  noOperationalQueues: "لا توجد قوائم تشغيل مسموحة لهذا الدور حاليًا. استخدم الإجراء المتاح للمتابعة."
+} as const;
+
+export const plan35StorageDiagnosticUiCopy = {
+  title: "جاهزية التخزين الفعلية",
+  description: "قراءة لحظية من بيئة الخادم. لا تُعرض المسارات أو الأسرار ولا يمكن تغييرها من لوحة التحكم.",
+  source: "المصدر",
+  sourceEnvironment: "بيئة الخادم",
+  status: "الحالة",
+  driver: "نوع التخزين",
+  maxUpload: "أقصى حجم للملف",
+  allowedTypes: "أنواع الملفات المسموحة",
+  uploadsPathConfigured: "تهيئة مسار الرفع الخاص",
+  rootStatus: "صلاحية مجلد التخزين",
+  scannerMode: "سياسة فحص البرمجيات الخبيثة",
+  scannerStatus: "اتصال خدمة الفحص",
+  checkedAt: "وقت الفحص",
+  readOnly: "تشخيص للقراءة فقط",
+  configured: "جاهز",
+  degraded: "جاهزية محدودة",
+  unavailable: "غير جاهز",
+  yes: "مهيأ",
+  no: "غير مهيأ",
+  rootStatuses: {
+    "valid-writable": "صالح وقابل للكتابة",
+    invalid: "غير صالح",
+    unwritable: "غير قابل للكتابة"
+  },
+  scannerModes: {
+    required: "الفحص مطلوب",
+    "optional-disabled": "الفحص معطل في بيئة غير إنتاجية"
+  },
+  scannerStatuses: {
+    reachable: "متصل",
+    disabled: "معطل",
+    unreachable: "غير متصل"
+  },
+  remediation: {
+    configured: "لا يلزم إجراء حاليًا. راقب الجاهزية بعد أي تحديث للخادم.",
+    degraded: "الفحص معطل لأن البيئة غير إنتاجية. فعّله قبل اعتماد بيئة الإنتاج.",
+    unavailable: "راجع إعدادات الخادم وصلاحيات مجلد التخزين واتصال خدمة الفحص، ثم أعد تحميل الصفحة."
+  }
+} as const;
+
 export const plan35AdminStateCopy = {
   loading: { title: "جارٍ تحميل بيانات القسم", description: "يمكنك متابعة استخدام بقية مساحة العمل أثناء التحميل." },
   empty: { title: "لا توجد بيانات مطابقة", description: "عدّل الفلاتر أو ابدأ بإضافة سجل جديد إذا كانت صلاحيتك تسمح." },

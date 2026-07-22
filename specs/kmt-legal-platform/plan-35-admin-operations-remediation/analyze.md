@@ -1,8 +1,8 @@
 # PLAN-35 Spec Kit Analyze Report
 
 **Date**: 2026-07-22
-**Status**: `US5-LOCAL-VERIFIED`
-**Implementation state**: T001–T015, T017–T027, T029–T041, T043–T051, T053–T067, T069–T080, and T082–T090 are implemented and locally verified. T057, T072, and T083's browser/database scenarios are authored and collection-verified, but their authenticated PostgreSQL execution remains part of T068/T081/T091. T016/G35-4D, T028, the database-backed portion of T039, T042's authenticated page/API cells, T052, T068, T081, and T091 remain deferred evidence under FR-035.
+**Status**: `US6-LOCAL-VERIFIED`
+**Implementation state**: T001–T015, T017–T027, T029–T041, T043–T051, T053–T067, T069–T080, T082–T090, T092–T100, and T102–T106 are implemented and locally verified. T057, T072, T083, and T094's browser/database scenarios are authored and collection-verified, but their authenticated PostgreSQL execution remains part of T068/T081/T091/T101. T016/G35-4D, T028, the database-backed portion of T039, T042's authenticated page/API cells, T052, T068, T081, T091, and T101 remain deferred evidence under FR-035.
 
 ## Gate Result
 
@@ -46,7 +46,7 @@ contract, broken local Markdown link, or duplicated detailed master task was fou
 | Contact and notification queues | T053–T068 | T053–T067 local implementation is verified; authenticated/DB/browser acceptance remains open in T068 |
 | Manual case create/edit | T069–T081 | T069–T080 locally verified; T072 authored/collection-only; T079 activated `cases.create` after service, API, and page; T081 remains DB/browser acceptance |
 | Role/user governance | T082–T091 | T082–T090 local lane verified; T090 activated roles; T091 remains the complete DB/authenticated 19×5 gate |
-| Command center and storage truth | T092–T106 | Deterministic dashboard contract and read-only runtime diagnostic |
+| Command center and storage truth | T092–T106 | T092–T100/T102–T106 local lane verified; T094 is authored/collection-only and T101 remains authenticated end-to-end acceptance |
 | UI/RTL/accessibility convergence | T107–T112 | Five exact viewports plus all shared-consumer dispositions |
 | Release evidence and convergence | T113–T128 | Local, DB, browser, live, analyze/converge, commit/push handoff |
 
@@ -314,10 +314,42 @@ collection-verified only. T091 remains open for repeat-seed durability, persiste
 concurrent role/user/final-Super outcomes, fresh/revoked sessions, and all 95 authenticated route
 cells. Converge found no new local remediation task; existing T091 owns every deferred assertion.
 
+## US6 Local Implementation Convergence — 2026-07-22
+
+| Severity | Open | Disposition |
+|---|---:|---|
+| `CRITICAL` | 0 | None |
+| `HIGH` | 0 | None. Authenticated five-role payload/drill-down/partial-failure execution remains explicitly owned by T101. |
+| `MEDIUM` | 0 | Dashboard DTO over-selection, loader coupling, ambiguous metric semantics, Cairo-day drift, forbidden quick actions, editable storage claims, stale database policy authority, read-only status/authorization-order drift, path/secret exposure, and unbounded scanner probing were fixed. |
+
+T092–T100 now implement the local role-aware command-center lane. `DashboardSnapshotV1` fixes the
+seven metric keys, five priority queues, five route-registry quick actions, purpose-built item and
+activity unions, maximum-six bounds, canonical scope predicates, semantic timeframe/scope labels,
+exact filtered destinations, deterministic tie-breakers, and `Africa/Cairo` day cutoffs. Every
+domain loader is guarded independently, so one unavailable source does not erase or disable ready
+sections. The Arabic RTL UI prioritizes permitted work and the first useful action, exposes no
+forbidden placeholders, supports retry and empty states, and marks dynamic values for deterministic
+visual evidence.
+
+T102–T106 remove `storage.policy` from generic settings authority and reject its mutation. The new
+one-shot diagnostic derives only safe facts from the effective environment, filesystem writability,
+upload allowlist/limit, and bounded ClamAV reachability. It returns configured/degraded/unavailable
+truth without root paths, hostnames, secrets, database values, polling, or write controls. Existing
+private upload, traversal, MIME, size, scanner, and readiness enforcement remains covered.
+
+Local verification passed without a database connection: 13 focused dashboard tests, 45 focused
+storage/governance/security tests, 95 combined focused tests across 10 files, all 353 unit/contract
+tests across 50 files, typecheck, warning-free lint, a guarded production build across 72 static
+pages, collection of 30 PLAN-35 Playwright scenarios, and diff hygiene. T094's six authenticated
+command-center cases are authored and collection-verified only; T101 remains open for their real
+execution. Converge found no new local remediation task because T101 already owns the remaining
+authenticated end-to-end evidence.
+
 ## Conclusion
 
 PLAN-35 remains internally consistent and conflict-controlled with zero unresolved `CRITICAL`,
 `HIGH`, or `MEDIUM` findings in the completed local lanes. US1, the US2 shell/policy work, US3
-T053–T067, US4 T069–T080, and US5 T082–T090 are locally complete, while T016, T028, the database-backed part of
-T039, T042's authenticated cells, T052, T068, T081, and T091 remain explicitly open. Neither skipped
-authentication cells nor the production-connected database are used as acceptance evidence.
+T053–T067, US4 T069–T080, US5 T082–T090, and US6 T092–T100/T102–T106 are locally complete, while
+T016, T028, the database-backed part of T039, T042's authenticated cells, T052, T068, T081, T091,
+and T101 remain explicitly open. Neither collected-only authentication cells nor the
+production-connected database are used as acceptance evidence.

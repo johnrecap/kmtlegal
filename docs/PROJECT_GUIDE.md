@@ -45,13 +45,26 @@ source as part of ordinary product work.
 ## Current PLAN-35 Snapshot
 
 The local Foundation, scope/appointments, workspace/permissions, Contact/Notifications, Manual
-Cases, and Governance lanes are implemented. Governance tasks T082–T090 are locally verified. T091
-remains open because it requires disposable PostgreSQL, safe authenticated staff states, concurrent
-mutation evidence, and the real nineteen-route-by-five-role browser matrix. The production database
-was not used for local acceptance.
+Cases, Governance, and Command Center/Storage lanes are implemented. T092–T100 and T102–T106 are
+locally verified. T091 remains open for disposable PostgreSQL governance evidence, and T101 remains
+open for authenticated five-role dashboard/drill-down execution. The production database was not
+used for local acceptance.
 
 The canonical admin registry now exposes all 19 implemented destinations. `roles.list` is visible
 only to the exact `Super Admin` role with both `role.manage.any` and `permission.manage.any`.
+
+## Command Center And Storage Runtime Truth
+
+- Admin home: `/admin`
+- Snapshot API: `GET /api/admin/dashboard`
+- Settings page: `/admin/settings`
+- Settings API: `GET /api/admin/settings`
+
+The admin home is a role-aware command center with exact semantic metrics, maximum-six priority
+queues, filtered drill-down links, registry-filtered quick actions, and independent partial-failure
+states. The settings API returns `{ settings, storageRuntimeDiagnostic }`; legacy `storage.policy`
+is excluded and read-only, while the diagnostic derives safe effective facts from environment,
+filesystem writability, and bounded scanner reachability without exposing paths or secrets.
 
 ## Role And User Governance
 

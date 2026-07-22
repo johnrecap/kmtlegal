@@ -1,11 +1,12 @@
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { documentDownloadHeaders } from "@/server/storage/download-headers";
 import { generateDocumentFileKey } from "@/server/storage/file-keys";
 import { assertMultipartContentLengthAllowed, assertUploadAllowed, MULTIPART_CONTENT_LENGTH_OVERHEAD_BYTES } from "@/server/storage/upload-policy";
 import { resolvePrivateFilePath, resolveUploadsRoot, StorageConfigError, StoragePathError } from "@/server/storage/vps-storage";
 import { canReadDocument } from "@/server/storage/document-service";
+import { getStorageRuntimeDiagnostic } from "@/server/storage/runtime-diagnostic";
 
 describe("document storage and upload contract", () => {
   it("accepts allowed PDF uploads under 5MB after MIME, extension, and magic-byte validation", () => {
@@ -100,5 +101,100 @@ describe("document storage and upload contract", () => {
     expect(canReadDocument(client, document)).toBe(true);
     expect(canReadDocument(lawyer, document)).toBe(true);
     expect(canReadDocument(other, document)).toBe(false);
+  });
+
+  it("derives an exact redacted configured diagnostic from the effective environment policy", async () => {
+    const ping = vi.fn(async () => true);
+    const diagnostic = await getStorageRuntimeDiagnostic({
+      env: {
+        NODE_ENV: "production",
+        STORAGE_DRIVER: "vps-filesystem",
+        UPLOADS_DIR: "C:\\private\\kmt-secret-uploads",
+        MAX_UPLOAD_MB: "5",
+        ALLOWED_UPLOAD_TYPES: "application/pdf,image/png",
+        MALWARE_SCAN_MODE: "required",
+        CLAMAV_HOST: "scanner.internal.secret",
+        CLAMAV_PORT: "3310"
+      },
+      now: new Date("2026-07-22T10:00:00.000Z"),
+      fileSystem: {
+        stat: vi.fn(async () => ({ isDirectory: () => true })),
+        access: vi.fn(async () => undefined)
+      },
+      ping
+    });
+
+    expect(diagnostic).toEqual({
+      source: "environment",
+      status: "configured",
+      driver: "vps-filesystem",
+      maxUploadMb: 5,
+      allowedTypes: ["application/pdf", "image/png"],
+      uploadsPathConfigured: true,
+      rootStatus: "valid-writable",
+      scannerMode: "required",
+      scannerStatus: "reachable",
+      checkedAt: "2026-07-22T10:00:00.000Z",
+      editable: false
+    });
+    expect(ping).toHaveBeenCalledWith(expect.any(Object), 2_000);
+    expect(JSON.stringify(diagnostic)).not.toMatch(/kmt-secret-uploads|scanner\.internal|3310|CLAMAV|UPLOADS_DIR/i);
+  });
+
+  it("distinguishes invalid, unwritable, disabled, and unreachable runtime states", async () => {
+    const baseEnv = {
+      UPLOADS_DIR: "C:\\private\\uploads",
+      MAX_UPLOAD_MB: "5",
+      ALLOWED_UPLOAD_TYPES: "application/pdf"
+    };
+    const directory = { stat: vi.fn(async () => ({ isDirectory: () => true })), access: vi.fn(async () => undefined) };
+
+    await expect(getStorageRuntimeDiagnostic({
+      env: { ...baseEnv, NODE_ENV: "production", UPLOADS_DIR: "C:\\app\\public\\uploads", MALWARE_SCAN_MODE: "required" },
+      fileSystem: directory,
+      ping: vi.fn(async () => true)
+    })).resolves.toMatchObject({ status: "unavailable", rootStatus: "invalid" });
+
+    await expect(getStorageRuntimeDiagnostic({
+      env: { ...baseEnv, NODE_ENV: "production", MALWARE_SCAN_MODE: "required" },
+      fileSystem: { ...directory, access: vi.fn(async () => { throw new Error("denied"); }) },
+      ping: vi.fn(async () => true)
+    })).resolves.toMatchObject({ status: "unavailable", rootStatus: "unwritable" });
+
+    const disabledPing = vi.fn(async () => true);
+    await expect(getStorageRuntimeDiagnostic({
+      env: { ...baseEnv, NODE_ENV: "development", MALWARE_SCAN_MODE: "disabled" },
+      fileSystem: directory,
+      ping: disabledPing
+    })).resolves.toMatchObject({
+      status: "degraded",
+      rootStatus: "valid-writable",
+      scannerMode: "optional-disabled",
+      scannerStatus: "disabled"
+    });
+    expect(disabledPing).not.toHaveBeenCalled();
+
+    await expect(getStorageRuntimeDiagnostic({
+      env: { ...baseEnv, NODE_ENV: "production", MALWARE_SCAN_MODE: "required" },
+      fileSystem: directory,
+      ping: vi.fn(async () => { throw new Error("timeout"); })
+    })).resolves.toMatchObject({ status: "unavailable", scannerStatus: "unreachable" });
+  });
+
+  it("does not overstate a production-disabled scanner", async () => {
+    const diagnostic = await getStorageRuntimeDiagnostic({
+      env: {
+        NODE_ENV: "production",
+        UPLOADS_DIR: "C:\\private\\uploads",
+        MALWARE_SCAN_MODE: "disabled"
+      },
+      fileSystem: {
+        stat: vi.fn(async () => ({ isDirectory: () => true })),
+        access: vi.fn(async () => undefined)
+      },
+      ping: vi.fn(async () => true)
+    });
+
+    expect(diagnostic).toMatchObject({ status: "unavailable", scannerStatus: "disabled" });
   });
 });

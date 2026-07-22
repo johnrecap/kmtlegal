@@ -1,0 +1,69 @@
+{
+  "plan": "PLAN-35",
+  "story": "US6",
+  "scope": "runtime-storage-truthfulness",
+  "recordedAt": "2026-07-22T09:32:27+03:00",
+  "status": "local-complete",
+  "completedTasks": ["T102-T106"],
+  "productionDatabaseUsed": false,
+  "databaseConnectionUsed": false,
+  "commands": [
+    {
+      "command": "npm run test -- tests/server/storage-contract.test.ts tests/server/admin-governance.test.ts tests/server/security-hardening.test.ts tests/server/readiness-contract.test.ts tests/server/malware-scan.test.ts tests/ui/admin-storage-diagnostic.test.tsx",
+      "result": "pass",
+      "summary": "6 files, 45 tests passed"
+    },
+    {
+      "command": "npm run test -- <10 US6 dashboard/storage/route/security files>",
+      "result": "pass",
+      "summary": "10 files, 95 tests passed"
+    },
+    {
+      "command": "npm run test",
+      "result": "pass",
+      "summary": "50 files, 353 tests passed"
+    },
+    { "command": "npm run typecheck", "result": "pass" },
+    { "command": "npm run lint", "result": "pass", "summary": "No ESLint warnings or errors" },
+    {
+      "command": "ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build",
+      "result": "pass",
+      "summary": "Production build completed without a database connection"
+    },
+    { "command": "git diff --check", "result": "pass" }
+  ],
+  "contract": {
+    "settingsEnvelope": ["settings", "storageRuntimeDiagnostic"],
+    "source": "environment",
+    "driver": "vps-filesystem",
+    "statuses": ["configured", "degraded", "unavailable"],
+    "rootStatuses": ["valid-writable", "invalid", "unwritable"],
+    "scannerModes": ["required", "optional-disabled"],
+    "scannerStatuses": ["reachable", "disabled", "unreachable"],
+    "scannerTimeoutMs": 2000,
+    "editable": false,
+    "legacyStoragePolicy": {
+      "includedInGenericSettings": false,
+      "writeAccepted": false,
+      "authoritative": false
+    },
+    "redaction": {
+      "uploadsPath": "presence boolean only",
+      "rootPath": "omitted",
+      "scannerHost": "omitted",
+      "secrets": "omitted",
+      "legacyValueAndUpdateMetadata": "omitted"
+    }
+  },
+  "convergence": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "notes": [
+      "Diagnostic checks are one-shot and do not poll or mutate the filesystem.",
+      "Authorized legacy writes return 409 SETTING_READ_ONLY only after settings.manage.any authorization; unauthorized callers remain denied with 403.",
+      "Existing private storage, traversal, upload MIME/size, malware scanning, and readiness contracts remain green.",
+      "No local database was installed, migrated, seeded, or contacted."
+    ]
+  }
+}

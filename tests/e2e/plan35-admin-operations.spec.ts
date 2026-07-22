@@ -9,6 +9,11 @@ const personaStorageStates = Object.fromEntries(
   PLAN35_ROLE_KEYS.map((roleKey) => [roleKey, configuredPlan35StorageState(roleKey)])
 ) as Record<Plan35RoleKey, string | null>;
 const hasAllPersonaStorageStates = PLAN35_ROLE_KEYS.every((roleKey) => Boolean(personaStorageStates[roleKey]));
+const us6DisposableBrowserEnabled = Boolean(
+  hasAllPersonaStorageStates &&
+  process.env.PLAN35_ALLOW_DB_FIXTURES === "true" &&
+  process.env.PLAN35_US6_E2E === "true"
+);
 const us3DisposableBrowserEnabled = Boolean(
   officeAdminStorageState &&
   process.env.PLAN35_ALLOW_DB_FIXTURES === "true" &&
@@ -155,6 +160,60 @@ test.describe("PLAN-35 nineteen-route permission-aware workspace matrix", () => 
       }
     });
   }
+});
+
+test.describe("PLAN-35 role-aware command center and drill-down contract", () => {
+  test.skip(
+    !us6DisposableBrowserEnabled,
+    "Requires all five disposable authenticated storage states and PLAN35_US6_E2E=true; production data is forbidden."
+  );
+
+  for (const roleKey of PLAN35_ROLE_KEYS) {
+    test(`${roleKey} receives only authorized command-center payload and drill-down links`, async ({ browser }, testInfo) => {
+      const baseURL = String(testInfo.project.use.baseURL ?? process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000");
+      const context = await browser.newContext({ baseURL, storageState: personaStorageStates[roleKey]! });
+      try {
+        const page = await context.newPage();
+        const response = await page.request.get("/api/admin/dashboard");
+        expect(response.status()).toBe(200);
+        const envelope = await response.json();
+        expect(envelope.data).toMatchObject({ version: 1 });
+        expect(Object.keys(envelope.data).sort()).toEqual([
+          "generatedAt",
+          "metrics",
+          "prioritySections",
+          "quickActionRouteIds",
+          "recentActivity",
+          "version"
+        ]);
+        expect(JSON.stringify(envelope.data)).not.toMatch(/passwordHash|secretEncrypted|recoveryCodes|summary|notes|message|fileKey/);
+
+        await page.goto("/admin", { waitUntil: "domcontentloaded" });
+        await expect(page.getByTestId("admin-command-center")).toBeVisible();
+        const drillDowns = page.locator('[data-testid="dashboard-metric-link"], [data-testid="dashboard-section-link"]');
+        for (let index = 0; index < await drillDowns.count(); index += 1) {
+          const href = await drillDowns.nth(index).getAttribute("href");
+          expect(href).toMatch(/^\/admin\//);
+          const destination = await page.request.get(href!);
+          expect(destination.status(), `${roleKey}:${href}`).toBeLessThan(500);
+          expect(destination.status(), `${roleKey}:${href}`).not.toBe(403);
+        }
+      } finally {
+        await context.close();
+      }
+    });
+  }
+
+  test("keeps ready widgets usable when the prepared disposable environment injects one loader failure", async ({ page }) => {
+    test.skip(
+      process.env.PLAN35_US6_EXPECT_UNAVAILABLE_SECTION !== "true",
+      "Run against the disposable US6 fault-injection environment and set PLAN35_US6_EXPECT_UNAVAILABLE_SECTION=true."
+    );
+    await page.goto("/admin", { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("dashboard-section-unavailable")).toHaveCount(1);
+    await expect(page.getByTestId("dashboard-section-ready").first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "إعادة محاولة تحميل هذا القسم" })).toBeVisible();
+  });
 });
 
 test.describe("PLAN-35 contact triage and complete notification center", () => {

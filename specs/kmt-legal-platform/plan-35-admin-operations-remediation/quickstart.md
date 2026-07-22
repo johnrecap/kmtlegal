@@ -222,6 +222,22 @@ be reported as locally implemented but not checkpoint-accepted or DB-verified.
 
 ### US6 — command center
 
+- Local lane status (2026-07-22): T092–T100 and T102–T106 are implemented and locally verified
+  without a database connection. The dashboard now exposes a versioned, role-scoped command-center
+  contract with independent loaders, exact Cairo boundaries, bounded purpose-built DTOs, semantic
+  drill-down links, deterministic ordering, and partial-failure recovery. Storage is now reported
+  from effective environment/runtime state through a read-only diagnostic; legacy
+  `storage.policy` rows are excluded and update attempts are rejected.
+- T094's six authenticated command-center scenarios are authored and collection-verified only.
+  T101 remains open until they execute against safe disposable authenticated states and confirm
+  page/API/destination parity. T091 also remains open and is not bypassed by this local lane.
+- Local evidence: 13 focused dashboard tests and 45 focused storage/governance/security tests pass;
+  the combined focused lane passes 95 tests across 10 files; all 353 unit/contract tests across 50
+  files pass; typecheck and warning-free lint pass; the guarded production build completes all 72
+  static pages; Playwright collects 30 PLAN-35 scenarios; and diff hygiene passes. The build only
+  generated the Prisma client and did not connect to a database. No migration, seed, authenticated
+  browser run, local PostgreSQL installation, or production data was used.
+
 - Verify role-allowed priority order, maximum-six queues, metric definitions, authorized drill-down
   filters, and primary action.
 - Force one loader to fail and confirm unaffected sections remain interactive.

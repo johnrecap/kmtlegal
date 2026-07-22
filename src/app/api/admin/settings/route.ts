@@ -14,8 +14,8 @@ export async function GET(request: Request) {
       return jsonError(401, "UNAUTHENTICATED", "Authentication required.", requestId);
     }
 
-    const settings = await listAdminSettings(context.principal);
-    return NextResponse.json({ data: settings, requestId }, { headers: { "Cache-Control": "no-store" } });
+    const snapshot = await listAdminSettings(context.principal);
+    return NextResponse.json({ data: snapshot, requestId }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return errorToResponse(error, requestId);
   }
