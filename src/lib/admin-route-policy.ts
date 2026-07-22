@@ -61,6 +61,7 @@ export const ADMIN_ROUTE_POLICIES: readonly AdminRoutePolicy[] = [
   route({ id: "contacts.list", href: "/admin/contact-messages", activeMatch: "prefix", group: "office-operations", icon: "contact_mail", requiredAnyPermissions: ["contact.read.any", "contact.manage.any"] }),
   route({ id: "notifications.list", href: "/admin/notifications", activeMatch: "prefix", group: "office-operations", icon: "notifications", requiredAnyPermissions: ["notification.read.self"] }),
   route({ id: "users.list", href: "/admin/users", activeMatch: "prefix", group: "administration", icon: "manage_accounts", requiredAnyPermissions: ["user.manage.any"] }),
+  route({ id: "roles.list", href: "/admin/roles", activeMatch: "prefix", group: "administration", icon: "admin_panel_settings", requiredAnyPermissions: [], requiredAllPermissions: ["role.manage.any", "permission.manage.any"], exactRole: "Super Admin" }),
   route({ id: "settings.home", href: "/admin/settings", activeMatch: "prefix", group: "administration", icon: "settings", requiredAnyPermissions: ["settings.manage.any"] }),
   route({ id: "audit.list", href: "/admin/audit-log", activeMatch: "prefix", group: "administration", icon: "fact_check", requiredAnyPermissions: ["audit.read.any"] })
 ];

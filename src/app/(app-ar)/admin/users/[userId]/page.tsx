@@ -5,9 +5,10 @@ import { AdminNotificationBell } from "@/features/admin/notifications/admin-noti
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
 import { AdminUserActionPanel } from "@/features/admin/governance/governance-forms";
 import { formatDateTime } from "@/lib/legal-format";
-import { roleDisplayLabel } from "@/lib/ui-copy";
+import { permissionDisplayLabel, plan35UserGovernanceUiCopy, roleDisplayLabel } from "@/lib/ui-copy";
 import { canManageClientAccounts } from "@/server/admin/client-crm-service";
 import { canChangeAdminUserPassword, getAdminUserDetail, getAdminUserOptions } from "@/server/admin/governance-service";
+import { auditActionOptionLabel, auditResourceLabel } from "@/server/audit/audit-event-catalog";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../../admin-navigation";
 
@@ -19,8 +20,8 @@ export const metadata: Metadata = {
 };
 
 type UserDetail = Awaited<ReturnType<typeof getAdminUserDetail>>;
-type SessionRow = UserDetail["sessions"][number];
-type AuditRow = UserDetail["auditLogs"][number];
+type SessionRow = UserDetail["safeSessions"][number];
+type AuditRow = UserDetail["safeAuditRows"][number];
 
 function statusTone(status: string) {
   if (status === "ACTIVE") return "active" as const;
@@ -49,13 +50,17 @@ const auditColumns: Array<DataTableColumn<AuditRow>> = [
     header: "الإجراء",
     render: (row) => (
       <div>
-        <p className="font-semibold text-kmt-ink">{row.event.label}</p>
-        <p className="mt-1 text-xs text-kmt-muted">{row.summary}</p>
+        <p className="font-semibold text-kmt-ink">{auditActionOptionLabel(row.action)}</p>
+        <p className="mt-1 text-xs text-kmt-muted">
+          {row.actor
+            ? `${row.actor.name} · ${roleDisplayLabel(row.actor.roleName)}`
+            : plan35UserGovernanceUiCopy.systemAction}
+        </p>
       </div>
     )
   },
-  { key: "resource", header: "المورد", render: (row) => row.resource.label },
-  { key: "created", header: "الوقت", render: (row) => formatDateTime(row.occurredAt) }
+  { key: "resource", header: "المورد", render: (row) => auditResourceLabel(row.resourceType) },
+  { key: "created", header: "الوقت", render: (row) => formatDateTime(row.createdAt) }
 ];
 
 function SessionMobileCard({ row }: { row: SessionRow }) {
@@ -75,11 +80,15 @@ function SessionMobileCard({ row }: { row: SessionRow }) {
 function AuditMobileCard({ row }: { row: AuditRow }) {
   return (
     <DataRecordCard
-      title={row.event.label}
-      description={row.summary}
+      title={auditActionOptionLabel(row.action)}
+      description={
+        row.actor
+          ? `${row.actor.name} · ${roleDisplayLabel(row.actor.roleName)}`
+          : plan35UserGovernanceUiCopy.systemAction
+      }
       fields={[
-        { label: "المورد", value: row.resource.label },
-        { label: "الوقت", value: formatDateTime(row.occurredAt) }
+        { label: "المورد", value: auditResourceLabel(row.resourceType) },
+        { label: "الوقت", value: formatDateTime(row.createdAt) }
       ]}
     />
   );
@@ -96,7 +105,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
     getAdminUserDetail({ actor: guard.context.principal, userId }),
     getAdminUserOptions(guard.context.principal)
   ]);
-  const permissionKeys = user.role.permissions.map((entry) => entry.permission.key);
+  const permissionKeys = user.rolePermissionKeys;
 
   return (
     <DashboardShell
@@ -135,7 +144,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               <CardHeader>
                 <CardTitle>النشاط</CardTitle>
                 <CardDescription>
-                  {user._count.sessions} جلسة · {user._count.auditLogs} حدث تدقيق
+                  {user.counts.sessions} جلسة · {user.counts.auditLogs} حدث تدقيق
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -150,7 +159,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               <div className="flex flex-wrap gap-2">
                 {permissionKeys.slice(0, 80).map((permission) => (
                   <Badge key={permission} tone="neutral">
-                    {permission}
+                    {permissionDisplayLabel(permission)}
                   </Badge>
                 ))}
               </div>
@@ -163,7 +172,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               <CardDescription>جلسات الدخول الأخيرة بدون عرض token أو بيانات سرية.</CardDescription>
             </CardHeader>
             <CardContent>
-              <DataTable columns={sessionColumns} rows={user.sessions} empty="لا توجد جلسات مسجلة." mobileRender={(row) => <SessionMobileCard row={row} />} />
+              <DataTable columns={sessionColumns} rows={user.safeSessions} empty="لا توجد جلسات مسجلة." mobileRender={(row) => <SessionMobileCard row={row} />} />
             </CardContent>
           </Card>
 
@@ -173,7 +182,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
               <CardDescription>أحدث الإجراءات التي نفذها هذا الحساب.</CardDescription>
             </CardHeader>
             <CardContent>
-              <DataTable columns={auditColumns} rows={user.auditLogs} empty="لا توجد أحداث تدقيق مرتبطة بهذا المستخدم." mobileRender={(row) => <AuditMobileCard row={row} />} />
+              <DataTable columns={auditColumns} rows={user.safeAuditRows} empty="لا توجد أحداث تدقيق مرتبطة بهذا المستخدم." mobileRender={(row) => <AuditMobileCard row={row} />} />
             </CardContent>
           </Card>
 
@@ -201,10 +210,11 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
             name: user.name,
             email: user.email,
             phone: user.phone,
-            roleId: user.roleId,
+            roleId: user.role.id,
             roleName: user.role.name,
             status: user.status,
-            locale: user.locale
+            locale: user.locale,
+            updatedAt: user.updatedAt
           }}
         />
       </div>

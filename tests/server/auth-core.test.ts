@@ -1,7 +1,9 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { hashPassword, verifyPassword } from "@/server/auth/password";
 import { hasPermission, isStaffRole, permissionsForRole, ROLES } from "@/server/auth/policy";
-import { principalFromUser, type AuthUser } from "@/server/auth/session-store";
+import { isActiveAuthUser, principalFromUser, type AuthUser } from "@/server/auth/session-store";
 import { generateTotpCode, verifyTotpCode } from "@/server/auth/totp";
 import {
   canFinalizeSession,
@@ -51,6 +53,24 @@ describe("auth role and permission policy", () => {
     expect(principal.permissions).toEqual([]);
     expect(hasPermission(principal, "case.read.any")).toBe(false);
     expect(hasPermission(principal, "settings.manage.any")).toBe(false);
+  });
+
+  it("rejects inactive, deleted, or inactive-role principals at login and session resolution", () => {
+    const activeUser = {
+      status: "ACTIVE",
+      deletedAt: null,
+      role: { status: "ACTIVE" }
+    };
+    expect(isActiveAuthUser(activeUser)).toBe(true);
+    expect(isActiveAuthUser({ ...activeUser, status: "SUSPENDED" })).toBe(false);
+    expect(isActiveAuthUser({ ...activeUser, status: "DELETED" })).toBe(false);
+    expect(isActiveAuthUser({ ...activeUser, deletedAt: new Date() })).toBe(false);
+    expect(isActiveAuthUser({ ...activeUser, role: { status: "INACTIVE" } })).toBe(false);
+
+    const loginSource = readFileSync(join(process.cwd(), "src/server/auth/auth-service.ts"), "utf8");
+    const sessionSource = readFileSync(join(process.cwd(), "src/server/auth/session-store.ts"), "utf8");
+    expect(loginSource).toContain("isActiveAuthUser(user)");
+    expect(sessionSource).toContain("isActiveAuthUser(session.user)");
   });
 });
 

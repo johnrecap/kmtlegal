@@ -136,7 +136,7 @@ test.describe("PLAN-35 admin responsive accessibility characterization", () => {
   }
 });
 
-test.describe("PLAN-35 eighteen-route permission-aware workspace matrix", () => {
+test.describe("PLAN-35 nineteen-route permission-aware workspace matrix", () => {
   test.skip(
     !hasAllPersonaStorageStates,
     "Requires disposable authenticated storage states for Lawyer, Secretary, Office Admin, Marketing Staff, and Super Admin."

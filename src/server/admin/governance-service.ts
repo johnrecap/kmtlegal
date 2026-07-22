@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { appendAuditLog } from "@/server/audit/audit-service";
 import { auditActionOptionLabel, auditFilterOption, auditResourceLabel, toAdminAuditLogDto, type AuditFilterOption } from "@/server/audit/audit-event-catalog";
+import { redactMetadata } from "@/server/audit/redaction";
 import { hashPassword } from "@/server/auth/password";
 import { hasPermission, ROLES, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
@@ -32,8 +33,9 @@ export const adminUserUpdateSchema = z.object({
   phone: z.string().trim().max(40).optional().or(z.literal("")),
   roleId: uuidSchema,
   status: userStatusSchema,
-  locale: localeSchema
-});
+  locale: localeSchema,
+  updatedAt: z.string().datetime({ offset: true })
+}).strict();
 
 export const adminUserCreateSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -108,6 +110,159 @@ export type AdminUserListQuery = z.infer<typeof adminUserListQuerySchema>;
 export type AdminUserCreateInput = z.infer<typeof adminUserCreateSchema>;
 export type AdminAuditLogQuery = z.infer<typeof adminAuditLogQuerySchema>;
 export type AdminSettingUpdateInput = z.infer<typeof adminSettingUpdateSchema>;
+
+const editableOperationalRoleNames = new Set<string>([
+  ROLES.lawyer,
+  ROLES.secretary,
+  ROLES.officeAdmin,
+  ROLES.marketingStaff
+]);
+const protectedRoleNames = new Set<string>([ROLES.guest, ROLES.client, ROLES.superAdmin]);
+const canonicalRoleNames = new Set<string>(Object.values(ROLES));
+
+const adminUserListSelect = {
+  id: true,
+  email: true,
+  name: true,
+  phone: true,
+  locale: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+  role: { select: { id: true, name: true } },
+  twoFactorCredential: {
+    select: { recoveryState: true, enabledAt: true, lastVerifiedAt: true }
+  },
+  _count: {
+    select: { sessions: true, auditLogs: true, assignedCases: true, assignedTasks: true }
+  }
+} satisfies Prisma.UserSelect;
+
+const adminUserDetailSelect = {
+  ...adminUserListSelect,
+  deletedAt: true,
+  role: {
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      permissions: {
+        select: { permission: { select: { key: true } } },
+        orderBy: { permission: { key: "asc" as const } }
+      }
+    }
+  },
+  sessions: {
+    orderBy: { createdAt: "desc" as const },
+    take: 8,
+    select: {
+      id: true,
+      status: true,
+      twoFactorVerifiedAt: true,
+      expiresAt: true,
+      revokedAt: true,
+      ipAddress: true,
+      createdAt: true
+    }
+  },
+  auditLogs: {
+    orderBy: { createdAt: "desc" as const },
+    take: 8,
+    select: {
+      id: true,
+      action: true,
+      resourceType: true,
+      resourceId: true,
+      metadata: true,
+      actor: { select: { name: true, role: { select: { name: true } } } },
+      createdAt: true
+    }
+  },
+  clientProfile: { select: { id: true, fullName: true, status: true } },
+  lawyerProfile: { select: { id: true, title: true, isPublic: true, bookingEnabled: true } }
+} satisfies Prisma.UserSelect;
+
+type AdminUserListRow = Prisma.UserGetPayload<{ select: typeof adminUserListSelect }>;
+type AdminUserDetailRow = Prisma.UserGetPayload<{ select: typeof adminUserDetailSelect }>;
+
+function isoDate(value: Date | string | null | undefined) {
+  return value ? new Date(value).toISOString() : null;
+}
+
+export function toAdminUserListItem(row: AdminUserListRow) {
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    phone: row.phone,
+    locale: row.locale,
+    status: row.status,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+    role: { id: row.role.id, name: row.role.name },
+    twoFactor: row.twoFactorCredential
+      ? {
+          recoveryState: row.twoFactorCredential.recoveryState,
+          enabledAt: isoDate(row.twoFactorCredential.enabledAt),
+          lastVerifiedAt: isoDate(row.twoFactorCredential.lastVerifiedAt)
+        }
+      : null,
+    counts: {
+      sessions: row._count.sessions,
+      auditLogs: row._count.auditLogs,
+      assignedCases: row._count.assignedCases,
+      assignedTasks: row._count.assignedTasks
+    }
+  };
+}
+
+export function toAdminUserDetail(row: AdminUserDetailRow) {
+  const base = toAdminUserListItem(row);
+  return {
+    ...base,
+    rolePermissionKeys: row.role.permissions.map(({ permission }) => permission.key),
+    safeSessions: row.sessions.map((session) => ({
+      id: session.id,
+      status: session.status,
+      twoFactorVerifiedAt: isoDate(session.twoFactorVerifiedAt),
+      expiresAt: session.expiresAt.toISOString(),
+      revokedAt: isoDate(session.revokedAt),
+      ipAddress: session.ipAddress,
+      createdAt: session.createdAt.toISOString()
+    })),
+    safeAuditRows: row.auditLogs.map((audit) => ({
+      id: audit.id,
+      action: audit.action,
+      resourceType: audit.resourceType,
+      resourceId: audit.resourceId,
+      redactedMetadata: redactMetadata(audit.metadata),
+      actor: audit.actor
+        ? { name: audit.actor.name, roleName: audit.actor.role.name }
+        : null,
+      createdAt: audit.createdAt.toISOString()
+    })),
+    clientProfile: row.clientProfile,
+    lawyerProfile: row.lawyerProfile
+  };
+}
+
+export function rolePermissionsWithinCeiling(
+  actorPermissionKeys: readonly string[],
+  candidatePermissionKeys: readonly string[]
+) {
+  const actorPermissions = new Set(actorPermissionKeys);
+  return candidatePermissionKeys.every((permission) => actorPermissions.has(permission));
+}
+
+function permissionKeysForRole(role: { name: string; permissions: Array<{ permission: { key: string } }> }) {
+  return role.name === ROLES.superAdmin
+    ? ["*"]
+    : role.permissions.map(({ permission }) => permission.key);
+}
+
+function exactSuperAdmin(actor: Principal) {
+  return actor.roleName === ROLES.superAdmin;
+}
 
 export const settingDefinitions = [
   {
@@ -223,11 +378,12 @@ function userOrderBy(filters: AdminUserListQuery): Prisma.UserOrderByWithRelatio
   return [{ [filters.sortBy]: filters.sortDirection }, { createdAt: "desc" }];
 }
 
-function userListWhere(filters: AdminUserListQuery): Prisma.UserWhereInput {
+function userListWhere(filters: AdminUserListQuery, allowedRoleIds?: readonly string[]): Prisma.UserWhereInput {
   const search = filters.q?.trim();
 
   return {
     AND: [
+      allowedRoleIds ? { roleId: { in: [...allowedRoleIds] } } : {},
       filters.status ? { status: filters.status } : {},
       filters.roleId ? { roleId: filters.roleId } : {},
       filters.twoFactorState ? { twoFactorCredential: { recoveryState: filters.twoFactorState } } : {},
@@ -245,61 +401,117 @@ function userListWhere(filters: AdminUserListQuery): Prisma.UserWhereInput {
   };
 }
 
-export async function listAdminUsers(input: { actor: Principal; query: unknown }) {
+async function delegatedRoleIds(client: typeof prisma, actor: Principal) {
+  if (exactSuperAdmin(actor)) return undefined;
+  const roles = await client.role.findMany({
+    where: { status: "ACTIVE", name: { in: [...editableOperationalRoleNames] } },
+    select: {
+      id: true,
+      name: true,
+      permissions: { select: { permission: { select: { key: true } } } }
+    }
+  });
+  return roles
+    .filter((role) => rolePermissionsWithinCeiling(actor.permissions ?? [], permissionKeysForRole(role)))
+    .map((role) => role.id);
+}
+
+export async function listAdminUsers(input: {
+  actor: Principal;
+  query: unknown;
+  client?: typeof prisma;
+}) {
   assertUserManagePermission(input.actor);
+  const client = input.client ?? prisma;
   const filters = normalizeUserListQuery(input.query);
   const pagination = toPagination(filters);
-  const where = userListWhere(filters);
+  const roleIds = await delegatedRoleIds(client, input.actor);
+  const where = userListWhere(filters, roleIds);
 
   const [items, total] = await Promise.all([
-    prisma.user.findMany({
+    client.user.findMany({
       where,
-      include: {
-        role: { select: { id: true, name: true } },
-        twoFactorCredential: { select: { recoveryState: true, enabledAt: true, lastVerifiedAt: true } },
-        _count: { select: { sessions: true, auditLogs: true, assignedCases: true, assignedTasks: true } }
-      },
+      select: adminUserListSelect,
       orderBy: userOrderBy(filters),
       skip: pagination.skip,
       take: pagination.take
     }),
-    prisma.user.count({ where })
+    client.user.count({ where })
   ]);
 
-  return { items, total, filters, page: pagination.page, pageSize: pagination.pageSize };
+  return {
+    items: items.map(toAdminUserListItem),
+    total,
+    filters,
+    page: pagination.page,
+    pageSize: pagination.pageSize
+  };
 }
 
-export async function getAdminUserOptions(actor: Principal) {
+export async function getAdminUserOptions(actor: Principal, client: typeof prisma = prisma) {
   assertUserManagePermission(actor);
-  const roles = await prisma.role.findMany({
-    where: { status: "ACTIVE", name: { not: "Guest" } },
-    select: { id: true, name: true, description: true },
+  const roles = await client.role.findMany({
+    where: {
+      status: "ACTIVE",
+      name: exactSuperAdmin(actor)
+        ? { in: [...canonicalRoleNames].filter((roleName) => roleName !== ROLES.guest) }
+        : { in: [...editableOperationalRoleNames] }
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      permissions: { select: { permission: { select: { key: true } } } }
+    },
     orderBy: { name: "asc" }
   });
 
   return {
-    roles,
+    roles: roles
+      .filter(
+        (role) =>
+          exactSuperAdmin(actor) ||
+          rolePermissionsWithinCeiling(actor.permissions ?? [], permissionKeysForRole(role))
+      )
+      .map(({ id, name, description }) => ({ id, name, description })),
     statuses: ["INVITED", "ACTIVE", "SUSPENDED", "DELETED"] as const,
     twoFactorStates: ["PENDING_SETUP", "ENABLED", "RESET_REQUIRED", "DISABLED_BY_ADMIN"] as const
   };
 }
 
-export async function createAdminUser(input: { actor: Principal; body: unknown; request?: Request }) {
+async function assignableRole(client: typeof prisma, roleId: string) {
+  const role = await client.role.findUnique({
+    where: { id: roleId },
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      permissions: { select: { permission: { select: { key: true } } } }
+    }
+  });
+  if (!role || role.status !== "ACTIVE" || role.name === ROLES.guest || !canonicalRoleNames.has(role.name)) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Role is invalid.");
+  }
+  return role;
+}
+
+export async function createAdminUser(input: {
+  actor: Principal;
+  body: unknown;
+  request?: Request;
+  client?: typeof prisma;
+}) {
   assertUserCreatePermission(input.actor);
   const body = parseWithSchema(adminUserCreateSchema, input.body, "User create payload is invalid.");
-  const nextRole = await assertAssignableRole(body.roleId);
-
-  const existing = await prisma.user.findUnique({
-    where: { email: body.email },
-    select: { id: true }
-  });
-
+  const client = input.client ?? prisma;
+  const nextRole = await assignableRole(client, body.roleId);
+  const existing = await client.user.findUnique({ where: { email: body.email }, select: { id: true } });
   if (existing) {
     throw new ApiError(409, "CONFLICT", "A user with this email already exists.");
   }
 
   const passwordHash = await hashPassword(body.password);
-  const user = await prisma.$transaction(async (tx) => {
+  const user = await client.$transaction(async (tx) => {
     const created = await tx.user.create({
       data: {
         email: body.email,
@@ -311,13 +523,8 @@ export async function createAdminUser(input: { actor: Principal; body: unknown; 
         locale: body.locale,
         deletedAt: body.status === "DELETED" ? new Date() : null
       },
-      include: {
-        role: { select: { id: true, name: true } },
-        twoFactorCredential: { select: { recoveryState: true, enabledAt: true, lastVerifiedAt: true } },
-        _count: { select: { sessions: true, auditLogs: true, assignedCases: true, assignedTasks: true } }
-      }
+      select: adminUserListSelect
     });
-
     await appendAuditLog({
       client: tx,
       actorId: input.actor.id,
@@ -333,163 +540,191 @@ export async function createAdminUser(input: { actor: Principal; body: unknown; 
       },
       request: input.request
     });
-
     return created;
   });
 
-  return user;
+  return toAdminUserListItem(user);
 }
 
-export async function getAdminUserDetail(input: { actor: Principal; userId: string }) {
+function delegatedCanTarget(actor: Principal, role: {
+  name: string;
+  status: string;
+  permissions: Array<{ permission: { key: string } }>;
+}) {
+  return (
+    role.status === "ACTIVE" &&
+    editableOperationalRoleNames.has(role.name) &&
+    rolePermissionsWithinCeiling(actor.permissions ?? [], permissionKeysForRole(role))
+  );
+}
+
+export async function getAdminUserDetail(input: {
+  actor: Principal;
+  userId: string;
+  client?: typeof prisma;
+}) {
   assertUserManagePermission(input.actor);
   const userId = parseWithSchema(uuidSchema, input.userId, "User id is invalid.");
-
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: {
-      role: {
-        include: {
-          permissions: {
-            include: {
-              permission: true
-            },
-            orderBy: { permission: { key: "asc" } }
-          }
-        }
-      },
-      twoFactorCredential: true,
-      sessions: {
-        orderBy: { createdAt: "desc" },
-        take: 8,
-        select: {
-          id: true,
-          status: true,
-          twoFactorVerifiedAt: true,
-          expiresAt: true,
-          revokedAt: true,
-          ipAddress: true,
-          createdAt: true
-        }
-      },
-      auditLogs: {
-        orderBy: { createdAt: "desc" },
-        take: 8,
-        select: {
-          id: true,
-          action: true,
-          resourceType: true,
-          resourceId: true,
-          metadata: true,
-          actor: { select: { name: true, role: { select: { name: true } } } },
-          createdAt: true
-        }
-      },
-      clientProfile: { select: { id: true, fullName: true, status: true } },
-      lawyerProfile: { select: { id: true, title: true, isPublic: true, bookingEnabled: true } },
-      _count: { select: { sessions: true, auditLogs: true, assignedCases: true, assignedTasks: true } }
-    }
-  });
-
-  if (!user) {
+  const client = input.client ?? prisma;
+  const user = await client.user.findUnique({ where: { id: userId }, select: adminUserDetailSelect });
+  if (!user || (!exactSuperAdmin(input.actor) && !delegatedCanTarget(input.actor, user.role))) {
     throw new ApiError(404, "NOT_FOUND", "User was not found.");
   }
-
-  return {
-    ...user,
-    auditLogs: user.auditLogs.map(toAdminAuditLogDto)
-  };
+  return toAdminUserDetail(user);
 }
 
-async function assertAssignableRole(roleId: string) {
-  const role = await prisma.role.findFirst({
-    where: { id: roleId, status: "ACTIVE", name: { not: "Guest" } },
-    select: { id: true, name: true }
-  });
-
-  if (!role) {
-    throw new ApiError(400, "VALIDATION_ERROR", "Role is invalid.");
-  }
-
-  return role;
+function isSerializationConflict(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error && error.code === "P2034";
 }
 
-function ensureSelfAdminNotLocked(input: {
+export async function updateAdminUser(input: {
   actor: Principal;
-  targetUserId: string;
-  existingRoleName: string;
-  nextRoleName: string;
-  nextStatus: string;
+  userId: string;
+  body: unknown;
+  request?: Request;
+  now?: Date;
+  client?: typeof prisma;
 }) {
-  if (input.actor.id !== input.targetUserId) {
-    return;
-  }
-
-  if (input.nextStatus !== "ACTIVE" || input.existingRoleName !== input.nextRoleName) {
-    throw new ApiError(409, "CONFLICT", "You cannot change your own active Super Admin access.");
-  }
-}
-
-export async function updateAdminUser(input: { actor: Principal; userId: string; body: unknown; request?: Request }) {
   assertUserManagePermission(input.actor);
   const userId = parseWithSchema(uuidSchema, input.userId, "User id is invalid.");
   const body = parseWithSchema(adminUserUpdateSchema, input.body, "User payload is invalid.");
-  const nextRole = await assertAssignableRole(body.roleId);
+  const client = input.client ?? prisma;
+  const now = input.now ?? new Date();
 
-  const existing = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { role: { select: { id: true, name: true } }, twoFactorCredential: true }
-  });
+  try {
+    return await client.$transaction(
+      async (tx) => {
+        const actorUser = await tx.user.findFirst({
+          where: { id: input.actor.id, status: "ACTIVE", deletedAt: null, role: { status: "ACTIVE" } },
+          select: {
+            id: true,
+            role: {
+              select: {
+                id: true,
+                name: true,
+                status: true,
+                permissions: { select: { permission: { select: { key: true } } } }
+              }
+            }
+          }
+        });
+        if (!actorUser) {
+          throw new ApiError(403, "PERMISSION_DENIED", "An active user manager account is required.");
+        }
 
-  if (!existing) {
-    throw new ApiError(404, "NOT_FOUND", "User was not found.");
+        const liveActor: Principal = {
+          id: actorUser.id,
+          roleName: actorUser.role.name,
+          permissions: permissionKeysForRole(actorUser.role)
+        };
+        if (!hasPermission(liveActor, "user.manage.any")) {
+          throw new ApiError(403, "PERMISSION_DENIED", "User management permission is required.");
+        }
+        const actorIsExactSuper =
+          input.actor.roleName === ROLES.superAdmin && actorUser.role.name === ROLES.superAdmin;
+
+        const existing = await tx.user.findUnique({ where: { id: userId }, select: adminUserDetailSelect });
+        if (!existing || (!actorIsExactSuper && !delegatedCanTarget(liveActor, existing.role))) {
+          throw new ApiError(404, "NOT_FOUND", "User was not found.");
+        }
+
+        const nextRole = await tx.role.findUnique({
+          where: { id: body.roleId },
+          select: {
+            id: true,
+            name: true,
+            status: true,
+            permissions: { select: { permission: { select: { key: true } } } }
+          }
+        });
+        if (!nextRole || nextRole.status !== "ACTIVE" || nextRole.name === ROLES.guest || !canonicalRoleNames.has(nextRole.name)) {
+          throw new ApiError(400, "VALIDATION_ERROR", "Role is invalid.");
+        }
+        if (!actorIsExactSuper) {
+          if (protectedRoleNames.has(nextRole.name)) {
+            throw new ApiError(403, "PERMISSION_DENIED", "Only Super Admin can assign a protected role.");
+          }
+          if (!delegatedCanTarget(liveActor, nextRole)) {
+            throw new ApiError(403, "PERMISSION_DENIED", "The selected role exceeds your permission ceiling.");
+          }
+        }
+
+        const removesActiveSuper =
+          existing.status === "ACTIVE" &&
+          existing.deletedAt === null &&
+          existing.role.name === ROLES.superAdmin &&
+          (body.status !== "ACTIVE" || nextRole.name !== ROLES.superAdmin);
+        if (removesActiveSuper) {
+          const otherActiveSupers = await tx.user.count({
+            where: {
+              id: { not: existing.id },
+              status: "ACTIVE",
+              deletedAt: null,
+              role: { name: ROLES.superAdmin, status: "ACTIVE" }
+            }
+          });
+          if (otherActiveSupers < 1) {
+            throw new ApiError(409, "CONFLICT", "The final active Super Admin account cannot be changed.");
+          }
+        }
+
+        const updateResult = await tx.user.updateMany({
+          where: { id: existing.id, updatedAt: new Date(body.updatedAt) },
+          data: {
+            name: body.name,
+            phone: body.phone || null,
+            roleId: nextRole.id,
+            status: body.status,
+            locale: body.locale,
+            deletedAt: body.status === "DELETED" ? now : null,
+            updatedAt: now
+          }
+        });
+        if (updateResult.count !== 1) {
+          throw new ApiError(409, "CONFLICT", "User data changed after this form was loaded.");
+        }
+
+        const accessChanged =
+          existing.role.id !== nextRole.id ||
+          existing.status !== body.status ||
+          Boolean(existing.deletedAt) !== Boolean(body.status === "DELETED");
+        if (accessChanged) {
+          await tx.session.updateMany({
+            where: { userId: existing.id, revokedAt: null },
+            data: { status: "REVOKED", revokedAt: now }
+          });
+        }
+
+        await appendAuditLog({
+          client: tx,
+          actorId: input.actor.id,
+          action: "user.update",
+          resourceType: "User",
+          resourceId: existing.id,
+          metadata: {
+            previousStatus: existing.status,
+            status: body.status,
+            locale: body.locale,
+            roleChanged: existing.role.id !== nextRole.id,
+            sessionsRevoked: accessChanged
+          },
+          request: input.request
+        });
+
+        const updated = await tx.user.findUnique({ where: { id: existing.id }, select: adminUserDetailSelect });
+        if (!updated) {
+          throw new ApiError(404, "NOT_FOUND", "User was not found.");
+        }
+        return toAdminUserDetail(updated);
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+    );
+  } catch (error) {
+    if (isSerializationConflict(error)) {
+      throw new ApiError(409, "CONFLICT", "User access changed concurrently. Reload and try again.");
+    }
+    throw error;
   }
-
-  ensureSelfAdminNotLocked({
-    actor: input.actor,
-    targetUserId: existing.id,
-    existingRoleName: existing.role.name,
-    nextRoleName: nextRole.name,
-    nextStatus: body.status
-  });
-
-  const user = await prisma.$transaction(async (tx) => {
-    const updated = await tx.user.update({
-      where: { id: existing.id },
-      data: {
-        name: body.name,
-        phone: body.phone || null,
-        roleId: nextRole.id,
-        status: body.status,
-        locale: body.locale,
-        deletedAt: body.status === "DELETED" ? new Date() : null
-      },
-      include: {
-        role: { select: { id: true, name: true } },
-        twoFactorCredential: { select: { recoveryState: true, enabledAt: true, lastVerifiedAt: true } },
-        _count: { select: { sessions: true, auditLogs: true, assignedCases: true, assignedTasks: true } }
-      }
-    });
-
-    await appendAuditLog({
-      client: tx,
-      actorId: input.actor.id,
-      action: "user.update",
-      resourceType: "User",
-      resourceId: updated.id,
-      metadata: {
-        previousRole: existing.role.name,
-        role: updated.role.name,
-        previousStatus: existing.status,
-        status: updated.status,
-        locale: updated.locale
-      },
-      request: input.request
-    });
-
-    return updated;
-  });
-
-  return user;
 }
 
 export async function updateAdminUserPassword(input: {

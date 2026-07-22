@@ -325,6 +325,144 @@ export const roleDisplayLabels: Record<string, string> = {
   Guest: "زائر"
 };
 
+export const permissionGroupDisplayLabels = {
+  governance: "الحوكمة وإدارة الوصول",
+  appointments: "المواعيد والاستشارات",
+  cases: "القضايا والمهام",
+  clients: "العملاء والمحامون",
+  communications: "التواصل والإشعارات",
+  documents: "المستندات",
+  finance: "المالية والتقارير",
+  content: "المحتوى والخدمات"
+} as const;
+
+export type PermissionGroupKey = keyof typeof permissionGroupDisplayLabels;
+
+export const permissionDisplayLabels: Record<string, string> = {
+  "audit.read.any": "عرض سجل التدقيق للمكتب",
+  "appointment.create.self": "إنشاء موعد شخصي",
+  "appointment.manage.any": "إدارة كل المواعيد",
+  "appointment.read.assigned": "عرض المواعيد المسندة",
+  "appointment.read.own": "عرض المواعيد الشخصية",
+  "case.create.any": "إنشاء قضية",
+  "case.read.any": "عرض كل القضايا",
+  "case.read.assigned": "عرض القضايا المسندة",
+  "case.read.own": "عرض القضايا الخاصة بالحساب",
+  "case.update.any": "تعديل كل القضايا",
+  "case.update.assigned": "تعديل القضايا المسندة",
+  "caseStudy.approve.any": "اعتماد دراسات الحالة",
+  "caseStudy.create.any": "إنشاء دراسات الحالة",
+  "caseStudy.read.public": "عرض دراسات الحالة المنشورة",
+  "client.account.manage": "إدارة حسابات بوابة العملاء",
+  "client.read.any": "عرض كل العملاء",
+  "client.read.assigned": "عرض العملاء المسندين",
+  "client.read.self": "عرض ملف العميل الشخصي",
+  "client.update.any": "تعديل كل العملاء",
+  "contact.manage.any": "إدارة رسائل التواصل",
+  "contact.read.any": "عرض رسائل التواصل",
+  "conversation.assign.any": "إسناد محادثات العملاء",
+  "conversation.create.own": "بدء محادثة شخصية",
+  "conversation.manage.any": "إدارة كل المحادثات",
+  "conversation.read.any": "عرض كل المحادثات",
+  "conversation.read.own": "عرض المحادثات الشخصية",
+  "conversation.reply.any": "الرد على كل المحادثات",
+  "conversation.reply.own": "الرد على المحادثات الشخصية",
+  "consultation.create.public": "إرسال طلب استشارة عام",
+  "consultation.review.any": "مراجعة كل الاستشارات",
+  "consultation.review.assigned": "مراجعة الاستشارات المسندة",
+  "content.approve.any": "اعتماد المحتوى",
+  "content.create.any": "إنشاء المحتوى",
+  "content.read.public": "عرض المحتوى المنشور",
+  "document.manage.any": "إدارة كل المستندات",
+  "document.read.assigned": "عرض المستندات المسندة",
+  "document.read.own": "عرض المستندات الشخصية",
+  "document.upload.self": "رفع مستند شخصي",
+  "email.read.audit": "عرض سجل تسليم البريد",
+  "finance.manage.any": "إدارة العمليات المالية",
+  "finance.read.any": "عرض العمليات المالية",
+  "lawyer.manage.any": "إدارة ملفات المحامين",
+  "lawyer.read.public": "عرض ملفات المحامين المنشورة",
+  "note.create.assigned": "إضافة ملاحظات للقضايا المسندة",
+  "note.read.any": "عرض كل الملاحظات",
+  "note.read.assigned": "عرض ملاحظات القضايا المسندة",
+  "notification.read.self": "عرض الإشعارات الشخصية",
+  "payment.read.own": "عرض المدفوعات الشخصية",
+  "permission.manage.any": "إدارة تعيينات الصلاحيات",
+  "report.read.any": "عرض تقارير المكتب",
+  "role.manage.any": "إدارة أدوار النظام",
+  "service.manage.any": "إدارة الخدمات القانونية",
+  "service.read.public": "عرض الخدمات المنشورة",
+  "session.manage.any": "إدارة كل جلسات الدخول",
+  "session.manage.assigned": "إدارة الجلسات المسندة",
+  "settings.manage.any": "إدارة إعدادات النظام",
+  "socialDraft.approve.any": "اعتماد مسودات التواصل الاجتماعي",
+  "socialDraft.create.any": "إنشاء مسودات التواصل الاجتماعي",
+  "task.manage.any": "إدارة كل المهام",
+  "task.manage.assigned": "إدارة المهام المسندة",
+  "task.read.assigned": "عرض المهام المسندة",
+  "twoFactor.manage.self": "إدارة التحقق الثنائي الشخصي",
+  "twoFactor.reset.staff": "إعادة ضبط تحقق الموظفين",
+  "user.manage.any": "إدارة مستخدمي النظام",
+  "user.read.self": "عرض الحساب الشخصي"
+};
+
+export const plan35RoleGovernanceUiCopy = {
+  eyebrow: "حوكمة الإدارة",
+  title: "الأدوار والصلاحيات",
+  description: "مراجعة الصلاحيات الفعلية للأدوار التشغيلية واستبدالها كوحدة واحدة.",
+  metadataDescription: "إدارة صلاحيات الأدوار التشغيلية داخل منصة KMT Legal.",
+  roleList: "أدوار النظام",
+  permissionMatrix: "صلاحيات الدور المحدد",
+  protectedRole: "دور محمي ولا يقبل التعديل.",
+  inactiveRole: "الدور غير نشط ويظهر للقراءة فقط.",
+  effectiveWildcard: "مدير النظام يملك كل الصلاحيات تلقائيًا ولا تُعدّل صفوفه.",
+  usersSuffix: "مستخدم",
+  save: "حفظ صلاحيات الدور",
+  saving: "جارٍ حفظ الصلاحيات",
+  reload: "تحميل النسخة الحالية",
+  noEditableRole: "لا يوجد دور تشغيلي نشط قابل للتعديل.",
+  dirty: "توجد تعديلات غير محفوظة لهذا الدور.",
+  clean: "لا توجد تعديلات غير محفوظة.",
+  status: {
+    active: "نشط",
+    inactive: "غير نشط",
+    readOnly: "للقراءة فقط"
+  },
+  feedback: {
+    successTitle: "تم الحفظ",
+    incompleteTitle: "لم يكتمل الحفظ",
+    saved: "تم حفظ صلاحيات الدور وتسجيل العملية في سجل التدقيق.",
+    stale: "تغيرت صلاحيات هذا الدور بعد فتح الصفحة. احتفظنا باختياراتك؛ حمّل النسخة الحالية ثم راجعها قبل الحفظ.",
+    failed: "تعذر حفظ صلاحيات الدور الآن. راجع الاختيارات وحاول مرة أخرى.",
+    unavailable: "لا يمكن الوصول إلى الخادم الآن. لم تُفقد اختياراتك."
+  }
+} as const;
+
+export const plan35UserGovernanceUiCopy = {
+  systemAction: "إجراء نظامي",
+  saveSucceeded: "تم حفظ بيانات المستخدم وإنهاء جلساته السابقة إذا تغير الوصول."
+} as const;
+
+export function permissionGroupForKey(permissionKey: string): PermissionGroupKey {
+  const prefix = permissionKey.split(".", 1)[0];
+  if (["appointment", "consultation"].includes(prefix)) return "appointments";
+  if (["case", "note", "task"].includes(prefix)) return "cases";
+  if (["client", "lawyer"].includes(prefix)) return "clients";
+  if (["contact", "conversation", "email", "notification"].includes(prefix)) return "communications";
+  if (prefix === "document") return "documents";
+  if (["finance", "payment", "report"].includes(prefix)) return "finance";
+  if (["caseStudy", "content", "service", "socialDraft"].includes(prefix)) return "content";
+  return "governance";
+}
+
+export function permissionGroupDisplayLabel(groupKey: string) {
+  return permissionGroupDisplayLabels[groupKey as PermissionGroupKey] ?? permissionGroupDisplayLabels.governance;
+}
+
+export function permissionDisplayLabel(permissionKey: string) {
+  return permissionDisplayLabels[permissionKey] ?? "صلاحية تشغيلية";
+}
+
 export const technicalValueDisplayLabels: Record<string, string> = {
   manual: "يدوي",
   "read-only": "للقراءة فقط",
@@ -373,6 +511,21 @@ const apiExactMessages: Record<string, string> = {
   "Only Super Admin can create user email accounts.": "إنشاء حسابات البريد للمستخدمين متاح لمدير النظام فقط.",
   "Only Super Admin can change user passwords.": "تغيير كلمات مرور المستخدمين متاح لمدير النظام فقط.",
   "You cannot change your own active Super Admin access.": "لا يمكنك تعديل صلاحية حساب مدير النظام النشط الذي تستخدمه الآن.",
+  "Exact Super Admin role and both role and permission management permissions are required.": "إدارة صلاحيات الأدوار تتطلب حساب مدير نظام فعليًا مع صلاحيتي إدارة الأدوار والصلاحيات.",
+  "An active exact Super Admin account is required.": "يلزم حساب مدير نظام نشط لإدارة الأدوار والصلاحيات.",
+  "No active Super Admin governance path remains.": "لا يوجد مسار حوكمة نشط لمدير النظام. لم يتم حفظ التغيير.",
+  "Protected roles cannot be changed.": "هذا الدور محمي ولا يمكن تعديل صلاحياته.",
+  "Only canonical operational roles can be changed.": "يمكن تعديل الأدوار التشغيلية المعتمدة فقط.",
+  "Inactive roles are read-only.": "الدور غير النشط متاح للقراءة فقط.",
+  "Permission keys must be canonical.": "تتضمن البيانات صلاحية غير معتمدة في النظام.",
+  "Role permissions changed after this form was loaded.": plan35RoleGovernanceUiCopy.feedback.stale,
+  "Role permissions changed concurrently. Reload and try again.": plan35RoleGovernanceUiCopy.feedback.stale,
+  "An active user manager account is required.": "يلزم حساب نشط يملك صلاحية إدارة المستخدمين.",
+  "Only Super Admin can assign a protected role.": "تعيين الأدوار المحمية متاح لمدير النظام فقط.",
+  "The selected role exceeds your permission ceiling.": "الدور المحدد يتجاوز نطاق الصلاحيات المسموح لك بإدارته.",
+  "The final active Super Admin account cannot be changed.": "لا يمكن تعطيل أو خفض صلاحيات آخر حساب مدير نظام نشط.",
+  "User data changed after this form was loaded.": "تغيرت بيانات المستخدم بعد فتح الصفحة. حدّث الصفحة ثم راجع التغيير.",
+  "User access changed concurrently. Reload and try again.": "تغير وصول المستخدم بالتزامن مع طلبك. حدّث الصفحة ثم حاول مرة أخرى.",
   "SMTP/email policy management is disabled for this release.": "إدارة سياسة البريد وSMTP غير متاحة في هذه النسخة.",
   "Installer is disabled.": "معالج التثبيت غير مفعل.",
   "Installer setup token is invalid.": "رمز إعداد التثبيت غير صحيح.",
@@ -435,6 +588,7 @@ const apiSubjectLabels: Record<string, string> = {
   "Reject": "بيانات الرفض",
   "Report": "التقرير",
   "Role": "الدور",
+  "Role permission": "صلاحيات الدور",
   "Service": "الخدمة",
   "Setting": "الإعداد",
   "Social draft": "مسودة السوشيال",

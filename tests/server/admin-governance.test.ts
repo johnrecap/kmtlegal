@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   adminAuditLogQuerySchema,
   adminSettingUpdateSchema,
@@ -11,7 +11,11 @@ import {
   canManageAdminSettings,
   canManageAdminUsers,
   canReadAdminAuditLog,
-  settingDefinitions
+  rolePermissionsWithinCeiling,
+  settingDefinitions,
+  toAdminUserDetail,
+  toAdminUserListItem,
+  updateAdminUser
 } from "@/server/admin/governance-service";
 import { auditActionOptionLabel, auditResourceLabel, toAdminAuditLogDto } from "@/server/audit/audit-event-catalog";
 import { ROLES, type Principal } from "@/server/auth/policy";
@@ -39,6 +43,147 @@ const secretary: Principal = {
   roleName: ROLES.secretary,
   permissions: ["client.read.any", "client.update.any", "client.account.manage", "appointment.manage.any"]
 };
+
+const actorRoleId = "91000000-0000-4000-8000-000000000001";
+const lawyerRoleId = "91000000-0000-4000-8000-000000000002";
+const secretaryRoleId = "91000000-0000-4000-8000-000000000003";
+const elevatedRoleId = "91000000-0000-4000-8000-000000000004";
+const superRoleId = "91000000-0000-4000-8000-000000000005";
+const targetUserId = "92000000-0000-4000-8000-000000000001";
+const observedUserAt = new Date("2026-07-22T12:00:00.000Z");
+const savedUserAt = new Date("2026-07-22T12:05:00.000Z");
+
+type HarnessRole = {
+  id: string;
+  name: string;
+  status: "ACTIVE" | "INACTIVE";
+  permissionKeys: string[];
+};
+
+function adminUserHarness(options: {
+  actor?: Principal;
+  targetRoleId?: string;
+  activeOtherSupers?: number;
+  auditFails?: boolean;
+  serializationConflict?: boolean;
+} = {}) {
+  const actor = options.actor ?? governanceDelegate;
+  const roles = new Map<string, HarnessRole>([
+    [actorRoleId, { id: actorRoleId, name: actor.roleName, status: "ACTIVE", permissionKeys: actor.permissions ?? [] }],
+    [lawyerRoleId, { id: lawyerRoleId, name: "Lawyer", status: "ACTIVE", permissionKeys: ["case.read.assigned"] }],
+    [secretaryRoleId, { id: secretaryRoleId, name: "Secretary", status: "ACTIVE", permissionKeys: ["case.read.any"] }],
+    [elevatedRoleId, { id: elevatedRoleId, name: "Office Admin", status: "ACTIVE", permissionKeys: ["settings.manage.any"] }],
+    [superRoleId, { id: superRoleId, name: "Super Admin", status: "ACTIVE", permissionKeys: [] }]
+  ]);
+  const initialRoleId = options.targetRoleId ?? lawyerRoleId;
+  const target = {
+    id: targetUserId,
+    name: "Target User",
+    email: "target@example.invalid",
+    phone: null as string | null,
+    locale: "ar",
+    status: "ACTIVE" as "ACTIVE" | "SUSPENDED" | "DELETED" | "INVITED",
+    roleId: initialRoleId,
+    createdAt: new Date("2026-07-20T10:00:00.000Z"),
+    updatedAt: new Date(observedUserAt),
+    deletedAt: null as Date | null
+  };
+  const audits: Array<Record<string, unknown>> = [];
+  let revokedSessions = 0;
+
+  function rolePayload(roleId: string) {
+    const role = roles.get(roleId)!;
+    return {
+      id: role.id,
+      name: role.name,
+      status: role.status,
+      permissions: role.permissionKeys.map((key) => ({ permission: { key } }))
+    };
+  }
+
+  function targetPayload() {
+    return {
+      ...target,
+      role: rolePayload(target.roleId),
+      twoFactorCredential: null,
+      sessions: [],
+      auditLogs: [],
+      clientProfile: null,
+      lawyerProfile: null,
+      _count: { sessions: revokedSessions, auditLogs: audits.length, assignedCases: 0, assignedTasks: 0 }
+    };
+  }
+
+  function delegates() {
+    return {
+      user: {
+        findFirst: vi.fn(async ({ where }: { where: { id?: string } }) =>
+          where.id === actor.id
+            ? {
+                id: actor.id,
+                status: "ACTIVE",
+                deletedAt: null,
+                role: rolePayload(actor.roleName === "Super Admin" ? superRoleId : actorRoleId)
+              }
+            : null
+        ),
+        findUnique: vi.fn(async ({ where }: { where: { id: string } }) => where.id === target.id ? targetPayload() : null),
+        updateMany: vi.fn(async ({ where, data }: {
+          where: { id: string; updatedAt: Date };
+          data: Record<string, unknown>;
+        }) => {
+          if (where.id !== target.id || target.updatedAt.getTime() !== where.updatedAt.getTime()) return { count: 0 };
+          Object.assign(target, data);
+          return { count: 1 };
+        }),
+        count: vi.fn(async () => options.activeOtherSupers ?? 1)
+      },
+      role: {
+        findUnique: vi.fn(async ({ where }: { where: { id: string } }) => roles.has(where.id) ? rolePayload(where.id) : null),
+        findMany: vi.fn(async () => [...roles.values()].map((role) => rolePayload(role.id)))
+      },
+      session: {
+        updateMany: vi.fn(async () => {
+          revokedSessions += 2;
+          return { count: 2 };
+        })
+      },
+      auditLog: {
+        create: vi.fn(async ({ data }: { data: Record<string, unknown> }) => {
+          if (options.auditFails) throw new Error("audit write failed");
+          audits.push(data);
+          return data;
+        })
+      }
+    };
+  }
+
+  const host = {
+    ...delegates(),
+    $transaction: vi.fn(async (
+      operation: (client: ReturnType<typeof delegates>) => Promise<unknown>,
+      transactionOptions?: { isolationLevel?: string }
+    ) => {
+      const snapshot = { ...target, updatedAt: new Date(target.updatedAt), deletedAt: target.deletedAt ? new Date(target.deletedAt) : null };
+      const auditCount = audits.length;
+      const revokedBefore = revokedSessions;
+      try {
+        const response = await operation(delegates());
+        if (options.serializationConflict) throw Object.assign(new Error("serialization failure"), { code: "P2034" });
+        return response;
+      } catch (error) {
+        Object.assign(target, snapshot);
+        audits.splice(auditCount);
+        revokedSessions = revokedBefore;
+        throw error;
+      } finally {
+        expect(transactionOptions?.isolationLevel).toBe("Serializable");
+      }
+    })
+  };
+
+  return { actor, host, target, audits, revokedSessions: () => revokedSessions };
+}
 
 describe("admin governance contract", () => {
   it("keeps users, settings, and audit governance behind explicit permissions", () => {
@@ -84,10 +229,13 @@ describe("admin governance contract", () => {
       phone: "+201000000002",
       roleId: "44444444-4444-4444-8444-444444444444",
       status: "ACTIVE",
-      locale: "ar"
+      locale: "ar",
+      updatedAt: observedUserAt.toISOString()
     });
 
     expect(payload.status).toBe("ACTIVE");
+    expect(payload.updatedAt).toBe(observedUserAt.toISOString());
+    expect(() => adminUserUpdateSchema.parse({ ...payload, updatedAt: undefined })).toThrow();
     expect(() => adminUserUpdateSchema.parse({ name: "A", roleId: "bad", status: "ROOT", locale: "fr" })).toThrow();
 
     const createPayload = adminUserCreateSchema.parse({
@@ -111,6 +259,212 @@ describe("admin governance contract", () => {
 
     expect(adminUserPasswordUpdateSchema.parse({ password: "LongEnoughPassword1", revokeSessions: "true" }).revokeSessions).toBe(true);
     expect(() => adminUserPasswordUpdateSchema.parse({ password: "short" })).toThrow();
+  });
+
+  it("maps list and detail rows to purpose-built DTOs with no credential or token material", () => {
+    const baseRow = {
+      id: targetUserId,
+      name: "Safe User",
+      email: "safe@example.invalid",
+      phone: null,
+      locale: "ar",
+      status: "ACTIVE",
+      createdAt: new Date("2026-07-20T10:00:00.000Z"),
+      updatedAt: observedUserAt,
+      role: { id: lawyerRoleId, name: "Lawyer" },
+      twoFactorCredential: { recoveryState: "ENABLED", enabledAt: observedUserAt, lastVerifiedAt: observedUserAt },
+      _count: { sessions: 2, auditLogs: 3, assignedCases: 4, assignedTasks: 5 },
+      passwordHash: "credential-secret",
+      tokenHash: "session-token"
+    };
+    const listItem = toAdminUserListItem(baseRow as never);
+    const detail = toAdminUserDetail({
+      ...baseRow,
+      role: {
+        ...baseRow.role,
+        permissions: [{ permission: { key: "case.read.assigned" } }]
+      },
+      twoFactorCredential: {
+        ...baseRow.twoFactorCredential,
+        secretEncrypted: "totp-secret",
+        recoveryCodesEncrypted: "recovery-secret"
+      },
+      sessions: [{
+        id: "session-1",
+        status: "ACTIVE",
+        twoFactorVerifiedAt: null,
+        expiresAt: savedUserAt,
+        revokedAt: null,
+        ipAddress: "127.0.0.1",
+        createdAt: observedUserAt,
+        tokenHash: "session-token"
+      }],
+      auditLogs: [],
+      clientProfile: null,
+      lawyerProfile: null
+    } as never);
+
+    expect(listItem).toMatchObject({
+      counts: { sessions: 2, auditLogs: 3, assignedCases: 4, assignedTasks: 5 },
+      twoFactor: { recoveryState: "ENABLED" }
+    });
+    expect(detail).toMatchObject({
+      rolePermissionKeys: ["case.read.assigned"],
+      safeSessions: [{ id: "session-1" }],
+      safeAuditRows: []
+    });
+    const serialized = JSON.stringify({ listItem, detail });
+    for (const secret of ["credential-secret", "totp-secret", "recovery-secret", "session-token"]) {
+      expect(serialized).not.toContain(secret);
+    }
+    expect(listItem).not.toHaveProperty("_count");
+    expect(detail).not.toHaveProperty("sessions");
+    expect(detail).not.toHaveProperty("auditLogs");
+  });
+
+  it("enforces delegated permission ceilings for both current and next roles", () => {
+    expect(rolePermissionsWithinCeiling(
+      ["user.manage.any", "case.read.any", "case.read.assigned"],
+      ["case.read.assigned"]
+    )).toBe(true);
+    expect(rolePermissionsWithinCeiling(["user.manage.any"], ["settings.manage.any"])).toBe(false);
+  });
+
+  it("updates a scoped delegated target with optimistic concurrency, revocation, and audit", async () => {
+    const boundedDelegate: Principal = {
+      ...governanceDelegate,
+      permissions: ["user.manage.any", "case.read.any", "case.read.assigned"]
+    };
+    const harness = adminUserHarness({ actor: boundedDelegate });
+    const updated = await updateAdminUser({
+      actor: boundedDelegate,
+      userId: targetUserId,
+      body: {
+        name: "Updated User",
+        phone: "",
+        roleId: secretaryRoleId,
+        status: "SUSPENDED",
+        locale: "ar",
+        updatedAt: observedUserAt.toISOString()
+      },
+      now: savedUserAt,
+      client: harness.host as never
+    });
+
+    expect(updated).toMatchObject({
+      id: targetUserId,
+      name: "Updated User",
+      status: "SUSPENDED",
+      role: { id: secretaryRoleId, name: "Secretary" },
+      updatedAt: savedUserAt.toISOString()
+    });
+    expect(harness.revokedSessions()).toBe(2);
+    expect(harness.audits).toHaveLength(1);
+    expect(JSON.stringify(harness.audits[0])).not.toMatch(/password|secret|tokenHash/i);
+  });
+
+  it("denies protected targets and cross-ceiling assignments for delegated managers", async () => {
+    const boundedDelegate: Principal = {
+      ...governanceDelegate,
+      permissions: ["user.manage.any", "case.read.any", "case.read.assigned"]
+    };
+    const protectedHarness = adminUserHarness({ actor: boundedDelegate, targetRoleId: superRoleId });
+    await expect(updateAdminUser({
+      actor: boundedDelegate,
+      userId: targetUserId,
+      body: {
+        name: "Protected",
+        phone: "",
+        roleId: lawyerRoleId,
+        status: "ACTIVE",
+        locale: "ar",
+        updatedAt: observedUserAt.toISOString()
+      },
+      now: savedUserAt,
+      client: protectedHarness.host as never
+    })).rejects.toMatchObject({ status: 404 });
+
+    const amplifiedHarness = adminUserHarness({ actor: boundedDelegate });
+    await expect(updateAdminUser({
+      actor: boundedDelegate,
+      userId: targetUserId,
+      body: {
+        name: "Amplified",
+        phone: "",
+        roleId: elevatedRoleId,
+        status: "ACTIVE",
+        locale: "ar",
+        updatedAt: observedUserAt.toISOString()
+      },
+      now: savedUserAt,
+      client: amplifiedHarness.host as never
+    })).rejects.toMatchObject({ status: 403 });
+    expect(amplifiedHarness.audits).toHaveLength(0);
+  });
+
+  it("rejects stale writes and concurrent policy changes without partial effects", async () => {
+    const boundedDelegate: Principal = {
+      ...governanceDelegate,
+      permissions: ["user.manage.any", "case.read.any", "case.read.assigned"]
+    };
+    for (const options of [{}, { serializationConflict: true }]) {
+      const harness = adminUserHarness({ actor: boundedDelegate, ...options });
+      await expect(updateAdminUser({
+        actor: boundedDelegate,
+        userId: targetUserId,
+        body: {
+          name: "Concurrent",
+          phone: "",
+          roleId: secretaryRoleId,
+          status: "ACTIVE",
+          locale: "ar",
+          updatedAt: options.serializationConflict ? observedUserAt.toISOString() : "2026-07-22T10:00:00.000Z"
+        },
+        now: savedUserAt,
+        client: harness.host as never
+      })).rejects.toMatchObject({ status: 409 });
+      expect(harness.target).toMatchObject({ name: "Target User", roleId: lawyerRoleId, updatedAt: observedUserAt });
+      expect(harness.revokedSessions()).toBe(0);
+      expect(harness.audits).toHaveLength(0);
+    }
+  });
+
+  it("protects the final active exact Super Admin and rolls back on audit failure", async () => {
+    const finalSuper: Principal = { ...superAdmin, id: targetUserId };
+    const finalHarness = adminUserHarness({ actor: finalSuper, targetRoleId: superRoleId, activeOtherSupers: 0 });
+    await expect(updateAdminUser({
+      actor: finalSuper,
+      userId: targetUserId,
+      body: {
+        name: "Final Super",
+        phone: "",
+        roleId: lawyerRoleId,
+        status: "ACTIVE",
+        locale: "ar",
+        updatedAt: observedUserAt.toISOString()
+      },
+      now: savedUserAt,
+      client: finalHarness.host as never
+    })).rejects.toMatchObject({ status: 409 });
+    expect(finalHarness.target.roleId).toBe(superRoleId);
+
+    const auditHarness = adminUserHarness({ actor: finalSuper, targetRoleId: lawyerRoleId, auditFails: true });
+    await expect(updateAdminUser({
+      actor: finalSuper,
+      userId: targetUserId,
+      body: {
+        name: "Audit Rollback",
+        phone: "",
+        roleId: secretaryRoleId,
+        status: "SUSPENDED",
+        locale: "ar",
+        updatedAt: observedUserAt.toISOString()
+      },
+      now: savedUserAt,
+      client: auditHarness.host as never
+    })).rejects.toThrow("audit write failed");
+    expect(auditHarness.target).toMatchObject({ name: "Target User", roleId: lawyerRoleId, status: "ACTIVE" });
+    expect(auditHarness.revokedSessions()).toBe(0);
   });
 
   it("keeps settings updates inside the documented allowlist", () => {

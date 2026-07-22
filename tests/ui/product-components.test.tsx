@@ -447,4 +447,18 @@ describe("product UI primitives", () => {
     expect(source).not.toContain("JSON.stringify(metadata)");
     expect(source).not.toContain("shortMetadata");
   });
+
+  it("keeps admin-user pages on the purpose-built safe DTO contract", () => {
+    const listSource = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/users/page.tsx"), "utf8");
+    const detailSource = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/users/[userId]/page.tsx"), "utf8");
+    const formSource = readFileSync(join(process.cwd(), "src/features/admin/governance/governance-forms.tsx"), "utf8");
+
+    expect(listSource).toContain("row.counts.sessions");
+    expect(detailSource).toContain("user.rolePermissionKeys");
+    expect(detailSource).toContain("user.safeSessions");
+    expect(detailSource).toContain("user.safeAuditRows");
+    expect(formSource).toContain("updatedAt: user.updatedAt");
+    expect(`${listSource}\n${detailSource}`).not.toContain("user.role.permissions");
+    expect(`${listSource}\n${detailSource}`).not.toContain("user._count");
+  });
 });

@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { adminUserCreateSchema, createAdminUser, listAdminUsers } from "@/server/admin/governance-service";
+import { createAdminUser, listAdminUsers } from "@/server/admin/governance-service";
 import { getAuthContextFromRequest } from "@/server/auth/session-store";
 import { errorToResponse, getRequestId, jsonError } from "@/server/http/errors";
-import { parseJsonRequest } from "@/server/validation/schemas";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +35,7 @@ export async function POST(request: Request) {
       return jsonError(401, "UNAUTHENTICATED", "Authentication required.", requestId);
     }
 
-    const body = await parseJsonRequest(request, adminUserCreateSchema, "User create payload is invalid.");
+    const body = await request.json().catch(() => null);
     const user = await createAdminUser({ actor: context.principal, body, request });
 
     return NextResponse.json({ data: user, requestId }, { status: 201, headers: { "Cache-Control": "no-store" } });

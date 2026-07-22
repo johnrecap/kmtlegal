@@ -1,8 +1,8 @@
 # PLAN-35 Spec Kit Analyze Report
 
 **Date**: 2026-07-22
-**Status**: `US4-LOCAL-VERIFIED`
-**Implementation state**: T001–T015, T017–T027, T029–T041, T043–T051, T053–T067, and T069–T080 are implemented and locally verified. T057 and T072's browser scenarios are authored and collection-verified, but their authenticated PostgreSQL execution remains part of T068/T081. T016/G35-4D, T028, the database-backed portion of T039, T042's authenticated page/API cells, T052, T068, and T081 remain deferred evidence under FR-035.
+**Status**: `US5-LOCAL-VERIFIED`
+**Implementation state**: T001–T015, T017–T027, T029–T041, T043–T051, T053–T067, T069–T080, and T082–T090 are implemented and locally verified. T057, T072, and T083's browser/database scenarios are authored and collection-verified, but their authenticated PostgreSQL execution remains part of T068/T081/T091. T016/G35-4D, T028, the database-backed portion of T039, T042's authenticated page/API cells, T052, T068, T081, and T091 remain deferred evidence under FR-035.
 
 ## Gate Result
 
@@ -45,15 +45,15 @@ contract, broken local Markdown link, or duplicated detailed master task was fou
 | Existing permission-aware workspace | T040–T052 | T040–T051 local lane; authenticated T042/T052 acceptance remains open; contact/notification routes were later activated by T066 |
 | Contact and notification queues | T053–T068 | T053–T067 local implementation is verified; authenticated/DB/browser acceptance remains open in T068 |
 | Manual case create/edit | T069–T081 | T069–T080 locally verified; T072 authored/collection-only; T079 activated `cases.create` after service, API, and page; T081 remains DB/browser acceptance |
-| Role/user governance | T082–T091 | T090 activates roles; T091 passes the complete 19×5 matrix |
+| Role/user governance | T082–T091 | T082–T090 local lane verified; T090 activated roles; T091 remains the complete DB/authenticated 19×5 gate |
 | Command center and storage truth | T092–T106 | Deterministic dashboard contract and read-only runtime diagnostic |
 | UI/RTL/accessibility convergence | T107–T112 | Five exact viewports plus all shared-consumer dispositions |
 | Release evidence and convergence | T113–T128 | Local, DB, browser, live, analyze/converge, commit/push handoff |
 
 This ordering removes the former circular acceptance condition: T042/T052 test only the original
 fifteen executable destinations. T066 activated `contacts.list` and `notifications.list`, and T079
-activated `cases.create`, so eighteen destinations are executable. `roles.list` remains
-contract-planned until T090, and T091 is the first complete executable nineteen-route gate. A `404`, `405`, or
+activated `cases.create`, and T090 activated `roles.list`, so all nineteen destinations are
+executable. T091 remains the first authenticated/database-backed nineteen-route gate. A `404`, `405`, or
 skipped probe never satisfies an allowed cell.
 
 ## Coverage and Connected Impact
@@ -277,10 +277,47 @@ The T072 DB/browser cases require explicit `PLAN35_DATABASE_CLASS=disposable` an
 their execution and T081 remain open. No new convergence task is appended because T081 already owns
 all missing PostgreSQL/authenticated-browser assertions.
 
+## US5 Local Implementation Convergence — 2026-07-22
+
+| Severity | Open | Disposition |
+|---|---:|---|
+| `CRITICAL` | 0 | None |
+| `HIGH` | 0 | None. PostgreSQL durability/concurrency, fresh-session behavior, and authenticated 19×5 execution remain explicitly owned by T091. |
+| `MEDIUM` | 0 | Broad user scalar/credential projection, delegated amplification, self-only Super protection, stale writes, inactive principal/session reuse, raw permission labels, route-contract status, and fixture cleanup findings were fixed. |
+
+T082–T090 now implement the local role/user governance lane without a schema, migration, seed, or
+database connection. The isolated role service rechecks an active exact Super Admin, publishes the
+canonical grouped catalog, presents protected/inactive roles as read-only, accepts strict unique
+canonical assignments including an empty set, claims `Role.updatedAt`, and replaces rows plus the
+redacted audit in one serializable transaction. T090 activated `roles.list` only after the guarded
+page and both APIs existed, taking the executable registry from eighteen to nineteen destinations.
+
+Admin-user list/create/detail/update now use purpose-built safe selectors and DTO mappers that omit
+password hashes, encrypted TOTP/recovery material, token hashes, and whole credential rows. A
+single-attempt serializable update re-reads the active actor, target, and next role, enforces current
+and next permission-subset ceilings for delegates, hides protected targets, claims `User.updatedAt`,
+revokes affected sessions, writes one audit, and preserves the final active exact Super Admin in the
+same transaction. Password login and session loading reject suspended/deleted users, non-null
+`deletedAt`, and inactive roles.
+
+The Arabic RTL matrix reuses existing tokens/components, provides grouped localized permission
+labels, native labelled checkboxes, wildcard/protected/inactive states, dirty-state preservation,
+and explicit stale recovery. Admin-user consumers use only `counts`, `rolePermissionKeys`,
+`safeSessions`, and `safeAuditRows`. No raw permission key is the visible label and no new UI library
+was added.
+
+Local verification passed without installing or contacting PostgreSQL: 80 focused tests, all 337
+unit/contract tests across 48 files, typecheck, warning-free lint, a guarded production build across
+72 static pages, collection of 24 PLAN-35 Playwright scenarios, complete canonical Arabic permission
+label coverage, and diff hygiene. T083's three disposable DB/browser scenarios are authored and
+collection-verified only. T091 remains open for repeat-seed durability, persisted empty roles,
+concurrent role/user/final-Super outcomes, fresh/revoked sessions, and all 95 authenticated route
+cells. Converge found no new local remediation task; existing T091 owns every deferred assertion.
+
 ## Conclusion
 
 PLAN-35 remains internally consistent and conflict-controlled with zero unresolved `CRITICAL`,
 `HIGH`, or `MEDIUM` findings in the completed local lanes. US1, the US2 shell/policy work, US3
-T053–T067, and US4 T069–T080 are locally complete, while T016, T028, the database-backed part of
-T039, T042's authenticated cells, T052, T068, and T081 remain explicitly open. Neither skipped
+T053–T067, US4 T069–T080, and US5 T082–T090 are locally complete, while T016, T028, the database-backed part of
+T039, T042's authenticated cells, T052, T068, T081, and T091 remain explicitly open. Neither skipped
 authentication cells nor the production-connected database are used as acceptance evidence.

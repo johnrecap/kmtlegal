@@ -44,13 +44,39 @@ source as part of ordinary product work.
 
 ## Current PLAN-35 Snapshot
 
-The local Foundation, scope/appointments, workspace/permissions, and Contact/Notifications lanes are
-implemented. Contact/Notifications tasks T053–T067 are locally verified. T068 remains open because
-it requires disposable PostgreSQL, safe authenticated staff states, and real browser/mobile queue
-evidence. The production database was not used for local acceptance.
+The local Foundation, scope/appointments, workspace/permissions, Contact/Notifications, Manual
+Cases, and Governance lanes are implemented. Governance tasks T082–T090 are locally verified. T091
+remains open because it requires disposable PostgreSQL, safe authenticated staff states, concurrent
+mutation evidence, and the real nineteen-route-by-five-role browser matrix. The production database
+was not used for local acceptance.
 
-The canonical admin registry currently exposes 17 implemented destinations. `cases.create` and
-`roles.list` remain planned and undiscoverable until their own implementation gates pass.
+The canonical admin registry now exposes all 19 implemented destinations. `roles.list` is visible
+only to the exact `Super Admin` role with both `role.manage.any` and `permission.manage.any`.
+
+## Role And User Governance
+
+- Admin page: `/admin/roles`
+- Matrix API: `GET /api/admin/roles`
+- Replacement API: `PATCH /api/admin/roles/:roleId/permissions`
+- Service: `src/server/admin/role-permission-service.ts`
+- UI: `src/features/admin/governance/role-permission-form.tsx`
+
+Guest, Client, and exact Super Admin roles are protected. Inactive roles remain visible but
+read-only; Lawyer, Secretary, Office Admin, and Marketing Staff are editable only while active.
+Permission replacement accepts strict unique canonical keys, including an intentional empty set,
+claims `Role.updatedAt`, replaces assignments and writes one redacted audit inside a single
+serializable transaction, and preserves at least one active exact-Super governance path.
+
+Admin-user list/detail/create/update outputs now use explicit safe selectors and named DTOs. They do
+not serialize `passwordHash`, TOTP/recovery material, session token hashes, or whole credential
+records. Delegated `user.manage.any` can see and assign only active editable roles whose permission
+sets are subsets of the actor's live role permissions. Update re-reads actor, target, and next role,
+claims `User.updatedAt`, revokes target sessions when role/status access changes, writes the audit in
+the same transaction, and cannot remove the final active exact Super Admin.
+
+Password login and session resolution require an active nondeleted user and an active role. This
+makes a suspended/deleted user, inactive role, or revoked session unusable on the next request.
+No Prisma schema, migration, seed, or new UI dependency was added for this lane.
 
 ## Contact Message Flow
 
@@ -90,6 +116,8 @@ safe authorized destination or no action.
 ## Authorization And UI Boundaries
 
 - Page visibility, navigation, and server authorization derive from `src/lib/admin-route-policy.ts`.
+- Role governance requires exact Super Admin plus both governance permissions at route, page, and
+  service boundaries; navigation discovery alone is never authorization.
 - Contact read and manage capabilities remain separate.
 - Generic notifications require `notification.read.self`; consultation review permissions alone do
   not grant access to another user's generic notifications.
@@ -129,24 +157,25 @@ No-database build on PowerShell:
 $env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; npm run build
 ```
 
-The 2026-07-22 Contact/Notifications verification passed:
+The 2026-07-22 Governance verification passed:
 
-- 39 focused server/component tests.
-- 304 repository unit/contract tests.
+- 80 focused server/component/route/contract tests.
+- 337 repository unit/contract tests across 48 files.
 - Typecheck and lint.
 - Guarded production build with 72 static pages.
-- Collection of 19 PLAN-35 Playwright scenarios.
+- Collection of 24 PLAN-35 Playwright scenarios, including three gated governance DB/browser cases.
 - Git diff hygiene.
 
-The normal production build compiled and then stopped during page-data collection when no
-`DATABASE_URL` was present, as designed. No DB-backed or authenticated Playwright scenario was
-claimed as passed.
+No DB-backed or authenticated Playwright scenario was claimed as passed. The guarded build generated
+the Prisma client but did not connect to a database; it is not migration, seed, runtime, or T091
+evidence.
 
 ## Known Gaps And Next Work
 
-- Run T068 against disposable migrated PostgreSQL and isolated authenticated staff storage states.
-- Execute the contact-submit-to-triage and full notification-pagination Playwright scenarios,
-  including mobile queue behavior.
+- Run T091 against disposable migrated PostgreSQL and isolated authenticated staff storage states;
+  execute repeat-seed persistence, stale/concurrent role and user mutations, inactive principal,
+  target-session revocation, final-Super, and all 95 route/persona cells.
+- Preserve T068 and T081 for their contact/notification and manual-case DB/browser evidence.
 - Preserve the existing open PLAN-35 DB/auth gates for earlier lanes; skipped tests and 404/405
   responses are not acceptance evidence.
 - Continue with the next user-authorized PLAN-35 task IDs only after refreshing downstream Spec Kit

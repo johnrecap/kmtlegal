@@ -191,6 +191,18 @@ be reported as locally implemented but not checkpoint-accepted or DB-verified.
 
 ### US5 — role governance
 
+- Local lane status (2026-07-22): T082–T090 are implemented and locally verified without a
+  database connection. The role matrix/service/routes, purpose-built admin-user DTOs, optimistic
+  serializable user mutation, delegated permission ceilings, session revocation, active-principal
+  checks, final-Super protection, localized RTL UI, and nineteenth route activation are complete.
+  T083's disposable PostgreSQL scenarios are authored and collection-verified only; T091 remains
+  open until those scenarios and all 95 authenticated route cells execute against isolated data.
+- Local evidence: 80 focused governance/route/contract tests and all 337 unit/contract tests pass;
+  typecheck and lint pass; the guarded production build completes all 72 static pages and includes
+  `/admin/roles` plus both role APIs; Playwright collection reports 24 scenarios across the PLAN-35
+  admin and DB-backed specs. No seed, migration, database connection, authenticated browser matrix,
+  or production data was used, so this evidence does not satisfy T091 or the US5 checkpoint.
+
 - Exact Super Admin reads and updates an editable role.
 - Office Admin remains denied even if granted governance-looking keys.
 - Protected role, unknown/duplicate key, stale version, concurrent update, and failed audit paths

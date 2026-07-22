@@ -58,8 +58,8 @@ Errors use:
 | `POST /api/admin/cases` | Implemented by PLAN-35 | Manual, audited, idempotent case create | `case.create.any` |
 | `GET /api/admin/cases/{caseId}` | Current | Existing scoped detail | Existing case read capability |
 | `PATCH /api/admin/cases/{caseId}` | Implemented by PLAN-35 | Core-field edit only; status remains separate | `case.update.any` or `case.update.assigned` with object scope |
-| `GET /api/admin/roles` | **Planned new route** | Protected/editable role matrix and canonical permission catalog | Exact active Super Admin plus `role.manage.any` and `permission.manage.any` |
-| `PATCH /api/admin/roles/{roleId}/permissions` | **Planned new route** | Atomic replacement with stale-write protection and audit | Exact active Super Admin plus `role.manage.any` and `permission.manage.any` |
+| `GET /api/admin/roles` | Implemented by PLAN-35 | Protected/editable role matrix and canonical permission catalog | Exact active Super Admin plus `role.manage.any` and `permission.manage.any` |
+| `PATCH /api/admin/roles/{roleId}/permissions` | Implemented by PLAN-35 | Atomic replacement with stale-write protection and audit | Exact active Super Admin plus `role.manage.any` and `permission.manage.any` |
 | `GET /api/admin/users` | Current, hardened | Purpose-built paginated safe-user DTOs only | `user.manage.any`; protected-target metadata is nonactionable for delegated managers |
 | `POST /api/admin/users` | Current, hardened | Purpose-built create DTO; protected-role assignment restricted | Exact active Super Admin and `user.manage.any` |
 | `GET /api/admin/users/{userId}` | Current, hardened | Purpose-built safe detail DTO only | `user.manage.any`; exact active Super Admin required for a protected-role target |
@@ -399,7 +399,7 @@ commit in one transaction; stale version or audit failure leaves the case and au
 
 ## Role and permission contracts
 
-### GET `/api/admin/roles` — planned
+### GET `/api/admin/roles` — implemented by PLAN-35
 
 Response:
 
@@ -432,7 +432,7 @@ Response:
 - Permission labels/groups use the existing Arabic copy/token system; raw keys may be present in the
   payload for stable form submission but are not the only user-facing label.
 
-### PATCH `/api/admin/roles/{roleId}/permissions` — planned
+### PATCH `/api/admin/roles/{roleId}/permissions` — implemented by PLAN-35
 
 Request:
 
@@ -582,7 +582,7 @@ Changing a legacy database row must not change upload/download runtime behavior.
 | `contacts.list` | `/admin/contact-messages` | `contact.read.any`, `contact.manage.any` | Implemented page over current API |
 | `notifications.list` | `/admin/notifications` | `notification.read.self` | Implemented page over current API |
 | `users.list` | `/admin/users` | `user.manage.any` | Existing |
-| `roles.list` | `/admin/roles` | Exact active Super Admin **and both** `role.manage.any`, `permission.manage.any` | Planned |
+| `roles.list` | `/admin/roles` | Exact active Super Admin **and both** `role.manage.any`, `permission.manage.any` | Implemented by PLAN-35 |
 | `settings.home` | `/admin/settings` | `settings.manage.any` | Existing |
 | `audit.list` | `/admin/audit-log` | `audit.read.any` | Existing |
 
@@ -611,7 +611,7 @@ Rules:
 | `/admin/content/social` | Inherits `content.home` |
 | `/admin/users/{userId}` | Inherits `users.list` |
 
-The planned role page and the implemented contact, notification, and case-create pages are exact
+The implemented role, contact, notification, and case-create pages are exact
 entries. Any later detail child must be
 added to the registry, server guard, contract inventory, and route-policy test together.
 
@@ -649,7 +649,7 @@ object-detail probe added later, never for these list probes.
 T042/T052 preserve the historical fifteen-route baseline where the four then-planned IDs
 (`contacts.list`, `notifications.list`, `cases.create`, `roles.list`) were absent. T066 activated
 contact and notification after their page/API existed; T079 has now activated case create, while
-T090 retains the same gate for roles. T091 and final browser acceptance run
+T090 has now activated roles after its API and page were implemented. T091 and final browser acceptance run
 all nineteen rows by five roles; `404`, `405`, or a skip never satisfies an allowed cell.
 
 ## Default role acceptance matrix after PLAN-35 data migration

@@ -98,14 +98,11 @@ describe("PLAN-35 affected contract inventory", () => {
   const affected = parseAffectedRoutes(contract);
   const routes = parseAdminRoutes(contract);
 
-  it("parses one unique affected method/path row and preserves planned status", () => {
+  it("parses one unique affected method/path row with no remaining planned operation", () => {
     const operations = affected.map(({ method, apiPath }) => `${method} ${apiPath}`);
     expect(affected).toHaveLength(23);
     expect(new Set(operations).size).toBe(23);
-    expect(affected.filter(({ planned }) => planned).map(({ method, apiPath }) => `${method} ${apiPath}`).sort()).toEqual([
-      "GET /api/admin/roles",
-      "PATCH /api/admin/roles/{roleId}/permissions"
-    ]);
+    expect(affected.filter(({ planned }) => planned)).toEqual([]);
   });
 
   it("matches current and planned operations to handlers in both directions", () => {

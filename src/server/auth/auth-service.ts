@@ -5,7 +5,7 @@ import { verifyPassword } from "./password";
 import { hasPermission } from "./policy";
 import { openSealedSecret } from "./secret";
 import { hashSessionToken, SESSION_COOKIE_NAME } from "./session";
-import { safeUser, createSessionForUser, getAuthContextFromRequest, type AuthContext } from "./session-store";
+import { safeUser, createSessionForUser, getAuthContextFromRequest, isActiveAuthUser, type AuthContext } from "./session-store";
 import {
   EMAIL_OTP_MAX_ATTEMPTS,
   EMAIL_OTP_PURPOSE,
@@ -55,8 +55,8 @@ export async function loginWithPassword({
     include: authUserInclude
   });
 
-  const passwordMatches = user?.status === "ACTIVE" ? await verifyPassword(password, user.passwordHash) : false;
-  if (!user || user.status !== "ACTIVE" || !passwordMatches) {
+  const passwordMatches = user && isActiveAuthUser(user) ? await verifyPassword(password, user.passwordHash) : false;
+  if (!user || !isActiveAuthUser(user) || !passwordMatches) {
     await appendAuditLog({
       actorId: user?.id,
       action: "auth.login_failed",

@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { Button, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, Select, StateBlock, TextInput, Textarea } from "@/components/ui";
-import { roleDisplayLabel, technicalValueDisplayLabel } from "@/lib/ui-copy";
+import { plan35UserGovernanceUiCopy, roleDisplayLabel, technicalValueDisplayLabel } from "@/lib/ui-copy";
 
 type ApiMessage = {
   error?: {
@@ -26,6 +26,7 @@ type UserFormValue = {
   roleName: string;
   status: string;
   locale: string;
+  updatedAt: string;
 };
 
 type ClientProfileValue = {
@@ -161,7 +162,7 @@ export function AdminUserActionPanel({
   canChangePassword,
   canManageClientAccount,
   clientProfile,
-  user,
+  user: initialUser,
   roles
 }: {
   canChangePassword: boolean;
@@ -171,18 +172,28 @@ export function AdminUserActionPanel({
   roles: RoleOption[];
 }) {
   const router = useRouter();
+  const [user, setUser] = useState(initialUser);
   const [message, setMessage] = useState<string | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
-  async function send(path: string, method: "PATCH" | "POST", payload: unknown, successMessage: string) {
+  async function saveUser(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
     setMessage(null);
     setIsBusy(true);
 
     try {
-      const response = await fetch(path, {
-        method,
+      const response = await fetch(`/api/admin/users/${user.id}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          name: textValue(formData, "name"),
+          phone: textValue(formData, "phone"),
+          roleId: textValue(formData, "roleId"),
+          status: textValue(formData, "status"),
+          locale: textValue(formData, "locale"),
+          updatedAt: user.updatedAt
+        })
       });
 
       if (!response.ok) {
@@ -190,30 +201,26 @@ export function AdminUserActionPanel({
         return;
       }
 
-      setMessage(successMessage);
+      const payload = (await response.json().catch(() => ({}))) as {
+        data?: { updatedAt?: string; role?: { id?: string; name?: string }; status?: string; locale?: string; name?: string; phone?: string | null };
+      };
+      setUser((current) => ({
+        ...current,
+        name: payload.data?.name ?? current.name,
+        phone: payload.data?.phone ?? current.phone,
+        roleId: payload.data?.role?.id ?? current.roleId,
+        roleName: payload.data?.role?.name ?? current.roleName,
+        status: payload.data?.status ?? current.status,
+        locale: payload.data?.locale ?? current.locale,
+        updatedAt: payload.data?.updatedAt ?? current.updatedAt
+      }));
+      setMessage(plan35UserGovernanceUiCopy.saveSucceeded);
       router.refresh();
     } catch {
       setMessage("لا يمكن الوصول إلى الخادم الآن.");
     } finally {
       setIsBusy(false);
     }
-  }
-
-  function saveUser(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    send(
-      `/api/admin/users/${user.id}`,
-      "PATCH",
-      {
-        name: textValue(formData, "name"),
-        phone: textValue(formData, "phone"),
-        roleId: textValue(formData, "roleId"),
-        status: textValue(formData, "status"),
-        locale: textValue(formData, "locale")
-      },
-      "تم حفظ بيانات المستخدم."
-    );
   }
 
   async function createLinkedClientProfile(event: FormEvent<HTMLFormElement>) {

@@ -41,7 +41,7 @@ export const FINAL_PLAN35_ADMIN_ROUTE_MATRIX: readonly Plan35AdminRouteFixture[]
   { id: "contacts.list", href: "/admin/contact-messages", apiProbe: "/api/admin/contact-messages", state: "implemented", defaultAccess: access(false, true, true, false) },
   { id: "notifications.list", href: "/admin/notifications", apiProbe: "/api/admin/notifications", state: "implemented", defaultAccess: access(true, true, true, true) },
   { id: "users.list", href: "/admin/users", apiProbe: "/api/admin/users", state: "implemented", defaultAccess: access(false, false, false, false) },
-  { id: "roles.list", href: "/admin/roles", apiProbe: "/api/admin/roles", state: "planned", defaultAccess: access(false, false, false, false) },
+  { id: "roles.list", href: "/admin/roles", apiProbe: "/api/admin/roles", state: "implemented", defaultAccess: access(false, false, false, false) },
   { id: "settings.home", href: "/admin/settings", apiProbe: "/api/admin/settings", state: "implemented", defaultAccess: access(false, false, false, false) },
   { id: "audit.list", href: "/admin/audit-log", apiProbe: "/api/admin/audit-log", state: "implemented", defaultAccess: access(false, false, false, false) }
 ] as const;

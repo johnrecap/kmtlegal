@@ -9,13 +9,19 @@ For a current-state PRD and external model review brief, use `docs/KMT_LEGAL_CUR
 
 ## Current Status
 
-- `PLAN-00` through `PLAN-34` are implemented as code, tests, plans, or handoff artifacts where local infrastructure allows. `PLAN-35` is active; its Contact/Notifications tasks T053–T067 are locally verified while authenticated/database acceptance remains open under T068.
+- `PLAN-00` through `PLAN-34` are implemented as code, tests, plans, or handoff artifacts where local infrastructure allows. `PLAN-35` is active through its Governance local lane: T082–T090 are locally verified, all nineteen admin routes are executable, and T091 remains open for disposable-database/authenticated-browser acceptance.
 - The public `/privacy` and `/ar/privacy` routes provide a bilingual, responsive privacy and job-applicant notice covering the verified Meta recruitment intake, email CV flow, website forms, client services, privacy rights, retention criteria, Meta processing, and first-party analytics boundaries.
 - `PLAN-04` still needs a real PostgreSQL runtime check: run migrations and seed against a running `DATABASE_URL`, then rerun seed to verify idempotency.
 - DB-backed E2E flows need PostgreSQL plus seed data before they can run end to end.
 - PLAN-34 makes Paymob the prepared primary provider, keeps PayTabs disabled standby, leaves paid booking disabled, adds expiring minimized receipts, PostgreSQL rate limiting, async scrypt, required production ClamAV scanning, optional privacy-safe Sentry, locale/error/accessibility/image hardening, and behavior-preserving module decomposition. DB-backed/provider/live deployment evidence remains a release gate.
 
 ## Recent Changes
+
+- 2026-07-22 - Implemented the PLAN-35 Governance local lane.
+  - Changed: exact-Super role-permission service/APIs/page, grouped Arabic matrix, safe admin-user DTO selectors, delegated permission ceilings, optimistic serializable user updates, atomic session revocation/audit, final-Super protection, and active user/role checks at login and session resolution.
+  - Behavior: only an active exact Super Admin with both governance permissions can edit active operational roles; protected/inactive roles remain read-only, user/API payloads contain no credential records or token hashes, and the admin registry now exposes all nineteen destinations.
+  - Verification: 80 focused tests and all 337 unit/contract tests passed with typecheck, warning-free lint, guarded production build, 24-scenario Playwright collection, and diff hygiene. No database was installed or contacted; T083 was collection-verified only and T091 remains open.
+  - Handoff: detailed contracts, environment boundaries, and deferred database/browser evidence are recorded in `docs/PROJECT_GUIDE.md` and the PLAN-35 quickstart.
 
 - 2026-07-22 - Implemented the PLAN-35 Contact and Notifications local lane.
   - Changed: protected contact inbox, atomic contact status/audit workflow, unified generic/consultation notification projection, safe permission-aware links, owner-only generic reads, opaque full-center pagination, responsive RTL queue UI, route registry activation, and dashboard count loaders.

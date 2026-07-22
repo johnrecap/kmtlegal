@@ -73,7 +73,7 @@ const columns: Array<DataTableColumn<UserRow>> = [
     header: "النشاط",
     render: (row) => (
       <span className="text-sm text-kmt-muted">
-        {row._count.sessions} جلسة · {row._count.auditLogs} حدث تدقيق · {row._count.assignedTasks} مهمة
+        {row.counts.sessions} جلسة · {row.counts.auditLogs} حدث تدقيق · {row.counts.assignedTasks} مهمة
       </span>
     )
   },
@@ -103,7 +103,7 @@ function UserMobileCard({ row }: { row: UserRow }) {
         { label: "الدور", value: roleDisplayLabel(row.role.name) },
         {
           label: "النشاط",
-          value: `${row._count.sessions} جلسة · ${row._count.auditLogs} حدث تدقيق · ${row._count.assignedTasks} مهمة`
+          value: `${row.counts.sessions} جلسة · ${row.counts.auditLogs} حدث تدقيق · ${row.counts.assignedTasks} مهمة`
         },
         { label: "آخر تحديث", value: formatDateTime(row.updatedAt), className: "sm:col-span-2" }
       ]}

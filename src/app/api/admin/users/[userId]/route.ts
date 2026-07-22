@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { adminUserUpdateSchema, getAdminUserDetail, updateAdminUser } from "@/server/admin/governance-service";
+import { getAdminUserDetail, updateAdminUser } from "@/server/admin/governance-service";
 import { getAuthContextFromRequest } from "@/server/auth/session-store";
 import { errorToResponse, getRequestId, jsonError } from "@/server/http/errors";
-import { parseJsonRequest } from "@/server/validation/schemas";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +38,7 @@ export async function PATCH(request: Request, { params }: UserRouteProps) {
       return jsonError(401, "UNAUTHENTICATED", "Authentication required.", requestId);
     }
 
-    const body = await parseJsonRequest(request, adminUserUpdateSchema, "User payload is invalid.");
+    const body = await request.json().catch(() => null);
     const user = await updateAdminUser({ actor: context.principal, userId, body, request });
 
     return NextResponse.json({ data: user, requestId }, { headers: { "Cache-Control": "no-store" } });

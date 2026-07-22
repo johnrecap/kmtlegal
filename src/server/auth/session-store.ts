@@ -48,6 +48,14 @@ export class ActiveSessionRequiredError extends Error {
   }
 }
 
+export function isActiveAuthUser(user: {
+  status: string;
+  deletedAt: Date | null;
+  role: { status: string };
+}) {
+  return user.status === "ACTIVE" && user.deletedAt === null && user.role.status === "ACTIVE";
+}
+
 export function getIpAddress(request: Request) {
   const realIp = normalizeIpHeader(request.headers.get("x-real-ip"));
   if (realIp) {
@@ -107,6 +115,9 @@ export function getSessionTokenFromCookieHeader(cookieHeader: string) {
 }
 
 export async function createSessionForUser(user: AuthUser, request: Request) {
+  if (!isActiveAuthUser(user)) {
+    throw new ActiveSessionRequiredError();
+  }
   const token = createSessionToken();
   const status = initialSessionStatusForRole(user.role.name);
   const session = await prisma.session.create({
@@ -150,6 +161,10 @@ export async function getAuthContextFromCookieHeader(
   });
 
   if (!session || session.revokedAt || session.expiresAt <= new Date()) {
+    return null;
+  }
+
+  if (!isActiveAuthUser(session.user)) {
     return null;
   }
 
