@@ -13,7 +13,8 @@ export const APPOINTMENT_TRANSACTION_MODES = {
 
 type AppointmentConflictScope =
   | { kind: "office-consultation" }
-  | { kind: "lawyer"; lawyerId: string };
+  | { kind: "lawyer"; lawyerId: string }
+  | { kind: "client"; clientId: string };
 
 type AppointmentConflictInput = {
   startsAt: Date;
@@ -48,9 +49,10 @@ export function appointmentIntervalsOverlap(
 export function appointmentConflictWhere(input: AppointmentConflictInput): Prisma.AppointmentWhereInput {
   assertValidAppointmentInterval(input.startsAt, input.endsAt);
 
-  const scope: Prisma.AppointmentWhereInput =
-    input.scope.kind === "office-consultation"
-      ? { type: "CONSULTATION" }
+  const scope: Prisma.AppointmentWhereInput = input.scope.kind === "office-consultation"
+    ? { type: "CONSULTATION" }
+    : input.scope.kind === "client"
+      ? { clientId: input.scope.clientId }
       : {
           OR: [
             { lawyerId: input.scope.lawyerId },
@@ -87,6 +89,7 @@ export async function runAppointmentConflictTransaction<T>(input: {
   mode: AppointmentTransactionMode;
   operation: (tx: Prisma.TransactionClient) => Promise<T>;
   client?: AppointmentTransactionRunner;
+  serializationConflictError?: () => Error;
 }) {
   const client: AppointmentTransactionRunner =
     input.client ?? (prisma as unknown as AppointmentTransactionRunner);
@@ -105,7 +108,7 @@ export async function runAppointmentConflictTransaction<T>(input: {
         throw error;
       }
       if (attempt === maxAttempts) {
-        throw appointmentConflictError();
+        throw input.serializationConflictError?.() ?? appointmentConflictError();
       }
     }
   }

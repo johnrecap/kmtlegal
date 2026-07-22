@@ -13,6 +13,8 @@ ENV_FILE="${ENV_FILE:-${APP_DIR}/.env.production.local}"
 STATIC_BACKUP_DIR="${STATIC_BACKUP_DIR:-${APP_DIR}/.next-static-previous}"
 PM2_START_TIMEOUT_SECONDS="${PM2_START_TIMEOUT_SECONDS:-30}"
 PM2_STABILITY_SECONDS="${PM2_STABILITY_SECONDS:-8}"
+PAYMENT_MAINTENANCE_STABILITY_SECONDS="${PAYMENT_MAINTENANCE_STABILITY_SECONDS:-65}"
+DATABASE_BACKUP_DIR="${DATABASE_BACKUP_DIR:-/www/backup/kmtlegal}"
 PUBLIC_VERIFY_ENABLED="${PUBLIC_VERIFY_ENABLED:-true}"
 PUBLIC_VERIFY_PATHS="${PUBLIC_VERIFY_PATHS:-/ /articles /case-studies /media /contact}"
 PUBLIC_VERIFY_RETRY_DELAY_SECONDS="${PUBLIC_VERIFY_RETRY_DELAY_SECONDS:-3}"
@@ -46,6 +48,9 @@ require_command node
 require_command npm
 require_command pm2
 require_command curl
+require_command pg_dump
+require_command pg_restore
+require_command realpath
 
 if [[ ! -d "${APP_DIR}/.git" ]]; then
   fail "APP_DIR must point to the Git checkout. Current APP_DIR=${APP_DIR}"
@@ -65,6 +70,20 @@ set +a
 
 if [[ -z "${DATABASE_URL:-}" ]]; then
   fail "DATABASE_URL is missing after loading ${ENV_FILE}"
+fi
+
+if [[ "${PAYMENT_MAINTENANCE_PM2_ENABLED}" != "true" ]]; then
+  fail "PAYMENT_MAINTENANCE_PM2_ENABLED=true is required for consultation outcome classification"
+fi
+
+if [[ "${PAYMENT_MAINTENANCE_INTERVAL_SECONDS:-60}" != "60" ]]; then
+  log "Overriding PAYMENT_MAINTENANCE_INTERVAL_SECONDS to the required 60-second outcome cycle"
+fi
+export PAYMENT_MAINTENANCE_INTERVAL_SECONDS=60
+
+if [[ ! "${PAYMENT_MAINTENANCE_STABILITY_SECONDS}" =~ ^[0-9]+$ ]] ||
+  (( PAYMENT_MAINTENANCE_STABILITY_SECONDS <= PAYMENT_MAINTENANCE_INTERVAL_SECONDS )); then
+  fail "PAYMENT_MAINTENANCE_STABILITY_SECONDS must be an integer greater than the 60-second maintenance cycle"
 fi
 
 node -e '
@@ -685,14 +704,54 @@ verify_public_origin_matches_local() {
   run_public_origin_verify_once
 }
 
+run_payment_maintenance_once() {
+  log "Running consultation outcome reconciliation and maintenance once"
+  npm run jobs:payments
+}
+
+pm2_process_value() {
+  local app_name="$1"
+  local field="$2"
+  pm2 jlist | node -e '
+    let input = "";
+    process.stdin.on("data", (chunk) => { input += chunk; });
+    process.stdin.on("end", () => {
+      const [appName, field] = process.argv.slice(1);
+      const apps = JSON.parse(input || "[]");
+      const app = apps.find((entry) => entry.name === appName);
+      const value = app?.pm2_env?.[field];
+      process.stdout.write(value === undefined ? "missing" : String(value));
+    });
+  ' "${app_name}" "${field}"
+}
+
+create_verified_database_backup() {
+  local app_path backup_path timestamp release_suffix
+  app_path="$(realpath -m "${APP_DIR}")"
+  backup_path="$(realpath -m "${DATABASE_BACKUP_DIR}")"
+  if [[ "${backup_path}" == "${app_path}" || "${backup_path}" == "${app_path}/"* ]]; then
+    fail "DATABASE_BACKUP_DIR must be outside the Git checkout"
+  fi
+
+  umask 077
+  mkdir -p "${backup_path}"
+  timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  release_suffix="$(printf '%s' "${APP_RELEASE}" | cut -c1-12)"
+  DATABASE_BACKUP_FILE="${backup_path}/kmtlegal-${timestamp}-${release_suffix}.dump"
+
+  log "Creating verified PostgreSQL backup outside the Git checkout"
+  pg_dump --dbname="${DATABASE_URL}" --format=custom --file="${DATABASE_BACKUP_FILE}"
+  [[ -s "${DATABASE_BACKUP_FILE}" ]] || fail "Database backup is empty: ${DATABASE_BACKUP_FILE}"
+  pg_restore --list "${DATABASE_BACKUP_FILE}" >/dev/null ||
+    fail "Database backup could not be read by pg_restore: ${DATABASE_BACKUP_FILE}"
+  log "Verified database backup: ${DATABASE_BACKUP_FILE}"
+}
+
 restart_payment_maintenance_pm2() {
   if [[ "${PAYMENT_MAINTENANCE_PM2_ENABLED}" != "true" ]]; then
     log "Payment maintenance PM2 management is disabled"
     return 0
   fi
-
-  log "Running payment maintenance once"
-  npm run jobs:payments
 
   if pm2 describe "${PM2_PAYMENT_MAINTENANCE_APP}" >/dev/null 2>&1; then
     log "Restarting PM2 process ${PM2_PAYMENT_MAINTENANCE_APP}"
@@ -705,6 +764,30 @@ restart_payment_maintenance_pm2() {
   sleep 2
   pm2 describe "${PM2_PAYMENT_MAINTENANCE_APP}" >/dev/null 2>&1 ||
     fail "PM2 process ${PM2_PAYMENT_MAINTENANCE_APP} was not found after start/restart"
+
+  local baseline_restarts final_restarts final_status
+  baseline_restarts="$(pm2_process_value "${PM2_PAYMENT_MAINTENANCE_APP}" restart_time)"
+  [[ "$(pm2_process_value "${PM2_PAYMENT_MAINTENANCE_APP}" status)" == "online" ]] ||
+    fail "PM2 process ${PM2_PAYMENT_MAINTENANCE_APP} is not online after restart"
+  log "Checking maintenance stability for ${PAYMENT_MAINTENANCE_STABILITY_SECONDS}s (baseline restarts: ${baseline_restarts})"
+  sleep "${PAYMENT_MAINTENANCE_STABILITY_SECONDS}"
+  final_status="$(pm2_process_value "${PM2_PAYMENT_MAINTENANCE_APP}" status)"
+  final_restarts="$(pm2_process_value "${PM2_PAYMENT_MAINTENANCE_APP}" restart_time)"
+  [[ "${final_status}" == "online" ]] ||
+    fail "PM2 process ${PM2_PAYMENT_MAINTENANCE_APP} left online state during the maintenance cycle"
+  [[ "${final_restarts}" == "${baseline_restarts}" ]] ||
+    fail "PM2 process ${PM2_PAYMENT_MAINTENANCE_APP} restarted unexpectedly (${baseline_restarts} -> ${final_restarts})"
+}
+
+verify_application_stability_after_maintenance_cycle() {
+  local final_restarts final_status
+  final_status="$(pm2_process_value "${PM2_APP}" status)"
+  final_restarts="$(pm2_process_value "${PM2_APP}" restart_time)"
+  [[ "${final_status}" == "online" ]] ||
+    fail "PM2 process ${PM2_APP} left online state during the maintenance cycle"
+  [[ "${final_restarts}" == "${APP_BASELINE_RESTARTS}" ]] ||
+    fail "PM2 process ${PM2_APP} restarted unexpectedly (${APP_BASELINE_RESTARTS} -> ${final_restarts})"
+  wait_for_local_response
 }
 
 origin_url="$(git remote get-url origin || true)"
@@ -768,8 +851,12 @@ if [[ "${PAYMENT_PREDEPLOY_CHECK_ENABLED:-true}" != "false" ]]; then
   npm run predeploy:payments
 fi
 
+create_verified_database_backup
+
 log "Applying database migrations"
 npm run db:migrate
+
+run_payment_maintenance_once
 
 if pm2 describe "${PM2_APP}" >/dev/null 2>&1; then
   log "Recreating PM2 process ${PM2_APP} from ${APP_DIR}"
@@ -792,10 +879,12 @@ log "Confirming process stability"
 sleep "${PM2_STABILITY_SECONDS}"
 wait_for_pm2_online
 wait_for_local_response
+APP_BASELINE_RESTARTS="$(pm2_process_value "${PM2_APP}" restart_time)"
 
 install_public_cache_policy
 verify_public_origin_matches_local
 restart_payment_maintenance_pm2
+verify_application_stability_after_maintenance_cycle
 
 pm2 save
 

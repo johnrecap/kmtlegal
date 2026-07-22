@@ -102,7 +102,8 @@ describe("admin consultation review contract", () => {
         {},
         {
           status: "SCHEDULED",
-          secretaryReviewedAt: null
+          secretaryReviewedAt: null,
+          outcomeStatus: "PENDING"
         }
       ]
     });
@@ -111,7 +112,8 @@ describe("admin consultation review contract", () => {
         { assignedLawyerId: assignedLawyer.id },
         {
           status: "SCHEDULED",
-          secretaryReviewedAt: null
+          secretaryReviewedAt: null,
+          outcomeStatus: "PENDING"
         }
       ]
     });

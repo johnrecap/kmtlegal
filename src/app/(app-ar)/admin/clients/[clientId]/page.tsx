@@ -17,7 +17,7 @@ import {
   serviceCategoryLabels,
   urgencyLabels
 } from "@/lib/legal-format";
-import { plan35ManualCaseUiCopy as manualCaseCopy } from "@/lib/ui-copy";
+import { adminCurrentCapabilityCopy, plan35ManualCaseUiCopy as manualCaseCopy } from "@/lib/ui-copy";
 import {
   canManageAdminClients,
   canManageClientAccounts,
@@ -118,7 +118,7 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
             <MetricCard label="القضايا" value={String(client._count.cases)} meta="كل القضايا المرتبطة بهذا العميل." />
             <MetricCard label="الاستشارات" value={String(client._count.consultationRequests)} meta="طلبات الاستشارة المرتبطة." />
             <MetricCard label="المواعيد" value={String(client._count.appointments)} meta="كل المواعيد المرتبطة." />
-            <MetricCard label="المستندات" value={String(client._count.documents)} meta="عدد مستندات العميل فقط؛ الإدارة في PLAN-17." />
+            <MetricCard label="المستندات" value={String(client._count.documents)} meta={adminCurrentCapabilityCopy.clientDocumentsMeta} />
           </div>
 
           <Card>

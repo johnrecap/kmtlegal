@@ -366,7 +366,7 @@ describe("public consultation contract", () => {
 
     expect(assignmentSource).toContain("APPOINTMENT_TRANSACTION_MODES.existingUpdateSingleAttempt");
     expect(assignmentSource).toContain("tx.consultationRequest.findUnique");
-    expect(assignmentSource).toContain("tx.appointment.findFirst");
+    expect(assignmentSource).toContain("getPrimaryConsultationAppointment(consultationId, tx)");
     expect(assignmentSource).toContain("await assertNoAppointmentConflict");
     expect(assignmentSource).toContain("appendAuditLog({");
     expect(assignmentSource).toContain("client: tx");

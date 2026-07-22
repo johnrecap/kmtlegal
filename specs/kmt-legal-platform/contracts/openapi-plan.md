@@ -114,12 +114,14 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 ### Consultation Workflow
 | Method | Path | Purpose | Auth | Permission |
 | --- | --- | --- | --- | --- |
-| GET | `/api/admin/consultations` | Review queue | Staff | consultation.review.any / assigned |
-| GET | `/api/admin/consultations/{id}` | Consultation detail | Staff | consultation.review.any / assigned |
+| GET | `/api/admin/consultations` | Outcome-aware review queue with seven shareable views and scoped `viewCounts` | Staff | consultation.review.any / assigned |
+| GET | `/api/admin/consultations/{id}` | Consultation detail with canonical primary booking and current outcome version | Staff | consultation.review.any / assigned |
 | POST | `/api/admin/consultations/{id}/assign` | Assign lawyer and conflict-check a linked active appointment | Admin | consultation.review.any |
-| PATCH | `/api/admin/consultations/{id}/reject` | Reject request | Admin | consultation.review.any |
+| POST | `/api/admin/consultations/{id}/reject` | Reject request and atomically record a cancelled outcome | Secretary/Admin | consultation.review.any + appointment.manage.any |
 | POST | `/api/admin/consultations/{id}/convert` | Convert to client/case | Admin | consultation.convert.any |
 | POST | `/api/admin/consultations/{id}/review` | Mark secretary review complete and resolve consultation notifications | Secretary/Admin | consultation.review.any |
+| POST | `/api/admin/consultations/{id}/outcome` | Confirm or correct the final consultation result with optimistic versioning | Secretary/Admin | consultation.review.any + appointment.manage.any |
+| POST | `/api/admin/consultations/{id}/reopen` | Reopen a missed request with future conflict-safe assignment and rescheduling | Secretary/Admin | consultation.review.any + appointment.manage.any |
 | GET | `/api/admin/notifications` | Read current user's in-app notifications and permission-scoped consultation review count | Staff | notification.read.self; consultation.review.any / assigned only for review rows |
 | POST | `/api/admin/notifications/{notificationId}/read` | Mark one current-user generic notification as read | Staff | notification.read.self |
 | GET | `/api/admin/consultation-availability` | Read weekly public consultation booking availability | Secretary/Admin | appointment.manage.any |

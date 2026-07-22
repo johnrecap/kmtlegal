@@ -42,6 +42,11 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 
 ## Database Gates
 
+- [ ] PLAN-36 backup is a non-empty custom-format `pg_dump` outside the Git checkout and passes `pg_restore --list` before migration.
+- [ ] PLAN-36 additive migration applies on staging or disposable PostgreSQL without destructive data changes.
+- [ ] One-shot reconciliation runs after migration and before application/worker restart; repeated execution produces no duplicate outcome audit or notification.
+- [ ] Historical completed, no-show, cancelled, rejected, ended-unassigned, ended-reviewed/assigned, future, and missing-primary scenarios match the PLAN-36 mapping.
+
 - [ ] PostgreSQL is running.
 - [ ] `DATABASE_URL` points to the intended database.
 - [ ] `npm run qa:db` passes against real PostgreSQL.
@@ -193,6 +198,10 @@ Evidence rules:
 - [ ] Payment maintenance alert payloads, if enabled, do not include stack traces, database URLs, raw webhook payloads, legal summaries, emails, phones, tokens, or secrets.
 
 ## Deployment Gates
+
+- [ ] `kmtlegal-payment-maintenance` remains the only recurring maintenance process and runs at a 60-second interval; both it and the Next.js PM2 app stay `online` beyond one full cycle, pass local health, and keep unchanged restart counters after their intentional start/restart baselines.
+- [ ] Any npm `init.module` warning was repaired manually only after locating and backing up the owning npm config; deploy automation did not edit it.
+- [ ] Any deprecated Nginx `listen ... http2` warning was repaired manually after a vhost backup, followed by successful `nginx -t` and reload; deploy automation did not rewrite the directive.
 
 - [ ] `GET /api/health` returns 200 after migrations, seed, first Super Admin setup, installer lock, and `INSTALLER_ENABLED=false`.
 - [ ] VPS service runs in production mode, not `next dev`.

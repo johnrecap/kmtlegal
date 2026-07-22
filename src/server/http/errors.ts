@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { localizeApiMessage, plan35ApiErrorSourceMessages } from "@/lib/ui-copy";
+import {
+  localizeApiMessage,
+  plan35ApiErrorSourceMessages,
+  plan36ApiErrorSourceMessages
+} from "@/lib/ui-copy";
 import type { PublicLocale } from "@/lib/public-locale";
 import { safeLog } from "@/server/observability/safe-log";
 
@@ -15,6 +19,9 @@ export type ApiErrorCode =
   | "VALIDATION_ERROR"
   | "CONFLICT"
   | "APPOINTMENT_CONFLICT"
+  | "CONSULTATION_OUTCOME_NOT_READY"
+  | "CONSULTATION_STATE_CHANGED"
+  | "CONSULTATION_REOPEN_REQUIRED"
   | "CASE_REFERENCE_CONFLICT"
   | "SETTING_READ_ONLY"
   | "TOO_MANY_REQUESTS"
@@ -51,7 +58,10 @@ export function canonicalApiErrorCode(code: ApiErrorCode): CanonicalApiErrorCode
 const stableApiMessageByCode: Partial<Record<CanonicalApiErrorCode, string>> = {
   APPOINTMENT_CONFLICT: plan35ApiErrorSourceMessages.APPOINTMENT_CONFLICT,
   CASE_REFERENCE_CONFLICT: plan35ApiErrorSourceMessages.CASE_REFERENCE_CONFLICT,
-  SETTING_READ_ONLY: plan35ApiErrorSourceMessages.SETTING_READ_ONLY
+  SETTING_READ_ONLY: plan35ApiErrorSourceMessages.SETTING_READ_ONLY,
+  CONSULTATION_OUTCOME_NOT_READY: plan36ApiErrorSourceMessages.CONSULTATION_OUTCOME_NOT_READY,
+  CONSULTATION_STATE_CHANGED: plan36ApiErrorSourceMessages.CONSULTATION_STATE_CHANGED,
+  CONSULTATION_REOPEN_REQUIRED: plan36ApiErrorSourceMessages.CONSULTATION_REOPEN_REQUIRED
 };
 
 export function canonicalApiErrorMessage(code: ApiErrorCode, fallbackMessage: string) {

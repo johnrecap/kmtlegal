@@ -2,18 +2,23 @@
 
 Last updated: 2026-07-22
 
-This is the main tracking file for 36 Spec Kit plan IDs (`PLAN-00` through `PLAN-35`).
+This is the main tracking file for 37 Spec Kit plan IDs (`PLAN-00` through `PLAN-36`).
+
+Highest evidenced PLAN-36 state: `Local-Verified`
 
 Highest evidenced PLAN-35 state: `Local-Verified`
 
+PLAN-35 remains `Local-Verified`; none of its deferred database, authenticated-browser, or live
+evidence has been reclassified by PLAN-36.
+
 ## Summary
 
-Total plans: 36
+Total plans: 37
 
 | Status | Count |
 | --- | ---: |
 | Done | 27 |
-| In progress / partial / planned | 9 |
+| In progress / partial / planned | 10 |
 | Not started | 0 |
 
 ## Current Execution State
@@ -56,6 +61,24 @@ Total plans: 36
 | PLAN-33 Payment Gateway For Consultation Booking | In progress / partial | Added server-side consultation pricing rules, payment attempts, transactions, webhook events, reserved appointment state, payment-pending consultation state, provider-neutral payment services, PayTabs-compatible webhook endpoint, Paymob Hosted/Unified Checkout adapter and webhook endpoint, active provider admin setting, admin-controlled booking mode (`AI_CHAT_PAID` vs `AI_CHAT_FREE` with legacy mapping from `PAID_CHAT`/`MANUAL_REVIEW`), checkout/status/admin payment APIs, public booking review/pay UI, payment return/status page, signed printable consultation receipt page after `PAID`, client invoice receipt links, secretary review notifications for confirmed bookings, admin review/unassigned consultation filters, admin notification bell, admin finance gateway visibility, payment analytics events, env placeholders, provider evaluation docs, ADR, audits, Spec Kit data/API docs, focused contract tests, tokenless payment-status privacy for legal request details, admin finance filters for attempts/webhooks, visible payment issue labels, manual/gateway duplicate-payment guards, phoneCanonical search indexes, and optional maintenance failure alerting. | Live provider API credentials and merchant comparison remain required before production go-live. Full manual payment verification against a pending `PaymentAttempt`, refunds/disputes UI, settlement imports, PayTabs direct API replacement if required, email/WhatsApp receipt delivery, and full provider sandbox smoke remain follow-up work. |
 | PLAN-34 Audit Remediation And Paymob-First Hardening | In progress / deployment-blocked | Paymob is now the default/only activatable provider for new attempts; PayTabs is disabled standby with historical webhook compatibility. Added canonical production callback origins, bounded Paymob timeout/error mapping, expiring minimized receipt tokens, async scrypt, PostgreSQL fixed-window throttling and cleanup, required ClamAV INSTREAM scanning/readiness, optional privacy-scrubbed Sentry, bounded AI config/output errors, locale-aware sitemap/detail alternates, mobile language switching, Arabic availability UI, protected recovery states, CSP SRI/`script-src-attr`, accessible loading buttons, Next/Image optimization, deterministic visual/date tests, and pure-helper decomposition for booking/payment/finance modules. | Apply migrations on real PostgreSQL, configure and verify ClamAV with EICAR on the VPS, run DB-backed E2E and Paymob sandbox tests, keep `AI_CHAT_PAID` disabled, deploy through aaPanel/PM2, then archive live health/public/admin/mobile evidence. Sentry remains disabled until production credentials are supplied. |
 | PLAN-35 Admin Operations Remediation | In progress / `Local-Verified`; database, authenticated-browser, and live acceptance deferred | Local product lanes through T111 plus Phase 9 contract, harness, source-of-truth, release-evidence, local-gate, analyze/converge, and repository handoff T113–T122/T126–T128 are complete. The current API inventory covers 23 method/path rows, the release ledger distinguishes pass/block/skip, and Converge appended no new task. | T016/G35-4D, T028, the DB-backed part of T039, T042's authenticated role cells, T052, T068, T081, T091, T101, T112, and T123–T125 remain open. No production database was contacted or may be used for this evidence. |
+| PLAN-36 Consultation Outcome Lifecycle | In progress / `Local-Verified`; database, authenticated-browser, deploy, and live acceptance deferred | Added the six-state consultation outcome lifecycle, additive Prisma migration, canonical primary-booking selection, optimistic versioning, atomic manual outcome/correction and missed-request reopen APIs, lifecycle guards for legacy consultation actions, idempotent 60-second maintenance classification, deduplicated notifications, dashboard counts, calendar effective states, seven shareable RTL tabs, mobile cards, Cairo time formatting and calendar boundaries, safe localized result/reopen forms and fallbacks, explicit stale-serialization mapping, full primary-client conflict checks, contract-complete DTOs, and hardened aaPanel backup/reconcile/two-process PM2 stability handoff. Local no-DB verification passed all 404 tests across 59 files, focused 72/72 PLAN-36 tests across 11 files, Prisma validate/generate, typecheck, lint, secret scan, 72-page guarded build, shell/Node syntax checks, collection of four gated Playwright flows including stale-version recovery/correction coverage, and a final zero-finding Converge pass. | Apply the additive migration and run reconciliation on an authorized staging/disposable PostgreSQL database, execute the authenticated desktop/mobile mutation flows with synthetic fixtures, deploy through the aaPanel/PM2 script, verify both PM2 processes beyond one worker cycle, complete non-mutating live acceptance, then rotate the previously shared admin credential and revoke old sessions. No local or production database was contacted for PLAN-36 verification. |
+
+## Latest PLAN-36 Consultation Outcome Lifecycle
+
+- An ended primary consultation booking now leaves the current queue: unassigned and unreviewed
+  requests become `MISSED`; assigned or reviewed requests become `AWAITING_RESULT` within the
+  existing maintenance process's 60-second cycle.
+- A consultation becomes `SUCCESSFUL`, `NO_SHOW`, or `CANCELLED` only through an authorized manual
+  result. Corrections require a categorized reason and optimistic-version match; the matching
+  primary appointment changes in the same transaction.
+- A missed request cannot bypass its history through assign/review/convert. The explicit reopen flow
+  requires an active lawyer, future Cairo time, duration/mode/reason, conflict checks, and a distinct
+  audit before returning it to `PENDING`.
+- Consultation list, dashboard, calendar, and notifications share the canonical outcome predicates.
+  The admin list now has seven linkable RTL views with count badges and responsive cards.
+- The additive migration and maintenance reconciliation were deliberately not executed against a
+  local or production database. Those gates remain deferred to an authorized staging/disposable
+  target and the normal aaPanel deployment handoff.
 
 ## Latest PLAN-35 QA And Delivery Follow-Up
 
@@ -79,7 +102,7 @@ Total plans: 36
 
 - Migrated repeated task/document, case, client, consultation, availability, content, finance, and governance forms to deterministic ID prefixes while preserving their submitted field names. Success/error feedback now uses the shared semantic alert/status component.
 - Centralized Arabic accessible names for operational filters, searches, and tables. Existing admin lists and the product-system demo now expose captions, named regions, scoped headers, and mobile record alternatives instead of compressed tables.
-- Classified all 60 source consumers of the changed Foundation UI/token contracts in `test-results/plan35/shared-ui-consumer-disposition.json`; none is blocked or silently unreviewed. Playwright transient output no longer cleans tracked PLAN-35 evidence.
+- Classified all 62 current source consumers of the changed Foundation UI/token contracts in `test-results/plan35/shared-ui-consumer-disposition.json`; none is blocked or silently unreviewed. Playwright transient output no longer cleans tracked PLAN-35 evidence.
 - Fixed the mobile menu's missing internal glyph and the compact bidirectional `KMT Legal` title. Reviewed deterministic baselines now cover `1440x900`, `1023x768`, `1024x768`, `390x844`, and `320x568` with animations disabled and a 1% pixel-diff ceiling.
 - Local verification without a database connection passed 67 focused UI regressions, all 359 unit/contract tests across 52 files, typecheck, warning-free lint, the guarded 72-page build, and 17 browser checks. Thirteen authenticated scenarios remained skipped, so T112 is still open and no protected admin visual-acceptance claim is made.
 

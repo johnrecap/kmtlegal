@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Badge, Button, MaterialSymbol, StateBlock, buttonClasses } from "@/components/ui";
 import { formatDateTime } from "@/lib/legal-format";
-import { plan35NotificationUiCopy as copy } from "@/lib/ui-copy";
+import { plan35NotificationUiCopy as copy, plan36ConsultationOutcomeCopy } from "@/lib/ui-copy";
 import type {
   GenericNotificationCenterItem,
   NotificationCenterItem,
@@ -25,6 +25,9 @@ function NotificationItemView({
   const isGeneric = item.kind === "generic";
   const title = isGeneric ? item.title : item.applicantDisplayName;
   const description = isGeneric ? item.body : item.reference;
+  const isConsultationOutcomeAttention = isGeneric &&
+    item.type === "CONSULTATION" &&
+    item.resourceType === "ConsultationRequest";
 
   return (
     <li className="rounded border border-kmt-border bg-white p-3 shadow-sm">
@@ -43,7 +46,13 @@ function NotificationItemView({
             <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(new Date(item.startsAt))}</p>
           ) : null}
         </div>
-        {isGeneric && !item.readAt ? <Badge tone="pending">{copy.unreadGeneric}</Badge> : null}
+        {isGeneric && !item.readAt ? (
+          <Badge tone="pending">
+            {isConsultationOutcomeAttention
+              ? plan36ConsultationOutcomeCopy.notifications.outcomeAttention
+              : copy.unreadGeneric}
+          </Badge>
+        ) : null}
       </div>
       {isGeneric && !item.readAt ? (
         <Button

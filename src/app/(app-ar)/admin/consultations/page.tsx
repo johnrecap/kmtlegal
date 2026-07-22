@@ -5,10 +5,18 @@ import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
-import { consultationStatusLabels, formatDateTime, labelFrom, modeLabels, urgencyLabels } from "@/lib/legal-format";
-import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
+import { consultationServiceCategoryLabel, consultationStatusLabels, formatDateTime, labelFrom, modeLabels, urgencyLabels } from "@/lib/legal-format";
+import {
+  consultationOutcomeReasonLabel,
+  plan35AdminListAccessibilityCopy,
+  plan36ConsultationOutcomeCopy
+} from "@/lib/ui-copy";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { listAdminConsultations } from "@/server/admin/consultation-review-service";
+import {
+  CONSULTATION_OUTCOME_VIEWS,
+  type ConsultationOutcomeView
+} from "@/server/admin/consultation-outcome-service";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -40,9 +48,17 @@ function badgeTone(status: string) {
   return "neutral" as const;
 }
 
+function outcomeTone(status: string) {
+  if (status === "SUCCESSFUL") return "active" as const;
+  if (status === "AWAITING_RESULT") return "pending" as const;
+  if (status === "MISSED") return "danger" as const;
+  if (status === "NO_SHOW" || status === "CANCELLED") return "closed" as const;
+  return "neutral" as const;
+}
+
 function consultationReviewBadges(row: ConsultationRow): ReactNode {
   const badges: ReactNode[] = [];
-  if (row.status === "SCHEDULED" && !row.secretaryReviewedAt) {
+  if (row.outcomeStatus === "PENDING" && row.status === "SCHEDULED" && !row.secretaryReviewedAt) {
     badges.push(
       <Badge key="secretary-review" tone="pending">
         لم تراجعه السكرتيرة
@@ -54,7 +70,7 @@ function consultationReviewBadges(row: ConsultationRow): ReactNode {
       </Badge>
     );
   }
-  if (!row.assignedLawyerId) {
+  if (row.outcomeStatus === "PENDING" && !row.assignedLawyerId) {
     badges.push(
       <Badge key="unassigned" tone="danger">
         بدون محامي
@@ -64,8 +80,21 @@ function consultationReviewBadges(row: ConsultationRow): ReactNode {
   return badges;
 }
 
-function listHref(filters: { q?: string; status?: string; assigned?: string; review?: string; pageSize?: number }, page: number) {
+function listHref(
+  filters: {
+    view?: ConsultationOutcomeView;
+    q?: string;
+    status?: string;
+    assigned?: string;
+    review?: string;
+    pageSize?: number;
+  },
+  page: number
+) {
   const params = new URLSearchParams();
+  if (filters.view) {
+    params.set("view", filters.view);
+  }
   if (filters.q) {
     params.set("q", filters.q);
   }
@@ -85,12 +114,12 @@ function listHref(filters: { q?: string; status?: string; assigned?: string; rev
   return `/admin/consultations?${params.toString()}`;
 }
 
-function summaryPreview(value: string, maxLength = 120) {
-  const normalized = value.replace(/\s+/g, " ").trim();
-  if (normalized.length <= maxLength) {
-    return normalized;
-  }
-  return `${normalized.slice(0, maxLength - 1)}…`;
+function viewHref(filters: Parameters<typeof listHref>[0], view: ConsultationOutcomeView) {
+  return listHref({
+    ...filters,
+    view,
+    review: view === "current" ? filters.review : ""
+  }, 1);
 }
 
 const columns: Array<DataTableColumn<ConsultationRow>> = [
@@ -108,22 +137,39 @@ const columns: Array<DataTableColumn<ConsultationRow>> = [
   },
   {
     key: "requestText",
-    header: "نص طلب العميل",
+    header: plan36ConsultationOutcomeCopy.list.serviceAndMode,
     render: (row) => (
       <div className="min-w-0">
-        <p className="break-words font-medium">{summaryPreview(row.summary)}</p>
+        <p className="break-words font-medium">{consultationServiceCategoryLabel(row.serviceCategory)}</p>
         <p className="mt-1 text-xs text-kmt-muted">{labelFrom(modeLabels, row.preferredMode)}</p>
       </div>
     )
   },
   {
     key: "status",
-    header: "الحالة",
+    header: plan36ConsultationOutcomeCopy.list.workflowAndOutcome,
     render: (row) => (
       <div className="flex flex-wrap gap-2">
+        <Badge tone={outcomeTone(row.outcomeStatus)}>
+          {plan36ConsultationOutcomeCopy.statuses[row.outcomeStatus]}
+        </Badge>
         <Badge tone={badgeTone(row.status)}>{labelFrom(consultationStatusLabels, row.status)}</Badge>
         {consultationReviewBadges(row)}
       </div>
+    )
+  },
+  {
+    key: "primaryAppointment",
+    header: plan36ConsultationOutcomeCopy.list.primaryAppointment,
+    render: (row) => row.primaryAppointment ? (
+      <div className="text-sm">
+        <p>{plan36ConsultationOutcomeCopy.list.startsAt}: {formatDateTime(row.primaryAppointment.startsAt)}</p>
+        <p className="mt-1 text-xs text-kmt-muted">
+          {plan36ConsultationOutcomeCopy.list.endsAt}: {formatDateTime(row.primaryAppointment.endsAt)}
+        </p>
+      </div>
+    ) : (
+      <span className="text-sm text-kmt-muted">{plan36ConsultationOutcomeCopy.list.noPrimaryAppointment}</span>
     )
   },
   {
@@ -163,20 +209,34 @@ function ConsultationMobileCard({ row }: { row: ConsultationRow }) {
       description={<span dir="ltr">{row.phone}</span>}
       badges={
         <>
+          <Badge tone={outcomeTone(row.outcomeStatus)}>
+            {plan36ConsultationOutcomeCopy.statuses[row.outcomeStatus]}
+          </Badge>
           <Badge tone={badgeTone(row.status)}>{labelFrom(consultationStatusLabels, row.status)}</Badge>
           <Badge tone={row.urgency === "URGENT" || row.urgency === "HIGH" ? "pending" : "neutral"}>{labelFrom(urgencyLabels, row.urgency)}</Badge>
           {consultationReviewBadges(row)}
         </>
       }
       fields={[
-        { label: "نص طلب العميل", value: summaryPreview(row.summary, 90) },
+        { label: plan36ConsultationOutcomeCopy.list.serviceAndMode, value: consultationServiceCategoryLabel(row.serviceCategory) },
         { label: "طريقة التواصل", value: labelFrom(modeLabels, row.preferredMode) },
         { label: "المحامي", value: row.assignedLawyer?.name ?? "غير معين" },
+        {
+          label: plan36ConsultationOutcomeCopy.list.primaryAppointment,
+          value: row.primaryAppointment
+            ? `${formatDateTime(row.primaryAppointment.startsAt)} — ${formatDateTime(row.primaryAppointment.endsAt)}`
+            : plan36ConsultationOutcomeCopy.list.noPrimaryAppointment
+        },
+        ...(row.outcomeBy ? [{ label: plan36ConsultationOutcomeCopy.list.resultBy, value: row.outcomeBy.name }] : []),
+        ...(row.outcomeReasonCode ? [{
+          label: plan36ConsultationOutcomeCopy.list.resultReason,
+          value: consultationOutcomeReasonLabel(row.outcomeReasonCode) ?? ""
+        }] : []),
         { label: "تاريخ الطلب", value: formatDateTime(row.createdAt) }
       ]}
       action={
         <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={`/admin/consultations/${row.id}`}>
-          مراجعة
+          {plan36ConsultationOutcomeCopy.list.open}
         </Link>
       }
     />
@@ -206,7 +266,31 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
       notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="min-w-0 space-y-5">
+        <nav
+          aria-label={plan36ConsultationOutcomeCopy.list.tabsLabel}
+          className="flex min-h-11 max-w-full gap-2 overflow-x-auto pb-2"
+        >
+          {CONSULTATION_OUTCOME_VIEWS.map((view) => (
+            <Link
+              aria-current={result.filters.view === view ? "page" : undefined}
+              className={buttonClasses({
+                variant: result.filters.view === view ? "primary" : "secondary",
+                size: "sm",
+                className: "min-h-11 shrink-0"
+              })}
+              href={viewHref(result.filters, view)}
+              key={view}
+            >
+              <span>{plan36ConsultationOutcomeCopy.tabs[view]}</span>
+              <Badge tone={result.filters.view === view ? "active" : "neutral"}>
+                {result.viewCounts[view]}
+              </Badge>
+            </Link>
+          ))}
+        </nav>
+
         <form action="/admin/consultations" method="get">
+          <input name="view" type="hidden" value={result.filters.view} />
           <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.consultations.filters}>
             <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.consultations.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالاسم أو الهاتف أو نص طلب العميل" />
             <Select className="min-w-44" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
@@ -234,14 +318,14 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
 
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
           <div className="flex flex-wrap gap-2">
-            <Link className={buttonClasses({ variant: result.filters.assigned === "unassigned" ? "primary" : "secondary", size: "sm" })} href="/admin/consultations?assigned=unassigned">
+            <Link className={buttonClasses({ variant: result.filters.view === "current" && result.filters.assigned === "unassigned" ? "primary" : "secondary", size: "sm" })} href={listHref({ view: "current", assigned: "unassigned" }, 1)}>
               {result.unassignedTotal} يحتاج تعيين محامي
             </Link>
-            <Link className={buttonClasses({ variant: result.filters.review === "unreviewed" ? "primary" : "secondary", size: "sm" })} href="/admin/consultations?review=unreviewed">
+            <Link className={buttonClasses({ variant: result.filters.view === "current" && result.filters.review === "unreviewed" ? "primary" : "secondary", size: "sm" })} href={listHref({ view: "current", review: "unreviewed" }, 1)}>
               {result.unreviewedTotal} يحتاج مراجعة السكرتيرة
             </Link>
           </div>
-          <p>{result.total} طلب استشارة</p>
+          <p>{result.total} {plan36ConsultationOutcomeCopy.list.countSuffix}</p>
           <p>
             صفحة {result.page} من {totalPages}
           </p>
@@ -251,7 +335,7 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
           caption={plan35AdminListAccessibilityCopy.consultations.table}
           columns={columns}
           rows={result.items}
-          empty="لا توجد طلبات استشارة مطابقة للفلاتر الحالية."
+          empty={plan36ConsultationOutcomeCopy.list.empty}
           mobileRender={(row) => <ConsultationMobileCard row={row} />}
         />
 

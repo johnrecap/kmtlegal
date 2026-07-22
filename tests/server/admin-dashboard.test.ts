@@ -124,6 +124,8 @@ describe("admin dashboard canonical scope contract", () => {
       "appointments.today",
       "tasks.overdue",
       "consultations.unreviewed",
+      "consultations.awaiting_result",
+      "consultations.missed",
       "contacts.new",
       "documents.under-review",
       "cases.active",
@@ -183,6 +185,8 @@ describe("admin dashboard canonical scope contract", () => {
       "appointments.today": "/admin/calendar?from=2026-07-21T21:00:00.000Z&to=2026-07-22T21:00:00.000Z",
       "tasks.overdue": "/admin/tasks?view=overdue&sortBy=dueDate&sortDirection=asc",
       "consultations.unreviewed": "/admin/consultations?status=SCHEDULED&review=unreviewed",
+      "consultations.awaiting_result": "/admin/consultations?view=awaiting_result",
+      "consultations.missed": "/admin/consultations?view=missed",
       "contacts.new": "/admin/contact-messages?status=NEW&sortBy=createdAt&sortDirection=asc",
       "documents.under-review": "/admin/documents?status=UNDER_REVIEW&sortBy=updatedAt&sortDirection=asc",
       "cases.active": "/admin/cases?status=ACTIVE&sortBy=updatedAt&sortDirection=desc",
@@ -320,6 +324,34 @@ describe("admin dashboard canonical scope contract", () => {
       "cases.active",
       "clients.active"
     ]);
+  });
+
+  it("uses canonical role-scoped outcome predicates for the two actionable consultation cards", async () => {
+    databaseMocks.consultationCount
+      .mockResolvedValueOnce(2)
+      .mockResolvedValueOnce(4)
+      .mockResolvedValueOnce(3);
+
+    const snapshot = await getAdminDashboard(PLAN35_PRINCIPALS.officeAdmin, {
+      now: new Date("2026-07-22T10:00:00.000Z")
+    });
+
+    expect(snapshot.metrics.find(({ key }) => key === "consultations.awaiting_result")).toMatchObject({
+      state: "ready",
+      value: 4,
+      href: "/admin/consultations?view=awaiting_result"
+    });
+    expect(snapshot.metrics.find(({ key }) => key === "consultations.missed")).toMatchObject({
+      state: "ready",
+      value: 3,
+      href: "/admin/consultations?view=missed"
+    });
+
+    const consultationCountQueries = (
+      databaseMocks.consultationCount.mock.calls as unknown as Array<[{ where: unknown }]>
+    ).map(([query]) => query);
+    expect(consultationCountQueries).toContainEqual({ where: { AND: [{}, { outcomeStatus: "AWAITING_RESULT" }] } });
+    expect(consultationCountQueries).toContainEqual({ where: { AND: [{}, { outcomeStatus: "MISSED" }] } });
   });
 
   it("loads contact and notification counts only inside each principal's permission scope", async () => {

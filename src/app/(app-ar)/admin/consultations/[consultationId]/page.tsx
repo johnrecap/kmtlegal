@@ -4,7 +4,8 @@ import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, StateBlock } from "@/components/ui";
 import { ConsultationActionPanel } from "@/features/admin/consultations/consultation-action-panel";
-import { consultationStatusLabels, formatDateTime, labelFrom, modeLabels, serviceCategoryLabels, urgencyLabels } from "@/lib/legal-format";
+import { consultationServiceCategoryLabel, consultationStatusLabels, formatDateTime, labelFrom, modeLabels, urgencyLabels } from "@/lib/legal-format";
+import { consultationOutcomeReasonLabel, plan36ConsultationOutcomeCopy } from "@/lib/ui-copy";
 import { getAdminConsultationDetail, listAssignableLawyers } from "@/server/admin/consultation-review-service";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { publicConsultationReference } from "@/server/consultations/consultation-service";
@@ -32,6 +33,14 @@ function statusTone(status: string) {
   if (status === "REVIEWING" || status === "SCHEDULED") {
     return "pending" as const;
   }
+  return "neutral" as const;
+}
+
+function outcomeTone(status: string) {
+  if (status === "SUCCESSFUL") return "active" as const;
+  if (status === "MISSED") return "danger" as const;
+  if (status === "NO_SHOW" || status === "CANCELLED") return "closed" as const;
+  if (status === "AWAITING_RESULT") return "pending" as const;
   return "neutral" as const;
 }
 
@@ -103,7 +112,7 @@ function AiClassificationSummary({ value }: { value: unknown }) {
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {category ? <DetailItem label="تصنيف AI مساعد" value={labelFrom(serviceCategoryLabels, category)} /> : null}
+        {category ? <DetailItem label="تصنيف AI مساعد" value={consultationServiceCategoryLabel(category)} /> : null}
         {urgency ? <DetailItem label="الأولوية المقترحة" value={labelFrom(urgencyLabels, urgency)} /> : null}
         {preferredMode ? <DetailItem label="طريقة التواصل" value={labelFrom(modeLabels, preferredMode)} /> : null}
         {confidence ? <DetailItem label="درجة الثقة" value={confidence} /> : null}
@@ -159,7 +168,7 @@ function adminConsultationOfficeBrief(consultation: Awaited<ReturnType<typeof ge
     : "لم يتم العثور على موعد مرتبط";
 
   return [
-    `ملخص للفريق: ${consultation.fullName} طلب استشارة من خلال شات الحجز العام. التصنيف الداخلي المبدئي: ${labelFrom(serviceCategoryLabels, consultation.serviceCategory)}.`,
+    `ملخص للفريق: ${consultation.fullName} طلب استشارة من خلال شات الحجز العام. التصنيف الداخلي المبدئي: ${consultationServiceCategoryLabel(consultation.serviceCategory)}.`,
     `طلب العميل كما وصل: ${consultation.summary}`,
     `بيانات التواصل: ${contactParts.join("، ")}.`,
     `التفضيلات: ${labelFrom(modeLabels, consultation.preferredMode)}، أولوية ${labelFrom(urgencyLabels, consultation.urgency)}، الموعد ${appointmentText}.`,
@@ -205,6 +214,58 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
             <CardHeader>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
+                  <CardTitle>{plan36ConsultationOutcomeCopy.detail.outcomeTitle}</CardTitle>
+                  <CardDescription>{plan36ConsultationOutcomeCopy.detail.outcomeDescription}</CardDescription>
+                </div>
+                <Badge tone={outcomeTone(consultation.outcomeStatus)}>
+                  {plan36ConsultationOutcomeCopy.statuses[consultation.outcomeStatus]}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <DetailItem
+                  label={plan36ConsultationOutcomeCopy.detail.status}
+                  value={plan36ConsultationOutcomeCopy.statuses[consultation.outcomeStatus]}
+                />
+                <DetailItem
+                  label={plan36ConsultationOutcomeCopy.detail.changedAt}
+                  value={consultation.outcomeAt ? formatDateTime(consultation.outcomeAt) : null}
+                />
+                <DetailItem
+                  label={plan36ConsultationOutcomeCopy.detail.changedBy}
+                  value={consultation.outcomeBy?.name ?? (consultation.outcomeAt ? plan36ConsultationOutcomeCopy.detail.systemActor : null)}
+                />
+                <DetailItem
+                  label={plan36ConsultationOutcomeCopy.detail.reason}
+                  value={consultationOutcomeReasonLabel(consultation.outcomeReasonCode)}
+                />
+                <DetailItem
+                  label={plan36ConsultationOutcomeCopy.detail.version}
+                  value={<span dir="ltr">{consultation.outcomeVersion}</span>}
+                />
+                <DetailItem
+                  label={plan36ConsultationOutcomeCopy.detail.primaryStart}
+                  value={consultation.primaryAppointment ? formatDateTime(consultation.primaryAppointment.startsAt) : null}
+                />
+                <DetailItem
+                  label={plan36ConsultationOutcomeCopy.detail.primaryEnd}
+                  value={consultation.primaryAppointment ? formatDateTime(consultation.primaryAppointment.endsAt) : null}
+                />
+              </div>
+              {consultation.outcomeNote ? (
+                <div className="mt-4 rounded border border-kmt-border bg-kmt-canvas p-3">
+                  <p className="text-xs font-semibold text-kmt-muted">{plan36ConsultationOutcomeCopy.detail.note}</p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-kmt-ink">{consultation.outcomeNote}</p>
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
                   <CardTitle>بيانات الطلب</CardTitle>
                   <CardDescription>كل بيانات الاستشارة كما وصلت من شات الحجز العام.</CardDescription>
                 </div>
@@ -221,7 +282,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
                 <DetailItem label="الهاتف" value={consultation.phone} />
                 <DetailItem label="البريد الإلكتروني" value={consultation.email} />
                 <DetailItem label="المدينة" value={consultation.city} />
-                <DetailItem label="تصنيف داخلي مبدئي" value={labelFrom(serviceCategoryLabels, consultation.serviceCategory)} />
+                <DetailItem label="تصنيف داخلي مبدئي" value={consultationServiceCategoryLabel(consultation.serviceCategory)} />
                 <DetailItem label="طريقة التواصل" value={labelFrom(modeLabels, consultation.preferredMode)} />
                 <DetailItem label="رقم المرجع" value={<span dir="ltr">{publicConsultationReference(consultation.id)}</span>} />
                 <DetailItem label="تاريخ الطلب" value={formatDateTime(consultation.createdAt)} />
@@ -305,6 +366,11 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
           secretaryReviewedAt={consultation.secretaryReviewedAt?.toISOString() ?? null}
           secretaryReviewedByName={consultation.secretaryReviewedBy?.name ?? null}
           secretaryReviewNote={consultation.secretaryReviewNote}
+          outcomeStatus={consultation.outcomeStatus}
+          outcomeVersion={consultation.outcomeVersion}
+          canAssign={consultation.canAssign}
+          canManageOutcome={consultation.canManageOutcome}
+          canReopen={consultation.canReopen}
           lawyers={lawyers}
         />
       </div>

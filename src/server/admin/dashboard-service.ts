@@ -13,6 +13,11 @@ import { appointmentScopeWhereForPrincipal, caseScopeWhereForPrincipal } from ".
 import { clientScopeWhereForPrincipal } from "./client-crm-service";
 import { consultationScopeWhereForPrincipal } from "./consultation-review-service";
 import {
+  canManageConsultationOutcome,
+  consultationOutcomeViewWhere,
+  type ConsultationOutcomeView
+} from "./consultation-outcome-service";
+import {
   documentScopeWhereForPrincipal,
   taskScopeWhereForPrincipal
 } from "./task-document-service";
@@ -25,6 +30,8 @@ export const DASHBOARD_METRIC_KEYS = [
   "appointments.today",
   "tasks.overdue",
   "consultations.unreviewed",
+  "consultations.awaiting_result",
+  "consultations.missed",
   "contacts.new",
   "documents.under-review",
   "cases.active",
@@ -189,6 +196,7 @@ type DashboardLoadResult =
 type DashboardMetricSpec = {
   key: DashboardMetricKey;
   permissions: readonly PermissionKey[];
+  requireAllPermissions?: boolean;
   timeframe: DashboardTimeframe;
   tokenStem: string;
   href: (context: DashboardLoadContext) => string;
@@ -236,6 +244,26 @@ const DASHBOARD_METRIC_SPECS: readonly DashboardMetricSpec[] = [
     href: () => "/admin/consultations?status=SCHEDULED&review=unreviewed",
     scope: (actor) => hasPermission(actor, "consultation.review.any") ? "office-wide" : "actor-assigned",
     load: loadConsultations
+  },
+  {
+    key: "consultations.awaiting_result",
+    permissions: ["consultation.review.any", "appointment.manage.any"],
+    requireAllPermissions: true,
+    timeframe: "as-of-generated-at",
+    tokenStem: "admin.dashboard.metrics.awaitingConsultationResults",
+    href: () => "/admin/consultations?view=awaiting_result",
+    scope: () => "office-wide",
+    load: (context) => loadConsultationOutcomeCount(context, "awaiting_result")
+  },
+  {
+    key: "consultations.missed",
+    permissions: ["consultation.review.any", "appointment.manage.any"],
+    requireAllPermissions: true,
+    timeframe: "as-of-generated-at",
+    tokenStem: "admin.dashboard.metrics.missedConsultations",
+    href: () => "/admin/consultations?view=missed",
+    scope: () => "office-wide",
+    load: (context) => loadConsultationOutcomeCount(context, "missed")
   },
   {
     key: "contacts.new",
@@ -327,7 +355,7 @@ export async function getAdminDashboard(
     generatedAt,
     cairoRange: cairoDayRange(generatedAt)
   };
-  const specs = DASHBOARD_METRIC_SPECS.filter((spec) => hasAnyPermission(actor, spec.permissions));
+  const specs = DASHBOARD_METRIC_SPECS.filter((spec) => hasMetricPermissions(actor, spec));
   const entries = await Promise.all(specs.map(async (spec) => [spec.key, await guardedLoad(() => spec.load(context))] as const));
   const results = new Map<DashboardMetricKey, DashboardLoadResult>(entries);
 
@@ -472,7 +500,7 @@ async function loadConsultations(context: DashboardLoadContext): Promise<Dashboa
   const href = "/admin/consultations?status=SCHEDULED&review=unreviewed";
   const scope = consultationScopeWhereForPrincipal(context.actor);
   const where: Prisma.ConsultationRequestWhereInput = {
-    AND: [scope, { status: "SCHEDULED", secretaryReviewedAt: null }]
+    AND: [scope, { status: "SCHEDULED", secretaryReviewedAt: null, outcomeStatus: "PENDING" }]
   };
   const [count, rows, activityRows] = await Promise.all([
     context.client.consultationRequest.count({ where }),
@@ -518,6 +546,19 @@ async function loadConsultations(context: DashboardLoadContext): Promise<Dashboa
       href: `/admin/consultations/${row.id}`
     }))
   };
+}
+
+async function loadConsultationOutcomeCount(
+  context: DashboardLoadContext,
+  view: Extract<ConsultationOutcomeView, "awaiting_result" | "missed">
+): Promise<DashboardDomainPayload> {
+  const where: Prisma.ConsultationRequestWhereInput = {
+    AND: [
+      consultationScopeWhereForPrincipal(context.actor),
+      consultationOutcomeViewWhere(view)
+    ]
+  };
+  return { count: await context.client.consultationRequest.count({ where }) };
 }
 
 async function loadContacts(context: DashboardLoadContext): Promise<DashboardDomainPayload> {
@@ -628,6 +669,15 @@ function appointmentHref(context: DashboardLoadContext) {
 
 function hasAnyPermission(actor: Principal, permissions: readonly PermissionKey[]) {
   return permissions.some((permission) => hasPermission(actor, permission));
+}
+
+function hasMetricPermissions(actor: Principal, spec: DashboardMetricSpec) {
+  if (spec.key === "consultations.awaiting_result" || spec.key === "consultations.missed") {
+    return canManageConsultationOutcome(actor);
+  }
+  return spec.requireAllPermissions
+    ? spec.permissions.every((permission) => hasPermission(actor, permission))
+    : hasAnyPermission(actor, spec.permissions);
 }
 
 function displayValue(text: string, dir: "auto" | "ltr" = "auto"): DashboardDisplayValue {

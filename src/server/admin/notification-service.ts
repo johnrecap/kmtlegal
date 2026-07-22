@@ -1,11 +1,16 @@
 import { Prisma, type NotificationType } from "@prisma/client";
 import { z } from "zod";
 import { canAccessAdminPath } from "@/lib/admin-route-policy";
-import { plan35NotificationUiCopy } from "@/lib/ui-copy";
+import { plan35NotificationUiCopy, plan36ConsultationOutcomeCopy } from "@/lib/ui-copy";
 import { canReadCase, hasPermission, ROLES, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
+import {
+  canManageConsultationOutcome,
+  consultationOutcomeViewWhere,
+  type ConsultationOutcomeValue
+} from "./consultation-outcome-policy";
 
 export const CONSULTATION_NOTIFICATION_RESOURCE_TYPE = "ConsultationRequest";
 
@@ -66,8 +71,8 @@ const consultationReviewSelect = Prisma.validator<Prisma.ConsultationRequestSele
   createdAt: true,
   appointments: {
     select: { startsAt: true },
-    where: { type: "CONSULTATION", status: "SCHEDULED" },
-    orderBy: { startsAt: "asc" },
+    where: { type: "CONSULTATION", caseId: null, status: "SCHEDULED" },
+    orderBy: [{ startsAt: "asc" }, { id: "asc" }],
     take: 1
   }
 });
@@ -81,6 +86,7 @@ export type GenericNotificationCenterItem = {
   kind: "generic";
   id: string;
   type: NotificationType;
+  resourceType?: string | null;
   title: string;
   body: string;
   href: string | null;
@@ -144,7 +150,8 @@ export function unreviewedConsultationWhere(actor: Principal): Prisma.Consultati
       scope,
       {
         status: "SCHEDULED",
-        secretaryReviewedAt: null
+        secretaryReviewedAt: null,
+        ...consultationOutcomeViewWhere("current")
       }
     ]
   };
@@ -316,6 +323,7 @@ export async function listAdminNotifications(input: {
       kind: "generic",
       id: notification.id,
       type: notification.type,
+      resourceType: notification.resourceType,
       title: notification.title,
       body: notification.body,
       href: await safeNotificationHref({ actor: input.actor, notification, client }),
@@ -372,10 +380,15 @@ export async function createConsultationReviewNotifications(input: {
   const client = input.client ?? prisma;
   const consultation = await client.consultationRequest.findUnique({
     where: { id: input.consultationId },
-    select: { id: true, fullName: true, status: true, secretaryReviewedAt: true }
+    select: { id: true, fullName: true, status: true, secretaryReviewedAt: true, outcomeStatus: true }
   });
 
-  if (!consultation || consultation.status !== "SCHEDULED" || consultation.secretaryReviewedAt) {
+  if (
+    !consultation ||
+    consultation.status !== "SCHEDULED" ||
+    consultation.secretaryReviewedAt ||
+    consultation.outcomeStatus !== "PENDING"
+  ) {
     return { created: 0 };
   }
 
@@ -433,4 +446,90 @@ export async function resolveConsultationNotifications(input: {
     },
     data: { readAt: new Date() }
   });
+}
+
+export async function syncConsultationOutcomeNotifications(input: {
+  consultationId: string;
+  outcomeStatus: ConsultationOutcomeValue;
+  client?: NotificationWriterClient;
+}) {
+  const client = input.client ?? prisma;
+  if (input.outcomeStatus !== "AWAITING_RESULT" && input.outcomeStatus !== "MISSED") {
+    const resolved = await resolveConsultationNotifications({
+      client,
+      consultationId: input.consultationId
+    });
+    return { createdOrUpdated: 0, resolved: resolved.count };
+  }
+
+  const candidates = await client.user.findMany({
+    where: {
+      status: "ACTIVE",
+      deletedAt: null,
+      role: { status: "ACTIVE" }
+    },
+    select: {
+      id: true,
+      role: {
+        select: {
+          name: true,
+          permissions: { select: { permission: { select: { key: true } } } }
+        }
+      }
+    }
+  });
+  const recipients = candidates.filter((candidate) => {
+    const principal = {
+      id: candidate.id,
+      roleName: candidate.role.name,
+      permissions: candidate.role.permissions.map(({ permission }) => permission.key)
+    };
+    return canManageConsultationOutcome(principal) && hasPermission(principal, "notification.read.self");
+  });
+
+  const copy = input.outcomeStatus === "MISSED"
+    ? {
+        title: plan36ConsultationOutcomeCopy.notifications.missedTitle,
+        body: plan36ConsultationOutcomeCopy.notifications.missedBody
+      }
+    : {
+        title: plan36ConsultationOutcomeCopy.notifications.awaitingTitle,
+        body: plan36ConsultationOutcomeCopy.notifications.awaitingBody
+      };
+  const now = new Date();
+
+  await Promise.all(
+    recipients.map((recipient) =>
+      client.notification.upsert({
+        where: {
+          userId_type_resourceType_resourceId: {
+            userId: recipient.id,
+            type: "CONSULTATION",
+            resourceType: CONSULTATION_NOTIFICATION_RESOURCE_TYPE,
+            resourceId: input.consultationId
+          }
+        },
+        update: {
+          title: copy.title,
+          body: copy.body,
+          actionUrl: `/admin/consultations/${input.consultationId}`,
+          readAt: null,
+          createdAt: now
+        },
+        create: {
+          userId: recipient.id,
+          type: "CONSULTATION",
+          title: copy.title,
+          body: copy.body,
+          resourceType: CONSULTATION_NOTIFICATION_RESOURCE_TYPE,
+          resourceId: input.consultationId,
+          actionUrl: `/admin/consultations/${input.consultationId}`,
+          readAt: null,
+          createdAt: now
+        }
+      })
+    )
+  );
+
+  return { createdOrUpdated: recipients.length, resolved: 0 };
 }

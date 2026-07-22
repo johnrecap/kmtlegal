@@ -7,8 +7,8 @@ import {
   AppointmentRescheduleForm,
   CalendarAppointmentForm
 } from "@/features/admin/cases/case-action-forms";
-import { appointmentStatusLabels, appointmentTypeLabels, formatDate, formatDateTime, labelFrom, modeLabels } from "@/lib/legal-format";
-import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
+import { appointmentStatusLabels, appointmentTypeLabels, formatCairoDateInput, formatDate, formatDateTime, labelFrom, modeLabels } from "@/lib/legal-format";
+import { plan35AdminListAccessibilityCopy, plan36ConsultationOutcomeCopy } from "@/lib/ui-copy";
 import {
   getAdminCaseFilterOptions,
   canManageCalendarAppointment,
@@ -17,6 +17,7 @@ import {
 } from "@/server/admin/case-operations-service";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { ApiError } from "@/server/http/errors";
+import { canUseGenericCalendarReschedule } from "@/server/admin/calendar-service";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -40,10 +41,6 @@ function flattenSearchParams(searchParams: SearchParams) {
   );
 }
 
-function dateInput(value: Date | string) {
-  return new Date(value).toISOString().slice(0, 10);
-}
-
 function statusTone(status: string) {
   if (status === "COMPLETED") {
     return "active" as const;
@@ -51,6 +48,13 @@ function statusTone(status: string) {
   if (status === "CANCELLED" || status === "NO_SHOW") {
     return "closed" as const;
   }
+  return "pending" as const;
+}
+
+function outcomeTone(status: string) {
+  if (status === "SUCCESSFUL") return "active" as const;
+  if (status === "MISSED") return "danger" as const;
+  if (status === "NO_SHOW" || status === "CANCELLED") return "closed" as const;
   return "pending" as const;
 }
 
@@ -73,7 +77,7 @@ function calendarHref(filters: {
 
 function groupAppointmentsByDay(appointments: CalendarAppointment[]) {
   return appointments.reduce<Array<{ key: string; label: string; items: CalendarAppointment[] }>>((groups, appointment) => {
-    const key = dateInput(appointment.startsAt);
+    const key = formatCairoDateInput(appointment.startsAt);
     const existing = groups.find((group) => group.key === key);
     if (existing) {
       existing.items.push(appointment);
@@ -127,8 +131,8 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
         <div className="space-y-5">
           <form action="/admin/calendar" method="get">
             <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.calendar.filters}>
-              <TextInput className="min-w-40" defaultValue={dateInput(result.from)} label="من" name="from" type="date" />
-              <TextInput className="min-w-40" defaultValue={dateInput(result.to)} label="إلى" name="to" type="date" />
+              <TextInput className="min-w-40" defaultValue={formatCairoDateInput(result.from)} label="من" name="from" type="date" />
+              <TextInput className="min-w-40" defaultValue={formatCairoDateInput(result.to)} label="إلى" name="to" type="date" />
               <Select className="min-w-44" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
                 <option value="">كل الحالات</option>
                 {appointmentStatusOptions.map((status) => (
@@ -189,7 +193,13 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                                 {formatDateTime(appointment.startsAt)} · {labelFrom(appointmentTypeLabels, appointment.type)} · {labelFrom(modeLabels, appointment.mode)}
                               </CardDescription>
                             </div>
-                            <Badge tone={statusTone(appointment.status)}>{labelFrom(appointmentStatusLabels, appointment.status)}</Badge>
+                            {appointment.effectiveConsultationOutcome && appointment.effectiveConsultationOutcome !== "PENDING" ? (
+                              <Badge tone={outcomeTone(appointment.effectiveConsultationOutcome)}>
+                                {plan36ConsultationOutcomeCopy.statuses[appointment.effectiveConsultationOutcome]}
+                              </Badge>
+                            ) : (
+                              <Badge tone={statusTone(appointment.status)}>{labelFrom(appointmentStatusLabels, appointment.status)}</Badge>
+                            )}
                           </div>
                         </CardHeader>
                         <CardContent>
@@ -210,7 +220,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                             </p>
                             <p>المكان: {appointment.location ?? "غير محدد"}</p>
                           </div>
-                          {canManageCalendarAppointment(guard.context.principal, appointment) ? (
+                          {canManageCalendarAppointment(guard.context.principal, appointment) && canUseGenericCalendarReschedule(appointment) ? (
                             <AppointmentRescheduleForm
                               appointmentId={appointment.id}
                               location={appointment.location}
@@ -218,6 +228,10 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                               startsAt={appointment.startsAt}
                               status={appointment.status}
                             />
+                          ) : canManageCalendarAppointment(guard.context.principal, appointment) && appointment.effectiveConsultationOutcome ? (
+                            <p className="mt-4 text-sm text-kmt-muted">
+                              {plan36ConsultationOutcomeCopy.calendar.genericRescheduleBlocked}
+                            </p>
                           ) : null}
                         </CardContent>
                       </Card>

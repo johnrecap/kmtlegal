@@ -1,5 +1,53 @@
 # Server Commands
 
+## PLAN-36 consultation outcome deployment
+
+The aaPanel/PM2 update script now performs the PLAN-36 database and worker steps in this order:
+
+1. Build and predeploy validation.
+2. Create a timestamped PostgreSQL custom-format backup under `DATABASE_BACKUP_DIR` (default `/www/backup/kmtlegal`), verify that it is non-empty, and verify it with `pg_restore --list`.
+3. Apply the additive Prisma migration.
+4. Run `npm run jobs:payments` once so historical consultation outcomes are reconciled before either PM2 process restarts.
+5. Restart the existing Next.js and `kmtlegal-payment-maintenance` process identities.
+6. Wait at least 65 seconds and fail deployment if either the Next.js application or maintenance process leaves `online` state, fails local health, or its restart counter increases after the intentional start/restart baseline.
+
+The backup directory must remain outside `/www/wwwroot/kmtlegal`. The recurring process uses a 60-second interval by default; do not create a second consultation worker.
+
+Local development does not require a database for focused tests, typecheck, lint, Prisma validation/generation, or the permitted no-DB build. Database migration and reconciliation acceptance must run against staging or a disposable PostgreSQL database. Do not create test fixtures in production without separate approval.
+
+### Manual npm `init.module` warning repair
+
+The deploy script intentionally does not edit user or global npm configuration. If npm prints an unknown `init.module` configuration warning, identify the owning file and back it up before changing it:
+
+```bash
+npm config get userconfig
+npm config get globalconfig
+grep -n '^init\.module' "$(npm config get userconfig)" 2>/dev/null || true
+grep -n '^init\.module' "$(npm config get globalconfig)" 2>/dev/null || true
+```
+
+After confirming which file contains the obsolete key, copy that exact file to a timestamped backup, then remove only `init.module` with the matching npm configuration scope:
+
+```bash
+cp --preserve=all "$(npm config get userconfig)" "$(npm config get userconfig).backup-$(date -u +%Y%m%dT%H%M%SZ)"
+npm config delete init.module --location=user
+```
+
+For a global config, use the same backup discipline and `npm config delete init.module --location=global` with the privileges required by that file. Re-run `npm config list` and the affected npm command to confirm the warning is gone.
+
+### Manual Nginx HTTP/2 syntax repair
+
+The deploy script does not rewrite deprecated `listen ... http2` directives. In aaPanel, first identify the exact vhost file, make a timestamped backup outside the Git checkout, then manually replace each relevant TLS listener such as `listen 443 ssl http2;` with `listen 443 ssl;` and add `http2 on;` once in the same server block. Apply the equivalent change to the IPv6 listener when present.
+
+Always validate before reload:
+
+```bash
+nginx -t
+systemctl reload nginx
+```
+
+If `nginx -t` fails, restore the saved vhost backup and validate again before any reload. Do not let application deployment automation make this server-wide syntax change.
+
 This file is the project reference for local Git commands, server pull/deploy commands, and runtime commands. Use it when handing off a pushed change.
 
 ## Current Git Targets

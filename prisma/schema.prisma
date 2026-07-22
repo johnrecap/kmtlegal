@@ -42,6 +42,15 @@ enum ConsultationStatus {
   CONVERTED
 }
 
+enum ConsultationOutcomeStatus {
+  PENDING
+  AWAITING_RESULT
+  MISSED
+  SUCCESSFUL
+  NO_SHOW
+  CANCELLED
+}
+
 enum Urgency {
   LOW
   NORMAL
@@ -341,6 +350,7 @@ model User {
   assignedClients         Client[]                  @relation("AssignedLawyerClients")
   assignedConsultations   ConsultationRequest[]     @relation("AssignedLawyerConsultations")
   secretaryReviewedConsultations ConsultationRequest[] @relation("SecretaryReviewedConsultations")
+  consultationOutcomeChanges ConsultationRequest[]  @relation("ConsultationOutcomeActor")
   lawyerAppointments      Appointment[]             @relation("AppointmentLawyer")
   assignedCases           LegalCase[]               @relation("AssignedCaseLawyer")
   createdCaseSessions     CaseSession[]             @relation("CaseSessionCreator")
@@ -489,6 +499,13 @@ model ConsultationRequest {
   secretaryReviewedById String?         @db.Uuid
   secretaryReviewedBy User?             @relation("SecretaryReviewedConsultations", fields: [secretaryReviewedById], references: [id], onDelete: SetNull)
   secretaryReviewNote String?
+  outcomeStatus      ConsultationOutcomeStatus @default(PENDING)
+  outcomeAt          DateTime?
+  outcomeById        String?            @db.Uuid
+  outcomeBy          User?              @relation("ConsultationOutcomeActor", fields: [outcomeById], references: [id], onDelete: SetNull)
+  outcomeReasonCode  String?
+  outcomeNote        String?
+  outcomeVersion     Int                @default(0)
   convertedCase     LegalCase?
   appointments      Appointment[]
   payments          Payment[]
@@ -502,6 +519,8 @@ model ConsultationRequest {
   @@index([assignedLawyerId])
   @@index([secretaryReviewedAt])
   @@index([secretaryReviewedById])
+  @@index([outcomeStatus, createdAt])
+  @@index([outcomeById])
   @@index([createdAt])
   @@index([serviceCategory])
   @@map("consultation_requests")
@@ -533,6 +552,8 @@ model Appointment {
 
   @@index([clientId])
   @@index([lawyerId])
+  @@index([consultationRequestId, type, caseId, startsAt])
+  @@index([type, caseId, endsAt, consultationRequestId])
   @@index([caseId])
   @@index([startsAt])
   @@index([status])

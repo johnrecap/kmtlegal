@@ -1,6 +1,6 @@
 # KMT Legal Feature Inventory
 
-Last updated: 2026-07-07
+Last updated: 2026-07-22
 
 ## Public Site
 
@@ -21,6 +21,10 @@ Last updated: 2026-07-07
 - Temporary reservation: appointment status `RESERVED` while payment is pending; confirmed appointment uses `SCHEDULED` only after trusted payment.
 - Confirmed consultation bookings create secretary review alerts after free chat confirmation or after paid webhook confirmation.
 - Successful confirmed consultation bookings expose a signed, time-limited client account setup link so the client can choose an email/password and see the request in `/client`.
+- The original booking uses its earliest case-less `CONSULTATION` appointment as the canonical primary appointment; later case follow-ups do not change the booking outcome.
+- At or after the primary appointment end, the 60-second maintenance cycle classifies an unassigned and unreviewed request as `MISSED`, otherwise as `AWAITING_RESULT`.
+- No consultation becomes successful automatically. Secretary, Office Admin, or Super Admin users with both required permissions record `SUCCESSFUL`, `NO_SHOW`, or `CANCELLED` manually, with optimistic version checks and audit history.
+- Missed requests require the explicit audited reopen-and-reschedule flow with an active lawyer, future Cairo time, and lawyer/client conflict checks before returning to `PENDING`.
 
 ## AI
 
@@ -41,6 +45,8 @@ Last updated: 2026-07-07
 
 - Admin dashboard, CRM clients, consultations, cases, calendar, sessions, tasks, documents, users, settings, audit log, messages, finance, and reports.
 - Admin consultation queue includes secretary review status, unreviewed/unassigned filters, post-booking review action, and next-request navigation.
+- Admin consultation operations include seven shareable RTL outcome tabs with counts, primary start/end time, effective status, responsive cards, manual result/correction controls, and missed-request reopen recovery.
+- Dashboard cards link directly to `AWAITING_RESULT` and `MISSED` queues; calendar and notification surfaces use the same canonical consultation outcome state.
 - Dashboard shell includes consultation review notifications for staff with `consultation.review.any`.
 - Finance now includes manual invoices plus gateway operations visibility: pricing rules, payment attempts, webhook events, operational filters, replay, CSV export, and visible manual-review issue labels.
 - Finance settings include the active consultation booking mode plus active payment provider readiness, without storing provider or AI secrets.
@@ -73,3 +79,10 @@ Last updated: 2026-07-07
 - Payment events added for checkout creation and webhook success/failure.
 - Request IDs and audit metadata propagate across critical backend operations.
 - Payment maintenance can optionally send safe failure alerts through `PAYMENT_MAINTENANCE_ALERT_WEBHOOK_URL`.
+- The existing payment-maintenance PM2 process also performs idempotent consultation outcome reconciliation every 60 seconds and emits privacy-safe aggregate counts without client text or identity.
+
+## Deployment And Operations
+
+- The aaPanel/PM2 update path creates and validates a custom-format PostgreSQL backup outside the Git checkout before migrations.
+- After migrations it runs one reconciliation cycle before restarting the app/maintenance process, then verifies the maintenance process stays online with an unchanged restart counter for longer than one full cycle.
+- Global npm configuration and deprecated Nginx HTTP/2 directive remediation remain documented manual operations with backups and syntax checks; deploy automation does not silently edit them.

@@ -12,7 +12,7 @@ import {
   taskStatusLabels
 } from "@/lib/legal-format";
 import { articleStatusLabels, caseStudyStatusLabels, socialDraftStatusLabels, socialPlatformLabels } from "@/lib/legal-content";
-import { roleDisplayLabel } from "@/lib/ui-copy";
+import { consultationOutcomeSourceLabel, roleDisplayLabel } from "@/lib/ui-copy";
 
 export type AuditSeverity = "عادي" | "مهم" | "حساس";
 export type AuditCategory = "الأمان" | "العملاء" | "القضايا" | "المواعيد" | "المستندات" | "المهام" | "المالية" | "المحتوى" | "الإدارة" | "النظام";
@@ -27,7 +27,18 @@ export const PLAN35_AUDIT_ACTIONS = {
   contactArchive: "contact.message_archive"
 } as const;
 
+export const PLAN36_AUDIT_ACTIONS = {
+  awaitingResult: "consultation.outcome.awaiting_result",
+  missed: "consultation.outcome.missed",
+  confirmed: "consultation.outcome.confirmed",
+  corrected: "consultation.outcome.corrected",
+  reopened: "consultation.outcome.reopened",
+  rejected: "consultation.reject",
+  backfilled: "consultation.outcome.backfilled"
+} as const;
+
 export type Plan35AuditAction = (typeof PLAN35_AUDIT_ACTIONS)[keyof typeof PLAN35_AUDIT_ACTIONS];
+export type Plan36AuditAction = (typeof PLAN36_AUDIT_ACTIONS)[keyof typeof PLAN36_AUDIT_ACTIONS];
 
 export const PLAN35_AUDIT_SAFE_METADATA_KEYS = {
   [PLAN35_AUDIT_ACTIONS.appointmentCreate]: ["startsAt", "status", "type", "mode", "reasonCode"],
@@ -39,11 +50,36 @@ export const PLAN35_AUDIT_SAFE_METADATA_KEYS = {
   [PLAN35_AUDIT_ACTIONS.contactArchive]: ["previousStatus", "status", "topic", "reasonCode"]
 } as const satisfies Record<Plan35AuditAction, readonly string[]>;
 
+const plan36AuditSafeKeys = [
+  "fromOutcome",
+  "toOutcome",
+  "reasonCode",
+  "outcomeVersion",
+  "source",
+  "primaryAppointmentId",
+  "assignedLawyerId"
+] as const;
+
+export const PLAN36_AUDIT_SAFE_METADATA_KEYS = {
+  [PLAN36_AUDIT_ACTIONS.awaitingResult]: plan36AuditSafeKeys,
+  [PLAN36_AUDIT_ACTIONS.missed]: plan36AuditSafeKeys,
+  [PLAN36_AUDIT_ACTIONS.confirmed]: plan36AuditSafeKeys,
+  [PLAN36_AUDIT_ACTIONS.corrected]: plan36AuditSafeKeys,
+  [PLAN36_AUDIT_ACTIONS.reopened]: plan36AuditSafeKeys,
+  [PLAN36_AUDIT_ACTIONS.rejected]: plan36AuditSafeKeys,
+  [PLAN36_AUDIT_ACTIONS.backfilled]: plan36AuditSafeKeys
+} as const satisfies Record<Plan36AuditAction, readonly string[]>;
+
 const plan35AuditActions = new Set<Plan35AuditAction>(Object.values(PLAN35_AUDIT_ACTIONS));
+const plan36AuditActions = new Set<Plan36AuditAction>(Object.values(PLAN36_AUDIT_ACTIONS));
 const safeCaseCoreFields = new Set(["title", "caseType", "courtName", "externalCaseNumber", "priority", "summary", "assignedLawyerId"]);
 
 export function isPlan35AuditAction(action: string): action is Plan35AuditAction {
   return plan35AuditActions.has(action as Plan35AuditAction);
+}
+
+export function isPlan36AuditAction(action: string): action is Plan36AuditAction {
+  return plan36AuditActions.has(action as Plan36AuditAction);
 }
 
 export function plan35SafeAuditMetadata(action: Plan35AuditAction, metadata: Record<string, unknown>) {
@@ -63,10 +99,22 @@ export function plan35SafeAuditMetadata(action: Plan35AuditAction, metadata: Rec
   return safe;
 }
 
+export function plan36SafeAuditMetadata(action: Plan36AuditAction, metadata: Record<string, unknown>) {
+  const safe: Record<string, unknown> = {};
+  for (const key of PLAN36_AUDIT_SAFE_METADATA_KEYS[action]) {
+    const value = metadata[key];
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      safe[key] = value;
+    }
+  }
+  return safe;
+}
+
 export function plan35AuditMetadataForStorage(action: string, metadata: unknown) {
-  return isPlan35AuditAction(action)
-    ? plan35SafeAuditMetadata(action, metadataRecord(metadata))
-    : metadata;
+  const record = metadataRecord(metadata);
+  if (isPlan35AuditAction(action)) return plan35SafeAuditMetadata(action, record);
+  if (isPlan36AuditAction(action)) return plan36SafeAuditMetadata(action, record);
+  return metadata;
 }
 
 type AuditActor = {
@@ -220,6 +268,12 @@ const auditEventDefinitions: Record<string, AuditEventDefinition> = {
   "consultation.create_public": { label: "تم استقبال طلب استشارة", category: "العملاء", severity: "عادي", summary: () => "تم استقبال طلب استشارة من الموقع." },
   "consultation.assistant_book": { label: "تم حجز استشارة عبر المساعد", category: "المواعيد", severity: "مهم", summary: ({ metadata }) => withDateSummary("تم حجز موعد استشارة عبر المساعد", metadata.startsAt) },
   "consultation.reject": { label: "تم رفض استشارة", category: "العملاء", severity: "مهم", summary: () => "تم رفض طلب استشارة بعد المراجعة." },
+  [PLAN36_AUDIT_ACTIONS.awaitingResult]: { label: "استشارة بانتظار النتيجة", category: "المواعيد", severity: "مهم", summary: () => "انتهى موعد الاستشارة وأصبحت النتيجة بانتظار التأكيد." },
+  [PLAN36_AUDIT_ACTIONS.missed]: { label: "طلب استشارة فائت", category: "المواعيد", severity: "مهم", summary: () => "انتهى موعد طلب الاستشارة دون إسناد أو مراجعة." },
+  [PLAN36_AUDIT_ACTIONS.confirmed]: { label: "تم تأكيد نتيجة استشارة", category: "المواعيد", severity: "مهم", summary: () => "تم تأكيد النتيجة النهائية للاستشارة." },
+  [PLAN36_AUDIT_ACTIONS.corrected]: { label: "تم تصحيح نتيجة استشارة", category: "المواعيد", severity: "حساس", summary: () => "تم تصحيح النتيجة النهائية مع الاحتفاظ بالسجل السابق." },
+  [PLAN36_AUDIT_ACTIONS.reopened]: { label: "تمت إعادة فتح طلب فائت", category: "المواعيد", severity: "مهم", summary: () => "تمت إعادة فتح الطلب الفائت وجدولة موعد جديد." },
+  [PLAN36_AUDIT_ACTIONS.backfilled]: { label: "تمت مصالحة نتيجة استشارة", category: "النظام", severity: "عادي", summary: () => "تمت مطابقة نتيجة تاريخية أثناء المصالحة." },
 
   "content.article_create": { label: "تم إنشاء مقال", category: "المحتوى", severity: "عادي", summary: () => "تم إنشاء مقال جديد." },
   "content.article_update": { label: "تم تعديل مقال", category: "المحتوى", severity: "عادي", summary: () => "تم تعديل مقال." },
@@ -256,7 +310,9 @@ export function toAdminAuditLogDto(row: AuditLogPresentationRow): AdminAuditLogD
   const storedMetadata = metadataRecord(row.metadata);
   const metadata = isPlan35AuditAction(row.action)
     ? plan35SafeAuditMetadata(row.action, storedMetadata)
-    : storedMetadata;
+    : isPlan36AuditAction(row.action)
+      ? plan36SafeAuditMetadata(row.action, storedMetadata)
+      : storedMetadata;
   const resourceLabel = auditResourceLabel(row.resourceType);
   const definition = auditEventDefinitions[row.action] ?? fallbackEventDefinition(row.action);
   const summary = definition.summary?.({ metadata, resourceLabel }) ?? `${definition.label} على ${resourceLabel}.`;
@@ -277,7 +333,7 @@ export function toAdminAuditLogDto(row: AuditLogPresentationRow): AdminAuditLogD
       id: row.resourceId ?? null
     },
     summary,
-    details: auditDetails(row.resourceType, metadata),
+    details: auditDetails(row.action, row.resourceType, metadata),
     technical: {
       action: row.action,
       resourceType: row.resourceType,
@@ -317,12 +373,18 @@ function metadataRecord(metadata: unknown): Record<string, unknown> {
   return metadata && typeof metadata === "object" && !Array.isArray(metadata) ? (metadata as Record<string, unknown>) : {};
 }
 
-function auditDetails(resourceType: string, metadata: Record<string, unknown>) {
+function auditDetails(action: string, resourceType: string, metadata: Record<string, unknown>) {
   const details: Array<{ label: string; value: string }> = [];
   addDetail(details, "رقم الفاتورة", stringValue(metadata.invoiceNumber));
   addDetail(details, "القيمة", moneyValue(metadata.amount, metadata.currency));
   addStatusDetail(details, resourceType, metadata);
-  addDetail(details, "المصدر", stringValue(metadata.source));
+  addDetail(
+    details,
+    "المصدر",
+    isPlan36AuditAction(action)
+      ? consultationOutcomeSourceLabel(stringValue(metadata.source))
+      : stringValue(metadata.source)
+  );
   addDetail(details, "الموضوع", contactTopicValue(metadata.topic));
   addDetail(details, "الإعداد", settingValue(metadata.key));
   addDetail(details, "طريقة التحقق", methodValue(metadata.method));

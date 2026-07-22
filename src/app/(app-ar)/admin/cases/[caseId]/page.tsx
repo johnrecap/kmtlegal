@@ -4,7 +4,7 @@ import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, MetricCard, StateBlock } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { plan35ManualCaseUiCopy as manualCaseCopy } from "@/lib/ui-copy";
+import { adminCurrentCapabilityCopy, plan35ManualCaseUiCopy as manualCaseCopy } from "@/lib/ui-copy";
 import {
   appointmentStatusLabels,
   appointmentTypeLabels,
@@ -231,8 +231,8 @@ function OverviewTab({
       </Card>
 
       <StateBlock
-        title="ما الذي لم يتم تضمينه هنا؟"
-        description="الفواتير والمدفوعات تأتي في PLAN-19. المهام والمستندات الداخلية أصبحت تبويبات فعالة داخل ملف القضية."
+        title={adminCurrentCapabilityCopy.caseDetailScopeTitle}
+        description={adminCurrentCapabilityCopy.caseDetailScopeDescription}
       />
     </div>
   );

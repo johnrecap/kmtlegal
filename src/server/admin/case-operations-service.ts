@@ -1,6 +1,11 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import {
+  addCairoDateInputDays,
+  cairoLocalDateTimeToIso,
+  formatCairoDateInput
+} from "@/lib/legal-format";
+import {
   APPOINTMENT_TRANSACTION_MODES,
   assertNoAppointmentConflict,
   runAppointmentConflictTransaction
@@ -12,6 +17,14 @@ import { ApiError } from "@/server/http/errors";
 import { toPagination } from "@/server/http/pagination";
 import { captureAnalyticsEventBestEffort } from "@/server/observability/analytics-service";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
+import {
+  canUseGenericCalendarReschedule,
+  effectiveConsultationOutcome
+} from "./calendar-service";
+import {
+  consultationReopenRequiredError,
+  consultationStateChangedError
+} from "./consultation-outcome-service";
 
 const caseStatusSchema = z.enum(["NEW", "UNDER_REVIEW", "ACTIVE", "AWAITING_JUDGMENT", "COMPLETED", "CLOSED", "ARCHIVED"]);
 const openCaseStatusValues = ["NEW", "UNDER_REVIEW", "ACTIVE", "AWAITING_JUDGMENT"] as const;
@@ -213,16 +226,25 @@ export function appointmentScopeWhereForPrincipal(actor: Principal): Prisma.Appo
   throw new ApiError(403, "PERMISSION_DENIED", "Appointment calendar permission is required.");
 }
 
-function calendarWindow(filters: AdminCalendarQuery) {
-  const now = new Date();
-  const from = filters.from ? dateFromActionInput(filters.from, "from") : new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const to = filters.to ? dateFromActionInput(filters.to, "to") : new Date(from.getTime() + 30 * 24 * 60 * 60 * 1000);
+export function calendarWindow(filters: AdminCalendarQuery, now = new Date()) {
+  const fromInput = filters.from || formatCairoDateInput(now);
+  const toInput = filters.to || addCairoDateInputDays(fromInput, 30);
+  const from = cairoCalendarBoundary(fromInput, "from");
+  const to = cairoCalendarBoundary(toInput, "to");
 
   if (to.getTime() <= from.getTime()) {
     throw new ApiError(400, "VALIDATION_ERROR", "Calendar end date must be after start date.");
   }
 
   return { from, to };
+}
+
+function cairoCalendarBoundary(value: string | null, fieldName: string) {
+  const iso = value ? cairoLocalDateTimeToIso(`${value}T00:00`) : null;
+  if (!iso) {
+    throw new ApiError(400, "VALIDATION_ERROR", `${fieldName} is invalid.`);
+  }
+  return new Date(iso);
 }
 
 function calendarWhere(actor: Principal, filters: AdminCalendarQuery): Prisma.AppointmentWhereInput {
@@ -525,16 +547,37 @@ export async function listAdminCalendarAppointments(input: { actor: Principal; q
 
   const appointments = await prisma.appointment.findMany({
     where,
-    include: {
+    select: {
+      id: true,
+      clientId: true,
+      lawyerId: true,
+      caseId: true,
+      consultationRequestId: true,
+      title: true,
+      type: true,
+      mode: true,
+      location: true,
+      startsAt: true,
+      endsAt: true,
+      status: true,
       client: { select: { id: true, fullName: true, phone: true } },
       lawyer: { select: { id: true, name: true, email: true } },
-      case: { select: { id: true, internalFileNumber: true, title: true, assignedLawyerId: true, deletedAt: true } }
+      case: { select: { id: true, internalFileNumber: true, title: true, assignedLawyerId: true, deletedAt: true } },
+      consultationRequest: { select: { outcomeStatus: true } }
     },
     orderBy: { startsAt: "asc" },
     take: filters.pageSize
   });
 
-  return { items: appointments, filters, from: window.from, to: window.to };
+  return {
+    items: appointments.map((appointment) => ({
+      ...appointment,
+      effectiveConsultationOutcome: effectiveConsultationOutcome(appointment)
+    })),
+    filters,
+    from: window.from,
+    to: window.to
+  };
 }
 
 export async function createAdminCalendarAppointment(input: { actor: Principal; body: unknown; request?: Request }) {
@@ -615,7 +658,14 @@ export async function rescheduleAdminCalendarAppointment(input: {
       const existing = await tx.appointment.findUnique({
         where: { id: appointmentId },
         include: {
-          case: { select: { id: true, assignedLawyerId: true, deletedAt: true } }
+          case: { select: { id: true, assignedLawyerId: true, deletedAt: true } },
+          consultationRequest: {
+            select: {
+              outcomeStatus: true,
+              assignedLawyerId: true,
+              secretaryReviewedAt: true
+            }
+          }
         }
       });
 
@@ -627,6 +677,22 @@ export async function rescheduleAdminCalendarAppointment(input: {
       }
       if (existing.status === "CANCELLED" || existing.status === "COMPLETED" || existing.status === "NO_SHOW") {
         throw new ApiError(409, "CONFLICT", "Closed appointments cannot be rescheduled.");
+      }
+      if (!canUseGenericCalendarReschedule(existing)) {
+        const pendingEndedWithoutHandling =
+          existing.type === "CONSULTATION" &&
+          existing.caseId === null &&
+          existing.consultationRequest?.outcomeStatus === "PENDING" &&
+          existing.endsAt.getTime() <= Date.now() &&
+          !existing.consultationRequest.assignedLawyerId &&
+          !existing.consultationRequest.secretaryReviewedAt;
+        if (
+          existing.consultationRequest?.outcomeStatus === "MISSED" ||
+          pendingEndedWithoutHandling
+        ) {
+          throw consultationReopenRequiredError();
+        }
+        throw consultationStateChangedError();
       }
 
       const lawyerId = existing.lawyerId ?? existing.case?.assignedLawyerId;

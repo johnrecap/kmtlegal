@@ -112,6 +112,8 @@ describe("route manifest contract", () => {
       ["/api/admin/notifications", "/api/admin/notifications"],
       ["/api/admin/notifications/[notificationId]/read", "/api/admin/notifications/{notificationId}/read"],
       ["/api/admin/consultations/[consultationId]/review", "/api/admin/consultations/{id}/review"],
+      ["/api/admin/consultations/[consultationId]/outcome", "/api/admin/consultations/{id}/outcome"],
+      ["/api/admin/consultations/[consultationId]/reopen", "/api/admin/consultations/{id}/reopen"],
       ["/api/admin/consultation-availability", "/api/admin/consultation-availability"],
       ["/api/client/assistant", "/api/client/assistant"],
       ["/api/client/messages", "/api/client/messages"],

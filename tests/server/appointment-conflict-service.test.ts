@@ -8,6 +8,7 @@ import {
   assertNoAppointmentConflict,
   runAppointmentConflictTransaction
 } from "@/server/appointments/appointment-conflict-service";
+import { ApiError } from "@/server/http/errors";
 
 const startsAt = new Date("2026-07-22T10:00:00.000Z");
 const endsAt = new Date("2026-07-22T11:00:00.000Z");
@@ -131,6 +132,29 @@ describe("appointment conflict service", () => {
     await expect(
       runAppointmentConflictTransaction({ mode, operation, client: { $transaction: transaction } as never })
     ).rejects.toMatchObject({ status: 409, code: "APPOINTMENT_CONFLICT" });
+    expect(operation).toHaveBeenCalledOnce();
+    expect(transaction).toHaveBeenCalledOnce();
+  });
+
+  it("lets state-only transactions map a serialization race without replaying the callback", async () => {
+    const operation = vi.fn(async () => "uncommitted");
+    const transaction = vi.fn(async (callback: (client: never) => Promise<string>) => {
+      await callback({} as never);
+      throw serializationConflict();
+    });
+
+    await expect(
+      runAppointmentConflictTransaction({
+        mode: APPOINTMENT_TRANSACTION_MODES.existingUpdateSingleAttempt,
+        operation,
+        client: { $transaction: transaction } as never,
+        serializationConflictError: () => new ApiError(
+          409,
+          "CONSULTATION_STATE_CHANGED",
+          "The consultation changed after this view was loaded. Refresh and try again."
+        )
+      })
+    ).rejects.toMatchObject({ status: 409, code: "CONSULTATION_STATE_CHANGED" });
     expect(operation).toHaveBeenCalledOnce();
     expect(transaction).toHaveBeenCalledOnce();
   });

@@ -428,6 +428,27 @@
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
     },
     {
+      "path": "src/features/admin/consultations/consultation-outcome-form.tsx",
+      "contracts": [
+        "InlineFeedback",
+        "Select",
+        "Textarea"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
+      "path": "src/features/admin/consultations/consultation-reopen-form.tsx",
+      "contracts": [
+        "InlineFeedback",
+        "Select",
+        "Textarea",
+        "TextInput"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
+    },
+    {
       "path": "src/features/admin/contact-messages/contact-message-inbox.tsx",
       "contracts": [
         "Button",

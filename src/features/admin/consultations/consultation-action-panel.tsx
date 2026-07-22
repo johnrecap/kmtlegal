@@ -3,6 +3,13 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, InlineFeedback, Select, Textarea, TextInput } from "@/components/ui";
+import {
+  commonUiCopy,
+  localizeApiMessage,
+  plan36ConsultationOutcomeCopy as outcomeCopy
+} from "@/lib/ui-copy";
+import { ConsultationOutcomeForm } from "./consultation-outcome-form";
+import { ConsultationReopenForm } from "./consultation-reopen-form";
 
 type LawyerOption = {
   id: string;
@@ -12,6 +19,7 @@ type LawyerOption = {
 
 type ApiErrorBody = {
   error?: {
+    code?: string;
     message?: string;
   };
 };
@@ -29,7 +37,9 @@ type ActionMessage = {
 
 async function readMessage(response: Response) {
   const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
-  return body.error?.message ?? "تعذر تنفيذ الإجراء الآن.";
+  return body.error?.message
+    ? localizeApiMessage(body.error.message, "ar")
+    : outcomeCopy.feedback.failed;
 }
 
 export function ConsultationActionPanel({
@@ -39,6 +49,11 @@ export function ConsultationActionPanel({
   secretaryReviewedAt,
   secretaryReviewedByName,
   secretaryReviewNote,
+  outcomeStatus,
+  outcomeVersion,
+  canAssign: canAssignConsultation,
+  canManageOutcome,
+  canReopen,
   lawyers
 }: {
   consultationId: string;
@@ -47,13 +62,24 @@ export function ConsultationActionPanel({
   secretaryReviewedAt?: string | null;
   secretaryReviewedByName?: string | null;
   secretaryReviewNote?: string | null;
+  outcomeStatus: string;
+  outcomeVersion: number;
+  canAssign: boolean;
+  canManageOutcome: boolean;
+  canReopen: boolean;
   lawyers: LawyerOption[];
 }) {
   const router = useRouter();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const isClosed = status === "CONVERTED" || status === "REJECTED";
-  const canReview = !isClosed && status !== "PAYMENT_PENDING";
+  const isFinalOutcome = outcomeStatus === "SUCCESSFUL" || outcomeStatus === "NO_SHOW" || outcomeStatus === "CANCELLED";
+  const lifecycleEditable = outcomeStatus === "PENDING" || outcomeStatus === "AWAITING_RESULT";
+  const canReview = !isClosed && status !== "PAYMENT_PENDING" && lifecycleEditable;
+  const canAssign = canAssignConsultation && !isClosed && lifecycleEditable;
+  const canConvert = !isClosed && (outcomeStatus === "AWAITING_RESULT" || outcomeStatus === "SUCCESSFUL");
+  const canReject = canManageOutcome && !isClosed && lifecycleEditable;
+  const canRecordOutcome = canManageOutcome && (outcomeStatus === "AWAITING_RESULT" || isFinalOutcome);
 
   async function postJson(path: string, payload: unknown, options: { goToNextReview?: boolean } = {}) {
     setIsBusy(true);
@@ -72,14 +98,14 @@ export function ConsultationActionPanel({
       }
 
       const body = (await response.json().catch(() => ({}))) as ApiSuccessBody;
-      setMessage({ tone: "success", text: "تم حفظ الإجراء بنجاح." });
+      setMessage({ tone: "success", text: commonUiCopy.saved });
       if (options.goToNextReview && body.data?.nextReviewHref) {
         router.push(body.data.nextReviewHref);
         return;
       }
       router.refresh();
     } catch {
-      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
+      setMessage({ tone: "error", text: commonUiCopy.serverUnavailable });
     } finally {
       setIsBusy(false);
     }
@@ -97,6 +123,8 @@ export function ConsultationActionPanel({
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     postJson(`/api/admin/consultations/${consultationId}/reject`, {
+      expectedOutcomeVersion: outcomeVersion,
+      reasonCode: formData.get("reasonCode"),
       reason: formData.get("reason")
     });
   }
@@ -131,6 +159,40 @@ export function ConsultationActionPanel({
 
   return (
     <div className="space-y-4">
+      {canRecordOutcome ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{isFinalOutcome ? outcomeCopy.outcomeForm.correctionTitle : outcomeCopy.outcomeForm.title}</CardTitle>
+            <CardDescription>
+              {isFinalOutcome ? outcomeCopy.outcomeForm.correctionDescription : outcomeCopy.outcomeForm.description}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ConsultationOutcomeForm
+              consultationId={consultationId}
+              currentOutcome={outcomeStatus}
+              outcomeVersion={outcomeVersion}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {canReopen ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{outcomeCopy.reopenForm.title}</CardTitle>
+            <CardDescription>{outcomeCopy.reopenForm.description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ConsultationReopenForm
+              consultationId={consultationId}
+              lawyers={lawyers}
+              outcomeVersion={outcomeVersion}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle>مراجعة السكرتيرة</CardTitle>
@@ -160,7 +222,7 @@ export function ConsultationActionPanel({
         </CardHeader>
         <CardContent>
           <form className="grid gap-3 sm:grid-cols-[1fr_auto]" onSubmit={assign}>
-            <Select defaultValue={assignedLawyerId ?? ""} disabled={isClosed || isBusy} idPrefix={`consultation-assign-${consultationId}`} label="المحامي المسؤول" name="assignedLawyerId" required>
+            <Select defaultValue={assignedLawyerId ?? ""} disabled={!canAssign || isBusy} idPrefix={`consultation-assign-${consultationId}`} label="المحامي المسؤول" name="assignedLawyerId" required>
               <option value="">اختر محاميًا</option>
               {lawyers.map((lawyer) => (
                 <option key={lawyer.id} value={lawyer.id}>
@@ -168,7 +230,7 @@ export function ConsultationActionPanel({
                 </option>
               ))}
             </Select>
-            <Button className="self-end" disabled={isClosed} loading={isBusy} type="submit" variant="secondary">
+            <Button className="self-end" disabled={!canAssign} loading={isBusy} type="submit" variant="secondary">
               تعيين
             </Button>
           </form>
@@ -182,7 +244,7 @@ export function ConsultationActionPanel({
         </CardHeader>
         <CardContent>
           <form className="grid gap-4" onSubmit={convert}>
-            <Select defaultValue={assignedLawyerId ?? ""} disabled={isClosed || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="المحامي المسؤول" name="assignedLawyerId">
+            <Select defaultValue={assignedLawyerId ?? ""} disabled={!canConvert || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="المحامي المسؤول" name="assignedLawyerId">
               <option value="">استخدم التعيين الحالي</option>
               {lawyers.map((lawyer) => (
                 <option key={lawyer.id} value={lawyer.id}>
@@ -190,27 +252,27 @@ export function ConsultationActionPanel({
                 </option>
               ))}
             </Select>
-            <TextInput disabled={isClosed || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="عنوان القضية" name="caseTitle" placeholder="مثال: مراجعة عقد توريد" />
-            <TextInput disabled={isClosed || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="نوع القضية" name="caseType" placeholder="الشركات والعقود" />
+            <TextInput disabled={!canConvert || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="عنوان القضية" name="caseTitle" placeholder="مثال: مراجعة عقد توريد" />
+            <TextInput disabled={!canConvert || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="نوع القضية" name="caseType" placeholder="الشركات والعقود" />
             <div className="grid gap-4 sm:grid-cols-2">
-              <Select defaultValue="NORMAL" disabled={isClosed || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="الأولوية" name="priority">
+              <Select defaultValue="NORMAL" disabled={!canConvert || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="الأولوية" name="priority">
                 <option value="LOW">منخفضة</option>
                 <option value="NORMAL">عادية</option>
                 <option value="HIGH">مرتفعة</option>
                 <option value="URGENT">عاجلة</option>
               </Select>
-              <Select defaultValue="ONLINE" disabled={isClosed || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="طريقة الموعد" name="appointmentMode">
+              <Select defaultValue="ONLINE" disabled={!canConvert || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="طريقة الموعد" name="appointmentMode">
                 <option value="ONLINE">أونلاين</option>
                 <option value="PHONE">هاتف</option>
                 <option value="OFFICE">في المكتب</option>
               </Select>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <TextInput disabled={isClosed || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="وقت الموعد" name="appointmentStartsAt" type="datetime-local" />
-              <TextInput defaultValue="60" disabled={isClosed || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="مدة الموعد بالدقائق" name="appointmentDurationMinutes" type="number" />
+              <TextInput disabled={!canConvert || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="وقت الموعد" name="appointmentStartsAt" type="datetime-local" />
+              <TextInput defaultValue="60" disabled={!canConvert || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="مدة الموعد بالدقائق" name="appointmentDurationMinutes" type="number" />
             </div>
-            <TextInput disabled={isClosed || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="مكان أو رابط الموعد" name="appointmentLocation" />
-            <Button disabled={isClosed || lawyers.length === 0} loading={isBusy} type="submit">
+            <TextInput disabled={!canConvert || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="مكان أو رابط الموعد" name="appointmentLocation" />
+            <Button disabled={!canConvert || lawyers.length === 0} loading={isBusy} type="submit">
               تحويل إلى قضية
             </Button>
           </form>
@@ -224,8 +286,13 @@ export function ConsultationActionPanel({
         </CardHeader>
         <CardContent>
           <form className="space-y-3" onSubmit={reject}>
-            <Textarea disabled={isClosed || isBusy} idPrefix={`consultation-reject-${consultationId}`} label="سبب داخلي مختصر" name="reason" />
-            <Button disabled={isClosed} loading={isBusy} type="submit" variant="danger">
+            <Select defaultValue="CANCELLED_BY_OFFICE" disabled={!canReject || isBusy} idPrefix={`consultation-reject-${consultationId}`} label={outcomeCopy.outcomeForm.reason} name="reasonCode" required>
+              <option value="CANCELLED_BY_OFFICE">{outcomeCopy.reasons.CANCELLED_BY_OFFICE}</option>
+              <option value="CANCELLED_BY_CLIENT">{outcomeCopy.reasons.CANCELLED_BY_CLIENT}</option>
+              <option value="OTHER">{outcomeCopy.reasons.OTHER}</option>
+            </Select>
+            <Textarea disabled={!canReject || isBusy} idPrefix={`consultation-reject-${consultationId}`} label="سبب داخلي مختصر" name="reason" />
+            <Button disabled={!canReject} loading={isBusy} type="submit" variant="danger">
               رفض الطلب
             </Button>
           </form>

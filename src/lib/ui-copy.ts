@@ -1,3 +1,5 @@
+import plan36RuntimeCopy from "./plan36-runtime-copy.json";
+
 export const commonUiCopy = {
   unknown: "غير محدد",
   notAssigned: "غير معين",
@@ -82,6 +84,8 @@ export const plan35DashboardMetricCopy = {
   "appointments.today": { label: "مواعيد اليوم", definition: "المواعيد النشطة المجدولة اليوم بتوقيت القاهرة." },
   "tasks.overdue": { label: "المهام المتأخرة", definition: "المهام غير المكتملة التي تجاوزت موعد استحقاقها." },
   "consultations.unreviewed": { label: "استشارات تنتظر المراجعة", definition: "طلبات الاستشارة المجدولة التي لم يراجعها الفريق بعد." },
+  "consultations.awaiting_result": { label: "بانتظار النتيجة", definition: "الاستشارات التي انتهى موعدها وتحتاج تأكيد النتيجة يدويًا." },
+  "consultations.missed": { label: "طلبات فائتة", definition: "الطلبات التي انتهى موعدها دون إسناد محامٍ ودون مراجعة." },
   "contacts.new": { label: "رسائل تواصل جديدة", definition: "رسائل التواصل الموجودة حاليًا في حالة جديدة." },
   "documents.under-review": { label: "مستندات تحت المراجعة", definition: "المستندات الموجودة حاليًا في حالة تحت المراجعة." },
   "cases.active": { label: "قضايا نشطة", definition: "ملفات القضايا الموجودة حاليًا في حالة نشطة." },
@@ -307,6 +311,140 @@ export const plan35NotificationUiCopy = {
   consultationReview: "استشارات تنتظر المراجعة"
 } as const;
 
+export const plan36ConsultationOutcomeCopy = {
+  unknownReason: "سبب مصنف غير متاح",
+  unknownSource: "مصدر نظامي غير محدد",
+  sources: {
+    ADMIN: "إجراء إداري",
+    WORKER: "عامل الصيانة",
+    RECONCILIATION: "مصالحة البيانات"
+  },
+  tabs: {
+    current: "الحالية",
+    awaiting_result: "بانتظار النتيجة",
+    missed: "الفائتة",
+    successful: "الناجحة",
+    no_show: "لم يحضر",
+    cancelled: "الملغاة",
+    all: "الكل"
+  },
+  statuses: {
+    PENDING: "حالية",
+    AWAITING_RESULT: "بانتظار النتيجة",
+    MISSED: "طلب فائت",
+    SUCCESSFUL: "استشارة ناجحة",
+    NO_SHOW: "لم يحضر",
+    CANCELLED: "ملغاة"
+  },
+  reasons: {
+    COMPLETED_AS_SCHEDULED: "اكتملت في موعدها",
+    CLIENT_NO_SHOW: "العميل لم يحضر",
+    CANCELLED_BY_CLIENT: "ألغى العميل",
+    CANCELLED_BY_OFFICE: "ألغى المكتب",
+    TECHNICAL_ISSUE: "مشكلة تقنية",
+    CORRECTED_OPERATOR_ERROR: "تصحيح خطأ إدخال",
+    CORRECTED_AFTER_VERIFICATION: "تصحيح بعد المراجعة",
+    CORRECTED_CLIENT_UPDATE: "تصحيح بناءً على إفادة العميل",
+    REOPEN_CLIENT_REQUEST: "إعادة فتح بطلب العميل",
+    REOPEN_OFFICE_FOLLOW_UP: "إعادة فتح لمتابعة المكتب",
+    REOPEN_SCHEDULING_ERROR: "تصحيح خطأ في الجدولة",
+    AUTO_ENDED_UNASSIGNED_UNREVIEWED: "انتهى الموعد دون إسناد أو مراجعة",
+    AUTO_ENDED_ASSIGNED_OR_REVIEWED: "انتهى الموعد ويحتاج تأكيد النتيجة",
+    BACKFILL_APPOINTMENT_COMPLETED: "مطابقة موعد مكتمل سابقًا",
+    BACKFILL_APPOINTMENT_NO_SHOW: "مطابقة عدم حضور مسجل سابقًا",
+    BACKFILL_APPOINTMENT_CANCELLED: "مطابقة موعد ملغى سابقًا",
+    BACKFILL_CONSULTATION_REJECTED: "مطابقة طلب مرفوض سابقًا",
+    BACKFILL_ENDED_UNASSIGNED_UNREVIEWED: "مطابقة طلب منتهٍ دون إسناد أو مراجعة",
+    BACKFILL_ENDED_ASSIGNED_OR_REVIEWED: "مطابقة طلب منتهٍ يحتاج تأكيد النتيجة",
+    OTHER: "سبب آخر"
+  },
+  notifications: plan36RuntimeCopy.notifications,
+  dashboard: {
+    awaitingLabel: "بانتظار النتيجة",
+    awaitingDefinition: "الاستشارات التي انتهى موعدها وتحتاج تأكيد النتيجة يدويًا.",
+    missedLabel: "طلبات فائتة",
+    missedDefinition: "الطلبات التي انتهى موعدها دون إسناد محامٍ ودون مراجعة.",
+    timeframe: "حتى وقت تحديث اللوحة"
+  },
+  list: {
+    tabsLabel: "تصنيف طلبات الاستشارة حسب النتيجة",
+    serviceAndMode: "الخدمة والطريقة",
+    workflowAndOutcome: "حالة الطلب والنتيجة",
+    primaryAppointment: "موعد الاستشارة الأساسي",
+    noPrimaryAppointment: "لا يوجد موعد أساسي مرتبط",
+    startsAt: "البداية",
+    endsAt: "النهاية",
+    resultBy: "سجلها",
+    resultReason: "السبب",
+    open: "فتح الطلب",
+    empty: "لا توجد طلبات استشارة مطابقة لهذا التبويب والفلاتر الحالية.",
+    countSuffix: "طلب استشارة"
+  },
+  calendar: {
+    effectiveOutcome: "حالة الاستشارة الفعلية",
+    genericRescheduleBlocked: "تُدار هذه الاستشارة من صفحة الطلب حفاظًا على سجل النتيجة."
+  },
+  detail: {
+    outcomeTitle: "نتيجة الاستشارة",
+    outcomeDescription: "الحالة التشغيلية للحجز الأساسي وآخر تغيير مسجل عليها.",
+    status: "النتيجة الحالية",
+    changedAt: "وقت التغيير",
+    changedBy: "نفّذ التغيير",
+    reason: "السبب المصنف",
+    note: "الملاحظة الداخلية",
+    version: "نسخة الحالة",
+    primaryStart: "بداية الموعد الأساسي",
+    primaryEnd: "نهاية الموعد الأساسي",
+    systemActor: "النظام"
+  },
+  outcomeForm: {
+    title: "تأكيد نتيجة الاستشارة",
+    correctionTitle: "تصحيح نتيجة الاستشارة",
+    description: "لا تُسجل الاستشارة كناجحة تلقائيًا. اختر النتيجة الفعلية بعد التحقق.",
+    correctionDescription: "سيُحفظ التصحيح كتغيير جديد مستقل في سجل التدقيق.",
+    result: "النتيجة النهائية",
+    chooseDifferentResult: "اختر نتيجة جديدة",
+    reason: "سبب النتيجة",
+    correctionReason: "سبب التصحيح",
+    note: "ملاحظة داخلية اختيارية",
+    noteHint: "لا تظهر هذه الملاحظة في القائمة أو سجل التدقيق.",
+    confirm: "أؤكد أنني راجعت النتيجة وأريد حفظها",
+    confirmRequired: "أكد مراجعة النتيجة قبل الحفظ.",
+    save: "حفظ النتيجة",
+    saveCorrection: "حفظ التصحيح",
+    refresh: "تحديث الصفحة"
+  },
+  reopenForm: {
+    title: "إعادة فتح وجدولة الطلب الفائت",
+    description: "يُحفظ الفوات في سجل التدقيق، ثم يعود الطلب إلى الحالية بموعد مستقبلي.",
+    lawyer: "المحامي المسؤول",
+    chooseLawyer: "اختر محاميًا",
+    startsAt: "وقت الموعد الجديد",
+    futureHint: "يجب أن يكون الموعد في المستقبل بتوقيت القاهرة.",
+    duration: "المدة بالدقائق",
+    mode: "طريقة الاستشارة",
+    modes: {
+      ONLINE: "أونلاين",
+      PHONE: "هاتف",
+      OFFICE: "في المكتب"
+    },
+    location: "المكان أو رابط الاجتماع",
+    reason: "سبب إعادة الفتح",
+    note: "ملاحظة داخلية اختيارية",
+    submit: "إعادة الفتح وحفظ الموعد"
+  },
+  feedback: {
+    outcomeSaved: "تم تسجيل نتيجة الاستشارة.",
+    outcomeCorrected: "تم تصحيح نتيجة الاستشارة وحفظ سجل تدقيق جديد.",
+    outcomeSaving: "جارٍ حفظ النتيجة.",
+    reopened: "تمت إعادة فتح الطلب وجدولة موعد جديد.",
+    reopening: "جارٍ إعادة فتح الطلب وحفظ الموعد الجديد.",
+    failed: "تعذر حفظ التغيير. احتفظنا بالبيانات المدخلة؛ راجعها وحاول مرة أخرى.",
+    refresh: "تغير الطلب بعد فتح الصفحة. حدّث الصفحة وراجع أحدث حالة قبل المحاولة.",
+    conflict: "يوجد تعارض في الموعد. اختر وقتًا أو محاميًا آخر ثم حاول مرة أخرى."
+  }
+} as const;
+
 export const plan35ManualCaseUiCopy = {
   eyebrow: "إدارة القضايا",
   createTitle: "إنشاء قضية يدوية",
@@ -403,10 +541,39 @@ export const plan35AdminRestrictedActionCopy = {
   }
 } as const;
 
+export const adminCurrentCapabilityCopy = {
+  casesListScopeTitle: "نطاق هذه الشاشة",
+  casesListScopeDescription: "تدير هذه الشاشة بيانات القضايا الأساسية والجلسات والتقويم. افتح ملف القضية لإدارة مهامها ومستنداتها ومواعيدها.",
+  caseDetailScopeTitle: "نطاق ملف القضية",
+  caseDetailScopeDescription: "المهام والمستندات والمواعيد متاحة داخل ملف القضية، وتُدار الفواتير والمدفوعات من شاشة الإدارة المالية.",
+  clientDocumentsMeta: "عدد مستندات العميل المرتبطة، ويمكن إدارتها من شاشة المستندات أو ملف القضية."
+} as const;
+
 export const plan35ApiErrorSourceMessages = {
   APPOINTMENT_CONFLICT: "Another appointment already exists for this lawyer at this time. Choose a different time.",
   CASE_REFERENCE_CONFLICT: "A unique case reference could not be generated. Create a new request and retry.",
   SETTING_READ_ONLY: "Storage runtime settings are managed by the server environment and cannot be changed from the admin dashboard."
+} as const;
+
+export const plan36ApiErrorSourceMessages = {
+  CONSULTATION_OUTCOME_NOT_READY: "The consultation outcome is not ready to be recorded yet.",
+  CONSULTATION_STATE_CHANGED: "The consultation changed after this view was loaded. Refresh and try again.",
+  CONSULTATION_REOPEN_REQUIRED: "This missed consultation must be reopened and rescheduled before continuing."
+} as const;
+
+export const plan36ApiErrorCopy = {
+  CONSULTATION_OUTCOME_NOT_READY: {
+    message: "لم يحن وقت تسجيل نتيجة الاستشارة بعد. راجع موعد الانتهاء وحدّث الصفحة.",
+    recoveryAction: "تحديث الصفحة"
+  },
+  CONSULTATION_STATE_CHANGED: {
+    message: "تغير طلب الاستشارة بعد فتح الصفحة. حدّث الصفحة وراجع أحدث حالة ثم حاول مرة أخرى.",
+    recoveryAction: "تحديث الصفحة"
+  },
+  CONSULTATION_REOPEN_REQUIRED: {
+    message: "هذا طلب فائت. استخدم «إعادة فتح وجدولة» قبل تنفيذ الإجراء.",
+    recoveryAction: "إعادة فتح وجدولة"
+  }
 } as const;
 
 export const plan35ApiErrorCopy = {
@@ -591,6 +758,19 @@ const apiExactMessages: Record<string, string> = {
   [plan35ApiErrorSourceMessages.APPOINTMENT_CONFLICT]: plan35ApiErrorCopy.APPOINTMENT_CONFLICT.message,
   [plan35ApiErrorSourceMessages.CASE_REFERENCE_CONFLICT]: plan35ApiErrorCopy.CASE_REFERENCE_CONFLICT.message,
   [plan35ApiErrorSourceMessages.SETTING_READ_ONLY]: plan35ApiErrorCopy.SETTING_READ_ONLY.message,
+  [plan36ApiErrorSourceMessages.CONSULTATION_OUTCOME_NOT_READY]: plan36ApiErrorCopy.CONSULTATION_OUTCOME_NOT_READY.message,
+  [plan36ApiErrorSourceMessages.CONSULTATION_STATE_CHANGED]: plan36ApiErrorCopy.CONSULTATION_STATE_CHANGED.message,
+  [plan36ApiErrorSourceMessages.CONSULTATION_REOPEN_REQUIRED]: plan36ApiErrorCopy.CONSULTATION_REOPEN_REQUIRED.message,
+  "Choose a different final consultation outcome.": "اختر نتيجة نهائية مختلفة عن الحالة الحالية.",
+  "Consultation outcome payload is invalid.": "بيانات نتيجة الاستشارة غير مكتملة أو غير صحيحة.",
+  "Consultation reopen payload is invalid.": "بيانات إعادة فتح الاستشارة غير مكتملة أو غير صحيحة.",
+  "A categorized correction reason is required.": "اختر سببًا مصنفًا لتصحيح النتيجة.",
+  "A categorized consultation outcome reason is required.": "اختر سببًا مصنفًا لنتيجة الاستشارة.",
+  "The reopened consultation must start in the future.": "يجب أن يبدأ الموعد الجديد في وقت مستقبلي بتوقيت القاهرة.",
+  "Assigned lawyer is invalid.": "المحامي المختار غير متاح للإسناد.",
+  "Consultation outcome management requires consultation review and appointment management permissions.": "تسجيل نتيجة الاستشارة يتطلب صلاحية مراجعة الاستشارات وإدارة المواعيد.",
+  "Consultation rejection requires consultation review and appointment management permissions.": "رفض طلب الاستشارة يتطلب صلاحية مراجعة الاستشارات وإدارة المواعيد.",
+  "The unreviewed filter is available only for current consultations.": "فلتر الطلبات غير المراجعة متاح داخل تبويب الاستشارات الحالية فقط.",
   "An active existing client is required.": plan35ManualCaseUiCopy.validation.clientRequired,
   "An active eligible lawyer is required.": plan35ManualCaseUiCopy.validation.lawyerRequired,
   "The request token is already bound to another case request.": "رمز المحاولة مستخدم بالفعل مع طلب قضية مختلف. ابدأ محاولة جديدة بعد مراجعة البيانات.",
@@ -684,6 +864,8 @@ const apiSubjectLabels: Record<string, string> = {
   "Client archive": "أرشفة العميل",
   "Client profile": "ملف العميل",
   "Contact message status": "حالة رسالة التواصل",
+  "Consultation outcome": "نتيجة الاستشارة",
+  "Consultation reopen": "إعادة فتح الاستشارة",
   "Conversion": "بيانات التحويل",
   "Document": "المستند",
   "Document delete": "حذف المستند",
@@ -737,6 +919,9 @@ const apiEnglishMessages: Record<string, string> = {
   [plan35ApiErrorCopy.APPOINTMENT_CONFLICT.message]: plan35ApiErrorSourceMessages.APPOINTMENT_CONFLICT,
   [plan35ApiErrorCopy.CASE_REFERENCE_CONFLICT.message]: plan35ApiErrorSourceMessages.CASE_REFERENCE_CONFLICT,
   [plan35ApiErrorCopy.SETTING_READ_ONLY.message]: plan35ApiErrorSourceMessages.SETTING_READ_ONLY,
+  [plan36ApiErrorCopy.CONSULTATION_OUTCOME_NOT_READY.message]: plan36ApiErrorSourceMessages.CONSULTATION_OUTCOME_NOT_READY,
+  [plan36ApiErrorCopy.CONSULTATION_STATE_CHANGED.message]: plan36ApiErrorSourceMessages.CONSULTATION_STATE_CHANGED,
+  [plan36ApiErrorCopy.CONSULTATION_REOPEN_REQUIRED.message]: plan36ApiErrorSourceMessages.CONSULTATION_REOPEN_REQUIRED,
   "الطلب غير صحيح.": "Invalid request.",
   "البيانات المرسلة غير مكتملة أو غير صحيحة.": "Submitted data is incomplete or invalid.",
   "بيانات الطلب غير مكتملة أو غير صحيحة.": "Request data is incomplete or invalid.",
@@ -797,4 +982,20 @@ export function localizeApiMessage(message: string, locale: UiLocale = "ar") {
   }
 
   return message;
+}
+
+export function consultationOutcomeReasonLabel(reasonCode?: string | null) {
+  if (!reasonCode) return null;
+  return (
+    (plan36ConsultationOutcomeCopy.reasons as Record<string, string>)[reasonCode] ??
+    plan36ConsultationOutcomeCopy.unknownReason
+  );
+}
+
+export function consultationOutcomeSourceLabel(source?: string | null) {
+  if (!source) return plan36ConsultationOutcomeCopy.unknownSource;
+  return (
+    (plan36ConsultationOutcomeCopy.sources as Record<string, string>)[source] ??
+    plan36ConsultationOutcomeCopy.unknownSource
+  );
 }

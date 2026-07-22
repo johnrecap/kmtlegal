@@ -5,7 +5,7 @@ import { AdminNotificationBell } from "@/features/admin/notifications/admin-noti
 import { Badge, Button, ButtonLink, DataRecordCard, DataTable, FilterBar, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { caseStatusLabels, formatDateTime, labelFrom, priorityLabels } from "@/lib/legal-format";
-import { plan35AdminListAccessibilityCopy, plan35ManualCaseUiCopy as manualCaseCopy } from "@/lib/ui-copy";
+import { adminCurrentCapabilityCopy, plan35AdminListAccessibilityCopy, plan35ManualCaseUiCopy as manualCaseCopy } from "@/lib/ui-copy";
 import {
   getAdminCaseFilterOptions,
   listAdminCases
@@ -296,8 +296,8 @@ export default async function AdminCasesPage({ searchParams }: { searchParams?: 
         </div>
 
         <StateBlock
-          title="حدود هذه الشاشة"
-          description="هذه الخطة تدير القضايا والجلسات والتقويم فقط. مهام القضية والمستندات الإدارية ستكتمل في PLAN-17، والماليات في PLAN-19."
+          title={adminCurrentCapabilityCopy.casesListScopeTitle}
+          description={adminCurrentCapabilityCopy.casesListScopeDescription}
         />
       </div>
     </DashboardShell>

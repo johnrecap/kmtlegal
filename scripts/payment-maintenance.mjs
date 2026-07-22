@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { PrismaPg } from "@prisma/adapter-pg";
 import prismaClientPackage from "@prisma/client";
+import { reconcileConsultationOutcomes } from "./consultation-outcome-maintenance.mjs";
 
 const PrismaClient = prismaClientPackage.PrismaClient ?? prismaClientPackage.default?.PrismaClient;
 if (typeof PrismaClient !== "function") {
@@ -18,16 +19,16 @@ const prisma = new PrismaClient({
 });
 const args = new Set(process.argv.slice(2));
 const watch = args.has("--watch");
-const intervalSeconds = boundedNumber(process.env.PAYMENT_MAINTENANCE_INTERVAL_SECONDS, 60, 3600, 300);
+const intervalSeconds = boundedNumber(process.env.PAYMENT_MAINTENANCE_INTERVAL_SECONDS, 60, 3600, 60);
 const paymentMaintenanceBatchSize = boundedNumber(process.env.PAYMENT_MAINTENANCE_BATCH_SIZE, 1, 500, 100);
 const paymentMaintenanceMaxBatches = boundedNumber(process.env.PAYMENT_MAINTENANCE_MAX_BATCHES, 1, 20, 10);
 let runInProgress = false;
 
 async function main() {
   if (watch) {
-    await runOnce();
+    await runOnce("WORKER");
     const timer = setInterval(() => {
-      runOnce().catch((error) => {
+      runOnce("WORKER").catch((error) => {
         reportFailure(error).catch((alertError) => {
           console.error("[payment-maintenance] alert failed", safeErrorSummary(alertError));
         });
@@ -39,10 +40,10 @@ async function main() {
     return;
   }
 
-  await runOnce();
+  await runOnce("RECONCILIATION");
 }
 
-async function runOnce() {
+async function runOnce(outcomeSource) {
   if (runInProgress) {
     const now = new Date();
     console.log(
@@ -60,10 +61,18 @@ async function runOnce() {
   const now = new Date();
   try {
     const expiredAttempts = await expireOpenPaymentAttempts(now);
+    const consultationOutcomes = await reconcileConsultationOutcomes({
+      client: prisma,
+      now,
+      source: outcomeSource,
+      batchSize: paymentMaintenanceBatchSize,
+      maxBatches: paymentMaintenanceMaxBatches
+    });
     const cleanup = await cleanupOldOperationalData(now);
     console.log(
       JSON.stringify({
         ok: true,
+        consultationOutcomes,
         expiredAttempts,
         cleanup,
         ranAt: now.toISOString()

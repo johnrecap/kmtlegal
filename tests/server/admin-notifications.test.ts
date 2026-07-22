@@ -299,7 +299,8 @@ describe("admin notification center contract", () => {
           id: consultationId,
           fullName: "عميل تجريبي",
           status: "SCHEDULED",
-          secretaryReviewedAt: null
+          secretaryReviewedAt: null,
+          outcomeStatus: "PENDING"
         }))
       },
       user: { findMany: userFindMany },

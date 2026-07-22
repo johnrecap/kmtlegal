@@ -2,15 +2,27 @@
 
 ## Current source-of-truth update — 2026-07-22
 
+Highest evidenced PLAN-36 state: `Local-Verified`
+
 Highest evidenced PLAN-35 state: `Local-Verified`
 
-The repository now tracks **36 plan IDs (`PLAN-00` through `PLAN-35`)**. The detailed narrative
+The repository now tracks **37 plan IDs (`PLAN-00` through `PLAN-36`)**. The detailed narrative
 below is a legacy PLAN-27-era index retained for history; current completion truth lives in
 `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md` and executable sequencing lives in
 `specs/kmt-legal-platform/tasks.md`.
 
-PLAN-35 is the current locally verified admin-operations remediation package; its database,
-authenticated-browser, and live acceptance gates remain open:
+PLAN-36 is the active consultation-outcome implementation package. It is locally verified without
+a database; its staging/disposable database, authenticated-browser, deploy, and live gates remain
+open:
+
+- Specification: `specs/kmt-legal-platform/plan-36-consultation-outcome-lifecycle/spec.md`
+- Technical decisions: `plan.md`, `research.md`, and `data-model.md` in that directory
+- API/data contract: `contracts/consultation-outcome-contract.md`
+- Quality gates: the 16-item requirements checklist, 42-item delivery checklist, and clean `analyze.md`
+- Canonical execution list: `tasks.md` with external IDs `PLAN-36/T001` through `PLAN-36/T030`
+- Reproducible local, DB, browser, deploy, and live boundaries: `quickstart.md`
+
+PLAN-35 remains locally verified with its previously deferred evidence unchanged:
 
 - Specification: `specs/kmt-legal-platform/plan-35-admin-operations-remediation/spec.md`
 - Technical plan and decisions: `plan.md`, `research.md`, and `data-model.md` in that directory
@@ -22,12 +34,12 @@ authenticated-browser, and live acceptance gates remain open:
 - Sanitized release evidence: `docs/evidence/PLAN_35_ADMIN_OPERATIONS.md`
 - Final analyze/converge disposition: `docs/evidence/PLAN_35_ANALYZE_CONVERGE.md`
 
-The master task list contains one PLAN-35 roll-up only; detailed tasks must not be copied here or
-into another plan.
+The master task list contains one PLAN-35 roll-up only. PLAN-36 execution remains in its independent
+package; neither plan's detailed tasks are copied into the other.
 
 ## PLAN-27 Update
 
-At the time of this legacy snapshot, the active set contained 28 plans: PLAN-00 through PLAN-27. PLAN-24 covered remediation/production readiness, PLAN-25 covered the no-code VPS installer and first Super Admin bootstrap, PLAN-26 covered panel-aware installer compatibility, and PLAN-27 covered live-site QA remediation. Consult the current update above for PLAN-28 through PLAN-35.
+At the time of this legacy snapshot, the active set contained 28 plans: PLAN-00 through PLAN-27. PLAN-24 covered remediation/production readiness, PLAN-25 covered the no-code VPS installer and first Super Admin bootstrap, PLAN-26 covered panel-aware installer compatibility, and PLAN-27 covered live-site QA remediation. Consult the current update above for PLAN-28 through PLAN-36.
 
 تاريخ الإصدار: 2026-06-23
 
@@ -800,6 +812,6 @@ PLAN-00
 
 ## ملخص عدد الخطط
 
-Legacy snapshot count: **28 plans**. Current source-of-truth count: **36 plan IDs**.
+Legacy snapshot count: **28 plans**. Current source-of-truth count: **37 plan IDs**.
 
 هذا العدد كبير عمدًا لأن المنصة واسعة وحساسة، ولأن Spec Kit يكون أقوى عندما تكون كل خطة قابلة للقبول والاختبار بدل خطة واحدة ضخمة تفقد التفاصيل.
