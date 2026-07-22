@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
-import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
+import { Badge, Button, ButtonLink, DataRecordCard, DataTable, FilterBar, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { caseStatusLabels, formatDateTime, labelFrom, priorityLabels } from "@/lib/legal-format";
+import { plan35ManualCaseUiCopy as manualCaseCopy } from "@/lib/ui-copy";
 import {
   getAdminCaseFilterOptions,
   listAdminCases
@@ -201,6 +202,8 @@ export default async function AdminCasesPage({ searchParams }: { searchParams?: 
 
   return (
     <DashboardShell
+      action={<ButtonLink href="/admin/cases/new">{manualCaseCopy.createTitle}</ButtonLink>}
+      actionRouteId="cases.create"
       eyebrow="لوحة المكتب"
       mode="admin"
       navItems={adminNavForPath("/admin/cases")}

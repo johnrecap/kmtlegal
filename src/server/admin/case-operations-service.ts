@@ -341,7 +341,8 @@ export async function listAssignableCaseLawyers() {
   return prisma.user.findMany({
     where: {
       status: "ACTIVE",
-      role: { name: "Lawyer" }
+      deletedAt: null,
+      role: { name: "Lawyer", status: "ACTIVE" }
     },
     select: { id: true, name: true, email: true },
     orderBy: { name: "asc" }

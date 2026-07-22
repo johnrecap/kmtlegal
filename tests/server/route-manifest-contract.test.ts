@@ -91,4 +91,32 @@ describe("route manifest contract", () => {
     expect(fs.existsSync(path.join(appRoot, "error.tsx"))).toBe(true);
     expect(fs.existsSync(path.join(appRoot, "not-found.tsx"))).toBe(true);
   });
+
+  it("keeps manual case create and core edit methods aligned with the permission contract", () => {
+    const casesRoute = fs.readFileSync(
+      path.join(process.cwd(), "src/app/api/admin/cases/route.ts"),
+      "utf8"
+    );
+    const caseDetailRoute = fs.readFileSync(
+      path.join(process.cwd(), "src/app/api/admin/cases/[caseId]/route.ts"),
+      "utf8"
+    );
+    const contract = fs.readFileSync(
+      path.join(
+        process.cwd(),
+        "specs/kmt-legal-platform/plan-35-admin-operations-remediation/contracts/admin-operations-contract.md"
+      ),
+      "utf8"
+    );
+    const policy = JSON.parse(
+      fs.readFileSync(path.join(process.cwd(), "src/server/auth/policy-data.json"), "utf8")
+    ) as { permissions: string[] };
+
+    expect(casesRoute).toMatch(/export async function POST\(/);
+    expect(caseDetailRoute).toMatch(/export async function PATCH\(/);
+    expect(contract).toContain("`POST /api/admin/cases`");
+    expect(contract).toContain("`PATCH /api/admin/cases/{caseId}`");
+    expect(contract).toContain("`case.create.any`");
+    expect(policy.permissions).toContain("case.create.any");
+  });
 });

@@ -136,7 +136,7 @@ test.describe("PLAN-35 admin responsive accessibility characterization", () => {
   }
 });
 
-test.describe("PLAN-35 seventeen-route permission-aware workspace matrix", () => {
+test.describe("PLAN-35 eighteen-route permission-aware workspace matrix", () => {
   test.skip(
     !hasAllPersonaStorageStates,
     "Requires disposable authenticated storage states for Lawyer, Secretary, Office Admin, Marketing Staff, and Super Admin."
@@ -260,8 +260,10 @@ async function expectWorkspaceDiscovery(page: Page, roleKey: Plan35RoleKey) {
 async function expectDirectAuthorization(page: Page, roleKey: Plan35RoleKey) {
   for (const route of PLAN35_IMPLEMENTED_ADMIN_ROUTES) {
     const allowed = route.defaultAccess[roleKey];
-    const apiResponse = await page.request.get(route.apiProbe);
-    expect(apiResponse.status(), `${roleKey}:${route.id}:api`).toBe(allowed ? 200 : 403);
+    const apiResponse = route.apiMethod === "POST"
+      ? await page.request.post(route.apiProbe, { data: route.apiBody })
+      : await page.request.get(route.apiProbe);
+    expect(apiResponse.status(), `${roleKey}:${route.id}:api`).toBe(allowed ? route.allowedApiStatus ?? 200 : 403);
 
     const pageResponse = await page.goto(route.href, { waitUntil: "domcontentloaded" });
     expect(pageResponse?.status() ?? 500, `${roleKey}:${route.id}:page`).toBeLessThan(500);

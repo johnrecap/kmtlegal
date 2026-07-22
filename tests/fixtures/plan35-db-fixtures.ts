@@ -174,7 +174,10 @@ export async function cleanupPlan35DatabaseFixture(
   return prisma.$transaction(async (tx) => {
     const users = await tx.user.findMany({ where: { email: { endsWith: emailSuffix } }, select: { id: true } });
     const clients = await tx.client.findMany({ where: { source: marker }, select: { id: true } });
-    const cases = await tx.legalCase.findMany({ where: { internalFileNumber: caseReference }, select: { id: true } });
+    const cases = await tx.legalCase.findMany({
+      where: { OR: [{ internalFileNumber: caseReference }, { clientId: { in: clients.map(({ id }) => id) } }] },
+      select: { id: true }
+    });
     const appointments = await tx.appointment.findMany({ where: { title: { startsWith: marker } }, select: { id: true } });
     const userIds = users.map(({ id }) => id);
     const clientIds = clients.map(({ id }) => id);
@@ -185,7 +188,9 @@ export async function cleanupPlan35DatabaseFixture(
     });
     const deletedAppointments = await tx.appointment.deleteMany({ where: { OR: [{ id: { in: appointmentIds } }, { title: { startsWith: marker } }] } });
     const deletedTasks = await tx.task.deleteMany({ where: { title: { startsWith: marker } } });
-    const deletedCases = await tx.legalCase.deleteMany({ where: { OR: [{ id: { in: caseIds } }, { internalFileNumber: caseReference }] } });
+    const deletedCases = await tx.legalCase.deleteMany({
+      where: { OR: [{ id: { in: caseIds } }, { internalFileNumber: caseReference }, { clientId: { in: clientIds } }] }
+    });
     const deletedClients = await tx.client.deleteMany({ where: { OR: [{ id: { in: clientIds } }, { source: marker }] } });
     const deletedUsers = await tx.user.deleteMany({ where: { email: { endsWith: emailSuffix } } });
     return {

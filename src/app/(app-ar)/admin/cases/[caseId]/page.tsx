@@ -4,6 +4,7 @@ import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, MetricCard, StateBlock } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { plan35ManualCaseUiCopy as manualCaseCopy } from "@/lib/ui-copy";
 import {
   appointmentStatusLabels,
   appointmentTypeLabels,
@@ -20,6 +21,7 @@ import {
   taskStatusLabels
 } from "@/lib/legal-format";
 import { AppointmentRescheduleForm, CaseSessionForm, CaseStatusForm } from "@/features/admin/cases/case-action-forms";
+import { ManualCaseEditForm, type ManualCaseLawyerOption } from "@/features/admin/cases/manual-case-form";
 import {
   AdminDocumentUploadForm,
   DocumentActionForm,
@@ -27,9 +29,10 @@ import {
   TaskCreateForm,
   TaskUpdateForm
 } from "@/features/admin/task-documents/task-document-forms";
-import { getAdminCaseDetail } from "@/server/admin/case-operations-service";
+import { getAdminCaseDetail, listAssignableCaseLawyers } from "@/server/admin/case-operations-service";
 import { getAdminDocumentOptions, getCaseTaskDocumentTabs } from "@/server/admin/task-document-service";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
+import { hasPermission } from "@/server/auth/policy";
 import { ApiError } from "@/server/http/errors";
 import { adminNavForPath } from "../../admin-navigation";
 
@@ -145,7 +148,15 @@ function CaseTabs({ caseId, active }: { caseId: string; active: string }) {
   );
 }
 
-function OverviewTab({ legalCase }: { legalCase: CaseDetail }) {
+function OverviewTab({
+  legalCase,
+  lawyers,
+  canTransfer
+}: {
+  legalCase: CaseDetail;
+  lawyers: ManualCaseLawyerOption[];
+  canTransfer: boolean;
+}) {
   return (
     <div className="space-y-5">
       <Card>
@@ -173,6 +184,27 @@ function OverviewTab({ legalCase }: { legalCase: CaseDetail }) {
           ) : null}
         </CardContent>
       </Card>
+
+      {legalCase.access.canUpdate ? (
+        <div className="scroll-mt-6" id="case-core-edit">
+          <ManualCaseEditForm
+            canTransfer={canTransfer}
+            caseRecord={{
+              id: legalCase.id,
+              assignedLawyerId: legalCase.assignedLawyerId,
+              assignedLawyerName: legalCase.assignedLawyer.name,
+              title: legalCase.title,
+              caseType: legalCase.caseType,
+              courtName: legalCase.courtName,
+              externalCaseNumber: legalCase.externalCaseNumber,
+              priority: legalCase.priority,
+              summary: legalCase.summary,
+              updatedAt: legalCase.updatedAt.toISOString()
+            }}
+            lawyers={lawyers}
+          />
+        </div>
+      ) : null}
 
       <Card>
         <CardHeader>
@@ -453,6 +485,11 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
   }
 
   const tab = activeTab(resolvedSearchParams.tab);
+  const canTransfer = hasPermission(guard.context.principal, "case.update.any");
+  const activeLawyers = tab === "overview" && canTransfer ? await listAssignableCaseLawyers() : [];
+  const lawyers: ManualCaseLawyerOption[] = activeLawyers.some((lawyer) => lawyer.id === legalCase.assignedLawyerId)
+    ? activeLawyers
+    : [{ id: legalCase.assignedLawyer.id, name: legalCase.assignedLawyer.name }, ...activeLawyers];
   let taskDocumentData: CaseTaskDocumentTabs | null = null;
   let documentOptions: DocumentOptions | null = null;
 
@@ -506,7 +543,14 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
                     {legalCase.client.fullName} · {legalCase.assignedLawyer.name} · {formatDateTime(legalCase.updatedAt)}
                   </CardDescription>
                 </div>
-                <Badge tone={statusTone(legalCase.status)}>{labelFrom(caseStatusLabels, legalCase.status)}</Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone={statusTone(legalCase.status)}>{labelFrom(caseStatusLabels, legalCase.status)}</Badge>
+                  {tab === "overview" && legalCase.access.canUpdate ? (
+                    <ButtonLink href="#case-core-edit" size="sm" variant="secondary">
+                      {manualCaseCopy.editAction}
+                    </ButtonLink>
+                  ) : null}
+                </div>
               </div>
             </CardHeader>
           </Card>
@@ -520,7 +564,7 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
 
           <CaseTabs active={tab} caseId={legalCase.id} />
 
-          {tab === "overview" ? <OverviewTab legalCase={legalCase} /> : null}
+          {tab === "overview" ? <OverviewTab canTransfer={canTransfer} legalCase={legalCase} lawyers={lawyers} /> : null}
           {tab === "sessions" ? <SessionsTab legalCase={legalCase} /> : null}
           {tab === "appointments" ? <AppointmentsTab legalCase={legalCase} /> : null}
           {tab === "tasks" && taskDocumentData ? <TasksTab data={taskDocumentData} /> : null}

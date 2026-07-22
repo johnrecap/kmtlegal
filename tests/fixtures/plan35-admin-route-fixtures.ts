@@ -7,6 +7,9 @@ export type Plan35AdminRouteFixture = {
   id: AdminRouteId;
   href: string;
   apiProbe: string;
+  apiMethod?: "GET" | "POST";
+  apiBody?: unknown;
+  allowedApiStatus?: number;
   state: "implemented" | "planned";
   defaultAccess: Plan35RouteAcceptance;
 };
@@ -28,7 +31,7 @@ export const FINAL_PLAN35_ADMIN_ROUTE_MATRIX: readonly Plan35AdminRouteFixture[]
   { id: "clients.list", href: "/admin/clients", apiProbe: "/api/admin/clients", state: "implemented", defaultAccess: access(true, true, true, false) },
   { id: "messages.list", href: "/admin/messages", apiProbe: "/api/admin/messages", state: "implemented", defaultAccess: access(false, true, true, false) },
   { id: "cases.list", href: "/admin/cases", apiProbe: "/api/admin/cases", state: "implemented", defaultAccess: access(true, true, true, false) },
-  { id: "cases.create", href: "/admin/cases/new", apiProbe: "/api/admin/cases", state: "planned", defaultAccess: access(false, true, true, false) },
+  { id: "cases.create", href: "/admin/cases/new", apiProbe: "/api/admin/cases", apiMethod: "POST", apiBody: {}, allowedApiStatus: 400, state: "implemented", defaultAccess: access(false, true, true, false) },
   { id: "calendar.list", href: "/admin/calendar", apiProbe: "/api/admin/calendar", state: "implemented", defaultAccess: access(true, true, true, false) },
   { id: "tasks.list", href: "/admin/tasks", apiProbe: "/api/admin/tasks", state: "implemented", defaultAccess: access(true, true, true, false) },
   { id: "documents.list", href: "/admin/documents", apiProbe: "/api/admin/documents", state: "implemented", defaultAccess: access(true, true, true, false) },

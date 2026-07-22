@@ -55,9 +55,9 @@ Errors use:
 | `GET /api/admin/notifications` | Current, extended | Unified generic/review projection and truthful counts | `notification.read.self`; consultation items additionally require review scope |
 | `POST /api/admin/notifications/{notificationId}/read` | Current, extended | Owner-only idempotent generic mark-read | `notification.read.self` |
 | `GET /api/admin/cases` | Current, scope-aligned | Uses canonical case visibility; advertises create action only when allowed | Existing case read capability |
-| `POST /api/admin/cases` | **Planned new method** | Manual, audited, idempotent case create | `case.create.any` |
+| `POST /api/admin/cases` | Implemented by PLAN-35 | Manual, audited, idempotent case create | `case.create.any` |
 | `GET /api/admin/cases/{caseId}` | Current | Existing scoped detail | Existing case read capability |
-| `PATCH /api/admin/cases/{caseId}` | **Planned new method** | Core-field edit only; status remains separate | `case.update.any` or `case.update.assigned` with object scope |
+| `PATCH /api/admin/cases/{caseId}` | Implemented by PLAN-35 | Core-field edit only; status remains separate | `case.update.any` or `case.update.assigned` with object scope |
 | `GET /api/admin/roles` | **Planned new route** | Protected/editable role matrix and canonical permission catalog | Exact active Super Admin plus `role.manage.any` and `permission.manage.any` |
 | `PATCH /api/admin/roles/{roleId}/permissions` | **Planned new route** | Atomic replacement with stale-write protection and audit | Exact active Super Admin plus `role.manage.any` and `permission.manage.any` |
 | `GET /api/admin/users` | Current, hardened | Purpose-built paginated safe-user DTOs only | `user.manage.any`; protected-target metadata is nonactionable for delegated managers |
@@ -336,7 +336,7 @@ tuple. Supplying both `limit` and `cursor/pageSize` is a validation error.
 
 ## Manual case contracts
 
-### POST `/api/admin/cases` — planned
+### POST `/api/admin/cases` — implemented
 
 Request:
 
@@ -382,7 +382,7 @@ Validation:
 - Validation, references, case, parties, redaction-safe `requestHash` audit metadata, and direct audit insert are
   atomic; the best-effort audit helper is not used.
 
-### PATCH `/api/admin/cases/{caseId}` — planned
+### PATCH `/api/admin/cases/{caseId}` — implemented
 
 Request is strict and must include `updatedAt` for optimistic concurrency. Allowed fields:
 
@@ -572,7 +572,7 @@ Changing a legacy database row must not change upload/download runtime behavior.
 | `clients.list` | `/admin/clients` | `client.read.any`, `client.read.assigned` | Existing |
 | `messages.list` | `/admin/messages` | `conversation.read.any`, `conversation.manage.any` | Existing |
 | `cases.list` | `/admin/cases` | `case.read.any`, `case.read.assigned` | Existing |
-| `cases.create` | `/admin/cases/new` | `case.create.any` | Planned |
+| `cases.create` | `/admin/cases/new` | `case.create.any` | Implemented page and API |
 | `calendar.list` | `/admin/calendar` | `appointment.manage.any`, `appointment.read.assigned` | Existing |
 | `tasks.list` | `/admin/tasks` | `task.manage.any`, `task.manage.assigned`, `task.read.assigned` | Existing |
 | `documents.list` | `/admin/documents` | `document.manage.any`, `document.read.assigned` | Existing |
@@ -611,7 +611,8 @@ Rules:
 | `/admin/content/social` | Inherits `content.home` |
 | `/admin/users/{userId}` | Inherits `users.list` |
 
-Planned contact, notification, and role pages are exact entries. Any later detail child must be
+The planned role page and the implemented contact, notification, and case-create pages are exact
+entries. Any later detail child must be
 added to the registry, server guard, contract inventory, and route-policy test together.
 
 ### Representative API probes for the nineteen-route matrix
@@ -646,9 +647,9 @@ object-detail probe added later, never for these list probes.
 | `audit.list` | `GET /api/admin/audit-log` |
 
 T042/T052 preserve the historical fifteen-route baseline where the four then-planned IDs
-(`contacts.list`, `notifications.list`, `cases.create`, `roles.list`) were absent. T066 activates
-contact and notification after their page/API exists; T079 and T090 retain the same gate for case
-create and roles. T091 and final browser acceptance run
+(`contacts.list`, `notifications.list`, `cases.create`, `roles.list`) were absent. T066 activated
+contact and notification after their page/API existed; T079 has now activated case create, while
+T090 retains the same gate for roles. T091 and final browser acceptance run
 all nineteen rows by five roles; `404`, `405`, or a skip never satisfies an allowed cell.
 
 ## Default role acceptance matrix after PLAN-35 data migration

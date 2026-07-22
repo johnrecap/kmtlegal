@@ -104,9 +104,7 @@ describe("PLAN-35 affected contract inventory", () => {
     expect(new Set(operations).size).toBe(23);
     expect(affected.filter(({ planned }) => planned).map(({ method, apiPath }) => `${method} ${apiPath}`).sort()).toEqual([
       "GET /api/admin/roles",
-      "PATCH /api/admin/cases/{caseId}",
-      "PATCH /api/admin/roles/{roleId}/permissions",
-      "POST /api/admin/cases"
+      "PATCH /api/admin/roles/{roleId}/permissions"
     ]);
   });
 

@@ -17,12 +17,14 @@ import {
   serviceCategoryLabels,
   urgencyLabels
 } from "@/lib/legal-format";
+import { plan35ManualCaseUiCopy as manualCaseCopy } from "@/lib/ui-copy";
 import {
   canManageAdminClients,
   canManageClientAccounts,
   getAdminClientDetail,
   listAssignableClientLawyers
 } from "@/server/admin/client-crm-service";
+import { canCreateManualCase } from "@/server/admin/manual-case-service";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { ApiError } from "@/server/http/errors";
 import { adminNavForPath } from "../../admin-navigation";
@@ -121,8 +123,17 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
 
           <Card>
             <CardHeader>
-              <CardTitle>القضايا المرتبطة</CardTitle>
-              <CardDescription>عرض مختصر للقضايا المرتبطة مع رابط مباشر لملف القضية الكامل.</CardDescription>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <CardTitle>القضايا المرتبطة</CardTitle>
+                  <CardDescription>عرض مختصر للقضايا المرتبطة مع رابط مباشر لملف القضية الكامل.</CardDescription>
+                </div>
+                {client.status === "ACTIVE" && canCreateManualCase(guard.context.principal) ? (
+                  <ButtonLink href={`/admin/cases/new?clientId=${client.id}`} size="sm">
+                    {manualCaseCopy.createForClient}
+                  </ButtonLink>
+                ) : null}
+              </div>
             </CardHeader>
             <CardContent>
               {client.cases.length ? (

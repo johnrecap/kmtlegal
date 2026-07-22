@@ -51,6 +51,7 @@ export const ADMIN_ROUTE_POLICIES: readonly AdminRoutePolicy[] = [
   route({ id: "clients.list", href: "/admin/clients", activeMatch: "prefix", group: "office-operations", icon: "groups", requiredAnyPermissions: ["client.read.any", "client.read.assigned"] }),
   route({ id: "messages.list", href: "/admin/messages", activeMatch: "prefix", group: "office-operations", icon: "forum", requiredAnyPermissions: ["conversation.read.any", "conversation.manage.any"] }),
   route({ id: "cases.list", href: "/admin/cases", activeMatch: "prefix", group: "office-operations", icon: "gavel", requiredAnyPermissions: ["case.read.any", "case.read.assigned"] }),
+  route({ id: "cases.create", href: "/admin/cases/new", activeMatch: "exact", group: "office-operations", icon: "add_circle", requiredAnyPermissions: ["case.create.any"] }),
   route({ id: "calendar.list", href: "/admin/calendar", activeMatch: "prefix", group: "office-operations", icon: "event", requiredAnyPermissions: ["appointment.manage.any", "appointment.read.assigned"] }),
   route({ id: "tasks.list", href: "/admin/tasks", activeMatch: "prefix", group: "office-operations", icon: "task_alt", requiredAnyPermissions: ["task.manage.any", "task.manage.assigned", "task.read.assigned"] }),
   route({ id: "documents.list", href: "/admin/documents", activeMatch: "prefix", group: "files-finance", icon: "folder", requiredAnyPermissions: ["document.manage.any", "document.read.assigned"] }),
@@ -67,7 +68,6 @@ export const ADMIN_ROUTE_POLICIES: readonly AdminRoutePolicy[] = [
 const adminRoutePolicyById = new Map<AdminRouteId, AdminRoutePolicy>(
   ADMIN_ROUTE_POLICIES.map((policy) => [policy.id, policy])
 );
-const reservedAdminRoutePrefixes = ["/admin/cases/new"] as const;
 
 function route(definition: AdminRouteDefinition): AdminRoutePolicy {
   return {
@@ -87,20 +87,12 @@ function policyMatchesPath(policy: AdminRoutePolicy, pathname: string) {
   return pathname === policy.href || pathname.startsWith(`${policy.href}/`);
 }
 
-function isReservedAdminPath(pathname: string) {
-  return reservedAdminRoutePrefixes.some(
-    (reservedPath) => pathname === reservedPath || pathname.startsWith(`${reservedPath}/`)
-  );
-}
-
 export function getAdminRoutePolicy(id: AdminRouteId) {
   return adminRoutePolicyById.get(id);
 }
 
 export function resolveAdminRoutePolicy(pathname: string) {
   const normalizedPath = normalizedAdminPath(pathname);
-  if (isReservedAdminPath(normalizedPath)) return undefined;
-
   return ADMIN_ROUTE_POLICIES.filter((policy) => policyMatchesPath(policy, normalizedPath)).sort(
     (left, right) => Number(right.activeMatch === "exact") - Number(left.activeMatch === "exact") || right.href.length - left.href.length
   )[0];

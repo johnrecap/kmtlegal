@@ -19,7 +19,7 @@ import {
 } from "../fixtures/plan35-admin-route-fixtures";
 import { PLAN35_ROLE_FIXTURES, PLAN35_ROLE_KEYS } from "../fixtures/plan35-role-fixtures";
 
-const PLANNED_ROUTE_IDS = ["cases.create", "roles.list"] as const;
+const PLANNED_ROUTE_IDS = ["roles.list"] as const;
 const PROTECTED_CHILD_ROUTES = [
   ["/admin/consultations/35000000-0000-4000-8000-000000000101", "consultations.list"],
   ["/admin/clients/35000000-0000-4000-8000-000000000102", "clients.list"],
@@ -40,6 +40,7 @@ const ADMIN_PAGE_FILES = [
   "messages/page.tsx",
   "messages/[threadId]/page.tsx",
   "cases/page.tsx",
+  "cases/new/page.tsx",
   "cases/[caseId]/page.tsx",
   "calendar/page.tsx",
   "tasks/page.tsx",
@@ -67,14 +68,14 @@ describe("PLAN-35 canonical admin route policy", () => {
     }
   });
 
-  it("registers the seventeen executable destinations", () => {
+  it("registers the eighteen executable destinations", () => {
     expect(ADMIN_ROUTE_POLICIES.map(({ id }) => id)).toEqual(PLAN35_IMPLEMENTED_ADMIN_ROUTES.map(({ id }) => id));
-    expect(PLAN35_IMPLEMENTED_ADMIN_ROUTES).toHaveLength(17);
+    expect(PLAN35_IMPLEMENTED_ADMIN_ROUTES).toHaveLength(18);
   });
 
   it("keeps planned destinations undiscoverable", () => {
     for (const id of PLANNED_ROUTE_IDS) expect(getAdminRoutePolicy(id)).toBeUndefined();
-    expect(resolveAdminRoutePolicy("/admin/cases/new")).toBeUndefined();
+    expect(resolveAdminRoutePolicy("/admin/roles")).toBeUndefined();
   });
 
   it("keeps route presentation metadata inside typed copy and group catalogs", () => {
@@ -90,6 +91,7 @@ describe("PLAN-35 canonical admin route policy", () => {
     expect(resolveAdminRoutePolicy("/admin/")?.id).toBe("dashboard.home");
     expect(resolveAdminRoutePolicy("/admin/content/articles?status=draft")?.id).toBe("content.home");
     expect(resolveAdminRoutePolicy("/admin/content/social/scheduled")?.id).toBe("content.home");
+    expect(resolveAdminRoutePolicy("/admin/cases/new")?.id).toBe("cases.create");
     expect(resolveAdminRoutePolicy("/admin/contentious")).toBeUndefined();
     expect(resolveAdminRoutePolicy("/admin/unknown")).toBeUndefined();
   });

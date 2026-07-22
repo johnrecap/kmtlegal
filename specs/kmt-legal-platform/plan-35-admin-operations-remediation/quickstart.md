@@ -179,6 +179,15 @@ be reported as locally implemented but not checkpoint-accepted or DB-verified.
 - Force a rare file-reference collision and verify values are preserved and a new request UUID is
   created only for the explicit retry action.
 - Invalid client/lawyer, stale edit, and denied role leave no partial case or party.
+- Local lane: run deterministic service/route/UI tests, typecheck, lint, and the documented
+  no-database build without installing or contacting PostgreSQL. The DB/browser scenario may be
+  authored and collection-verified, but replay persistence, rollback, role, connected-history, and
+  under-three-minute execution evidence remains `BLOCKED` until a disposable migrated database and
+  safe authenticated personas exist. Do not use the production-connected database as a substitute.
+- Local evidence: 64 focused server/UI tests and all 316 unit/contract tests pass; typecheck and
+  lint pass; the guarded production build completes all 72 static pages; and Playwright collects 21
+  PLAN-35 scenarios, including both manual-case DB/browser cases. These results do not constitute
+  T081 PostgreSQL or authenticated-browser acceptance.
 
 ### US5 — role governance
 

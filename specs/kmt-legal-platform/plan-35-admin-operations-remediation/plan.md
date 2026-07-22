@@ -248,7 +248,11 @@ those cells pass.
 Add atomic, audited case create/edit service and route behavior, then wire forms and connected
 list/detail/client-history refresh. Depends on `case.create.any`, canonical case scope, and shared
 message/form foundations. Replay is actor/token/request-hash bound; assigned-only actors cannot
-transfer a case.
+transfer a case. Under FR-035, T069–T071 and T073–T080 may be implemented and locally verified
+without a database. T072 may be authored and collection-verified, but its persistence, rollback,
+authenticated-role, connected-history, and timing journeys plus T081 remain open until a disposable
+PostgreSQL target and safe authenticated personas exist; US4 cannot be checkpoint-accepted before
+those cells pass.
 
 ### Phase 6 — Role and permission governance (US5)
 

@@ -14,6 +14,7 @@ import { captureAnalyticsEventBestEffort } from "@/server/observability/analytic
 import { toPagination } from "@/server/http/pagination";
 import { canonicalPhone } from "@/server/phone/phone-normalization";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
+import { legalCaseReference } from "./legal-case-reference";
 import { resolveConsultationNotifications, unreviewedConsultationWhere } from "./notification-service";
 
 const consultationStatusSchema = z.enum(["NEW", "REVIEWING", "PAYMENT_PENDING", "SCHEDULED", "REJECTED", "CONVERTED"]);
@@ -96,9 +97,7 @@ export function appointmentEndAt(startsAt: Date, durationMinutes: number) {
   return new Date(startsAt.getTime() + durationMinutes * 60_000);
 }
 
-export function consultationInternalFileNumber(id: string, now = new Date()) {
-  return `KMT-${now.getFullYear()}-${id.slice(0, 8).toUpperCase()}`;
-}
+export const consultationInternalFileNumber = legalCaseReference;
 
 function normalizeListQuery(input: unknown) {
   return parseWithSchema(adminConsultationListQuerySchema, input, "Consultation list query is invalid.");
