@@ -5,8 +5,8 @@ import { AdminNotificationBell } from "@/features/admin/notifications/admin-noti
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, TextInput, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { formatDateTime } from "@/lib/legal-format";
-import { canReadAdminAuditLog, listAdminAuditLogs } from "@/server/admin/governance-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { listAdminAuditLogs } from "@/server/admin/governance-service";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -184,13 +184,9 @@ function AuditMobileCard({ row }: { row: AuditRow }) {
 }
 
 export default async function AdminAuditLogPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
-  const guard = await requireAdminPage("/admin/audit-log");
+  const guard = await requireAdminRoutePage("/admin/audit-log");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
-  }
-
-  if (!canReadAdminAuditLog(guard.context.principal)) {
-    return <PermissionBlocked title="غير مسموح بقراءة سجل التدقيق" description="هذا المسار يحتاج صلاحية audit.read.any." />;
   }
 
   const query = flattenSearchParams((await searchParams) ?? {});

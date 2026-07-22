@@ -6,7 +6,7 @@ import { Badge, ButtonLink, Card, CardContent, CardDescription, CardHeader, Card
 import { ConsultationActionPanel } from "@/features/admin/consultations/consultation-action-panel";
 import { consultationStatusLabels, formatDateTime, labelFrom, modeLabels, serviceCategoryLabels, urgencyLabels } from "@/lib/legal-format";
 import { getAdminConsultationDetail, listAssignableLawyers } from "@/server/admin/consultation-review-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { publicConsultationReference } from "@/server/consultations/consultation-service";
 import { adminNavForPath } from "../../admin-navigation";
 
@@ -169,7 +169,7 @@ function adminConsultationOfficeBrief(consultation: Awaited<ReturnType<typeof ge
 
 export default async function AdminConsultationDetailPage({ params }: PageProps) {
   const { consultationId } = await params;
-  const guard = await requireAdminPage(`/admin/consultations/${consultationId}`);
+  const guard = await requireAdminRoutePage(`/admin/consultations/${consultationId}`);
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }
@@ -191,6 +191,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
       title={consultation.fullName}
       userLabel={guard.context.user.name}
       principal={guard.context.principal}
+      actionRouteId="consultations.list"
       notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
       action={
         <ButtonLink href="/admin/consultations" variant="secondary" size="sm">

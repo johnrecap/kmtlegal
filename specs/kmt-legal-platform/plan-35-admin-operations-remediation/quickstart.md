@@ -129,6 +129,13 @@ be reported as locally implemented but not checkpoint-accepted or DB-verified.
 
 ### US2 — permission-aware workspace
 
+- Local lane: implement T040–T051 and verify the deterministic policy matrix, filtered shell,
+  boundary states, native mobile dialog, types, lint, and build without opening a database
+  connection. Author T042 with explicit storage-state prerequisites; do not replace authenticated
+  direct-page/direct-API cells with mocks or production credentials.
+- When all five disposable persona storage states are unavailable, record T042's authenticated cells
+  and T052 as `BLOCKED`, keep the US2 checkpoint open, and report only the local verification that
+  actually ran.
 - For all five staff personas, compare registry entries, visible desktop/mobile navigation, direct
   page result, and direct API result for the fifteen already implemented destination IDs.
 - Confirm `contacts.list`, `notifications.list`, `cases.create`, and `roles.list` are absent at the

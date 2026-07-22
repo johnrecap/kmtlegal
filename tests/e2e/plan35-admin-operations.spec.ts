@@ -1,14 +1,23 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { PLAN35_IMPLEMENTED_ADMIN_ROUTES, PLAN35_PLANNED_ADMIN_ROUTES } from "../fixtures/plan35-admin-route-fixtures";
+import { PLAN35_ROLE_KEYS, type Plan35RoleKey } from "../fixtures/plan35-role-fixtures";
 import { configuredPlan35StorageState } from "./plan35-auth-state";
 
 const officeAdminStorageState = configuredPlan35StorageState("officeAdmin");
 const surfacePath = officeAdminStorageState ? "/admin" : process.env.PLAN35_E2E_FALLBACK_PATH ?? "/product-system";
+const personaStorageStates = Object.fromEntries(
+  PLAN35_ROLE_KEYS.map((roleKey) => [roleKey, configuredPlan35StorageState(roleKey)])
+) as Record<Plan35RoleKey, string | null>;
+const hasAllPersonaStorageStates = PLAN35_ROLE_KEYS.every((roleKey) => Boolean(personaStorageStates[roleKey]));
 
 if (officeAdminStorageState) test.use({ storageState: officeAdminStorageState });
 
 test.describe("PLAN-35 admin responsive accessibility characterization", () => {
   test.beforeEach(async ({ page }, testInfo) => {
-    testInfo.annotations.push({ type: "expected-red", description: "Remains red through Foundation; converges in T046-T049 and T112." });
+    testInfo.annotations.push({
+      type: "local-verification",
+      description: "The T046-T049 shell behavior is green; deterministic screenshot acceptance remains owned by T112."
+    });
     testInfo.annotations.push({ type: "auth-state", description: officeAdminStorageState ? "Disposable Office Admin storage state" : "Collection-safe product-system fallback" });
     await loadSurface(page);
   });
@@ -118,6 +127,27 @@ test.describe("PLAN-35 admin responsive accessibility characterization", () => {
   }
 });
 
+test.describe("PLAN-35 fifteen-route permission-aware workspace matrix", () => {
+  test.skip(
+    !hasAllPersonaStorageStates,
+    "Requires disposable authenticated storage states for Lawyer, Secretary, Office Admin, Marketing Staff, and Super Admin."
+  );
+
+  for (const roleKey of PLAN35_ROLE_KEYS) {
+    test(`${roleKey} discovery matches direct page and API authorization`, async ({ browser }, testInfo) => {
+      const baseURL = String(testInfo.project.use.baseURL ?? process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000");
+      const context = await browser.newContext({ baseURL, storageState: personaStorageStates[roleKey]! });
+      try {
+        const page = await context.newPage();
+        await expectWorkspaceDiscovery(page, roleKey);
+        await expectDirectAuthorization(page, roleKey);
+      } finally {
+        await context.close();
+      }
+    });
+  }
+});
+
 async function loadSurface(page: Page) {
   const response = await page.goto(surfacePath, { waitUntil: "domcontentloaded" });
   expect(response).not.toBeNull();
@@ -133,6 +163,45 @@ async function openMobileNavigation(page: Page) {
   const dialog = page.getByRole("dialog", { name: /التنقل|القائمة/ }).first();
   await expect(dialog).toBeVisible();
   return { trigger, dialog };
+}
+
+async function expectWorkspaceDiscovery(page: Page, roleKey: Plan35RoleKey) {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/admin", { waitUntil: "domcontentloaded" });
+  for (const route of PLAN35_IMPLEMENTED_ADMIN_ROUTES) {
+    const expectedCount = route.defaultAccess[roleKey] ? 1 : 0;
+    await expect(page.getByTestId("dashboard-desktop-navigation").locator(`a[href="${route.href}"]`)).toHaveCount(expectedCount);
+  }
+  for (const route of PLAN35_PLANNED_ADMIN_ROUTES) {
+    await expect(page.locator(`a[href="${route.href}"]`)).toHaveCount(0);
+  }
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.reload({ waitUntil: "domcontentloaded" });
+  const { dialog } = await openMobileNavigation(page);
+  for (const route of PLAN35_IMPLEMENTED_ADMIN_ROUTES) {
+    const expectedCount = route.defaultAccess[roleKey] ? 1 : 0;
+    await expect(dialog.locator(`a[href="${route.href}"]`)).toHaveCount(expectedCount);
+  }
+}
+
+async function expectDirectAuthorization(page: Page, roleKey: Plan35RoleKey) {
+  for (const route of PLAN35_IMPLEMENTED_ADMIN_ROUTES) {
+    const allowed = route.defaultAccess[roleKey];
+    const apiResponse = await page.request.get(route.apiProbe);
+    expect(apiResponse.status(), `${roleKey}:${route.id}:api`).toBe(allowed ? 200 : 403);
+
+    const pageResponse = await page.goto(route.href, { waitUntil: "domcontentloaded" });
+    expect(pageResponse?.status() ?? 500, `${roleKey}:${route.id}:page`).toBeLessThan(500);
+    const deniedState = page.getByTestId("admin-permission-denied");
+    if (allowed) {
+      await expect(deniedState).toHaveCount(0);
+    } else {
+      await expect(deniedState).toBeVisible();
+      await expect(deniedState).not.toContainText(/[a-z]+\.[a-z]+\.[a-z]+/i);
+      await expect(deniedState.getByRole("link", { name: /مساحة العمل|الرئيسية/ })).toBeVisible();
+    }
+  }
 }
 
 function mobileNavigationTrigger(page: Page) { return page.getByRole("button", { name: /التنقل|القائمة الرئيسية|قائمة الإدارة/ }).first(); }

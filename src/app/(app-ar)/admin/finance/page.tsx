@@ -45,13 +45,13 @@ import {
 } from "@/features/admin/finance/finance-page-helpers";
 import { currencyValues, paymentStatusValues } from "@/lib/legal-finance";
 import { formatDate, formatDateTime, formatMoney, labelFrom, paymentStatusLabels } from "@/lib/legal-format";
+import { plan35AdminRestrictedActionCopy } from "@/lib/ui-copy";
 import {
-  canReadAdminFinance,
   getAdminFinanceOptions,
   getAdminPaymentDetail,
   listAdminPayments
 } from "@/server/admin/finance-report-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { listAdminPaymentAttempts, listAdminPaymentWebhookEvents } from "@/server/payments/payment-service";
 import { listAdminConsultationPricingRules } from "@/server/payments/pricing-service";
 import { getAdminPaymentGatewaySettings } from "@/server/payments/payment-settings-service";
@@ -470,7 +470,7 @@ function PaymentGatewayOperationsPanel({
                 </div>
               </>
             ) : (
-              <StateBlock tone="permission" title="إدارة الدفع غير متاحة" description="قراءة معلومات الدفع متاحة فقط. الحفظ يحتاج صلاحية finance.manage.any أو settings.manage.any." />
+              <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.paymentSettingsManage} />
             )}
           </div>
         </CardContent>
@@ -607,13 +607,9 @@ function PaymentGatewayOperationsPanel({
 }
 
 export default async function AdminFinancePage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
-  const guard = await requireAdminPage("/admin/finance");
+  const guard = await requireAdminRoutePage("/admin/finance");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
-  }
-
-  if (!canReadAdminFinance(guard.context.principal)) {
-    return <PermissionBlocked title="غير مسموح بقراءة الفواتير" description="هذا المسار يحتاج صلاحية finance.read.any أو finance.manage.any." />;
   }
 
   const query = flattenSearchParams((await searchParams) ?? {});
@@ -788,7 +784,7 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
                   payment={editPayment ? paymentFormValue(editPayment) : undefined}
                 />
               ) : (
-                <StateBlock tone="permission" title="إدارة الفواتير غير متاحة" description="يمكنك قراءة الفواتير فقط. الإنشاء والتعديل يحتاجان صلاحية finance.manage.any." />
+                <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.invoiceManage} />
               )}
             </CardContent>
           </Card>

@@ -16,9 +16,8 @@ import {
   socialPlatformValues
 } from "@/lib/legal-content";
 import { formatDateTime, labelFrom } from "@/lib/legal-format";
-import { sourceTypeDisplayLabel } from "@/lib/ui-copy";
+import { plan35AdminRestrictedActionCopy, sourceTypeDisplayLabel } from "@/lib/ui-copy";
 import {
-  canAccessContentHub,
   canApproveArticles,
   canApproveCaseStudies,
   canApproveSocialDrafts,
@@ -30,7 +29,7 @@ import {
   getAdminContentHub,
   getAdminSocialDraftDetail
 } from "@/server/admin/content-social-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -286,13 +285,9 @@ function socialDraftFormValue(draft: Awaited<ReturnType<typeof getAdminSocialDra
 }
 
 export default async function AdminContentPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
-  const guard = await requireAdminPage("/admin/content");
+  const guard = await requireAdminRoutePage("/admin/content");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
-  }
-
-  if (!canAccessContentHub(guard.context.principal)) {
-    return <PermissionBlocked title="غير مسموح بإدارة المحتوى" description="هذا المسار يحتاج صلاحيات content أو caseStudy أو socialDraft." />;
   }
 
   const query = flattenSearchParams((await searchParams) ?? {});
@@ -450,18 +445,18 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
                   canCaseStudyCreate ? (
                     <CaseStudyForm canApprove={canCaseStudyApprove} study={editCaseStudy ? caseStudyFormValue(editCaseStudy) : undefined} />
                   ) : (
-                    <StateBlock tone="permission" title="إنشاء دراسات الحالة غير متاح" description="هذا الحساب يحتاج صلاحية caseStudy.create.any." />
+                    <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.caseStudyCreate} />
                   )
                 ) : activeTab === "social" || editSocialDraft ? (
                   canSocialCreate ? (
                     <SocialDraftForm canApprove={canSocialApprove} draft={editSocialDraft ? socialDraftFormValue(editSocialDraft) : undefined} />
                   ) : (
-                    <StateBlock tone="permission" title="إنشاء مسودات السوشيال غير متاح" description="هذا الحساب يحتاج صلاحية socialDraft.create.any." />
+                    <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.socialDraftCreate} />
                   )
                 ) : canArticleCreate ? (
                   <ArticleForm article={editArticle ? articleFormValue(editArticle) : undefined} canApprove={canArticleApprove} />
                 ) : (
-                  <StateBlock tone="permission" title="إنشاء المقالات غير متاح" description="هذا الحساب يحتاج صلاحية content.create.any." />
+                  <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.articleCreate} />
                 )}
               </CardContent>
             </Card>

@@ -23,7 +23,7 @@ import {
   getAdminClientDetail,
   listAssignableClientLawyers
 } from "@/server/admin/client-crm-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { ApiError } from "@/server/http/errors";
 import { adminNavForPath } from "../../admin-navigation";
 
@@ -50,7 +50,7 @@ function DetailItem({ label, value }: { label: string; value: React.ReactNode })
 
 export default async function AdminClientDetailPage({ params }: PageProps) {
   const { clientId } = await params;
-  const guard = await requireAdminPage(`/admin/clients/${clientId}`);
+  const guard = await requireAdminRoutePage(`/admin/clients/${clientId}`);
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }
@@ -78,6 +78,7 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
       title={client.fullName}
       userLabel={guard.context.user.name}
       principal={guard.context.principal}
+      actionRouteId="clients.list"
       notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
       action={
         <ButtonLink href="/admin/clients" size="sm" variant="secondary">

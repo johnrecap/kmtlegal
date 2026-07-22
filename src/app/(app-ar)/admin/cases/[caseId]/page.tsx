@@ -29,7 +29,7 @@ import {
 } from "@/features/admin/task-documents/task-document-forms";
 import { getAdminCaseDetail } from "@/server/admin/case-operations-service";
 import { getAdminDocumentOptions, getCaseTaskDocumentTabs } from "@/server/admin/task-document-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { ApiError } from "@/server/http/errors";
 import { adminNavForPath } from "../../admin-navigation";
 
@@ -434,7 +434,7 @@ function DocumentsTab({ data, documentOptions }: { data: CaseTaskDocumentTabs; d
 export default async function AdminCaseDetailPage({ params, searchParams }: PageProps) {
   const { caseId } = await params;
   const resolvedSearchParams = (await searchParams) ?? {};
-  const guard = await requireAdminPage(`/admin/cases/${caseId}`);
+  const guard = await requireAdminRoutePage(`/admin/cases/${caseId}`);
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }
@@ -487,6 +487,7 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
       title={legalCase.internalFileNumber}
       userLabel={guard.context.user.name}
       principal={guard.context.principal}
+      actionRouteId="cases.list"
       notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
       action={
         <ButtonLink href="/admin/cases" size="sm" variant="secondary">

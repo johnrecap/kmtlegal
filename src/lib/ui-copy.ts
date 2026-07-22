@@ -43,7 +43,9 @@ export const protectedRecoveryUiCopy = {
   retry: "إعادة المحاولة",
   notFoundTitle: "الصفحة غير موجودة",
   notFoundDescription: "الرابط الذي فتحته غير صحيح أو لم يعد متاحًا لحسابك.",
-  backToDashboard: "العودة إلى الرئيسية"
+  backToDashboard: "العودة إلى الرئيسية",
+  adminOnlyTitle: "غير مسموح بالدخول إلى لوحة المكتب",
+  adminOnlyDescription: "هذا المسار مخصص لفريق العمل فقط. حسابات العملاء تظل داخل بوابة العميل."
 } as const;
 
 export const plan35AdminRouteLabels = {
@@ -102,7 +104,8 @@ export const plan35DashboardScopeCopy = {
 export const plan35AdminStateCopy = {
   loading: { title: "جارٍ تحميل بيانات القسم", description: "يمكنك متابعة استخدام بقية مساحة العمل أثناء التحميل." },
   empty: { title: "لا توجد بيانات مطابقة", description: "عدّل الفلاتر أو ابدأ بإضافة سجل جديد إذا كانت صلاحيتك تسمح." },
-  unavailable: { title: "هذا القسم غير متاح مؤقتًا", description: "باقي مساحة العمل ما زالت متاحة. حاول تحميل هذا القسم مرة أخرى." }
+  unavailable: { title: "هذا القسم غير متاح مؤقتًا", description: "باقي مساحة العمل ما زالت متاحة. حاول تحميل هذا القسم مرة أخرى." },
+  denied: { title: "هذا القسم غير متاح لحسابك", description: "يمكنك متابعة العمل من الأقسام الظاهرة لك في القائمة أو الرجوع إلى مساحة العمل." }
 } as const;
 
 export const plan35AdminRecoveryCopy = {
@@ -110,6 +113,45 @@ export const plan35AdminRecoveryCopy = {
   refresh: "تحديث البيانات",
   backToWorkspace: "العودة إلى مساحة العمل",
   caseReferenceRetry: "إنشاء محاولة جديدة وإعادة الإرسال"
+} as const;
+
+export const plan35AdminShellCopy = {
+  adminMode: "إدارة المكتب",
+  portalMode: "بوابة العميل",
+  adminBadge: "إدارة",
+  clientBadge: "عميل",
+  workspaceEyebrow: "مساحة عمل المكتب",
+  desktopNavigation: "التنقل في لوحة التحكم",
+  mobileNavigation: "التنقل في مساحة العمل على الهاتف",
+  openNavigation: "فتح قائمة الإدارة",
+  closeNavigation: "إغلاق قائمة الإدارة",
+  navigationTitle: "القائمة الرئيسية لمساحة العمل",
+  logout: "تسجيل الخروج",
+  unknownSection: "شاشة إدارية",
+  fallbackUser: "فريق المكتب"
+} as const;
+
+export const plan35AdminRestrictedActionCopy = {
+  caseStudyCreate: {
+    title: "إنشاء دراسات الحالة غير متاح",
+    description: "يمكنك مراجعة المحتوى المتاح، لكن إنشاء دراسة حالة جديدة غير متاح لهذا الحساب."
+  },
+  socialDraftCreate: {
+    title: "إنشاء مسودات السوشيال غير متاح",
+    description: "يمكنك مراجعة المسودات المتاحة، لكن إنشاء مسودة جديدة غير متاح لهذا الحساب."
+  },
+  articleCreate: {
+    title: "إنشاء المقالات غير متاح",
+    description: "يمكنك مراجعة المقالات المتاحة، لكن إنشاء مقال جديد غير متاح لهذا الحساب."
+  },
+  paymentSettingsManage: {
+    title: "إدارة الدفع غير متاحة",
+    description: "يمكنك قراءة معلومات الدفع، لكن حفظ إعدادات الدفع غير متاح لهذا الحساب."
+  },
+  invoiceManage: {
+    title: "إدارة الفواتير غير متاحة",
+    description: "يمكنك قراءة الفواتير، لكن إنشاءها أو تعديلها غير متاح لهذا الحساب."
+  }
 } as const;
 
 export const plan35ApiErrorSourceMessages = {

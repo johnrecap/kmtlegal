@@ -1,0 +1,123 @@
+{
+  "plan": "PLAN-35",
+  "story": "US2",
+  "scope": "permission-aware-admin-workspace",
+  "recordedAt": "2026-07-22T06:08:28+03:00",
+  "status": "local-policy-and-shell-verified-authenticated-matrix-deferred",
+  "baseCommit": "7088d7c",
+  "completedTasks": ["T040", "T041", "T043-T051"],
+  "openTasks": ["T042 authenticated page/API cells", "T052 checkpoint acceptance"],
+  "databaseInstalled": false,
+  "databaseContacted": false,
+  "productionDatabaseUsed": false,
+  "implementedRouteCount": 15,
+  "plannedRoutesAbsent": [
+    "contacts.list",
+    "notifications.list",
+    "cases.create",
+    "roles.list"
+  ],
+  "deterministicPolicyBaseline": {
+    "lawyer": [
+      "dashboard.home",
+      "consultations.list",
+      "clients.list",
+      "cases.list",
+      "calendar.list",
+      "tasks.list",
+      "documents.list"
+    ],
+    "secretary": [
+      "dashboard.home",
+      "consultations.availability",
+      "consultations.list",
+      "clients.list",
+      "messages.list",
+      "cases.list",
+      "calendar.list",
+      "tasks.list",
+      "documents.list",
+      "finance.list",
+      "reports.list"
+    ],
+    "officeAdmin": [
+      "dashboard.home",
+      "consultations.availability",
+      "consultations.list",
+      "clients.list",
+      "messages.list",
+      "cases.list",
+      "calendar.list",
+      "tasks.list",
+      "documents.list",
+      "finance.list",
+      "reports.list"
+    ],
+    "marketingStaff": [
+      "dashboard.home",
+      "content.home"
+    ],
+    "superAdmin": [
+      "dashboard.home",
+      "consultations.availability",
+      "consultations.list",
+      "clients.list",
+      "messages.list",
+      "cases.list",
+      "calendar.list",
+      "tasks.list",
+      "documents.list",
+      "finance.list",
+      "reports.list",
+      "content.home",
+      "users.list",
+      "settings.home",
+      "audit.list"
+    ]
+  },
+  "commands": [
+    {
+      "command": "npm test -- tests/server/admin-route-policy.test.ts tests/ui/product-components.test.tsx",
+      "result": "pass",
+      "summary": "2 files, 36 tests passed"
+    },
+    {
+      "command": "npm test",
+      "result": "pass",
+      "summary": "41 files, 287 tests passed"
+    },
+    { "command": "npm run typecheck", "result": "pass" },
+    { "command": "npm run lint", "result": "pass", "summary": "No warnings or errors" },
+    {
+      "command": "ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build",
+      "result": "pass",
+      "summary": "Next.js production build completed without a database connection"
+    },
+    {
+      "command": "node scripts/run-playwright-with-server.mjs tests/e2e/plan35-admin-operations.spec.ts --workers=1",
+      "result": "pass-with-authenticated-cells-skipped",
+      "summary": "12 shell/accessibility tests passed at 1440x900, 1023x768, 1024x768, 390x844, and 320x568; five role-matrix tests were skipped"
+    },
+    { "command": "npm run security:secrets", "result": "pass" },
+    { "command": "git diff --check", "result": "pass" }
+  ],
+  "authenticatedAcceptance": {
+    "result": "deferred",
+    "unexecutedRoleTests": 5,
+    "unexecutedRouteRoleCells": 75,
+    "reason": "No disposable PostgreSQL and no safe authenticated storage states exist for the five staff personas.",
+    "notCountedAsPass": ["skipped test", "404", "405", "mock principal", "production-connected database"]
+  },
+  "convergence": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "acceptedResiduals": [
+      {
+        "severity": "DEFERRED_EVIDENCE",
+        "finding": "Direct authenticated navigation/page/API parity has not run for all five default staff roles.",
+        "disposition": "T042 authenticated cells and T052 remain open. The local policy and shell implementation may proceed under FR-035, but US2 is not checkpoint-accepted or DB-verified."
+      }
+    ]
+  }
+}

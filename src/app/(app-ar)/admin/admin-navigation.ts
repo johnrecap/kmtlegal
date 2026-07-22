@@ -1,31 +1,44 @@
 import type { DashboardNavItem } from "@/components/layout";
+import {
+  ADMIN_ROUTE_POLICIES,
+  filterAdminRoutePolicies,
+  isAdminRouteActive,
+  resolveAdminRoutePolicy
+} from "@/lib/admin-route-policy";
+import {
+  plan35AdminRouteGroupLabels,
+  plan35AdminRouteLabels,
+  plan35AdminShellCopy
+} from "@/lib/ui-copy";
+import type { Principal } from "@/server/auth/policy";
 
-export const adminNavItems: DashboardNavItem[] = [
-  { label: "أوقات الاستشارات", href: "/admin/consultation-availability", icon: "event_available", group: "تشغيل المكتب" },
-  { label: "الرئيسية", href: "/admin", icon: "dashboard", group: "تشغيل المكتب" },
-  { label: "الاستشارات", href: "/admin/consultations", icon: "rate_review", group: "تشغيل المكتب" },
-  { label: "العملاء", href: "/admin/clients", icon: "groups", group: "تشغيل المكتب" },
-  { label: "رسائل العملاء", href: "/admin/messages", icon: "forum", group: "تشغيل المكتب" },
-  { label: "القضايا", href: "/admin/cases", icon: "gavel", group: "تشغيل المكتب" },
-  { label: "التقويم", href: "/admin/calendar", icon: "event", group: "تشغيل المكتب" },
-  { label: "المهام", href: "/admin/tasks", icon: "task_alt", group: "تشغيل المكتب" },
-  { label: "المستندات", href: "/admin/documents", icon: "folder", group: "الملفات والمال" },
-  { label: "الفواتير", href: "/admin/finance", icon: "receipt_long", group: "الملفات والمال" },
-  { label: "التقارير", href: "/admin/reports", icon: "monitoring", group: "الملفات والمال" },
-  { label: "المحتوى", href: "/admin/content", icon: "campaign", group: "الإدارة" },
-  { label: "المستخدمون", href: "/admin/users", icon: "manage_accounts", group: "الإدارة" },
-  { label: "الإعدادات", href: "/admin/settings", icon: "settings", group: "الإدارة" },
-  { label: "سجل التدقيق", href: "/admin/audit-log", icon: "fact_check", group: "الإدارة" }
-];
+function navItemFromPolicy(
+  policy: (typeof ADMIN_ROUTE_POLICIES)[number],
+  pathname?: string
+): DashboardNavItem {
+  return {
+    label: plan35AdminRouteLabels[policy.labelKey],
+    href: policy.href,
+    icon: policy.icon,
+    group: plan35AdminRouteGroupLabels[policy.group],
+    active: pathname ? isAdminRouteActive(policy, pathname) : false
+  };
+}
 
-export function adminNavForPath(pathname: string) {
-  return adminNavItems.map((item) => ({
-    ...item,
-    active: item.href === "/admin" ? pathname === "/admin" : pathname === item.href || pathname.startsWith(`${item.href}/`)
-  }));
+export const adminNavItems: DashboardNavItem[] = ADMIN_ROUTE_POLICIES.map((policy) =>
+  navItemFromPolicy(policy)
+);
+
+export function adminNavForPath(
+  pathname: string,
+  principal?: Pick<Principal, "roleName" | "permissions">
+) {
+  const policies = principal ? filterAdminRoutePolicies(principal) : ADMIN_ROUTE_POLICIES;
+  return policies.map((policy) => navItemFromPolicy(policy, pathname));
 }
 
 export function adminSectionLabel(section: string[] = []) {
-  const path = `/admin/${section.join("/")}`;
-  return adminNavItems.find((item) => path === item.href || path.startsWith(`${item.href}/`))?.label ?? "شاشة إدارية";
+  const pathname = section.length ? `/admin/${section.join("/")}` : "/admin";
+  const policy = resolveAdminRoutePolicy(pathname);
+  return policy ? plan35AdminRouteLabels[policy.labelKey] : plan35AdminShellCopy.unknownSection;
 }

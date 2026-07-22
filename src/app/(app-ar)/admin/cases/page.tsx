@@ -6,11 +6,10 @@ import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Selec
 import { buttonClasses } from "@/components/ui/button";
 import { caseStatusLabels, formatDateTime, labelFrom, priorityLabels } from "@/lib/legal-format";
 import {
-  canListAdminCases,
   getAdminCaseFilterOptions,
   listAdminCases
 } from "@/server/admin/case-operations-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -188,18 +187,9 @@ function CaseMobileCard({ row }: { row: CaseRow }) {
 }
 
 export default async function AdminCasesPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
-  const guard = await requireAdminPage("/admin/cases");
+  const guard = await requireAdminRoutePage("/admin/cases");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
-  }
-
-  if (!canListAdminCases(guard.context.principal)) {
-    return (
-      <PermissionBlocked
-        title="غير مسموح بقراءة القضايا"
-        description="هذا المسار يحتاج صلاحية قراءة كل القضايا أو قراءة القضايا المعينة لك."
-      />
-    );
   }
 
   const query = flattenSearchParams((await searchParams) ?? {});

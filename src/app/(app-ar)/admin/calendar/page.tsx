@@ -14,7 +14,7 @@ import {
   listAdminCalendarAppointments,
   listCalendarCaseOptions
 } from "@/server/admin/case-operations-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { ApiError } from "@/server/http/errors";
 import { adminNavForPath } from "../admin-navigation";
 
@@ -85,7 +85,7 @@ function groupAppointmentsByDay(appointments: CalendarAppointment[]) {
 }
 
 export default async function AdminCalendarPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
-  const guard = await requireAdminPage("/admin/calendar");
+  const guard = await requireAdminRoutePage("/admin/calendar");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }

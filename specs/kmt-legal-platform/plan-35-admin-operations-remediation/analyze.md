@@ -1,8 +1,8 @@
 # PLAN-35 Spec Kit Analyze Report
 
 **Date**: 2026-07-22
-**Status**: `US1-LOCAL-IMPLEMENTATION-COMPLETE-DB-ACCEPTANCE-DEFERRED`
-**Implementation state**: T001–T015, T017–T027, and T029–T038 are implemented and locally verified. T016/G35-4D, T028, and the database-backed portion of T039 remain deferred evidence under the explicit FR-035 scope clarification; T019 is the planned expected-red UI exception.
+**Status**: `US2-LOCAL-IMPLEMENTATION-COMPLETE-AUTHENTICATED-ACCEPTANCE-DEFERRED`
+**Implementation state**: T001–T015, T017–T027, T029–T041, and T043–T051 are implemented and locally verified. T016/G35-4D, T028, the database-backed portion of T039, T042's authenticated page/API cells, and T052 remain deferred evidence under the explicit FR-035 scope clarification.
 
 ## Gate Result
 
@@ -42,7 +42,7 @@ contract, broken local Markdown link, or duplicated detailed master task was fou
 |---|---|---|
 | Foundation and characterization | T001–T023 | G35-4L permits local work; T016/G35-4D remains open and T019 stays expected-red until UI convergence |
 | Scope and appointment correctness | T024–T039 | T024–T027/T029–T038 local lane; T028/T039 DB evidence required before US1 acceptance |
-| Existing permission-aware workspace | T040–T052 | Fifteen implemented routes × five roles; four planned routes remain absent |
+| Existing permission-aware workspace | T040–T052 | T040–T051 local lane; authenticated T042/T052 acceptance remains open; four planned routes remain absent |
 | Contact and notification queues | T053–T068 | T066 activates only page/API-ready contact and notification entries |
 | Manual case create/edit | T069–T081 | T079 activates `cases.create` only after service, API, and page exist |
 | Role/user governance | T082–T091 | T090 activates roles; T091 passes the complete 19×5 matrix |
@@ -167,10 +167,43 @@ remain open because same-row/contention behavior and bounded `EXPLAIN` evidence 
 without disposable PostgreSQL. No new convergence task is appended because T016/T028/T039 already
 own every deferred database assertion.
 
-## Conclusion
+## US1 Local Conclusion
 
 PLAN-35 remains internally consistent and conflict-controlled with zero unresolved `CRITICAL` or
 `HIGH` findings. The user explicitly accepted local-only progress without installing a database;
 therefore T024–T027 and T029–T038 are locally complete. T016, T028, and the DB-backed portion of T039
 stay open, US1 cannot be checkpoint-accepted or described as DB-verified, and no production database
 may be used for verification.
+
+## US2 Local Implementation Convergence — 2026-07-22
+
+| Severity | Open | Disposition |
+|---|---:|---|
+| `CRITICAL` | 0 | None |
+| `HIGH` | 0 | None. Direct page authorization remains server-side and the client context contains only filtered navigation metadata plus the user label. |
+| `MEDIUM` | 0 | Registry/navigation drift, inherited child-route authorization, shell-loss on denied/boundary states, raw permission copy, and mobile-dialog accessibility findings were fixed. |
+
+T040, T041, and T043–T051 now provide a canonical fifteen-route registry, deterministic role
+filtering, matching page guards, shell-preserving denial/loading/error/not-found states, and one RTL
+desktop/mobile navigation source. The native mobile dialog traps keyboard and programmatic focus,
+locks document scrolling, handles Escape and navigation close, restores focus, uses logical inline
+positioning, and keeps controls at least 44 CSS pixels. The server-side policy filter, reusable
+presentation shell, shared navigation renderer, and client dialog have separate explicitly owned
+files so raw permissions do not enter the client access context and later phases cannot overlap them.
+
+The deterministic server/UI suite passes locally, and the browser shell suite passes at `1440x900`,
+`1023x768`, `1024x768`, `390x844`, and the additional compact `320x568` viewport. The five
+authenticated role-matrix cases are collected but intentionally skipped because no disposable
+PostgreSQL or five safe authenticated storage states exist. Therefore T042's authenticated cells and
+T052 remain open; no `404`, `405`, skip, mock principal, or production database is counted as an
+authorization pass. The truthful partial evidence is recorded in
+`test-results/plan35/us2-baseline-route-matrix.json`. No new convergence task is appended because
+T042/T052 already own the remaining evidence.
+
+## Conclusion
+
+PLAN-35 remains internally consistent and conflict-controlled with zero unresolved `CRITICAL`,
+`HIGH`, or `MEDIUM` findings in the completed local lanes. US1 and the US2 shell/policy work are
+locally complete, while T016, T028, the database-backed part of T039, T042's authenticated cells,
+and T052 remain explicitly open. Neither skipped authentication cells nor the production-connected
+database are used as acceptance evidence.

@@ -9,8 +9,8 @@ import {
   StoragePolicySettingForm
 } from "@/features/admin/governance/governance-forms";
 import { formatDateTime } from "@/lib/legal-format";
-import { canManageAdminSettings, listAdminSettings } from "@/server/admin/governance-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { listAdminSettings } from "@/server/admin/governance-service";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -38,13 +38,9 @@ function SettingForm({ setting }: { setting: SettingRow }) {
 }
 
 export default async function AdminSettingsPage() {
-  const guard = await requireAdminPage("/admin/settings");
+  const guard = await requireAdminRoutePage("/admin/settings");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
-  }
-
-  if (!canManageAdminSettings(guard.context.principal)) {
-    return <PermissionBlocked title="غير مسموح بإدارة الإعدادات" description="هذا المسار يحتاج صلاحية settings.manage.any." />;
   }
 
   const settings = await listAdminSettings(guard.context.principal);

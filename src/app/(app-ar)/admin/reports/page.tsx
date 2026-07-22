@@ -30,8 +30,8 @@ import {
   paymentStatusLabels,
   taskStatusLabels
 } from "@/lib/legal-format";
-import { canReadAdminReports, getAdminReports } from "@/server/admin/finance-report-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { getAdminReports } from "@/server/admin/finance-report-service";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -185,13 +185,9 @@ function RecentPaymentMobileCard({ row }: { row: RecentPaymentRow }) {
 }
 
 export default async function AdminReportsPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
-  const guard = await requireAdminPage("/admin/reports");
+  const guard = await requireAdminRoutePage("/admin/reports");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
-  }
-
-  if (!canReadAdminReports(guard.context.principal)) {
-    return <PermissionBlocked title="غير مسموح بقراءة التقارير" description="هذا المسار يحتاج صلاحية report.read.any." />;
   }
 
   const query = flattenSearchParams((await searchParams) ?? {});

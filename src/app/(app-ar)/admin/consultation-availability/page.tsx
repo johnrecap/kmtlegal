@@ -3,11 +3,8 @@ import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { StateBlock } from "@/components/ui";
 import { ConsultationAvailabilityForm } from "@/features/admin/consultations/consultation-availability-form";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
-import {
-  canManageConsultationAvailability,
-  getAdminConsultationAvailability
-} from "@/server/consultations/consultation-availability-service";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
+import { getAdminConsultationAvailability } from "@/server/consultations/consultation-availability-service";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -18,18 +15,9 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminConsultationAvailabilityPage() {
-  const guard = await requireAdminPage("/admin/consultation-availability");
+  const guard = await requireAdminRoutePage("/admin/consultation-availability");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
-  }
-
-  if (!canManageConsultationAvailability(guard.context.principal)) {
-    return (
-      <PermissionBlocked
-        title="غير مسموح بإدارة مواعيد الاستشارات"
-        description="هذه الشاشة تحتاج صلاحية إدارة مواعيد المكتب حتى يتم ضبط أوقات الحجز العامة."
-      />
-    );
   }
 
   const result = await getAdminConsultationAvailability({ actor: guard.context.principal });

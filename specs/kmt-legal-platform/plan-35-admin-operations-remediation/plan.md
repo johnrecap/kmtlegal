@@ -148,7 +148,7 @@ src/
 |   |-- settings/route.ts
 |   `-- settings/[key]/route.ts
 |-- components/
-|   |-- layout/{dashboard-shell,dashboard-mobile-nav,admin-shell-state}.tsx
+|   |-- layout/{dashboard-shell,dashboard-shell-view,dashboard-navigation,dashboard-mobile-nav,admin-shell-state}.tsx
 |   `-- ui/{button,badge,data-table,field,filter-bar,inline-feedback,search-input,skeleton,state,toast}.tsx
 |-- features/admin/
 |   |-- dashboard/                        # planned bounded dashboard components
@@ -279,7 +279,7 @@ accessibility, and live checks. Reconcile OpenAPI/status evidence. A missing env
 | Route policy | `src/lib/admin-route-policy.ts`, `src/app/(app-ar)/admin/admin-navigation.ts`, `src/server/auth/page-guards.tsx` | T011, T040–T052, T066, T079, T090–T091 | Integrator sequence; baseline first, then only page/API-ready metadata requests |
 | Appointment/operations | conflict helper, `consultation-assistant-service.ts`, `consultation-review-service.ts`, `case-operations-service.ts` | T025–T037, T073 | Helper, public writer, assignment/conversion, admin writer, then reference extraction |
 | Dashboard | dashboard service/route/page/features/tests | T024, T038, T067, T092–T101 | Scope pass, queue pass, command center; never concurrent |
-| Shell/UI | `src/components/layout/dashboard-shell.tsx`, `src/components/layout/dashboard-mobile-nav.tsx`, `src/components/layout/admin-shell-state.tsx`, `src/components/layout/index.ts`, `src/features/admin/shell/admin-access-context.tsx`, `src/app/(app-ar)/admin/layout.tsx`, `src/app/(app-ar)/admin/loading.tsx`, `src/app/(app-ar)/admin/error.tsx`, `src/app/(app-ar)/admin/not-found.tsx`, `tests/ui/product-components.test.tsx` | T041, T046–T052 | One UI owner through US2 checkpoint |
+| Shell/UI | `src/components/layout/dashboard-shell.tsx`, `src/components/layout/dashboard-shell-view.tsx`, `src/components/layout/dashboard-navigation.tsx`, `src/components/layout/dashboard-mobile-nav.tsx`, `src/components/layout/admin-shell-state.tsx`, `src/components/layout/index.ts`, `src/features/admin/shell/admin-access-context.tsx`, `src/app/(app-ar)/admin/layout.tsx`, `src/app/(app-ar)/admin/loading.tsx`, `src/app/(app-ar)/admin/error.tsx`, `src/app/(app-ar)/admin/not-found.tsx`, `tests/ui/product-components.test.tsx` | T041, T046–T052 | One UI owner through US2 checkpoint |
 | Contact | contact service/routes/feature/page/tests | T053, T055, T057–T061 | Atomic service before route/UI; may run beside Notification |
 | Notification | notification service/routes/bell/popover/page/tests | T054, T056–T057, T062–T065 | Projection contract before preview/center; registry/dashboard integrate later |
 | Cases | manual-case service/routes/form/pages/tests/client history | T069–T081 | Service/API before UI; appointment lane hands consultation service first |

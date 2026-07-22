@@ -40,56 +40,72 @@ export type AdminRoutePolicy = {
   staffFallback: boolean;
 };
 
+type AdminRouteDefinition = Omit<AdminRoutePolicy, "labelKey" | "staffFallback"> & {
+  staffFallback?: boolean;
+};
+
 export const ADMIN_ROUTE_POLICIES: readonly AdminRoutePolicy[] = [
-  route("dashboard.home", "/admin", "exact", "office-operations", "dashboard", [], true),
-  route("consultations.availability", "/admin/consultation-availability", "prefix", "office-operations", "event_available", ["appointment.manage.any", "settings.manage.any"]),
-  route("consultations.list", "/admin/consultations", "prefix", "office-operations", "rate_review", ["consultation.review.any", "consultation.review.assigned"]),
-  route("clients.list", "/admin/clients", "prefix", "office-operations", "groups", ["client.read.any", "client.read.assigned"]),
-  route("messages.list", "/admin/messages", "prefix", "office-operations", "forum", ["conversation.read.any", "conversation.manage.any"]),
-  route("cases.list", "/admin/cases", "prefix", "office-operations", "gavel", ["case.read.any", "case.read.assigned"]),
-  route("calendar.list", "/admin/calendar", "prefix", "office-operations", "event", ["appointment.manage.any", "appointment.read.assigned"]),
-  route("tasks.list", "/admin/tasks", "prefix", "office-operations", "task_alt", ["task.manage.any", "task.manage.assigned", "task.read.assigned"]),
-  route("documents.list", "/admin/documents", "prefix", "files-finance", "folder", ["document.manage.any", "document.read.assigned"]),
-  route("finance.list", "/admin/finance", "prefix", "files-finance", "receipt_long", ["finance.read.any", "finance.manage.any"]),
-  route("reports.list", "/admin/reports", "prefix", "files-finance", "monitoring", ["report.read.any"]),
-  route("content.home", "/admin/content", "prefix", "administration", "campaign", [
-    "content.create.any",
-    "content.approve.any",
-    "caseStudy.create.any",
-    "caseStudy.approve.any",
-    "socialDraft.create.any",
-    "socialDraft.approve.any"
-  ]),
-  route("users.list", "/admin/users", "prefix", "administration", "manage_accounts", ["user.manage.any"]),
-  route("settings.home", "/admin/settings", "prefix", "administration", "settings", ["settings.manage.any"]),
-  route("audit.list", "/admin/audit-log", "prefix", "administration", "fact_check", ["audit.read.any"])
+  route({ id: "dashboard.home", href: "/admin", activeMatch: "exact", group: "office-operations", icon: "dashboard", requiredAnyPermissions: [], staffFallback: true }),
+  route({ id: "consultations.availability", href: "/admin/consultation-availability", activeMatch: "prefix", group: "office-operations", icon: "event_available", requiredAnyPermissions: ["appointment.manage.any", "settings.manage.any"] }),
+  route({ id: "consultations.list", href: "/admin/consultations", activeMatch: "prefix", group: "office-operations", icon: "rate_review", requiredAnyPermissions: ["consultation.review.any", "consultation.review.assigned"] }),
+  route({ id: "clients.list", href: "/admin/clients", activeMatch: "prefix", group: "office-operations", icon: "groups", requiredAnyPermissions: ["client.read.any", "client.read.assigned"] }),
+  route({ id: "messages.list", href: "/admin/messages", activeMatch: "prefix", group: "office-operations", icon: "forum", requiredAnyPermissions: ["conversation.read.any", "conversation.manage.any"] }),
+  route({ id: "cases.list", href: "/admin/cases", activeMatch: "prefix", group: "office-operations", icon: "gavel", requiredAnyPermissions: ["case.read.any", "case.read.assigned"] }),
+  route({ id: "calendar.list", href: "/admin/calendar", activeMatch: "prefix", group: "office-operations", icon: "event", requiredAnyPermissions: ["appointment.manage.any", "appointment.read.assigned"] }),
+  route({ id: "tasks.list", href: "/admin/tasks", activeMatch: "prefix", group: "office-operations", icon: "task_alt", requiredAnyPermissions: ["task.manage.any", "task.manage.assigned", "task.read.assigned"] }),
+  route({ id: "documents.list", href: "/admin/documents", activeMatch: "prefix", group: "files-finance", icon: "folder", requiredAnyPermissions: ["document.manage.any", "document.read.assigned"] }),
+  route({ id: "finance.list", href: "/admin/finance", activeMatch: "prefix", group: "files-finance", icon: "receipt_long", requiredAnyPermissions: ["finance.read.any", "finance.manage.any"] }),
+  route({ id: "reports.list", href: "/admin/reports", activeMatch: "prefix", group: "files-finance", icon: "monitoring", requiredAnyPermissions: ["report.read.any"] }),
+  route({ id: "content.home", href: "/admin/content", activeMatch: "prefix", group: "administration", icon: "campaign", requiredAnyPermissions: ["content.create.any", "content.approve.any", "caseStudy.create.any", "caseStudy.approve.any", "socialDraft.create.any", "socialDraft.approve.any"] }),
+  route({ id: "users.list", href: "/admin/users", activeMatch: "prefix", group: "administration", icon: "manage_accounts", requiredAnyPermissions: ["user.manage.any"] }),
+  route({ id: "settings.home", href: "/admin/settings", activeMatch: "prefix", group: "administration", icon: "settings", requiredAnyPermissions: ["settings.manage.any"] }),
+  route({ id: "audit.list", href: "/admin/audit-log", activeMatch: "prefix", group: "administration", icon: "fact_check", requiredAnyPermissions: ["audit.read.any"] })
 ];
 
-function route(
-  id: AdminRouteId,
-  href: string,
-  activeMatch: AdminRouteActiveMatch,
-  group: AdminRouteGroup,
-  icon: string,
-  requiredAnyPermissions: readonly PermissionKey[],
-  staffFallback = false
-): AdminRoutePolicy {
+const adminRoutePolicyById = new Map<AdminRouteId, AdminRoutePolicy>(
+  ADMIN_ROUTE_POLICIES.map((policy) => [policy.id, policy])
+);
+const reservedAdminRoutePrefixes = ["/admin/cases/new"] as const;
+
+function route(definition: AdminRouteDefinition): AdminRoutePolicy {
   return {
-    id,
-    href,
-    activeMatch,
-    group,
-    labelKey: `admin.routes.${id}` as Plan35AdminRouteLabelKey,
-    icon,
-    requiredAnyPermissions,
-    staffFallback
+    ...definition,
+    labelKey: `admin.routes.${definition.id}` as Plan35AdminRouteLabelKey,
+    staffFallback: definition.staffFallback ?? false
   };
 }
 
-const adminRoutePolicyById = new Map<AdminRouteId, AdminRoutePolicy>(ADMIN_ROUTE_POLICIES.map((item) => [item.id, item]));
+function normalizedAdminPath(pathname: string) {
+  const withoutQuery = pathname.split(/[?#]/, 1)[0] || "/";
+  return withoutQuery.length > 1 ? withoutQuery.replace(/\/+$/, "") : withoutQuery;
+}
+
+function policyMatchesPath(policy: AdminRoutePolicy, pathname: string) {
+  if (policy.activeMatch === "exact") return pathname === policy.href;
+  return pathname === policy.href || pathname.startsWith(`${policy.href}/`);
+}
+
+function isReservedAdminPath(pathname: string) {
+  return reservedAdminRoutePrefixes.some(
+    (reservedPath) => pathname === reservedPath || pathname.startsWith(`${reservedPath}/`)
+  );
+}
 
 export function getAdminRoutePolicy(id: AdminRouteId) {
   return adminRoutePolicyById.get(id);
+}
+
+export function resolveAdminRoutePolicy(pathname: string) {
+  const normalizedPath = normalizedAdminPath(pathname);
+  if (isReservedAdminPath(normalizedPath)) return undefined;
+
+  return ADMIN_ROUTE_POLICIES.filter((policy) => policyMatchesPath(policy, normalizedPath)).sort(
+    (left, right) => Number(right.activeMatch === "exact") - Number(left.activeMatch === "exact") || right.href.length - left.href.length
+  )[0];
+}
+
+export function isAdminRouteActive(policy: AdminRoutePolicy, pathname: string) {
+  return resolveAdminRoutePolicy(pathname)?.id === policy.id;
 }
 
 export function canAccessAdminRoute(
@@ -100,10 +116,24 @@ export function canAccessAdminRoute(
   if (!policy || !isStaffRole(principal.roleName)) return false;
   if (policy.exactRole && policy.exactRole !== principal.roleName) return false;
 
-  const any = policy.requiredAnyPermissions;
-  const all = policy.requiredAllPermissions ?? [];
-  const hasRequirements = any.length > 0 || all.length > 0;
-  const hasAny = any.length === 0 || any.some((permission) => hasPermission(principal, permission));
-  const hasAll = all.every((permission) => hasPermission(principal, permission));
+  const anyPermissions = policy.requiredAnyPermissions;
+  const allPermissions = policy.requiredAllPermissions ?? [];
+  const hasRequirements = anyPermissions.length > 0 || allPermissions.length > 0;
+  const hasAny = anyPermissions.length === 0 || anyPermissions.some((permission) => hasPermission(principal, permission));
+  const hasAll = allPermissions.every((permission) => hasPermission(principal, permission));
   return hasAll && (hasRequirements ? hasAny : policy.staffFallback);
+}
+
+export function canAccessAdminPath(
+  principal: Pick<Principal, "roleName" | "permissions">,
+  pathname: string
+) {
+  const policy = resolveAdminRoutePolicy(pathname);
+  return policy ? canAccessAdminRoute(principal, policy) : false;
+}
+
+export function filterAdminRoutePolicies(
+  principal: Pick<Principal, "roleName" | "permissions">
+) {
+  return ADMIN_ROUTE_POLICIES.filter((policy) => canAccessAdminRoute(principal, policy));
 }

@@ -5,8 +5,8 @@ import { AdminNotificationBell } from "@/features/admin/notifications/admin-noti
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { conversationStatusLabels, formatDateTime, labelFrom } from "@/lib/legal-format";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
-import { canReadAdminConversations, listAdminConversations, listConversationAssignees } from "@/server/conversations/conversation-service";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
+import { listAdminConversations, listConversationAssignees } from "@/server/conversations/conversation-service";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -125,13 +125,9 @@ function ConversationMobileCard({ row }: { row: ConversationRow }) {
 }
 
 export default async function AdminMessagesPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
-  const guard = await requireAdminPage("/admin/messages");
+  const guard = await requireAdminRoutePage("/admin/messages");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
-  }
-
-  if (!canReadAdminConversations(guard.context.principal)) {
-    return <PermissionBlocked title="غير مسموح بقراءة رسائل العملاء" description="هذا المسار يحتاج صلاحية قراءة محادثات العملاء." />;
   }
 
   const query = flattenSearchParams((await searchParams) ?? {});

@@ -7,8 +7,8 @@ import { AdminUserActionPanel } from "@/features/admin/governance/governance-for
 import { formatDateTime } from "@/lib/legal-format";
 import { roleDisplayLabel } from "@/lib/ui-copy";
 import { canManageClientAccounts } from "@/server/admin/client-crm-service";
-import { canChangeAdminUserPassword, canManageAdminUsers, getAdminUserDetail, getAdminUserOptions } from "@/server/admin/governance-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { canChangeAdminUserPassword, getAdminUserDetail, getAdminUserOptions } from "@/server/admin/governance-service";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -87,13 +87,9 @@ function AuditMobileCard({ row }: { row: AuditRow }) {
 
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ userId: string }> }) {
   const { userId } = await params;
-  const guard = await requireAdminPage(`/admin/users/${userId}`);
+  const guard = await requireAdminRoutePage(`/admin/users/${userId}`);
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
-  }
-
-  if (!canManageAdminUsers(guard.context.principal)) {
-    return <PermissionBlocked title="غير مسموح بإدارة المستخدمين" description="هذا المسار يحتاج صلاحية user.manage.any." />;
   }
 
   const [user, options] = await Promise.all([

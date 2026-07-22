@@ -8,11 +8,10 @@ import { ClientCreateForm } from "@/features/admin/clients/client-crm-forms";
 import { clientStatusLabels, formatDateTime, labelFrom } from "@/lib/legal-format";
 import { commonUiCopy, sourceTypeDisplayLabel } from "@/lib/ui-copy";
 import {
-  canListAdminClients,
   getAdminClientFilterOptions,
   listAdminClients
 } from "@/server/admin/client-crm-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -152,13 +151,9 @@ function ClientMobileCard({ row }: { row: ClientRow }) {
 }
 
 export default async function AdminClientsPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
-  const guard = await requireAdminPage("/admin/clients");
+  const guard = await requireAdminRoutePage("/admin/clients");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
-  }
-
-  if (!canListAdminClients(guard.context.principal)) {
-    return <PermissionBlocked title="غير مسموح بقراءة CRM العملاء" description="هذا المسار يحتاج صلاحية قراءة العملاء أو قراءة العملاء المعينين لك." />;
   }
 
   const query = flattenSearchParams((await searchParams) ?? {});

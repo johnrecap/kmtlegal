@@ -6,6 +6,8 @@ import { describe, expect, it } from "vitest";
 import { ClientPortalMetric, ClientPortalPanel, ClientSiteShell, DashboardShell, clientPortalTableClass } from "@/components/layout";
 import { ClientPortalSelect } from "@/components/layout/client-portal-select";
 import { Badge, Button, DataRecordCard, DataTable, Select, StateBlock, Tabs, TextInput } from "@/components/ui";
+import { adminNavForPath } from "@/app/(app-ar)/admin/admin-navigation";
+import { PLAN35_ROLE_FIXTURES } from "../fixtures/plan35-role-fixtures";
 
 describe("product UI primitives", () => {
   it("renders button states and accessible text", () => {
@@ -167,8 +169,10 @@ describe("product UI primitives", () => {
 
     expect(html).toContain("href=\"/product-system/clients\"");
     expect(html).toContain("href=\"/product-system/cases\"");
-    expect(html).toContain("overflow-x-auto");
-    expect(html).toContain("scrollbar-hide");
+    expect(html).toContain("data-testid=\"dashboard-mobile-navigation-trigger\"");
+    expect(html).toContain("<dialog");
+    expect(html).toContain("data-testid=\"dashboard-desktop-navigation\"");
+    expect(html).toContain("lg:block");
     expect(html).toContain("تشغيل المكتب");
     expect(html).toContain("الملفات");
     expect(html).toContain("aria-current=\"page\"");
@@ -176,6 +180,73 @@ describe("product UI primitives", () => {
     expect(html).toContain("/brand/kmt-logo-mark.webp");
     expect(html).toContain("action=\"/api/auth/logout\"");
     expect(html).toContain("تسجيل الخروج");
+  });
+
+  it("filters the admin workspace before rendering desktop and mobile navigation", () => {
+    const principal = PLAN35_ROLE_FIXTURES.marketingStaff.principal;
+    const navItems = adminNavForPath("/admin/content");
+    const html = renderToStaticMarkup(
+      <DashboardShell
+        action={<span>إدارة الإعدادات</span>}
+        actionRouteId="settings.home"
+        eyebrow="مساحة العمل"
+        navItems={navItems}
+        principal={principal}
+        title="المحتوى"
+        userLabel="مسؤول التسويق"
+      >
+        <div>content</div>
+      </DashboardShell>
+    );
+
+    expect(html).toContain("href=\"/admin\"");
+    expect(html).toContain("href=\"/admin/content\"");
+    expect(html).not.toContain("href=\"/admin/clients\"");
+    expect(html).not.toContain("href=\"/admin/settings\"");
+    expect(html).not.toContain("إدارة الإعدادات");
+    expect(html).not.toContain("case.read.any");
+  });
+
+  it("keeps only safe navigation and user labels in the persisted admin access context", () => {
+    const contextSource = readFileSync(join(process.cwd(), "src/features/admin/shell/admin-access-context.tsx"), "utf8");
+    const layoutSource = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/layout.tsx"), "utf8");
+
+    expect(contextSource).toContain("createContext");
+    expect(contextSource).toContain("usePathname");
+    expect(contextSource).toContain("navItems");
+    expect(contextSource).toContain("userLabel");
+    expect(contextSource).not.toContain("permissions:");
+    expect(layoutSource).toContain("AdminAccessProvider");
+    expect(layoutSource).not.toContain("permissions={");
+  });
+
+  it("preserves authorized navigation across admin loading, error, and not-found boundaries", () => {
+    const stateSource = readFileSync(join(process.cwd(), "src/components/layout/admin-shell-state.tsx"), "utf8");
+    const loadingSource = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/loading.tsx"), "utf8");
+    const errorSource = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/error.tsx"), "utf8");
+    const notFoundSource = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/not-found.tsx"), "utf8");
+
+    for (const source of [loadingSource, errorSource, notFoundSource]) expect(source).toContain("AdminShellState");
+    expect(stateSource).toContain("useAdminAccess");
+    expect(errorSource).toContain('"use client"');
+    expect(errorSource).toContain("reset");
+    expect(errorSource).not.toContain("error.message");
+    expect(errorSource).not.toContain("error.digest");
+  });
+
+  it("uses a native RTL mobile dialog with focus, scroll, Escape, and navigation recovery", () => {
+    const mobileNavSource = readFileSync(join(process.cwd(), "src/components/layout/dashboard-mobile-nav.tsx"), "utf8");
+
+    expect(mobileNavSource).toContain("<dialog");
+    expect(mobileNavSource).toContain("showModal()");
+    expect(mobileNavSource).toContain("focusin");
+    expect(mobileNavSource).toContain('overflow = "hidden"');
+    expect(mobileNavSource).toContain('event.key === "Tab"');
+    expect(mobileNavSource).toContain("onCancel");
+    expect(mobileNavSource).toContain("usePathname");
+    expect(mobileNavSource).toContain("aria-expanded");
+    expect(mobileNavSource).toContain("aria-controls");
+    expect(mobileNavSource).toContain("start-0");
   });
 
   it("renders the client portal shell with the public dark visual language and no card motion", () => {

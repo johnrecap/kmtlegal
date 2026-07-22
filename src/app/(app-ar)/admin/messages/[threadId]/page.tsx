@@ -4,11 +4,10 @@ import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { buttonClasses } from "@/components/ui/button";
 import { AdminMessageThreadPanel } from "@/features/admin/messages/admin-message-thread-panel";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import {
   canAssignAdminConversations,
   canManageAdminConversations,
-  canReadAdminConversations,
   canReplyAdminConversations,
   getAdminConversationDetail,
   listConversationAssignees
@@ -30,13 +29,9 @@ type AdminMessageDetailPageProps = {
 
 export default async function AdminMessageDetailPage({ params }: AdminMessageDetailPageProps) {
   const { threadId } = await params;
-  const guard = await requireAdminPage(`/admin/messages/${threadId}`);
+  const guard = await requireAdminRoutePage(`/admin/messages/${threadId}`);
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
-  }
-
-  if (!canReadAdminConversations(guard.context.principal)) {
-    return <PermissionBlocked title="غير مسموح بقراءة رسائل العملاء" description="هذا المسار يحتاج صلاحية قراءة محادثات العملاء." />;
   }
 
   const [thread, assignees] = await Promise.all([
@@ -52,6 +47,7 @@ export default async function AdminMessageDetailPage({ params }: AdminMessageDet
       title={`محادثة ${thread.client.fullName}`}
       userLabel={guard.context.user.name}
       principal={guard.context.principal}
+      actionRouteId="messages.list"
       notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
       action={
         <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href="/admin/messages">

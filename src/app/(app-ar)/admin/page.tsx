@@ -14,7 +14,7 @@ import {
   serviceCategoryLabels
 } from "@/lib/legal-format";
 import { getAdminDashboard } from "@/server/admin/dashboard-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "./admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -39,7 +39,7 @@ function PermissionState({ label }: { label: string }) {
 }
 
 export default async function AdminHomePage() {
-  const guard = await requireAdminPage("/admin");
+  const guard = await requireAdminRoutePage("/admin");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
   }

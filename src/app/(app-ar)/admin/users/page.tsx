@@ -7,8 +7,8 @@ import { buttonClasses } from "@/components/ui/button";
 import { AdminUserCreateForm } from "@/features/admin/governance/governance-forms";
 import { formatDateTime } from "@/lib/legal-format";
 import { roleDisplayLabel } from "@/lib/ui-copy";
-import { canCreateAdminUsers, canManageAdminUsers, getAdminUserOptions, listAdminUsers } from "@/server/admin/governance-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { canCreateAdminUsers, getAdminUserOptions, listAdminUsers } from "@/server/admin/governance-service";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -117,13 +117,9 @@ function UserMobileCard({ row }: { row: UserRow }) {
 }
 
 export default async function AdminUsersPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
-  const guard = await requireAdminPage("/admin/users");
+  const guard = await requireAdminRoutePage("/admin/users");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
-  }
-
-  if (!canManageAdminUsers(guard.context.principal)) {
-    return <PermissionBlocked title="غير مسموح بإدارة المستخدمين" description="هذا المسار مخصص لمدير النظام أو أي دور يملك صلاحية إدارة المستخدمين." />;
   }
 
   const query = flattenSearchParams((await searchParams) ?? {});

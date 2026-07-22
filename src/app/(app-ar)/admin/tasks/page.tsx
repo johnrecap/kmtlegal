@@ -8,11 +8,10 @@ import { TaskCreateForm, TaskUpdateForm } from "@/features/admin/task-documents/
 import { formatDate, labelFrom, taskPriorityLabels, taskStatusLabels } from "@/lib/legal-format";
 import {
   canCreateAdminTask,
-  canListAdminTasks,
   getAdminTaskOptions,
   listAdminTasks
 } from "@/server/admin/task-document-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -127,13 +126,9 @@ function TaskCard({
 }
 
 export default async function AdminTasksPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
-  const guard = await requireAdminPage("/admin/tasks");
+  const guard = await requireAdminRoutePage("/admin/tasks");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
-  }
-
-  if (!canListAdminTasks(guard.context.principal)) {
-    return <PermissionBlocked title="غير مسموح بقراءة المهام" description="هذا المسار يحتاج صلاحية قراءة أو إدارة المهام داخل نطاقك." />;
   }
 
   const query = flattenSearchParams((await searchParams) ?? {});

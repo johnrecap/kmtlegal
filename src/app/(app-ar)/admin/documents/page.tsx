@@ -30,11 +30,10 @@ import {
   labelFrom
 } from "@/lib/legal-format";
 import {
-  canListAdminDocuments,
   getAdminDocumentOptions,
   listAdminDocuments
 } from "@/server/admin/task-document-service";
-import { PermissionBlocked, requireAdminPage } from "@/server/auth/page-guards";
+import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { adminNavForPath } from "../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -170,18 +169,9 @@ function DocumentCard({ document, options }: { document: DocumentRow; options: D
 }
 
 export default async function AdminDocumentsPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
-  const guard = await requireAdminPage("/admin/documents");
+  const guard = await requireAdminRoutePage("/admin/documents");
   if (guard.status === "forbidden") {
     return <PermissionBlocked title={guard.title} description={guard.description} />;
-  }
-
-  if (!canListAdminDocuments(guard.context.principal)) {
-    return (
-      <PermissionBlocked
-        title="غير مسموح بقراءة المستندات"
-        description="هذا المسار يحتاج صلاحية قراءة أو إدارة المستندات داخل نطاق حسابك."
-      />
-    );
   }
 
   const query = flattenSearchParams((await searchParams) ?? {});
