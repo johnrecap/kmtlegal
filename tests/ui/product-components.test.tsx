@@ -185,6 +185,9 @@ describe("product UI primitives", () => {
   it("filters the admin workspace before rendering desktop and mobile navigation", () => {
     const principal = PLAN35_ROLE_FIXTURES.marketingStaff.principal;
     const navItems = adminNavForPath("/admin/content");
+    const groupTransitions = navItems
+      .map(({ group }) => group)
+      .filter((group, index, groups) => index === 0 || group !== groups[index - 1]);
     const html = renderToStaticMarkup(
       <DashboardShell
         action={<span>إدارة الإعدادات</span>}
@@ -199,6 +202,7 @@ describe("product UI primitives", () => {
       </DashboardShell>
     );
 
+    expect(groupTransitions).toEqual(["تشغيل المكتب", "الملفات والمالية", "الإدارة"]);
     expect(html).toContain("href=\"/admin\"");
     expect(html).toContain("href=\"/admin/content\"");
     expect(html).not.toContain("href=\"/admin/clients\"");

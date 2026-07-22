@@ -22,6 +22,6 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ data: result, requestId }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    return errorToResponse(error, requestId);
+    return errorToResponse(error, requestId, { routeGroup: "admin.notifications", method: "GET" });
   }
 }

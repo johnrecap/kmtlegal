@@ -9,13 +9,19 @@ const databaseMocks = vi.hoisted(() => ({
   consultationFindMany: vi.fn(async () => []),
   appointmentCount: vi.fn(async () => 0),
   appointmentFindMany: vi.fn(async () => []),
-  taskCount: vi.fn(async () => 0)
+  taskCount: vi.fn(async () => 0),
+  contactCount: vi.fn(async () => 0),
+  notificationFindMany: vi.fn(async (): Promise<Array<Record<string, unknown>>> => [])
 }));
 
 vi.mock("@/server/db/prisma", () => ({
   prisma: {
     client: { count: databaseMocks.clientCount, findMany: databaseMocks.clientFindMany },
-    legalCase: { count: databaseMocks.caseCount, findMany: databaseMocks.caseFindMany },
+    legalCase: {
+      count: databaseMocks.caseCount,
+      findMany: databaseMocks.caseFindMany,
+      findUnique: vi.fn(async () => null)
+    },
     consultationRequest: {
       count: databaseMocks.consultationCount,
       findMany: databaseMocks.consultationFindMany
@@ -24,11 +30,18 @@ vi.mock("@/server/db/prisma", () => ({
       count: databaseMocks.appointmentCount,
       findMany: databaseMocks.appointmentFindMany
     },
-    task: { count: databaseMocks.taskCount }
+    task: { count: databaseMocks.taskCount },
+    contactMessage: { count: databaseMocks.contactCount },
+    notification: { findMany: databaseMocks.notificationFindMany }
   }
 }));
 
-import { dashboardScopesForPrincipal, getAdminDashboard } from "@/server/admin/dashboard-service";
+import {
+  dashboardScopesForPrincipal,
+  getAdminDashboard,
+  loadNewContactCount,
+  loadNotificationAttentionCount
+} from "@/server/admin/dashboard-service";
 import { appointmentScopeWhereForPrincipal, caseScopeWhereForPrincipal } from "@/server/admin/case-operations-service";
 import { clientScopeWhereForPrincipal } from "@/server/admin/client-crm-service";
 import { consultationScopeWhereForPrincipal } from "@/server/admin/consultation-review-service";
@@ -86,5 +99,31 @@ describe("admin dashboard canonical scope contract", () => {
       expect(query).not.toHaveProperty("include");
       expect(JSON.stringify(query)).not.toMatch(/passwordHash|secretEncrypted|recoveryCodes|notes|summary|phone|email/);
     }
+  });
+
+  it("loads contact and notification counts only inside each principal's permission scope", async () => {
+    databaseMocks.contactCount.mockResolvedValueOnce(7);
+    databaseMocks.notificationFindMany.mockResolvedValueOnce([
+      {
+        id: "71000000-0000-4000-8000-000000000001",
+        title: "إشعار اختبار",
+        body: "تفاصيل آمنة",
+        type: "SYSTEM",
+        resourceType: null,
+        resourceId: null,
+        actionUrl: "/admin/notifications",
+        readAt: null,
+        createdAt: new Date("2026-07-22T12:00:00.000Z")
+      }
+    ]);
+
+    await expect(loadNewContactCount(PLAN35_PRINCIPALS.officeAdmin)).resolves.toBe(7);
+    await expect(loadNewContactCount(PLAN35_PRINCIPALS.lawyer)).resolves.toBeNull();
+    await expect(loadNotificationAttentionCount(PLAN35_PRINCIPALS.marketingStaff)).resolves.toBe(1);
+    await expect(
+      loadNotificationAttentionCount({ ...PLAN35_PRINCIPALS.marketingStaff, permissions: [] })
+    ).resolves.toBeNull();
+    expect(databaseMocks.contactCount).toHaveBeenCalledOnce();
+    expect(databaseMocks.notificationFindMany).toHaveBeenCalledOnce();
   });
 });

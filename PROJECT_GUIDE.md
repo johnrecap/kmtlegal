@@ -9,13 +9,19 @@ For a current-state PRD and external model review brief, use `docs/KMT_LEGAL_CUR
 
 ## Current Status
 
-- `PLAN-00` through `PLAN-34` are implemented as code, tests, plans, or handoff artifacts where local infrastructure allows.
+- `PLAN-00` through `PLAN-34` are implemented as code, tests, plans, or handoff artifacts where local infrastructure allows. `PLAN-35` is active; its Contact/Notifications tasks T053–T067 are locally verified while authenticated/database acceptance remains open under T068.
 - The public `/privacy` and `/ar/privacy` routes provide a bilingual, responsive privacy and job-applicant notice covering the verified Meta recruitment intake, email CV flow, website forms, client services, privacy rights, retention criteria, Meta processing, and first-party analytics boundaries.
 - `PLAN-04` still needs a real PostgreSQL runtime check: run migrations and seed against a running `DATABASE_URL`, then rerun seed to verify idempotency.
 - DB-backed E2E flows need PostgreSQL plus seed data before they can run end to end.
 - PLAN-34 makes Paymob the prepared primary provider, keeps PayTabs disabled standby, leaves paid booking disabled, adds expiring minimized receipts, PostgreSQL rate limiting, async scrypt, required production ClamAV scanning, optional privacy-safe Sentry, locale/error/accessibility/image hardening, and behavior-preserving module decomposition. DB-backed/provider/live deployment evidence remains a release gate.
 
 ## Recent Changes
+
+- 2026-07-22 - Implemented the PLAN-35 Contact and Notifications local lane.
+  - Changed: protected contact inbox, atomic contact status/audit workflow, unified generic/consultation notification projection, safe permission-aware links, owner-only generic reads, opaque full-center pagination, responsive RTL queue UI, route registry activation, and dashboard count loaders.
+  - Behavior: authorized staff can process persisted contact work and reach a complete notification center; the executable admin registry now contains seventeen destinations while case create and role management remain planned.
+  - Verification: 39 focused tests and all 304 unit/contract tests passed with typecheck, lint, guarded production build, 19-scenario Playwright collection, and diff hygiene. No database was installed or contacted; T068 remains open.
+  - Handoff: detailed architecture, APIs, environment boundaries, and open evidence are recorded in `docs/PROJECT_GUIDE.md`.
 
 - 2026-07-10 - Standardized Git delivery on GitHub only.
   - Changed: local `origin` now targets `https://github.com/johnrecap/kmtlegal.git`; the duplicate remote and obsolete dual-push instructions were removed.

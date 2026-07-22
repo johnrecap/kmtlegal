@@ -57,6 +57,8 @@ export const ADMIN_ROUTE_POLICIES: readonly AdminRoutePolicy[] = [
   route({ id: "finance.list", href: "/admin/finance", activeMatch: "prefix", group: "files-finance", icon: "receipt_long", requiredAnyPermissions: ["finance.read.any", "finance.manage.any"] }),
   route({ id: "reports.list", href: "/admin/reports", activeMatch: "prefix", group: "files-finance", icon: "monitoring", requiredAnyPermissions: ["report.read.any"] }),
   route({ id: "content.home", href: "/admin/content", activeMatch: "prefix", group: "administration", icon: "campaign", requiredAnyPermissions: ["content.create.any", "content.approve.any", "caseStudy.create.any", "caseStudy.approve.any", "socialDraft.create.any", "socialDraft.approve.any"] }),
+  route({ id: "contacts.list", href: "/admin/contact-messages", activeMatch: "prefix", group: "office-operations", icon: "contact_mail", requiredAnyPermissions: ["contact.read.any", "contact.manage.any"] }),
+  route({ id: "notifications.list", href: "/admin/notifications", activeMatch: "prefix", group: "office-operations", icon: "notifications", requiredAnyPermissions: ["notification.read.self"] }),
   route({ id: "users.list", href: "/admin/users", activeMatch: "prefix", group: "administration", icon: "manage_accounts", requiredAnyPermissions: ["user.manage.any"] }),
   route({ id: "settings.home", href: "/admin/settings", activeMatch: "prefix", group: "administration", icon: "settings", requiredAnyPermissions: ["settings.manage.any"] }),
   route({ id: "audit.list", href: "/admin/audit-log", activeMatch: "prefix", group: "administration", icon: "fact_check", requiredAnyPermissions: ["audit.read.any"] })

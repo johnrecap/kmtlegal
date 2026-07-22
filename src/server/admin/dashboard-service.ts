@@ -1,6 +1,8 @@
-import type { Principal } from "@/server/auth/policy";
+import { hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
+import { canReadAdminContactMessages } from "./contact-message-service";
+import { listAdminNotifications, type NotificationCenterClient } from "./notification-service";
 import { appointmentScopeWhereForPrincipal, caseScopeWhereForPrincipal } from "./case-operations-service";
 import { clientScopeWhereForPrincipal } from "./client-crm-service";
 import { consultationScopeWhereForPrincipal } from "./consultation-review-service";
@@ -31,6 +33,20 @@ export function dashboardScopesForPrincipal(actor: Principal) {
     appointments: optionalScope(() => appointmentScopeWhereForPrincipal(actor)),
     tasks: optionalScope(() => taskScopeWhereForPrincipal(actor))
   };
+}
+
+export async function loadNewContactCount(
+  actor: Principal,
+  client: Pick<typeof prisma, "contactMessage"> = prisma
+) {
+  if (!canReadAdminContactMessages(actor)) return null;
+  return client.contactMessage.count({ where: { status: "NEW" } });
+}
+
+export async function loadNotificationAttentionCount(actor: Principal, client?: NotificationCenterClient) {
+  if (!hasPermission(actor, "notification.read.self")) return null;
+  const snapshot = await listAdminNotifications({ actor, query: { limit: 1 }, client });
+  return snapshot.attentionCount;
 }
 
 export async function getAdminDashboard(actor: Principal) {

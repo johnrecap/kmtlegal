@@ -153,33 +153,37 @@ consultation notifications produce the documented count; reader/manager/owner/ot
 
 ### Tests first
 
-- [ ] T053 [P] [US3] Extend `tests/server/admin-contact-messages.test.ts` with expected-red transition, concurrent identical/different-target races, same-state idempotency, exact one-audit behavior, audit-failure rollback, minimized DTO, reader/manager, and denied cases; impact: inbox service behavior is atomic and fixed before UI wiring.
-- [ ] T054 [P] [US3] Add expected-red complete-set counts, a duplicate beyond the first source fetch, cross-page cursor stability, malicious/external/script `actionUrl` fallback, post-creation permission removal and dynamic-resource reassignment fallback, owner-only read, consultation-review separation, and recipient-permission cases in `tests/server/admin-notifications.test.ts`; impact: notification counts, links, and complete-queue semantics cannot drift or expose newly forbidden/out-of-scope paths.
-- [ ] T055 [P] [US3] Add contact inbox responsive/keyboard/state component cases in `tests/ui/admin-contact-message-inbox.test.tsx`; impact: long Arabic/English content and action feedback are covered before the page exists.
-- [ ] T056 [P] [US3] Add notification bell/center count, safe-link, cursor load-more/exhaustion, mark-read, retry, and accessible announcement cases in `tests/ui/admin-notification-center.test.tsx`; impact: generic notifications cannot again be returned but not rendered or become inaccessible after the preview.
-- [ ] T057 [US3] Add contact-submit-to-triage with at-most-two shell navigation actions and complete generic-notification pagination browser scenarios to `tests/e2e/plan35-admin-operations.spec.ts`; impact: SC-004 and both persisted queues are proven end to end.
+- [x] T053 [P] [US3] Extend `tests/server/admin-contact-messages.test.ts` with expected-red transition, concurrent identical/different-target races, same-state idempotency, exact one-audit behavior, audit-failure rollback, minimized DTO, reader/manager, and denied cases; impact: inbox service behavior is atomic and fixed before UI wiring.
+- [x] T054 [P] [US3] Add expected-red complete-set counts, a duplicate beyond the first source fetch, cross-page cursor stability, malicious/external/script `actionUrl` fallback, post-creation permission removal and dynamic-resource reassignment fallback, owner-only read, consultation-review separation, and recipient-permission cases in `tests/server/admin-notifications.test.ts`; impact: notification counts, links, and complete-queue semantics cannot drift or expose newly forbidden/out-of-scope paths.
+- [x] T055 [P] [US3] Add contact inbox responsive/keyboard/state component cases in `tests/ui/admin-contact-message-inbox.test.tsx`; impact: long Arabic/English content and action feedback are covered before the page exists.
+- [x] T056 [P] [US3] Add notification bell/center count, safe-link, cursor load-more/exhaustion, mark-read, retry, and accessible announcement cases in `tests/ui/admin-notification-center.test.tsx`; impact: generic notifications cannot again be returned but not rendered or become inaccessible after the preview.
+- [x] T057 [US3] Add contact-submit-to-triage with at-most-two shell navigation actions and complete generic-notification pagination browser scenarios to `tests/e2e/plan35-admin-operations.spec.ts`; impact: SC-004 and both persisted queues are proven end to end. The scenarios are authored and collection-verified; authenticated execution evidence remains open under T068.
 
 ### Contact lane
 
-- [ ] T058 [US3] Enforce the state machine with conditional observed-status claims, concurrent same-target idempotency, different-target conflict handling, bounded list projection, and direct same-transaction audit/rollback in `src/server/admin/contact-message-service.ts`; impact: invalid reopen, duplicate audit, and unaudited transition behavior are removed without changing stored states.
-- [ ] T059 [US3] Align `src/app/api/admin/contact-messages/route.ts` and `src/app/api/admin/contact-messages/[messageId]/route.ts` with T058 and the common contract; impact: list and mutation remain the only contact admin API path.
-- [ ] T060 [US3] Build the responsive search/filter/pagination/detail/actions client in `src/features/admin/contact-messages/contact-message-inbox.tsx`; impact: existing contact data becomes operational with reader-versus-manager controls.
-- [ ] T061 [US3] Add the authorized server page at `src/app/(app-ar)/admin/contact-messages/page.tsx`; impact: contact APIs gain a protected admin consumer without changing the public contact flow.
+- [x] T058 [US3] Enforce the state machine with conditional observed-status claims, concurrent same-target idempotency, different-target conflict handling, bounded list projection, and direct same-transaction audit/rollback in `src/server/admin/contact-message-service.ts`; impact: invalid reopen, duplicate audit, and unaudited transition behavior are removed without changing stored states.
+- [x] T059 [US3] Align `src/app/api/admin/contact-messages/route.ts` and `src/app/api/admin/contact-messages/[messageId]/route.ts` with T058 and the common contract; impact: list and mutation remain the only contact admin API path.
+- [x] T060 [US3] Build the responsive search/filter/pagination/detail/actions client in `src/features/admin/contact-messages/contact-message-inbox.tsx`; impact: existing contact data becomes operational with reader-versus-manager controls.
+- [x] T061 [US3] Add the authorized server page at `src/app/(app-ar)/admin/contact-messages/page.tsx`; impact: contact APIs gain a protected admin consumer without changing the public contact flow.
 
 ### Notification lane
 
-- [ ] T062 [US3] Implement the discriminated projection, complete-set attention formula before limits, cross-source dedupe, internal-admin href allowlist plus current-principal route capability and canonical dynamic-resource object-scope fallback, opaque stable cursor pagination, strict `notification.read.self`, and safe selects in `src/server/admin/notification-service.ts`; impact: generic and consultation work share one truthful, complete view without forbidden/out-of-scope resource links or merged state machines.
-- [ ] T063 [US3] Align preview `limit`, center `pageSize/cursor/nextCursor`, mutual-exclusion validation, and owner-only read in `src/app/api/admin/notifications/route.ts` and `src/app/api/admin/notifications/[notificationId]/read/route.ts` with T062; impact: cross-user access stays 404, repeated read is idempotent, and all stored visible items remain reachable.
-- [ ] T064 [US3] Refactor `src/features/admin/notifications/admin-notification-bell.tsx` and create `src/features/admin/notifications/admin-notification-popover.tsx`; impact: the global bell renders generic items, review items, failures, and live count updates.
-- [ ] T065 [US3] Add the cursor-paginated full protected center at `src/app/(app-ar)/admin/notifications/page.tsx`; impact: staff can reach the complete authorized queue beyond the compact recent bell without gaps or repeats.
+- [x] T062 [US3] Implement the discriminated projection, complete-set attention formula before limits, cross-source dedupe, internal-admin href allowlist plus current-principal route capability and canonical dynamic-resource object-scope fallback, opaque stable cursor pagination, strict `notification.read.self`, and safe selects in `src/server/admin/notification-service.ts`; impact: generic and consultation work share one truthful, complete view without forbidden/out-of-scope resource links or merged state machines.
+- [x] T063 [US3] Align preview `limit`, center `pageSize/cursor/nextCursor`, mutual-exclusion validation, and owner-only read in `src/app/api/admin/notifications/route.ts` and `src/app/api/admin/notifications/[notificationId]/read/route.ts` with T062; impact: cross-user access stays 404, repeated read is idempotent, and all stored visible items remain reachable.
+- [x] T064 [US3] Refactor `src/features/admin/notifications/admin-notification-bell.tsx` and create `src/features/admin/notifications/admin-notification-popover.tsx`; impact: the global bell renders generic items, review items, failures, and live count updates.
+- [x] T065 [US3] Add the cursor-paginated full protected center at `src/app/(app-ar)/admin/notifications/page.tsx`; impact: staff can reach the complete authorized queue beyond the compact recent bell without gaps or repeats.
 
 ### Integration
 
-- [ ] T066 [US3] After T061/T065 page and T059/T063 API acceptance, add contact and notification route entries in `src/lib/admin-route-policy.ts`, regenerate consumers through `src/app/(app-ar)/admin/admin-navigation.ts`, and extend `tests/server/admin-route-policy.test.ts`; impact: only authorized staff see the two destinations and neither link activates before its consumer exists.
-- [ ] T067 [US3] Add permission-scoped new-contact and notification-attention loaders to `src/server/admin/dashboard-service.ts`; impact: the command center can later reuse real queue counts without exposing data to Marketing/Lawyer roles lacking contact scope.
+- [x] T066 [US3] After T061/T065 page and T059/T063 API acceptance, add contact and notification route entries in `src/lib/admin-route-policy.ts`, regenerate consumers through `src/app/(app-ar)/admin/admin-navigation.ts`, and extend `tests/server/admin-route-policy.test.ts`; impact: only authorized staff see the two destinations and neither link activates before its consumer exists.
+- [x] T067 [US3] Add permission-scoped new-contact and notification-attention loaders to `src/server/admin/dashboard-service.ts`; impact: the command center can later reuse real queue counts without exposing data to Marketing/Lawyer roles lacking contact scope.
 - [ ] T068 [US3] Run T053–T057 plus DB state/idempotency and mobile queue journeys in `tests/e2e/plan35-admin-operations.spec.ts` and `tests/e2e/plan35-db-backed.spec.ts`; impact: US3 is independently acceptable before command-center composition.
 
 **Checkpoint US3**: Stored inbound work is visible, actionable, scoped, audited, and truthfully counted.
+T053–T067 are locally implemented and verified without a database connection. T057 is authored,
+gated by explicit fixture/authentication prerequisites, and collection-verified, but its
+authenticated contact-to-triage and complete-pagination cells plus T068 remain open. US3 cannot be
+checkpoint-accepted or described as DB/browser-verified under FR-035.
 
 ---
 
@@ -359,10 +363,12 @@ truthful; deployment handoff is ready.
 4. T040–T051 may establish the locally verified shell and deterministic fifteen-route policy
    baseline without a disposable database. T042's authenticated page/API cells and T052 must be
    green before US2 checkpoint acceptance; the four planned route IDs remain undiscoverable.
-5. US3, US4, and US5 backend/test lanes may start after Foundation, but their page/navigation/UI
-   registration waits for US2 T040–T052 and occurs only after each lane's page/API exists: T066 for
-   contact/notification, T079 for case create, and T090 for roles. A single route-policy owner uses
-   that sequence; parallel teams submit metadata and obey the lanes below.
+5. US3, US4, and US5 backend/test lanes may start after Foundation. Under FR-035, their local
+   page/navigation/UI work may start after T040–T051 are locally green even while authenticated
+   T042/T052 evidence remains open; each registry entry still waits for its own page/API: T066 for
+   contact/notification, T079 for case create, and T090 for roles. Authenticated browser/DB story
+   checkpoints remain blocked until their named evidence tasks pass. A single route-policy owner
+   uses that sequence; parallel teams submit metadata and obey the lanes below.
 6. T091 must pass the complete nineteen-route-by-five-role matrix after T090; no 404/405 or skipped
    planned route can satisfy that gate.
 7. US6 T092–T106 depends on US1 through US5, including the T091 full route matrix, because it composes

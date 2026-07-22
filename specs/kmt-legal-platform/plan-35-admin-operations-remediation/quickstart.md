@@ -145,6 +145,13 @@ be reported as locally implemented but not checkpoint-accepted or DB-verified.
 
 ### US3 — contact and notifications
 
+- Local lane status (2026-07-22): T053–T067 are implemented and locally verified without a database
+  connection using deterministic service/contract/component tests, source checks, typecheck, lint,
+  and the documented no-database build flag. T057 is authored and collection-verified but skips its
+  authenticated cells unless safe disposable persona storage states exist; T068 stays open until
+  isolated PostgreSQL and browser evidence are available.
+- Do not mock a passing authenticated journey, use production credentials/data, or count a skipped
+  contact/notification cell as US3 acceptance.
 - Submit a public contact fixture, find it through search/status/topic/pagination, and exercise
   reader-versus-manager transitions.
 - Create generic and consultation-linked notifications, verify dedupe and the attention formula,
@@ -156,6 +163,10 @@ be reported as locally implemented but not checkpoint-accepted or DB-verified.
   change or object reassignment fall back to an authorized destination or no action.
 - Race identical and different contact transitions; assert one atomic audit for the identical pair
   and full rollback when audit insertion fails.
+- Local evidence: 39 focused tests and all 304 unit/contract tests pass; typecheck and lint pass;
+  `$env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; npm run build` completes all 72 static pages; and
+  `npx playwright test tests/e2e/plan35-admin-operations.spec.ts --list` collects 19 scenarios.
+  These results do not constitute T068 database or authenticated-browser acceptance.
 
 ### US4 — manual cases
 

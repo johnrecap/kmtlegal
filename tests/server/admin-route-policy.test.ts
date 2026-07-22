@@ -19,7 +19,7 @@ import {
 } from "../fixtures/plan35-admin-route-fixtures";
 import { PLAN35_ROLE_FIXTURES, PLAN35_ROLE_KEYS } from "../fixtures/plan35-role-fixtures";
 
-const PLANNED_ROUTE_IDS = ["contacts.list", "notifications.list", "cases.create", "roles.list"] as const;
+const PLANNED_ROUTE_IDS = ["cases.create", "roles.list"] as const;
 const PROTECTED_CHILD_ROUTES = [
   ["/admin/consultations/35000000-0000-4000-8000-000000000101", "consultations.list"],
   ["/admin/clients/35000000-0000-4000-8000-000000000102", "clients.list"],
@@ -50,6 +50,8 @@ const ADMIN_PAGE_FILES = [
   "content/articles/page.tsx",
   "content/case-studies/page.tsx",
   "content/social/page.tsx",
+  "contact-messages/page.tsx",
+  "notifications/page.tsx",
   "users/page.tsx",
   "users/[userId]/page.tsx",
   "settings/page.tsx",
@@ -65,9 +67,9 @@ describe("PLAN-35 canonical admin route policy", () => {
     }
   });
 
-  it("registers only the fifteen executable destinations", () => {
+  it("registers the seventeen executable destinations", () => {
     expect(ADMIN_ROUTE_POLICIES.map(({ id }) => id)).toEqual(PLAN35_IMPLEMENTED_ADMIN_ROUTES.map(({ id }) => id));
-    expect(PLAN35_IMPLEMENTED_ADMIN_ROUTES).toHaveLength(15);
+    expect(PLAN35_IMPLEMENTED_ADMIN_ROUTES).toHaveLength(17);
   });
 
   it("keeps planned destinations undiscoverable", () => {

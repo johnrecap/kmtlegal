@@ -579,8 +579,8 @@ Changing a legacy database row must not change upload/download runtime behavior.
 | `finance.list` | `/admin/finance` | `finance.read.any`, `finance.manage.any` | Existing |
 | `reports.list` | `/admin/reports` | `report.read.any` | Existing; contract typo `reports.read.any` must be removed |
 | `content.home` | `/admin/content` | Any canonical content/case-study/social-draft create or approve permission | Existing |
-| `contacts.list` | `/admin/contact-messages` | `contact.read.any`, `contact.manage.any` | Planned page over current API |
-| `notifications.list` | `/admin/notifications` | `notification.read.self` | Planned page over current API |
+| `contacts.list` | `/admin/contact-messages` | `contact.read.any`, `contact.manage.any` | Implemented page over current API |
+| `notifications.list` | `/admin/notifications` | `notification.read.self` | Implemented page over current API |
 | `users.list` | `/admin/users` | `user.manage.any` | Existing |
 | `roles.list` | `/admin/roles` | Exact active Super Admin **and both** `role.manage.any`, `permission.manage.any` | Planned |
 | `settings.home` | `/admin/settings` | `settings.manage.any` | Existing |
@@ -645,9 +645,10 @@ object-detail probe added later, never for these list probes.
 | `settings.home` | `GET /api/admin/settings` |
 | `audit.list` | `GET /api/admin/audit-log` |
 
-T042/T052 execute the fifteen already implemented route IDs and assert the four planned IDs
-(`contacts.list`, `notifications.list`, `cases.create`, `roles.list`) are absent. T066, T079, and
-T090 activate those entries only after their page/API exists. T091 and final browser acceptance run
+T042/T052 preserve the historical fifteen-route baseline where the four then-planned IDs
+(`contacts.list`, `notifications.list`, `cases.create`, `roles.list`) were absent. T066 activates
+contact and notification after their page/API exists; T079 and T090 retain the same gate for case
+create and roles. T091 and final browser acceptance run
 all nineteen rows by five roles; `404`, `405`, or a skip never satisfies an allowed cell.
 
 ## Default role acceptance matrix after PLAN-35 data migration

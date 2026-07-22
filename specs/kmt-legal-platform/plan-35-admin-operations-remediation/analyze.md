@@ -1,8 +1,8 @@
 # PLAN-35 Spec Kit Analyze Report
 
 **Date**: 2026-07-22
-**Status**: `US2-LOCAL-IMPLEMENTATION-COMPLETE-AUTHENTICATED-ACCEPTANCE-DEFERRED`
-**Implementation state**: T001–T015, T017–T027, T029–T041, and T043–T051 are implemented and locally verified. T016/G35-4D, T028, the database-backed portion of T039, T042's authenticated page/API cells, and T052 remain deferred evidence under the explicit FR-035 scope clarification.
+**Status**: `US3-LOCAL-VERIFIED`
+**Implementation state**: T001–T015, T017–T027, T029–T041, T043–T051, and T053–T067 are implemented and locally verified. T057's browser scenarios are authored and collection-verified, but their authenticated execution remains part of T068. T016/G35-4D, T028, the database-backed portion of T039, T042's authenticated page/API cells, T052, and T068 remain deferred evidence under the explicit FR-035 scope clarification.
 
 ## Gate Result
 
@@ -42,18 +42,19 @@ contract, broken local Markdown link, or duplicated detailed master task was fou
 |---|---|---|
 | Foundation and characterization | T001–T023 | G35-4L permits local work; T016/G35-4D remains open and T019 stays expected-red until UI convergence |
 | Scope and appointment correctness | T024–T039 | T024–T027/T029–T038 local lane; T028/T039 DB evidence required before US1 acceptance |
-| Existing permission-aware workspace | T040–T052 | T040–T051 local lane; authenticated T042/T052 acceptance remains open; four planned routes remain absent |
-| Contact and notification queues | T053–T068 | T066 activates only page/API-ready contact and notification entries |
+| Existing permission-aware workspace | T040–T052 | T040–T051 local lane; authenticated T042/T052 acceptance remains open; contact/notification routes were later activated by T066 |
+| Contact and notification queues | T053–T068 | T053–T067 local implementation is verified; authenticated/DB/browser acceptance remains open in T068 |
 | Manual case create/edit | T069–T081 | T079 activates `cases.create` only after service, API, and page exist |
 | Role/user governance | T082–T091 | T090 activates roles; T091 passes the complete 19×5 matrix |
 | Command center and storage truth | T092–T106 | Deterministic dashboard contract and read-only runtime diagnostic |
 | UI/RTL/accessibility convergence | T107–T112 | Five exact viewports plus all shared-consumer dispositions |
 | Release evidence and convergence | T113–T128 | Local, DB, browser, live, analyze/converge, commit/push handoff |
 
-This ordering removes the former circular acceptance condition: T042/T052 test only the fifteen
-already executable destinations. `contacts.list`, `notifications.list`, `cases.create`, and
-`roles.list` are contract-planned until T066/T079/T090, and T091 is the first complete executable
-nineteen-route gate. A `404`, `405`, or skipped probe never satisfies an allowed cell.
+This ordering removes the former circular acceptance condition: T042/T052 test only the original
+fifteen executable destinations. T066 has since activated `contacts.list` and `notifications.list`,
+so seventeen destinations are executable. `cases.create` and `roles.list` remain contract-planned
+until T079/T090, and T091 is the first complete executable nineteen-route gate. A `404`, `405`, or
+skipped probe never satisfies an allowed cell.
 
 ## Coverage and Connected Impact
 
@@ -200,10 +201,47 @@ authorization pass. The truthful partial evidence is recorded in
 `test-results/plan35/us2-baseline-route-matrix.json`. No new convergence task is appended because
 T042/T052 already own the remaining evidence.
 
+## US3 Local Implementation Convergence — 2026-07-22
+
+| Severity | Open | Disposition |
+|---|---:|---|
+| `CRITICAL` | 0 | None |
+| `HIGH` | 0 | None. Database-backed and authenticated browser acceptance remains explicitly owned by T068. |
+| `MEDIUM` | 0 | Contact transition races/audits, notification count completeness/dedupe/cursors, safe navigation, live read state, retry behavior, responsive RTL presentation, contiguous navigation grouping, and route/dashboard integration findings were fixed. |
+
+T053–T067 now implement the local Contact and Notifications lane without a schema change or database
+connection. Contact messages use a bounded minimized projection and a conditional state machine:
+`NEW` can become `REVIEWED` or `ARCHIVED`, `REVIEWED` can become `ARCHIVED`, repeated target states
+are idempotent, conflicting races return a conflict, and the one required audit is written inside
+the same transaction. The protected inbox supplies permission-scoped reader/manager behavior,
+search, status filtering, pagination, responsive cards/table presentation, keyboard-accessible long
+content, mixed-direction isolation, and recoverable action feedback.
+
+The notification service now exposes distinct preview and opaque-cursor center contracts, computes
+complete-set generic-unread plus visible-consultation attention before preview limits, deduplicates
+linked records, enforces strict owner reads, keeps consultation review state separate, and rechecks
+both current route capability and dynamic resource scope before returning an internal action link.
+The bell and full center render both item kinds, preserve truthful live counts after marking a
+generic notification read, paginate without repeats, and retain a retry path after load failures.
+T066 activates only the now-backed contact and notification destinations, bringing the executable
+route registry from fifteen to seventeen; `cases.create` and `roles.list` remain planned.
+
+Verification passed without installing or contacting PostgreSQL: 39 focused server/UI tests, all
+304 unit/contract tests, typecheck, lint, the production build with
+`ALLOW_BUILD_WITHOUT_DATABASE_URL=true`, Playwright collection of all 19 PLAN-35 admin-operation
+scenarios, and diff hygiene. A normal production build compiled but correctly stopped during page
+data collection because production requires `DATABASE_URL`; the documented no-database build guard
+then completed all 72 static pages. This is not database or authenticated-browser evidence.
+
+T057 is implemented as explicitly gated contact-to-triage and full-notification-pagination browser
+scenarios and is collection-verified. Its authenticated execution, database state/idempotency checks,
+and mobile queue journey remain open under T068. No new convergence task is appended because T068
+already owns every missing US3 acceptance artifact.
+
 ## Conclusion
 
 PLAN-35 remains internally consistent and conflict-controlled with zero unresolved `CRITICAL`,
-`HIGH`, or `MEDIUM` findings in the completed local lanes. US1 and the US2 shell/policy work are
-locally complete, while T016, T028, the database-backed part of T039, T042's authenticated cells,
-and T052 remain explicitly open. Neither skipped authentication cells nor the production-connected
-database are used as acceptance evidence.
+`HIGH`, or `MEDIUM` findings in the completed local lanes. US1, the US2 shell/policy work, and US3
+T053–T067 are locally complete, while T016, T028, the database-backed part of T039, T042's
+authenticated cells, T052, and T068 remain explicitly open. Neither skipped authentication cells
+nor the production-connected database are used as acceptance evidence.

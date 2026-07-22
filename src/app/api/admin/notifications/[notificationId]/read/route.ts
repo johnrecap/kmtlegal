@@ -28,6 +28,6 @@ export async function POST(request: Request, { params }: NotificationReadRoutePr
 
     return NextResponse.json({ data: notification, requestId }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    return errorToResponse(error, requestId);
+    return errorToResponse(error, requestId, { routeGroup: "admin.notifications.read", method: "POST" });
   }
 }

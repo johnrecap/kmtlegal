@@ -115,6 +115,86 @@ export const plan35AdminRecoveryCopy = {
   caseReferenceRetry: "إنشاء محاولة جديدة وإعادة الإرسال"
 } as const;
 
+export const plan35ContactInboxUiCopy = {
+  eyebrow: "لوحة المكتب",
+  title: "رسائل التواصل",
+  description: "مراجعة الرسائل الواردة من نموذج التواصل وتصنيفها دون إنشاء عميل أو قضية تلقائيًا.",
+  filtersLabel: "فلاتر رسائل التواصل",
+  searchLabel: "البحث في رسائل التواصل",
+  searchPlaceholder: "ابحث بالاسم أو البريد أو الهاتف أو محتوى الرسالة",
+  status: "الحالة",
+  topic: "الموضوع",
+  sort: "الترتيب",
+  direction: "الاتجاه",
+  allStatuses: "كل الحالات",
+  allTopics: "كل الموضوعات",
+  apply: "تطبيق",
+  clearFilters: "مسح الفلاتر",
+  tableCaption: "رسائل التواصل الواردة",
+  sender: "المرسل",
+  message: "الرسالة",
+  reviewer: "المراجع",
+  receivedAt: "وقت الاستلام",
+  actions: "الإجراءات",
+  openDetails: "عرض التفاصيل",
+  markReviewed: "تحديد كمراجعة",
+  archive: "أرشفة",
+  updating: "جارٍ تحديث حالة الرسالة",
+  updateSucceeded: "تم تحديث حالة الرسالة.",
+  updateFailed: "تعذر تحديث حالة الرسالة. حاول مرة أخرى.",
+  empty: "لا توجد رسائل مطابقة للفلاتر الحالية.",
+  totalSuffix: "رسالة",
+  page: "صفحة",
+  of: "من",
+  previous: "السابق",
+  next: "التالي",
+  readerOnly: "يمكنك قراءة الرسائل، لكن تغيير حالتها يحتاج صلاحية إدارة رسائل التواصل.",
+  statuses: {
+    NEW: "جديدة",
+    REVIEWED: "تمت المراجعة",
+    ARCHIVED: "مؤرشفة"
+  },
+  topics: {
+    consultation: "استشارة قانونية",
+    documents: "مستندات",
+    media: "إعلام وتعاون",
+    other: "أخرى"
+  },
+  sortOptions: {
+    createdAt: "تاريخ الاستلام",
+    status: "الحالة",
+    topic: "الموضوع"
+  },
+  directions: {
+    desc: "الأحدث أولًا",
+    asc: "الأقدم أولًا"
+  }
+} as const;
+
+export const plan35NotificationUiCopy = {
+  eyebrow: "لوحة المكتب",
+  title: "مركز الإشعارات",
+  description: "الإشعارات الخاصة بحسابك وطلبات الاستشارة التي تقع ضمن نطاق مراجعتك.",
+  bellLabel: "فتح الإشعارات",
+  popoverTitle: "الإشعارات والعمل المطلوب",
+  noAttention: "لا توجد عناصر جديدة تحتاج انتباهك.",
+  attentionSummary: "عناصر تحتاج انتباهك",
+  reviewRequestTitle: "طلب استشارة جديد يحتاج مراجعة",
+  markRead: "تحديد كمقروء",
+  markedRead: "تم تحديد الإشعار كمقروء.",
+  markReadFailed: "تعذر تحديث الإشعار. حاول مرة أخرى.",
+  openCenter: "فتح مركز الإشعارات",
+  loadMore: "تحميل المزيد",
+  loadingMore: "جارٍ تحميل المزيد",
+  loadPreviewFailed: "تعذر تحميل الإشعارات الآن.",
+  loadMoreFailed: "تعذر تحميل المزيد من الإشعارات.",
+  retry: "إعادة المحاولة",
+  exhausted: "تم عرض كل الإشعارات المتاحة.",
+  empty: "لا توجد إشعارات متاحة حاليًا.",
+  unreadGeneric: "إشعارات غير مقروءة",
+  consultationReview: "استشارات تنتظر المراجعة"
+} as const;
+
 export const plan35AdminShellCopy = {
   adminMode: "إدارة المكتب",
   portalMode: "بوابة العميل",

@@ -9,6 +9,15 @@ const personaStorageStates = Object.fromEntries(
   PLAN35_ROLE_KEYS.map((roleKey) => [roleKey, configuredPlan35StorageState(roleKey)])
 ) as Record<Plan35RoleKey, string | null>;
 const hasAllPersonaStorageStates = PLAN35_ROLE_KEYS.every((roleKey) => Boolean(personaStorageStates[roleKey]));
+const us3DisposableBrowserEnabled = Boolean(
+  officeAdminStorageState &&
+  process.env.PLAN35_ALLOW_DB_FIXTURES === "true" &&
+  process.env.PLAN35_US3_E2E === "true"
+);
+const expectedNotificationTitles = (process.env.PLAN35_US3_NOTIFICATION_TITLES ?? "")
+  .split("|")
+  .map((value) => value.trim())
+  .filter(Boolean);
 
 if (officeAdminStorageState) test.use({ storageState: officeAdminStorageState });
 
@@ -127,7 +136,7 @@ test.describe("PLAN-35 admin responsive accessibility characterization", () => {
   }
 });
 
-test.describe("PLAN-35 fifteen-route permission-aware workspace matrix", () => {
+test.describe("PLAN-35 seventeen-route permission-aware workspace matrix", () => {
   test.skip(
     !hasAllPersonaStorageStates,
     "Requires disposable authenticated storage states for Lawyer, Secretary, Office Admin, Marketing Staff, and Super Admin."
@@ -146,6 +155,69 @@ test.describe("PLAN-35 fifteen-route permission-aware workspace matrix", () => {
       }
     });
   }
+});
+
+test.describe("PLAN-35 contact triage and complete notification center", () => {
+  test.skip(
+    !us3DisposableBrowserEnabled,
+    "Requires an explicitly opted-in disposable database plus an authenticated Office Admin storage state."
+  );
+
+  test("submits a public contact and reaches triage in one shell navigation action", async ({ page }, testInfo) => {
+    testInfo.annotations.push({
+      type: "database-prerequisite",
+      description: "T057 is collected only against disposable synthetic data; production databases are forbidden."
+    });
+    const marker = `PLAN35-US3-${testInfo.workerIndex}-${Date.now()}`;
+    const response = await page.request.post("/api/public/contact?locale=ar", {
+      data: {
+        locale: "ar",
+        fullName: marker,
+        email: `plan35.us3.${Date.now()}@example.invalid`,
+        phone: "+201550000035",
+        topic: "documents",
+        message: `${marker} رسالة اصطناعية لاختبار وصول نموذج التواصل إلى قائمة المراجعة فقط.`,
+        consent: true
+      }
+    });
+    expect(response.status()).toBe(201);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/admin", { waitUntil: "domcontentloaded" });
+    const contactNavigation = page
+      .getByTestId("dashboard-desktop-navigation")
+      .locator('a[href="/admin/contact-messages"]');
+    await expect(contactNavigation).toBeVisible();
+    await contactNavigation.click();
+    await expect(page).toHaveURL(/\/admin\/contact-messages/);
+
+    await page.getByRole("search", { name: "فلاتر رسائل التواصل" }).getByRole("searchbox").fill(marker);
+    await page.getByRole("button", { name: "تطبيق" }).click();
+    await expect(page.getByText(marker, { exact: true }).first()).toBeVisible();
+    await page.getByRole("button", { name: "تحديد كمراجعة" }).first().click();
+    await expect(page.getByText("تم تحديث حالة الرسالة.", { exact: true })).toBeVisible();
+  });
+
+  test("loads every prepared generic notification once across opaque cursor pages", async ({ page }) => {
+    test.skip(
+      expectedNotificationTitles.length < 21,
+      "Set PLAN35_US3_NOTIFICATION_TITLES to at least 21 pipe-separated synthetic titles prepared for the Office Admin persona."
+    );
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/admin/notifications", { waitUntil: "domcontentloaded" });
+
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const missing = await missingExpectedTitles(page, expectedNotificationTitles);
+      if (!missing.length) break;
+      const loadMore = page.getByRole("button", { name: "تحميل المزيد" });
+      if (!(await loadMore.isVisible().catch(() => false))) break;
+      await loadMore.click();
+    }
+
+    for (const title of expectedNotificationTitles) {
+      await expect(page.getByText(title, { exact: true })).toHaveCount(1);
+    }
+  });
 });
 
 async function loadSurface(page: Page) {
@@ -210,4 +282,12 @@ async function visibleCount(locator: Locator) {
   let visible = 0;
   for (let index = 0; index < await locator.count(); index += 1) if (await locator.nth(index).isVisible()) visible += 1;
   return visible;
+}
+
+async function missingExpectedTitles(page: Page, titles: string[]) {
+  const missing: string[] = [];
+  for (const title of titles) {
+    if ((await page.getByText(title, { exact: true }).count()) === 0) missing.push(title);
+  }
+  return missing;
 }

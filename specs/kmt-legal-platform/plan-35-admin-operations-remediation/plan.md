@@ -237,6 +237,11 @@ nineteen-by-five matrix before Phase 7. Depends on the permission and route regi
 Complete contact triage and unified notification workflows over existing models and APIs. Depends
 on Phase 3 navigation and Phase 1 permission/count contracts. Contact and notification files form
 separate implementation lanes and may proceed in parallel after their shared contract is frozen.
+Under FR-035, T053–T056 and T058–T067 may be implemented and locally verified after the US2 local
+shell/policy lane is green even while authenticated T042/T052 evidence is unavailable. T057 may be
+authored collection-safe, but its authenticated journey and T068 remain open until a disposable
+PostgreSQL target and safe persona storage states exist; US3 cannot be checkpoint-accepted before
+those cells pass.
 
 ### Phase 5 — Manual case create/edit (US4)
 
