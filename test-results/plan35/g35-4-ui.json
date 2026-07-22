@@ -1,0 +1,33 @@
+{
+  "plan": "PLAN-35",
+  "checkpoint": "G35-4-UI",
+  "recordedAt": "2026-07-22T04:03:17+03:00",
+  "status": "pass-with-expected-red",
+  "commands": [
+    {
+      "command": "npm test -- tests/ui/admin-accessibility.test.tsx tests/ui/product-components.test.tsx",
+      "result": "pass",
+      "summary": "Shared field, table, filter/search, live-region, semantic-token, 44px, and reduced-motion contracts passed within the focused 63-test run."
+    },
+    {
+      "command": "npx playwright test tests/e2e/plan35-admin-operations.spec.ts --list",
+      "result": "pass",
+      "summary": "12 tests collected, zero skips"
+    },
+    {
+      "command": "node scripts/run-playwright-with-server.mjs tests/e2e/plan35-admin-operations.spec.ts --workers=1",
+      "result": "expected-red",
+      "summary": "7 passed and 5 failed. Failures record the intentionally missing mobile native-dialog trigger/behavior and 1023/1024 shell switch. T019 remains red until T046-T049 and T112."
+    }
+  ],
+  "review": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "notes": [
+      "Semantic state CSS variables are generated from src/lib/design-system/tokens.ts through the Tailwind base plugin; globals.css contains no duplicated state hex values.",
+      "Caller-provided ARIA descriptions and error-message references remain intact when component-owned errors are absent.",
+      "RTL logical spacing and reduced-motion-safe loading are covered by unit contracts; shell convergence remains T019 expected-red."
+    ]
+  }
+}

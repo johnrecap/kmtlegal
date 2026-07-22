@@ -17,11 +17,11 @@ const variantClasses: Record<ButtonVariant, string> = {
   primary: "border-kmt-gold bg-kmt-gold text-white hover:bg-kmt-goldDark active:bg-kmt-goldDark",
   secondary: "border-kmt-navy bg-transparent text-kmt-navy hover:bg-kmt-navy hover:text-white",
   ghost: "border-transparent bg-transparent text-kmt-navy hover:bg-kmt-canvas",
-  danger: "border-kmt-danger bg-kmt-danger text-white hover:bg-[#7f1d1d]"
+  danger: "border-kmt-danger bg-kmt-danger text-white hover:border-kmt-danger-strong hover:bg-kmt-danger-strong"
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: "min-h-9 px-3 text-sm",
+  sm: "min-h-11 px-3 text-sm",
   md: "min-h-11 px-4 text-base",
   lg: "min-h-12 px-5 text-base"
 };

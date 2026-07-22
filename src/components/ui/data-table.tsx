@@ -8,32 +8,42 @@ export type DataTableColumn<Row> = {
   className?: string;
 };
 
-export function DataTable<Row extends { id: string }>({
-  columns,
-  rows,
-  empty,
-  className,
-  emptyClassName,
-  mobileRender
-}: {
+export type DataTableProps<Row extends { id: string }> = {
   columns: Array<DataTableColumn<Row>>;
   rows: Row[];
+  caption?: ReactNode;
   empty?: ReactNode;
   className?: string;
   emptyClassName?: string;
   mobileRender?: (row: Row) => ReactNode;
-}) {
+};
+
+export function DataTable<Row extends { id: string }>({
+  columns,
+  rows,
+  caption,
+  empty,
+  className,
+  emptyClassName,
+  mobileRender
+}: DataTableProps<Row>) {
   if (rows.length === 0) {
-    return <div className={cn("rounded-lg border border-kmt-border bg-white p-6 text-sm text-kmt-muted", className, emptyClassName)}>{empty || "لا توجد بيانات."}</div>;
+    return (
+      <div className={cn("rounded-lg border border-kmt-border bg-white p-6 text-sm text-kmt-muted", className, emptyClassName)} role="status">
+        {caption ? <span className="sr-only">{caption}: </span> : null}
+        {empty || "لا توجد بيانات."}
+      </div>
+    );
   }
 
   const table = (
     <div className={cn("max-w-full min-w-0 overflow-x-auto rounded-lg border border-kmt-border bg-white", mobileRender ? "hidden md:block" : undefined, className)}>
       <table className="min-w-full border-collapse text-sm">
+        {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead className="bg-slate-50 text-kmt-muted">
           <tr>
             {columns.map((column) => (
-              <th key={column.key} className={cn("border-b border-kmt-border px-4 py-3 text-start font-semibold", column.className)}>
+              <th key={column.key} className={cn("border-b border-kmt-border px-4 py-3 text-start font-semibold", column.className)} scope="col">
                 {column.header}
               </th>
             ))}

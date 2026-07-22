@@ -1,0 +1,46 @@
+{
+  "plan": "PLAN-35",
+  "checkpoint": "G35-4",
+  "recordedAt": "2026-07-22T04:03:17+03:00",
+  "status": "blocked-live-database",
+  "completedScope": ["T001-T015", "T017-T023"],
+  "pendingScope": ["T016 live PostgreSQL migration/seed durability assertions"],
+  "commands": [
+    {
+      "command": "npm test -- tests/server/seed-contract.test.ts tests/server/auth-core.test.ts tests/server/admin-route-policy.test.ts tests/server/plan35-contract-inventory.test.ts tests/server/plan35-error-copy.test.ts tests/server/auth-audit-contract.test.ts tests/ui/admin-accessibility.test.tsx tests/ui/product-components.test.tsx",
+      "result": "pass",
+      "summary": "8 files, 63 tests passed"
+    },
+    { "command": "npm run db:validate", "result": "pass", "summary": "Prisma schema valid" },
+    { "command": "npm run db:generate", "result": "pass", "summary": "Prisma Client 7.8.0 generated" },
+    { "command": "npm run typecheck", "result": "pass" },
+    { "command": "npm run lint", "result": "pass", "summary": "No warnings or errors" },
+    { "command": "npm test", "result": "pass", "summary": "39 files, 262 tests passed" },
+    { "command": "ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build", "result": "pass", "summary": "Next.js production build completed" },
+    { "command": "npm run test:e2e:smoke", "result": "pass", "summary": "48 browser smoke tests passed on the second run; the first attempt timed out after 30 passes because next dev encountered a transient post-build cache error." },
+    { "command": "npm run security:secrets", "result": "pass", "summary": "No high-confidence secret patterns found" },
+    { "command": "git diff --check", "result": "pass" },
+    {
+      "command": "npm run db:migrate && npm run db:seed && npm run db:seed",
+      "result": "blocked",
+      "summary": "No DATABASE_URL, Docker CLI, psql CLI, or local PostgreSQL service is available. No live migration or repeat-seed claim is made."
+    }
+  ],
+  "convergence": {
+    "critical": 0,
+    "high": 1,
+    "medium": 0,
+    "acceptedResiduals": [
+      {
+        "severity": "HIGH",
+        "finding": "Migration and repeat-seed durability require a disposable live PostgreSQL database.",
+        "disposition": "Blocks G35-4 closure and all later PLAN-35 phases; T016 remains open."
+      },
+      {
+        "severity": "MEDIUM",
+        "finding": "Full UI route-policy versus page/API guard parity is not executable for all destinations yet.",
+        "disposition": "Accepted for Foundation because T042/T052 cover the fifteen executable routes and T091 covers the final nineteen-route matrix before activation."
+      }
+    ]
+  }
+}

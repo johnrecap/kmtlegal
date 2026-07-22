@@ -46,6 +46,96 @@ export const protectedRecoveryUiCopy = {
   backToDashboard: "العودة إلى الرئيسية"
 } as const;
 
+export const plan35AdminRouteLabels = {
+  "admin.routes.dashboard.home": "لوحة التحكم",
+  "admin.routes.consultations.availability": "أوقات الاستشارات",
+  "admin.routes.consultations.list": "طلبات الاستشارة",
+  "admin.routes.clients.list": "العملاء",
+  "admin.routes.messages.list": "محادثات العملاء",
+  "admin.routes.cases.list": "القضايا",
+  "admin.routes.cases.create": "إنشاء قضية",
+  "admin.routes.calendar.list": "التقويم",
+  "admin.routes.tasks.list": "المهام",
+  "admin.routes.documents.list": "المستندات",
+  "admin.routes.finance.list": "المالية",
+  "admin.routes.reports.list": "التقارير",
+  "admin.routes.content.home": "المحتوى",
+  "admin.routes.contacts.list": "رسائل التواصل",
+  "admin.routes.notifications.list": "الإشعارات",
+  "admin.routes.users.list": "المستخدمون",
+  "admin.routes.roles.list": "الأدوار والصلاحيات",
+  "admin.routes.settings.home": "الإعدادات",
+  "admin.routes.audit.list": "سجل التدقيق"
+} as const;
+
+export type Plan35AdminRouteLabelKey = keyof typeof plan35AdminRouteLabels;
+
+export const plan35AdminRouteGroupLabels = {
+  "office-operations": "تشغيل المكتب",
+  "files-finance": "الملفات والمالية",
+  administration: "الإدارة"
+} as const;
+
+export const plan35DashboardMetricCopy = {
+  "appointments.today": { label: "مواعيد اليوم", definition: "المواعيد النشطة المجدولة اليوم بتوقيت القاهرة." },
+  "tasks.overdue": { label: "المهام المتأخرة", definition: "المهام غير المكتملة التي تجاوزت موعد استحقاقها." },
+  "consultations.unreviewed": { label: "استشارات تنتظر المراجعة", definition: "طلبات الاستشارة المجدولة التي لم يراجعها الفريق بعد." },
+  "contacts.new": { label: "رسائل تواصل جديدة", definition: "رسائل التواصل الموجودة حاليًا في حالة جديدة." },
+  "documents.under-review": { label: "مستندات تحت المراجعة", definition: "المستندات الموجودة حاليًا في حالة تحت المراجعة." },
+  "cases.active": { label: "قضايا نشطة", definition: "ملفات القضايا الموجودة حاليًا في حالة نشطة." },
+  "clients.active": { label: "عملاء نشطون", definition: "ملفات العملاء الموجودة حاليًا في حالة نشطة." }
+} as const;
+
+export const plan35DashboardTimeframeCopy = {
+  "before-generated-at": "حتى وقت تحديث اللوحة",
+  "cairo-today": "اليوم بتوقيت القاهرة",
+  "as-of-generated-at": "كما هي عند تحديث اللوحة"
+} as const;
+
+export const plan35DashboardScopeCopy = {
+  "office-wide": "كل المكتب ضمن صلاحياتك",
+  "actor-assigned": "المسند إليك مباشرة",
+  "actor-or-case-assigned": "المسند إليك مباشرة أو عبر القضية",
+  "actor-owned": "السجلات الخاصة بك"
+} as const;
+
+export const plan35AdminStateCopy = {
+  loading: { title: "جارٍ تحميل بيانات القسم", description: "يمكنك متابعة استخدام بقية مساحة العمل أثناء التحميل." },
+  empty: { title: "لا توجد بيانات مطابقة", description: "عدّل الفلاتر أو ابدأ بإضافة سجل جديد إذا كانت صلاحيتك تسمح." },
+  unavailable: { title: "هذا القسم غير متاح مؤقتًا", description: "باقي مساحة العمل ما زالت متاحة. حاول تحميل هذا القسم مرة أخرى." }
+} as const;
+
+export const plan35AdminRecoveryCopy = {
+  retry: "إعادة المحاولة",
+  refresh: "تحديث البيانات",
+  backToWorkspace: "العودة إلى مساحة العمل",
+  caseReferenceRetry: "إنشاء محاولة جديدة وإعادة الإرسال"
+} as const;
+
+export const plan35ApiErrorSourceMessages = {
+  APPOINTMENT_CONFLICT: "Another appointment already exists for this lawyer at this time. Choose a different time.",
+  CASE_REFERENCE_CONFLICT: "A unique case reference could not be generated. Create a new request and retry.",
+  SETTING_READ_ONLY: "Storage runtime settings are managed by the server environment and cannot be changed from the admin dashboard."
+} as const;
+
+export const plan35ApiErrorCopy = {
+  APPOINTMENT_CONFLICT: {
+    message: "يوجد موعد آخر للمحامي في هذا التوقيت. اختر وقتًا مختلفًا.",
+    recoveryAction: "اختيار وقت مختلف"
+  },
+  CASE_REFERENCE_CONFLICT: {
+    message: "تعذر إنشاء رقم مرجعي فريد للقضية. احتفظنا بالبيانات؛ أنشئ محاولة جديدة ثم أعد الإرسال.",
+    recoveryAction: plan35AdminRecoveryCopy.caseReferenceRetry,
+    preservesEnteredValues: true
+  },
+  SETTING_READ_ONLY: {
+    message: "إعدادات التخزين الفعلية تُدار من بيئة الخادم ولا يمكن تعديلها من لوحة التحكم.",
+    recoveryAction: "مراجعة إعدادات بيئة الخادم"
+  }
+} as const;
+
+export type Plan35StableApiErrorCode = keyof typeof plan35ApiErrorCopy;
+
 export const roleDisplayLabels: Record<string, string> = {
   "Super Admin": "مدير النظام",
   "Office Admin": "مدير المكتب",
@@ -69,6 +159,9 @@ export const technicalValueDisplayLabels: Record<string, string> = {
 const apiExactMessages: Record<string, string> = {
   "Authentication required.": "يجب تسجيل الدخول للمتابعة.",
   "Active session required.": "انتهت الجلسة أو لم تعد نشطة. سجل الدخول مرة أخرى.",
+  [plan35ApiErrorSourceMessages.APPOINTMENT_CONFLICT]: plan35ApiErrorCopy.APPOINTMENT_CONFLICT.message,
+  [plan35ApiErrorSourceMessages.CASE_REFERENCE_CONFLICT]: plan35ApiErrorCopy.CASE_REFERENCE_CONFLICT.message,
+  [plan35ApiErrorSourceMessages.SETTING_READ_ONLY]: plan35ApiErrorCopy.SETTING_READ_ONLY.message,
   "Invalid request.": "الطلب غير صحيح.",
   "Request validation failed.": "البيانات المرسلة غير مكتملة أو غير صحيحة.",
   "Too many requests.": "تم إرسال طلبات كثيرة. حاول مرة أخرى بعد قليل.",
@@ -187,6 +280,9 @@ type UiLocale = "ar" | "en";
 
 const apiEnglishMessages: Record<string, string> = {
   "يجب تسجيل الدخول للمتابعة.": "Authentication required.",
+  [plan35ApiErrorCopy.APPOINTMENT_CONFLICT.message]: plan35ApiErrorSourceMessages.APPOINTMENT_CONFLICT,
+  [plan35ApiErrorCopy.CASE_REFERENCE_CONFLICT.message]: plan35ApiErrorSourceMessages.CASE_REFERENCE_CONFLICT,
+  [plan35ApiErrorCopy.SETTING_READ_ONLY.message]: plan35ApiErrorSourceMessages.SETTING_READ_ONLY,
   "الطلب غير صحيح.": "Invalid request.",
   "البيانات المرسلة غير مكتملة أو غير صحيحة.": "Submitted data is incomplete or invalid.",
   "بيانات الطلب غير مكتملة أو غير صحيحة.": "Request data is incomplete or invalid.",

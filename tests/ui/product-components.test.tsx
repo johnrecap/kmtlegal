@@ -85,7 +85,7 @@ describe("product UI primitives", () => {
     const html = renderToStaticMarkup(<Badge tone="active">نشطة</Badge>);
 
     expect(html).toContain("نشطة");
-    expect(html).toContain("bg-blue-50");
+    expect(html).toContain("bg-kmt-success-surface");
   });
 
   it("renders empty table state", () => {

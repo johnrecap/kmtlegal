@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db/prisma";
-import { permissionsForRole, type Principal } from "./policy";
+import type { Principal } from "./policy";
 import {
   createSessionToken,
   getSessionExpiresAt,
@@ -77,7 +77,7 @@ export function principalFromUser(user: AuthUser): Principal {
   return {
     id: user.id,
     roleName,
-    permissions: permissions.length > 0 ? permissions : permissionsForRole(roleName),
+    permissions,
     clientId: user.clientProfile?.id ?? null
   };
 }

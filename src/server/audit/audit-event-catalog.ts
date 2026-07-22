@@ -17,6 +17,58 @@ import { roleDisplayLabel } from "@/lib/ui-copy";
 export type AuditSeverity = "عادي" | "مهم" | "حساس";
 export type AuditCategory = "الأمان" | "العملاء" | "القضايا" | "المواعيد" | "المستندات" | "المهام" | "المالية" | "المحتوى" | "الإدارة" | "النظام";
 
+export const PLAN35_AUDIT_ACTIONS = {
+  appointmentCreate: "calendar.appointment_create",
+  appointmentReschedule: "calendar.appointment_reschedule",
+  manualCaseCreate: "case.manual_create",
+  caseCoreUpdate: "case.core_update",
+  rolePermissionsReplace: "role.permissions_replace",
+  contactReview: "contact.message_review",
+  contactArchive: "contact.message_archive"
+} as const;
+
+export type Plan35AuditAction = (typeof PLAN35_AUDIT_ACTIONS)[keyof typeof PLAN35_AUDIT_ACTIONS];
+
+export const PLAN35_AUDIT_SAFE_METADATA_KEYS = {
+  [PLAN35_AUDIT_ACTIONS.appointmentCreate]: ["startsAt", "status", "type", "mode", "reasonCode"],
+  [PLAN35_AUDIT_ACTIONS.appointmentReschedule]: ["previousStartsAt", "startsAt", "status", "reasonCode"],
+  [PLAN35_AUDIT_ACTIONS.manualCaseCreate]: ["requestHash", "source", "status", "reasonCode"],
+  [PLAN35_AUDIT_ACTIONS.caseCoreUpdate]: ["changedFields", "previousAssignedLawyerId", "assignedLawyerId", "previousPriority", "priority", "reasonCode"],
+  [PLAN35_AUDIT_ACTIONS.rolePermissionsReplace]: ["previousPermissionCount", "permissionCount", "reasonCode"],
+  [PLAN35_AUDIT_ACTIONS.contactReview]: ["previousStatus", "status", "topic", "reasonCode"],
+  [PLAN35_AUDIT_ACTIONS.contactArchive]: ["previousStatus", "status", "topic", "reasonCode"]
+} as const satisfies Record<Plan35AuditAction, readonly string[]>;
+
+const plan35AuditActions = new Set<Plan35AuditAction>(Object.values(PLAN35_AUDIT_ACTIONS));
+const safeCaseCoreFields = new Set(["title", "caseType", "courtName", "externalCaseNumber", "priority", "summary", "assignedLawyerId"]);
+
+export function isPlan35AuditAction(action: string): action is Plan35AuditAction {
+  return plan35AuditActions.has(action as Plan35AuditAction);
+}
+
+export function plan35SafeAuditMetadata(action: Plan35AuditAction, metadata: Record<string, unknown>) {
+  const safe: Record<string, unknown> = {};
+  for (const key of PLAN35_AUDIT_SAFE_METADATA_KEYS[action] as readonly string[]) {
+    const value = metadata[key];
+    if (key === "changedFields") {
+      if (Array.isArray(value)) {
+        safe[key] = value.filter((field): field is string => typeof field === "string" && safeCaseCoreFields.has(field));
+      }
+    } else if (key === "requestHash") {
+      if (typeof value === "string" && /^[a-f\d]{64}$/i.test(value)) safe[key] = value;
+    } else if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      safe[key] = value;
+    }
+  }
+  return safe;
+}
+
+export function plan35AuditMetadataForStorage(action: string, metadata: unknown) {
+  return isPlan35AuditAction(action)
+    ? plan35SafeAuditMetadata(action, metadataRecord(metadata))
+    : metadata;
+}
+
 type AuditActor = {
   name: string;
   role: {
@@ -98,6 +150,7 @@ const resourceLabels: Record<string, string> = {
   Document: "مستند",
   LegalCase: "قضية",
   Payment: "فاتورة",
+  Role: "دور وصلاحيات",
   Session: "جلسة دخول",
   SocialPostDraft: "مسودة محتوى",
   SystemSetting: "إعدادات النظام",
@@ -146,6 +199,8 @@ const auditEventDefinitions: Record<string, AuditEventDefinition> = {
 
   "case.session_create": { label: "تمت إضافة جلسة قضية", category: "القضايا", severity: "مهم", summary: ({ metadata }) => withDateSummary("تمت إضافة جلسة قضية", metadata.sessionDate) },
   "case.status_update": { label: "تم تغيير حالة قضية", category: "القضايا", severity: "مهم", summary: ({ metadata }) => statusSummary("تم تغيير حالة قضية", "LegalCase", metadata) },
+  [PLAN35_AUDIT_ACTIONS.manualCaseCreate]: { label: "تم إنشاء قضية يدويًا", category: "القضايا", severity: "مهم", summary: () => "تم إنشاء ملف قضية يدويًا من لوحة الإدارة." },
+  [PLAN35_AUDIT_ACTIONS.caseCoreUpdate]: { label: "تم تعديل بيانات قضية", category: "القضايا", severity: "مهم", summary: () => "تم تعديل البيانات الأساسية لملف قضية." },
 
   "client.archive": { label: "تم أرشفة عميل", category: "العملاء", severity: "مهم", summary: () => "تمت أرشفة ملف عميل." },
   "client.assign": { label: "تم تغيير المحامي المسؤول", category: "العملاء", severity: "مهم", summary: () => "تم تحديث التكليف المسؤول عن ملف عميل." },
@@ -157,6 +212,8 @@ const auditEventDefinitions: Record<string, AuditEventDefinition> = {
 
   "contact.message_create": { label: "تم استقبال رسالة تواصل", category: "العملاء", severity: "عادي", summary: () => "تم استقبال رسالة تواصل من الموقع." },
   "contact.message_update": { label: "تم تحديث رسالة تواصل", category: "الإدارة", severity: "عادي", summary: ({ metadata }) => statusSummary("تم تحديث حالة رسالة تواصل", "ContactMessage", metadata) },
+  [PLAN35_AUDIT_ACTIONS.contactReview]: { label: "تمت مراجعة رسالة تواصل", category: "الإدارة", severity: "عادي", summary: () => "تمت مراجعة رسالة تواصل." },
+  [PLAN35_AUDIT_ACTIONS.contactArchive]: { label: "تمت أرشفة رسالة تواصل", category: "الإدارة", severity: "مهم", summary: () => "تمت أرشفة رسالة تواصل." },
 
   "consultation.assign": { label: "تم إسناد استشارة", category: "العملاء", severity: "عادي", summary: () => "تم إسناد طلب استشارة إلى مسؤول." },
   "consultation.convert_to_case": { label: "تم تحويل استشارة إلى قضية", category: "القضايا", severity: "مهم", summary: () => "تم تحويل طلب استشارة إلى ملف قضية." },
@@ -183,6 +240,8 @@ const auditEventDefinitions: Record<string, AuditEventDefinition> = {
   "installer.locked": { label: "تم إغلاق معالج التثبيت", category: "النظام", severity: "حساس", summary: () => "تم إغلاق معالج التثبيت بعد الإعداد." },
   "installer.super_admin.bootstrap": { label: "تم إنشاء المدير الرئيسي", category: "النظام", severity: "حساس", summary: () => "تم إنشاء حساب المدير الرئيسي أثناء التثبيت." },
 
+  [PLAN35_AUDIT_ACTIONS.rolePermissionsReplace]: { label: "تم استبدال صلاحيات دور", category: "الأمان", severity: "حساس", summary: () => "تم استبدال مجموعة الصلاحيات المسندة إلى دور قابل للإدارة." },
+
   "settings.update": { label: "تم تعديل إعداد", category: "الإدارة", severity: "حساس", summary: ({ metadata }) => `تم تعديل ${settingLabel(metadata.key)}.` },
 
   "task.create": { label: "تم إنشاء مهمة", category: "المهام", severity: "عادي", summary: () => "تم إنشاء مهمة داخلية جديدة." },
@@ -194,7 +253,10 @@ const auditEventDefinitions: Record<string, AuditEventDefinition> = {
 };
 
 export function toAdminAuditLogDto(row: AuditLogPresentationRow): AdminAuditLogDto {
-  const metadata = metadataRecord(row.metadata);
+  const storedMetadata = metadataRecord(row.metadata);
+  const metadata = isPlan35AuditAction(row.action)
+    ? plan35SafeAuditMetadata(row.action, storedMetadata)
+    : storedMetadata;
   const resourceLabel = auditResourceLabel(row.resourceType);
   const definition = auditEventDefinitions[row.action] ?? fallbackEventDefinition(row.action);
   const summary = definition.summary?.({ metadata, resourceLabel }) ?? `${definition.label} على ${resourceLabel}.`;

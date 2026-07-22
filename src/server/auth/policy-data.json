@@ -15,6 +15,7 @@
     "appointment.manage.any",
     "appointment.read.assigned",
     "appointment.read.own",
+    "case.create.any",
     "case.read.any",
     "case.read.assigned",
     "case.read.own",
@@ -106,6 +107,7 @@
       "document.read.assigned",
       "note.create.assigned",
       "note.read.assigned",
+      "notification.read.self",
       "session.manage.assigned",
       "task.manage.assigned",
       "task.read.assigned",
@@ -114,6 +116,7 @@
     ],
     "Office Admin": [
       "appointment.manage.any",
+      "case.create.any",
       "case.read.any",
       "case.update.any",
       "client.read.any",
@@ -129,6 +132,7 @@
       "document.manage.any",
       "finance.manage.any",
       "finance.read.any",
+      "notification.read.self",
       "report.read.any",
       "session.manage.any",
       "task.manage.any",
@@ -137,6 +141,7 @@
     ],
     "Secretary": [
       "appointment.manage.any",
+      "case.create.any",
       "case.read.any",
       "case.update.any",
       "client.read.any",
@@ -162,6 +167,7 @@
     "Marketing Staff": [
       "caseStudy.create.any",
       "content.create.any",
+      "notification.read.self",
       "socialDraft.create.any",
       "twoFactor.manage.self",
       "user.read.self"

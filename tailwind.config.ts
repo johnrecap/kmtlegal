@@ -1,6 +1,8 @@
 import type { Config } from "tailwindcss";
 import forms from "@tailwindcss/forms";
 import containerQueries from "@tailwindcss/container-queries";
+import plugin from "tailwindcss/plugin";
+import { kmtStateCssVariables, kmtTokens } from "./src/lib/design-system/tokens";
 
 const config: Config = {
   darkMode: "class",
@@ -13,17 +15,26 @@ const config: Config = {
     extend: {
       colors: {
         kmt: {
-          navy: "#0f172a",
-          gold: "#997b44",
-          goldDark: "#755a26",
-          paper: "#ffffff",
-          canvas: "#f8fafc",
-          ink: "#0f172a",
-          muted: "#64748b",
-          border: "#e2e8f0",
-          success: "#166534",
-          warning: "#92400e",
-          danger: "#991b1b"
+          navy: kmtTokens.color.navy,
+          gold: kmtTokens.color.gold,
+          goldDark: kmtTokens.color.goldDark,
+          paper: kmtTokens.color.paper,
+          canvas: kmtTokens.color.canvas,
+          ink: kmtTokens.color.ink,
+          muted: kmtTokens.color.muted,
+          border: kmtTokens.color.border,
+          info: {
+            DEFAULT: "var(--kmt-state-info)", surface: "var(--kmt-state-info-surface)", border: "var(--kmt-state-info-border)", strong: "var(--kmt-state-info-strong)"
+          },
+          success: {
+            DEFAULT: "var(--kmt-state-success)", surface: "var(--kmt-state-success-surface)", border: "var(--kmt-state-success-border)", strong: "var(--kmt-state-success-strong)"
+          },
+          warning: {
+            DEFAULT: "var(--kmt-state-warning)", surface: "var(--kmt-state-warning-surface)", border: "var(--kmt-state-warning-border)", strong: "var(--kmt-state-warning-strong)"
+          },
+          danger: {
+            DEFAULT: "var(--kmt-state-danger)", surface: "var(--kmt-state-danger-surface)", border: "var(--kmt-state-danger-border)", strong: "var(--kmt-state-danger-strong)"
+          }
         },
         "surface-container": "#eceef0",
         "surface-container-highest": "#e0e3e5",
@@ -120,7 +131,11 @@ const config: Config = {
       }
     }
   },
-  plugins: [forms, containerQueries]
+  plugins: [
+    forms,
+    containerQueries,
+    plugin(({ addBase }) => addBase({ ":root": kmtStateCssVariables }))
+  ]
 };
 
 export default config;

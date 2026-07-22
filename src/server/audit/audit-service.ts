@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db/prisma";
 import { getIpAddress, getUserAgent } from "@/server/auth/session-store";
 import { safeLog } from "@/server/observability/safe-log";
+import { plan35AuditMetadataForStorage } from "./audit-event-catalog";
 import { redactMetadata } from "./redaction";
 
 export type AuditEventInput = {
@@ -53,7 +54,7 @@ export function auditLogCreateData(input: AuditEventInput): Prisma.AuditLogUnche
     appointmentId: input.appointmentId ?? null,
     documentId: input.documentId ?? null,
     paymentId: input.paymentId ?? null,
-    metadata: redactMetadata(input.metadata) as Prisma.InputJsonValue,
+    metadata: redactMetadata(plan35AuditMetadataForStorage(input.action, input.metadata)) as Prisma.InputJsonValue,
     ipAddress: input.request ? getIpAddress(input.request) : null,
     userAgent: input.request ? getUserAgent(input.request) : null
   };

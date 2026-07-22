@@ -20,6 +20,7 @@ const prisma = new PrismaClient({ adapter });
 const demoPassword = process.env.KMT_DEMO_PASSWORD || "KmtLocalDev!2026";
 const demoTotpSecret = process.env.KMT_DEMO_TOTP_SECRET || "JBSWY3DPEHPK3PXP";
 const authSecret = process.env.AUTH_SECRET ?? "local-dev-only-auth-secret-do-not-use-in-production";
+const RBAC_ASSIGNMENTS_BOOTSTRAP_KEY = "auth.rbac_assignments_bootstrap";
 const seedDocumentFileKey = "seed/kmt-2024-089/contract-final.pdf";
 const seedPdfBytes = Buffer.from("%PDF-1.4\n% KMT Legal local demo document\n1 0 obj\n<< /Type /Catalog >>\nendobj\n%%EOF\n");
 
@@ -58,7 +59,7 @@ async function upsertRole(name) {
   return prisma.role.upsert({
     where: { name },
     create: { name, description: `${name} role`, status: "ACTIVE" },
-    update: { description: `${name} role`, status: "ACTIVE" }
+    update: { description: `${name} role` }
   });
 }
 
@@ -79,6 +80,12 @@ async function findOrCreate(model, where, create, update = {}) {
 }
 
 async function seedAccessControl() {
+  const bootstrapMarker = await prisma.systemSetting.findUnique({
+    where: { key: RBAC_ASSIGNMENTS_BOOTSTRAP_KEY },
+    select: { id: true }
+  });
+  const shouldInstallDefaultAssignments = !bootstrapMarker;
+
   const permissionRows = new Map();
   for (const key of policy.permissions) {
     permissionRows.set(key, await upsertPermission(key));
@@ -89,25 +96,36 @@ async function seedAccessControl() {
     roleRows.set(name, await upsertRole(name));
   }
 
-  for (const [roleName, rolePermissions] of Object.entries(policy.rolePermissions)) {
-    const role = roleRows.get(roleName);
-    const keys = rolePermissions.includes("*") ? policy.permissions : rolePermissions;
-    for (const key of keys) {
-      const permission = permissionRows.get(key);
-      await prisma.rolePermission.upsert({
-        where: {
-          roleId_permissionId: {
+  if (shouldInstallDefaultAssignments) {
+    for (const [roleName, rolePermissions] of Object.entries(policy.rolePermissions)) {
+      const role = roleRows.get(roleName);
+      const keys = rolePermissions.includes("*") ? policy.permissions : rolePermissions;
+      for (const key of keys) {
+        const permission = permissionRows.get(key);
+        await prisma.rolePermission.upsert({
+          where: {
+            roleId_permissionId: {
+              roleId: role.id,
+              permissionId: permission.id
+            }
+          },
+          create: {
             roleId: role.id,
             permissionId: permission.id
-          }
-        },
-        create: {
-          roleId: role.id,
-          permissionId: permission.id
-        },
-        update: {}
-      });
+          },
+          update: {}
+        });
+      }
     }
+
+    await prisma.systemSetting.upsert({
+      where: { key: RBAC_ASSIGNMENTS_BOOTSTRAP_KEY },
+      create: {
+        key: RBAC_ASSIGNMENTS_BOOTSTRAP_KEY,
+        value: { version: 1, source: "seed" }
+      },
+      update: {}
+    });
   }
 
   return roleRows;

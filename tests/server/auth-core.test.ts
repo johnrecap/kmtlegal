@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { hashPassword, verifyPassword } from "@/server/auth/password";
 import { hasPermission, isStaffRole, permissionsForRole, ROLES } from "@/server/auth/policy";
+import { principalFromUser, type AuthUser } from "@/server/auth/session-store";
 import { generateTotpCode, verifyTotpCode } from "@/server/auth/totp";
 import {
   canFinalizeSession,
@@ -38,6 +39,18 @@ describe("auth role and permission policy", () => {
     expect(hasPermission({ roleName: ROLES.client }, "case.read.any")).toBe(false);
     expect(hasPermission({ roleName: ROLES.superAdmin }, "settings.manage.any")).toBe(true);
     expect(hasPermission({ roleName: ROLES.superAdmin, permissions: ["user.manage.any"] }, "client.account.manage")).toBe(true);
+  });
+
+  it("preserves an explicitly empty persisted permission set", () => {
+    const principal = principalFromUser({
+      id: "editable-role-user",
+      role: { name: ROLES.officeAdmin, permissions: [] },
+      clientProfile: null
+    } as unknown as AuthUser);
+
+    expect(principal.permissions).toEqual([]);
+    expect(hasPermission(principal, "case.read.any")).toBe(false);
+    expect(hasPermission(principal, "settings.manage.any")).toBe(false);
   });
 });
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { localizeApiMessage } from "@/lib/ui-copy";
+import { localizeApiMessage, plan35ApiErrorSourceMessages } from "@/lib/ui-copy";
 import type { PublicLocale } from "@/lib/public-locale";
 import { safeLog } from "@/server/observability/safe-log";
 
@@ -14,6 +14,9 @@ export type ApiErrorCode =
   | "NOT_FOUND"
   | "VALIDATION_ERROR"
   | "CONFLICT"
+  | "APPOINTMENT_CONFLICT"
+  | "CASE_REFERENCE_CONFLICT"
+  | "SETTING_READ_ONLY"
   | "TOO_MANY_REQUESTS"
   | "RATE_LIMITED"
   | "PAYMENT_PROVIDER_DISABLED"
@@ -38,6 +41,22 @@ export type ApiErrorDetails = Array<{
   message: string;
   code?: string;
 }>;
+
+export type CanonicalApiErrorCode = Exclude<ApiErrorCode, "UNAUTHENTICATED">;
+
+export function canonicalApiErrorCode(code: ApiErrorCode): CanonicalApiErrorCode {
+  return code === "UNAUTHENTICATED" ? "AUTH_REQUIRED" : code;
+}
+
+const stableApiMessageByCode: Partial<Record<CanonicalApiErrorCode, string>> = {
+  APPOINTMENT_CONFLICT: plan35ApiErrorSourceMessages.APPOINTMENT_CONFLICT,
+  CASE_REFERENCE_CONFLICT: plan35ApiErrorSourceMessages.CASE_REFERENCE_CONFLICT,
+  SETTING_READ_ONLY: plan35ApiErrorSourceMessages.SETTING_READ_ONLY
+};
+
+export function canonicalApiErrorMessage(code: ApiErrorCode, fallbackMessage: string) {
+  return stableApiMessageByCode[canonicalApiErrorCode(code)] ?? fallbackMessage;
+}
 
 export class ApiError extends Error {
   constructor(
@@ -76,8 +95,8 @@ export function jsonError(
   return NextResponse.json(
     {
       error: {
-        code,
-        message: localizeApiMessage(message, options.locale),
+        code: canonicalApiErrorCode(code),
+        message: localizeApiMessage(canonicalApiErrorMessage(code, message), options.locale),
         details: details ?? [],
         requestId
       }

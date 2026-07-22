@@ -5,10 +5,10 @@ type BadgeTone = "neutral" | "active" | "pending" | "closed" | "danger";
 
 const toneClasses: Record<BadgeTone, string> = {
   neutral: "border-kmt-border bg-white text-kmt-muted",
-  active: "border-blue-200 bg-blue-50 text-blue-800",
-  pending: "border-amber-200 bg-amber-50 text-amber-800",
-  closed: "border-slate-200 bg-slate-100 text-slate-700",
-  danger: "border-red-200 bg-red-50 text-red-800"
+  active: "border-kmt-success-border bg-kmt-success-surface text-kmt-success",
+  pending: "border-kmt-warning-border bg-kmt-warning-surface text-kmt-warning",
+  closed: "border-kmt-border bg-kmt-canvas text-kmt-muted",
+  danger: "border-kmt-danger-border bg-kmt-danger-surface text-kmt-danger"
 };
 
 export type BadgeProps = HTMLAttributes<HTMLSpanElement> & {

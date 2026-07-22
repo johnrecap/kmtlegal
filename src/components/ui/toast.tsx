@@ -5,10 +5,10 @@ import { MaterialSymbol } from "./material-symbol";
 type ToastTone = "success" | "warning" | "error" | "info";
 
 const toneClasses: Record<ToastTone, string> = {
-  success: "border-green-200 bg-green-50 text-green-900",
-  warning: "border-amber-200 bg-amber-50 text-amber-900",
-  error: "border-red-200 bg-red-50 text-red-900",
-  info: "border-blue-200 bg-blue-50 text-blue-900"
+  success: "border-kmt-success-border bg-kmt-success-surface text-kmt-success-strong",
+  warning: "border-kmt-warning-border bg-kmt-warning-surface text-kmt-warning-strong",
+  error: "border-kmt-danger-border bg-kmt-danger-surface text-kmt-danger-strong",
+  info: "border-kmt-info-border bg-kmt-info-surface text-kmt-info-strong"
 };
 
 const iconNames: Record<ToastTone, string> = {
@@ -32,7 +32,7 @@ export function Toast({
   className?: string;
 }) {
   return (
-    <div className={cn("flex max-w-xl items-start gap-3 rounded-lg border p-4 shadow-kmt-popover", toneClasses[tone], className)} role="status">
+    <div aria-live={tone === "error" ? "assertive" : "polite"} className={cn("flex max-w-xl items-start gap-3 rounded-lg border p-4 shadow-kmt-popover", toneClasses[tone], className)} role={tone === "error" ? "alert" : "status"}>
       <MaterialSymbol className="mt-0.5 text-[20px]" name={iconNames[tone]} />
       <div className="min-w-0 flex-1">
         <p className="font-semibold">{title}</p>

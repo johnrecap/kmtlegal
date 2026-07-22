@@ -1,8 +1,8 @@
 # PLAN-35 Spec Kit Analyze Report
 
 **Date**: 2026-07-22
-**Status**: `CLEAN-FOR-PLANNING`
-**Implementation state**: `Planned` — no product task is implemented or accepted by this report.
+**Status**: `FOUNDATION-IN-PROGRESS`
+**Implementation state**: T001–T015 and T017–T023 implemented; G35-4 remains open on T016 live PostgreSQL evidence. T019 is the planned expected-red exception.
 
 ## Gate Result
 
@@ -112,12 +112,31 @@ the payment contract and is intentionally deferred to a separate specification.
 - Independent backend/transaction, UI/UX, and final Spec Kit consistency reviews: clean after the
   documented fixes.
 
-Planning validation does not substitute for implementation verification. Typecheck, lint, tests,
-build, PostgreSQL concurrency, authenticated browser, responsive/accessibility, and live checks
-remain future task gates in `quickstart.md` and T122–T125.
+Planning validation does not substitute for implementation verification. Foundation local checks are
+recorded below; PostgreSQL, authenticated final-role, responsive convergence, and live checks remain
+mandatory at their named gates in `quickstart.md` and T122–T125.
+
+## Foundation Implementation Convergence — 2026-07-22
+
+| Severity | Open | Disposition |
+|---|---:|---|
+| `CRITICAL` | 0 | None |
+| `HIGH` | 1 | Live migration plus repeat-seed durability is blocked because this workspace has no `DATABASE_URL`, Docker, `psql`, or PostgreSQL service. T016 stays open and no later phase may start. |
+| `MEDIUM` | 0 | Storage-time PLAN-35 audit redaction, stable code-driven error messages, exact-role/all-permission evaluator coverage, semantic-token projection, and ARIA passthrough findings were fixed. |
+
+The remaining route-policy versus page/API guard parity observation is explicitly accepted only for
+Foundation: T042/T052 prove the fifteen executable destinations and T091 proves the final nineteen
+routes before planned destinations are activated. No new convergence task is appended because those
+accepted task IDs already own the evidence.
+
+Local evidence is recorded in `test-results/plan35/g35-4-foundation.json` and
+`test-results/plan35/g35-4-ui.json`. Focused tests, all 262 unit/contract tests, typecheck, lint,
+Prisma validate/generate, production build, and diff hygiene pass. The T019 browser characterization
+collected twelve unskipped tests and produced the intentional result: seven pass and five shell/dialog
+tests fail. This expected-red result does not close the live-database blocker.
 
 ## Conclusion
 
-PLAN-35 is organized, internally consistent, conflict-controlled, and executable as a planning
-package. The feature remains `Planned`; the next authorized action is to select accepted task IDs
-and execute them in the dependency/file-owner order above, beginning with Foundation.
+PLAN-35 remains internally consistent and conflict-controlled. Foundation implementation is present,
+but the next permitted action is only to provide a disposable PostgreSQL target and complete T016.
+T024 or any later phase must not start until G35-4 has no unresolved `HIGH` finding.

@@ -1,13 +1,16 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-type StateTone = "empty" | "loading" | "error" | "permission";
+type StateTone = "empty" | "loading" | "info" | "success" | "warning" | "error" | "permission";
 
 const toneClasses: Record<StateTone, string> = {
   empty: "border-kmt-border bg-white",
-  loading: "border-blue-100 bg-blue-50",
-  error: "border-red-200 bg-red-50",
-  permission: "border-amber-200 bg-amber-50"
+  loading: "border-kmt-info-border bg-kmt-info-surface",
+  info: "border-kmt-info-border bg-kmt-info-surface",
+  success: "border-kmt-success-border bg-kmt-success-surface",
+  warning: "border-kmt-warning-border bg-kmt-warning-surface",
+  error: "border-kmt-danger-border bg-kmt-danger-surface",
+  permission: "border-kmt-warning-border bg-kmt-warning-surface"
 };
 
 export function StateBlock({
@@ -24,7 +27,7 @@ export function StateBlock({
   className?: string;
 }) {
   return (
-    <div className={cn("rounded-lg border p-6", toneClasses[tone], className)} role={tone === "error" ? "alert" : "status"}>
+    <div aria-live={tone === "error" ? "assertive" : "polite"} className={cn("rounded-lg border p-6", toneClasses[tone], className)} role={tone === "error" ? "alert" : "status"}>
       <h3 className="text-lg font-semibold text-kmt-ink">{title}</h3>
       <p className="mt-2 max-w-2xl text-sm leading-6 text-kmt-muted">{description}</p>
       {action ? <div className="mt-5">{action}</div> : null}
