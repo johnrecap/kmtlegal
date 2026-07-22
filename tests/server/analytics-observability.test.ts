@@ -9,6 +9,10 @@ import {
   sanitizeAnalyticsProperties
 } from "@/server/observability/analytics-service";
 import { safeLog } from "@/server/observability/safe-log";
+import {
+  PAYMENT_CHECKOUT_RECONCILIATION_EVENT,
+  paymentCheckoutReconciliationMetadata
+} from "@/server/consultations/consultation-assistant-service";
 import { ROLES, type Principal } from "@/server/auth/policy";
 import { ApiError } from "@/server/http/errors";
 
@@ -129,5 +133,41 @@ describe("privacy-safe analytics and observability contract", () => {
     expect(payload.metadata.prompt).toBe("[REDACTED]");
     expect(payload.metadata.safe).toBe("ok");
     info.mockRestore();
+  });
+
+  it("allowlists the exactly-once paid-booking reconciliation event metadata", () => {
+    const metadata = paymentCheckoutReconciliationMetadata({
+      requestId: "req-checkout",
+      provider: "paymob",
+      paymentAttemptId: "35000000-0000-4000-8000-000000000090",
+      providerCheckoutId: "provider-session-1",
+      password: "must-not-survive",
+      checkoutUrl: "https://payment.example/private-token",
+      email: "client@example.invalid"
+    } as never);
+
+    expect(Object.keys(metadata).sort()).toEqual([
+      "failureCode",
+      "paymentAttemptId",
+      "provider",
+      "providerCheckoutId",
+      "requestId",
+      "retryPolicy",
+      "source"
+    ]);
+    expect(metadata).toMatchObject({
+      failureCode: "P2034",
+      retryPolicy: "single_attempt",
+      source: "public_booking"
+    });
+    expect(JSON.stringify(metadata)).not.toMatch(/password|checkoutUrl|client@example/);
+
+    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    safeLog("error", PAYMENT_CHECKOUT_RECONCILIATION_EVENT, metadata);
+    expect(error).toHaveBeenCalledOnce();
+    const payload = JSON.parse(String(error.mock.calls[0]?.[0]));
+    expect(payload.event).toBe("payment.checkout_reconciliation_required");
+    expect(payload.metadata).toEqual(metadata);
+    error.mockRestore();
   });
 });

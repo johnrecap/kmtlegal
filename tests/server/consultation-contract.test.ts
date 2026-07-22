@@ -341,16 +341,41 @@ describe("public consultation contract", () => {
     }
   });
 
-  it("keeps booking reservation writes guarded by a serializable transaction and pending duplicate checks", () => {
+  it("uses the shared appointment transaction modes without replaying paid provider calls", () => {
     const source = readFileSync(join(process.cwd(), "src/server/consultations/consultation-assistant-service.ts"), "utf8");
 
-    expect(source).toContain("runConsultationBookingTransaction");
-    expect(source).toContain("Prisma.TransactionIsolationLevel.Serializable");
+    expect(source).toContain("runAppointmentConflictTransaction");
+    expect(source).toContain("APPOINTMENT_TRANSACTION_MODES.externalSideEffectSingleAttempt");
+    expect(source).toContain("APPOINTMENT_TRANSACTION_MODES.databaseCreateBoundedRetry");
     expect(source).toContain('status: "PAYMENT_PENDING"');
     expect(source).toContain("paymentAttempts: {");
     expect(source).toContain('status: { in: ["CREATED", "PENDING"] }');
     expect(source).toContain("expiresAt: { gt: now }");
-    expect(source).toContain("await assertNoSlotConflict(startsAt, endsAt, tx)");
+    expect(source).toContain('scope: { kind: "office-consultation" }');
+    expect(source).toContain("await assertNoAppointmentConflict");
+    expect(source).toContain('safeLog("error", PAYMENT_CHECKOUT_RECONCILIATION_EVENT');
+  });
+
+  it("rereads assignment and conversion state inside the transaction and writes required audits there", () => {
+    const source = readFileSync(join(process.cwd(), "src/server/admin/consultation-review-service.ts"), "utf8");
+    const assignmentSource = source.slice(
+      source.indexOf("export async function assignConsultation"),
+      source.indexOf("export async function reviewConsultation")
+    );
+    const conversionSource = source.slice(source.indexOf("export async function convertConsultationToCase"));
+
+    expect(assignmentSource).toContain("APPOINTMENT_TRANSACTION_MODES.existingUpdateSingleAttempt");
+    expect(assignmentSource).toContain("tx.consultationRequest.findUnique");
+    expect(assignmentSource).toContain("tx.appointment.findFirst");
+    expect(assignmentSource).toContain("await assertNoAppointmentConflict");
+    expect(assignmentSource).toContain("appendAuditLog({");
+    expect(assignmentSource).toContain("client: tx");
+
+    expect(conversionSource).toContain("APPOINTMENT_TRANSACTION_MODES.databaseCreateBoundedRetry");
+    expect(conversionSource).toContain("tx.consultationRequest.findUnique");
+    expect(conversionSource).toContain("await assertNoAppointmentConflict");
+    expect(conversionSource).toContain("appendAuditLog({");
+    expect(conversionSource).toContain("client: tx");
   });
 
   it("creates secretary review notifications only after free chat booking confirmation", () => {

@@ -47,7 +47,7 @@ all user stories.
 - [x] T013 Add typed PLAN-35 Arabic labels, metric definitions, state/recovery text, and error mappings including case-reference collision retry in `src/lib/ui-copy.ts`; impact: all later UI lanes reuse semantic copy and avoid hardcoded permission keys/raw errors.
 - [x] T014 Add/redact required PLAN-35 mutation actions in `src/server/audit/audit-event-catalog.ts`; impact: case, role, contact, and appointment work shares audited semantic action names without sensitive payloads.
 - [x] T015 Complete the parser/assertions in `tests/server/plan35-contract-inventory.test.ts` so it compares affected route handlers, `src/lib/admin-route-policy.ts`, `src/server/auth/policy-data.json`, and `specs/kmt-legal-platform/plan-35-admin-operations-remediation/contracts/admin-operations-contract.md`; impact: contract validation is bidirectional rather than a hand-maintained whitelist.
-- [ ] T016 Run the Phase 1 focused tests plus `npm run db:validate`, `npm run db:generate`, `npm run typecheck`, and `git diff --check`; then use disposable PostgreSQL to run `npm run db:migrate` and `npm run db:seed` twice and prove fresh defaults, removed/empty permission durability, and inactive-role preservation, recording the command/result matrix in `test-results/plan35/g35-4-foundation.json`; impact: no user-story lane starts on an invalid or merely text-inspected permission/data foundation.
+- [ ] T016 [DEFERRED-DB] Before any `DB-Verified`, story-checkpoint, release, or production-complete claim, use disposable PostgreSQL to run `npm run db:migrate` and `npm run db:seed` twice and prove fresh defaults, removed/empty permission durability, and inactive-role preservation, recording the command/result matrix in `test-results/plan35/g35-4-foundation.json`; local story implementation may continue after G35-4L without checking off this task, but production PostgreSQL must never be used for this evidence; impact: missing infrastructure stays visible without fabricating or risking permission/data proof.
 
 ### Foundation UI contract and authenticated test personas
 
@@ -59,10 +59,14 @@ all user stories.
 - [x] T022 [US7] Require descriptive region/search labels in `src/components/ui/filter-bar.tsx` and `src/components/ui/search-input.tsx`; impact: repeated search landmarks are distinguishable before new inboxes and command-center search are implemented.
 - [x] T023 [US7] Make `src/lib/design-system/tokens.ts` the semantic color/state source, project it through `tailwind.config.ts` and `src/app/globals.css`, add `src/components/ui/inline-feedback.tsx` and `src/components/ui/skeleton.tsx`, align `src/components/ui/button.tsx`, `src/components/ui/badge.tsx`, `src/components/ui/state.tsx`, and `src/components/ui/toast.tsx`, export through `src/components/ui/index.ts`, then run T017 plus typecheck and record `test-results/plan35/g35-4-ui.json`; impact: later screens start on one verified accessible feedback/loading system without touching Stitch or adding a library.
 
-**Checkpoint G35-4**: Catalog, persisted-role semantics, route metadata, error/copy tokens, UI
-primitives, authenticated test personas, audit names, and contract inventory are stable. T001–T018
-and T020–T023 must pass. T019 remains the deliberately recorded expected-red shell/responsive
-characterization until T046–T049 and becomes green at T112; it does not create a circular gate.
+**Checkpoint G35-4L (local implementation)**: Catalog, route metadata, error/copy tokens, UI
+primitives, authenticated test personas, audit names, and contract inventory are locally stable.
+T001–T015 and T017–T023 must pass. T019 remains the deliberately recorded expected-red
+shell/responsive characterization until T046–T049 and becomes green at T112.
+
+**Checkpoint G35-4D (database acceptance)**: T016 remains open until disposable PostgreSQL exists.
+Its absence does not block accepted local code work under FR-035, but it blocks DB verification,
+story acceptance, release, and any production-complete claim. Production data is never a substitute.
 
 ---
 
@@ -77,27 +81,29 @@ one stable 409 with no partial change.
 
 ### Tests first
 
-- [ ] T024 [P] [US1] Add expected-red canonical-scope, DTO-minimization, and cross-surface parity cases in `tests/server/admin-dashboard.test.ts`; impact: dashboard drift and record over-serialization become regression failures.
-- [ ] T025 [P] [US1] Add expected-red half-open interval, active-status, different-lawyer, self-exclusion, rollback, database-only bounded-retry, and external-side-effect single-attempt modes in `tests/server/appointment-conflict-service.test.ts`; impact: the shared conflict primitive has a complete boundary and safe retry contract.
-- [ ] T026 [US1] Extend `tests/server/admin-cases.test.ts` with expected-red calendar create/reschedule permission, public-reservation cross-order, stale-pre-read orchestration for concurrent same-row reschedule, transaction-local mutable-state/permission recheck, transactional-audit failure rollback, and conflict cases; impact: admin writers cannot bypass the helper, overwrite a concurrent update from stale state, or commit without audit.
-- [ ] T027 [US1] Extend `tests/server/consultation-contract.test.ts` and `tests/server/analytics-observability.test.ts` with expected-red public booking, paid-booking `P2034` exactly-one-hosted-checkout-call, exactly-one `payment.checkout_reconciliation_required` safe-log event with the contract allowlist/redaction assertions, public/admin cross-order, stale-pre-read linked-assignment recheck/single-attempt conflict/audit rollback, and conversion retry that rereads mutable consultation/assignee state inside every attempt; impact: shared extraction cannot automatically duplicate provider calls, leak reconciliation data, hide orphan risk, overwrite assignments, or convert stale state.
+- [x] T024 [P] [US1] Add expected-red canonical-scope, DTO-minimization, and cross-surface parity cases in `tests/server/admin-dashboard.test.ts`; impact: dashboard drift and record over-serialization become regression failures.
+- [x] T025 [P] [US1] Add expected-red half-open interval, active-status, different-lawyer, self-exclusion, rollback, database-only bounded-retry, and external-side-effect single-attempt modes in `tests/server/appointment-conflict-service.test.ts`; impact: the shared conflict primitive has a complete boundary and safe retry contract.
+- [x] T026 [US1] Extend `tests/server/admin-cases.test.ts` with expected-red calendar create/reschedule permission, public-reservation cross-order, stale-pre-read orchestration for concurrent same-row reschedule, transaction-local mutable-state/permission recheck, transactional-audit failure rollback, and conflict cases; impact: admin writers cannot bypass the helper, overwrite a concurrent update from stale state, or commit without audit.
+- [x] T027 [US1] Extend `tests/server/consultation-contract.test.ts` and `tests/server/analytics-observability.test.ts` with expected-red public booking, paid-booking `P2034` exactly-one-hosted-checkout-call, exactly-one `payment.checkout_reconciliation_required` safe-log event with the contract allowlist/redaction assertions, public/admin cross-order, stale-pre-read linked-assignment recheck/single-attempt conflict/audit rollback, and conversion retry that rereads mutable consultation/assignee state inside every attempt; impact: shared extraction cannot automatically duplicate provider calls, leak reconciliation data, hide orphan risk, overwrite assignments, or convert stale state.
 - [ ] T028 [P] [US1] Add concurrent same-lawyer/different-lawyer, public/admin ordering, same-row reschedule, and assignment database scenarios plus bounded `EXPLAIN`/contention evidence to `tests/e2e/plan35-db-backed.spec.ts` and `test-results/plan35/appointment-query-plan.json`; impact: serializable correctness and current-index feasibility are proven against PostgreSQL, with schema re-planning required if the query plan/load gate is unacceptable.
 
 ### Implementation
 
-- [ ] T029 [US1] Export and reuse one task visibility builder from `src/server/admin/task-document-service.ts`; impact: direct assignee and case-assigned lawyer visibility become identical for task list and dashboard.
-- [ ] T030 [US1] Export one case/appointment visibility builder from `src/server/admin/case-operations-service.ts` without changing writes yet; impact: calendar/list/dashboard can consume the same object-scope predicate before conflict edits begin.
-- [ ] T031 [P] [US1] Export reusable consultation visibility predicates from `src/server/admin/consultation-review-service.ts`; impact: dashboard consultation queues match their destination scope.
-- [ ] T032 [P] [US1] Export reusable client scope selection from `src/server/admin/client-crm-service.ts`; impact: dashboard search/metrics cannot see clients outside the destination contract.
-- [ ] T033 [US1] Create the half-open overlap predicate, active statuses, symmetric active-unassigned-public reservation guard, office/lawyer scopes, self-exclusion, and serializable wrapper with explicit `database-create-bounded-retry` versus `existing-update-or-external-side-effect-single-attempt` modes in `src/server/appointments/appointment-conflict-service.ts`; impact: all appointment writers receive one atomic mechanism without order gaps, lost updates, or blind callback replay.
-- [ ] T034 [US1] Replace the local public booking conflict transaction in `src/server/consultations/consultation-assistant-service.ts` with T033 while preserving office-wide slot and post-commit best-effort audit behavior, forcing paid hosted checkout to single-attempt mode, and calling existing `src/server/observability/safe-log.ts` exactly once with `payment.checkout_reconciliation_required` plus only the contract metadata allowlist if provider success precedes transaction failure; impact: public behavior stays compatible, automatic retry cannot create multiple provider sessions, sensitive checkout data stays redacted, and the accepted orphan residual is observable rather than hidden.
-- [ ] T035 [US1] Route linked-appointment lawyer assignment/reassignment and consultation-conversion creation through T033 in `src/server/admin/consultation-review-service.ts` after T031/T034, moving consultation/status/assignee/active-lawyer/object-scope and previous-audit-value reads inside each callback/attempt and writing audit there; impact: neither stale reassignment nor a conversion retry can create hidden overlap, overwrite newer state, or produce a partial/wrong audit.
-- [ ] T036 [US1] Move admin calendar create/reschedule in `src/server/admin/case-operations-service.ts` onto T033 after T030/T035, rechecking case, target appointment, permission/object scope, status, lawyer, and previous-audit values inside the callback and persisting audit there; impact: stale pre-reads cannot authorize/overwrite a newer row, same-lawyer conflicts reject atomically, and successful writes are never unaudited.
-- [ ] T037 [US1] Align `src/app/api/admin/calendar/route.ts` and `src/app/api/admin/calendar/[appointmentId]/reschedule/route.ts` with the stable conflict response and no-store envelope; impact: UI receives one recoverable 409 contract.
-- [ ] T038 [US1] Refactor `src/server/admin/dashboard-service.ts` and verify `src/app/api/admin/dashboard/route.ts` consume T029–T032 with explicit `select` fields; impact: counts/IDs match destination modules and private unused fields leave no server boundary.
+- [x] T029 [US1] Export and reuse one task visibility builder from `src/server/admin/task-document-service.ts`; impact: direct assignee and case-assigned lawyer visibility become identical for task list and dashboard.
+- [x] T030 [US1] Export one case/appointment visibility builder from `src/server/admin/case-operations-service.ts` without changing writes yet; impact: calendar/list/dashboard can consume the same object-scope predicate before conflict edits begin.
+- [x] T031 [P] [US1] Export reusable consultation visibility predicates from `src/server/admin/consultation-review-service.ts`; impact: dashboard consultation queues match their destination scope.
+- [x] T032 [P] [US1] Export reusable client scope selection from `src/server/admin/client-crm-service.ts`; impact: dashboard search/metrics cannot see clients outside the destination contract.
+- [x] T033 [US1] Create the half-open overlap predicate, active statuses, symmetric active-unassigned-public reservation guard, office/lawyer scopes, self-exclusion, and serializable wrapper with explicit `database-create-bounded-retry` versus `existing-update-or-external-side-effect-single-attempt` modes in `src/server/appointments/appointment-conflict-service.ts`; impact: all appointment writers receive one atomic mechanism without order gaps, lost updates, or blind callback replay.
+- [x] T034 [US1] Replace the local public booking conflict transaction in `src/server/consultations/consultation-assistant-service.ts` with T033 while preserving office-wide slot and post-commit best-effort audit behavior, forcing paid hosted checkout to single-attempt mode, and calling existing `src/server/observability/safe-log.ts` exactly once with `payment.checkout_reconciliation_required` plus only the contract metadata allowlist if provider success precedes transaction failure; impact: public behavior stays compatible, automatic retry cannot create multiple provider sessions, sensitive checkout data stays redacted, and the accepted orphan residual is observable rather than hidden.
+- [x] T035 [US1] Route linked-appointment lawyer assignment/reassignment and consultation-conversion creation through T033 in `src/server/admin/consultation-review-service.ts` after T031/T034, moving consultation/status/assignee/active-lawyer/object-scope and previous-audit-value reads inside each callback/attempt and writing audit there; impact: neither stale reassignment nor a conversion retry can create hidden overlap, overwrite newer state, or produce a partial/wrong audit.
+- [x] T036 [US1] Move admin calendar create/reschedule in `src/server/admin/case-operations-service.ts` onto T033 after T030/T035, rechecking case, target appointment, permission/object scope, status, lawyer, and previous-audit values inside the callback and persisting audit there; impact: stale pre-reads cannot authorize/overwrite a newer row, same-lawyer conflicts reject atomically, and successful writes are never unaudited.
+- [x] T037 [US1] Align `src/app/api/admin/calendar/route.ts` and `src/app/api/admin/calendar/[appointmentId]/reschedule/route.ts` with the stable conflict response and no-store envelope; impact: UI receives one recoverable 409 contract.
+- [x] T038 [US1] Refactor `src/server/admin/dashboard-service.ts` and verify `src/app/api/admin/dashboard/route.ts` consume T029–T032 with explicit `select` fields; impact: counts/IDs match destination modules and private unused fields leave no server boundary.
 - [ ] T039 [US1] Run T024–T028, `tests/server/admin-task-documents.test.ts` if present or the repository task-document suite, `tests/server/analytics-observability.test.ts`, the consultation suite, and the DB concurrency scenario, recording the redacted reconciliation-event assertion in `test-results/plan35/us1-operations.json`; impact: US1 is independently acceptable before shell or feature UI work.
 
 **Checkpoint US1**: Scope parity and conflict safety are green locally and against PostgreSQL.
+Without disposable PostgreSQL, T028 and the DB-backed portion of T039 remain open; T024–T027 and
+T029–T038 may be implemented and locally verified, but US1 cannot be checkpoint-accepted.
 
 ---
 
@@ -339,9 +345,12 @@ truthful; deployment handoff is ready.
 
 1. T001–T006 plus T017/T019 must be written and observed red for the audited gaps while unrelated
    baseline tests remain green.
-2. T007–T018 and T020–T023 are blocking and green before product story implementation. T019's
-   expected failure is retained as characterization until US2/US7 and is not a G35-4 pass condition.
-3. T024–T039 complete US1's shared scopes/conflict mechanism before the final dashboard (US6).
+2. T007–T015 and T017–T023 are blocking and green before local product story implementation. T019's
+   expected failure is retained as characterization until US2/US7. T016 is deferred DB evidence:
+   it stays open and blocks database/story/release acceptance, not local code execution.
+3. T024–T027 and T029–T038 may complete US1's local scope/conflict implementation. T028 and the
+   DB-backed portion of T039 must pass on disposable PostgreSQL before US1 is accepted or any
+   dependent phase claims an accepted checkpoint.
 4. T040–T052 establish shell access and a green fifteen-route baseline; the four planned route IDs
    remain undiscoverable at that checkpoint.
 5. US3, US4, and US5 backend/test lanes may start after Foundation, but their page/navigation/UI
@@ -412,5 +421,8 @@ truthful; deployment handoff is ready.
   before changing behavior.
 - Stop release progression on any skipped PLAN-35 DB/browser/live gate required for the claimed
   state.
+- Missing disposable PostgreSQL does not stop explicitly accepted local implementation under
+  FR-035, but it leaves T016/T028/T039 and every dependent DB acceptance claim open. Never run
+  migration, seed, mutation, or concurrency verification against the production-connected database.
 - Stop parallel work when two tasks need the same exclusive file; finish and integrate the upstream
   contract owner first.

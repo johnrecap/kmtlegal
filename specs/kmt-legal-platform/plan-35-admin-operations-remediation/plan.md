@@ -5,8 +5,10 @@
 **Input**: The accepted PLAN-35 feature specification and the 2026-07-21 dashboard,
 backend, UI/UX, contract, test, and status-document audits.
 
-**Delivery mode**: Planning complete through a clean [Spec Kit analyze](./analyze.md). Product
-implementation is intentionally deferred until concrete task IDs are explicitly accepted.
+**Delivery mode**: Implementation is active for explicitly accepted task IDs. The workstation has
+no disposable PostgreSQL target and the user declined local database installation, so local code
+and non-DB verification may continue while database-dependent evidence remains open and cannot
+support a story, DB-verified, release, or production-complete claim.
 
 ## Summary
 
@@ -32,7 +34,8 @@ and Playwright systems remain authoritative.
 `Session`, `Appointment`, `Task`, `LegalCase`, `ContactMessage`, `Notification`, `SystemSetting`, and `AuditLog`
 models
 
-**Testing**: Vitest 4.1.9, Testing Library, Playwright 1.51.1, Prisma-backed integration fixtures
+**Testing**: Vitest 4.1.9, Testing Library, Playwright 1.51.1, and Prisma-backed integration fixtures;
+DB-backed execution is deferred until an isolated PostgreSQL target exists
 
 **Target Platform**: Responsive browsers at 390px and desktop widths; Linux aaPanel + PM2
 production deployment
@@ -46,10 +49,12 @@ new client-side data or chart frameworks
 
 **Constraints**: Arabic RTL admin, server-side authorization remains authoritative, no secrets or
 server paths become editable UI settings, no public/client/payment/Stitch behavior changes, no
-skipped check may satisfy an acceptance gate
+skipped check may satisfy an acceptance gate, and the production-connected database is never used
+for migration, seed, mutation, or concurrency verification
 
 **Scale/Scope**: Eight user stories, nineteen admin destination IDs, twenty-three affected API methods,
-five staff-role acceptance personas, and the existing single PostgreSQL database
+five staff-role acceptance personas, and the existing production PostgreSQL deployment; acceptance
+verification requires a separate disposable PostgreSQL target
 
 ## Constitution Check
 
@@ -65,7 +70,9 @@ five staff-role acceptance personas, and the existing single PostgreSQL database
   transaction isolation, stable error semantics, audit behavior, and idempotency are defined before
   consumer UI phases.
 - **PASS — Quality gate**: Focused, contract, database, browser, responsive, RTL, accessibility,
-  and live evidence are required in the quickstart and tasks.
+  and live evidence are required in the quickstart and tasks. Local implementation may proceed
+  without a disposable DB only because FR-035 keeps every DB-dependent task and acceptance boundary
+  explicitly open rather than counting it as passed.
 - **PASS — Conflict-control gate**: Shared-file lanes and sequential boundaries are explicit below.
 
 ### After Phase 1 design
@@ -77,7 +84,7 @@ five staff-role acceptance personas, and the existing single PostgreSQL database
 - **PASS — Decision closure**: [research.md](./research.md) resolves appointment serialization,
   notification counting, role immutability, storage truthfulness, route policy, and task registration.
 - **PASS — Reproducibility**: [quickstart.md](./quickstart.md) separates local, DB-backed, browser,
-  live, skipped, and blocked evidence.
+  live, skipped, blocked, and user-approved local-only implementation evidence.
 - **PASS — Parallel safety**: No task marked `[P]` may touch the same file or an upstream contract
   used by another simultaneous task.
 
@@ -204,14 +211,18 @@ PLAN-35 as the only detailed task source. Dependency: none. Product code remains
 Add characterization tests and then establish the permission catalog/bootstrap, route-policy
 metadata, stable Arabic error/copy/audit contracts, accessible shared primitives, bidirectional
 contract inventory, and deterministic role/DB/browser fixtures. All later product phases depend on
-this phase; T019 stays expected-red until shell convergence as defined by G35-4.
+this phase's locally verified contracts; T019 stays expected-red until shell convergence. T016 is
+an external DB-evidence task, remains open, and blocks DB verification/release rather than local
+code execution. Production data is never an acceptable substitute.
 
 ### Phase 2 — Trusted operational scopes and scheduling (US1)
 
 Make dashboard/task/calendar visibility consistent and move public/admin appointment writers onto
 the shared serializable conflict mechanism, including consultation assignment/conversion and
 symmetric unassigned public reservations. Depends on Phase 1. Public payment, consultation, and
-admin calendar writers are edited sequentially with writer-specific retry rules.
+admin calendar writers are edited sequentially with writer-specific retry rules. T024–T027 and
+T029–T038 may be implemented and locally verified without a database; T028 and the DB portion of
+T039 remain open, so the US1 checkpoint cannot be accepted until isolated PostgreSQL evidence exists.
 
 ### Phase 3 — Permission-aware workspace (US2)
 
@@ -317,6 +328,9 @@ seed, or route registry are sequential even when their production files differ.
   stop/re-spec blocker; public, client, payment, and Stitch surfaces cannot be silently changed.
 - **Evidence inflation**: `SKIPPED`, `BLOCKED`, local pass, DB pass, browser pass, and live pass are
   recorded as distinct states.
+- **No disposable database**: Local implementation continues only under the FR-035 status split.
+  T016, T028, T039 DB assertions, and all later DB acceptance remain open; no production database
+  is mutated to compensate for the missing test environment.
 
 ## Complexity Tracking
 

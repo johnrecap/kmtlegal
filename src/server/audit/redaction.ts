@@ -4,6 +4,7 @@ const SENSITIVE_KEY_PATTERN =
 const MAX_SAFE_STRING_LENGTH = 240;
 const EMAIL_VALUE_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 const PHONE_VALUE_PATTERN = /\+?\d[\d\s().-]{8,}\d/g;
+const SAFE_OPAQUE_IDENTIFIER_PATTERN = /^[A-Z0-9._:-]{1,160}$/i;
 
 export type RedactableJson =
   | null
@@ -37,7 +38,13 @@ function redactValue(value: unknown, depth: number): RedactableJson {
   if (typeof value === "object") {
     const output: Record<string, RedactableJson> = {};
     for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
-      output[key] = SENSITIVE_KEY_PATTERN.test(key) ? "[REDACTED]" : redactValue(entry, depth + 1);
+      const safeProviderCheckoutId =
+        key === "providerCheckoutId" &&
+        typeof entry === "string" &&
+        SAFE_OPAQUE_IDENTIFIER_PATTERN.test(entry);
+      output[key] = SENSITIVE_KEY_PATTERN.test(key) && !safeProviderCheckoutId
+        ? "[REDACTED]"
+        : redactValue(entry, depth + 1);
     }
     return output;
   }

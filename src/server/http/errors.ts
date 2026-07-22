@@ -101,7 +101,7 @@ export function jsonError(
         requestId
       }
     },
-    { status }
+    { status, headers: { "Cache-Control": "no-store" } }
   );
 }
 

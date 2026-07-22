@@ -1,0 +1,85 @@
+{
+  "plan": "PLAN-35",
+  "story": "US1",
+  "scope": "scope-and-appointment-correctness",
+  "recordedAt": "2026-07-22T05:01:00+03:00",
+  "status": "local-complete-database-acceptance-deferred",
+  "completedTasks": ["T024-T027", "T029-T038"],
+  "openTasks": ["T016", "T028", "T039 database-backed portion"],
+  "productionDatabaseUsed": false,
+  "expectedRed": {
+    "command": "npm test -- tests/server/appointment-conflict-service.test.ts tests/server/admin-dashboard.test.ts tests/server/admin-cases.test.ts tests/server/consultation-contract.test.ts tests/server/analytics-observability.test.ts",
+    "result": "expected-fail",
+    "summary": "5 files failed; 8 tests failed and 41 passed before implementation. Missing shared conflict/scope exports, duplicated dashboard scope/broad reads, and transaction-local writer/audit contracts were observed."
+  },
+  "commands": [
+    {
+      "command": "npm test -- tests/server/appointment-conflict-service.test.ts tests/server/admin-dashboard.test.ts tests/server/admin-cases.test.ts tests/server/consultation-contract.test.ts tests/server/analytics-observability.test.ts",
+      "result": "pass",
+      "summary": "5 files, 57 tests passed"
+    },
+    {
+      "command": "npm test -- tests/server/appointment-conflict-service.test.ts tests/server/admin-dashboard.test.ts tests/server/admin-cases.test.ts tests/server/consultation-contract.test.ts tests/server/analytics-observability.test.ts tests/server/plan35-error-copy.test.ts",
+      "result": "pass",
+      "summary": "Final focused verification: 6 files, 61 tests passed"
+    },
+    {
+      "command": "npm test",
+      "result": "pass",
+      "summary": "41 files, 277 tests passed"
+    },
+    { "command": "npm run typecheck", "result": "pass" },
+    { "command": "npm run lint", "result": "pass", "summary": "No warnings or errors" },
+    { "command": "npm run db:validate", "result": "pass", "summary": "Prisma schema valid; no database connection required" },
+    { "command": "npm run db:generate", "result": "pass", "summary": "Prisma Client 7.8.0 generated; no database connection required" },
+    {
+      "command": "ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build",
+      "result": "pass",
+      "summary": "Next.js production build completed without a database connection"
+    },
+    {
+      "command": "plan35-db-backed appointment concurrency and bounded EXPLAIN/contention scenarios",
+      "result": "deferred",
+      "summary": "No disposable PostgreSQL is available and the user declined local installation. T028/T039 remain open; no production database was contacted."
+    }
+  ],
+  "contracts": {
+    "interval": "half-open [startsAt, endsAt)",
+    "activeStatuses": ["RESERVED", "SCHEDULED", "RESCHEDULED"],
+    "databaseCreateMaxAttempts": 3,
+    "existingUpdateAttempts": 1,
+    "externalSideEffectAttempts": 1,
+    "stableConflictCode": "APPOINTMENT_CONFLICT",
+    "reconciliationEvent": {
+      "name": "payment.checkout_reconciliation_required",
+      "level": "error",
+      "exactlyOnceAssertion": "pass",
+      "metadataAllowlist": [
+        "requestId",
+        "provider",
+        "paymentAttemptId",
+        "providerCheckoutId",
+        "failureCode",
+        "retryPolicy",
+        "source"
+      ]
+    }
+  },
+  "convergence": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "acceptedResiduals": [
+      {
+        "severity": "MEDIUM",
+        "finding": "A paid provider checkout can become unreachable if provider success is followed by a serializable commit abort.",
+        "disposition": "No automatic replay; emit one privacy-safe reconciliation event. Provider idempotency/outbox redesign is outside PLAN-35."
+      },
+      {
+        "severity": "DEFERRED_EVIDENCE",
+        "finding": "PostgreSQL same-row concurrency, order independence, contention, and query plans are not locally executable.",
+        "disposition": "T028 and the database-backed portion of T039 remain open. US1 is not DB-verified or checkpoint-accepted."
+      }
+    ]
+  }
+}

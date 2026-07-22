@@ -2,11 +2,17 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { AI_REVIEW_DISCLAIMER, bookingIntakeExtractionOutputSchema, generateStructured } from "@/server/ai";
 import { createConsultationReviewNotifications } from "@/server/admin/notification-service";
+import {
+  APPOINTMENT_TRANSACTION_MODES,
+  assertNoAppointmentConflict,
+  runAppointmentConflictTransaction
+} from "@/server/appointments/appointment-conflict-service";
 import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { getIpAddress } from "@/server/auth/session-store";
 import type { Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
+import { safeLog } from "@/server/observability/safe-log";
 import { canonicalPhone } from "@/server/phone/phone-normalization";
 import { createConsultationPaymentAttempt } from "@/server/payments/payment-service";
 import { consultationPriceDto, resolveConsultationPrice } from "@/server/payments/pricing-service";
@@ -33,6 +39,25 @@ import { addCairoDays, cairoDateString, cairoWeekday } from "./consultation-date
 import { publicConsultationReference } from "./consultation-service";
 
 const OFFICE_TIMEZONE = CONSULTATION_TIMEZONE;
+
+export const PAYMENT_CHECKOUT_RECONCILIATION_EVENT = "payment.checkout_reconciliation_required";
+
+export function paymentCheckoutReconciliationMetadata(input: {
+  requestId: string;
+  provider: string;
+  paymentAttemptId: string;
+  providerCheckoutId?: string | null;
+}) {
+  return {
+    requestId: input.requestId,
+    provider: input.provider,
+    paymentAttemptId: input.paymentAttemptId,
+    ...(input.providerCheckoutId ? { providerCheckoutId: input.providerCheckoutId } : {}),
+    failureCode: "P2034",
+    retryPolicy: "single_attempt",
+    source: "public_booking"
+  };
+}
 
 const assistantActionSchema = z.enum([
   "answer_general",
@@ -1622,7 +1647,11 @@ async function prepareConsultationPaymentReview(input: {
   });
   const endsAt = new Date(slot.endsAt);
   await assertNoBookingDuplicate(body);
-  await assertNoSlotConflict(startsAt, endsAt);
+  await assertNoAppointmentConflict({
+    startsAt,
+    endsAt,
+    scope: { kind: "office-consultation" }
+  });
   const price = await resolveConsultationPrice({
     serviceCategory: body.serviceCategory!,
     mode: body.preferredMode
@@ -1673,67 +1702,99 @@ export async function createPublicConsultationCheckout(input: {
   });
   const endsAt = new Date(slot.endsAt);
   await assertNoBookingDuplicate(checkoutBody);
-  await assertNoSlotConflict(startsAt, endsAt);
+  await assertNoAppointmentConflict({
+    startsAt,
+    endsAt,
+    scope: { kind: "office-consultation" }
+  });
   const price = await resolveConsultationPrice({
     serviceCategory: checkoutBody.serviceCategory!,
     mode: checkoutBody.preferredMode
   });
 
   const phoneCanonical = canonicalPhone(checkoutBody.phone!);
-  const result = await runConsultationBookingTransaction(async (tx) => {
-    await assertNoBookingDuplicate(checkoutBody, tx);
-    await assertNoSlotConflict(startsAt, endsAt, tx);
-    const client = await upsertAssistantClient(tx, checkoutBody, phoneCanonical);
-    const consultation = await tx.consultationRequest.create({
-      data: {
-        clientId: client.id,
-        fullName: checkoutBody.fullName!,
-        phone: checkoutBody.phone!,
-        phoneCanonical,
-        email: checkoutBody.email || null,
-        city: checkoutBody.city || null,
-        serviceCategory: checkoutBody.serviceCategory!,
-        summary: checkoutBody.summary!,
-        opposingPartyName: checkoutBody.opposingPartyName || null,
-        urgency: checkoutBody.urgency,
-        preferredMode: checkoutBody.preferredMode,
-        status: "PAYMENT_PENDING",
-        aiClassification: deterministicBookingClassification(checkoutBody, startsAt, input.requestId),
-        aiSummary: deterministicBookingSummary(checkoutBody, startsAt)
-      }
-    });
-
-    const appointment = await tx.appointment.create({
-      data: {
-        clientId: client.id,
-        consultationRequestId: consultation.id,
-        title: appointmentTitle(body.locale, consultation.id),
-        type: "CONSULTATION",
-        mode: checkoutBody.preferredMode,
+  const reconciliationState = {
+    checkout: null as null | {
+      provider: string;
+      paymentAttemptId: string;
+      providerCheckoutId: string | null;
+    }
+  };
+  const result = await runAppointmentConflictTransaction({
+    mode: APPOINTMENT_TRANSACTION_MODES.externalSideEffectSingleAttempt,
+    operation: async (tx) => {
+      await assertNoBookingDuplicate(checkoutBody, tx);
+      await assertNoAppointmentConflict({
         startsAt,
         endsAt,
-        status: "RESERVED",
-        notes: "Reserved pending trusted payment webhook confirmation."
-      }
-    });
+        scope: { kind: "office-consultation" },
+        client: tx
+      });
+      const client = await upsertAssistantClient(tx, checkoutBody, phoneCanonical);
+      const consultation = await tx.consultationRequest.create({
+        data: {
+          clientId: client.id,
+          fullName: checkoutBody.fullName!,
+          phone: checkoutBody.phone!,
+          phoneCanonical,
+          email: checkoutBody.email || null,
+          city: checkoutBody.city || null,
+          serviceCategory: checkoutBody.serviceCategory!,
+          summary: checkoutBody.summary!,
+          opposingPartyName: checkoutBody.opposingPartyName || null,
+          urgency: checkoutBody.urgency,
+          preferredMode: checkoutBody.preferredMode,
+          status: "PAYMENT_PENDING",
+          aiClassification: deterministicBookingClassification(checkoutBody, startsAt, input.requestId),
+          aiSummary: deterministicBookingSummary(checkoutBody, startsAt)
+        }
+      });
 
-    const attempt = await createConsultationPaymentAttempt({
-      tx,
-      client,
-      consultationRequest: consultation,
-      appointment: {
-        id: appointment.id,
-        title: appointment.title,
-        startsAt: appointment.startsAt,
-        endsAt: appointment.endsAt,
-        mode: checkoutBody.preferredMode
-      },
-      price,
-      request: input.request,
-      locale: body.locale
-    });
+      const appointment = await tx.appointment.create({
+        data: {
+          clientId: client.id,
+          consultationRequestId: consultation.id,
+          title: appointmentTitle(body.locale, consultation.id),
+          type: "CONSULTATION",
+          mode: checkoutBody.preferredMode,
+          startsAt,
+          endsAt,
+          status: "RESERVED",
+          notes: "Reserved pending trusted payment webhook confirmation."
+        }
+      });
 
-    return { client, consultation, appointment, attempt };
+      const attempt = await createConsultationPaymentAttempt({
+        tx,
+        client,
+        consultationRequest: consultation,
+        appointment: {
+          id: appointment.id,
+          title: appointment.title,
+          startsAt: appointment.startsAt,
+          endsAt: appointment.endsAt,
+          mode: checkoutBody.preferredMode
+        },
+        price,
+        request: input.request,
+        locale: body.locale
+      });
+      reconciliationState.checkout = {
+        provider: attempt.provider,
+        paymentAttemptId: attempt.id,
+        providerCheckoutId: attempt.providerSessionId
+      };
+
+      return { client, consultation, appointment, attempt };
+    }
+  }).catch((error) => {
+    if (reconciliationState.checkout && error instanceof ApiError && error.code === "APPOINTMENT_CONFLICT") {
+      safeLog("error", PAYMENT_CHECKOUT_RECONCILIATION_EVENT, paymentCheckoutReconciliationMetadata({
+        requestId: input.requestId,
+        ...reconciliationState.checkout
+      }));
+    }
+    throw error;
   });
 
   await appendAuditLogBestEffort({
@@ -1806,52 +1867,64 @@ async function createFreeConsultationBooking(input: {
   });
   const endsAt = new Date(slot.endsAt);
   await assertNoBookingDuplicate(body);
-  await assertNoSlotConflict(startsAt, endsAt);
+  await assertNoAppointmentConflict({
+    startsAt,
+    endsAt,
+    scope: { kind: "office-consultation" }
+  });
 
   const phoneCanonical = canonicalPhone(body.phone!);
-  const result = await runConsultationBookingTransaction(async (tx) => {
-    await assertNoBookingDuplicate(body, tx);
-    await assertNoSlotConflict(startsAt, endsAt, tx);
-    const client = await upsertAssistantClient(tx, body, phoneCanonical);
-    const consultation = await tx.consultationRequest.create({
-      data: {
-        clientId: client.id,
-        fullName: body.fullName!,
-        phone: body.phone!,
-        phoneCanonical,
-        email: body.email || null,
-        city: body.city || null,
-        serviceCategory: body.serviceCategory!,
-        summary: body.summary!,
-        opposingPartyName: body.opposingPartyName || null,
-        urgency: body.urgency,
-        preferredMode: body.preferredMode,
-        status: "SCHEDULED",
-        aiClassification: deterministicBookingClassification(body, startsAt, input.requestId),
-        aiSummary: deterministicBookingSummary(body, startsAt)
-      }
-    });
-
-    const appointment = await tx.appointment.create({
-      data: {
-        clientId: client.id,
-        consultationRequestId: consultation.id,
-        title: appointmentTitle(body.locale, consultation.id),
-        type: "CONSULTATION",
-        mode: body.preferredMode,
+  const result = await runAppointmentConflictTransaction({
+    mode: APPOINTMENT_TRANSACTION_MODES.databaseCreateBoundedRetry,
+    operation: async (tx) => {
+      await assertNoBookingDuplicate(body, tx);
+      await assertNoAppointmentConflict({
         startsAt,
         endsAt,
-        status: "SCHEDULED",
-        notes: "Confirmed from public assistant without payment because booking fee is disabled."
-      }
-    });
+        scope: { kind: "office-consultation" },
+        client: tx
+      });
+      const client = await upsertAssistantClient(tx, body, phoneCanonical);
+      const consultation = await tx.consultationRequest.create({
+        data: {
+          clientId: client.id,
+          fullName: body.fullName!,
+          phone: body.phone!,
+          phoneCanonical,
+          email: body.email || null,
+          city: body.city || null,
+          serviceCategory: body.serviceCategory!,
+          summary: body.summary!,
+          opposingPartyName: body.opposingPartyName || null,
+          urgency: body.urgency,
+          preferredMode: body.preferredMode,
+          status: "SCHEDULED",
+          aiClassification: deterministicBookingClassification(body, startsAt, input.requestId),
+          aiSummary: deterministicBookingSummary(body, startsAt)
+        }
+      });
 
-    await createConsultationReviewNotifications({
-      client: tx,
-      consultationId: consultation.id
-    });
+      const appointment = await tx.appointment.create({
+        data: {
+          clientId: client.id,
+          consultationRequestId: consultation.id,
+          title: appointmentTitle(body.locale, consultation.id),
+          type: "CONSULTATION",
+          mode: body.preferredMode,
+          startsAt,
+          endsAt,
+          status: "SCHEDULED",
+          notes: "Confirmed from public assistant without payment because booking fee is disabled."
+        }
+      });
 
-    return { client, consultation, appointment };
+      await createConsultationReviewNotifications({
+        client: tx,
+        consultationId: consultation.id
+      });
+
+      return { client, consultation, appointment };
+    }
   });
 
   await appendAuditLogBestEffort({
@@ -2014,12 +2087,13 @@ async function recoverBookingSlotSelection(input: {
 function isRecoverableBookingSlotError(error: unknown) {
   return (
     error instanceof ApiError &&
-    [
-      "Appointment date is invalid.",
-      "Appointment date must be in the future.",
-      "This consultation slot is no longer available. Please choose another time.",
-      "This consultation slot is already booked."
-    ].includes(error.message)
+    (error.code === "APPOINTMENT_CONFLICT" ||
+      [
+        "Appointment date is invalid.",
+        "Appointment date must be in the future.",
+        "This consultation slot is no longer available. Please choose another time.",
+        "This consultation slot is already booked."
+      ].includes(error.message))
   );
 }
 
@@ -2042,22 +2116,6 @@ function duplicateBookingConversationMessage(locale: "ar" | "en") {
   return locale === "ar"
     ? "يوجد بالفعل حجز استشارة مجدول لنفس رقم الهاتف خلال الفترة الحالية. استخدم استعلام برقم المرجع لو معك المرجع، أو انتظر مراجعة فريق المكتب."
     : "A scheduled consultation already exists for this phone in the current period. Use Check reference if you have the reference, or wait for the office team review.";
-}
-
-async function assertNoSlotConflict(startsAt: Date, endsAt: Date, client: Pick<typeof prisma, "appointment"> = prisma) {
-  const conflict = await client.appointment.findFirst({
-    where: {
-      type: "CONSULTATION",
-      status: { in: ["RESERVED", "SCHEDULED", "RESCHEDULED"] },
-      startsAt: { lt: endsAt },
-      endsAt: { gt: startsAt }
-    },
-    select: { id: true }
-  });
-
-  if (conflict) {
-    throw new ApiError(409, "CONFLICT", "This consultation slot is already booked.");
-  }
 }
 
 async function assertNoBookingDuplicate(body: PublicConsultationAssistantInput, client: Pick<typeof prisma, "consultationRequest"> = prisma) {
@@ -2095,21 +2153,6 @@ async function assertNoBookingDuplicate(body: PublicConsultationAssistantInput, 
   if (recentDuplicate) {
     throw new ApiError(409, "CONFLICT", "A scheduled consultation already exists for this contact and service area.");
   }
-}
-
-async function runConsultationBookingTransaction<T>(operation: (tx: Prisma.TransactionClient) => Promise<T>) {
-  try {
-    return await prisma.$transaction(operation, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
-  } catch (error) {
-    if (isPrismaTransactionConflict(error)) {
-      throw new ApiError(409, "CONFLICT", "This consultation slot is already booked.");
-    }
-    throw error;
-  }
-}
-
-function isPrismaTransactionConflict(error: unknown) {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034";
 }
 
 async function upsertAssistantClient(tx: Prisma.TransactionClient, body: PublicConsultationAssistantInput, phoneCanonical: string | null) {

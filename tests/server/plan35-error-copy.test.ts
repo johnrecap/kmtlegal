@@ -14,6 +14,7 @@ describe("PLAN-35 stable API errors and Arabic recovery copy", () => {
     const body = await response.json();
     expect(body.error).toEqual({ code, message: expected, details: [], requestId: `request-${code.toLowerCase()}` });
     expect(body.error.message).not.toMatch(/prisma|sql|exception/i);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
   });
 
   it("keeps case-reference recovery explicit and preserves entered values", () => {

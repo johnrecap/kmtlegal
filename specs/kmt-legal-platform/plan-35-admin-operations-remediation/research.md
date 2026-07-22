@@ -430,3 +430,24 @@ audit rows or leave an unaudited business transition under concurrency.
 
 - UI debouncing: rejected because direct/concurrent API callers bypass it.
 - Post-commit best-effort audit: rejected because the contract requires exact transition evidence.
+
+## R16 — Local implementation without a disposable database
+
+**Decision**: When the workstation has no disposable PostgreSQL target and local database
+installation is not authorized, accepted product tasks may continue through code, contract, unit,
+type, lint, build, and non-DB browser verification. Database-dependent tasks remain unchecked and
+`BLOCKED`; they cannot close a story checkpoint, produce `DB-Verified`, or support release or
+production-complete status. The production-connected database is never used for migrations, seed
+repetition, mutation fixtures, contention, or concurrency tests.
+
+**Rationale**: This preserves development progress without fabricating database evidence or risking
+real legal/client data. It also keeps the exact missing proof visible for later execution against an
+isolated target.
+
+**Alternatives rejected**:
+
+- Install PostgreSQL locally: rejected by explicit user instruction.
+- Run verification against the live production database: rejected because migration, seed, and
+  concurrency scenarios are mutation-heavy and unsafe for production data.
+- Treat mocked/unit transaction tests as DB acceptance: rejected because they do not prove actual
+  PostgreSQL isolation, migration, query-plan, or contention behavior.

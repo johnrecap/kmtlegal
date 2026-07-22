@@ -1,6 +1,11 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
+import {
+  APPOINTMENT_TRANSACTION_MODES,
+  assertNoAppointmentConflict,
+  runAppointmentConflictTransaction
+} from "@/server/appointments/appointment-conflict-service";
+import { appendAuditLog, appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { canReadCase, hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
@@ -194,7 +199,7 @@ function caseListWhere(actor: Principal, filters: AdminCaseListQuery): Prisma.Le
   };
 }
 
-function appointmentScopeWhereForPrincipal(actor: Principal): Prisma.AppointmentWhereInput {
+export function appointmentScopeWhereForPrincipal(actor: Principal): Prisma.AppointmentWhereInput {
   if (hasPermission(actor, "appointment.manage.any")) {
     return {};
   }
@@ -236,8 +241,12 @@ function calendarWhere(actor: Principal, filters: AdminCalendarQuery): Prisma.Ap
   };
 }
 
-async function findCaseForAction(actor: Principal, caseId: string) {
-  const legalCase = await prisma.legalCase.findUnique({
+async function findCaseForAction(
+  actor: Principal,
+  caseId: string,
+  client: Pick<Prisma.TransactionClient, "legalCase"> = prisma
+) {
+  const legalCase = await client.legalCase.findUnique({
     where: { id: caseId },
     include: {
       client: { select: { id: true, fullName: true, phone: true, email: true, userId: true } },
@@ -265,8 +274,12 @@ async function assertCaseUpdateAllowed(actor: Principal, caseId: string) {
   return legalCase;
 }
 
-async function assertSessionManageAllowed(actor: Principal, caseId: string) {
-  const legalCase = await findCaseForAction(actor, caseId);
+async function assertSessionManageAllowed(
+  actor: Principal,
+  caseId: string,
+  client: Pick<Prisma.TransactionClient, "legalCase"> = prisma
+) {
+  const legalCase = await findCaseForAction(actor, caseId, client);
   if (!canManageCaseSessions(actor, legalCase)) {
     throw new ApiError(403, "PERMISSION_DENIED", "Session management permission is required.");
   }
@@ -525,48 +538,63 @@ export async function listAdminCalendarAppointments(input: { actor: Principal; q
 
 export async function createAdminCalendarAppointment(input: { actor: Principal; body: unknown; request?: Request }) {
   const body = parseWithSchema(calendarAppointmentCreateSchema, input.body, "Calendar appointment payload is invalid.");
-  const legalCase = await assertSessionManageAllowed(input.actor, body.caseId);
   const startsAt = dateFromActionInput(body.startsAt, "startsAt");
-  const appointment = await prisma.appointment.create({
-    data: {
-      clientId: legalCase.clientId,
-      lawyerId: legalCase.assignedLawyerId,
-      caseId: legalCase.id,
-      title: body.title,
-      type: body.type,
-      mode: body.mode,
-      location: body.location || null,
-      startsAt,
-      endsAt: appointmentEndAt(startsAt, body.durationMinutes),
-      status: "SCHEDULED",
-      notes: body.notes || null
-    },
-    include: {
-      client: { select: { id: true, fullName: true, phone: true } },
-      lawyer: { select: { id: true, name: true, email: true } },
-      case: { select: { id: true, internalFileNumber: true, title: true, assignedLawyerId: true } }
+  const endsAt = appointmentEndAt(startsAt, body.durationMinutes);
+
+  return runAppointmentConflictTransaction({
+    mode: APPOINTMENT_TRANSACTION_MODES.databaseCreateBoundedRetry,
+    operation: async (tx) => {
+      const legalCase = await assertSessionManageAllowed(input.actor, body.caseId, tx);
+      await assertNoAppointmentConflict({
+        startsAt,
+        endsAt,
+        scope: { kind: "lawyer", lawyerId: legalCase.assignedLawyerId },
+        client: tx
+      });
+
+      const appointment = await tx.appointment.create({
+        data: {
+          clientId: legalCase.clientId,
+          lawyerId: legalCase.assignedLawyerId,
+          caseId: legalCase.id,
+          title: body.title,
+          type: body.type,
+          mode: body.mode,
+          location: body.location || null,
+          startsAt,
+          endsAt,
+          status: "SCHEDULED",
+          notes: body.notes || null
+        },
+        include: {
+          client: { select: { id: true, fullName: true, phone: true } },
+          lawyer: { select: { id: true, name: true, email: true } },
+          case: { select: { id: true, internalFileNumber: true, title: true, assignedLawyerId: true } }
+        }
+      });
+
+      await appendAuditLog({
+        client: tx,
+        actorId: input.actor.id,
+        action: "calendar.appointment_create",
+        resourceType: "Appointment",
+        resourceId: appointment.id,
+        clientId: appointment.clientId,
+        caseId: legalCase.id,
+        lawyerId: appointment.lawyerId,
+        appointmentId: appointment.id,
+        metadata: {
+          caseId: legalCase.id,
+          startsAt: appointment.startsAt.toISOString(),
+          mode: appointment.mode,
+          type: appointment.type
+        },
+        request: input.request
+      });
+
+      return appointment;
     }
   });
-
-  await appendAuditLogBestEffort({
-    actorId: input.actor.id,
-    action: "calendar.appointment_create",
-    resourceType: "Appointment",
-    resourceId: appointment.id,
-    clientId: appointment.clientId,
-    caseId: legalCase.id,
-    lawyerId: appointment.lawyerId,
-    appointmentId: appointment.id,
-    metadata: {
-      caseId: legalCase.id,
-      startsAt: appointment.startsAt.toISOString(),
-      mode: appointment.mode,
-      type: appointment.type
-    },
-    request: input.request
-  });
-
-  return appointment;
 }
 
 export async function rescheduleAdminCalendarAppointment(input: {
@@ -577,57 +605,76 @@ export async function rescheduleAdminCalendarAppointment(input: {
 }) {
   const appointmentId = parseWithSchema(uuidSchema, input.appointmentId, "Appointment id is invalid.");
   const body = parseWithSchema(appointmentRescheduleSchema, input.body, "Appointment reschedule payload is invalid.");
-  const existing = await prisma.appointment.findUnique({
-    where: { id: appointmentId },
-    include: {
-      case: { select: { id: true, assignedLawyerId: true, deletedAt: true } }
-    }
-  });
-
-  if (!existing) {
-    throw new ApiError(404, "NOT_FOUND", "Appointment was not found.");
-  }
-  if (!canManageCalendarAppointment(input.actor, existing)) {
-    throw new ApiError(403, "PERMISSION_DENIED", "Appointment reschedule permission is required.");
-  }
-  if (existing.status === "CANCELLED" || existing.status === "COMPLETED" || existing.status === "NO_SHOW") {
-    throw new ApiError(409, "CONFLICT", "Closed appointments cannot be rescheduled.");
-  }
-
   const startsAt = dateFromActionInput(body.startsAt, "startsAt");
-  const updated = await prisma.appointment.update({
-    where: { id: appointmentId },
-    data: {
-      startsAt,
-      endsAt: appointmentEndAt(startsAt, body.durationMinutes),
-      mode: body.mode ?? existing.mode,
-      location: body.location || existing.location,
-      status: "RESCHEDULED"
-    },
-    include: {
-      client: { select: { id: true, fullName: true, phone: true } },
-      lawyer: { select: { id: true, name: true, email: true } },
-      case: { select: { id: true, internalFileNumber: true, title: true, assignedLawyerId: true } }
+  const endsAt = appointmentEndAt(startsAt, body.durationMinutes);
+
+  return runAppointmentConflictTransaction({
+    mode: APPOINTMENT_TRANSACTION_MODES.existingUpdateSingleAttempt,
+    operation: async (tx) => {
+      const existing = await tx.appointment.findUnique({
+        where: { id: appointmentId },
+        include: {
+          case: { select: { id: true, assignedLawyerId: true, deletedAt: true } }
+        }
+      });
+
+      if (!existing) {
+        throw new ApiError(404, "NOT_FOUND", "Appointment was not found.");
+      }
+      if (!canManageCalendarAppointment(input.actor, existing)) {
+        throw new ApiError(403, "PERMISSION_DENIED", "Appointment reschedule permission is required.");
+      }
+      if (existing.status === "CANCELLED" || existing.status === "COMPLETED" || existing.status === "NO_SHOW") {
+        throw new ApiError(409, "CONFLICT", "Closed appointments cannot be rescheduled.");
+      }
+
+      const lawyerId = existing.lawyerId ?? existing.case?.assignedLawyerId;
+      await assertNoAppointmentConflict({
+        startsAt,
+        endsAt,
+        scope: lawyerId
+          ? { kind: "lawyer", lawyerId }
+          : { kind: "office-consultation" },
+        excludeAppointmentId: appointmentId,
+        client: tx
+      });
+
+      const updated = await tx.appointment.update({
+        where: { id: appointmentId },
+        data: {
+          startsAt,
+          endsAt,
+          mode: body.mode ?? existing.mode,
+          location: body.location || existing.location,
+          status: "RESCHEDULED"
+        },
+        include: {
+          client: { select: { id: true, fullName: true, phone: true } },
+          lawyer: { select: { id: true, name: true, email: true } },
+          case: { select: { id: true, internalFileNumber: true, title: true, assignedLawyerId: true } }
+        }
+      });
+
+      await appendAuditLog({
+        client: tx,
+        actorId: input.actor.id,
+        action: "calendar.appointment_reschedule",
+        resourceType: "Appointment",
+        resourceId: appointmentId,
+        clientId: updated.clientId,
+        caseId: existing.caseId,
+        lawyerId: updated.lawyerId,
+        appointmentId,
+        metadata: {
+          caseId: existing.caseId,
+          previousStartsAt: existing.startsAt.toISOString(),
+          startsAt: updated.startsAt.toISOString(),
+          reason: body.reason || null
+        },
+        request: input.request
+      });
+
+      return updated;
     }
   });
-
-  await appendAuditLogBestEffort({
-    actorId: input.actor.id,
-    action: "calendar.appointment_reschedule",
-    resourceType: "Appointment",
-    resourceId: appointmentId,
-    clientId: updated.clientId,
-    caseId: existing.caseId,
-    lawyerId: updated.lawyerId,
-    appointmentId,
-    metadata: {
-      caseId: existing.caseId,
-      previousStartsAt: existing.startsAt.toISOString(),
-      startsAt: updated.startsAt.toISOString(),
-      reason: body.reason || null
-    },
-    request: input.request
-  });
-
-  return updated;
 }

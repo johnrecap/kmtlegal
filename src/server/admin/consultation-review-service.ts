@@ -1,5 +1,11 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
+import {
+  ACTIVE_APPOINTMENT_STATUSES,
+  APPOINTMENT_TRANSACTION_MODES,
+  assertNoAppointmentConflict,
+  runAppointmentConflictTransaction
+} from "@/server/appointments/appointment-conflict-service";
 import { appendAuditLog, appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { hasPermission, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
@@ -198,8 +204,11 @@ export async function listAssignableLawyers() {
   });
 }
 
-async function assertAssignableLawyer(userId: string) {
-  const lawyer = await prisma.user.findFirst({
+async function assertAssignableLawyer(
+  userId: string,
+  client: Pick<Prisma.TransactionClient, "user"> = prisma
+) {
+  const lawyer = await client.user.findFirst({
     where: {
       id: userId,
       status: "ACTIVE",
@@ -222,71 +231,94 @@ export async function assignConsultation(input: { actor: Principal; consultation
 
   const consultationId = parseWithSchema(uuidSchema, input.consultationId, "Consultation id is invalid.");
   const body = parseWithSchema(assignConsultationSchema, input.body, "Assignment payload is invalid.");
-  await assertAssignableLawyer(body.assignedLawyerId);
 
-  const consultation = await prisma.consultationRequest.findUnique({
-    where: { id: consultationId },
-    select: { id: true, status: true, assignedLawyerId: true, clientId: true, secretaryReviewedAt: true }
-  });
-
-  if (!consultation) {
-    throw new ApiError(404, "NOT_FOUND", "Consultation was not found.");
-  }
-  if (consultation.status === "CONVERTED" || consultation.status === "REJECTED") {
-    throw new ApiError(409, "CONFLICT", "Closed consultations cannot be assigned.");
-  }
-
-  const now = new Date();
-  const shouldMarkReviewed = consultation.status === "SCHEDULED" && !consultation.secretaryReviewedAt;
-  const updated = await prisma.$transaction(async (tx) => {
-    const assignedConsultation = await tx.consultationRequest.update({
-      where: { id: consultationId },
-      data: {
-        assignedLawyerId: body.assignedLawyerId,
-        status: consultation.status === "SCHEDULED" ? "SCHEDULED" : "REVIEWING",
-        ...(shouldMarkReviewed
-          ? {
-              secretaryReviewedAt: now,
-              secretaryReviewedById: input.actor.id,
-              secretaryReviewNote: "تمت مراجعة الطلب أثناء تعيين المحامي المسؤول."
-            }
-          : {})
-      },
-      include: {
-        assignedLawyer: { select: { id: true, name: true, email: true } }
-      }
-    });
-
-    if (shouldMarkReviewed) {
-      await resolveConsultationNotifications({ client: tx, consultationId });
-    }
-
-    await tx.appointment.updateMany({
-      where: { consultationRequestId: consultationId, type: "CONSULTATION" },
-      data: { lawyerId: body.assignedLawyerId }
-    });
-
-    if (consultation.clientId) {
-      await tx.client.update({
-        where: { id: consultation.clientId },
-        data: { assignedLawyerId: body.assignedLawyerId }
+  return runAppointmentConflictTransaction({
+    mode: APPOINTMENT_TRANSACTION_MODES.existingUpdateSingleAttempt,
+    operation: async (tx) => {
+      await assertAssignableLawyer(body.assignedLawyerId, tx);
+      const consultation = await tx.consultationRequest.findUnique({
+        where: { id: consultationId },
+        select: { id: true, status: true, assignedLawyerId: true, clientId: true, secretaryReviewedAt: true }
       });
+
+      if (!consultation) {
+        throw new ApiError(404, "NOT_FOUND", "Consultation was not found.");
+      }
+      if (consultation.status === "CONVERTED" || consultation.status === "REJECTED") {
+        throw new ApiError(409, "CONFLICT", "Closed consultations cannot be assigned.");
+      }
+
+      const linkedAppointment = await tx.appointment.findFirst({
+        where: {
+          consultationRequestId: consultationId,
+          type: "CONSULTATION",
+          status: { in: [...ACTIVE_APPOINTMENT_STATUSES] }
+        },
+        select: { id: true, startsAt: true, endsAt: true }
+      });
+      if (linkedAppointment) {
+        await assertNoAppointmentConflict({
+          startsAt: linkedAppointment.startsAt,
+          endsAt: linkedAppointment.endsAt,
+          scope: { kind: "lawyer", lawyerId: body.assignedLawyerId },
+          excludeAppointmentId: linkedAppointment.id,
+          client: tx
+        });
+      }
+
+      const now = new Date();
+      const shouldMarkReviewed = consultation.status === "SCHEDULED" && !consultation.secretaryReviewedAt;
+      const assignedConsultation = await tx.consultationRequest.update({
+        where: { id: consultationId },
+        data: {
+          assignedLawyerId: body.assignedLawyerId,
+          status: consultation.status === "SCHEDULED" ? "SCHEDULED" : "REVIEWING",
+          ...(shouldMarkReviewed
+            ? {
+                secretaryReviewedAt: now,
+                secretaryReviewedById: input.actor.id,
+                secretaryReviewNote: "تمت مراجعة الطلب أثناء تعيين المحامي المسؤول."
+              }
+            : {})
+        },
+        include: {
+          assignedLawyer: { select: { id: true, name: true, email: true } }
+        }
+      });
+
+      if (shouldMarkReviewed) {
+        await resolveConsultationNotifications({ client: tx, consultationId });
+      }
+
+      await tx.appointment.updateMany({
+        where: { consultationRequestId: consultationId, type: "CONSULTATION" },
+        data: { lawyerId: body.assignedLawyerId }
+      });
+
+      if (consultation.clientId) {
+        await tx.client.update({
+          where: { id: consultation.clientId },
+          data: { assignedLawyerId: body.assignedLawyerId }
+        });
+      }
+
+      await appendAuditLog({
+        client: tx,
+        actorId: input.actor.id,
+        action: "consultation.assign",
+        resourceType: "ConsultationRequest",
+        resourceId: consultationId,
+        lawyerId: body.assignedLawyerId,
+        metadata: {
+          assignedLawyerId: body.assignedLawyerId,
+          previousAssignedLawyerId: consultation.assignedLawyerId
+        },
+        request: input.request
+      });
+
+      return assignedConsultation;
     }
-
-    return assignedConsultation;
   });
-
-  await appendAuditLogBestEffort({
-    actorId: input.actor.id,
-    action: "consultation.assign",
-    resourceType: "ConsultationRequest",
-    resourceId: consultationId,
-    lawyerId: body.assignedLawyerId,
-    metadata: { assignedLawyerId: body.assignedLawyerId, previousAssignedLawyerId: consultation.assignedLawyerId },
-    request: input.request
-  });
-
-  return updated;
 }
 
 export async function reviewConsultation(input: { actor: Principal; consultationId: string; body: unknown; request?: Request; requestId?: string }) {
@@ -400,119 +432,145 @@ export async function rejectConsultation(input: { actor: Principal; consultation
 export async function convertConsultationToCase(input: { actor: Principal; consultationId: string; body: unknown; request?: Request; requestId?: string }) {
   const consultationId = parseWithSchema(uuidSchema, input.consultationId, "Consultation id is invalid.");
   const body = parseWithSchema(convertConsultationSchema, input.body, "Conversion payload is invalid.");
-  const consultation = await prisma.consultationRequest.findUnique({
-    where: { id: consultationId },
-    include: { convertedCase: { select: { id: true } } }
-  });
-
-  if (!consultation) {
-    throw new ApiError(404, "NOT_FOUND", "Consultation was not found.");
-  }
-  if (!canReviewConsultation(input.actor, consultation)) {
-    throw new ApiError(403, "PERMISSION_DENIED", "Consultation conversion is not allowed.");
-  }
-  if (consultation.status === "CONVERTED" || consultation.convertedCase) {
-    throw new ApiError(409, "CONFLICT", "Consultation is already converted.");
-  }
-  if (consultation.status === "REJECTED") {
-    throw new ApiError(409, "CONFLICT", "Rejected consultations cannot be converted.");
-  }
-
-  const assignedLawyerId = body.assignedLawyerId || consultation.assignedLawyerId || (input.actor.roleName === "Lawyer" ? input.actor.id : "");
-  if (!assignedLawyerId) {
-    throw new ApiError(400, "VALIDATION_ERROR", "Assigned lawyer is required before conversion.");
-  }
-  await assertAssignableLawyer(assignedLawyerId);
-
   const appointmentStartsAt = body.appointmentStartsAt ? new Date(body.appointmentStartsAt) : null;
-  const caseTitle = body.caseTitle || consultation.summary.slice(0, 120);
-  const caseType = body.caseType || consultation.serviceCategory;
-  const priority = body.priority || priorityFromUrgency(consultation.urgency);
-  const now = new Date();
+  const appointmentEndsAt = appointmentStartsAt
+    ? appointmentEndAt(appointmentStartsAt, body.appointmentDurationMinutes)
+    : null;
 
-  const result = await prisma.$transaction(async (tx) => {
-    const client =
-      consultation.clientId
-        ? await tx.client.update({
-            where: { id: consultation.clientId },
+  const transactionResult = await runAppointmentConflictTransaction({
+    mode: APPOINTMENT_TRANSACTION_MODES.databaseCreateBoundedRetry,
+    operation: async (tx) => {
+      const consultation = await tx.consultationRequest.findUnique({
+        where: { id: consultationId },
+        include: { convertedCase: { select: { id: true } } }
+      });
+
+      if (!consultation) {
+        throw new ApiError(404, "NOT_FOUND", "Consultation was not found.");
+      }
+      if (!canReviewConsultation(input.actor, consultation)) {
+        throw new ApiError(403, "PERMISSION_DENIED", "Consultation conversion is not allowed.");
+      }
+      if (consultation.status === "CONVERTED" || consultation.convertedCase) {
+        throw new ApiError(409, "CONFLICT", "Consultation is already converted.");
+      }
+      if (consultation.status === "REJECTED") {
+        throw new ApiError(409, "CONFLICT", "Rejected consultations cannot be converted.");
+      }
+
+      const assignedLawyerId =
+        body.assignedLawyerId ||
+        consultation.assignedLawyerId ||
+        (input.actor.roleName === "Lawyer" ? input.actor.id : "");
+      if (!assignedLawyerId) {
+        throw new ApiError(400, "VALIDATION_ERROR", "Assigned lawyer is required before conversion.");
+      }
+      await assertAssignableLawyer(assignedLawyerId, tx);
+
+      if (appointmentStartsAt && appointmentEndsAt) {
+        await assertNoAppointmentConflict({
+          startsAt: appointmentStartsAt,
+          endsAt: appointmentEndsAt,
+          scope: { kind: "lawyer", lawyerId: assignedLawyerId },
+          client: tx
+        });
+      }
+
+      const caseTitle = body.caseTitle || consultation.summary.slice(0, 120);
+      const caseType = body.caseType || consultation.serviceCategory;
+      const priority = body.priority || priorityFromUrgency(consultation.urgency);
+      const now = new Date();
+      const client =
+        consultation.clientId
+          ? await tx.client.update({
+              where: { id: consultation.clientId },
+              data: {
+                fullName: consultation.fullName,
+                phone: consultation.phone,
+                phoneCanonical: canonicalPhone(consultation.phone),
+                email: consultation.email,
+                city: consultation.city,
+                status: "ACTIVE",
+                assignedLawyerId
+              }
+            })
+          : await upsertClientFromConsultation(tx, consultation, assignedLawyerId);
+
+      const legalCase = await tx.legalCase.create({
+        data: {
+          internalFileNumber: consultationInternalFileNumber(consultation.id, now),
+          clientId: client.id,
+          assignedLawyerId,
+          consultationRequestId: consultation.id,
+          title: caseTitle,
+          caseType,
+          status: "ACTIVE",
+          priority,
+          summary: consultation.aiSummary || consultation.summary,
+          nextSessionAt: appointmentStartsAt
+        }
+      });
+
+      const appointment = appointmentStartsAt && appointmentEndsAt
+        ? await tx.appointment.create({
             data: {
-              fullName: consultation.fullName,
-              phone: consultation.phone,
-              phoneCanonical: canonicalPhone(consultation.phone),
-              email: consultation.email,
-              city: consultation.city,
-              status: "ACTIVE",
-              assignedLawyerId
+              clientId: client.id,
+              lawyerId: assignedLawyerId,
+              consultationRequestId: consultation.id,
+              caseId: legalCase.id,
+              title: `موعد متابعة ${legalCase.internalFileNumber}`,
+              type: "CONSULTATION",
+              mode: body.appointmentMode,
+              location: body.appointmentLocation || null,
+              startsAt: appointmentStartsAt,
+              endsAt: appointmentEndsAt,
+              status: "SCHEDULED"
             }
           })
-        : await upsertClientFromConsultation(tx, consultation, assignedLawyerId);
+        : null;
 
-    const legalCase = await tx.legalCase.create({
-      data: {
-        internalFileNumber: consultationInternalFileNumber(consultation.id, now),
-        clientId: client.id,
-        assignedLawyerId,
-        consultationRequestId: consultation.id,
-        title: caseTitle,
-        caseType,
-        status: "ACTIVE",
-        priority,
-        summary: consultation.aiSummary || consultation.summary,
-        nextSessionAt: appointmentStartsAt
-      }
-    });
+      const updatedConsultation = await tx.consultationRequest.update({
+        where: { id: consultation.id },
+        data: {
+          clientId: client.id,
+          assignedLawyerId,
+          status: "CONVERTED"
+        }
+      });
 
-    const appointment = appointmentStartsAt
-      ? await tx.appointment.create({
-          data: {
-            clientId: client.id,
-            lawyerId: assignedLawyerId,
-            consultationRequestId: consultation.id,
-            caseId: legalCase.id,
-            title: `موعد متابعة ${legalCase.internalFileNumber}`,
-            type: "CONSULTATION",
-            mode: body.appointmentMode,
-            location: body.appointmentLocation || null,
-            startsAt: appointmentStartsAt,
-            endsAt: appointmentEndAt(appointmentStartsAt, body.appointmentDurationMinutes),
-            status: "SCHEDULED"
-          }
-        })
-      : null;
+      await resolveConsultationNotifications({ client: tx, consultationId: consultation.id });
 
-    const updatedConsultation = await tx.consultationRequest.update({
-      where: { id: consultation.id },
-      data: {
-        clientId: client.id,
-        assignedLawyerId,
-        status: "CONVERTED"
-      }
-    });
-
-    await resolveConsultationNotifications({ client: tx, consultationId: consultation.id });
-
-    await appendAuditLog({
-      client: tx,
-      actorId: input.actor.id,
-      action: "consultation.convert_to_case",
-      resourceType: "ConsultationRequest",
-      resourceId: consultation.id,
-      clientId: client.id,
-      caseId: legalCase.id,
-      lawyerId: assignedLawyerId,
-      appointmentId: appointment?.id ?? null,
-      metadata: {
+      await appendAuditLog({
+        client: tx,
+        actorId: input.actor.id,
+        action: "consultation.convert_to_case",
+        resourceType: "ConsultationRequest",
+        resourceId: consultation.id,
         clientId: client.id,
         caseId: legalCase.id,
+        lawyerId: assignedLawyerId,
         appointmentId: appointment?.id ?? null,
-        assignedLawyerId
-      },
-      request: input.request,
-      requestId: input.requestId
-    });
+        metadata: {
+          clientId: client.id,
+          caseId: legalCase.id,
+          appointmentId: appointment?.id ?? null,
+          assignedLawyerId
+        },
+        request: input.request,
+        requestId: input.requestId
+      });
 
-    return { client, legalCase, appointment, consultation: updatedConsultation };
+      return {
+        result: { client, legalCase, appointment, consultation: updatedConsultation },
+        analytics: {
+          previousStatus: consultation.status,
+          priority,
+          assignedLawyerChanged: assignedLawyerId !== consultation.assignedLawyerId
+        }
+      };
+    }
   });
+  const { result, analytics } = transactionResult;
 
   captureAnalyticsEventBestEffort({
     name: "consultation.converted_to_case",
@@ -521,11 +579,11 @@ export async function convertConsultationToCase(input: { actor: Principal; consu
     actor: input.actor,
     requestId: input.requestId,
     properties: {
-      previousStatus: consultation.status,
+      previousStatus: analytics.previousStatus,
       status: "CONVERTED",
-      priority,
+      priority: analytics.priority,
       appointmentCreated: Boolean(result.appointment),
-      assignedLawyerChanged: assignedLawyerId !== consultation.assignedLawyerId
+      assignedLawyerChanged: analytics.assignedLawyerChanged
     }
   });
 

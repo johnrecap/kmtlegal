@@ -2,8 +2,9 @@
 
 **Purpose**: Reproduce implementation gates and record truthful evidence for PLAN-35.
 
-**Important**: This file describes the future implementation/acceptance workflow. At planning
-completion the feature status remains `Planned`; planned test files and routes are not yet present.
+**Important**: Implementation is active. Local implementation evidence and database acceptance are
+separate: missing disposable PostgreSQL may leave DB tasks `BLOCKED`, but it is never converted to a
+pass and the production-connected database is never used as a substitute.
 
 ## 1. Preconditions
 
@@ -11,6 +12,8 @@ completion the feature status remains `Planned`; planned test files and routes a
 - npm 10 or newer; repository package manager is npm 11.6.2.
 - Dependencies installed with `npm install`.
 - For DB gates, `DATABASE_URL` points to a disposable PostgreSQL database, never production.
+- If no disposable DB exists and local installation is not authorized, continue only the accepted
+  non-DB tasks; keep T016, T028, T039 DB assertions, and later DB gates open.
 - For browser gates, all five staff personas exist: Lawyer, Secretary, Office Admin, Marketing
   Staff, and exact Super Admin.
 - Never commit real credentials, database URLs, contact content, or client/case evidence.
@@ -62,9 +65,16 @@ tests/e2e/plan35-admin-operations.spec.ts
 
 Do not convert an expected-red characterization run into a general pass claim.
 T019's shell/dialog/responsive assertions remain deliberately red through Foundation and become
-green only after US2/US7; G35-4 requires T001–T018 and T020–T023 green plus the recorded T019 failure.
+green only after US2/US7. G35-4L requires T001–T015 and T017–T023 green plus the recorded T019
+failure before local story implementation; T016 remains the separate G35-4D database gate.
 
-## 4. Foundation and data gate (G35-4)
+## 4. Foundation local and data gates (G35-4L / G35-4D)
+
+`G35-4L` permits local story implementation after the focused Foundation, type, lint, build,
+contract, and schema validate/generate checks pass. It does not grant DB verification.
+
+`G35-4D` remains open until a disposable PostgreSQL database is available. Run only against that
+isolated target:
 
 After accepted foundation tasks are implemented:
 
@@ -92,9 +102,17 @@ Required database assertions:
 - `prisma/schema.prisma` has no PLAN-35 structural diff unless the specification was formally
   reopened.
 
+When `G35-4D` is unavailable, record `BLOCKED` with the missing environment and continue only local
+implementation allowed by FR-035. Do not run these commands against production and do not check off
+T016.
+
 ## 5. Independent story checkpoints
 
 ### US1 — scopes and calendar
+
+Local lane: implement and run T024–T027 and T029–T038 with deterministic service/contract tests.
+T028 and the database-backed portion of T039 remain open without disposable PostgreSQL, so US1 may
+be reported as locally implemented but not checkpoint-accepted or DB-verified.
 
 - Create cross-assignment fixtures and compare dashboard metrics/IDs to task and calendar results.
 - Run exact-boundary, partial-overlap, full-overlap, different-lawyer, closed-status, and

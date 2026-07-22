@@ -1,7 +1,10 @@
-import { Prisma } from "@prisma/client";
-import { hasPermission, type Principal } from "@/server/auth/policy";
+import type { Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
+import { ApiError } from "@/server/http/errors";
+import { appointmentScopeWhereForPrincipal, caseScopeWhereForPrincipal } from "./case-operations-service";
 import { clientScopeWhereForPrincipal } from "./client-crm-service";
+import { consultationScopeWhereForPrincipal } from "./consultation-review-service";
+import { taskScopeWhereForPrincipal } from "./task-document-service";
 
 type MetricValue = number | null;
 
@@ -9,62 +12,36 @@ function metric(value: MetricValue, label: string, definition: string) {
   return { value, label, definition };
 }
 
-function optionalClientScope(actor: Principal): Prisma.ClientWhereInput | null {
+function optionalScope<T>(scope: () => T): T | null {
   try {
-    return clientScopeWhereForPrincipal(actor);
-  } catch {
-    return null;
+    return scope();
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 403) {
+      return null;
+    }
+    throw error;
   }
 }
 
-function optionalCaseScope(actor: Principal): Prisma.LegalCaseWhereInput | null {
-  if (hasPermission(actor, "case.read.any")) {
-    return { deletedAt: null };
-  }
-  if (hasPermission(actor, "case.read.assigned")) {
-    return { deletedAt: null, assignedLawyerId: actor.id };
-  }
-  return null;
-}
-
-function optionalConsultationScope(actor: Principal): Prisma.ConsultationRequestWhereInput | null {
-  if (hasPermission(actor, "consultation.review.any")) {
-    return {};
-  }
-  if (hasPermission(actor, "consultation.review.assigned")) {
-    return { assignedLawyerId: actor.id };
-  }
-  return null;
-}
-
-function optionalAppointmentScope(actor: Principal): Prisma.AppointmentWhereInput | null {
-  if (hasPermission(actor, "appointment.manage.any")) {
-    return {};
-  }
-  if (hasPermission(actor, "appointment.read.assigned")) {
-    return { lawyerId: actor.id };
-  }
-  return null;
-}
-
-function optionalTaskScope(actor: Principal): Prisma.TaskWhereInput | null {
-  if (hasPermission(actor, "task.manage.any")) {
-    return {};
-  }
-  if (hasPermission(actor, "task.read.assigned") || hasPermission(actor, "task.manage.assigned")) {
-    return { assignedToId: actor.id };
-  }
-  return null;
+export function dashboardScopesForPrincipal(actor: Principal) {
+  return {
+    clients: optionalScope(() => clientScopeWhereForPrincipal(actor)),
+    cases: optionalScope(() => caseScopeWhereForPrincipal(actor)),
+    consultations: optionalScope(() => consultationScopeWhereForPrincipal(actor)),
+    appointments: optionalScope(() => appointmentScopeWhereForPrincipal(actor)),
+    tasks: optionalScope(() => taskScopeWhereForPrincipal(actor))
+  };
 }
 
 export async function getAdminDashboard(actor: Principal) {
   const now = new Date();
   const twoWeeksFromNow = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
-  const clientScope = optionalClientScope(actor);
-  const caseScope = optionalCaseScope(actor);
-  const consultationScope = optionalConsultationScope(actor);
-  const appointmentScope = optionalAppointmentScope(actor);
-  const taskScope = optionalTaskScope(actor);
+  const scopes = dashboardScopesForPrincipal(actor);
+  const clientScope = scopes.clients;
+  const caseScope = scopes.cases;
+  const consultationScope = scopes.consultations;
+  const appointmentScope = scopes.appointments;
+  const taskScope = scopes.tasks;
 
   const [
     activeClients,
@@ -113,7 +90,13 @@ export async function getAdminDashboard(actor: Principal) {
     clientScope
       ? prisma.client.findMany({
           where: clientScope,
-          include: { assignedLawyer: { select: { id: true, name: true } } },
+          select: {
+            id: true,
+            fullName: true,
+            status: true,
+            createdAt: true,
+            assignedLawyer: { select: { id: true, name: true } }
+          },
           orderBy: { createdAt: "desc" },
           take: 5
         })
@@ -121,7 +104,14 @@ export async function getAdminDashboard(actor: Principal) {
     consultationScope
       ? prisma.consultationRequest.findMany({
           where: consultationScope,
-          include: { assignedLawyer: { select: { id: true, name: true } } },
+          select: {
+            id: true,
+            fullName: true,
+            status: true,
+            serviceCategory: true,
+            createdAt: true,
+            assignedLawyer: { select: { id: true, name: true } }
+          },
           orderBy: { createdAt: "desc" },
           take: 5
         })
@@ -137,7 +127,12 @@ export async function getAdminDashboard(actor: Principal) {
               }
             ]
           },
-          include: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            startsAt: true,
+            mode: true,
             client: { select: { id: true, fullName: true } },
             lawyer: { select: { id: true, name: true } },
             case: { select: { id: true, internalFileNumber: true, title: true } }
@@ -149,7 +144,12 @@ export async function getAdminDashboard(actor: Principal) {
     caseScope
       ? prisma.legalCase.findMany({
           where: caseScope,
-          include: {
+          select: {
+            id: true,
+            internalFileNumber: true,
+            title: true,
+            status: true,
+            updatedAt: true,
             client: { select: { id: true, fullName: true } },
             assignedLawyer: { select: { id: true, name: true } }
           },

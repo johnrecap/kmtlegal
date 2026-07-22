@@ -80,7 +80,7 @@ conflict controls are complete enough for accepted task execution.
 - [x] CHK048 Notification center tasks guarantee complete cursor reachability, count-before-limit dedupe, safe permission/object-scoped links, and contact transition concurrency.
 - [x] CHK049 Storage tasks derive the exact root/scanner matrix through a bounded existing ping and inspect the whole response for legacy row/path/metadata exclusion.
 - [x] CHK050 Manual-case tasks use existing `PartyType`, resource/actor/hash replay after redaction, no fuzzy duplicate promise, explicit reference-collision recovery, assignment rules, and transactional edit audit.
-- [x] CHK051 G35-4 explicitly permits only T019's recorded expected-red state, shared fixtures precede their consumers, file handoffs are exclusive, every global UI consumer has a recorded disposition, protected public/client/payment/Stitch surfaces have named compatibility evidence or stop for re-specification, and all verification tasks name evidence paths.
+- [x] CHK051 G35-4L explicitly permits T019's recorded expected-red state and local-only story implementation while G35-4D/T016 remains open; the requirements forbid production DB substitution, keep DB/story/release acceptance blocked, place shared fixtures before consumers, preserve exclusive file handoffs, require every global UI consumer disposition, protect public/client/payment/Stitch surfaces, and name evidence paths.
 
 ## Notes
 
@@ -88,4 +88,5 @@ conflict controls are complete enough for accepted task execution.
   access, notification count, protected-role, and appointment-concurrency findings.
 - Checklist result: 51/51 complete. The final [Spec Kit analyze](../analyze.md) is clean with zero
   unresolved `CRITICAL`/`HIGH`/`MEDIUM`; one payment residual is explicitly accepted. Implementation
-  may begin only for explicitly accepted task IDs.
+  may begin only for explicitly accepted task IDs. The 2026-07-22 FR-035 clarification permits
+  local-only execution while database evidence remains open and forbids production DB testing.

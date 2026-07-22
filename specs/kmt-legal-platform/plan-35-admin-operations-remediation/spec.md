@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-22
 
-**Status**: Planned
+**Status**: In Progress — local implementation permitted; database acceptance deferred
 
 **Input**: Convert the comprehensive admin dashboard audit into ordered, executable Spec Kit
 phases with connected-impact mapping, exact acceptance criteria, and conflict-safe tasks.
@@ -36,6 +36,11 @@ phases with connected-impact mapping, exact acceptance criteria, and conflict-sa
   Existing user list/create/detail/update responses become explicit safe DTOs; inactive, deleted,
   suspended, or inactive-role principals cannot keep an authenticated session; role/status changes
   revoke affected sessions and cannot remove the final active exact Super Admin.
+- Q: May implementation continue when no disposable PostgreSQL database is available locally? → A:
+  Yes. Local code, contract, unit, type, lint, build, and browser work may continue, while every
+  PostgreSQL-dependent assertion remains `BLOCKED` and cannot satisfy a story checkpoint, a
+  `DB-Verified` claim, or release acceptance. The connected production database is never used for
+  migration, seed, mutation, or concurrency verification.
 
 ## User Scenarios & Testing
 
@@ -230,6 +235,9 @@ claims.
    **Then** it is labeled SKIPPED or BLOCKED and does not satisfy the release gate.
 3. **Given** a documented route, method, permission, or status, **When** contract validation runs,
    **Then** the claim matches the implementation exactly.
+4. **Given** no disposable database is available, **When** local implementation continues,
+   **Then** local evidence is recorded separately, database-dependent tasks remain open, and no
+   production database is used as a substitute.
 
 ### Edge Cases
 
@@ -247,6 +255,9 @@ claims.
   direction content.
 - The mobile navigation contains more destinations than fit in one viewport.
 - Database, upload diagnostics, or browser credentials are unavailable during acceptance.
+- A developer has only a production-connected deployment and no disposable database; local work
+  may continue, but database mutation/concurrency evidence remains blocked until an isolated target
+  exists.
 
 ## Scope & Connected Impact
 
@@ -379,8 +390,10 @@ claims.
   contact triage, notifications, manual case creation, role changes, and mobile navigation.
 - **FR-034**: Visual and accessibility evidence MUST cover 390px mobile and desktop layouts,
   keyboard navigation, RTL, focus, labels, alerts, empty/error states, and no horizontal overflow.
-- **FR-035**: Release status MUST distinguish implemented, locally verified, DB-verified,
-  live-accepted, blocked, skipped, and deferred work.
+- **FR-035**: Delivery status MUST distinguish implemented, locally verified, DB-verified,
+  live-accepted, blocked, skipped, and deferred work. Missing disposable PostgreSQL MAY defer only
+  database-dependent evidence while local implementation continues; it MUST keep the affected DB
+  tasks and story/release checkpoints open, and production data MUST NOT be used as test data.
 - **FR-036**: The master platform task list MUST point to this feature task set without duplicating
   individual tasks or IDs.
 - **FR-037**: Existing admin-user list, create, detail, and update APIs MUST return purpose-built
@@ -460,3 +473,6 @@ claims.
   catalog.
 - Protected admin UI remains Arabic-first; full English admin localization is deferred.
 - Existing payments, public booking, client portal, and Stitch clone behavior must not change.
+- The current workstation has no disposable PostgreSQL target and no database installation is
+  authorized. Local-only implementation is therefore allowed under FR-035, while database-backed
+  acceptance remains deferred to a future isolated environment.

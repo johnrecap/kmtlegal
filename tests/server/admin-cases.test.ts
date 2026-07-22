@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   adminCalendarQuerySchema,
@@ -9,6 +11,7 @@ import {
   canManageCaseSessions,
   canReadAdminCase,
   canUpdateAdminCase,
+  appointmentScopeWhereForPrincipal,
   caseScopeWhereForPrincipal,
   caseSessionCreateSchema,
   caseStatusUpdateSchema,
@@ -79,6 +82,40 @@ describe("admin cases contract", () => {
     expect(canManageCalendarAppointment(assignedLawyer, { case: { assignedLawyerId: assignedLawyer.id, deletedAt: null } })).toBe(true);
     expect(canManageCalendarAppointment(assignedLawyer, { case: { assignedLawyerId: otherLawyer.id, deletedAt: null } })).toBe(false);
     expect(canManageCalendarAppointment(assignedLawyer, { case: { assignedLawyerId: assignedLawyer.id, deletedAt: new Date() } })).toBe(false);
+  });
+
+  it("shares one calendar visibility scope with dashboard and list consumers", () => {
+    expect(appointmentScopeWhereForPrincipal(officeAdmin)).toEqual({});
+    expect(appointmentScopeWhereForPrincipal(assignedLawyer)).toEqual({
+      OR: [
+        { lawyerId: assignedLawyer.id },
+        { case: { assignedLawyerId: assignedLawyer.id, deletedAt: null } }
+      ]
+    });
+
+    expect(() => appointmentScopeWhereForPrincipal(marketing)).toThrowError(ApiError);
+  });
+
+  it("keeps create and reschedule checks, mutable rereads, writes, and audits in the transaction", () => {
+    const source = readFileSync(join(process.cwd(), "src/server/admin/case-operations-service.ts"), "utf8");
+    const createSource = source.slice(
+      source.indexOf("export async function createAdminCalendarAppointment"),
+      source.indexOf("export async function rescheduleAdminCalendarAppointment")
+    );
+    const rescheduleSource = source.slice(source.indexOf("export async function rescheduleAdminCalendarAppointment"));
+
+    expect(createSource).toContain("APPOINTMENT_TRANSACTION_MODES.databaseCreateBoundedRetry");
+    expect(createSource).toContain("assertSessionManageAllowed(input.actor, body.caseId, tx)");
+    expect(createSource).toContain("await assertNoAppointmentConflict");
+    expect(createSource).toContain("appendAuditLog({");
+    expect(createSource).toContain("client: tx");
+
+    expect(rescheduleSource).toContain("APPOINTMENT_TRANSACTION_MODES.existingUpdateSingleAttempt");
+    expect(rescheduleSource).toContain("tx.appointment.findUnique");
+    expect(rescheduleSource).toContain("canManageCalendarAppointment(input.actor, existing)");
+    expect(rescheduleSource).toContain("excludeAppointmentId: appointmentId");
+    expect(rescheduleSource).toContain("appendAuditLog({");
+    expect(rescheduleSource).toContain("client: tx");
   });
 
   it("validates list, calendar, status, session, and appointment payloads", () => {

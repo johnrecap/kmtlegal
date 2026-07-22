@@ -1,8 +1,8 @@
 # PLAN-35 Spec Kit Analyze Report
 
 **Date**: 2026-07-22
-**Status**: `FOUNDATION-IN-PROGRESS`
-**Implementation state**: T001–T015 and T017–T023 implemented; G35-4 remains open on T016 live PostgreSQL evidence. T019 is the planned expected-red exception.
+**Status**: `US1-LOCAL-IMPLEMENTATION-COMPLETE-DB-ACCEPTANCE-DEFERRED`
+**Implementation state**: T001–T015, T017–T027, and T029–T038 are implemented and locally verified. T016/G35-4D, T028, and the database-backed portion of T039 remain deferred evidence under the explicit FR-035 scope clarification; T019 is the planned expected-red UI exception.
 
 ## Gate Result
 
@@ -40,8 +40,8 @@ contract, broken local Markdown link, or duplicated detailed master task was fou
 
 | Stage | Tasks | Acceptance boundary |
 |---|---|---|
-| Foundation and characterization | T001–T023 | G35-4; T019 alone remains recorded expected-red until UI convergence |
-| Scope and appointment correctness | T024–T039 | US1 service/DB checkpoint |
+| Foundation and characterization | T001–T023 | G35-4L permits local work; T016/G35-4D remains open and T019 stays expected-red until UI convergence |
+| Scope and appointment correctness | T024–T039 | T024–T027/T029–T038 local lane; T028/T039 DB evidence required before US1 acceptance |
 | Existing permission-aware workspace | T040–T052 | Fifteen implemented routes × five roles; four planned routes remain absent |
 | Contact and notification queues | T053–T068 | T066 activates only page/API-ready contact and notification entries |
 | Manual case create/edit | T069–T081 | T079 activates `cases.create` only after service, API, and page exist |
@@ -114,14 +114,15 @@ the payment contract and is intentionally deferred to a separate specification.
 
 Planning validation does not substitute for implementation verification. Foundation local checks are
 recorded below; PostgreSQL, authenticated final-role, responsive convergence, and live checks remain
-mandatory at their named gates in `quickstart.md` and T122–T125.
+mandatory at their named acceptance gates in `quickstart.md` and T122–T125. FR-035 now permits
+local implementation to continue while those environment-dependent tasks remain explicitly open.
 
 ## Foundation Implementation Convergence — 2026-07-22
 
 | Severity | Open | Disposition |
 |---|---:|---|
 | `CRITICAL` | 0 | None |
-| `HIGH` | 1 | Live migration plus repeat-seed durability is blocked because this workspace has no `DATABASE_URL`, Docker, `psql`, or PostgreSQL service. T016 stays open and no later phase may start. |
+| `HIGH` | 0 | None. The missing disposable database is an explicit deferred evidence state under FR-035, not an unresolved implementation decision. |
 | `MEDIUM` | 0 | Storage-time PLAN-35 audit redaction, stable code-driven error messages, exact-role/all-permission evaluator coverage, semantic-token projection, and ARIA passthrough findings were fixed. |
 
 The remaining route-policy versus page/API guard parity observation is explicitly accepted only for
@@ -133,10 +134,43 @@ Local evidence is recorded in `test-results/plan35/g35-4-foundation.json` and
 `test-results/plan35/g35-4-ui.json`. Focused tests, all 262 unit/contract tests, typecheck, lint,
 Prisma validate/generate, production build, and diff hygiene pass. The T019 browser characterization
 collected twelve unskipped tests and produced the intentional result: seven pass and five shell/dialog
-tests fail. This expected-red result does not close the live-database blocker.
+tests fail. T016 remains `BLOCKED` for database/story/release acceptance, but G35-4L permits the
+accepted US1 local implementation lane. The production-connected database is explicitly excluded.
+
+## US1 Local Implementation Convergence — 2026-07-22
+
+| Severity | Open | Disposition |
+|---|---:|---|
+| `CRITICAL` | 0 | None |
+| `HIGH` | 0 | None. PostgreSQL concurrency/query-plan evidence remains an explicit deferred acceptance state, not a hidden implementation claim. |
+| `MEDIUM` | 0 | Canonical scope drift, dashboard over-selection, stale mutable pre-reads, non-atomic required audits, unsafe callback replay, and reconciliation metadata handling were fixed. |
+
+T024–T027 were observed expected-red before implementation: the shared appointment service and
+scope exports were absent, dashboard queries used duplicated predicates and broad `include` reads,
+and calendar/consultation writers kept mutable checks or required audits outside their transaction.
+T029–T038 now converge on one half-open conflict service with active-status filtering, symmetric
+unassigned public reservations, self-exclusion, bounded retries for database-only creates, and
+single-attempt handling for existing updates and paid-provider work.
+
+The dashboard consumes the canonical client, case, consultation, appointment, and task predicates
+and uses explicit minimized selections. Calendar create/reschedule, consultation assignment, and
+conversion re-read mutable authorization/status/assignee inputs and persist required audits inside
+their serializable callback. Paid checkout is never automatically replayed; a provider-success then
+`P2034` abort emits exactly one redacted `payment.checkout_reconciliation_required` event with the
+contract allowlist. Stable appointment conflicts use `APPOINTMENT_CONFLICT`, and error envelopes are
+also `Cache-Control: no-store`.
+
+Local evidence is recorded in `test-results/plan35/us1-operations.json`: the five focused files pass
+57/57, the repository suite passes 277/277, and typecheck, lint, Prisma validate/generate, and the
+production build without a database URL pass. No production database was contacted. T028 and T039
+remain open because same-row/contention behavior and bounded `EXPLAIN` evidence cannot be claimed
+without disposable PostgreSQL. No new convergence task is appended because T016/T028/T039 already
+own every deferred database assertion.
 
 ## Conclusion
 
-PLAN-35 remains internally consistent and conflict-controlled. Foundation implementation is present,
-but the next permitted action is only to provide a disposable PostgreSQL target and complete T016.
-T024 or any later phase must not start until G35-4 has no unresolved `HIGH` finding.
+PLAN-35 remains internally consistent and conflict-controlled with zero unresolved `CRITICAL` or
+`HIGH` findings. The user explicitly accepted local-only progress without installing a database;
+therefore T024–T027 and T029–T038 are locally complete. T016, T028, and the DB-backed portion of T039
+stay open, US1 cannot be checkpoint-accepted or described as DB-verified, and no production database
+may be used for verification.

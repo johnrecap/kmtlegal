@@ -2,9 +2,9 @@
   "plan": "PLAN-35",
   "checkpoint": "G35-4",
   "recordedAt": "2026-07-22T04:03:17+03:00",
-  "status": "blocked-live-database",
+  "status": "local-verified-database-evidence-deferred",
   "completedScope": ["T001-T015", "T017-T023"],
-  "pendingScope": ["T016 live PostgreSQL migration/seed durability assertions"],
+  "pendingScope": ["T016 disposable PostgreSQL migration/seed durability assertions"],
   "commands": [
     {
       "command": "npm test -- tests/server/seed-contract.test.ts tests/server/auth-core.test.ts tests/server/admin-route-policy.test.ts tests/server/plan35-contract-inventory.test.ts tests/server/plan35-error-copy.test.ts tests/server/auth-audit-contract.test.ts tests/ui/admin-accessibility.test.tsx tests/ui/product-components.test.tsx",
@@ -23,18 +23,18 @@
     {
       "command": "npm run db:migrate && npm run db:seed && npm run db:seed",
       "result": "blocked",
-      "summary": "No DATABASE_URL, Docker CLI, psql CLI, or local PostgreSQL service is available. No live migration or repeat-seed claim is made."
+      "summary": "The user explicitly declined local database installation. No disposable PostgreSQL is available, the production-connected database is excluded, and no migration or repeat-seed claim is made."
     }
   ],
   "convergence": {
     "critical": 0,
-    "high": 1,
+    "high": 0,
     "medium": 0,
     "acceptedResiduals": [
       {
-        "severity": "HIGH",
+        "severity": "DEFERRED_EVIDENCE",
         "finding": "Migration and repeat-seed durability require a disposable live PostgreSQL database.",
-        "disposition": "Blocks G35-4 closure and all later PLAN-35 phases; T016 remains open."
+        "disposition": "T016 and database/release acceptance remain open; G35-4L permits local story implementation under FR-035. Production PostgreSQL is not test infrastructure."
       },
       {
         "severity": "MEDIUM",
