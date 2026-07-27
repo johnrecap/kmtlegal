@@ -243,6 +243,15 @@ Total plans: 38
 - Added `npm run predeploy:payments` and wired it into the aaPanel deploy script before `npm run db:migrate` to catch duplicate paid manual receipt numbers before the database unique index migration blocks deployment.
 - Focused verification passed: `cmd /c npm run typecheck` and `cmd /c npx vitest run tests/server/payment-gateway-contract.test.ts tests/server/security-hardening.test.ts tests/ui/product-components.test.tsx`.
 
+## Latest Production Lockfile Repair
+
+- PLAN-38 is `Local-Verified` and tracked in `specs/kmt-legal-platform/plan-38-production-lockfile-repair/`.
+- The production aaPanel update had stopped safely at `npm ci` because the committed lockfile omitted `@emnapi/core@1.11.3` and nested `@emnapi/wasi-threads@1.2.3`.
+- npm 11.6.2 regenerated exactly those optional transitive records: 23 inserted lockfile lines, with no `package.json`, source, schema, API, UI, auth, payment, or server-configuration change.
+- Verification passed: `npm.cmd install --package-lock-only`, `npm.cmd ci`, unchanged-manifest/lock-stability review, `npm.cmd run typecheck`, and `ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm.cmd run build`.
+- npm audit warnings were recorded but not auto-fixed because dependency upgrades are outside this focused repair.
+- Live acceptance is still pending: deploy through `bash deploy/install/aapanel-pm2-update.sh`, require the pushed release in ready health, and require a `kmtlegal.org`-only sitemap before disabling the former domain.
+
 ## Remaining Count
 
 - Fully not started: 0 plans.

@@ -528,3 +528,17 @@ Acceptance:
 - Status may advance only through evidenced local, PostgreSQL, browser, responsive/RTL/accessibility,
   and live gates defined by the feature quickstart.
 - Skipped or blocked environment checks are recorded truthfully and never counted as passing.
+
+## Milestone 28 - PLAN-38 Production Lockfile Repair
+
+Highest evidenced PLAN-38 state: `Local-Verified`
+
+- [x] T290 Synchronize `package-lock.json` with npm 11.6.2 without changing `package.json`, then pass clean install, typecheck, and production build gates from `specs/kmt-legal-platform/plan-38-production-lockfile-repair/tasks.md`.
+- [ ] T291 Deploy the pushed PLAN-38 revision with `deploy/install/aapanel-pm2-update.sh`, then archive matching release, ready health, and new-domain-only sitemap evidence before disabling the former domain.
+
+Acceptance:
+
+- `npm ci` accepts the committed lockfile and does not rewrite it.
+- The lockfile change contains only npm-generated metadata for the missing optional transitive dependencies.
+- `package.json`, application source, schema, API, UI, auth, payment, Cloudflare, Nginx, and PM2 configuration remain unchanged by the repository repair.
+- The live state advances only after `/api/health` reports the pushed release as ready and `/sitemap.xml` contains `https://kmtlegal.org` with no `kmtlegal.saeeddev.com` URLs.
