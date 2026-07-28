@@ -21,15 +21,16 @@ describe("auth route protection contract", () => {
     expect(signedInRedirectPath(ROLES.officeAdmin, "/")).toBe("/admin");
     expect(signedInRedirectPath(ROLES.officeAdmin, "/login")).toBe("/admin");
     expect(signedInRedirectPath(ROLES.client, "/admin")).toBe("/client");
+    expect(signedInRedirectPath(ROLES.client, "/portal")).toBe("/client");
     expect(signedInRedirectPath(ROLES.lawyer, "/portal")).toBe("/admin");
     expect(signedInRedirectPath(ROLES.superAdmin, "/admin/cases")).toBe("/admin/cases");
   });
 
   it("rejects unsafe next paths", () => {
-    expect(sanitizeNextPath("https://example.com", "/portal")).toBe("/portal");
-    expect(sanitizeNextPath("//example.com", "/portal")).toBe("/portal");
-    expect(sanitizeNextPath("/api/auth/me", "/portal")).toBe("/portal");
-    expect(sanitizeNextPath("/portal/cases", "/portal")).toBe("/portal/cases");
+    expect(sanitizeNextPath("https://example.com", "/client")).toBe("/client");
+    expect(sanitizeNextPath("//example.com", "/client")).toBe("/client");
+    expect(sanitizeNextPath("/api/auth/me", "/client")).toBe("/client");
+    expect(sanitizeNextPath("/client/cases", "/client")).toBe("/client/cases");
   });
 
   it("detects protected app prefixes for middleware", () => {
@@ -37,8 +38,10 @@ describe("auth route protection contract", () => {
     expect(isProtectedAppPath("/admin/clients")).toBe(true);
     expect(isProtectedAppPath("/client")).toBe(true);
     expect(isProtectedAppPath("/client/files")).toBe(true);
-    expect(isProtectedAppPath("/portal")).toBe(true);
-    expect(isProtectedAppPath("/portal/documents")).toBe(true);
+    expect(isProtectedAppPath("/portal")).toBe(false);
+    expect(isProtectedAppPath("/portal/documents")).toBe(false);
+    expect(isProtectedAppPath("/product-system")).toBe(false);
+    expect(isProtectedAppPath("/stitch-clone/home")).toBe(false);
     expect(isProtectedAppPath("/services")).toBe(false);
   });
 
@@ -51,7 +54,7 @@ describe("auth route protection contract", () => {
   it("matches role policy staff roles", () => {
     expect(staffRoleNames.every((role) => isStaffRole(role))).toBe(true);
     expect(canRoleOpenPath(ROLES.client, "/client/files")).toBe(true);
-    expect(canRoleOpenPath(ROLES.client, "/portal/documents")).toBe(true);
+    expect(canRoleOpenPath(ROLES.client, "/portal/documents")).toBe(false);
     expect(canRoleOpenPath(ROLES.client, "/admin")).toBe(false);
     expect(canRoleOpenPath(ROLES.officeAdmin, "/admin/consultations")).toBe(true);
     expect(canRoleOpenPath(ROLES.officeAdmin, "/portal")).toBe(false);

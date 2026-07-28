@@ -40,8 +40,8 @@ async function waitForServer(url, timeoutMs = 30_000) {
 async function main() {
   fs.mkdirSync(logsDir, { recursive: true });
 
-  if (await requestUrl(`${baseUrl}/stitch-clone/home`)) {
-    console.log(`already running: ${baseUrl}/stitch-clone/home`);
+  if (await requestUrl(`${baseUrl}/api/health`)) {
+    console.log(`already running: ${baseUrl}/api/health`);
     return;
   }
 
@@ -66,7 +66,7 @@ async function main() {
   child.unref();
   fs.writeFileSync(pidFile, `${child.pid}\n`);
 
-  if (!(await waitForServer(`${baseUrl}/stitch-clone/home`))) {
+  if (!(await waitForServer(`${baseUrl}/api/health`))) {
     console.error(`server did not become ready. pid=${child.pid}`);
     console.error(`stdout: ${stdoutFile}`);
     console.error(`stderr: ${stderrFile}`);
@@ -74,7 +74,7 @@ async function main() {
   }
 
   console.log(`started pid=${child.pid}`);
-  console.log(`${baseUrl}/stitch-clone/home`);
+  console.log(`${baseUrl}/api/health`);
   console.log(`stdout: ${stdoutFile}`);
   console.log(`stderr: ${stderrFile}`);
 }

@@ -7,7 +7,8 @@ const { securityHeaders } = securityHeaderModule;
 const nextConfig = {
   reactStrictMode: true,
   experimental: {
-    sri: { algorithm: "sha256" }
+    sri: { algorithm: "sha256" },
+    globalNotFound: true
   },
   async headers() {
     return [
@@ -37,10 +38,6 @@ const nextConfig = {
       },
       {
         source: "/client/:path*",
-        headers: [{ key: "Cache-Control", value: "no-store" }]
-      },
-      {
-        source: "/portal/:path*",
         headers: [{ key: "Cache-Control", value: "no-store" }]
       },
       {

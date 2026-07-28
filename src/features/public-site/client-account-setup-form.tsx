@@ -68,8 +68,7 @@ export function ClientAccountSetupForm({ token, initialEmail, copy }: ClientAcco
           token,
           email: email.trim(),
           password,
-          confirmPassword,
-          locale: "ar"
+          confirmPassword
         })
       });
       const payload = (await response.json().catch(() => ({}))) as SetupResponse;

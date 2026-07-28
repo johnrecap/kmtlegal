@@ -80,6 +80,14 @@ function walk(directory: string, routes: string[]) {
   }
 }
 
+function filesUnder(directory: string): string[] {
+  if (!fs.existsSync(directory)) return [];
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const fullPath = path.join(directory, entry.name);
+    return entry.isDirectory() ? filesUnder(fullPath) : [fullPath];
+  });
+}
+
 describe("route manifest contract", () => {
   it("documents the implemented MVP API route families", () => {
     const routes = apiRoutes();
@@ -100,7 +108,7 @@ describe("route manifest contract", () => {
       ["/api/install/bootstrap-super-admin", "/api/install/bootstrap-super-admin"],
       ["/api/install/finish", "/api/install/finish"],
       ["/api/files/upload", "/api/files/upload"],
-      ["/api/portal/profile", "/api/portal/profile"],
+      ["/api/client/profile", "/api/client/profile"],
       ["/api/public/consultations", "/api/public/consultations"],
       ["/api/public/consultations/assistant", "/api/public/consultations/assistant"],
       ["/api/public/consultations/checkout", "/api/public/consultations/checkout"],
@@ -136,13 +144,16 @@ describe("route manifest contract", () => {
     }
 
     expect(routes).not.toContain("/api/admin/invoices");
-    expect(contract).toContain("Portal MVP is server-rendered except implemented JSON routes");
+    expect(routes).not.toContain("/api/portal/profile");
+    expect(contract).toContain("Client portal MVP is server-rendered except implemented JSON routes");
   });
 
-  it("does not mask unknown admin or portal paths with catch-all routes", () => {
+  it("does not keep retired runtime route families or mask unknown admin paths", () => {
     const appRoot = path.join(process.cwd(), "src", "app", "(app-ar)");
     expect(fs.existsSync(path.join(appRoot, "admin", "[...section]", "page.tsx"))).toBe(false);
-    expect(fs.existsSync(path.join(appRoot, "portal", "[...section]", "page.tsx"))).toBe(false);
+    expect(filesUnder(path.join(appRoot, "portal"))).toEqual([]);
+    expect(filesUnder(path.join(appRoot, "product-system"))).toEqual([]);
+    expect(filesUnder(path.join(process.cwd(), "src", "app", "(install-ar)", "stitch-clone"))).toEqual([]);
     expect(fs.existsSync(path.join(appRoot, "loading.tsx"))).toBe(true);
     expect(fs.existsSync(path.join(appRoot, "error.tsx"))).toBe(true);
     expect(fs.existsSync(path.join(appRoot, "not-found.tsx"))).toBe(true);

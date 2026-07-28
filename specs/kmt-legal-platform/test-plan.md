@@ -5,7 +5,7 @@
 - Unit tests: validators, permission helpers, services, mappers, telemetry sanitizers, AI provider adapters, disabled email helper.
 - Component tests: forms, tables, dialogs, upload dropzone, permission states.
 - Integration tests: API/server actions, repositories, auth, Prisma with test DB.
-- E2E tests: critical public/admin/portal workflows.
+- E2E tests: critical public/admin/client workflows.
 - Manual/UAT: legal content, Arabic RTL, anonymization, release smoke.
 
 ## Static Checks
@@ -161,13 +161,27 @@
   missing credentials, or missing database is never a pass. Production data is not test data.
 
 ## Visual Regression Tests
-- Stitch clone at `390x844` and `1440x900` where references exist.
-- Stitch clone requires `_workspace/stitch-clone/{screen-name}/04_visual-diff-report.md` and `06_acceptance.md` for each screen.
+- Archived Stitch comparisons remain historical offline evidence and are not runtime release tests.
 - Product public shell mobile/desktop.
 - PLAN-28 public luxury screenshots for `/`, `/services`, `/contact`, and `/book-consultation`.
 - PLAN-30/31 public motion screenshots and reduced-motion checks for English and Arabic public pages.
-- Portal dashboard mobile/desktop.
+- Client dashboard mobile/desktop in Arabic and English.
 - Admin dashboard desktop.
+
+## PLAN-39 Site Cleanup And Client Localization Tests
+
+- Accepted contact messages remain stored if alert creation fails; alert recipients require active
+  contact-read/manage plus notification-read permission and alert payloads contain no inquiry text,
+  email, or phone.
+- The open notification bell refreshes immediately and every 30 seconds only while visible.
+- Root and nested `/portal`, `/product-system`, and `/stitch-clone` requests return the branded
+  true 404 without a login redirect; a product-used `/stitch-assets` image remains available.
+- `/client` and `/login` cover Arabic RTL and English LTR copy, safe errors, dates, numbers,
+  currency, forms, assistant/chat, keyboard access, and 390px overflow.
+- `/api/client/profile` and self-only `/api/client/preferences` are canonical; the old profile API
+  is absent.
+- Authenticated persistence, booking-locale inheritance, and alert recipient flows require an
+  authorized disposable database and synthetic fixtures; absence is recorded as deferred, not pass.
 - Critical forms/dialogs.
 
 ## Accessibility Tests

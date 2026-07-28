@@ -240,7 +240,7 @@
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
     },
     {
-      "path": "src/app/(app-ar)/client/cases/[caseId]/page.tsx",
+      "path": "src/app/(client)/client/cases/[caseId]/page.tsx",
       "contracts": [
         "ButtonLink"
       ],
@@ -248,7 +248,7 @@
       "evidence": "tests/ui/product-components.test.tsx"
     },
     {
-      "path": "src/app/(app-ar)/client/cases/page.tsx",
+      "path": "src/app/(client)/client/cases/page.tsx",
       "contracts": [
         "DataTable",
         "DataTableColumn",
@@ -258,7 +258,7 @@
       "evidence": "tests/ui/product-components.test.tsx"
     },
     {
-      "path": "src/app/(app-ar)/client/court-dates/page.tsx",
+      "path": "src/app/(client)/client/court-dates/page.tsx",
       "contracts": [
         "DataTable",
         "DataTableColumn",
@@ -268,7 +268,7 @@
       "evidence": "tests/ui/product-components.test.tsx"
     },
     {
-      "path": "src/app/(app-ar)/client/files/page.tsx",
+      "path": "src/app/(client)/client/files/page.tsx",
       "contracts": [
         "DataTable",
         "DataTableColumn",
@@ -278,7 +278,7 @@
       "evidence": "tests/ui/product-components.test.tsx"
     },
     {
-      "path": "src/app/(app-ar)/client/page.tsx",
+      "path": "src/app/(client)/client/page.tsx",
       "contracts": [
         "ButtonLink"
       ],
@@ -286,7 +286,7 @@
       "evidence": "tests/ui/product-components.test.tsx"
     },
     {
-      "path": "src/app/(app-ar)/client/payments/page.tsx",
+      "path": "src/app/(client)/client/payments/page.tsx",
       "contracts": [
         "DataTable",
         "DataTableColumn",
@@ -319,23 +319,6 @@
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/product-components.test.tsx"
-    },
-    {
-      "path": "src/app/(app-ar)/product-system/_components/product-system-demo.tsx",
-      "contracts": [
-        "Badge",
-        "Button",
-        "DataTable",
-        "FilterBar",
-        "SearchInput",
-        "Select",
-        "StateBlock",
-        "TextInput",
-        "Textarea",
-        "Toast"
-      ],
-      "disposition": "migrated",
-      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
     },
     {
       "path": "src/components/domain/legal-cards.tsx",

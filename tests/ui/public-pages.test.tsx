@@ -27,7 +27,7 @@ describe("public website UI", () => {
     expect(html).toContain("Services");
     expect(html).toContain("Request a Consultation");
     expect(html).toContain("Client Login");
-    expect(html).toContain("href=\"/login?next=/client\"");
+    expect(html).toContain("href=\"/login?next=/client&amp;locale=en\"");
     expect(html).toContain("العربية");
     expect(html).toContain("bg-[color:var(--kmt-public-header)]");
     expect(html).toContain("event_available");
@@ -53,7 +53,7 @@ describe("public website UI", () => {
     expect(html).toContain("href=\"/services\"");
     expect(html).toContain("English");
     expect(html).toContain("دخول العميل");
-    expect(html).toContain("href=\"/login?next=/client\"");
+    expect(html).toContain("href=\"/login?next=/client&amp;locale=ar\"");
   });
 
   it("renders the English applicant privacy notice with semantic structure and verified links", () => {

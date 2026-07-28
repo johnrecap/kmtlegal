@@ -5,7 +5,11 @@ import { type FormEvent, useState } from "react";
 import { ClientPortalPanel, clientPortalPrimaryActionClass } from "@/components/layout";
 import { ClientPortalSelect, type ClientPortalSelectOption } from "@/components/layout/client-portal-select";
 import { Button } from "@/components/ui";
-import { documentCategoryLabels, labelFrom } from "@/lib/legal-format";
+import {
+  clientErrorMessage,
+  getClientContent,
+  type ClientLocale
+} from "@/content/client-content";
 
 type CaseOption = {
   id: string;
@@ -15,23 +19,24 @@ type CaseOption = {
 
 type ApiErrorBody = {
   error?: {
-    message?: string;
+    code?: string;
   };
+  requestId?: string;
 };
 
 const documentCategoryValues = ["CONTRACT", "COURT_FILE", "IDENTITY", "EVIDENCE", "PAYMENT", "OTHER"] as const;
 
-const documentCategoryOptions: ClientPortalSelectOption[] = documentCategoryValues.map((category) => ({
-  value: category,
-  label: labelFrom(documentCategoryLabels, category)
-}));
-
-export function DocumentUploadForm({ cases }: { cases: CaseOption[] }) {
+export function DocumentUploadForm({ cases, locale }: { cases: CaseOption[]; locale: ClientLocale }) {
   const router = useRouter();
+  const copy = getClientContent(locale);
   const [message, setMessage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const documentCategoryOptions: ClientPortalSelectOption[] = documentCategoryValues.map((category) => ({
+    value: category,
+    label: copy.statuses.documentCategory[category]
+  }));
   const caseOptions: ClientPortalSelectOption[] = [
-    { value: "", label: "بدون قضية محددة" },
+    { value: "", label: copy.upload.noCase },
     ...cases.map((legalCase) => ({
       value: legalCase.id,
       label: `${legalCase.internalFileNumber} - ${legalCase.title}`
@@ -54,28 +59,28 @@ export function DocumentUploadForm({ cases }: { cases: CaseOption[] }) {
 
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
-        setMessage(body.error?.message ?? "تعذر رفع المستند.");
+        setMessage(clientErrorMessage(locale, body.error?.code, copy.upload.failed));
         return;
       }
 
       form.reset();
-      setMessage("تم رفع المستند بنجاح.");
+      setMessage(copy.upload.succeeded);
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage(copy.upload.networkError);
     } finally {
       setIsUploading(false);
     }
   }
 
   return (
-    <ClientPortalPanel description="الحد الأقصى 5MB. الأنواع المسموحة: PDF, DOC, DOCX, JPG, PNG." title="رفع مستند جديد">
+    <ClientPortalPanel description={copy.upload.description} title={copy.upload.title}>
       <form className="space-y-4" onSubmit={upload}>
-        <ClientPortalSelect label="ربط المستند بقضية" name="caseId" options={caseOptions} />
-        <ClientPortalSelect defaultValue="OTHER" label="تصنيف المستند" name="category" options={documentCategoryOptions} />
+        <ClientPortalSelect label={copy.upload.caseLabel} name="caseId" options={caseOptions} />
+        <ClientPortalSelect defaultValue="OTHER" label={copy.upload.categoryLabel} name="category" options={documentCategoryOptions} />
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-white" htmlFor="portal-document-file">
-            الملف
+            {copy.upload.fileLabel}
           </label>
           <input
             id="portal-document-file"
@@ -87,7 +92,7 @@ export function DocumentUploadForm({ cases }: { cases: CaseOption[] }) {
           />
         </div>
         <Button className={clientPortalPrimaryActionClass} loading={isUploading} type="submit">
-          رفع المستند
+          {copy.upload.submit}
         </Button>
         {message ? (
           <div className="rounded border border-blue-300/35 bg-blue-950/45 px-3 py-2 text-sm leading-6 text-blue-100" role="status">

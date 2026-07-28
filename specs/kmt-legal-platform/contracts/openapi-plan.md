@@ -128,7 +128,7 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 | PATCH | `/api/admin/consultation-availability` | Update weekly public consultation booking availability | Secretary/Admin | appointment.manage.any |
 
 ### Client Portal
-`/client` is the primary protected client surface. `/portal` remains as a compatible legacy surface. Portal MVP is server-rendered except implemented JSON routes. Current portal pages read data server-side through authenticated service helpers. JSON routes are added only when the product needs client-side mutation or async refresh.
+`/client` is the only protected client surface. Client portal MVP is server-rendered except implemented JSON routes. Current client pages read data server-side through authenticated service helpers. JSON routes are added only when the product needs client-side mutation or async refresh.
 
 | Method | Path | Purpose | Auth | Permission |
 | --- | --- | --- | --- | --- |
@@ -145,13 +145,9 @@ SMTP is a deferred feature in this release. Keep `SMTP_ENABLED=false`; SMTP env 
 | POST | `/api/client/messages` | Create or continue current client's team conversation | Client | conversation.create.own / conversation.reply.own |
 | GET | `/api/client/messages/{threadId}` | Read one own team conversation | Client | conversation.read.own |
 | POST | `/api/client/messages/{threadId}/messages` | Add a client message to one own open conversation | Client | conversation.reply.own |
-| Server-rendered | `/portal` | Client summary | Client | portal.read.self |
-| Server-rendered | `/portal/cases` | Own cases list | Client | case.read.own |
-| Server-rendered | `/portal/cases/{id}` | Own case detail | Client | case.read.own |
-| Server-rendered | `/portal/documents` | Compatibility redirect to `/client/files` | Client | document.read.own / document.upload.self |
-| Server-rendered | `/portal/appointments` | Own appointments | Client | appointment.read.own |
-| Server-rendered | `/portal/payments` | Own payment records | Client | payment.read.own |
-| PATCH | `/api/portal/profile` | Update profile | Client | user.update.self |
+| GET | `/api/client/profile` | Read own profile | Client | client self scope |
+| PATCH | `/api/client/profile` | Update own profile | Client | user.update.self |
+| PATCH | `/api/client/preferences` | Update own locale preference | Client | client self scope |
 
 ### Admin Clients and Cases
 | Method | Path | Purpose | Auth | Permission |

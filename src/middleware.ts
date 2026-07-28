@@ -5,11 +5,16 @@ import { evaluateMutationOrigin, shouldUseStrictMutationOrigin } from "@/server/
 
 export function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  if (pathname.startsWith("/stitch-clone/") && isProductionRuntime() && process.env.ENABLE_STITCH_CLONE !== "true") {
-    return new NextResponse("Stitch clone routes are disabled in production.", {
-      status: 404,
-      headers: {
-        "Cache-Control": "no-store"
+
+  if (pathname === "/login") {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set(
+      "x-kmt-login-locale",
+      request.nextUrl.searchParams.get("locale") === "en" ? "en" : "ar"
+    );
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders
       }
     });
   }
@@ -56,10 +61,6 @@ export function middleware(request: NextRequest) {
   }
 
   return NextResponse.next();
-}
-
-function isProductionRuntime() {
-  return process.env.APP_ENV === "production" || process.env.NODE_ENV === "production";
 }
 
 export function shouldApplyApiMutationOriginGuard(pathname: string, method: string) {

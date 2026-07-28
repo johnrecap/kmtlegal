@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   CLIENT_ACCOUNT_SETUP_TOKEN_TTL_MS,
@@ -23,16 +25,18 @@ describe("client account setup contract", () => {
       clientId,
       consultationId,
       email: "client@example.com",
+      locale: "en",
       now
     });
 
     const payload = verifyClientAccountSetupToken(token.value, now);
     expect(payload).toMatchObject({
       purpose: "client_account_setup",
-      version: 1,
+      version: 2,
       clientId,
       consultationId,
-      email: "client@example.com"
+      email: "client@example.com",
+      locale: "en"
     });
     expect(token.expiresAt.getTime()).toBe(now.getTime() + CLIENT_ACCOUNT_SETUP_TOKEN_TTL_MS);
 
@@ -48,19 +52,21 @@ describe("client account setup contract", () => {
     const setup = publicClientAccountSetupTarget({
       client: { id: clientId, email: null, userId: null },
       consultationId,
+      locale: "ar",
       now
     });
     expect(setup.status).toBe("setup_available");
-    expect(setup.status === "setup_available" ? setup.setupUrl : "").toContain("https://kmt.test/client-account/setup?token=");
+    expect(setup.status === "setup_available" ? setup.setupUrl : "").toContain("https://kmt.test/ar/client-account/setup?token=");
 
     const existing = publicClientAccountSetupTarget({
       client: { id: clientId, email: "client@example.com", userId: "33333333-3333-4333-8333-333333333333" },
       consultationId,
+      locale: "en",
       now
     });
     expect(existing).toEqual({
       status: "existing_account",
-      loginUrl: "/login?next=/client",
+      loginUrl: "/login?next=/client&locale=en",
       email: "client@example.com"
     });
   });
@@ -70,8 +76,7 @@ describe("client account setup contract", () => {
       token: "x".repeat(40),
       email: "client@example.com",
       password: "strong-pass-123",
-      confirmPassword: "strong-pass-123",
-      locale: "ar"
+      confirmPassword: "strong-pass-123"
     });
     expect(valid.email).toBe("client@example.com");
 
@@ -80,9 +85,47 @@ describe("client account setup contract", () => {
         token: "x".repeat(40),
         email: "not-email",
         password: "short",
-        confirmPassword: "different",
-        locale: "ar"
+        confirmPassword: "different"
       })
     ).toThrow();
+
+    expect(() =>
+      publicClientAccountSetupSchema.parse({
+        token: "x".repeat(40),
+        email: "client@example.com",
+        password: "strong-pass-123",
+        confirmPassword: "strong-pass-123",
+        locale: "en"
+      })
+    ).toThrow();
+  });
+
+  it("persists the trusted booking locale for delayed payment setup with a safe historical default", () => {
+    const schema = readFileSync(join(process.cwd(), "prisma/schema.prisma"), "utf8");
+    const migration = readFileSync(
+      join(
+        process.cwd(),
+        "prisma/migrations/20260728203000_plan_39_consultation_locale/migration.sql"
+      ),
+      "utf8"
+    );
+    const publicService = readFileSync(
+      join(process.cwd(), "src/server/consultations/consultation-service.ts"),
+      "utf8"
+    );
+    const assistantService = readFileSync(
+      join(process.cwd(), "src/server/consultations/consultation-assistant-service.ts"),
+      "utf8"
+    );
+    const paymentService = readFileSync(
+      join(process.cwd(), "src/server/payments/payment-service.ts"),
+      "utf8"
+    );
+
+    expect(schema).toContain('locale            String             @default("ar")');
+    expect(migration).toContain("CHECK (\"locale\" IN ('ar', 'en'))");
+    expect(publicService).toContain("locale: input.body.locale");
+    expect(assistantService.match(/locale: body\.locale/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
+    expect(paymentService).toContain("attempt.consultationRequest.locale");
   });
 });

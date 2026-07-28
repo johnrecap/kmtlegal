@@ -4,7 +4,7 @@ import { PLAN35_ROLE_KEYS, type Plan35RoleKey } from "../fixtures/plan35-role-fi
 import { configuredPlan35StorageState } from "./plan35-auth-state";
 
 const officeAdminStorageState = configuredPlan35StorageState("officeAdmin");
-const surfacePath = officeAdminStorageState ? "/admin" : process.env.PLAN35_E2E_FALLBACK_PATH ?? "/product-system";
+const surfacePath = "/admin";
 const personaStorageStates = Object.fromEntries(
   PLAN35_ROLE_KEYS.map((roleKey) => [roleKey, configuredPlan35StorageState(roleKey)])
 ) as Record<Plan35RoleKey, string | null>;
@@ -30,17 +30,18 @@ const accessibilityViewports = [
   { width: 390, height: 844 },
   { width: 320, height: 568 }
 ] as const;
-const visualSurfaceName = officeAdminStorageState ? "admin-office" : "product-system-fallback";
+const visualSurfaceName = "admin-office";
 
 if (officeAdminStorageState) test.use({ storageState: officeAdminStorageState });
 
 test.describe("PLAN-35 admin responsive accessibility characterization", () => {
   test.beforeEach(async ({ page }, testInfo) => {
+    test.skip(!officeAdminStorageState, "A disposable Office Admin storage state is required for real admin-page verification.");
     testInfo.annotations.push({
       type: "local-verification",
       description: "The T046-T049 shell behavior is green; deterministic screenshot acceptance remains owned by T112."
     });
-    testInfo.annotations.push({ type: "auth-state", description: officeAdminStorageState ? "Disposable Office Admin storage state" : "Collection-safe product-system fallback" });
+    testInfo.annotations.push({ type: "auth-state", description: "Disposable Office Admin storage state" });
     await loadSurface(page);
   });
 
@@ -248,11 +249,12 @@ test.describe("PLAN-35 contact triage and complete notification center", () => {
       description: "T057 is collected only against disposable synthetic data; production databases are forbidden."
     });
     const marker = `PLAN35-US3-${testInfo.workerIndex}-${Date.now()}`;
+    const contactEmail = `plan35.us3.${Date.now()}@example.invalid`;
     const response = await page.request.post("/api/public/contact?locale=ar", {
       data: {
         locale: "ar",
         fullName: marker,
-        email: `plan35.us3.${Date.now()}@example.invalid`,
+        email: contactEmail,
         phone: "+201550000035",
         topic: "documents",
         message: `${marker} رسالة اصطناعية لاختبار وصول نموذج التواصل إلى قائمة المراجعة فقط.`,
@@ -263,6 +265,15 @@ test.describe("PLAN-35 contact triage and complete notification center", () => {
 
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/admin", { waitUntil: "domcontentloaded" });
+    const notificationBell = page.locator('summary[aria-label="فتح الإشعارات"]');
+    await notificationBell.click();
+    const notificationPopover = notificationBell.locator("xpath=..");
+    await expect(
+      notificationPopover.getByText("رسالة تواصل جديدة", { exact: true }).first()
+    ).toBeVisible({ timeout: 30_000 });
+    await expect(notificationPopover).not.toContainText(marker);
+    await expect(notificationPopover).not.toContainText(contactEmail);
+
     const contactNavigation = page
       .getByTestId("dashboard-desktop-navigation")
       .locator('a[href="/admin/contact-messages"]');

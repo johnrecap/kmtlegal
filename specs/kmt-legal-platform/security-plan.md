@@ -203,4 +203,5 @@
 - CSRF/origin test for state-changing cookie-auth endpoints.
 - Rich text/content rendering does not execute HTML/script.
 - Protected private responses are not shared-cacheable.
-- `/stitch-clone/*` is unavailable in production unless explicitly enabled for visual QA.
+- Retired `/portal/*`, `/product-system/*`, and `/stitch-clone/*` routes are absent in every
+  environment and return the branded true 404 without an authentication redirect.

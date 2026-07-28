@@ -1,5 +1,8 @@
 # PLAN-13 Client Portal Core
 
+> PLAN-39 superseding note (2026-07-28): the `/portal` routes described below are historical.
+> Their maintained equivalents live under `/client`; `/portal/*` now returns the branded 404.
+
 Status: Done
 
 ## Scope Delivered

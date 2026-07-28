@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  CONTACT_MESSAGE_NOTIFICATION_RESOURCE_TYPE,
   CONSULTATION_NOTIFICATION_RESOURCE_TYPE,
   adminNotificationQuerySchema,
+  createContactMessageNotifications,
   createConsultationReviewNotifications,
   listAdminNotifications,
   markAdminNotificationRead
@@ -272,7 +274,7 @@ describe("admin notification center contract", () => {
 
   it("creates review notifications only for active recipients who can both receive and review", async () => {
     const consultationId = "55000000-0000-4000-8000-000000000001";
-    const createMany = vi.fn(async ({ data }: { data: Array<{ userId: string }> }) => ({ count: data.length }));
+    const createMany = vi.fn(async ({ data }: { data: Array<{ userId: string }>; skipDuplicates?: boolean }) => ({ count: data.length }));
     const userFindMany = vi.fn(async () => [
       {
         id: "55000000-0000-4000-8000-000000000010",
@@ -319,5 +321,98 @@ describe("admin notification center contract", () => {
     expect(userQuery).toHaveProperty("where.status", "ACTIVE");
     expect(userQuery).toHaveProperty("where.deletedAt", null);
     expect(JSON.stringify(userQuery.select)).not.toMatch(/email|password|secret|recovery/);
+  });
+
+  it("creates privacy-safe contact alerts only for active recipients who can read messages and notifications", async () => {
+    const contactMessageId = "56000000-0000-4000-8000-000000000001";
+    const createMany = vi.fn(async ({ data }: { data: Array<{ userId: string }>; skipDuplicates?: boolean }) => ({ count: data.length }));
+    const userFindMany = vi.fn(async () => [
+      {
+        id: "56000000-0000-4000-8000-000000000010",
+        role: {
+          name: "Secretary",
+          permissions: [
+            { permission: { key: "contact.read.any" } },
+            { permission: { key: "notification.read.self" } }
+          ]
+        }
+      },
+      {
+        id: "56000000-0000-4000-8000-000000000011",
+        role: {
+          name: "Lawyer",
+          permissions: [
+            { permission: { key: "case.read.assigned" } },
+            { permission: { key: "notification.read.self" } }
+          ]
+        }
+      },
+      {
+        id: "56000000-0000-4000-8000-000000000012",
+        role: {
+          name: "Marketing Staff",
+          permissions: [{ permission: { key: "contact.read.any" } }]
+        }
+      },
+      {
+        id: "56000000-0000-4000-8000-000000000013",
+        role: { name: "Super Admin", permissions: [] }
+      }
+    ]);
+    const client = {
+      user: { findMany: userFindMany },
+      notification: { createMany }
+    };
+
+    const result = await createContactMessageNotifications({
+      contactMessageId,
+      client: client as never
+    });
+
+    expect(result.created).toBe(2);
+    const [createInput] = createMany.mock.calls[0];
+    expect(createInput.skipDuplicates).toBe(true);
+    expect(createInput.data.map(({ userId }) => userId)).toEqual([
+      "56000000-0000-4000-8000-000000000010",
+      "56000000-0000-4000-8000-000000000013"
+    ]);
+    expect(createInput.data[0]).toMatchObject({
+      type: "SYSTEM",
+      resourceType: CONTACT_MESSAGE_NOTIFICATION_RESOURCE_TYPE,
+      resourceId: contactMessageId,
+      actionUrl: "/admin/contact-messages?status=NEW&sortBy=createdAt&sortDirection=desc"
+    });
+    expect(JSON.stringify(createInput.data)).not.toMatch(
+      /"(?:fullName|email|phone|message|topic)":|Ahmed|0100/i
+    );
+    const [userQuery] = userFindMany.mock.calls[0] as unknown as [{ where: unknown; select: unknown }];
+    expect(userQuery).toHaveProperty("where.status", "ACTIVE");
+    expect(userQuery).toHaveProperty("where.deletedAt", null);
+    expect(userQuery).toHaveProperty("where.role.status", "ACTIVE");
+    expect(JSON.stringify(userQuery.select)).not.toMatch(/email|password|secret|recovery/);
+  });
+
+  it("skips contact notification writes when no active recipient has both required permissions", async () => {
+    const createMany = vi.fn();
+    const result = await createContactMessageNotifications({
+      contactMessageId: "56000000-0000-4000-8000-000000000099",
+      client: {
+        user: {
+          findMany: vi.fn(async () => [
+            {
+              id: "56000000-0000-4000-8000-000000000098",
+              role: {
+                name: "Lawyer",
+                permissions: [{ permission: { key: "notification.read.self" } }]
+              }
+            }
+          ])
+        },
+        notification: { createMany }
+      } as never
+    });
+
+    expect(result).toEqual({ created: 0 });
+    expect(createMany).not.toHaveBeenCalled();
   });
 });

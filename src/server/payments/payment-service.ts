@@ -252,7 +252,7 @@ export async function getPublicPaymentAttemptStatus(input: { attemptId: string; 
     include: {
       client: { select: { id: true, fullName: true, phone: true, email: true, userId: true } },
       appointment: { select: { id: true, title: true, startsAt: true, status: true } },
-      consultationRequest: { select: { id: true, status: true, summary: true, urgency: true, preferredMode: true, serviceCategory: true, city: true } },
+      consultationRequest: { select: { id: true, status: true, summary: true, urgency: true, preferredMode: true, serviceCategory: true, city: true, locale: true } },
       payment: {
         select: {
           id: true,
@@ -1115,7 +1115,7 @@ function paymentAttemptDto(
     include: {
       client: { select: { id: true; fullName: true; phone: true; email: true; userId: true } };
       appointment: { select: { id: true; title: true; startsAt: true; status: true } };
-      consultationRequest: { select: { id: true; status: true; summary: true; urgency: true; preferredMode: true; serviceCategory: true; city: true } };
+      consultationRequest: { select: { id: true; status: true; summary: true; urgency: true; preferredMode: true; serviceCategory: true; city: true; locale: true } };
       payment: {
         select: {
           id: true;
@@ -1181,7 +1181,8 @@ function paymentAttemptDto(
       includeSensitive && attempt.payment && attempt.status === "PAID" && attempt.payment.status === "PAID"
         ? publicClientAccountSetupTarget({
             client: attempt.client,
-            consultationId: attempt.consultationRequest.id
+            consultationId: attempt.consultationRequest.id,
+            locale: attempt.consultationRequest.locale === "en" ? "en" : "ar"
           })
         : null,
     payment: attempt.payment

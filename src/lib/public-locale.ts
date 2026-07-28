@@ -5,7 +5,7 @@ export type PublicLocale = (typeof publicLocales)[number];
 export const defaultPublicLocale: PublicLocale = "en";
 export const arabicPublicLocale: PublicLocale = "ar";
 
-const protectedPathPrefixes = ["/admin", "/client", "/portal", "/install", "/login", "/product-system", "/stitch-clone"];
+const protectedPathPrefixes = ["/admin", "/client", "/install", "/login"];
 
 export function isPublicLocale(value: unknown): value is PublicLocale {
   return value === "en" || value === "ar";

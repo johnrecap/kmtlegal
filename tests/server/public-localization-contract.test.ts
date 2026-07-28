@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   documentLocaleForPath,
+  isProtectedProductPath,
   localizedPublicHref,
   publicLocaleDirection,
   stripPublicLocalePrefix
@@ -16,7 +17,9 @@ describe("public localization contract", () => {
     expect(publicLocaleDirection(documentLocaleForPath("/ar/services"))).toBe("rtl");
     expect(documentLocaleForPath("/admin")).toBe("ar");
     expect(documentLocaleForPath("/client/files")).toBe("ar");
-    expect(documentLocaleForPath("/portal/cases")).toBe("ar");
+    expect(isProtectedProductPath("/portal/cases")).toBe(false);
+    expect(isProtectedProductPath("/product-system")).toBe(false);
+    expect(isProtectedProductPath("/stitch-clone/home")).toBe(false);
   });
 
   it("localizes public links without translating slugs", () => {

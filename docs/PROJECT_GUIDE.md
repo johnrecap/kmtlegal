@@ -1,8 +1,8 @@
 # KMT Legal Platform — Engineering Handoff
 
-**Last updated**: 2026-07-22
+**Last updated**: 2026-07-28
 
-**Current delivery focus**: PLAN-35 Admin Operations Remediation
+**Current delivery focus**: PLAN-39 Site Cleanup, Contact Alerts, and Client Localization
 
 **Primary setup guide**: `../PROJECT_GUIDE.md`
 
@@ -37,12 +37,45 @@ commit real credentials or client data.
 | Automated checks | `tests/server`, `tests/ui`, `tests/e2e` | Unit/contract, component, and Playwright coverage |
 | Product plans | `specs/kmt-legal-platform` | Spec Kit requirements, plans, tasks, and analysis |
 | Deployment | `deploy`, `docs/SERVER_COMMANDS.md` | aaPanel/PM2 and server handoff |
-| Stitch reference | `stitch_kmt_legal_platform_ui_system`, `src/app/(install-ar)/stitch-clone` | Read-only visual source and isolated mechanical clone |
+| Stitch reference | `stitch_kmt_legal_platform_ui_system`, `public/stitch-assets` | Offline read-only design archive and product-used localized images |
 
-Do not connect product code or dynamic data to the Stitch clone. Do not edit the exported Stitch
-source as part of ordinary product work.
+Do not recreate runtime Stitch clone pages or connect product code/dynamic data to the archive. Do
+not edit the exported Stitch source as part of ordinary product work.
 
-## Current PLAN-35 Snapshot
+## Recent Changes
+
+- 2026-07-28 - PLAN-39 site cleanup, contact alerts, and client localization
+  - Removed runtime `/portal`, `/product-system`, and `/stitch-clone` pages, their obsolete scripts,
+    commands, snapshots, and the old portal profile API.
+  - Added a branded bilingual global 404, canonical `/api/client/profile`, self-only
+    `/api/client/preferences`, and complete Arabic/English `/client` and `/login` surfaces.
+  - Added privacy-safe permission-based contact-message alerts with refresh-on-open and visible-tab
+    30-second bell polling; contact persistence does not depend on alert delivery.
+  - Added the additive `ConsultationRequest.locale` migration so delayed account setup inherits
+    the trusted booking language; historical consultations default to Arabic.
+  - Verification: Prisma validate/generate, typecheck, lint, 437 Vitest tests, guarded production
+    build, 46 public browser checks, 9 retired-route/404 checks, and bilingual login browser check.
+    Authenticated DB/staging, deploy, and live read-only checks remain open.
+
+## Current PLAN-39 Snapshot
+
+PLAN-39 is locally verified. `/client` is the only maintained client route family. Every
+`/portal/*`, `/product-system/*`, and `/stitch-clone/*` request falls through to the branded global
+404 with a real 404 status and no login redirect. The offline Stitch export remains available only
+to developers, and current product images under `/stitch-assets` remain cacheable.
+
+Visitor contact messages remain durable in the existing inbox. A generic alert is created for each
+active user whose current effective permissions include notification self-read and contact
+read/manage. The alert contains no visitor name, contact detail, topic, or message text. The bell
+refreshes when opened and every 30 seconds while the admin document is visible.
+
+Client pages and the shared login gateway use typed Arabic/English catalogs without a new
+localization dependency. The account's `User.locale` drives `/client` document language,
+direction, navigation, statuses, dates, numbers, currency, assistant, team chat, upload, profile,
+and error copy. New account setup signs the consultation's stored booking locale; existing or
+unsupported values safely normalize to Arabic.
+
+## Retained PLAN-35 Snapshot
 
 The local Foundation, scope/appointments, workspace/permissions, Contact/Notifications, Manual
 Cases, Governance, and Command Center/Storage lanes are implemented. T092–T100 and T102–T106 are
@@ -98,6 +131,8 @@ No Prisma schema, migration, seed, or new UI dependency was added for this lane.
 - Status API: `PATCH /api/admin/contact-messages/:messageId`
 - Service: `src/server/admin/contact-message-service.ts`
 - UI: `src/features/admin/contact-messages/contact-message-inbox.tsx`
+- Public writer: `src/server/contact/contact-message-service.ts`
+- Alert writer: `src/server/admin/notification-service.ts`
 
 The list accepts bounded `q`, `status`, `topic`, `sortBy`, `sortDirection`, `page`, and `pageSize`
 parameters. It returns an explicit minimized projection. Readers can inspect the queue; managers can
@@ -105,7 +140,9 @@ apply the stored lifecycle `NEW → REVIEWED/ARCHIVED` and `REVIEWED → ARCHIVE
 target is idempotent. Conflicting concurrent transitions fail, while successful transitions and the
 required audit commit atomically.
 
-No Prisma model, enum, migration, or seed change was needed for this lane.
+Accepted public messages also create deduplicated, generic per-user notifications for active
+authorized recipients. Notification failure is logged without visitor data and does not roll back
+the accepted message.
 
 ## Notification Flow
 
@@ -125,6 +162,20 @@ Generic notification reads require `notification.read.self` and ownership. Actio
 to safe internal admin destinations and are rechecked against the current principal. Dynamic case
 and consultation links are also rechecked against current object scope; stale access falls back to a
 safe authorized destination or no action.
+
+## Client Routes, Localization, And Data
+
+- Client routes: `/client`, `/client/cases`, `/client/court-dates`, `/client/files`,
+  `/client/payments`, `/client/assistant`, and `/client/profile`
+- Client APIs: `GET/PATCH /api/client/profile` and `PATCH /api/client/preferences`
+- Locale catalogs: `src/content/client-content.ts` and `src/content/auth-content.ts`
+- Client root/document semantics: `src/app/(client)/layout.tsx`
+- Account setup routes: `/client-account/setup` and `/ar/client-account/setup`
+- Migration: `prisma/migrations/20260728203000_plan_39_consultation_locale/migration.sql`
+
+The preference endpoint accepts strict `{ locale: "ar" | "en" }`, derives the target user from the
+session, requires an active linked client profile, and audits the self-owned update. Client-facing
+components map stable error codes to catalog copy and do not display raw backend messages.
 
 ## Authorization And UI Boundaries
 
@@ -160,6 +211,10 @@ Production requires a real PostgreSQL `DATABASE_URL`. The local-only build guard
 `ALLOW_BUILD_WITHOUT_DATABASE_URL=true` lets static validation finish without contacting a database;
 it must not be treated as runtime, migration, or production-readiness evidence.
 
+Deploy PLAN-39 only after applying the additive consultation-locale migration. The migration gives
+existing rows `ar`, constrains new stored values to `ar` or `en`, and should be retained during an
+application rollback rather than dropped.
+
 ## Verification
 
 Standard local checks:
@@ -176,7 +231,17 @@ No-database build on PowerShell:
 $env:ALLOW_BUILD_WITHOUT_DATABASE_URL='true'; npm run build
 ```
 
-The 2026-07-22 Governance verification passed:
+The 2026-07-28 PLAN-39 local verification passed:
+
+- `npm run db:validate` and `npm run db:generate`.
+- `npm run typecheck`, `npm run lint`, and 437 tests across 61 Vitest files.
+- Guarded production build with canonical client/profile/preference routes and no retired routes.
+- 46 no-database public Playwright checks.
+- 9 retired-route/404/asset Playwright checks.
+- Bilingual login Playwright check; authenticated locale persistence was correctly skipped without
+  disposable PostgreSQL and explicit `PLAN39_ALLOW_DB_FIXTURES=true`.
+
+The retained 2026-07-22 Governance verification passed:
 
 - 80 focused server/component/route/contract tests.
 - 337 repository unit/contract tests across 48 files.
@@ -191,6 +256,12 @@ evidence.
 
 ## Known Gaps And Next Work
 
+- Apply the PLAN-39 consultation-locale migration to disposable staging PostgreSQL, then run the
+  authenticated client-language persistence suite with `PLAN39_ALLOW_DB_FIXTURES=true`.
+- Run the opt-in disposable contact-message browser scenario to prove inbox + bell arrival and the
+  denied lawyer/marketing role states against real role records; unit/permission coverage is green.
+- Deploy the pushed release through aaPanel/PM2 and run read-only live health, retired-route 404,
+  login redirect, and `/stitch-assets` checks before upgrading PLAN-39 beyond local verification.
 - Run T091 against disposable migrated PostgreSQL and isolated authenticated staff storage states;
   execute repeat-seed persistence, stale/concurrent role and user mutations, inactive principal,
   target-session revocation, final-Super, and all 95 route/persona cells.

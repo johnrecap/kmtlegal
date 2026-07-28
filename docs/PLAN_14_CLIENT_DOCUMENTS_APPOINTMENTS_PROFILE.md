@@ -1,5 +1,8 @@
 # PLAN-14 Client Documents, Appointments, Payments & Profile
 
+> PLAN-39 superseding note (2026-07-28): all maintained client pages and profile services use
+> `/client`; the historical `/portal` pages and `/api/portal/profile` no longer exist.
+
 Status: Done
 
 ## Scope Delivered

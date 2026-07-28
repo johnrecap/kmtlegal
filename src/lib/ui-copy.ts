@@ -297,6 +297,8 @@ export const plan35NotificationUiCopy = {
   noAttention: "لا توجد عناصر جديدة تحتاج انتباهك.",
   attentionSummary: "عناصر تحتاج انتباهك",
   reviewRequestTitle: "طلب استشارة جديد يحتاج مراجعة",
+  contactMessageTitle: "رسالة تواصل جديدة",
+  contactMessageBody: "وصلت رسالة جديدة إلى صندوق رسائل التواصل.",
   markRead: "تحديد كمقروء",
   markedRead: "تم تحديد الإشعار كمقروء.",
   markReadFailed: "تعذر تحديث الإشعار. حاول مرة أخرى.",

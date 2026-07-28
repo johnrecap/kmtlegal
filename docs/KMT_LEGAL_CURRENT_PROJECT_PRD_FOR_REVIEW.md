@@ -1,6 +1,7 @@
 # KMT Legal Current Project PRD And External Review Brief
 
-Generated from repository inspection on 2026-07-07 Africa/Cairo.
+Generated from repository inspection on 2026-07-07 Africa/Cairo; current-state corrections
+applied by PLAN-39 on 2026-07-28.
 
 This document describes the current implemented state of the KMT Legal Platform so a second model, reviewer, or engineering team can review the full project and propose improvement work. It does not replace `specs/kmt-legal-platform/` as the planning source of truth, and it does not claim production readiness where runtime gates are still open.
 
@@ -14,9 +15,9 @@ The product has five major surfaces:
 
 1. Public website, English by default, Arabic under `/ar`.
 2. Public consultation booking chat with AI-style intake, secretary review, appointment slot selection, and optional payment checkout.
-3. Protected client portal under `/client`, with legacy `/portal` compatibility.
+3. Protected bilingual client portal under the canonical `/client` route family.
 4. Protected admin dashboard under `/admin`.
-5. Installation, product system demo, and Stitch visual clone routes for setup and design/reference work.
+5. Installation under `/install`; original Stitch exports remain offline design-reference files.
 
 ## 2. Source Files And Evidence Checked
 
@@ -201,16 +202,13 @@ Protected client routes:
 - `/client/profile`
 - `/client/assistant`
 
-Legacy portal compatibility routes:
+Retired route families:
 
-- `/portal`
-- `/portal/cases`
-- `/portal/cases/[caseId]`
-- `/portal/documents`
-- `/portal/appointments`
-- `/portal/payments`
-- `/portal/profile`
-- `/portal/[...section]`
+- `/portal/*`
+- `/product-system/*`
+- `/stitch-clone/*`
+
+These URLs have no redirects or protected runtime pages and return the branded global 404.
 
 Protected admin routes:
 
@@ -243,12 +241,6 @@ Utility and setup routes:
 - `/login`
 - `/login/2fa`, disabled placeholder surface.
 - `/install`
-- `/product-system`
-- `/product-system/cases`
-- `/product-system/clients`
-- `/product-system/documents`
-- `/product-system/settings`
-- `/stitch-clone/[screen-name]`, blocked in production unless `ENABLE_STITCH_CLONE=true`.
 
 ## 7. UI And UX PRD
 
@@ -320,12 +312,12 @@ Important UX constraints:
 
 ### 7.3 Client Portal UX
 
-Primary protected client surface is `/client`. `/portal` remains compatibility.
+The only protected client route family is `/client`.
 
 Design:
 
 - Dark client portal shell matching public legal-luxury tone.
-- Arabic RTL protected portal.
+- Arabic RTL and English LTR follow the saved client account locale.
 - Header includes KMT brand, protected nav, user identity, logout, and link back to public site.
 - Pages use portal panels, metrics, rows, tables, and dark-safe form controls.
 
@@ -574,7 +566,8 @@ Client:
 - `/api/client/messages`
 - `/api/client/messages/[threadId]`
 - `/api/client/messages/[threadId]/messages`
-- `/api/portal/profile`
+- `/api/client/profile`
+- `/api/client/preferences`
 
 Admin:
 
@@ -1159,6 +1152,7 @@ When we receive the second model's recommendations, we should approve work using
 - Do not change public API contracts without updating tests and consumers.
 - Do not expand payment live scope until sandbox evidence exists.
 - Do not enable SMTP or Staff 2FA as small toggles. They need separate implementation plans.
-- Keep `/stitch-clone/*` isolated and production-disabled unless explicitly needed for visual QA.
+- Keep the original Stitch export as an isolated offline archive; never recreate visitor-facing
+  `/stitch-clone/*` runtime pages.
 - Keep public site cacheable only when pages remain private-data-free.
 - Keep every AI output clearly review-gated and non-advisory.

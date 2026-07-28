@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Badge, Button, MaterialSymbol, StateBlock, buttonClasses } from "@/components/ui";
 import { formatDateTime } from "@/lib/legal-format";
 import { plan35NotificationUiCopy as copy, plan36ConsultationOutcomeCopy } from "@/lib/ui-copy";
@@ -148,24 +148,51 @@ export function AdminNotificationPopover({
 }) {
   const state = useNotificationRead(initialSnapshot);
   const [loadFailed, setLoadFailed] = useState(initialLoadFailed);
+  const {
+    setItems,
+    setAttentionCount,
+    setGenericUnreadCount
+  } = state;
 
-  async function reloadPreview() {
+  const reloadPreview = useCallback(async () => {
     try {
       const response = await fetch("/api/admin/notifications?limit=5", { headers: { Accept: "application/json" } });
       if (!response.ok) return;
       const body = (await response.json().catch(() => ({}))) as SnapshotResponse;
       if (!body.data) return;
-      state.setItems(body.data.items);
-      state.setAttentionCount(body.data.attentionCount);
-      state.setGenericUnreadCount(body.data.genericUnreadCount);
+      setItems(body.data.items);
+      setAttentionCount(body.data.attentionCount);
+      setGenericUnreadCount(body.data.genericUnreadCount);
       setLoadFailed(false);
     } catch {
       setLoadFailed(true);
     }
-  }
+  }, [setAttentionCount, setGenericUnreadCount, setItems]);
+
+  useEffect(() => {
+    function refreshWhenVisible() {
+      if (document.visibilityState === "visible") {
+        void reloadPreview();
+      }
+    }
+
+    const timer = window.setInterval(refreshWhenVisible, 30_000);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
+  }, [reloadPreview]);
 
   return (
-    <details className="relative">
+    <details
+      className="relative"
+      onToggle={(event) => {
+        if (event.currentTarget.open && document.visibilityState === "visible") {
+          void reloadPreview();
+        }
+      }}
+    >
       <summary
         aria-label={copy.bellLabel}
         className={buttonClasses({

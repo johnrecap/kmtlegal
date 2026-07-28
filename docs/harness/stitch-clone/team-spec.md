@@ -156,3 +156,6 @@ _workspace/stitch-clone/{screen-name}/
 - `PLAN-02` depends on `PLAN-01`.
 - `PLAN-03` may read Stitch visual direction after `PLAN-02`, but must not reuse clone code or mutate clone routes.
 - Backend, auth, database, and dynamic product slices must not enter `/stitch-clone/*`.
+> PLAN-39 archive note (2026-07-28): this document and the exported Stitch files are retained as
+> offline design history only. No `/stitch-clone/*` runtime route, generation command, or visual
+> acceptance command remains available to visitors or operators.

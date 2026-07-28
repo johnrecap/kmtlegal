@@ -9,10 +9,10 @@ test.describe("RTL select controls", () => {
       }
     });
 
-    await page.goto("/product-system", { waitUntil: "domcontentloaded" });
+    await page.goto("/ar/contact", { waitUntil: "domcontentloaded" });
 
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    const select = page.locator('select[name="caseStatus"]');
+    const select = page.locator('select[name="topic"]');
     await expect(select).toBeVisible();
 
     const metrics = await select.evaluate((element) => {

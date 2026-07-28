@@ -38,7 +38,7 @@ export function canRoleOpenPath(roleName: string, path: string): boolean {
   }
 
   if (roleName === "Client") {
-    return path === "/client" || path.startsWith("/client/") || path === "/portal" || path.startsWith("/portal/");
+    return path === "/client" || path.startsWith("/client/");
   }
 
   if (isStaffRoleName(roleName)) {
@@ -63,9 +63,7 @@ export function isProtectedAppPath(pathname: string): boolean {
     pathname === "/admin" ||
     pathname.startsWith("/admin/") ||
     pathname === "/client" ||
-    pathname.startsWith("/client/") ||
-    pathname === "/portal" ||
-    pathname.startsWith("/portal/")
+    pathname.startsWith("/client/")
   );
 }
 

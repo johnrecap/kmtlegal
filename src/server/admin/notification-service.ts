@@ -13,6 +13,7 @@ import {
 } from "./consultation-outcome-policy";
 
 export const CONSULTATION_NOTIFICATION_RESOURCE_TYPE = "ConsultationRequest";
+export const CONTACT_MESSAGE_NOTIFICATION_RESOURCE_TYPE = "ContactMessage";
 
 const notificationCenterKindSchema = z.enum(["generic", "consultation-review"]);
 const notificationCursorSchema = z
@@ -81,6 +82,7 @@ type NotificationRow = Prisma.NotificationGetPayload<{ select: typeof notificati
 type ConsultationReviewRow = Prisma.ConsultationRequestGetPayload<{ select: typeof consultationReviewSelect }>;
 export type NotificationCenterClient = Pick<Prisma.TransactionClient, "consultationRequest" | "legalCase" | "notification">;
 type NotificationWriterClient = Pick<Prisma.TransactionClient, "consultationRequest" | "notification" | "user">;
+type ContactNotificationWriterClient = Pick<Prisma.TransactionClient, "notification" | "user">;
 
 export type GenericNotificationCenterItem = {
   kind: "generic";
@@ -432,6 +434,56 @@ export async function createConsultationReviewNotifications(input: {
       resourceType: CONSULTATION_NOTIFICATION_RESOURCE_TYPE,
       resourceId: consultation.id,
       actionUrl: `/admin/consultations/${consultation.id}`
+    })),
+    skipDuplicates: true
+  });
+
+  return { created: result.count };
+}
+
+export async function createContactMessageNotifications(input: {
+  contactMessageId: string;
+  client?: ContactNotificationWriterClient;
+}) {
+  const client = input.client ?? prisma;
+  const candidates = await client.user.findMany({
+    where: {
+      status: "ACTIVE",
+      deletedAt: null,
+      role: { status: "ACTIVE" }
+    },
+    select: {
+      id: true,
+      role: {
+        select: {
+          name: true,
+          permissions: { select: { permission: { select: { key: true } } } }
+        }
+      }
+    }
+  });
+  const recipients = candidates.filter((candidate) => {
+    const principal = {
+      id: candidate.id,
+      roleName: candidate.role.name,
+      permissions: candidate.role.permissions.map(({ permission }) => permission.key)
+    };
+    return (
+      hasPermission(principal, "notification.read.self") &&
+      (hasPermission(principal, "contact.read.any") || hasPermission(principal, "contact.manage.any"))
+    );
+  });
+
+  if (!recipients.length) return { created: 0 };
+  const result = await client.notification.createMany({
+    data: recipients.map((recipient) => ({
+      userId: recipient.id,
+      type: "SYSTEM",
+      title: plan35NotificationUiCopy.contactMessageTitle,
+      body: plan35NotificationUiCopy.contactMessageBody,
+      resourceType: CONTACT_MESSAGE_NOTIFICATION_RESOURCE_TYPE,
+      resourceId: input.contactMessageId,
+      actionUrl: "/admin/contact-messages?status=NEW&sortBy=createdAt&sortDirection=desc"
     })),
     skipDuplicates: true
   });

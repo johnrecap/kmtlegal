@@ -302,7 +302,8 @@ describe("security, privacy, upload, and observability hardening", () => {
     expect(middlewareSource).toContain('response.headers.set("Cache-Control", "no-store")');
     expect(nextConfigSource).toContain('source: "/admin/:path*"');
     expect(nextConfigSource).toContain('source: "/client/:path*"');
-    expect(nextConfigSource).toContain('source: "/portal/:path*"');
+    expect(nextConfigSource).not.toContain('source: "/portal/:path*"');
+    expect(nextConfigSource).toContain("globalNotFound: true");
     expect(nextConfigSource).toContain('source: "/login/:path*"');
     expect(nextConfigSource).toContain('source: "/install/:path*"');
   });

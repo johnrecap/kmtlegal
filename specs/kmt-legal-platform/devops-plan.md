@@ -74,7 +74,6 @@ Names only; never commit real values.
 | `SENTRY_AUTH_TOKEN` | CI | yes | source map upload if used |
 | `LOG_LEVEL` | server | no | logging level |
 | `RATE_LIMIT_DRIVER` | server | no | memory/redis later |
-| `ENABLE_STITCH_CLONE` | server | no | enable `/stitch-clone/*` only for non-production visual QA |
 | `PLAYWRIGHT_BASE_URL` | tests | no | base URL override used by Playwright runner |
 | `KMT_PORT` | tests/dev | no | local app port used by Playwright/dev server runner |
 
@@ -117,7 +116,7 @@ Names only; never commit real values.
 - Nginx must not serve the uploads directory directly.
 - Nginx must pass `X-Real-IP $remote_addr`; the app ignores client-supplied `X-Forwarded-For` in production.
 - Configure Nginx/body limits to align with the 5MB upload contract; app-level `Content-Length`, MIME, extension, and magic-byte validation still applies.
-- `/stitch-clone/*` is disabled in production unless `ENABLE_STITCH_CLONE=true` is explicitly set for a controlled visual-QA build.
+- `/portal/*`, `/product-system/*`, and `/stitch-clone/*` are retired runtime families and must return the branded 404.
 - Production must run build/start mode, not dev mode.
 - PostgreSQL runs on the VPS or a VPS-managed database path with private network/firewall rules.
 - After `/install` is locked, run `sudo kmt-legal-disable-installer`; production readiness fails while `INSTALLER_ENABLED=true`.

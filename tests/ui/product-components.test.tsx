@@ -2,12 +2,22 @@ import React from "react";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { ClientPortalMetric, ClientPortalPanel, ClientSiteShell, DashboardShell, clientPortalTableClass } from "@/components/layout";
 import { ClientPortalSelect } from "@/components/layout/client-portal-select";
 import { Badge, Button, DataRecordCard, DataTable, MaterialSymbol, Select, StateBlock, Tabs, TextInput } from "@/components/ui";
 import { adminNavForPath } from "@/app/(app-ar)/admin/admin-navigation";
+import { LoginForm } from "@/features/auth/login-form";
+import { ClientAssistantPanel } from "@/features/client/client-assistant-panel";
+import { DocumentUploadForm } from "@/features/portal/document-upload-form";
+import { ProfileForm } from "@/features/portal/profile-form";
 import { PLAN35_ROLE_FIXTURES } from "../fixtures/plan35-role-fixtures";
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/admin",
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  useSearchParams: () => new URLSearchParams()
+}));
 
 describe("product UI primitives", () => {
   it("renders the mobile navigation menu icon instead of the unknown-icon fallback", () => {
@@ -162,21 +172,21 @@ describe("product UI primitives", () => {
   it("renders distinct dashboard navigation routes", () => {
     const html = renderToStaticMarkup(
       <DashboardShell
-        eyebrow="Product System"
+        eyebrow="لوحة المكتب"
         navItems={[
-          { label: "لوحة التحكم", href: "/product-system", icon: "dashboard", group: "تشغيل المكتب", active: true },
-          { label: "العملاء", href: "/product-system/clients", icon: "groups", group: "تشغيل المكتب" },
-          { label: "القضايا", href: "/product-system/cases", icon: "folder_open", group: "الملفات" }
+          { label: "لوحة التحكم", href: "/admin", icon: "dashboard", group: "تشغيل المكتب", active: true },
+          { label: "العملاء", href: "/admin/clients", icon: "groups", group: "تشغيل المكتب" },
+          { label: "القضايا", href: "/admin/cases", icon: "folder_open", group: "الملفات" }
         ]}
-        title="نظام واجهة KMT Legal"
+        title="إدارة مكتب KMT Legal"
         userLabel="سارة - مدير المكتب"
       >
         <div>content</div>
       </DashboardShell>
     );
 
-    expect(html).toContain("href=\"/product-system/clients\"");
-    expect(html).toContain("href=\"/product-system/cases\"");
+    expect(html).toContain("href=\"/admin/clients\"");
+    expect(html).toContain("href=\"/admin/cases\"");
     expect(html).toContain("data-testid=\"dashboard-mobile-navigation-trigger\"");
     expect(html).toContain("<dialog");
     expect(html).toContain("data-testid=\"dashboard-desktop-navigation\"");
@@ -264,6 +274,7 @@ describe("product UI primitives", () => {
   it("renders the client portal shell with the public dark visual language and no card motion", () => {
     const html = renderToStaticMarkup(
       <ClientSiteShell
+        locale="ar"
         navItems={[
           { label: "الرئيسية", href: "/client", icon: "home", active: true },
           { label: "الملفات", href: "/client/files", icon: "folder" }
@@ -296,8 +307,57 @@ describe("product UI primitives", () => {
     expect(html).not.toContain("kmt-motion-card-beam");
   });
 
-  it("keeps the client files page wired to the upload form after portal redirects", () => {
-    const source = readFileSync(join(process.cwd(), "src/app/(app-ar)/client/files/page.tsx"), "utf8");
+  it("renders the client shell and account forms from the English catalog", () => {
+    const shell = renderToStaticMarkup(
+      <ClientSiteShell
+        locale="en"
+        navItems={[
+          { label: "Home", href: "/client", icon: "home", active: true },
+          { label: "Files", href: "/client/files", icon: "folder" }
+        ]}
+        title="Welcome"
+        userLabel="client@example.com"
+      >
+        <div>content</div>
+      </ClientSiteShell>
+    );
+    const profile = renderToStaticMarkup(
+      <ProfileForm
+        locale="en"
+        profile={{
+          fullName: "Test Client",
+          email: "client@example.com",
+          phone: "+201000000000"
+        }}
+      />
+    );
+    const upload = renderToStaticMarkup(<DocumentUploadForm cases={[]} locale="en" />);
+
+    expect(shell).toContain('dir="ltr"');
+    expect(shell).toContain("Client Portal");
+    expect(shell).toContain("Sign out");
+    expect(profile).toContain("Profile details");
+    expect(profile).toContain("Save details");
+    expect(upload).toContain("Upload a new document");
+    expect(upload).toContain("No specific case");
+  });
+
+  it("renders login and assistant entry states in both supported languages", () => {
+    const englishLogin = renderToStaticMarkup(<LoginForm locale="en" />);
+    const arabicLogin = renderToStaticMarkup(<LoginForm locale="ar" />);
+    const englishAssistant = renderToStaticMarkup(<ClientAssistantPanel locale="en" />);
+    const arabicAssistant = renderToStaticMarkup(<ClientAssistantPanel locale="ar" />);
+
+    expect(englishLogin).toContain("Sign in");
+    expect(englishLogin).toContain("Email address");
+    expect(arabicLogin).toContain("تسجيل الدخول");
+    expect(arabicLogin).toContain("البريد الإلكتروني");
+    expect(englishAssistant).toContain("KMT Client Assistant");
+    expect(arabicAssistant).toContain("المساعد التنظيمي");
+  });
+
+  it("keeps the canonical client files page wired to the upload form", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/(client)/client/files/page.tsx"), "utf8");
 
     expect(source).toContain("DocumentUploadForm");
     expect(source).toContain("listPortalCases");
@@ -314,6 +374,7 @@ describe("product UI primitives", () => {
     const globalStyles = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
     const publicContentEn = readFileSync(join(process.cwd(), "src/content/public-content.en.ts"), "utf8");
     const publicContentAr = readFileSync(join(process.cwd(), "src/content/public-content.ar.ts"), "utf8");
+    const clientContent = readFileSync(join(process.cwd(), "src/content/client-content.ts"), "utf8");
 
     expect(publicPageSource).toContain("ConsultationBookingChat");
     expect(publicPageSource).not.toContain("BookingStepperFromQuery");
@@ -350,12 +411,12 @@ describe("product UI primitives", () => {
     expect(publicContentAr).toContain("languagePrompt");
     expect(publicContentAr).toContain("languagePendingPlaceholder");
     expect(publicContentAr).toContain("لا أستطيع تقديم رأي قانوني");
-    expect(clientChatSource).toContain("KMT Client Assistant");
+    expect(clientContent).toContain("KMT Client Assistant");
     expect(clientChatSource).toContain("KmtBrandLogo");
     expect(teamChatSource).toContain("KmtBrandLogo");
     expect(brandLogoSource).toContain("/brand/kmt-logo-mark.webp");
     expect(brandLogoSource).toContain("/brand/kmt-logo-full.webp");
-    expect(clientChatSource).toContain("لا أقدم رأيًا قانونيًا");
+    expect(clientContent).toContain("لا أقدم رأيًا قانونيًا");
     expect(`${publicChatSource}\n${clientChatSource}\n${teamChatSource}`).not.toContain("localStorage");
     expect(`${publicChatSource}\n${clientChatSource}\n${teamChatSource}`).not.toContain("sessionStorage");
   });

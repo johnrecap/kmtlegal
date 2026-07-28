@@ -1,15 +1,30 @@
 export const LEGAL_TIME_ZONE = "Africa/Cairo";
 
-const dateFormatter = new Intl.DateTimeFormat("ar-EG", {
-  dateStyle: "medium",
-  timeZone: LEGAL_TIME_ZONE
-});
+type FormatLocale = "ar" | "en";
 
-const dateTimeFormatter = new Intl.DateTimeFormat("ar-EG", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: LEGAL_TIME_ZONE
-});
+const dateFormatters: Record<FormatLocale, Intl.DateTimeFormat> = {
+  ar: new Intl.DateTimeFormat("ar-EG", {
+    dateStyle: "medium",
+    timeZone: LEGAL_TIME_ZONE
+  }),
+  en: new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeZone: LEGAL_TIME_ZONE
+  })
+};
+
+const dateTimeFormatters: Record<FormatLocale, Intl.DateTimeFormat> = {
+  ar: new Intl.DateTimeFormat("ar-EG", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: LEGAL_TIME_ZONE
+  }),
+  en: new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: LEGAL_TIME_ZONE
+  })
+};
 
 const cairoPartsFormatter = new Intl.DateTimeFormat("en-US-u-ca-gregory-nu-latn", {
   timeZone: LEGAL_TIME_ZONE,
@@ -28,20 +43,20 @@ const cairoDatePartsFormatter = new Intl.DateTimeFormat("en-US-u-ca-gregory-nu-l
   day: "2-digit"
 });
 
-export function formatDate(value?: Date | string | null) {
+export function formatDate(value?: Date | string | null, locale: FormatLocale = "ar") {
   if (!value) {
-    return "غير محدد";
+    return locale === "ar" ? "غير محدد" : "Not specified";
   }
 
-  return dateFormatter.format(new Date(value));
+  return dateFormatters[locale].format(new Date(value));
 }
 
-export function formatDateTime(value?: Date | string | null) {
+export function formatDateTime(value?: Date | string | null, locale: FormatLocale = "ar") {
   if (!value) {
-    return "غير محدد";
+    return locale === "ar" ? "غير محدد" : "Not specified";
   }
 
-  return dateTimeFormatter.format(new Date(value));
+  return dateTimeFormatters[locale].format(new Date(value));
 }
 
 export function formatCairoDateInput(value: Date | string) {
@@ -118,9 +133,9 @@ function cairoLocalOrdinal(value: Date) {
   );
 }
 
-export function formatMoney(amount: number | string, currency = "EGP") {
+export function formatMoney(amount: number | string, currency = "EGP", locale: FormatLocale = "ar") {
   const numeric = typeof amount === "string" ? Number(amount) : amount;
-  return new Intl.NumberFormat("ar-EG", {
+  return new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-GB", {
     style: "currency",
     currency,
     maximumFractionDigits: 2

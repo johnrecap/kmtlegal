@@ -40,11 +40,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:seed": "prisma db seed",
-    "stitch:assets": "node scripts/localize-stitch-assets.mjs",
-    "stitch:generate": "node scripts/generate-stitch-clone.mjs",
-    "stitch:screenshots": "node scripts/capture-stitch-screenshots.mjs",
-    "stitch:compare": "python scripts/compare-stitch-screenshots.py",
-    "product:screenshots": "node scripts/capture-product-system-screenshots.mjs"
+    "stitch:assets": "node scripts/localize-stitch-assets.mjs"
   },
   "dependencies": {
     "@fontsource/ibm-plex-sans-arabic": "^5.2.9",

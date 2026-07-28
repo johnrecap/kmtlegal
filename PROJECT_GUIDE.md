@@ -9,13 +9,20 @@ For a current-state PRD and external model review brief, use `docs/KMT_LEGAL_CUR
 
 ## Current Status
 
-- `PLAN-00` through `PLAN-34` are implemented as code, tests, plans, or handoff artifacts where local infrastructure allows. `PLAN-35` is active through its Governance local lane: T082–T090 are locally verified, all nineteen admin routes are executable, and T091 remains open for disposable-database/authenticated-browser acceptance.
+- `PLAN-39` is locally verified. Contact inquiries create privacy-safe alerts for active authorized readers; `/portal`, `/product-system`, and `/stitch-clone` are retired runtime families; `/client` and login are bilingual and use the saved client locale.
+- `PLAN-35` through `PLAN-39` still have separately recorded database, authenticated-browser, deployment, or live evidence gates. See `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md` before making a production-readiness claim.
 - The public `/privacy` and `/ar/privacy` routes provide a bilingual, responsive privacy and job-applicant notice covering the verified Meta recruitment intake, email CV flow, website forms, client services, privacy rights, retention criteria, Meta processing, and first-party analytics boundaries.
 - `PLAN-04` still needs a real PostgreSQL runtime check: run migrations and seed against a running `DATABASE_URL`, then rerun seed to verify idempotency.
 - DB-backed E2E flows need PostgreSQL plus seed data before they can run end to end.
 - PLAN-34 makes Paymob the prepared primary provider, keeps PayTabs disabled standby, leaves paid booking disabled, adds expiring minimized receipts, PostgreSQL rate limiting, async scrypt, required production ClamAV scanning, optional privacy-safe Sentry, locale/error/accessibility/image hardening, and behavior-preserving module decomposition. DB-backed/provider/live deployment evidence remains a release gate.
 
 ## Recent Changes
+
+- 2026-07-28 - Implemented PLAN-39 site cleanup, contact alerts, and client localization.
+  - Changed: permission-based contact bell alerts, true branded bilingual 404 handling, canonical client profile/preferences APIs, complete Arabic/English client and login copy, signed booking-locale inheritance, and an additive consultation-locale migration.
+  - Removed: runtime `/portal`, `/product-system`, and `/stitch-clone` pages plus clone/product-only commands and tests.
+  - Preserved: offline Stitch source exports and the `/stitch-assets` files used by real product pages.
+  - Verification: Prisma validation/generation, typecheck, lint, 437 tests, guarded production build, 46 smoke browser checks, 9 retired-route/404 checks, and bilingual login browser coverage passed without contacting a database.
 
 - 2026-07-22 - Implemented the PLAN-35 Governance local lane.
   - Changed: exact-Super role-permission service/APIs/page, grouped Arabic matrix, safe admin-user DTO selectors, delegated permission ceilings, optimistic serializable user updates, atomic session revocation/audit, final-Super protection, and active user/role checks at login and session resolution.
@@ -90,10 +97,11 @@ Open:
 - Public site: `http://localhost:3000/`
 - Booking: `http://localhost:3000/book-consultation`
 - Login: `http://localhost:3000/login`
-- Client portal: `http://localhost:3000/portal`
+- Client portal: `http://localhost:3000/client`
 - Admin: `http://localhost:3000/admin`
-- Product system: `http://localhost:3000/product-system`
-- Stitch clone: `http://localhost:3000/stitch-clone/home`
+
+Retired `/portal`, `/product-system`, and `/stitch-clone` URLs intentionally return the branded
+404. The Stitch source export is an offline archive, not a local route.
 
 ## Quality Gates
 

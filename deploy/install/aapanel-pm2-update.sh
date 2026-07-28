@@ -24,7 +24,9 @@ PUBLIC_CACHE_POLICY_ENABLED="${PUBLIC_CACHE_POLICY_ENABLED:-true}"
 PUBLIC_CACHE_POLICY_INCLUDE="${PUBLIC_CACHE_POLICY_INCLUDE:-}"
 PUBLIC_NGINX_VHOST_FILES="${PUBLIC_NGINX_VHOST_FILES:-}"
 PUBLIC_CACHEABLE_VERIFY_PATHS="${PUBLIC_CACHEABLE_VERIFY_PATHS:-/ /services /team /book-consultation /ar /ar/services}"
-SENSITIVE_CACHE_VERIFY_PATHS="${SENSITIVE_CACHE_VERIFY_PATHS:-/api/health /api/auth/me /admin /client /portal /login /install}"
+SENSITIVE_CACHE_VERIFY_PATHS="${SENSITIVE_CACHE_VERIFY_PATHS:-/api/health /api/auth/me /admin /client /login /install}"
+RETIRED_ROUTE_VERIFY_PATHS="${RETIRED_ROUTE_VERIFY_PATHS:-/portal /portal/cases /product-system /stitch-clone/home}"
+PRESERVED_ASSET_VERIFY_PATH="${PRESERVED_ASSET_VERIFY_PATH:-/stitch-assets/ff4ca4cf707aef0c.png}"
 NGINX_RELOAD_AFTER_CACHE_PURGE="${NGINX_RELOAD_AFTER_CACHE_PURGE:-true}"
 NEXT_BIN="${NEXT_BIN:-${APP_DIR}/node_modules/next/dist/bin/next}"
 
@@ -503,12 +505,14 @@ install_public_cache_policy() {
 }
 
 run_public_origin_verify_once() {
-  APP_ORIGIN="${APP_ORIGIN}" PORT="${PORT}" PUBLIC_VERIFY_PATHS="${PUBLIC_VERIFY_PATHS}" PUBLIC_CACHEABLE_VERIFY_PATHS="${PUBLIC_CACHEABLE_VERIFY_PATHS}" SENSITIVE_CACHE_VERIFY_PATHS="${SENSITIVE_CACHE_VERIFY_PATHS}" node <<'NODE'
+  APP_ORIGIN="${APP_ORIGIN}" PORT="${PORT}" PUBLIC_VERIFY_PATHS="${PUBLIC_VERIFY_PATHS}" PUBLIC_CACHEABLE_VERIFY_PATHS="${PUBLIC_CACHEABLE_VERIFY_PATHS}" SENSITIVE_CACHE_VERIFY_PATHS="${SENSITIVE_CACHE_VERIFY_PATHS}" RETIRED_ROUTE_VERIFY_PATHS="${RETIRED_ROUTE_VERIFY_PATHS}" PRESERVED_ASSET_VERIFY_PATH="${PRESERVED_ASSET_VERIFY_PATH}" node <<'NODE'
 const origin = process.env.APP_ORIGIN.replace(/\/+$/, "");
 const port = process.env.PORT || "3000";
 const paths = (process.env.PUBLIC_VERIFY_PATHS || "/media /contact").split(/\s+/).filter(Boolean);
 const publicCacheablePaths = (process.env.PUBLIC_CACHEABLE_VERIFY_PATHS || "/").split(/\s+/).filter(Boolean);
-const sensitiveCachePaths = (process.env.SENSITIVE_CACHE_VERIFY_PATHS || "/api/health /admin /client /portal /login").split(/\s+/).filter(Boolean);
+const sensitiveCachePaths = (process.env.SENSITIVE_CACHE_VERIFY_PATHS || "/api/health /admin /client /login").split(/\s+/).filter(Boolean);
+const retiredRoutePaths = (process.env.RETIRED_ROUTE_VERIFY_PATHS || "/portal /product-system /stitch-clone").split(/\s+/).filter(Boolean);
+const preservedAssetPath = process.env.PRESERVED_ASSET_VERIFY_PATH || "/stitch-assets/ff4ca4cf707aef0c.png";
 
 function extractBuildId(html) {
   return html.match(/\\"buildId\\":\\"([^\\"]+)/)?.[1] || html.match(/"buildId":"([^"]+)/)?.[1] || null;
@@ -678,6 +682,30 @@ async function assertStaticAsset(url) {
     const headers = await getHeaders(`${origin}${path}`);
     assertSensitiveNoStoreHeaders(path, headers);
   }
+
+  for (const path of retiredRoutePaths) {
+    const response = await fetch(`${origin}${path}`, {
+      redirect: "manual",
+      headers: { "Cache-Control": "no-cache", Pragma: "no-cache" }
+    });
+    const html = await response.text();
+    if (response.status !== 404) {
+      throw new Error(`${path}: retired route returned ${response.status}, expected 404`);
+    }
+    if (!html.includes("404") || !html.includes("KMT")) {
+      throw new Error(`${path}: retired route did not return the branded 404 page`);
+    }
+    console.log(`${path}: retired route returns branded 404`);
+  }
+
+  const preservedAsset = await fetch(`${origin}${preservedAssetPath}`, {
+    method: "HEAD",
+    headers: { "Cache-Control": "no-cache", Pragma: "no-cache" }
+  });
+  if (!preservedAsset.ok || !/^image\//i.test(preservedAsset.headers.get("content-type") || "")) {
+    throw new Error(`${preservedAssetPath}: preserved product image is unavailable or has an invalid content type`);
+  }
+  console.log(`${preservedAssetPath}: preserved product image is available`);
 })().catch((error) => {
   console.error(error.message);
   process.exit(1);

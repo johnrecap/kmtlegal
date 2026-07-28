@@ -1,16 +1,17 @@
 <!--
 Sync Impact Report
-- Version change: template -> 1.0.0
+- Version change: 1.0.0 -> 1.1.0
 - Added principles:
   - I. Spec Kit Before Code
   - II. Existing-System and End-to-End Integrity
   - III. Authorization, Contract, and Data Correctness
   - IV. Evidence-Backed Quality and Release Truth
   - V. Arabic-First Accessible Product Design
-- Added sections:
-  - Platform Constraints
-  - Delivery Workflow and Conflict Control
-- Removed sections: none; template placeholders were replaced.
+- Modified guidance:
+  - Platform Constraints: retired routable Stitch clone pages while preserving the
+    read-only source archive and product-consumed localized assets.
+- Added sections: none.
+- Removed sections: none.
 - Templates requiring updates:
   - ✅ .specify/templates/spec-template.md
   - ✅ .specify/templates/plan-template.md
@@ -19,6 +20,8 @@ Sync Impact Report
 - Runtime guidance reviewed:
   - ✅ AGENTS.md
   - ✅ README.md
+- Runtime guidance requiring updates:
+  - ✅ AGENTS.md
 - Follow-up TODOs: none.
 -->
 # KMT Legal Platform Constitution
@@ -97,9 +100,10 @@ MUST NOT be added without explicit approval and a documented gap in existing pri
 - Product planning remains under `specs/kmt-legal-platform/`. Feature-specific Spec Kit folders
   MAY live beneath it, while the master `tasks.md` and implementation status link to the active
   feature instead of duplicating its task list.
-- `src/app/stitch-clone/*` and `stitch_kmt_legal_platform_ui_system/` remain isolated,
-  read-only visual inputs. Product components, dynamic data, and backend calls MUST NOT be wired
-  into the clone.
+- `stitch_kmt_legal_platform_ui_system/` remains an isolated, read-only design archive and
+  MUST NOT be exposed as a runtime route. Localized assets already consumed by the product MAY
+  remain under `public/stitch-assets/`; product code MUST NOT import runtime clone components,
+  dynamic clone data, or clone-only backend calls.
 - Existing design tokens, components, API helpers, audit utilities, permission helpers, and
   message/localization utilities MUST be reused before adding equivalents.
 - Real secrets and real client data MUST NOT be committed, copied into fixtures, logged, or
@@ -138,4 +142,4 @@ MINOR versions add or materially expand principles, and PATCH versions clarify w
 changing obligations. Every specification, plan, checklist, task set, review, and pull request
 MUST include a constitution compliance check.
 
-**Version**: 1.0.0 | **Ratified**: 2026-07-22 | **Last Amended**: 2026-07-22
+**Version**: 1.1.0 | **Ratified**: 2026-07-22 | **Last Amended**: 2026-07-28

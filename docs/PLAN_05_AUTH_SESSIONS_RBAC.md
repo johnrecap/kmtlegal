@@ -1,5 +1,8 @@
 # PLAN-05 Auth, Sessions, Roles & Permissions
 
+> PLAN-39 superseding note (2026-07-28): `/client` is the only client route family. `/portal`
+> and every nested legacy path now return the branded 404 and are not protected-login aliases.
+
 Last updated: 2026-06-24
 
 Status: implemented for MVP auth foundation and protected route entry points; DB-backed runtime smoke remains dependent on PLAN-04 PostgreSQL availability.

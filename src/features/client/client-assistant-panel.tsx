@@ -5,21 +5,19 @@ import { KmtBrandLogo } from "@/components/brand";
 import { ClientPortalPanel, ClientPortalRow, clientPortalPrimaryActionClass, clientPortalSecondaryActionClass } from "@/components/layout";
 import { Badge, Button, MaterialSymbol, Textarea } from "@/components/ui";
 import {
-  appointmentStatusLabels,
-  caseStatusLabels,
-  documentCategoryLabels,
-  documentStatusLabels,
   formatBytes,
   formatDate,
   formatDateTime,
-  formatMoney,
-  labelFrom,
-  modeLabels,
-  paymentStatusLabels,
-  priorityLabels
+  formatMoney
 } from "@/lib/legal-format";
 import { cn } from "@/lib/cn";
 import { ClientTeamChatPanel } from "./client-team-chat-panel";
+import {
+  clientErrorMessage,
+  getClientContent,
+  type ClientContent,
+  type ClientLocale
+} from "@/content/client-content";
 
 type AssistantAppointment = {
   id: string;
@@ -96,54 +94,27 @@ type ChatMessage = {
 type ApiBody = {
   data?: AssistantResponse;
   error?: {
-    message?: string;
+    code?: string;
   };
 };
 
-const assistantCopy = {
-  title: "المساعد التنظيمي",
-  description: "اسأل عن البيانات التنظيمية الظاهرة في حسابك فقط: المواعيد، الجلسات، القضايا، المستندات، والمدفوعات.",
-  assistantName: "KMT Client Assistant",
-  status: "تنظيم فقط",
-  scope: "بيانات حسابك فقط. بدون رأي قانوني.",
-  placeholder: "مثال: موعد جلستي إمتى؟",
-  inputLabel: "رسالتك",
-  send: "إرسال",
-  talkToTeam: "التحدث مع الفريق",
-  typing: "المساعد يراجع بيانات حسابك",
-  noData: "لا توجد بيانات ظاهرة لهذا السؤال الآن.",
-  requestError: "تعذر تنفيذ الطلب الآن.",
-  networkError: "لا يمكن الوصول إلى الخادم الآن.",
-  initialMessage:
-    "أنا مساعد تنظيمي داخل بوابة العميل. أستطيع عرض المواعيد، جلسات القضايا، القضايا، المستندات المرئية، والمدفوعات الظاهرة في حسابك فقط. لا أقدم رأيًا قانونيًا."
-} as const;
-
-const quickPrompts = [
-  { label: "مواعيدي القادمة", message: "ما هي مواعيدي القادمة؟", icon: "event" },
-  { label: "جلسات القضايا", message: "ما هي جلسات القضايا الظاهرة لي؟", icon: "gavel" },
-  { label: "قضاياي", message: "ما هي القضايا المفتوحة في حسابي؟", icon: "folder_open" },
-  { label: "مستنداتي", message: "هل توجد مستندات جديدة أو مرئية لي؟", icon: "description" },
-  { label: "مدفوعاتي", message: "ما هي المدفوعات الظاهرة في بوابتي؟", icon: "payments" }
-] as const;
-
-const initialAssistantMessage: ChatMessage = {
-  id: "initial",
-  role: "assistant",
-  text: assistantCopy.initialMessage
-};
-
-async function parseAssistantResponse(response: Response) {
+async function parseAssistantResponse(response: Response, locale: ClientLocale, copy: ClientContent) {
   const body = (await response.json().catch(() => ({}))) as ApiBody;
   if (!response.ok) {
-    return { error: body.error?.message ?? assistantCopy.requestError };
+    return { error: clientErrorMessage(locale, body.error?.code, copy.assistant.requestError) };
   }
   return { data: body.data };
 }
 
-export function ClientAssistantPanel() {
+export function ClientAssistantPanel({ locale }: { locale: ClientLocale }) {
+  const copy = getClientContent(locale);
   const logEndRef = useRef<HTMLDivElement | null>(null);
   const [surface, setSurface] = useState<"assistant" | "team">("assistant");
-  const [messages, setMessages] = useState<ChatMessage[]>([initialAssistantMessage]);
+  const [messages, setMessages] = useState<ChatMessage[]>([{
+    id: "initial",
+    role: "assistant",
+    text: copy.assistant.intro
+  }]);
   const [message, setMessage] = useState("");
   const [isBusy, setIsBusy] = useState(false);
 
@@ -169,11 +140,11 @@ export function ClientAssistantPanel() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          locale: "ar",
+          locale,
           message: trimmed
         })
       });
-      const result = await parseAssistantResponse(response);
+      const result = await parseAssistantResponse(response, locale, copy);
       if (result.error) {
         appendAssistantError(result.error);
         return;
@@ -184,12 +155,12 @@ export function ClientAssistantPanel() {
         {
           id: `assistant-${Date.now()}`,
           role: "assistant",
-          text: data.message ?? assistantCopy.noData,
+          text: data.message ?? copy.assistant.noData,
           data
         }
       ]);
     } catch {
-      appendAssistantError(assistantCopy.networkError);
+      appendAssistantError(copy.assistant.networkError);
     } finally {
       setIsBusy(false);
     }
@@ -201,29 +172,29 @@ export function ClientAssistantPanel() {
   }
 
   if (surface === "team") {
-    return <ClientTeamChatPanel onBack={() => setSurface("assistant")} />;
+    return <ClientTeamChatPanel locale={locale} onBack={() => setSurface("assistant")} />;
   }
 
   return (
-    <ClientPortalPanel description={assistantCopy.description} title={assistantCopy.title}>
+    <ClientPortalPanel description={copy.assistant.description} title={copy.assistant.title}>
       <div
         className="overflow-hidden rounded-lg border border-kmt-gold/20 bg-[linear-gradient(145deg,#17110a_0%,#0b0c0e_52%,#050505_100%)]"
         data-testid="client-assistant-shell"
       >
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 bg-black/25 px-4 py-4">
           <div className="flex min-w-0 items-center gap-3">
-            <KmtBrandLogo label={assistantCopy.assistantName} shape="circle" size="md" variant="mark" />
+            <KmtBrandLogo label={copy.assistant.assistantName} shape="circle" size="md" variant="mark" />
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-white">{assistantCopy.assistantName}</p>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-kmt-gold">{assistantCopy.status}</p>
+              <p className="truncate text-sm font-semibold text-white">{copy.assistant.assistantName}</p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-kmt-gold">{copy.assistant.status}</p>
             </div>
           </div>
-          <p className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs leading-5 text-slate-300">{assistantCopy.scope}</p>
+          <p className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs leading-5 text-slate-300">{copy.assistant.scope}</p>
         </header>
 
         <div className="border-b border-white/10 bg-black/15 px-4 py-3">
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-            {quickPrompts.map((prompt) => (
+            {copy.assistant.quickActions.map((prompt) => (
               <Button
                 key={prompt.message}
                 className={cn(clientPortalSecondaryActionClass, "min-h-9 shrink-0 rounded-full border-kmt-gold/25 bg-white/[0.03] px-3 text-sm text-amber-100 hover:bg-kmt-gold hover:text-[#120d07]")}
@@ -246,16 +217,16 @@ export function ClientAssistantPanel() {
               onClick={() => setSurface("team")}
             >
               <MaterialSymbol className="text-base" name="forum" />
-              {assistantCopy.talkToTeam}
+              {copy.assistant.talkToTeam}
             </Button>
           </div>
         </div>
 
         <div aria-busy={isBusy ? "true" : "false"} className="max-h-[36rem] space-y-4 overflow-y-auto px-4 py-5" data-testid="client-assistant-log" role="log">
           {messages.map((item) => (
-            <ClientChatBubble key={item.id} item={item} />
+            <ClientChatBubble copy={copy} item={item} key={item.id} locale={locale} />
           ))}
-          {isBusy ? <TypingIndicator label={assistantCopy.typing} /> : null}
+          {isBusy ? <TypingIndicator label={copy.assistant.typing} /> : null}
           <div ref={logEndRef} />
         </div>
 
@@ -263,23 +234,23 @@ export function ClientAssistantPanel() {
           <div className="min-w-0 flex-1 [&_label]:sr-only">
             <Textarea
               className="min-h-12 resize-none rounded-2xl border-kmt-gold/25 bg-black/35 py-3 text-white placeholder:text-amber-100/45 focus:border-kmt-gold focus:ring-kmt-gold/25"
-              label={assistantCopy.inputLabel}
+              label={copy.assistant.inputLabel}
               name="message"
-              placeholder={assistantCopy.placeholder}
+              placeholder={copy.assistant.placeholder}
               value={message}
               onChange={(event) => setMessage(event.target.value)}
               required
             />
           </div>
           <Button
-            aria-label={assistantCopy.send}
+            aria-label={copy.assistant.send}
             className={cn(clientPortalPrimaryActionClass, "h-12 w-12 shrink-0 rounded-full px-0")}
             disabled={!message.trim()}
             loading={isBusy}
             type="submit"
           >
             <MaterialSymbol className="text-xl" name="send" />
-            <span className="sr-only">{assistantCopy.send}</span>
+            <span className="sr-only">{copy.assistant.send}</span>
           </Button>
         </form>
       </div>
@@ -287,7 +258,7 @@ export function ClientAssistantPanel() {
   );
 }
 
-function ClientChatBubble({ item }: { item: ChatMessage }) {
+function ClientChatBubble({ item, copy, locale }: { item: ChatMessage; copy: ClientContent; locale: ClientLocale }) {
   const isUser = item.role === "user";
 
   return (
@@ -311,7 +282,7 @@ function ClientChatBubble({ item }: { item: ChatMessage }) {
       >
         <p>{item.text}</p>
         {item.data?.disclaimer ? <p className="mt-2 border-t border-white/10 pt-2 text-xs text-amber-100">{item.data.disclaimer}</p> : null}
-        <AssistantData response={item.data} />
+        <AssistantData copy={copy} locale={locale} response={item.data} />
       </div>
     </div>
   );
@@ -333,88 +304,88 @@ function TypingIndicator({ label }: { label: string }) {
   );
 }
 
-function AssistantData({ response }: { response?: AssistantResponse }) {
+function AssistantData({ response, copy, locale }: { response?: AssistantResponse; copy: ClientContent; locale: ClientLocale }) {
   if (!response) return null;
 
   return (
     <div className="mt-3 space-y-2">
-      {response.appointments?.map((appointment) => <AppointmentCard key={appointment.id} appointment={appointment} />)}
-      {response.sessions?.map((session) => <SessionCard key={session.id} session={session} />)}
-      {response.cases?.map((legalCase) => <CaseCard key={legalCase.id} legalCase={legalCase} />)}
-      {response.documents?.map((document) => <DocumentCard key={document.id} document={document} />)}
-      {response.payments?.map((payment) => <PaymentCard key={payment.id} payment={payment} />)}
+      {response.appointments?.map((appointment) => <AppointmentCard copy={copy} key={appointment.id} locale={locale} appointment={appointment} />)}
+      {response.sessions?.map((session) => <SessionCard copy={copy} key={session.id} locale={locale} session={session} />)}
+      {response.cases?.map((legalCase) => <CaseCard copy={copy} key={legalCase.id} locale={locale} legalCase={legalCase} />)}
+      {response.documents?.map((document) => <DocumentCard copy={copy} key={document.id} locale={locale} document={document} />)}
+      {response.payments?.map((payment) => <PaymentCard copy={copy} key={payment.id} locale={locale} payment={payment} />)}
     </div>
   );
 }
 
-function AppointmentCard({ appointment }: { appointment: AssistantAppointment }) {
+function AppointmentCard({ appointment, copy, locale }: { appointment: AssistantAppointment; copy: ClientContent; locale: ClientLocale }) {
   return (
     <ClientPortalRow>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-semibold text-white">{appointment.title}</p>
-        <Badge tone="pending">{labelFrom(appointmentStatusLabels, appointment.status)}</Badge>
+        <Badge tone="pending">{copy.statuses.appointment[appointment.status as keyof typeof copy.statuses.appointment] ?? copy.common.unknown}</Badge>
       </div>
-      <p className="mt-1 text-sm text-slate-300">{formatDateTime(appointment.startsAt)}</p>
+      <p className="mt-1 text-sm text-slate-300">{formatDateTime(appointment.startsAt, locale)}</p>
       <p className="mt-1 text-xs text-slate-400">
-        {labelFrom(modeLabels, appointment.mode)} · {appointment.lawyer?.name ?? "غير محدد"}
+        {copy.statuses.mode[appointment.mode as keyof typeof copy.statuses.mode] ?? copy.common.unknown} · {appointment.lawyer?.name ?? copy.common.unknown}
       </p>
       {appointment.case ? <p className="mt-1 text-xs text-amber-100">{appointment.case.internalFileNumber} · {appointment.case.title}</p> : null}
     </ClientPortalRow>
   );
 }
 
-function SessionCard({ session }: { session: AssistantSession }) {
+function SessionCard({ session, copy, locale }: { session: AssistantSession; copy: ClientContent; locale: ClientLocale }) {
   return (
     <ClientPortalRow>
       <p className="font-semibold text-white">{session.case.internalFileNumber} · {session.case.title}</p>
-      <p className="mt-1 text-sm text-slate-300">{formatDateTime(session.sessionDate)}</p>
-      <p className="mt-1 text-xs text-slate-400">{session.courtName ?? "محكمة غير محددة"}</p>
-      {session.nextSessionDate ? <p className="mt-1 text-xs text-amber-100">الجلسة التالية: {formatDateTime(session.nextSessionDate)}</p> : null}
-      {session.decision ? <p className="mt-1 text-xs text-slate-300">قرار الجلسة: {session.decision}</p> : null}
+      <p className="mt-1 text-sm text-slate-300">{formatDateTime(session.sessionDate, locale)}</p>
+      <p className="mt-1 text-xs text-slate-400">{session.courtName ?? copy.common.courtUnknown}</p>
+      {session.nextSessionDate ? <p className="mt-1 text-xs text-amber-100">{copy.common.nextSession}: {formatDateTime(session.nextSessionDate, locale)}</p> : null}
+      {session.decision ? <p className="mt-1 text-xs text-slate-300">{copy.common.sessionDecision}: {session.decision}</p> : null}
     </ClientPortalRow>
   );
 }
 
-function CaseCard({ legalCase }: { legalCase: AssistantCase }) {
+function CaseCard({ legalCase, copy, locale }: { legalCase: AssistantCase; copy: ClientContent; locale: ClientLocale }) {
   return (
     <ClientPortalRow>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-semibold text-white">{legalCase.internalFileNumber} · {legalCase.title}</p>
-        <Badge tone="active">{labelFrom(caseStatusLabels, legalCase.status)}</Badge>
+        <Badge tone="active">{copy.statuses.case[legalCase.status as keyof typeof copy.statuses.case] ?? copy.common.unknown}</Badge>
       </div>
       <p className="mt-1 text-xs text-slate-400">
-        الأولوية: {labelFrom(priorityLabels, legalCase.priority)} · المحامي: {legalCase.assignedLawyer?.name ?? "غير محدد"}
+        {copy.assistant.priority}: {copy.statuses.priority[legalCase.priority as keyof typeof copy.statuses.priority] ?? copy.common.unknown} · {copy.assistant.lawyer}: {legalCase.assignedLawyer?.name ?? copy.common.unknown}
       </p>
-      <p className="mt-1 text-xs text-amber-100">الجلسة القادمة: {formatDateTime(legalCase.nextSessionAt)}</p>
+      <p className="mt-1 text-xs text-amber-100">{copy.assistant.nextSession}: {formatDateTime(legalCase.nextSessionAt, locale)}</p>
     </ClientPortalRow>
   );
 }
 
-function DocumentCard({ document }: { document: AssistantDocument }) {
+function DocumentCard({ document, copy, locale }: { document: AssistantDocument; copy: ClientContent; locale: ClientLocale }) {
   return (
     <ClientPortalRow>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-semibold text-white">{document.fileName}</p>
-        <Badge tone="pending">{labelFrom(documentStatusLabels, document.status)}</Badge>
+        <Badge tone="pending">{copy.statuses.document[document.status as keyof typeof copy.statuses.document] ?? copy.common.unknown}</Badge>
       </div>
       <p className="mt-1 text-xs text-slate-400">
-        {labelFrom(documentCategoryLabels, document.category)} · {formatBytes(document.fileSize)} · {formatDate(document.createdAt)}
+        {copy.statuses.documentCategory[document.category as keyof typeof copy.statuses.documentCategory] ?? copy.common.unknown} · {formatBytes(document.fileSize)} · {formatDate(document.createdAt, locale)}
       </p>
       {document.case ? <p className="mt-1 text-xs text-amber-100">{document.case.internalFileNumber} · {document.case.title}</p> : null}
     </ClientPortalRow>
   );
 }
 
-function PaymentCard({ payment }: { payment: AssistantPayment }) {
+function PaymentCard({ payment, copy, locale }: { payment: AssistantPayment; copy: ClientContent; locale: ClientLocale }) {
   return (
     <ClientPortalRow>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="font-semibold text-white">{payment.invoiceNumber}</p>
-        <Badge tone="pending">{labelFrom(paymentStatusLabels, payment.status)}</Badge>
+        <Badge tone="pending">{copy.statuses.payment[payment.status as keyof typeof copy.statuses.payment] ?? copy.common.unknown}</Badge>
       </div>
-      <p className="mt-1 text-sm text-slate-300">{formatMoney(payment.amount, payment.currency)}</p>
+      <p className="mt-1 text-sm text-slate-300">{formatMoney(payment.amount, payment.currency, locale)}</p>
       <p className="mt-1 text-xs text-slate-400">
-        تاريخ الإصدار: {formatDate(payment.issueDate)} · الاستحقاق: {formatDate(payment.dueDate)}
+        {copy.common.issueDate}: {formatDate(payment.issueDate, locale)} · {copy.common.dueDate}: {formatDate(payment.dueDate, locale)}
       </p>
       {payment.case ? <p className="mt-1 text-xs text-amber-100">{payment.case.internalFileNumber} · {payment.case.title}</p> : null}
     </ClientPortalRow>

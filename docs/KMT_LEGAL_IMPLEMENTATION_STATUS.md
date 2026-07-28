@@ -1,8 +1,12 @@
 # KMT Legal Implementation Status
 
-Last updated: 2026-07-22
+Last updated: 2026-07-28
 
-This is the main tracking file for 38 Spec Kit plan IDs (`PLAN-00` through `PLAN-37`).
+This is the main tracking file for 40 Spec Kit plan IDs (`PLAN-00` through `PLAN-39`).
+
+Highest evidenced PLAN-39 state: `Local-Verified`
+
+Highest evidenced PLAN-38 state: `Local-Verified`
 
 Highest evidenced PLAN-37 state: `Local-Verified`
 
@@ -10,17 +14,18 @@ Highest evidenced PLAN-36 state: `Local-Verified`
 
 Highest evidenced PLAN-35 state: `Local-Verified`
 
-PLAN-35 and PLAN-36 remain `Local-Verified`; none of their deferred database,
-authenticated-browser, deploy, or live evidence has been reclassified by PLAN-37.
+PLAN-35 through PLAN-39 retain their separately recorded evidence states. PLAN-39 does not
+reclassify any deferred database, authenticated-browser, deploy, or live evidence from an earlier
+plan.
 
 ## Summary
 
-Total plans: 38
+Total plans: 40
 
 | Status | Count |
 | --- | ---: |
 | Done | 27 |
-| In progress / partial / planned | 11 |
+| In progress / partial / planned | 13 |
 | Not started | 0 |
 
 ## Current Execution State
@@ -29,10 +34,10 @@ Total plans: 38
 | --- | --- | --- | --- |
 | PLAN-00 Governance & Source of Truth | Done | `AGENTS.md`, governance doc, source-of-truth rules, Stitch isolation rule. | Nothing blocking for this stage. |
 | PLAN-01 Next.js App Foundation | Done | Next.js App Router, TypeScript, Tailwind, ESLint, typecheck, build, Playwright, env example, package scripts. | Some future folders may expand during later feature slices. |
-| PLAN-02 Stitch Visual Clone | Done | 23 clone routes generated, screenshots captured, local fonts/icons/images fixed, per-screen visual diff reports, final acceptance files. | Future pixel-perfect pass needs references exported at the same target viewport. |
-| PLAN-03 Product Design System & Layout Shells | Done | Product tokens, UI primitives, public/admin/portal shells, RTL/accessibility states, routed `/product-system` showcase screens, component tests, screenshots. | Future feature slices will extend domain-specific components with real data. |
+| PLAN-02 Stitch Visual Clone | Done / runtime superseded by PLAN-39 | 23 clone screens, screenshots, visual reports, and original exports remain as offline design evidence. PLAN-39 removed the visitor-facing clone routes and their runtime commands. | The archived source is not a production route; any future visual comparison must use an isolated offline workflow. |
+| PLAN-03 Product Design System & Layout Shells | Done / showcase superseded by PLAN-39 | Product tokens, UI primitives, public/admin/client shells, RTL/accessibility states, component tests, and screenshots remain. PLAN-39 removed the visitor-facing `/product-system` showcase. | Future feature slices extend domain components through real product pages rather than a public showcase. |
 | PLAN-04 Database Schema, Prisma & Seeds | In progress / partial | Prisma 7/PostgreSQL config, schema, generated migration SQL, migration lock, deterministic readable Arabic seed script, role/permission seed data, demo legal data, production bootstrap split from local demo seed, backing file generation for demo document seeds, local PostgreSQL compose handoff, `db:validate`, `db:generate`, and seed contract tests passing. | Run `db:migrate`/`db:seed` twice against a running PostgreSQL `DATABASE_URL` through `npm run qa:db`; confirm seeded document download against private `UPLOADS_DIR`. |
-| PLAN-05 Auth, Sessions, Roles & Permissions | Done | Server-side session model, password hashing, secure cookie policy, RBAC helpers, object-scope helpers, login/logout/me handlers, login UI, admin/portal protected entry routes, middleware protection, server page guards, auth/route tests. PLAN-25 disables TOTP/Email OTP/staff 2FA reset active flows; staff sessions become active after password login while `STAFF_2FA_MODE=disabled`. | DB-backed browser smoke remains tied to PLAN-04 PostgreSQL runtime availability. Future Staff 2FA Rework is deferred. |
+| PLAN-05 Auth, Sessions, Roles & Permissions | Done | Server-side session model, password hashing, secure cookie policy, RBAC helpers, object-scope helpers, login/logout/me handlers, bilingual login UI, protected admin/client entry routes, middleware protection, server page guards, and auth/route tests. PLAN-39 removes all retired `/portal` auth behavior. PLAN-25 disables TOTP/Email OTP/staff 2FA reset active flows; staff sessions become active after password login while `STAFF_2FA_MODE=disabled`. | DB-backed browser smoke remains tied to PLAN-04 PostgreSQL runtime availability. Future Staff 2FA Rework is deferred. |
 | PLAN-06 Server Contracts, Validation, Errors & Audit Foundation | Done | Shared error shape, Zod validation helpers, requestId propagation, audit primitive, redaction, pagination/sort utilities, rate-limit hooks, disabled email/template abstraction, auth route validation/rate limits, tests. PLAN-34 upgrades production throttling to privacy-safe PostgreSQL counters. | Future SMTP activation requires a separate plan. |
 | PLAN-07 Document Storage & Upload Contract | Done | Private VPS filesystem storage helpers, generated file keys, 5MB allowlist, MIME/content validation, upload/download service contracts, protected routes, safe download headers, audit events, tests. | Runtime smoke needs real PostgreSQL and writable `UPLOADS_DIR`; UI wiring is delivered in PLAN-14/17. |
 | PLAN-08 AI Provider Gateway & Legal Guardrails | Done | Provider-agnostic gateway, mock/openrouter/openai-compatible/local/custom registry, deterministic mock tasks, OpenAI-compatible adapter, schema validation, review disclaimer, safety rejection, metadata logging, tests. | Real provider smoke waits for configured provider/model/API key; current MVP feature usage is server-side only. |
@@ -40,8 +45,8 @@ Total plans: 38
 | PLAN-10 Public Content, Media, Contact & Legal Pages | Done | Articles list/detail, anonymous case studies with disclaimers, read-only media wall, contact/branches page, contact API contract, terms page, and bilingual `/privacy` + `/ar/privacy` notices. The privacy notice now covers the verified Meta recruitment form and CV email flow, website/client data, access, retention criteria, rights, Meta processing, cookies/analytics boundaries, semantic navigation, responsive RTL, metadata, footer, and focused browser coverage. | Article and case-study list/detail routes are DB-backed through PLAN-20; the expanded privacy wording still needs final human legal review before production release. |
 | PLAN-11 Consultation Booking Flow | Done | Booking stepper, validation, public consultation API, rate limit hook, duplicate protection, AI organizer classification/summary, disabled/skipped email metadata, public audit metadata. | Runtime DB smoke needs migrated PostgreSQL; admin review/convert continues in PLAN-12. |
 | PLAN-12 Admin Consultation Review & Convert To Case | Done | Admin consultation queue/detail pages, list/detail/action APIs, assign/reject/convert service, linked client/case/optional appointment creation, permission checks, audit logs, contract tests. | DB-backed E2E waits for PLAN-04 PostgreSQL runtime. |
-| PLAN-13 Client Portal Core | Done | Real portal dashboard, own-case listing/detail, client-safe case content, portal ownership guards, profile linkage checks, tests. | DB-backed browser smoke waits for PLAN-04 PostgreSQL runtime. |
-| PLAN-14 Client Documents, Appointments, Payments & Profile | Done | Client document list/upload/download wiring, appointment list, read-only payment list, profile edit basics, portal navigation update, upload contract reuse, tests. | Runtime upload smoke waits for PostgreSQL plus writable private `UPLOADS_DIR`. |
+| PLAN-13 Client Portal Core | Done | Real `/client` dashboard, own-case listing/detail, client-safe case content, ownership guards, profile linkage checks, and tests. PLAN-39 removes the former `/portal` aliases. | DB-backed browser smoke waits for PLAN-04 PostgreSQL runtime. |
+| PLAN-14 Client Documents, Appointments, Payments & Profile | Done | Canonical `/client` document list/upload/download wiring, appointments, read-only payments, profile editing, navigation, upload contract reuse, and tests. PLAN-39 adds complete Arabic/English copy and saved client language. | Runtime upload and authenticated locale-persistence smoke wait for PostgreSQL plus writable private `UPLOADS_DIR`. |
 | PLAN-15 Admin Dashboard & Clients CRM | Done | Real `/admin` metrics and operational lists, `/admin/clients` CRM list/search/filter/sort/pagination, client detail, create/edit/assign/archive actions, client-scoped permissions, audit logs, protected APIs, contract tests. | DB-backed browser smoke waits for PLAN-04 PostgreSQL runtime. Canonical scope/DTO, role-aware command-center, contact queue, and partial-failure follow-up is owned by PLAN-35. |
 | PLAN-16 Admin Cases, Sessions & Calendar | Done | `/admin/cases` list/search/filter/sort/pagination, `/admin/cases/[caseId]` detail tabs, status update with confirmation/audit, session creation, `/admin/calendar` list/filter/create/reschedule flows, protected APIs, role-scope tests. | DB-backed browser smoke waits for PLAN-04 PostgreSQL runtime. Manual case create/core edit and concurrent appointment conflict follow-up is owned by PLAN-35. |
 | PLAN-17 Admin Tasks & Document Management | Done | `/admin/tasks` task board/list filters, task create/update/assign APIs, `/admin/documents` list/upload/status/delete workflow, case detail task/document tabs, PLAN-07 upload/download reuse, audit logs, permission tests. | DB-backed authenticated browser smoke waits for PostgreSQL and writable `UPLOADS_DIR`. |
@@ -65,6 +70,29 @@ Total plans: 38
 | PLAN-35 Admin Operations Remediation | In progress / `Local-Verified`; database, authenticated-browser, and live acceptance deferred | Local product lanes through T111 plus Phase 9 contract, harness, source-of-truth, release-evidence, local-gate, analyze/converge, and repository handoff T113–T122/T126–T128 are complete. The current API inventory covers 23 method/path rows, the release ledger distinguishes pass/block/skip, and Converge appended no new task. | T016/G35-4D, T028, the DB-backed part of T039, T042's authenticated role cells, T052, T068, T081, T091, T101, T112, and T123–T125 remain open. No production database was contacted or may be used for this evidence. |
 | PLAN-36 Consultation Outcome Lifecycle | In progress / `Local-Verified`; database, authenticated-browser, deploy, and live acceptance deferred | Added the six-state consultation outcome lifecycle, additive Prisma migration, canonical primary-booking selection, optimistic versioning, atomic manual outcome/correction and missed-request reopen APIs, lifecycle guards for legacy consultation actions, idempotent 60-second maintenance classification, deduplicated notifications, dashboard counts, calendar effective states, seven shareable RTL tabs, mobile cards, Cairo time formatting and calendar boundaries, safe localized result/reopen forms and fallbacks, explicit stale-serialization mapping, full primary-client conflict checks, contract-complete DTOs, and hardened aaPanel backup/reconcile/two-process PM2 stability handoff. Local no-DB verification passed all 404 tests across 59 files, focused 72/72 PLAN-36 tests across 11 files, Prisma validate/generate, typecheck, lint, secret scan, 72-page guarded build, shell/Node syntax checks, collection of four gated Playwright flows including stale-version recovery/correction coverage, and a final zero-finding Converge pass. | Apply the additive migration and run reconciliation on an authorized staging/disposable PostgreSQL database, execute the authenticated desktop/mobile mutation flows with synthetic fixtures, deploy through the aaPanel/PM2 script, verify both PM2 processes beyond one worker cycle, complete non-mutating live acceptance, then rotate the previously shared admin credential and revoke old sessions. No local or production database was contacted for PLAN-36 verification. |
 | PLAN-37 Consultation Overdue-Unbooked Recovery | In progress / `Local-Verified`; authenticated-browser, staging/server reconciliation, deploy, and live acceptance deferred | Split active no-primary requests at an exact 72-hour boundary while keeping them `PENDING`, added the eighth shareable RTL queue and one captured `asOf`, exposed operational timing, added dual-permission atomic schedule-and-assign with client/lawyer conflict checks and optimistic versioning, repaired converted/rejected legacy no-primary states in the existing worker, added deduplicated overdue alerts and dashboard count, corrected the creation-date label, and added Cairo overdue presentation plus responsive recovery UI. No Prisma schema or migration changed. Local no-DB verification passed 75 focused tests across 9 files, all 424 tests across 60 files, typecheck, warning-free lint, secret scan, the guarded 72-page build, and Playwright collection/execution with all 3 authenticated scenarios safely skipped because disposable credentials/fixtures were absent. | Run the existing one-shot reconciliation only after a verified server/staging backup, validate representative existing rows and count consistency without production fixtures, execute the three authenticated desktop/mobile scenarios on disposable data, deploy through the existing aaPanel/PM2 script, and verify app/worker stability beyond one 60-second cycle. No local or production database was contacted for PLAN-37 verification. |
+| PLAN-38 Production Lockfile Repair | In progress / `Local-Verified`; deploy and live acceptance deferred | Repaired the committed npm lockfile with npm-generated metadata only and preserved application behavior. | Deploy the pushed revision and archive ready health and canonical-domain sitemap evidence before closing PLAN-38. |
+| PLAN-39 Site Cleanup, Contact Alerts & Client Localization | In progress / `Local-Verified`; database, authenticated-browser, deploy, and live acceptance deferred | Contact messages now remain durable while privacy-safe bell alerts reach only active authorized readers; retired `/portal`, `/product-system`, and `/stitch-clone` runtime routes now produce the branded bilingual 404; `/client` and login are Arabic/English with a self-owned saved locale; booking/account setup carries a signed durable locale; the profile API is canonical under `/api/client`; obsolete runtime tools/tests were removed while the offline design archive and used `/stitch-assets` remain. Local evidence passed Prisma validation/generation, typecheck, lint, 437 tests, guarded production build, 46 smoke browser checks, 9 retired-route/404 checks, and the bilingual login browser check. | Apply the additive consultation-locale migration to an authorized staging/disposable database, run the authenticated client persistence plus contact-recipient browser fixtures, deploy through aaPanel/PM2, then complete read-only live health/404/client/asset evidence. No local or production database was contacted for PLAN-39 verification. |
+
+## Latest PLAN-39 Site Cleanup, Contact Alerts, And Client Localization
+
+- A saved visitor message is still the primary outcome. Alert creation is isolated, generic, and
+  best effort, so an alert outage cannot lose the inquiry or expose its text, email, or phone in
+  the bell.
+- Active staff receive the bell alert only when their effective role permissions allow both
+  contact-message reading/management and own notifications. The open bell refreshes immediately
+  and every 30 seconds while the page is visible.
+- `/portal`, `/product-system`, and `/stitch-clone` have no runtime pages, redirects, auth guards,
+  cache exceptions, or active capture/generation commands. Their root and nested URLs return the
+  branded bilingual global 404 with a true 404 status. Product-used `/stitch-assets` and the
+  read-only source archive remain.
+- `/client` is the sole client route family. Its dashboard, cases, appointments, files, payments,
+  profile, assistant, office chat, login, errors, statuses, dates, numbers, and money now follow
+  the saved `ar`/`en` account locale without adding a localization library.
+- The canonical APIs are `/api/client/profile` and `/api/client/preferences`. A client can update
+  only their own locale. Confirmed bookings store locale through an additive constrained column
+  and signed setup context; legacy setup tokens and existing accounts safely default to Arabic.
+- Local evidence is complete. Disposable-database, authenticated fixture, deployment, and live
+  checks remain explicitly deferred until their required external environment is available.
 
 ## Latest PLAN-37 Consultation Overdue-Unbooked Recovery
 
@@ -266,7 +294,7 @@ Total plans: 38
 4. Run VPS smoke for `/api/health`, Nginx/TLS/systemd/private uploads/backups before closing PLAN-23/24. SMTP smoke is deferred until the future SMTP activation plan.
 5. For aaPanel/cPanel deployment, complete PLAN-26 preflight and smoke before claiming panel compatibility.
 6. Complete the remaining PLAN-27 gates before any production-ready claim: broader public/static/mobile smoke, approved production content bootstrap, DB-backed staging verification, atomic live deploy, live public/admin smoke, and evidence archive.
-7. Keep `/stitch-clone/*` frozen and disabled in production unless `ENABLE_STITCH_CLONE=true` is explicitly set for visual QA.
+7. Keep the Stitch export as an offline read-only archive; never expose runtime `/stitch-clone/*` pages.
 8. For PLAN-35, accept task IDs explicitly and execute them in dependency/file-owner order; do not copy its 128 feature tasks into the master list.
 
 ## Verification Already Passing
@@ -295,7 +323,7 @@ Total plans: 38
 
 ## Important Notes
 
-- `/stitch-clone/*` is still static and isolated; production middleware blocks it unless `ENABLE_STITCH_CLONE=true`.
+- `/stitch-clone/*` has no runtime surface. The original export remains an offline read-only archive.
 - Product design-system components are separate from Stitch clone routes.
 - Backend foundation now exists for Prisma, auth, contracts, storage, disabled email templates, and AI.
 - Database migrate/seed has not been run in this workspace because no running PostgreSQL instance was verified yet; Docker CLI is not currently available on this machine.

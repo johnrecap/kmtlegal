@@ -157,14 +157,6 @@ export function productionReadinessIssues(env: NodeJS.ProcessEnv = process.env) 
     });
   }
 
-  if (env.ENABLE_STITCH_CLONE === "true") {
-    issues.push({
-      code: "STITCH_CLONE_ENABLED_IN_PRODUCTION",
-      severity: "error",
-      message: "Stitch clone reference routes must be disabled in production."
-    });
-  }
-
   if (env.AI_PROVIDER && env.AI_PROVIDER !== "mock" && !env.AI_API_KEY) {
     issues.push({
       code: "AI_API_KEY_REQUIRED",

@@ -39,7 +39,6 @@ const tableFiles = [
   "src/app/(app-ar)/admin/reports/page.tsx",
   "src/app/(app-ar)/admin/users/[userId]/page.tsx",
   "src/app/(app-ar)/admin/users/page.tsx",
-  "src/app/(app-ar)/product-system/_components/product-system-demo.tsx",
   "src/features/admin/contact-messages/contact-message-inbox.tsx"
 ] as const;
 
@@ -56,7 +55,6 @@ const filterFiles = [
   "src/app/(app-ar)/admin/reports/page.tsx",
   "src/app/(app-ar)/admin/tasks/page.tsx",
   "src/app/(app-ar)/admin/users/page.tsx",
-  "src/app/(app-ar)/product-system/_components/product-system-demo.tsx",
   "src/features/admin/contact-messages/contact-message-inbox.tsx"
 ] as const;
 

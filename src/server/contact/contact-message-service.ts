@@ -4,6 +4,8 @@ import { prisma } from "@/server/db/prisma";
 import { emailSchema } from "@/server/validation/schemas";
 import { z } from "zod";
 import { canonicalPhone } from "@/server/phone/phone-normalization";
+import { createContactMessageNotifications } from "@/server/admin/notification-service";
+import { safeLog } from "@/server/observability/safe-log";
 
 export const contactTopicSchema = z.enum(["consultation", "documents", "media", "other"]);
 
@@ -23,6 +25,8 @@ export type PublicContactMessageInput = z.infer<typeof publicContactMessageSchem
 
 type ContactMessageClient = Pick<Prisma.TransactionClient, "contactMessage">;
 type AuditWriter = typeof appendAuditLogBestEffort;
+type ContactNotificationWriter = typeof createContactMessageNotifications;
+type SafeLogger = typeof safeLog;
 
 export function contactMessageReference(id: string) {
   return `MSG-${id.slice(0, 8).toUpperCase()}`;
@@ -34,9 +38,13 @@ export async function createPublicContactMessage(input: {
   requestId?: string;
   client?: ContactMessageClient;
   audit?: AuditWriter;
+  notify?: ContactNotificationWriter;
+  logger?: SafeLogger;
 }) {
   const client = input.client ?? prisma;
   const audit = input.audit ?? appendAuditLogBestEffort;
+  const notify = input.notify ?? createContactMessageNotifications;
+  const logger = input.logger ?? safeLog;
   const phone = input.body.phone?.trim() || null;
 
   const message = await client.contactMessage.create({
@@ -71,6 +79,16 @@ export async function createPublicContactMessage(input: {
     request: input.request,
     requestId: input.requestId
   });
+
+  try {
+    await notify({ contactMessageId: message.id });
+  } catch {
+    logger("warn", "contact.notification_write_failed", {
+      requestId: input.requestId,
+      resourceType: "ContactMessage",
+      resourceId: message.id
+    });
+  }
 
   return {
     id: message.id,

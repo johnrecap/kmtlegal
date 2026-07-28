@@ -64,7 +64,7 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 - [ ] Admin assign/reject/convert consultation.
 - [ ] Converted consultation creates linked client/case/appointment.
 - [ ] Staff login reaches `/admin` without 2FA while `STAFF_2FA_MODE=disabled`.
-- [ ] Client login does not require 2FA and reaches `/portal`.
+- [ ] Client login does not require 2FA and reaches `/client`.
 - [ ] Client sees own cases, appointments, payments, documents, and profile only.
 - [ ] Lawyer sees assigned cases only.
 - [ ] Admin document upload and status/delete workflow.
@@ -95,7 +95,7 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 - [ ] `/articles` and `/case-studies` do not contradict homepage featured content.
 - [ ] `/articles/[slug]` and `/case-studies/[slug]` pass for every rendered public link.
 - [ ] Public link-crawl smoke covers homepage, nav, footer, services, team, articles, case studies, privacy, terms, contact, and booking.
-- [ ] Anonymous `/admin` and `/portal` redirects to `/login?next=...` without `ChunkLoadError`.
+- [ ] Anonymous `/admin` and `/client` redirects to `/login?next=...` without `ChunkLoadError`.
 - [ ] `_next/static` JavaScript and CSS requested during smoke return status `< 400` and correct MIME types.
 - [ ] Cloudflare Insights is either disabled or permitted by reviewed CSP; no blocked beacon console error remains.
 - [ ] `/favicon.ico` returns a successful static response.
@@ -204,7 +204,7 @@ Evidence rules:
 - [ ] Logs do not contain passwords, OTPs, tokens, raw prompts, provider raw responses, legal summaries, document contents, emails, or phone numbers.
 - [ ] Analytics events use allowlisted properties only.
 - [ ] AI output is review-required and not legal advice.
-- [ ] `/stitch-clone/*` returns 404 in production unless `ENABLE_STITCH_CLONE=true`.
+- [ ] `/portal/*`, `/product-system/*`, and `/stitch-clone/*` always return the branded 404 without a login redirect.
 - [ ] Nginx passes `X-Real-IP $remote_addr`; app does not trust client-supplied `X-Forwarded-For` in production.
 - [ ] Upload oversize `Content-Length` is rejected before multipart parsing.
 - [ ] `MALWARE_SCAN_MODE=required`, ClamAV answers `clamdscan --ping`, and `/api/health` reports `storage.malware_scan` healthy.
@@ -237,7 +237,7 @@ Evidence rules:
 - [ ] Upload directory backup exists before release.
 - [ ] Rollback target is known.
 - [ ] Post-deploy smoke passes.
-- [ ] Unknown `/admin/*` and `/portal/*` paths return the localized not-found recovery state instead of a placeholder or redirect to `/client`.
+- [ ] Unknown `/admin/*` paths use the protected recovery state; retired `/portal/*`, `/product-system/*`, and `/stitch-clone/*` paths use the branded global 404.
 - [ ] Public mobile language switch is visible at 390px and article/case-study alternates never link to a missing localized detail.
 - [ ] `npm run qa:release` result is archived with this checklist.
 

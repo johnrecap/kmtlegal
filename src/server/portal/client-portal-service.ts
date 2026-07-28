@@ -5,6 +5,7 @@ import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
 import { canonicalPhone } from "@/server/phone/phone-normalization";
 import { parseWithSchema, uuidSchema, emailSchema } from "@/server/validation/schemas";
+import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
 
 export const portalProfileUpdateSchema = z.object({
   fullName: z.string().trim().min(2).max(120),
@@ -13,7 +14,15 @@ export const portalProfileUpdateSchema = z.object({
   city: z.string().trim().max(80).optional().or(z.literal(""))
 });
 
+export const clientPreferenceSchema = z
+  .object({
+    locale: z.enum(["ar", "en"])
+  })
+  .strict();
+
 export type PortalProfileUpdateInput = z.infer<typeof portalProfileUpdateSchema>;
+export type ClientPreferenceInput = z.infer<typeof clientPreferenceSchema>;
+type ClientPreferenceWriter = Pick<Prisma.TransactionClient, "client" | "user">;
 
 export function assertClientPortalAccess(actor: Principal) {
   if (!hasPermission(actor, "client.read.self") || !actor.clientId) {
@@ -245,4 +254,48 @@ export async function updatePortalProfile(input: { actor: Principal; body: unkno
 
     return updatedClient;
   });
+}
+
+export async function updateClientPreferences(input: {
+  actor: Principal;
+  body: unknown;
+  request?: Request;
+  requestId?: string;
+  client?: ClientPreferenceWriter;
+  audit?: typeof appendAuditLogBestEffort;
+}) {
+  const clientId = assertClientPortalAccess(input.actor);
+  const body = parseWithSchema(clientPreferenceSchema, input.body, "Client preference payload is invalid.");
+  const client = input.client ?? prisma;
+  const linkedClient = await client.client.findFirst({
+    where: {
+      id: clientId,
+      userId: input.actor.id,
+      status: "ACTIVE",
+      deletedAt: null
+    },
+    select: { id: true }
+  });
+
+  if (!linkedClient) {
+    throw new ApiError(404, "NOT_FOUND", "Client profile was not found.");
+  }
+
+  const updated = await client.user.update({
+    where: { id: input.actor.id },
+    data: { locale: body.locale },
+    select: { locale: true }
+  });
+  const audit = input.audit ?? appendAuditLogBestEffort;
+  await audit({
+    actorId: input.actor.id,
+    action: "client.preference_update",
+    resourceType: "User",
+    resourceId: input.actor.id,
+    metadata: { locale: body.locale },
+    request: input.request,
+    requestId: input.requestId
+  });
+
+  return { locale: updated.locale };
 }

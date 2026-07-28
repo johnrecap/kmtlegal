@@ -12,6 +12,7 @@ import {
 import { clientPortalGuardIssue } from "./client-portal-guard";
 import { isStaffRole } from "./policy";
 import { getAuthContextFromCookieHeader, type AuthContext } from "./session-store";
+import { getClientContent, type ClientLocale } from "@/content/client-content";
 
 export type ProtectedPageResult =
   | { status: "authorized"; context: AuthContext }
@@ -68,7 +69,7 @@ export async function requireAdminRoutePage(nextPath: string): Promise<Protected
   );
 }
 
-export async function requirePortalPage(nextPath = "/portal"): Promise<ProtectedPageResult> {
+export async function requirePortalPage(nextPath = "/client"): Promise<ProtectedPageResult> {
   const context = await requireProtectedPageContext(nextPath);
   const issue = clientPortalGuardIssue(context);
   return issue
@@ -96,13 +97,22 @@ export function AdminPermissionBlocked({ title, description }: { title: string; 
   );
 }
 
-export function PermissionBlocked({ title, description }: { title: string; description: string }) {
+export function PermissionBlocked({
+  title,
+  description,
+  locale = "ar"
+}: {
+  title: string;
+  description: string;
+  locale?: ClientLocale;
+}) {
+  const copy = getClientContent(locale);
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
       <StateBlock
         action={
-          <ButtonLink href="/" variant="secondary">
-            {protectedRecoveryUiCopy.backToDashboard}
+          <ButtonLink href={locale === "ar" ? "/ar" : "/"} variant="secondary">
+            {copy.common.back}
           </ButtonLink>
         }
         description={description}

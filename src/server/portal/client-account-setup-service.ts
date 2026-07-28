@@ -15,7 +15,7 @@ export const CLIENT_ACCOUNT_SETUP_TOKEN_TTL_MS = 30 * 60 * 1000;
 
 const tokenSchema = z.string().min(32).max(4096);
 
-const tokenPayloadSchema = z.object({
+const tokenPayloadV1Schema = z.object({
   purpose: z.literal(CLIENT_ACCOUNT_SETUP_PURPOSE),
   version: z.literal(1),
   clientId: uuidSchema,
@@ -24,15 +24,26 @@ const tokenPayloadSchema = z.object({
   iat: z.number().int().positive(),
   exp: z.number().int().positive()
 });
+const tokenPayloadV2Schema = z.object({
+  purpose: z.literal(CLIENT_ACCOUNT_SETUP_PURPOSE),
+  version: z.literal(2),
+  clientId: uuidSchema,
+  consultationId: uuidSchema,
+  email: emailSchema.optional(),
+  locale: localeSchema,
+  iat: z.number().int().positive(),
+  exp: z.number().int().positive()
+});
+const tokenPayloadSchema = z.union([tokenPayloadV1Schema, tokenPayloadV2Schema]);
 
 export const publicClientAccountSetupSchema = z
   .object({
     token: tokenSchema,
     email: emailSchema,
     password: z.string().min(10).max(256),
-    confirmPassword: z.string().min(10).max(256),
-    locale: localeSchema.optional()
+    confirmPassword: z.string().min(10).max(256)
   })
+  .strict()
   .superRefine((value, context) => {
     if (value.password !== value.confirmPassword) {
       context.addIssue({
@@ -52,6 +63,7 @@ type ClientAccountSetupTargetInput = {
     userId: string | null;
   };
   consultationId: string;
+  locale: "ar" | "en";
   request?: Request;
   now?: Date;
 };
@@ -87,7 +99,7 @@ export function publicClientAccountSetupTarget(input: ClientAccountSetupTargetIn
   if (input.client.userId) {
     return {
       status: "existing_account",
-      loginUrl: "/login?next=/client",
+      loginUrl: `/login?next=/client&locale=${input.locale}`,
       email: input.client.email
     };
   }
@@ -96,10 +108,14 @@ export function publicClientAccountSetupTarget(input: ClientAccountSetupTargetIn
     clientId: input.client.id,
     consultationId: input.consultationId,
     email: input.client.email ?? undefined,
+    locale: input.locale,
     now: input.now
   });
 
-  const url = new URL("/client-account/setup", publicAppOrigin(input.request));
+  const url = new URL(
+    input.locale === "ar" ? "/ar/client-account/setup" : "/client-account/setup",
+    publicAppOrigin(input.request)
+  );
   url.searchParams.set("token", token.value);
 
   return {
@@ -114,15 +130,17 @@ export function createClientAccountSetupToken(input: {
   clientId: string;
   consultationId: string;
   email?: string | null;
+  locale: "ar" | "en";
   now?: Date;
 }) {
   const now = input.now ?? new Date();
   const payload: ClientAccountSetupPayload = {
     purpose: CLIENT_ACCOUNT_SETUP_PURPOSE,
-    version: 1,
+    version: 2,
     clientId: uuidSchema.parse(input.clientId),
     consultationId: uuidSchema.parse(input.consultationId),
     email: input.email ? emailSchema.parse(input.email) : undefined,
+    locale: localeSchema.parse(input.locale),
     iat: now.getTime(),
     exp: now.getTime() + CLIENT_ACCOUNT_SETUP_TOKEN_TTL_MS
   };
@@ -209,6 +227,7 @@ export async function getClientAccountSetupContext(input: { token: string; now?:
   const appointment = consultation.appointments[0] ?? null;
   return {
     token: input.token,
+    locale: payload.version === 2 ? payload.locale : "ar",
     expiresAt: new Date(payload.exp).toISOString(),
     client: {
       id: consultation.client.id,
@@ -296,7 +315,7 @@ export async function completePublicClientAccountSetup(input: { body: unknown; r
             phone: freshClient.phone,
             passwordHash,
             status: "ACTIVE",
-            locale: body.locale ?? "ar"
+            locale: context.locale
           }
         })
       : await tx.user.create({
@@ -307,7 +326,7 @@ export async function completePublicClientAccountSetup(input: { body: unknown; r
             passwordHash,
             roleId: clientRole.id,
             status: "ACTIVE",
-            locale: body.locale ?? "ar"
+            locale: context.locale
           }
         });
 

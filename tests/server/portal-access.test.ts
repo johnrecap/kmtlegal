@@ -1,10 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   assertClientPortalAccess,
+  clientPreferenceSchema,
   clientVisibleDocumentWhere,
   ownCaseWhere,
   ownClientWhere,
-  portalProfileUpdateSchema
+  portalProfileUpdateSchema,
+  updateClientPreferences
 } from "@/server/portal/client-portal-service";
 import { clientPortalGuardIssue } from "@/server/auth/client-portal-guard";
 import type { AuthContext } from "@/server/auth/session-store";
@@ -135,5 +137,73 @@ describe("client portal access contract", () => {
     expect(parsed.fullName).toBe("أحمد منصور");
     expect(parsed.email).toBe("");
     expect(() => portalProfileUpdateSchema.parse({ fullName: "أ", phone: "1" })).toThrow();
+  });
+
+  it("accepts only Arabic or English as a self-owned client preference", async () => {
+    expect(clientPreferenceSchema.parse({ locale: "en" })).toEqual({ locale: "en" });
+    expect(clientPreferenceSchema.parse({ locale: "ar" })).toEqual({ locale: "ar" });
+    expect(() => clientPreferenceSchema.parse({ locale: "fr" })).toThrow();
+    expect(() => clientPreferenceSchema.parse({ locale: "en", userId: staffPrincipal.id })).toThrow();
+
+    const clientFindFirst = vi.fn(async () => ({ id: clientPrincipal.clientId }));
+    const userUpdate = vi.fn(async () => ({ locale: "en" }));
+    const audit = vi.fn(async () => null);
+    const result = await updateClientPreferences({
+      actor: clientPrincipal,
+      body: { locale: "en" },
+      client: {
+        client: { findFirst: clientFindFirst },
+        user: { update: userUpdate }
+      } as never,
+      audit: audit as never,
+      requestId: "req-client-locale"
+    });
+
+    expect(result).toEqual({ locale: "en" });
+    expect(clientFindFirst).toHaveBeenCalledWith({
+      where: {
+        id: clientPrincipal.clientId,
+        userId: clientPrincipal.id,
+        status: "ACTIVE",
+        deletedAt: null
+      },
+      select: { id: true }
+    });
+    expect(userUpdate).toHaveBeenCalledWith({
+      where: { id: clientPrincipal.id },
+      data: { locale: "en" },
+      select: { locale: true }
+    });
+    expect(audit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorId: clientPrincipal.id,
+        action: "client.preference_update",
+        resourceType: "User",
+        resourceId: clientPrincipal.id,
+        requestId: "req-client-locale",
+        metadata: { locale: "en" }
+      })
+    );
+  });
+
+  it("rejects preference changes outside an active linked client profile", async () => {
+    await expect(
+      updateClientPreferences({
+        actor: staffPrincipal,
+        body: { locale: "en" },
+        client: {} as never
+      })
+    ).rejects.toMatchObject({ status: 403, code: "PERMISSION_DENIED" });
+
+    await expect(
+      updateClientPreferences({
+        actor: clientPrincipal,
+        body: { locale: "en" },
+        client: {
+          client: { findFirst: vi.fn(async () => null) },
+          user: { update: vi.fn() }
+        } as never
+      })
+    ).rejects.toMatchObject({ status: 404, code: "NOT_FOUND" });
   });
 });

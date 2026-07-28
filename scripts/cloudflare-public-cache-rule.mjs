@@ -78,11 +78,8 @@ function buildRules({ host, edgeTtl }) {
     "/api",
     "/admin",
     "/client",
-    "/portal",
     "/login",
     "/install",
-    "/product-system",
-    "/stitch-clone",
   ];
 
   const publicPaths = [

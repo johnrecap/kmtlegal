@@ -1,5 +1,9 @@
 # PLAN-03 Product Design System & Layout Shells
 
+> PLAN-39 superseding note (2026-07-28): the historical `/product-system` showcase and runtime
+> Stitch clone pages were removed. Design exports remain an offline archive and product components
+> continue under their real public, client, and admin routes.
+
 Status: implemented as a frontend foundation.
 
 ## Scope Completed

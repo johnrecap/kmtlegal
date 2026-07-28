@@ -85,7 +85,7 @@ PUBLIC_NGINX_VHOST_FILES=/www/server/panel/vhost/nginx/kmtlegal.saeeddev.com.con
 bash deploy/install/aapanel-pm2-update.sh
 ```
 
-Set `PUBLIC_CACHE_POLICY_ENABLED=false` only if you have manually configured the same split in aaPanel or Cloudflare: public `GET/HEAD` HTML cacheable, and `/api/*`, `/admin/*`, `/client/*`, `/portal/*`, `/login*`, and `/install*` as `no-store`.
+Set `PUBLIC_CACHE_POLICY_ENABLED=false` only if you have manually configured the same split in aaPanel or Cloudflare: public `GET/HEAD` HTML cacheable, and `/api/*`, `/admin/*`, `/client/*`, `/login*`, and `/install*` as `no-store`.
 
 If a browser tab was open during deployment, it may still hold HTML or runtime state from the previous build. Preserving old static assets prevents most `ChunkLoadError` failures while the user refreshes into the new build.
 

@@ -1744,6 +1744,7 @@ export async function createPublicConsultationCheckout(input: {
           opposingPartyName: checkoutBody.opposingPartyName || null,
           urgency: checkoutBody.urgency,
           preferredMode: checkoutBody.preferredMode,
+          locale: body.locale,
           status: "PAYMENT_PENDING",
           aiClassification: deterministicBookingClassification(checkoutBody, startsAt, input.requestId),
           aiSummary: deterministicBookingSummary(checkoutBody, startsAt)
@@ -1898,6 +1899,7 @@ async function createFreeConsultationBooking(input: {
           opposingPartyName: body.opposingPartyName || null,
           urgency: body.urgency,
           preferredMode: body.preferredMode,
+          locale: body.locale,
           status: "SCHEDULED",
           aiClassification: deterministicBookingClassification(body, startsAt, input.requestId),
           aiSummary: deterministicBookingSummary(body, startsAt)
@@ -1955,6 +1957,7 @@ async function createFreeConsultationBooking(input: {
     clientAccountSetup: publicClientAccountSetupTarget({
       client: result.client,
       consultationId: result.consultation.id,
+      locale: body.locale,
       request: input.request
     }),
     reviewRequired: true,

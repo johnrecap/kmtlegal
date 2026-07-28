@@ -45,7 +45,7 @@ Use Stitch `DESIGN.md` as the source for initial palette: calm light surfaces, m
 ### Locale And Direction Rules
 - Public routes without a locale prefix are English-first with `lang="en"` and `dir="ltr"`.
 - Arabic public routes live under `/ar` and render with `lang="ar"` and `dir="rtl"`.
-- Protected product surfaces (`/admin`, `/portal`, `/install`, `/login`, `/product-system`, and `/stitch-clone/*`) remain Arabic/RTL for this stage.
+- Protected admin/install surfaces remain Arabic/RTL; `/client` and `/login` use the selected client locale.
 - Sidebar appears on the right in Arabic protected shells.
 - Directional icons mirror when meaning direction.
 - Tables keep numeric columns readable in both directions.
@@ -84,7 +84,7 @@ Public motion rules:
 - Preserve RTL direction with semantic arrow mirroring; hover movement must go inline-forward for both English and Arabic.
 - Reduced-motion mode disables reveal, lift, zoom, and shift motion while preserving static RTL icon direction.
 - Disabled or loading controls do not lift on hover.
-- Do not apply public motion helpers to `/admin`, `/portal`, `/install`, `/login`, `/product-system`, or `/stitch-clone/*`.
+- Do not apply public motion helpers to `/admin`, `/client`, `/install`, or `/login`.
 
 ### PLAN-31 Public Motion V2 - Cinematic Legal
 PLAN-31 is the current public motion contract. It removes the weak decorative line under copy and replaces it with clearer CSS-only motion.
@@ -100,7 +100,7 @@ Public motion V2 rules:
 - No Framer Motion, GSAP, Lottie, Rive, Magic UI install, or `motion` package is allowed for PLAN-31.
 
 Protected-surface guard:
-- `/admin`, `/portal`, `/product-system`, and `/stitch-clone/*` must not visually inherit PLAN-28 public styling.
+- `/admin` and `/client` must not visually inherit PLAN-28 public styling.
 
 ## Component Inventory
 
@@ -194,12 +194,12 @@ Protected-surface guard:
 | `/contact` | Guest | Contact/branches | ContactForm, branch cards | submit contact | public submit | validation/success | contact_submitted | form |
 | `/login` | Guest | Login | LoginForm | auth login | guest/authenticated | invalid/loading | login_attempted | auth E2E |
 | `/install` | Installer operator | Hosting selector and first setup wizard | InstallWizard, HostingModeSelector | installer APIs | setup token | disabled/locked/preflight/error/success/unsupported-hosting | installer_bootstrap | installer + panel preflight contract |
-| `/portal` | Client | Dashboard | DashboardShell, MetricCard | portal summary | portal.read.self | empty/error/no-permission | portal_viewed | E2E |
-| `/portal/cases/[id]` | Client | Own case detail | CaseSummary, Timeline | own case | case.read.own | 403/404 safe | case_viewed | E2E |
-| `/portal/documents` | Client | Upload/list docs | UploadDropzone, DocumentCard | own docs/upload | document.read/upload.self | upload errors | upload_success/failed | E2E |
-| `/portal/appointments` | Client | Own appointments | AppointmentCard | own appointments | appointment.read.own | empty/error | appointment_viewed | render |
-| `/portal/payments` | Client | Invoice/payment records | PaymentRecordCard | own payments | payment.read.own | empty | payment_viewed | render |
-| `/portal/profile` | Client | Profile | ClientProfileForm | profile update | user.update.self | validation | profile_updated | form |
+| `/client` | Client | Dashboard | ClientSiteShell, ClientPortalMetric | client summary | client.read.self | empty/error/no-permission | client_viewed | E2E |
+| `/client/cases/[id]` | Client | Own case detail | ClientPortalPanel, timeline | own case | case.read.own | 403/404 safe | case_viewed | E2E |
+| `/client/files` | Client | Upload/list docs | DocumentUploadForm, document list | own docs/upload | document.read/upload.self | upload errors | upload_success/failed | E2E |
+| `/client/court-dates` | Client | Own appointments | appointment records | own appointments | appointment.read.own | empty/error | appointment_viewed | render |
+| `/client/payments` | Client | Invoice/payment records | payment records | own payments | payment.read.own | empty | payment_viewed | render |
+| `/client/profile` | Client | Profile and language | ProfileForm, ClientLanguageSwitch | profile/preferences | user.update.self | validation | profile_updated | form |
 | `/admin` | Staff | Role-aware command center | AdminCommandCenter, bounded queues/actions | DashboardSnapshotV1 | authenticated staff; per-widget domain scope | empty/partial/error | admin_dashboard_viewed | E2E |
 | `/admin/consultations` | Staff | Review queue | DataTable, filters | consultations | consultation.review | empty/error | consultation_queue_viewed | E2E |
 | `/admin/clients` | Admin | CRM | DataTable, filters | clients | client.read.any | empty/error | client_filter_used | integration |

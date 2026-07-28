@@ -490,6 +490,7 @@ model ConsultationRequest {
   opposingPartyName String?
   urgency           Urgency            @default(NORMAL)
   preferredMode     ConsultationMode
+  locale            String             @default("ar")
   status            ConsultationStatus @default(NEW)
   aiClassification  Json?
   aiSummary         String?

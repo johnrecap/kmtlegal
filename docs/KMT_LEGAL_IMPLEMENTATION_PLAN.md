@@ -1,5 +1,9 @@
 # KMT Legal Implementation Plan
 
+> PLAN-39 update (2026-07-28): this original implementation narrative is historical. Runtime
+> `/portal`, `/product-system`, and `/stitch-clone` instructions below are superseded by the
+> canonical PLAN-39 specification and task set.
+
 > تحديث 2026-06-23: ملف `docs/KMT_LEGAL_SPEC_KIT_PLAN_INDEX.md` هو المصدر التفصيلي المعتمد لخطط Spec Kit، وعدده الحالي **24 خطة**. هذا الملف يظل خطة تشغيل عامة، بينما التنفيذ التفصيلي يتم من خلال خطط Spec Kit.
 
 تاريخ الإصدار: 2026-06-23

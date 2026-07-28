@@ -34,7 +34,7 @@ function ConsultationLink({ className, locale, label }: { className?: string; lo
   );
 }
 
-function ClientLoginLink({ className, label }: { className?: string; label: string }) {
+function ClientLoginLink({ className, label, locale }: { className?: string; label: string; locale: PublicLocale }) {
   return (
     <Link
       aria-label={label}
@@ -44,7 +44,7 @@ function ClientLoginLink({ className, label }: { className?: string; label: stri
         publicMotionCta,
         className
       )}
-      href="/login?next=/client"
+      href={`/login?next=/client&locale=${locale}`}
       title={label}
     >
       <MaterialSymbol className={cn("text-lg", publicMotionIcon, publicMotionIconHalo)} name="account_circle" />
@@ -124,7 +124,7 @@ export function PublicShell({
                 <span className="sr-only sm:not-sr-only">{shell.languageSwitchLabel}</span>
               </a>
             ) : null}
-            <ClientLoginLink label={shell.clientLoginCta} />
+            <ClientLoginLink label={shell.clientLoginCta} locale={locale} />
             <ConsultationLink className="px-3 sm:px-4" label={shell.consultationCta} locale={locale} />
           </div>
         </div>

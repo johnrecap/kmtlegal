@@ -1,5 +1,9 @@
 # KMT Legal Platform PRD
 
+> PLAN-39 update (2026-07-28): this original product PRD is retained for historical intent.
+> Runtime `/portal`, `/product-system`, and `/stitch-clone` references below are superseded:
+> `/client` is canonical and the retired families return the branded global 404.
+
 تاريخ الإصدار: 2026-06-23
 
 ## 1. الهدف

@@ -2,8 +2,10 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useState } from "react";
-import { signedInRedirectPath } from "@/lib/auth-routing";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, MaterialSymbol, TextInput } from "@/components/ui";
+import { getAuthContent } from "@/content/auth-content";
+import type { ClientLocale } from "@/content/client-content";
+import { signedInRedirectPath } from "@/lib/auth-routing";
 
 type LoginResponse = {
   status?: "authenticated" | "two_factor_required";
@@ -11,7 +13,7 @@ type LoginResponse = {
     role: string;
   };
   error?: {
-    message?: string;
+    code?: string;
   };
 };
 
@@ -20,38 +22,38 @@ type LoginFieldErrors = {
   password?: string;
 };
 
-async function readApiMessage(response: Response) {
-  const data = (await response.json().catch(() => ({}))) as LoginResponse;
-  return {
-    data,
-    message: data.error?.message ?? "تعذر تنفيذ الطلب الآن. حاول مرة أخرى."
-  };
+async function readApiResult(response: Response) {
+  return (await response.json().catch(() => ({}))) as LoginResponse;
 }
-
-function validateLoginFields(email: string, password: string): LoginFieldErrors {
+function validateLoginFields(
+  email: string,
+  password: string,
+  copy: ReturnType<typeof getAuthContent>["login"]
+): LoginFieldErrors {
   const errors: LoginFieldErrors = {};
   const normalizedEmail = email.trim();
 
   if (!normalizedEmail) {
-    errors.email = "اكتب البريد الإلكتروني.";
+    errors.email = copy.emailRequired;
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
-    errors.email = "اكتب بريدًا إلكترونيًا صحيحًا.";
+    errors.email = copy.emailInvalid;
   }
 
   if (!password) {
-    errors.password = "اكتب كلمة المرور.";
+    errors.password = copy.passwordRequired;
   }
 
   return errors;
 }
 
-export function LoginForm() {
+export function LoginForm({ locale }: { locale: ClientLocale }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const copy = getAuthContent(locale).login;
   const requestedNext = searchParams.get("next");
   const notice =
     searchParams.get("reason") === "2fa_expired"
-      ? "انتهت جلسة التحقق الثنائي. سجل الدخول مرة أخرى ثم اطلب كود بريد جديد."
+      ? copy.twoFactorExpired
       : null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -75,7 +77,7 @@ export function LoginForm() {
     event.preventDefault();
     setError(null);
 
-    const nextFieldErrors = validateLoginFields(email, password);
+    const nextFieldErrors = validateLoginFields(email, password, copy);
     if (Object.values(nextFieldErrors).some(Boolean)) {
       setFieldErrors(nextFieldErrors);
       return;
@@ -92,15 +94,15 @@ export function LoginForm() {
         },
         body: JSON.stringify({ email: email.trim(), password })
       });
-      const { data, message } = await readApiMessage(response);
+      const data = await readApiResult(response);
 
       if (!response.ok) {
-        setError(message);
+        setError(loginErrorMessage(data.error?.code, copy));
         return;
       }
 
       if (data.status === "two_factor_required") {
-        setError("التحقق الثنائي لفريق المكتب غير متاح في هذا الإصدار. تواصل مع مسؤول النظام قبل إعادة المحاولة.");
+        setError(copy.twoFactorUnavailable);
         return;
       }
 
@@ -110,9 +112,9 @@ export function LoginForm() {
         return;
       }
 
-      setError("استجابة تسجيل الدخول غير مكتملة.");
+      setError(copy.incompleteResponse);
     } catch {
-      setError("لا يمكن الوصول إلى الخادم الآن. تأكد أن السيرفر وقاعدة البيانات يعملان.");
+      setError(copy.serverUnavailable);
     } finally {
       setIsSubmitting(false);
     }
@@ -121,8 +123,8 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md shadow-sm">
       <CardHeader>
-        <CardTitle>تسجيل الدخول</CardTitle>
-        <CardDescription>ادخل بيانات حسابك للوصول إلى بوابة العميل أو لوحة المكتب.</CardDescription>
+        <CardTitle>{copy.formTitle}</CardTitle>
+        <CardDescription>{copy.formDescription}</CardDescription>
       </CardHeader>
       <CardContent>
         <form className="space-y-5" noValidate onSubmit={onSubmit}>
@@ -133,9 +135,10 @@ export function LoginForm() {
           ) : null}
           <TextInput
             autoComplete="email"
+            dir="ltr"
             error={fieldErrors.email}
             inputMode="email"
-            label="البريد الإلكتروني"
+            label={copy.email}
             name="email"
             onChange={(event) => updateEmail(event.target.value)}
             placeholder="name@example.com"
@@ -146,7 +149,7 @@ export function LoginForm() {
           <TextInput
             autoComplete="current-password"
             error={fieldErrors.password}
-            label="كلمة المرور"
+            label={copy.password}
             name="password"
             onChange={(event) => updatePassword(event.target.value)}
             required
@@ -164,10 +167,31 @@ export function LoginForm() {
             trailingIcon={<MaterialSymbol className="text-[18px] rtl:rotate-180" name="arrow_forward" />}
             type="submit"
           >
-            دخول
+            {copy.submit}
           </Button>
         </form>
       </CardContent>
     </Card>
   );
+}
+
+function loginErrorMessage(
+  code: string | undefined,
+  copy: ReturnType<typeof getAuthContent>["login"]
+) {
+  switch (code) {
+    case "AUTH_REQUIRED":
+    case "INVALID_CREDENTIALS":
+      return copy.invalidCredentials;
+    case "RATE_LIMITED":
+    case "TOO_MANY_REQUESTS":
+      return copy.tooManyRequests;
+    case "BAD_REQUEST":
+    case "VALIDATION_ERROR":
+      return copy.invalidRequest;
+    case "SERVICE_UNAVAILABLE":
+      return copy.serverUnavailable;
+    default:
+      return copy.requestFailed;
+  }
 }

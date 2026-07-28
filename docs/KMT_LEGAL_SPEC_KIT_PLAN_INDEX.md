@@ -1,6 +1,10 @@
 # KMT Legal Spec Kit Plan Index
 
-## Current source-of-truth update — 2026-07-22
+## Current source-of-truth update — 2026-07-28
+
+Highest evidenced PLAN-39 state: `Local-Verified`
+
+Highest evidenced PLAN-38 state: `Local-Verified`
 
 Highest evidenced PLAN-37 state: `Local-Verified`
 
@@ -8,10 +12,19 @@ Highest evidenced PLAN-36 state: `Local-Verified`
 
 Highest evidenced PLAN-35 state: `Local-Verified`
 
-The repository now tracks **38 plan IDs (`PLAN-00` through `PLAN-37`)**. The detailed narrative
-below is a legacy PLAN-27-era index retained for history; current completion truth lives in
+The repository now tracks **40 plan IDs (`PLAN-00` through `PLAN-39`)**. The detailed narrative
+below is a legacy PLAN-27-era index retained for history; its `/portal`, `/product-system`, and
+`/stitch-clone` runtime references are superseded by PLAN-39. Current completion truth lives in
 `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md` and executable sequencing lives in
 `specs/kmt-legal-platform/tasks.md`.
+
+PLAN-39 is the active site-cleanup and client-localization package. It is locally verified without
+a database; staging migration, authenticated fixture, deployment, and live gates remain open:
+
+- Specification: `specs/kmt-legal-platform/plan-39-site-cleanup-localization/spec.md`
+- Tasks: `specs/kmt-legal-platform/plan-39-site-cleanup-localization/tasks.md`
+- Runtime rule: `/client` is canonical; retired route families return the branded 404; Stitch
+  originals are an offline archive only.
 
 PLAN-37 is the active overdue-unbooked consultation recovery package. It is locally verified
 without a database and does not change Prisma; its staging/server reconciliation,

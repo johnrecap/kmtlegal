@@ -13,9 +13,7 @@ const publicSmokePages = [
   "/login",
   "/privacy",
   "/ar/privacy",
-  "/terms",
-  "/product-system",
-  "/stitch-clone/home"
+  "/terms"
 ];
 
 const publicResponsivePages = ["/", "/services", "/team", "/articles", "/case-studies", "/media", "/contact", "/book-consultation", "/privacy"];
@@ -134,7 +132,7 @@ test.describe("MVP smoke without database", () => {
 
     const clientLogin = page.getByRole("link", { name: "Client Login" }).first();
     await expect(clientLogin).toBeVisible();
-    await expect(clientLogin).toHaveAttribute("href", "/login?next=/client");
+    await expect(clientLogin).toHaveAttribute("href", "/login?next=/client&locale=en");
 
     await Promise.all([
       page.waitForURL((url) => url.pathname === "/login" && url.searchParams.get("next") === "/client"),
@@ -358,7 +356,7 @@ test.describe("MVP smoke without database", () => {
     expect(url.searchParams.get("next")).toBe("/admin");
   });
 
-  test("protected client and portal routes redirect anonymous users without chunk errors", async ({ page }) => {
+  test("protected client route redirects anonymous users without chunk errors", async ({ page }) => {
     const consoleErrors: string[] = [];
     page.on("console", (message) => {
       if (message.type() === "error") {
@@ -371,11 +369,6 @@ test.describe("MVP smoke without database", () => {
     expect(url.pathname).toBe("/login");
     expect(url.searchParams.get("next")).toBe("/client");
 
-    await page.goto("/portal", { waitUntil: "domcontentloaded" });
-
-    url = new URL(page.url());
-    expect(url.pathname).toBe("/login");
-    expect(url.searchParams.get("next")).toBe("/portal");
     expect(consoleErrors).toEqual([]);
   });
 
@@ -395,9 +388,7 @@ test.describe("MVP smoke without database", () => {
 function expectedDocumentDir(path: string) {
   return path === "/ar" ||
     path.startsWith("/ar/") ||
-    path.startsWith("/login") ||
-    path.startsWith("/product-system") ||
-    path.startsWith("/stitch-clone")
+    path.startsWith("/login")
     ? "rtl"
     : "ltr";
 }

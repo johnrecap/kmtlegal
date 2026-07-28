@@ -79,7 +79,6 @@ Required names are planned in `devops-plan.md`:
 - `AI_MAX_TOKENS`
 - `AI_TEMPERATURE`
 - `ANALYTICS_ENABLED`
-- `ENABLE_STITCH_CLONE`
 
 Required MVP defaults:
 - `STORAGE_DRIVER=vps-filesystem`
@@ -89,7 +88,7 @@ Required MVP defaults:
 - Production must set `STAFF_2FA_MODE=disabled`; TOTP is deferred in this release.
 - Production must keep `INSTALLER_ENABLED=false` after `/install` is completed and locked.
 - Production must keep `SMTP_ENABLED=false` until the future SMTP activation plan.
-- Production keeps `/stitch-clone/*` disabled unless `ENABLE_STITCH_CLONE=true` is deliberately set for controlled visual QA.
+- Runtime Stitch clone routes are retired; the original export remains an offline reference only.
 
 ## Start Database
 Option A: local PostgreSQL service.
@@ -130,9 +129,8 @@ Open:
 - Services: `http://localhost:3000/services`
 - Booking: `http://localhost:3000/book-consultation`
 - Contact: `http://localhost:3000/contact`
-- Client portal: `http://localhost:3000/client` (`/portal` remains a compatibility alias)
+- Client portal: `http://localhost:3000/client`
 - Admin: `http://localhost:3000/admin`
-- Stitch clone routes: `http://localhost:3000/stitch-clone/...`
 
 ## Run Tests
 After test scripts exist:

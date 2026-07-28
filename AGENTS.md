@@ -5,14 +5,13 @@
 - Product planning artifacts live in `specs/kmt-legal-platform/`.
 - Implementation sequencing is tracked in `specs/kmt-legal-platform/tasks.md`.
 - Implementation progress is tracked in `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md`.
-- Stitch visual clone rules live in `docs/harness/stitch-clone/team-spec.md` and `.agents/skills/stitch-clone-orchestrator/SKILL.md`.
-- Stitch exports are read-only source inputs under `stitch_kmt_legal_platform_ui_system/`.
+- Historical Stitch visual clone rules live in `docs/harness/stitch-clone/team-spec.md` and `.agents/skills/stitch-clone-orchestrator/SKILL.md`.
+- Stitch exports remain read-only offline source inputs under `stitch_kmt_legal_platform_ui_system/`; runtime `/stitch-clone/*` pages are retired.
 
 ## Implementation Rules
 
-- Keep `/src/app/stitch-clone/*` isolated from product components, backend calls, dynamic data, and `shadcn/ui`.
-- For Stitch clone work, preserve exported HTML/CSS/classes/assets mechanically and verify with Playwright screenshots.
-- Product UI work starts after Stitch clone isolation is in place.
+- Do not recreate runtime `/stitch-clone/*` pages. Keep the archived Stitch export isolated from product components, backend calls, dynamic data, and `shadcn/ui`.
+- Preserve only localized Stitch assets that are referenced by current product pages; treat the remaining export as an offline historical input.
 - Do not commit real secrets or real client data.
 
 ## Commands
@@ -22,8 +21,7 @@
 - Build: `npm run build`
 - Typecheck: `npm run typecheck`
 - Lint: `npm run lint`
-- Generate Stitch clone: `npm run stitch:generate`
-- Stitch screenshots: `npm run stitch:screenshots`
+- Refresh archived design assets: `npm run stitch:assets`
 - Server commands and push handoff: `docs/SERVER_COMMANDS.md`
 
 ## Mandatory Push And Server Handoff Rule

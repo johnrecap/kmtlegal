@@ -66,6 +66,12 @@ describe("admin notification bell and center UI", () => {
     expect(source).toContain("copy.retry");
     expect(copySource).toContain('retry: "إعادة المحاولة"');
     expect(source).toContain("setAttentionCount");
+    expect(source).toContain("30_000");
+    expect(source).toContain('document.visibilityState === "visible"');
+    expect(source).toContain("onToggle");
+    expect(source).toContain('document.addEventListener("visibilitychange"');
+    expect(source).toContain('document.removeEventListener("visibilitychange"');
+    expect(source).toContain("window.clearInterval(timer)");
     expect(bellSource).toContain("AdminNotificationPopover");
   });
 

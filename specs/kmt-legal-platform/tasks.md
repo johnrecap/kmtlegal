@@ -542,3 +542,29 @@ Acceptance:
 - The lockfile change contains only npm-generated metadata for the missing optional transitive dependencies.
 - `package.json`, application source, schema, API, UI, auth, payment, Cloudflare, Nginx, and PM2 configuration remain unchanged by the repository repair.
 - The live state advances only after `/api/health` reports the pushed release as ready and `/sitemap.xml` contains `https://kmtlegal.org` with no `kmtlegal.saeeddev.com` URLs.
+
+## Milestone 29 - PLAN-39 Site Cleanup, Contact Alerts, And Client Localization
+
+Highest evidenced PLAN-39 state: `Local-Verified`
+
+- [ ] T292 Execute the canonical PLAN-39 task set in `specs/kmt-legal-platform/plan-39-site-cleanup-localization/tasks.md`, converge to zero remaining tasks, and record local, DB/browser, deployment, and live evidence truthfully.
+
+Acceptance:
+
+- Accepted contact messages remain durable and create privacy-safe alerts only for active users
+  with effective contact-read and notification permissions.
+- `/portal`, `/product-system`, and `/stitch-clone` runtime routes return the branded global 404
+  without a login redirect; the offline Stitch archive and product-used assets remain.
+- `/client` is the only client route family and renders complete Arabic/English content from the
+  saved account locale without weakening own-data authorization.
+- Staff/admin remains Arabic, user-facing messages are centralized, and raw internal failures do
+  not reach clients or staff.
+- Local, synthetic DB, authenticated browser, deployment, and read-only live states are reported
+  separately; unavailable gates never count as passing.
+
+Current evidence:
+
+- Local implementation, static checks, 437 automated tests, guarded production build, 46 browser
+  smoke checks, 9 retired-route/404 checks, and bilingual login browser coverage pass.
+- Disposable-database, authenticated client fixture, deployment, and post-deploy live evidence are
+  deferred and keep T292 open.

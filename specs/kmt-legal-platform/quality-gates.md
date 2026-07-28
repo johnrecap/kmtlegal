@@ -90,7 +90,7 @@ Pass only if:
 - `qa:local`, `qa:db`, `qa:release`, `security:secrets`, and `security:audit` have current recorded results.
 - PostgreSQL migrate + seed + seed has run against a real DB, not only schema validation.
 - DB-backed E2E covers staff password login and client portal login at minimum.
-- `/stitch-clone/*` is disabled in production unless explicitly enabled for visual QA.
+- `/portal/*`, `/product-system/*`, and `/stitch-clone/*` return the branded 404 in every runtime.
 
 ## Gate 6A: PLAN-26 Panel Installer Ready
 Pass only if:
@@ -105,7 +105,7 @@ Pass only if:
 - The live QA evidence from `https://kmtlegal.saeeddev.com/` is archived and mapped to remediation tasks.
 - Homepage featured article/case-study cards use the same published-content source as `/articles`, `/articles/[slug]`, `/case-studies`, and `/case-studies/[slug]`, or render an empty-safe state with no broken links.
 - A public link-crawl smoke proves rendered internal links from the homepage, public navigation, footer, services, team, articles, and case studies return status `< 400`.
-- Anonymous `/admin` and `/portal` redirects to `/login?next=...` do not produce `ChunkLoadError`.
+- Anonymous `/admin` and `/client` redirects to `/login?next=...` do not produce `ChunkLoadError`; retired route families do not redirect.
 - Release smoke proves requested `_next/static` JS/CSS assets return status `< 400` with the expected MIME type.
 - Cloudflare Insights is either disabled at the hosting layer or explicitly allowed through a reviewed minimal CSP rule; no blocked beacon console error remains.
 - `/favicon.ico` returns a successful static response.
@@ -124,7 +124,7 @@ Pass only if:
 Pass only if:
 - PLAN-28 is tracked in `specs/kmt-legal-platform/public-luxury-redesign-plan.md` and `tasks.md`.
 - The redesign is scoped to public routes and public-site components only.
-- `/admin`, `/portal`, `/product-system`, shared `src/components/ui/*` defaults, and `/stitch-clone/*` do not inherit PLAN-28 styling through global mutations.
+- `/admin`, `/client`, shared `src/components/ui/*` defaults, and the offline Stitch archive do not inherit PLAN-28 styling through global mutations.
 - Public labels follow the active public locale; after PLAN-29, `/services` remains the route while the label is `Practice Areas` in English and `مجالات الخبرة` in Arabic.
 - No incomplete language toggle is shown; after PLAN-29, the public shell may show a complete English/Arabic switch.
 - Public header, footer, hero, section, CTA, listing, booking, and contact surfaces follow one dark luxury legal visual language.
@@ -143,7 +143,7 @@ Pass only if:
 - PLAN-29 is tracked in `specs/kmt-legal-platform/public-localization-plan.md` and `tasks.md`.
 - English is the default public locale on existing public routes such as `/`, `/services`, `/contact`, and `/book-consultation`.
 - Arabic public pages render under `/ar` equivalents and keep `lang="ar"` plus `dir="rtl"`.
-- Protected routes (`/admin`, `/portal`, `/install`, `/login`, `/product-system`, and `/stitch-clone/*`) remain Arabic/RTL and are not localized by PLAN-29.
+- Protected admin/install routes remain Arabic/RTL. `/client` and `/login` now use the saved or selected Arabic/English locale under PLAN-39.
 - Public links, nav, footer, cards, forms, CTAs, empty states, error/success states, metadata, canonical URLs, and alternate language URLs are locale-aware.
 - Article and CaseStudy rows have explicit locale storage, composite `(locale, slug)` uniqueness, and locale-filtered public list/detail queries.
 - Existing slug strings and route segments are preserved across locales.

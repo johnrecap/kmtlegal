@@ -83,6 +83,7 @@ export async function createPublicConsultation(input: {
       opposingPartyName: input.body.opposingPartyName || null,
       urgency: input.body.urgency,
       preferredMode: input.body.preferredMode,
+      locale: input.body.locale,
       status: "NEW",
       aiClassification: organizer.classification ? (organizer.classification as Prisma.InputJsonValue) : Prisma.JsonNull,
       aiSummary: organizer.intakeSummary?.summary ?? null

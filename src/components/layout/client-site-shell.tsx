@@ -4,13 +4,16 @@ import { KmtBrandLogo } from "@/components/brand";
 import { MaterialSymbol } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import type { DashboardNavItem } from "./dashboard-shell";
+import { getClientContent, type ClientLocale } from "@/content/client-content";
+import { ClientLanguageSwitch } from "@/features/client/client-language-switch";
 
-function ClientPortalBrand() {
+function ClientPortalBrand({ locale }: { locale: ClientLocale }) {
+  const copy = getClientContent(locale);
   return (
     <KmtBrandLogo
       href="/client"
       size="md"
-      sublabel="بوابة العميل"
+      sublabel={copy.shell.portal}
       surface="dark"
       variant="lockup"
     />
@@ -19,14 +22,17 @@ function ClientPortalBrand() {
 
 function ClientPortalNav({
   navItems,
+  locale,
   compact = false
 }: {
   navItems: DashboardNavItem[];
+  locale: ClientLocale;
   compact?: boolean;
 }) {
+  const copy = getClientContent(locale);
   return (
     <nav
-      aria-label="تنقل بوابة العميل"
+      aria-label={copy.shell.navigation}
       className={compact ? "border-t border-white/10 bg-[#090806]/95 lg:hidden" : "hidden border-t border-white/10 bg-[#090806]/80 lg:block"}
     >
       <div className="mx-auto flex max-w-[1200px] gap-2 overflow-x-auto px-4 py-2 sm:px-6 lg:px-10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -60,8 +66,9 @@ function ClientPortalNav({
 
 export function ClientSiteShell({
   title,
-  eyebrow = "بوابة العميل",
+  eyebrow,
   navItems,
+  locale,
   children,
   userLabel,
   action,
@@ -70,45 +77,48 @@ export function ClientSiteShell({
   title: string;
   eyebrow?: string;
   navItems: DashboardNavItem[];
+  locale: ClientLocale;
   children: ReactNode;
   userLabel: string;
   action?: ReactNode;
   className?: string;
 }) {
+  const copy = getClientContent(locale);
   return (
     <div
       className={cn("client-portal-shell min-h-screen bg-[#060504] text-[#f8f3ea] selection:bg-kmt-gold/30 selection:text-white", className)}
       data-testid="client-portal-shell"
-      dir="rtl"
-      lang="ar"
+      dir={locale === "ar" ? "rtl" : "ltr"}
+      lang={locale}
     >
       <header className="sticky top-0 z-50 border-b border-kmt-gold/20 bg-[#070604]/95 shadow-[0_12px_40px_rgba(0,0,0,0.34)] backdrop-blur-xl">
         <div className="mx-auto flex min-h-[68px] max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
-          <ClientPortalBrand />
+          <ClientPortalBrand locale={locale} />
           <div className="flex shrink-0 items-center gap-2">
             <Link
               className="hidden min-h-10 items-center border border-white/15 px-3 text-xs font-semibold text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold md:inline-flex"
-              href="/"
+              href={locale === "ar" ? "/ar" : "/"}
             >
-              الرجوع للموقع
+              {copy.shell.backToSite}
             </Link>
+            <ClientLanguageSwitch locale={locale} />
             <span className="hidden max-w-56 truncate border border-kmt-gold/25 bg-kmt-gold/10 px-3 py-2 text-xs font-semibold text-amber-100 sm:inline-flex">
               {userLabel}
             </span>
             <form action="/api/auth/logout" method="post">
               <button
-                aria-label="تسجيل الخروج"
+                aria-label={copy.shell.logout}
                 className="inline-flex h-11 min-w-11 items-center justify-center gap-2 border border-white/15 px-3 text-sm font-semibold text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
                 type="submit"
               >
                 <MaterialSymbol className="text-[20px]" name="logout" />
-                <span className="hidden sm:inline">خروج</span>
+                <span className="hidden sm:inline">{copy.shell.logoutShort}</span>
               </button>
             </form>
           </div>
         </div>
-        <ClientPortalNav navItems={navItems} />
-        <ClientPortalNav compact navItems={navItems} />
+        <ClientPortalNav locale={locale} navItems={navItems} />
+        <ClientPortalNav compact locale={locale} navItems={navItems} />
       </header>
 
       <main className="bg-[#060504]">
@@ -116,10 +126,10 @@ export function ClientSiteShell({
           <div className="mx-auto max-w-[1200px] px-4 py-7 sm:px-6 lg:px-10 lg:py-8">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <div className="min-w-0 max-w-3xl">
-                <p className="text-sm font-semibold text-kmt-gold">{eyebrow}</p>
+                <p className="text-sm font-semibold text-kmt-gold">{eyebrow ?? copy.shell.portal}</p>
                 <h1 className="mt-2 break-words text-2xl font-semibold leading-tight text-white md:text-4xl">{title}</h1>
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300">
-                  مساحة آمنة لمتابعة ملفاتك ومواعيدك ومدفوعاتك مع مكتب KMT Legal.
+                  {copy.shell.description}
                 </p>
               </div>
               {action ? <div className="shrink-0">{action}</div> : null}
@@ -134,8 +144,8 @@ export function ClientSiteShell({
 
       <footer className="border-t border-kmt-gold/20 bg-[#070604] text-stone-400">
         <div className="mx-auto flex max-w-[1200px] flex-col gap-2 px-4 py-5 text-xs sm:px-6 md:flex-row md:items-center md:justify-between lg:px-10">
-          <p>KMT Legal - بوابة العميل المحمية</p>
-          <p>البيانات الظاهرة هنا خاصة بحسابك فقط.</p>
+          <p>{copy.shell.footerTitle}</p>
+          <p>{copy.shell.footerPrivacy}</p>
         </div>
       </footer>
     </div>

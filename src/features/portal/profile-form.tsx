@@ -4,6 +4,11 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { ClientPortalPanel, clientPortalPrimaryActionClass } from "@/components/layout";
 import { Button, TextInput } from "@/components/ui";
+import {
+  clientErrorMessage,
+  getClientContent,
+  type ClientLocale
+} from "@/content/client-content";
 
 type ProfileFormValue = {
   fullName: string;
@@ -14,12 +19,14 @@ type ProfileFormValue = {
 
 type ApiErrorBody = {
   error?: {
-    message?: string;
+    code?: string;
   };
+  requestId?: string;
 };
 
-export function ProfileForm({ profile }: { profile: ProfileFormValue }) {
+export function ProfileForm({ profile, locale }: { profile: ProfileFormValue; locale: ClientLocale }) {
   const router = useRouter();
+  const copy = getClientContent(locale);
   const [message, setMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -30,7 +37,7 @@ export function ProfileForm({ profile }: { profile: ProfileFormValue }) {
 
     const formData = new FormData(event.currentTarget);
     try {
-      const response = await fetch("/api/portal/profile", {
+      const response = await fetch("/api/client/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -43,28 +50,28 @@ export function ProfileForm({ profile }: { profile: ProfileFormValue }) {
 
       if (!response.ok) {
         const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
-        setMessage(body.error?.message ?? "تعذر حفظ البيانات.");
+        setMessage(clientErrorMessage(locale, body.error?.code, copy.profile.saveFailed));
         return;
       }
 
-      setMessage("تم حفظ بيانات الملف الشخصي.");
+      setMessage(copy.profile.saved);
       router.refresh();
     } catch {
-      setMessage("لا يمكن الوصول إلى الخادم الآن.");
+      setMessage(copy.profile.networkError);
     } finally {
       setIsSaving(false);
     }
   }
 
   return (
-    <ClientPortalPanel description="هذه البيانات تستخدم للتواصل وتنظيم مواعيد القضية." title="بيانات الملف الشخصي">
+    <ClientPortalPanel description={copy.profile.formDescription} title={copy.profile.formTitle}>
         <form className="grid gap-4" onSubmit={save}>
-          <TextInput defaultValue={profile.fullName} label="الاسم الكامل" name="fullName" required />
-          <TextInput defaultValue={profile.phone} label="رقم الهاتف" name="phone" required />
-          <TextInput defaultValue={profile.email ?? ""} label="البريد الإلكتروني" name="email" type="email" />
-          <TextInput defaultValue={profile.city ?? ""} label="المدينة" name="city" />
+          <TextInput defaultValue={profile.fullName} label={copy.profile.fullName} name="fullName" required />
+          <TextInput defaultValue={profile.phone} label={copy.profile.phone} name="phone" required />
+          <TextInput defaultValue={profile.email ?? ""} label={copy.profile.email} name="email" type="email" />
+          <TextInput defaultValue={profile.city ?? ""} label={copy.profile.city} name="city" />
           <Button className={clientPortalPrimaryActionClass} loading={isSaving} type="submit">
-            حفظ البيانات
+            {copy.profile.save}
           </Button>
           {message ? (
             <div className="rounded border border-blue-300/35 bg-blue-950/45 px-3 py-2 text-sm leading-6 text-blue-100" role="status">
