@@ -44,6 +44,14 @@ not edit the exported Stitch source as part of ordinary product work.
 
 ## Recent Changes
 
+- 2026-07-28 - PostgreSQL 18 backup-client deployment remediation
+  - The aaPanel/PM2 deploy path now reads the live PostgreSQL major version and selects a matching
+    `pg_dump`/`pg_restore` pair before backup.
+  - Exact-major tools are preferred; the lowest installed newer pair is accepted; older-only,
+    incomplete, mismatched, or invalid explicit pairs stop deployment before migration.
+  - `POSTGRES_BACKUP_BIN_DIR` supports nonstandard aaPanel/server installations without putting a
+    credential or server path into tracked source.
+  - Deterministic tests cover exact, newer, older-only, explicit-override, and fail-closed behavior.
 - 2026-07-28 - PLAN-39 site cleanup, contact alerts, and client localization
   - Removed runtime `/portal`, `/product-system`, and `/stitch-clone` pages, their obsolete scripts,
     commands, snapshots, and the old portal profile API.
@@ -215,6 +223,12 @@ Deploy PLAN-39 only after applying the additive consultation-locale migration. T
 existing rows `ar`, constrains new stored values to `ar` or `en`, and should be retained during an
 application rollback rather than dropped.
 
+The protected production deploy discovers a `pg_dump`/`pg_restore` pair that is at least as new as
+the live database server and uses the same pair to create and validate the pre-migration archive.
+For nonstandard installations, set `POSTGRES_BACKUP_BIN_DIR` in the untracked
+`.env.production.local`; see `SERVER_COMMANDS.md`. The deploy stops before migration if it cannot
+prove the pair is compatible.
+
 ## Verification
 
 Standard local checks:
@@ -240,6 +254,12 @@ The 2026-07-28 PLAN-39 local verification passed:
 - 9 retired-route/404/asset Playwright checks.
 - Bilingual login Playwright check; authenticated locale persistence was correctly skipped without
   disposable PostgreSQL and explicit `PLAN39_ALLOW_DB_FIXTURES=true`.
+- The production deploy reached the mandatory backup gate but stopped safely because the live
+  PostgreSQL server was major 18 while the PATH `pg_dump` was major 16. The compatibility
+  remediation is locally covered; a fresh server pull/deploy is still required for runtime proof.
+- The backup-client follow-up passed 25 focused deployment/security tests, all 443 tests across 62
+  Vitest files, typecheck, lint, the guarded production build, both Bash syntax checks, the secret
+  scan, diff hygiene, Analyze with zero unresolved findings, and zero-gap Converge.
 
 The retained 2026-07-22 Governance verification passed:
 

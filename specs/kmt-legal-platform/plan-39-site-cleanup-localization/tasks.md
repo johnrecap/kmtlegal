@@ -234,3 +234,45 @@ is never recorded as PASS.
 - Converge found zero missing, partial, contradictory, or unrequested implementation gaps in the
   accepted scope. It appended no task, and the task file hash remained unchanged during the
   convergence assessment.
+
+---
+
+## Phase 8: Production Backup Client Compatibility Remediation
+
+**Purpose**: Remove the observed PostgreSQL 18 server / PostgreSQL 16 dump-client deployment
+blocker without weakening the mandatory pre-migration backup.
+
+- [x] T043 Add deterministic PostgreSQL server/client-major selection, explicit override,
+  older-only failure, and matching restore-pair tests in
+  `tests/server/postgres-backup-tool-resolution.test.ts`
+- [x] T044 Implement fail-closed compatible `pg_dump`/`pg_restore` discovery and use the selected
+  pair for archive creation/validation in `deploy/install/postgres-backup-tools.sh` and
+  `deploy/install/aapanel-pm2-update.sh`
+- [x] T045 Update `docs/SERVER_COMMANDS.md`, `docs/PROJECT_GUIDE.md`,
+  `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md`, and release checks with the PostgreSQL client
+  prerequisite and recovery command
+- [x] T046 Run focused/full tests, Git Bash syntax validation, secret/diff checks, re-run Analyze
+  and Converge, preserve `.playwright-mcp/`, commit, and push `main`
+
+### Scope-change planning gate
+
+- 2026-07-28 — Production evidence showed PostgreSQL server 18.0 and default `pg_dump` 16.14.
+- Constitution v1.1.0 remains applicable and unchanged.
+- Clarify found no blocking ambiguity: backup remains mandatory, the script may discover but not
+  install tools, and a bad explicit override fails closed.
+- FR-020, SC-010, Decision 12, the deployment contract, quickstart, and CHK021–CHK023 define the
+  accepted remediation before implementation.
+
+### Remediation evidence
+
+- Focused deployment/security characterization passed 25 tests across 3 files; the full suite
+  passed 443 tests across 62 files.
+- Typecheck, lint, the guarded production build, both Git Bash syntax checks, secret scan, and
+  `git diff --check` passed.
+- Analyze rechecked 20 functional requirements, 10 success criteria, 46 tasks, the four user
+  stories, and all five constitution principles with zero unresolved CRITICAL, HIGH, or MEDIUM
+  findings.
+- Converge found zero missing, partial, contradictory, or unrequested gaps for the accepted
+  remediation and left the task file byte-for-byte unchanged during assessment.
+- The existing `.playwright-mcp/` directory remained untracked and untouched. Server runtime
+  deployment evidence remains deferred until the fixed revision is pulled and executed.

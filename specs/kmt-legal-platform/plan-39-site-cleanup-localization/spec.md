@@ -137,6 +137,8 @@ states and confirm their visible text comes from the approved Arabic copy source
   navigation data.
 - Stitch-derived assets that current product pages use remain available even though routable
   clone pages and clone-only commands are removed.
+- The production PostgreSQL server may be newer than the default `pg_dump` on the operating
+  system; deployment must not skip the backup or start migrations with an incompatible client.
 
 ## Scope & Connected Impact
 
@@ -149,6 +151,7 @@ states and confirm their visible text comes from the approved Arabic copy source
 - Full Arabic/English client and client-login copy, direction, formatting, and saved preference.
 - Arabic copy centralization for the touched staff surfaces.
 - Current planning, contract, test, deployment, and project-guide updates.
+- Production backup-tool discovery and compatibility validation before any migration.
 
 ### Out of Scope
 
@@ -159,6 +162,7 @@ states and confirm their visible text comes from the approved Arabic copy source
   slugs.
 - Adding a new localization library or changing the public English-default URL strategy.
 - Migrating or modifying real client records during verification.
+- Installing or upgrading operating-system packages automatically from the deployment script.
 
 ### Existing Behavior to Preserve
 
@@ -183,7 +187,8 @@ states and confirm their visible text comes from the approved Arabic copy source
 - **Messages/Localization**: Client Arabic/English catalog, locale-aware formatting, accessible
   names, safe error-code mapping, and touched admin Arabic copy.
 - **Tests/Docs/Deployment**: Contract, permission, component, browser, responsive/RTL, build,
-  cache-policy, route-manifest, server runbook, project guide, and live read-only smoke evidence.
+  cache-policy, route-manifest, PostgreSQL backup-tool compatibility, server runbook, project
+  guide, and live read-only smoke evidence.
 
 ## Requirements
 
@@ -232,6 +237,11 @@ states and confirm their visible text comes from the approved Arabic copy source
   MUST name `/client` as the only client path and MUST NOT depend on retired runtime routes.
 - **FR-019**: Verification MUST use synthetic data on local/staging environments; live
   verification MUST be read-only.
+- **FR-020**: Before creating a production backup or applying a migration, deployment MUST query
+  the PostgreSQL server major version, select an executable `pg_dump`/`pg_restore` pair whose
+  matching major version is not older than the server, prefer the exact server major, support an
+  explicit administrator-supplied binary directory, and stop with installation guidance when no
+  compatible pair exists. It MUST NOT silently fall back to an older client or skip the backup.
 
 ### Key Entities
 
@@ -267,6 +277,10 @@ states and confirm their visible text comes from the approved Arabic copy source
   find no unapproved client-facing literal outside the approved copy/catalog sources.
 - **SC-009**: Type checking, lint, full automated tests, production build, focused browser flows,
   route checks, and documentation accuracy checks complete without unresolved failures.
+- **SC-010**: In deterministic deployment-tool tests, a PostgreSQL 18 server rejects a
+  `pg_dump` 16-only environment before backup/migration, selects an available version-18 pair
+  even when version 16 is first on `PATH`, validates the archive with the selected matching
+  `pg_restore`, and honors a compatible explicit binary-directory override.
 
 ## Assumptions
 
@@ -279,3 +293,5 @@ states and confirm their visible text comes from the approved Arabic copy source
   active `/portal`, `/product-system`, or `/stitch-clone` runtime behavior.
 - The current modified Spec Kit templates are intentional project customizations and will not be
   overwritten by an integration upgrade.
+- The server exposes its numeric major version through a normal authenticated SQL query; no
+  production data is read beyond that server setting during tool selection.

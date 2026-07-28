@@ -1,6 +1,6 @@
 # KMT Legal Feature Inventory
 
-Last updated: 2026-07-22
+Last updated: 2026-07-28
 
 ## Public Site
 
@@ -86,7 +86,9 @@ Last updated: 2026-07-22
 
 ## Deployment And Operations
 
-- The aaPanel/PM2 update path creates and validates a custom-format PostgreSQL backup outside the Git checkout before migrations.
+- The aaPanel/PM2 update path reads the live PostgreSQL major, selects a same-major or newer
+  `pg_dump`/`pg_restore` pair, and creates and validates a custom-format PostgreSQL backup outside
+  the Git checkout before migrations. Older-only, mismatched, or incomplete pairs fail closed.
 - After migrations it runs one reconciliation cycle before restarting the app/maintenance process, then verifies the maintenance process stays online with an unchanged restart counter for longer than one full cycle.
 - PLAN-37 adds no migration or PM2 process; the same protected deploy path runs its reconciliation/overdue pass before restarting the existing processes.
 - Global npm configuration and deprecated Nginx HTTP/2 directive remediation remain documented manual operations with backups and syntax checks; deploy automation does not silently edit them.

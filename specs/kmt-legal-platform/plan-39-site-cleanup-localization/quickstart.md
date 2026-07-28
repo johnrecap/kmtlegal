@@ -23,6 +23,24 @@ git diff --check
 Expected: all commands exit 0. The build contains no `/portal`, `/product-system`, or
 `/stitch-clone` page; `/client` remains present.
 
+## PostgreSQL backup-tool compatibility
+
+Run the focused deployment contract test and shell syntax check:
+
+```powershell
+cmd /c npx vitest run tests/server/postgres-backup-tool-resolution.test.ts
+& 'C:\Program Files\Git\bin\bash.exe' -n deploy/install/aapanel-pm2-update.sh
+```
+
+Expected:
+
+- A simulated server major 18 selects a version-18 pair even if a version-16 pair is first on
+  `PATH`.
+- An older-only version-16 environment fails before backup or migration and names
+  `postgresql-client-18` plus `POSTGRES_BACKUP_BIN_DIR` as remediation.
+- A compatible explicit directory is selected; an incompatible explicit directory fails closed.
+- The selected matching `pg_restore` validates the custom archive.
+
 ## Focused server and UI checks
 
 - Contact submission saves the complete synthetic message.
@@ -67,6 +85,11 @@ After local and staging gates pass:
 cd /www/wwwroot/kmtlegal
 bash deploy/install/aapanel-pm2-update.sh
 ```
+
+The server must have `psql` plus a compatible `pg_dump`/`pg_restore` pair. For a PostgreSQL 18
+server on Ubuntu, install the `postgresql-client-18` package from the PostgreSQL Apt repository if
+the versioned client directory is absent, or set `POSTGRES_BACKUP_BIN_DIR` to an existing
+compatible pair. The deploy script never installs packages or skips the backup automatically.
 
 Live checks are read-only:
 

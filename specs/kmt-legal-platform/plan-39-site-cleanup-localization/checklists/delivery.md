@@ -39,8 +39,11 @@ requirements before task generation
 - [x] CHK019 Is the additive consultation-locale migration, historical Arabic backfill, rollback
   policy, and no-new-library assumption explicit and consistent with scope? [Dependency, Spec §Assumptions]
 - [x] CHK020 Are historical documentation and active operational documentation treated differently? [Documentation, Spec §Assumptions, FR-018]
+- [x] CHK021 Is PostgreSQL client/server major-version compatibility defined before backup and migration? [Safety, Spec §FR-020]
+- [x] CHK022 Are exact-match preference, compatible-newer fallback, explicit override, and fail-closed behavior unambiguous? [Clarity, Spec §FR-020]
+- [x] CHK023 Are package installation and backup skipping explicitly excluded from deployment automation? [Scope, Spec §Out of Scope, FR-020]
 
 ## Result
 
-All 20 requirements-quality checks pass. No unresolved CRITICAL, HIGH, or MEDIUM requirements
+All 23 requirements-quality checks pass. No unresolved CRITICAL, HIGH, or MEDIUM requirements
 gap remains before task generation.

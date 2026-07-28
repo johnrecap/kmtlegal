@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=deploy/install/postgres-backup-tools.sh
+source "${SCRIPT_DIR}/postgres-backup-tools.sh"
+
 APP_DIR="${APP_DIR:-/www/wwwroot/kmtlegal}"
 BRANCH="${BRANCH:-main}"
 PM2_APP="${PM2_APP:-kmtlegal}"
@@ -50,8 +54,7 @@ require_command node
 require_command npm
 require_command pm2
 require_command curl
-require_command pg_dump
-require_command pg_restore
+require_command psql
 require_command realpath
 
 if [[ ! -d "${APP_DIR}/.git" ]]; then
@@ -73,6 +76,30 @@ set +a
 if [[ -z "${DATABASE_URL:-}" ]]; then
   fail "DATABASE_URL is missing after loading ${ENV_FILE}"
 fi
+
+POSTGRES_SERVER_VERSION_NUM="$(
+  psql \
+    --dbname="${DATABASE_URL}" \
+    --no-psqlrc \
+    --tuples-only \
+    --no-align \
+    --command="SHOW server_version_num;" |
+    tr -d '[:space:]'
+)" || fail "Could not query PostgreSQL server_version_num before backup"
+
+if [[ ! "${POSTGRES_SERVER_VERSION_NUM}" =~ ^[0-9]+$ ]] ||
+  (( POSTGRES_SERVER_VERSION_NUM < 90000 )); then
+  fail "PostgreSQL returned an invalid server_version_num"
+fi
+
+POSTGRES_SERVER_MAJOR="$((10#${POSTGRES_SERVER_VERSION_NUM} / 10000))"
+if ! resolve_installed_postgres_backup_pair "${POSTGRES_SERVER_MAJOR}"; then
+  fail "A compatible PostgreSQL backup client is required before deployment can continue"
+fi
+
+log "PostgreSQL server major ${POSTGRES_SERVER_MAJOR}; using backup tools major ${POSTGRES_BACKUP_TOOL_MAJOR}"
+log "pg_dump: ${PG_DUMP_BIN}"
+log "pg_restore: ${PG_RESTORE_BIN}"
 
 if [[ "${PAYMENT_MAINTENANCE_PM2_ENABLED}" != "true" ]]; then
   fail "PAYMENT_MAINTENANCE_PM2_ENABLED=true is required for consultation outcome classification"
@@ -768,9 +795,9 @@ create_verified_database_backup() {
   DATABASE_BACKUP_FILE="${backup_path}/kmtlegal-${timestamp}-${release_suffix}.dump"
 
   log "Creating verified PostgreSQL backup outside the Git checkout"
-  pg_dump --dbname="${DATABASE_URL}" --format=custom --file="${DATABASE_BACKUP_FILE}"
+  "${PG_DUMP_BIN}" --dbname="${DATABASE_URL}" --format=custom --file="${DATABASE_BACKUP_FILE}"
   [[ -s "${DATABASE_BACKUP_FILE}" ]] || fail "Database backup is empty: ${DATABASE_BACKUP_FILE}"
-  pg_restore --list "${DATABASE_BACKUP_FILE}" >/dev/null ||
+  "${PG_RESTORE_BIN}" --list "${DATABASE_BACKUP_FILE}" >/dev/null ||
     fail "Database backup could not be read by pg_restore: ${DATABASE_BACKUP_FILE}"
   log "Verified database backup: ${DATABASE_BACKUP_FILE}"
 }

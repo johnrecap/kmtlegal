@@ -1,5 +1,49 @@
 # Server Commands
 
+## PostgreSQL backup client compatibility
+
+The protected deploy command now queries the database server major version before backup and
+selects one matching `pg_dump`/`pg_restore` pair. It prefers the exact server major and may use a
+newer pair, but it rejects any pair older than the server. The selected `pg_restore` verifies the
+custom-format archive before any migration starts.
+
+This handles the observed PostgreSQL 18.0 server with a PostgreSQL 16.14 default client. Pull the
+fixed script and retry the normal deployment:
+
+```bash
+cd /www/wwwroot/kmtlegal
+git pull --ff-only origin main
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+The script searches common Debian/Ubuntu, RHEL-like, local PostgreSQL, and aaPanel installation
+paths. If a compatible pair is installed in a different directory, add its directory to the
+untracked `/www/wwwroot/kmtlegal/.env.production.local` file:
+
+```bash
+POSTGRES_BACKUP_BIN_DIR=/usr/lib/postgresql/18/bin
+```
+
+Both executables in that directory must exist, have the same major version, and be at least as new
+as the server. Check the pair before retrying:
+
+```bash
+/usr/lib/postgresql/18/bin/pg_dump --version
+/usr/lib/postgresql/18/bin/pg_restore --version
+```
+
+If PostgreSQL client 18 is not installed, configure the official PostgreSQL Apt repository for the
+server's Ubuntu release, then install only the client package:
+
+```bash
+apt-get update
+apt-get install -y postgresql-client-18
+```
+
+The deploy script does not install operating-system packages and never continues to migrations
+without a non-empty, readable backup. It logs only selected versions and executable paths, never
+the database connection string.
+
 ## PLAN-37 overdue-unbooked consultation deployment
 
 PLAN-37 adds no Prisma migration and no new PM2 process. Use the existing protected aaPanel/PM2
@@ -269,6 +313,8 @@ The script:
 - Pulls with `git pull --ff-only origin main` when the server checkout is behind.
 - Fails if tracked files on the server are modified.
 - Loads the production environment file and fails if `DATABASE_URL` is missing.
+- Resolves a matching or newer `pg_dump`/`pg_restore` pair for the live PostgreSQL server and stops
+  before backup or migration when no safe pair exists.
 - Runs production readiness with Paymob-first settings and requires a reachable ClamAV daemon before `/api/health` can become ready.
 - Requires `/api/health` itself to return success after restart; `REQUIRE_HEALTH_READY=false` is reserved for controlled first-bootstrap work and must not be used for a normal production update.
 - Sets `APP_RELEASE` to the exact deployed Git commit so `/api/health` can prove which release the PM2 process and public domain are serving.

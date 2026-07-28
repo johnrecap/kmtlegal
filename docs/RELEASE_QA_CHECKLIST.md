@@ -42,6 +42,10 @@ Current result is documented in `docs/SECURITY_AUDIT_FINDINGS.md`.
 
 ## Database Gates
 
+- [ ] The deploy-reported `pg_dump` and `pg_restore` have the same major version, and that major is
+  equal to or newer than the live PostgreSQL server major.
+- [ ] A configured `POSTGRES_BACKUP_BIN_DIR`, when used, contains both compatible executables; an
+  invalid, incomplete, mismatched, or older-only pair stops deployment before migration.
 - [ ] PLAN-36 backup is a non-empty custom-format `pg_dump` outside the Git checkout and passes `pg_restore --list` before migration.
 - [ ] PLAN-36 additive migration applies on staging or disposable PostgreSQL without destructive data changes.
 - [ ] One-shot reconciliation runs after migration and before application/worker restart; repeated execution produces no duplicate outcome audit or notification.

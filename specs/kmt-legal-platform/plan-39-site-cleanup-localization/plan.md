@@ -15,6 +15,9 @@ offline Stitch archive and product-used `/stitch-assets`. Add Next.js global not
 move `/client` into a locale-aware root layout, reuse the current public dictionary pattern for
 a typed client Arabic/English catalog, and persist the existing `User.locale` through a self-only
 preference endpoint.
+Harden the existing aaPanel deployment backup gate so it resolves a PostgreSQL client pair that
+is compatible with the actual server major before migrations, instead of trusting the first
+`pg_dump` on `PATH`.
 
 ## Technical Context
 
@@ -30,7 +33,8 @@ existing KMT UI/layout primitives
 **Testing**: Vitest/Testing Library, route/contract tests, Playwright desktop/mobile/browser
 flows, typecheck, lint, Prisma validation, production build, read-only live smoke
 
-**Target Platform**: Responsive web app on the existing aaPanel + PM2 Linux deployment
+**Target Platform**: Responsive web app on the existing aaPanel + PM2 Linux deployment, including
+Ubuntu/Debian PostgreSQL client layouts and common aaPanel PostgreSQL binary layouts
 
 **Project Type**: Next.js full-stack web application
 
@@ -39,11 +43,12 @@ flows, typecheck, lint, Prisma validation, production build, read-only live smok
 
 **Constraints**: Preserve contact success response and message durability; no email/WhatsApp;
 no new localization/UI dependency; keep staff UI Arabic; keep `/client` URLs stable; no real
-client data in tests; keep `.playwright-mcp/` untouched
+client data in tests; do not auto-install OS packages; keep `.playwright-mcp/` untouched
 
 **Scale/Scope**: Three retired route families, eight client destinations, shared client shell,
 two client conversation panels, two portal-named forms, one contact side effect, one notification
-polling surface, login, cache/startup/deployment references, and current documentation
+polling surface, login, cache/startup/deployment references, one PostgreSQL backup tool resolver,
+and current documentation
 
 ## Constitution Check
 
@@ -123,6 +128,7 @@ tests/
 
 scripts/
 deploy/
+└── install/{aapanel-pm2-update.sh,postgres-backup-tools.sh}
 docs/
 ```
 
@@ -172,6 +178,15 @@ layout can emit the account locale at document level without changing URLs.
 - **Documentation truth**: Current docs and runbooks name `/client` only. Historical PLAN-02,
   PLAN-03, PLAN-05, PLAN-13, and PLAN-14 records remain but receive a short superseded note rather
   than rewritten history.
+- **Backup tool compatibility**: Add a sourceable/testable resolver at
+  `deploy/install/postgres-backup-tools.sh` and use it from
+  `deploy/install/aapanel-pm2-update.sh`. Query `server_version_num` with `psql`, inspect versioned
+  `pg_dump`/`pg_restore` pairs from an optional `POSTGRES_BACKUP_BIN_DIR`, the exact
+  Debian/Ubuntu version directory, common aaPanel/local directories, installed versioned
+  directories, and `PATH`. Select the exact server major first, otherwise the lowest matching
+  pair newer than the server. Never select an older pair. Use the selected pair for both dump
+  creation and `pg_restore --list`, and fail before migration with `postgresql-client-<major>`
+  guidance if no compatible pair exists.
 
 ## Interface and Data Flow
 
@@ -184,6 +199,8 @@ layout can emit the account locale at document level without changing URLs.
    `router.refresh()` re-renders document direction and text.
 4. Unknown or retired request → no retired middleware/auth special case → App Router miss →
    global branded 404 with status 404.
+5. Deployment → authenticated server-version query → compatible dump/restore pair resolution →
+   custom archive creation → archive-list validation → migration and reconciliation.
 
 ## File Conflict Control
 
@@ -195,7 +212,8 @@ Work is sequential in this task:
 4. Client contracts and locale foundation.
 5. Client route/page/component localization.
 6. Global docs/tests/build/browser verification.
-7. Convergence, task check-off, status/project guide, commit/push/deploy handoff.
+7. PostgreSQL backup-client compatibility regression test and deployment script remediation.
+8. Convergence, task check-off, status/project guide, commit/push/deploy handoff.
 
 No parallel producer edits are used; `.specify/**`, `specs/**`, shared copy/format files, route
 policy, package scripts, and final integration evidence remain root-owned.

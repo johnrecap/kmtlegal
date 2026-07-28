@@ -98,3 +98,18 @@
   used to sign account setup. The default safely backfills historical consultations.
 - **Alternatives considered**: Inferring from URL or payment time loses the original choice;
   accepting locale from account-setup form is mutable; a separate preference entity is excessive.
+
+## Decision 12: Resolve a compatible PostgreSQL backup client before migration
+
+- **Decision**: Query `server_version_num` with `psql`, then select a same-major
+  `pg_dump`/`pg_restore` pair when available or the lowest installed pair newer than the server.
+  Search an explicit `POSTGRES_BACKUP_BIN_DIR`, standard versioned Debian/Ubuntu paths, common
+  aaPanel/local paths, and `PATH`; validate both tools report the same major.
+- **Rationale**: PostgreSQL refuses to let an older-major `pg_dump` read a newer-major server.
+  The production failure showed server 18 with the Ubuntu 16 client first on `PATH`. Resolving the
+  pair before backup preserves the mandatory pre-migration safety gate without relying on shell
+  path order.
+- **Alternatives considered**: Skipping the backup violates the release contract; blindly using
+  `/usr/lib/postgresql/18/bin` fails on non-Debian or aaPanel-managed layouts; automatically
+  installing packages mutates server configuration during deployment; using Docker adds a new
+  runtime dependency and secret/connection handling.

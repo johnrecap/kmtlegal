@@ -566,5 +566,8 @@ Current evidence:
 
 - Local implementation, static checks, 437 automated tests, guarded production build, 46 browser
   smoke checks, 9 retired-route/404 checks, and bilingual login browser coverage pass.
+- Backup-client remediation passes 25 focused deployment/security tests, all 443 tests across 62
+  files, typecheck, lint, guarded build, Bash syntax, secret/diff checks, and zero-gap
+  Analyze/Converge.
 - Disposable-database, authenticated client fixture, deployment, and post-deploy live evidence are
   deferred and keep T292 open.
