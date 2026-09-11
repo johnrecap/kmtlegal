@@ -1,5 +1,6 @@
 "use client";
 
+import { useHydrated } from "@/lib/use-hydrated";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { ClientPortalPanel, clientPortalPrimaryActionClass } from "@/components/layout";
@@ -28,6 +29,7 @@ const documentCategoryValues = ["CONTRACT", "COURT_FILE", "IDENTITY", "EVIDENCE"
 
 export function DocumentUploadForm({ cases, locale }: { cases: CaseOption[]; locale: ClientLocale }) {
   const router = useRouter();
+  const isHydrated = useHydrated();
   const copy = getClientContent(locale);
   const [message, setMessage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -75,15 +77,16 @@ export function DocumentUploadForm({ cases, locale }: { cases: CaseOption[]; loc
 
   return (
     <ClientPortalPanel description={copy.upload.description} title={copy.upload.title}>
-      <form className="space-y-4" onSubmit={upload}>
-        <ClientPortalSelect label={copy.upload.caseLabel} name="caseId" options={caseOptions} />
-        <ClientPortalSelect defaultValue="OTHER" label={copy.upload.categoryLabel} name="category" options={documentCategoryOptions} />
+      <form className="space-y-4" method="post" onSubmit={upload}>
+        <ClientPortalSelect disabled={!isHydrated || isUploading} label={copy.upload.caseLabel} name="caseId" options={caseOptions} />
+        <ClientPortalSelect disabled={!isHydrated || isUploading} defaultValue="OTHER" label={copy.upload.categoryLabel} name="category" options={documentCategoryOptions} />
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-white" htmlFor="portal-document-file">
             {copy.upload.fileLabel}
           </label>
           <input
             id="portal-document-file"
+            disabled={!isHydrated || isUploading}
             accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
             className="client-portal-file-input w-full rounded border border-white/15 bg-black/20 px-3 py-2.5 text-sm text-slate-100 file:me-3 file:rounded file:border-0 file:bg-kmt-gold file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#120d07] hover:border-kmt-gold/50 focus:border-kmt-gold focus:ring-2 focus:ring-kmt-gold/20"
             name="file"
@@ -91,7 +94,7 @@ export function DocumentUploadForm({ cases, locale }: { cases: CaseOption[]; loc
             type="file"
           />
         </div>
-        <Button className={clientPortalPrimaryActionClass} loading={isUploading} type="submit">
+        <Button disabled={!isHydrated || isUploading} className={clientPortalPrimaryActionClass} loading={isUploading} type="submit">
           {copy.upload.submit}
         </Button>
         {message ? (

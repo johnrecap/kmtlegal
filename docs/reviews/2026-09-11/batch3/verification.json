@@ -1,0 +1,308 @@
+{
+  "date": "2026-09-11",
+  "baseline": "ea186fdb2e0a3b46572879bdb1683bd0098a153e",
+  "lanes": {
+    "browser-results": {
+      "stats": {
+        "startTime": "2026-09-11T19:12:36.283Z",
+        "duration": 49389.850999999995,
+        "expected": 16,
+        "skipped": 1,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "title": "download guest / CLIENT_VISIBLE returns 401",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "download client / CLIENT_VISIBLE returns 200",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "download other / CLIENT_VISIBLE returns 403",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "download client / STAFF_ONLY returns 403",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "download client / INTERNAL_ONLY returns 403",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "download office.admin / CLIENT_VISIBLE returns 200",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "download office.admin / INTERNAL_ONLY returns 200",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "download marketing / CLIENT_VISIBLE returns 403",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "download marketing / INTERNAL_ONLY returns 403",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "download lawyer / CLIENT_VISIBLE returns 200",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "download lawyer / INTERNAL_ONLY returns 200",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "download lawyer / unassigned returns 403",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "upload rejects ownership, case mismatch, type and size without saving document rows",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "browser client upload reaches private storage and downloads identical bytes",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "browser office.admin upload reaches private storage and downloads identical bytes",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "upload forms are inert before hydration for client and staff",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "required scanner outage returns 503 and writes no file or document",
+          "results": [
+            {
+              "status": "skipped",
+              "attempts": [
+                "skipped"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "upload-contract-results": {
+      "stats": {
+        "startTime": "2026-09-11T19:14:24.312Z",
+        "duration": 33568.117,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "title": "browser client upload reaches private storage and downloads identical bytes",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "browser office.admin upload reaches private storage and downloads identical bytes",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "multipart API returns the saved document JSON contract",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "scanner-results": {
+      "stats": {
+        "startTime": "2026-09-11T19:15:57.347Z",
+        "duration": 6243.03,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "cases": [
+        {
+          "title": "required scanner outage returns 503 and writes no file or document",
+          "results": [
+            {
+              "status": "expected",
+              "attempts": [
+                "passed"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "uniqueBrowserHttpCasesPassed": 18,
+  "executionNote": "16 normal passes; 3 strengthened upload/contract passes including 2 repeated browser cases; 1 separate scanner-outage pass. Normal lane skips outage intentionally; it passes independently.",
+  "unit": {
+    "passed": 35,
+    "failed": 0,
+    "skipped": 0
+  },
+  "typecheck": "passed",
+  "lint": "passed",
+  "build": {
+    "status": "passed",
+    "exitCode": 0,
+    "guardedWithoutDatabaseUrl": true,
+    "generatedStaticPages": 44,
+    "afterBothUploadFormChanges": true,
+    "warnings": [
+      "Non-fatal webpack cache snapshot warnings"
+    ]
+  },
+  "restore": "passed: 37 public tables and 39 private files",
+  "commands": {
+    "normal": "npm run test:e2e -- tests/e2e/batch3-files.spec.ts --workers=1 --reporter=list,json",
+    "uploadContract": "npm run test:e2e -- tests/e2e/batch3-files.spec.ts --grep \"browser|multipart API\" --workers=1 --reporter=list,json",
+    "outage": "npm run test:e2e -- tests/e2e/batch3-files.spec.ts --grep \"required scanner\" --workers=1 --reporter=list,json",
+    "restore": "node scripts/batch3-disposable-restore.mjs",
+    "environment": "APP_ENV=local; BATCH3_ISOLATED_DB=true; DATABASE_URL targets kmt_batch3 user/database at 127.0.0.1 port55437 with a disposable password; UPLOADS_DIR=<worktree>/_workspace/batch3-postgres/uploads; KMT_PORT=3109. Normal lane explicitly MALWARE_SCAN_MODE=disabled. Outage lane uses BATCH3_SCANNER_FAILURE=true, required scan, CLAMAV_HOST=127.0.0.1, CLAMAV_PORT=55439, timeout1000ms after confirming connection refused.",
+    "build": "ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build",
+    "unit": "npm test -- tests/server/storage-contract.test.ts tests/server/admin-task-documents.test.ts tests/server/malware-scan.test.ts tests/server/admin-route-policy.test.ts tests/server/postgres-backup-tool-resolution.test.ts --reporter=json --outputFile=.playwright/batch3-unit-results.json"
+  },
+  "limits": [
+    "No production or aaPanel restore.",
+    "No real ClamAV clean/infected scan.",
+    "Entry permission table is not every HTTP mutation policy.",
+    "Playwright browser response.json stalled after refresh; independent APIRequestContext JSON contract passed, and browser operation is checked through new unique row, stored bytes and authorized download."
+  ]
+}

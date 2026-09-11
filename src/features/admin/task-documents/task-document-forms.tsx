@@ -1,5 +1,6 @@
 "use client";
 
+import { useHydrated } from "@/lib/use-hydrated";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { Button, InlineFeedback, Select, StateBlock, TextInput, Textarea } from "@/components/ui";
@@ -310,6 +311,7 @@ export function AdminDocumentUploadForm({
   defaultCaseId?: string;
 }) {
   const router = useRouter();
+  const isHydrated = useHydrated();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -346,8 +348,8 @@ export function AdminDocumentUploadForm({
   }
 
   return (
-    <form className="grid gap-4" onSubmit={upload}>
-      <Select defaultValue={defaultCaseId ?? ""} disabled={isUploading} idPrefix="document-upload" label="القضية" name="caseId">
+    <form className="grid gap-4" method="post" onSubmit={upload}>
+      <Select defaultValue={defaultCaseId ?? ""} disabled={!isHydrated || isUploading} idPrefix="document-upload" label="القضية" name="caseId">
         <option value="">بدون قضية</option>
         {cases.map((legalCase) => (
           <option key={legalCase.id} value={legalCase.id}>
@@ -355,7 +357,7 @@ export function AdminDocumentUploadForm({
           </option>
         ))}
       </Select>
-      <Select disabled={isUploading} idPrefix="document-upload" label="العميل المالك" name="ownerClientId">
+      <Select disabled={!isHydrated || isUploading} idPrefix="document-upload" label="العميل المالك" name="ownerClientId">
         <option value="">غير محدد</option>
         {clients.map((client) => (
           <option key={client.id} value={client.id}>
@@ -364,14 +366,14 @@ export function AdminDocumentUploadForm({
         ))}
       </Select>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Select defaultValue="OTHER" disabled={isUploading} idPrefix="document-upload" label="التصنيف" name="category">
+        <Select defaultValue="OTHER" disabled={!isHydrated || isUploading} idPrefix="document-upload" label="التصنيف" name="category">
           {documentCategoryOptions.map((category) => (
             <option key={category} value={category}>
               {labelFrom(documentCategoryLabels, category)}
             </option>
           ))}
         </Select>
-        <Select defaultValue="STAFF_ONLY" disabled={isUploading} idPrefix="document-upload" label="الظهور" name="visibility">
+        <Select defaultValue="STAFF_ONLY" disabled={!isHydrated || isUploading} idPrefix="document-upload" label="الظهور" name="visibility">
           {documentVisibilityOptions.map((visibility) => (
             <option key={visibility} value={visibility}>
               {labelFrom(documentVisibilityLabels, visibility)}
@@ -387,7 +389,7 @@ export function AdminDocumentUploadForm({
           id="document-upload-file"
           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
           className="w-full rounded border border-slate-300 bg-white px-3 py-2.5 text-sm"
-          disabled={isUploading}
+          disabled={!isHydrated || isUploading}
           name="file"
           required
           type="file"
@@ -395,7 +397,7 @@ export function AdminDocumentUploadForm({
         />
         <p className="text-sm leading-6 text-kmt-muted" id="document-upload-file-hint">الحد الأقصى 5MB. الأنواع المسموحة: PDF, DOC, DOCX, JPG, PNG.</p>
       </div>
-      <Button loading={isUploading} type="submit">
+      <Button disabled={!isHydrated || isUploading} loading={isUploading} type="submit">
         رفع المستند
       </Button>
       <ActionFeedback message={message} />

@@ -1,0 +1,19 @@
+{
+  "port": 55437,
+  "sourceDatabase": "kmt_batch3",
+  "temporaryClusterUploadsDumpAndRestoredCopiesRemoved": true,
+  "pgIsReadyExitCode": 2,
+  "serverVersion": "18.6",
+  "stopExitCode": 0,
+  "postmasterPidPresent": false,
+  "restoreDatabase": "kmt_batch3_restore",
+  "systemServiceInstalled": false,
+  "successfulMigrations": 17,
+  "cleanupTarget": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\_workspace\\batch3-postgres",
+  "otherSourceClientsBeforeRestore": 0,
+  "dataDirectory": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\_workspace\\batch3-postgres\\data",
+  "date": "2026-09-11",
+  "server3109ConnectionRefusedBeforeRestore": true,
+  "originalCheckoutTouched": false,
+  "port5432Touched": false
+}

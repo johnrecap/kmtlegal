@@ -3,10 +3,12 @@
 Last updated: 2026-09-11
 
 2026-09-11 ordinary delivery checkpoint (Spec Kit not activated): the first dependency/session/
-booking-recovery batch was pushed as `7ad0010` to origin/main. Batch 2 remains local for
-supervisor review; see `docs/reviews/2026-09-11/batch2/BATCH-2.md` for bounded real database/browser evidence. See `docs/reviews/2026-09-11/BATCH-1.md` for changes, source preservation comparison,
+booking-recovery batch was pushed as `7ad0010` to origin/main. Batch 2 was subsequently pushed as `ea186fd`; see `docs/reviews/2026-09-11/batch2/BATCH-2.md` for bounded real database/browser evidence. See `docs/reviews/2026-09-11/BATCH-1.md` for changes, source preservation comparison,
 verification and remaining database/payment/visual gates. Existing plan evidence states below
 are unchanged; this checkpoint does not mark any whole-project audit or release complete.
+
+Batch 3 adds bounded document HTTP/upload and local restore evidence plus upload-form safety.
+See `docs/reviews/2026-09-11/batch3/BATCH-3.md`; no prior whole-plan release gate is automatically closed.
 
 This is the main tracking file for 40 Spec Kit plan IDs (`PLAN-00` through `PLAN-39`).
 

@@ -209,5 +209,16 @@ Batch 2 repairs Cairo winter slot conversion, malformed-cookie logout, localized
 and initial credential-form submission. Its isolated PostgreSQL 18.6 lane applied 17 migrations
 and verified seed idempotency, sessions, client/document service isolation and free-booking races.
 See `docs/reviews/2026-09-11/batch2/BATCH-2.md` for exact browser evidence, cleanup and remaining fourteen-step scope.
-Batch 2 remains local for supervisor review before push. This does not close prior deployment,
+Batch 2 was subsequently approved and pushed as `ea186fd`. This does not close prior deployment,
 provider, full authorization, backup or whole-project evidence gates.
+
+## 2026-09-11 batch 3 data-protection checkpoint
+
+Batch 2 is now pushed as `ea186fdb2e0a3b46572879bdb1683bd0098a153e`. Batch 3 adds real
+HTTP document access/upload checks, a source-derived 19-entry office permissions table, and
+a disposable PostgreSQL/file restore drill. It fixes initial GET submission in the client/admin
+upload forms with the existing hydration guard. Eighteen unique browser/HTTP cases and 35
+focused tests pass; 37 restored tables and 39 files match. The disposable cluster and copies
+were stopped and removed. See `docs/reviews/2026-09-11/batch3/BATCH-3.md` for the final build result, original
+reports and explicit limits. Batch 3 remains local for review; production ClamAV, aaPanel
+restore and the full mutation permission matrix remain unverified.
