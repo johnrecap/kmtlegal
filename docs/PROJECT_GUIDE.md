@@ -1,6 +1,6 @@
 # KMT Legal Platform — Engineering Handoff
 
-**Last updated**: 2026-07-28
+**Last updated**: 2026-09-11
 
 **Current delivery focus**: PLAN-39 Site Cleanup, Contact Alerts, and Client Localization
 
@@ -43,6 +43,14 @@ Do not recreate runtime Stitch clone pages or connect product code/dynamic data 
 not edit the exported Stitch source as part of ordinary product work.
 
 ## Recent Changes
+
+- 2026-09-11 - First hardening/review batch prepared for supervisor review before push.
+  - Cookie decoding fails closed; booking discards server-invalidated slots and distinguishes
+    payment restoration failures from legitimately withheld drafts; checkout requires a handoff URL.
+  - Security dependencies updated, with matching Prisma CLI/client/adapter 7.10.0 and a targeted
+    mysql2 3.24.4 override. Full evidence and limits: `reviews/2026-09-11/BATCH-1.md`.
+  - Source inventory and before/after comparison retain all page/API patterns and captured links.
+    Database, payment-provider and authenticated visual evidence gates remain open.
 
 - 2026-07-28 - PostgreSQL 18 backup-client deployment remediation
   - The aaPanel/PM2 deploy path now reads the live PostgreSQL major version and selects a matching

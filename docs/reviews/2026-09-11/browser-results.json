@@ -1,0 +1,323 @@
+{
+  "evidence": "Local Next and Chromium; assistant/payment responses mocked; auth cookie request real. No database or provider validation.",
+  "stats": {
+    "startTime": "2026-09-11T18:16:41.928Z",
+    "duration": 128577.178,
+    "expected": 31,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "title": "booking-recovery.spec.ts / malformed session cookies return unauthorized from the real auth endpoint",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3979
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 390px / reports payment resume http failure with a contact action",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 5964
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 390px / reports payment resume json failure with a contact action",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 2970
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 390px / reports payment resume shape failure with a contact action",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3937
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 390px / reports payment resume missing-draft failure with a contact action",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3367
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 390px / accepts intentionally withheld drafts without reporting a retrieval error",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 8655
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 390px / restores a verified failed attempt and clears its old appointment",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3014
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 390px / clears an invalidated appointment instead of resending it",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3536
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 390px / reports a failed payment-resume request without an unhandled error",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 2843
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 390px / does not report a payment page ready when checkout returns no payment attempt",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3417
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 390px / reports payment resume http failure with a contact action",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 6593
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 390px / reports payment resume json failure with a contact action",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3566
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 390px / reports payment resume shape failure with a contact action",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 2892
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 390px / reports payment resume missing-draft failure with a contact action",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 2883
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 390px / accepts intentionally withheld drafts without reporting a retrieval error",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 9018
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 390px / restores a verified failed attempt and clears its old appointment",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3097
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 390px / clears an invalidated appointment instead of resending it",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3773
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 390px / reports a failed payment-resume request without an unhandled error",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 2800
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 390px / does not report a payment page ready when checkout returns no payment attempt",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3191
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 768px / clears an invalidated appointment instead of resending it",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3703
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 768px / reports a failed payment-resume request without an unhandled error",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 2844
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 768px / does not report a payment page ready when checkout returns no payment attempt",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3305
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 768px / clears an invalidated appointment instead of resending it",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3761
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 768px / reports a failed payment-resume request without an unhandled error",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 2887
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 768px / does not report a payment page ready when checkout returns no payment attempt",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3841
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 1440px / clears an invalidated appointment instead of resending it",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 4454
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 1440px / reports a failed payment-resume request without an unhandled error",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3723
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / ar at 1440px / does not report a payment page ready when checkout returns no payment attempt",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 4280
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 1440px / clears an invalidated appointment instead of resending it",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 4698
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 1440px / reports a failed payment-resume request without an unhandled error",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 3796
+        }
+      ]
+    },
+    {
+      "title": "booking-recovery.spec.ts / en at 1440px / does not report a payment page ready when checkout returns no payment attempt",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "durationMs": 4276
+        }
+      ]
+    }
+  ]
+}

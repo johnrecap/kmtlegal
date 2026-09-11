@@ -1,6 +1,12 @@
 # KMT Legal Implementation Status
 
-Last updated: 2026-07-28
+Last updated: 2026-09-11
+
+2026-09-11 ordinary delivery checkpoint (Spec Kit not activated): the first dependency/session/
+booking-recovery batch is prepared on `codex/kmt-batch1-hardening` for supervisor review before
+push. See `docs/reviews/2026-09-11/BATCH-1.md` for changes, source preservation comparison,
+verification and remaining database/payment/visual gates. Existing plan evidence states below
+are unchanged; this checkpoint does not mark any whole-project audit or release complete.
 
 This is the main tracking file for 40 Spec Kit plan IDs (`PLAN-00` through `PLAN-39`).
 

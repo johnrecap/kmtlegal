@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { hashPassword, verifyPassword } from "@/server/auth/password";
 import { hasPermission, isStaffRole, permissionsForRole, ROLES } from "@/server/auth/policy";
-import { isActiveAuthUser, principalFromUser, type AuthUser } from "@/server/auth/session-store";
+import { getSessionTokenFromCookieHeader, isActiveAuthUser, principalFromUser, type AuthUser } from "@/server/auth/session-store";
 import { generateTotpCode, verifyTotpCode } from "@/server/auth/totp";
 import {
   canFinalizeSession,
@@ -17,6 +17,14 @@ import {
 } from "@/server/auth/two-factor";
 
 describe("auth password helpers", () => {
+  it("treats malformed session cookies as unauthenticated instead of throwing", () => {
+    for (const value of ["%", "%E0%A4%A", "%FF"]) {
+      expect(getSessionTokenFromCookieHeader("kmt_session=" + value)).toBeNull();
+    }
+    expect(getSessionTokenFromCookieHeader("other=value")).toBeNull();
+    expect(getSessionTokenFromCookieHeader("other=value; kmt_session=valid%2Dtoken")).toBe("valid-token");
+  });
+
   it("hashes and verifies passwords without plaintext storage", async () => {
     const hash = await hashPassword("CorrectHorseBatteryStaple");
 

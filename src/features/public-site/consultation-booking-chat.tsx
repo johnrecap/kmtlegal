@@ -192,17 +192,30 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     }
 
     let stopped = false;
+    const restoredLocale = params.get("locale") === "ar" || params.get("locale") === "en" ? (params.get("locale") as PublicLocale) : locale;
+    const restoredCopy = getPublicContent(restoredLocale).bookingChat;
     const restore = async () => {
       const statusParams = new URLSearchParams({ attemptId: resumeAttemptId, token });
       const response = await fetch(`/api/public/payments/status?${statusParams.toString()}`, { cache: "no-store" });
-      const body = (await response.json().catch(() => null)) as { data?: { resumeDraft?: Partial<BookingDraft> | null } } | null;
-      const resumeDraft = body?.data?.resumeDraft;
-      if (stopped || !response.ok || !resumeDraft) {
-        return;
+      if (stopped) return;
+      if (!response.ok) throw new Error("Payment resume request failed");
+      const body = (await response.json()) as {
+        data?: { status?: string; access?: { verified?: boolean }; resumeDraft?: Partial<BookingDraft> | null }
+      } | null;
+      if (stopped) return;
+      const data = body?.data;
+      const statuses = ["CREATED", "PENDING", "PAID", "FAILED", "EXPIRED", "REFUNDED", "DISPUTED", "CANCELLED"];
+      if (!data || !statuses.includes(data.status ?? "") || typeof data.access?.verified !== "boolean") {
+        throw new Error("Invalid payment resume response");
+      }
+      // The public DTO intentionally withholds drafts without verified access and
+      // for attempts that cannot be resumed. A null draft is valid in those cases.
+      if (!data.access.verified || !["FAILED", "EXPIRED", "CANCELLED"].includes(data.status!)) return;
+      const resumeDraft = data.resumeDraft;
+      if (!resumeDraft || typeof resumeDraft !== "object" || Array.isArray(resumeDraft)) {
+        throw new Error("Missing payment resume draft");
       }
 
-      const restoredLocale = params.get("locale") === "ar" || params.get("locale") === "en" ? (params.get("locale") as PublicLocale) : locale;
-      const restoredCopy = getPublicContent(restoredLocale).bookingChat;
       const restoredDraft = normalizeDraft({
         ...initialDraft,
         serviceCategory: initialServiceCategory,
@@ -226,7 +239,17 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       ]);
     };
 
-    void restore();
+    void restore().catch(() => {
+      if (stopped) return;
+      setMessages((current) => [...current, {
+        id: "payment-resume-error",
+        role: "assistant",
+        text: restoredCopy.fallbackError,
+        tone: "error",
+        actionHref: restoredLocale === "ar" ? "/ar/contact" : "/contact",
+        actionLabel: restoredCopy.whatsappFallbackLabel
+      }]);
+    });
     return () => {
       stopped = true;
     };
@@ -443,7 +466,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       setDraft(updatedDraft);
       setAvailableSlots(data.availableSlots ?? []);
       setSlotWindow(data.slotWindow ?? null);
-      setSelectedSlot(updatedDraft.startsAt || nextSlot || "");
+      // The server may explicitly clear a stale or unavailable appointment.
+      setSelectedSlot(updatedDraft.startsAt);
       setReadyToConfirm(Boolean(data.readyToConfirm));
       setReadyToCheckout(Boolean(data.readyToCheckout));
       setPaymentReview(data.paymentReview ?? null);
@@ -523,8 +547,12 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         return;
       }
 
-      setFailureCount(0);
       const attempt = body.data?.paymentAttempt;
+      if (!attempt?.checkoutUrl) {
+        appendRecoverableError(copy.fallbackError);
+        return;
+      }
+      setFailureCount(0);
       append("assistant", body.data?.message ?? copy.checkoutCreated, "success");
       if (body.data?.reference) {
         append("assistant", `${copy.reference}: ${body.data.reference}`, "success");

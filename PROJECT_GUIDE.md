@@ -18,6 +18,11 @@ For a current-state PRD and external model review brief, use `docs/KMT_LEGAL_CUR
 
 ## Recent Changes
 
+- 2026-09-11 - Prepared the first hardening/review batch on `codex/kmt-batch1-hardening` (supervisor review before push).
+  - Changed: dependency security updates, matched Prisma CLI/client/adapter 7.10.0, malformed session-cookie handling, stale-slot clearing, payment restoration error handling and checkout handoff validation.
+  - Evidence: source inventory preserves 58 page files, 100 API route files and 119 HTTP operations; dynamic patterns and source content slugs are separate. See `docs/reviews/2026-09-11/BATCH-1.md` for verification and explicit runtime limits.
+  - Scope: database-backed security/concurrency, provider payment sandbox, backup/restore drill and visual redesign remain open; this batch does not reclassify prior release gates.
+
 - 2026-07-28 - Implemented PLAN-39 site cleanup, contact alerts, and client localization.
   - Changed: permission-based contact bell alerts, true branded bilingual 404 handling, canonical client profile/preferences APIs, complete Arabic/English client and login copy, signed booking-locale inheritance, and an additive consultation-locale migration.
   - Removed: runtime `/portal`, `/product-system`, and `/stitch-clone` pages plus clone/product-only commands and tests.

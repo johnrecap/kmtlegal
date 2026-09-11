@@ -1,0 +1,36 @@
+{
+  "baseline": "ff6d9c6a21547e2b29cfb154c8a81a61ab4157cd",
+  "scope": "Static source comparison; runtime/database-populated URLs remain unverified.",
+  "before": {
+    "pageFiles": 58,
+    "apiRouteFiles": 100,
+    "apiOperations": 119,
+    "sourceFiles": 363
+  },
+  "after": {
+    "pageFiles": 58,
+    "apiRouteFiles": 100,
+    "apiOperations": 119,
+    "sourceFiles": 363
+  },
+  "changes": {
+    "files": {
+      "removed": [],
+      "added": []
+    },
+    "routes": {
+      "removed": [],
+      "added": []
+    },
+    "links": {
+      "removed": [],
+      "added": [
+        "src/features/public-site/consultation-booking-chat.tsx: actionHref=restoredLocale === \"ar\" ? \"/ar/contact\" : \"/contact\""
+      ]
+    },
+    "contentSlugs": {
+      "removed": [],
+      "added": []
+    }
+  }
+}

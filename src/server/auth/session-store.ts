@@ -111,7 +111,13 @@ export function getSessionTokenFromCookieHeader(cookieHeader: string) {
     .find((part) => part.startsWith(`${SESSION_COOKIE_NAME}=`))
     ?.slice(SESSION_COOKIE_NAME.length + 1);
 
-  return rawToken ? decodeURIComponent(rawToken) : null;
+  if (!rawToken) return null;
+  try {
+    return decodeURIComponent(rawToken);
+  } catch {
+    // A malformed browser cookie must fail authentication, not the request.
+    return null;
+  }
 }
 
 export async function createSessionForUser(user: AuthUser, request: Request) {
