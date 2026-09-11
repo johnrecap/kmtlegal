@@ -473,6 +473,7 @@ export const publicContentEn = {
     requiredDetails: "Write a clear request summary of at least 20 characters.",
     requiredConsent: "Consent is required before sending the request.",
     fallbackError: "The request could not be completed. Review the details and try again.",
+    languageTransferTooLarge: "Your details are still here. Shorten the unsent message before changing language.",
     requestId: "Request id",
     typing: "The assistant is checking the request",
     privacyNote: "Please do not share sensitive documents here. Our team will guide you securely.",

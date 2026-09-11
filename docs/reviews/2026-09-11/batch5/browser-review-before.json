@@ -1,0 +1,362 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "tests/e2e/batch5-chat-recovery.spec.ts",
+      "--grep",
+      "reviewed slot|preserves inquiry",
+      "--workers=1",
+      "--reporter=list,json"
+    ],
+    "configFile": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\playwright.config.ts",
+    "rootDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/.playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "batch5-chat-recovery.spec.ts",
+      "file": "batch5-chat-recovery.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "en: language retains reviewed slot and completed booking reference without auto-booking",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 18841,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m1\u001b[39m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m1\u001b[39m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:43:99",
+                    "location": {
+                      "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                      "column": 99,
+                      "line": 43
+                    },
+                    "snippet": "  41 |   await page.route(\"**/api/public/consultations/assistant\",route=>{const body=route.request().postDataJSON();requests.push(body);return route.fulfill({json:{data:body.confirmBooking?{reference:\"CONS-1234ABCD\",appointment:{title:\"Consultation fixture\",startsAt:draft.startsAt,status:\"SCHEDULED\"}}:{message:\"Current review\",draft,readyToConfirm:true}}});});\n  42 |   await page.goto(path);await page.getByTestId(`booking-language-${locale}`).click();await page.locator('input[name=\"chatMessage\"]').fill(\"Arrange consultation\");await page.getByTestId(\"booking-chat-composer\").locator('button[type=\"submit\"]').click();await expect(page.getByTestId(\"booking-confirm-booking\")).toBeVisible();\n> 43 |   await page.getByTestId(\"public-language-switch\").click();await expect.poll(()=>requests.length).toBe(2);expect(requests[1].selectedSlot).toBe(draft.startsAt);expect(requests[1].confirmBooking).not.toBe(true);expect(requests[1].locale).toBe(other);await expect(page.getByTestId(\"booking-confirm-booking\")).toBeVisible();\n     |                                                                                                   ^\n  44 |   await page.getByTestId(\"booking-confirm-booking\").click();await expect(page.getByTestId(\"booking-chat-log\")).toContainText(\"CONS-1234ABCD\");await expect(page.locator('input[name=\"chatMessage\"]')).toBeEnabled();expect(requests).toHaveLength(3);\n  45 |   await page.getByTestId(\"public-language-switch\").click();await expect(page.getByTestId(\"booking-chat-log\")).toContainText(\"CONS-1234ABCD\");await expect(page.getByTestId(\"booking-confirm-booking\")).toHaveCount(0);expect(requests).toHaveLength(3);\n  46 |  });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                        "column": 99,
+                        "line": 43
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m1\u001b[39m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate\n\n  41 |   await page.route(\"**/api/public/consultations/assistant\",route=>{const body=route.request().postDataJSON();requests.push(body);return route.fulfill({json:{data:body.confirmBooking?{reference:\"CONS-1234ABCD\",appointment:{title:\"Consultation fixture\",startsAt:draft.startsAt,status:\"SCHEDULED\"}}:{message:\"Current review\",draft,readyToConfirm:true}}});});\n  42 |   await page.goto(path);await page.getByTestId(`booking-language-${locale}`).click();await page.locator('input[name=\"chatMessage\"]').fill(\"Arrange consultation\");await page.getByTestId(\"booking-chat-composer\").locator('button[type=\"submit\"]').click();await expect(page.getByTestId(\"booking-confirm-booking\")).toBeVisible();\n> 43 |   await page.getByTestId(\"public-language-switch\").click();await expect.poll(()=>requests.length).toBe(2);expect(requests[1].selectedSlot).toBe(draft.startsAt);expect(requests[1].confirmBooking).not.toBe(true);expect(requests[1].locale).toBe(other);await expect(page.getByTestId(\"booking-confirm-booking\")).toBeVisible();\n     |                                                                                                   ^\n  44 |   await page.getByTestId(\"booking-confirm-booking\").click();await expect(page.getByTestId(\"booking-chat-log\")).toContainText(\"CONS-1234ABCD\");await expect(page.locator('input[name=\"chatMessage\"]')).toBeEnabled();expect(requests).toHaveLength(3);\n  45 |   await page.getByTestId(\"public-language-switch\").click();await expect(page.getByTestId(\"booking-chat-log\")).toContainText(\"CONS-1234ABCD\");await expect(page.getByTestId(\"booking-confirm-booking\")).toHaveCount(0);expect(requests).toHaveLength(3);\n  46 |  });\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:43:99"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-11T20:14:20.595Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-en-la-6de69-erence-without-auto-booking-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-en-la-6de69-erence-without-auto-booking-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                    "column": 99,
+                    "line": 43
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d952b87d65d0833f00b2-edcaa09b4c08752d9bb7",
+          "file": "batch5-chat-recovery.spec.ts",
+          "line": 39,
+          "column": 6
+        },
+        {
+          "title": "en: language preserves inquiry and blocks oversized unsent transfer",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 14251,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('booking-chat-log')\nExpected substring: \u001b[32m\"\u001b[7mأضف رقم المرجع والهاتف أو البريد المستخدم في الطلب\u001b[27m.\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[7mمرحبًا. أستطيع مساعدتك في حجز استشارة أو الاستعلام عن رقم مرجع سابق. سأجمع فقط البيانات اللازمة لمراجعة الفريق\u001b[27m.\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('booking-chat-log')\u001b[22m\n\u001b[2m    5 × locator resolved to <div role=\"log\" aria-busy=\"false\" data-testid=\"booking-chat-log\" class=\"kmt-chat-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8\">…</div>\u001b[22m\n\u001b[2m      - unexpected value \"من فضلك اختر لغة المحادثة. / Please choose the conversation language.العربيةEnglish\"\u001b[22m\n\u001b[2m    15 × locator resolved to <div role=\"log\" aria-busy=\"false\" data-testid=\"booking-chat-log\" class=\"kmt-chat-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"مرحبًا. أستطيع مساعدتك في حجز استشارة أو الاستعلام عن رقم مرجع سابق. سأجمع فقط البيانات اللازمة لمراجعة الفريق.\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('booking-chat-log')\nExpected substring: \u001b[32m\"\u001b[7mأضف رقم المرجع والهاتف أو البريد المستخدم في الطلب\u001b[27m.\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[7mمرحبًا. أستطيع مساعدتك في حجز استشارة أو الاستعلام عن رقم مرجع سابق. سأجمع فقط البيانات اللازمة لمراجعة الفريق\u001b[27m.\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('booking-chat-log')\u001b[22m\n\u001b[2m    5 × locator resolved to <div role=\"log\" aria-busy=\"false\" data-testid=\"booking-chat-log\" class=\"kmt-chat-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8\">…</div>\u001b[22m\n\u001b[2m      - unexpected value \"من فضلك اختر لغة المحادثة. / Please choose the conversation language.العربيةEnglish\"\u001b[22m\n\u001b[2m    15 × locator resolved to <div role=\"log\" aria-busy=\"false\" data-testid=\"booking-chat-log\" class=\"kmt-chat-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"مرحبًا. أستطيع مساعدتك في حجز استشارة أو الاستعلام عن رقم مرجع سابق. سأجمع فقط البيانات اللازمة لمراجعة الفريق.\"\u001b[22m\n\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:48:344",
+                    "location": {
+                      "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                      "column": 344,
+                      "line": 48
+                    },
+                    "snippet": "  46 |  });\n  47 |  test(`${locale}: language preserves inquiry and blocks oversized unsent transfer`,async({page})=>{\n> 48 |   await page.goto(path);await page.getByTestId(`booking-language-${locale}`).click();await page.getByTestId(\"booking-quick-inquiry\").click();const input=page.locator('input[name=\"chatMessage\"]');await input.fill(\"My pending question\");await page.getByTestId(\"public-language-switch\").click();await expect(page.getByTestId(\"booking-chat-log\")).toContainText(getPublicContent(other).bookingChat.inquiryPrompt);await expect(input).toHaveValue(\"My pending question\");\n     |                                                                                                                                                                                                                                                                                                                                                        ^\n  49 |   const long=\"x\".repeat(20001);await input.fill(long);const before=page.url();await page.getByTestId(\"public-language-switch\").click();await expect(page).toHaveURL(before);await expect(input).toHaveValue(long);expect(await page.evaluate(()=>sessionStorage.getItem(\"kmt.booking.language-transfer\"))).toBeNull();\n  50 |  });\n  51 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                        "column": 344,
+                        "line": 48
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('booking-chat-log')\nExpected substring: \u001b[32m\"\u001b[7mأضف رقم المرجع والهاتف أو البريد المستخدم في الطلب\u001b[27m.\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[7mمرحبًا. أستطيع مساعدتك في حجز استشارة أو الاستعلام عن رقم مرجع سابق. سأجمع فقط البيانات اللازمة لمراجعة الفريق\u001b[27m.\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('booking-chat-log')\u001b[22m\n\u001b[2m    5 × locator resolved to <div role=\"log\" aria-busy=\"false\" data-testid=\"booking-chat-log\" class=\"kmt-chat-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8\">…</div>\u001b[22m\n\u001b[2m      - unexpected value \"من فضلك اختر لغة المحادثة. / Please choose the conversation language.العربيةEnglish\"\u001b[22m\n\u001b[2m    15 × locator resolved to <div role=\"log\" aria-busy=\"false\" data-testid=\"booking-chat-log\" class=\"kmt-chat-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"مرحبًا. أستطيع مساعدتك في حجز استشارة أو الاستعلام عن رقم مرجع سابق. سأجمع فقط البيانات اللازمة لمراجعة الفريق.\"\u001b[22m\n\n\n  46 |  });\n  47 |  test(`${locale}: language preserves inquiry and blocks oversized unsent transfer`,async({page})=>{\n> 48 |   await page.goto(path);await page.getByTestId(`booking-language-${locale}`).click();await page.getByTestId(\"booking-quick-inquiry\").click();const input=page.locator('input[name=\"chatMessage\"]');await input.fill(\"My pending question\");await page.getByTestId(\"public-language-switch\").click();await expect(page.getByTestId(\"booking-chat-log\")).toContainText(getPublicContent(other).bookingChat.inquiryPrompt);await expect(input).toHaveValue(\"My pending question\");\n     |                                                                                                                                                                                                                                                                                                                                                        ^\n  49 |   const long=\"x\".repeat(20001);await input.fill(long);const before=page.url();await page.getByTestId(\"public-language-switch\").click();await expect(page).toHaveURL(before);await expect(input).toHaveValue(long);expect(await page.evaluate(()=>sessionStorage.getItem(\"kmt.booking.language-transfer\"))).toBeNull();\n  50 |  });\n  51 | }\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:48:344"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-11T20:14:40.807Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-en-la-63be6-s-oversized-unsent-transfer-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-en-la-63be6-s-oversized-unsent-transfer-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                    "column": 344,
+                    "line": 48
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d952b87d65d0833f00b2-bd38cc9153cf1f55b072",
+          "file": "batch5-chat-recovery.spec.ts",
+          "line": 47,
+          "column": 6
+        },
+        {
+          "title": "ar: language retains reviewed slot and completed booking reference without auto-booking",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 14599,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m1\u001b[39m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m1\u001b[39m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:43:99",
+                    "location": {
+                      "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                      "column": 99,
+                      "line": 43
+                    },
+                    "snippet": "  41 |   await page.route(\"**/api/public/consultations/assistant\",route=>{const body=route.request().postDataJSON();requests.push(body);return route.fulfill({json:{data:body.confirmBooking?{reference:\"CONS-1234ABCD\",appointment:{title:\"Consultation fixture\",startsAt:draft.startsAt,status:\"SCHEDULED\"}}:{message:\"Current review\",draft,readyToConfirm:true}}});});\n  42 |   await page.goto(path);await page.getByTestId(`booking-language-${locale}`).click();await page.locator('input[name=\"chatMessage\"]').fill(\"Arrange consultation\");await page.getByTestId(\"booking-chat-composer\").locator('button[type=\"submit\"]').click();await expect(page.getByTestId(\"booking-confirm-booking\")).toBeVisible();\n> 43 |   await page.getByTestId(\"public-language-switch\").click();await expect.poll(()=>requests.length).toBe(2);expect(requests[1].selectedSlot).toBe(draft.startsAt);expect(requests[1].confirmBooking).not.toBe(true);expect(requests[1].locale).toBe(other);await expect(page.getByTestId(\"booking-confirm-booking\")).toBeVisible();\n     |                                                                                                   ^\n  44 |   await page.getByTestId(\"booking-confirm-booking\").click();await expect(page.getByTestId(\"booking-chat-log\")).toContainText(\"CONS-1234ABCD\");await expect(page.locator('input[name=\"chatMessage\"]')).toBeEnabled();expect(requests).toHaveLength(3);\n  45 |   await page.getByTestId(\"public-language-switch\").click();await expect(page.getByTestId(\"booking-chat-log\")).toContainText(\"CONS-1234ABCD\");await expect(page.getByTestId(\"booking-confirm-booking\")).toHaveCount(0);expect(requests).toHaveLength(3);\n  46 |  });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                        "column": 99,
+                        "line": 43
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32m2\u001b[39m\nReceived: \u001b[31m1\u001b[39m\n\nCall Log:\n- Timeout 10000ms exceeded while waiting on the predicate\n\n  41 |   await page.route(\"**/api/public/consultations/assistant\",route=>{const body=route.request().postDataJSON();requests.push(body);return route.fulfill({json:{data:body.confirmBooking?{reference:\"CONS-1234ABCD\",appointment:{title:\"Consultation fixture\",startsAt:draft.startsAt,status:\"SCHEDULED\"}}:{message:\"Current review\",draft,readyToConfirm:true}}});});\n  42 |   await page.goto(path);await page.getByTestId(`booking-language-${locale}`).click();await page.locator('input[name=\"chatMessage\"]').fill(\"Arrange consultation\");await page.getByTestId(\"booking-chat-composer\").locator('button[type=\"submit\"]').click();await expect(page.getByTestId(\"booking-confirm-booking\")).toBeVisible();\n> 43 |   await page.getByTestId(\"public-language-switch\").click();await expect.poll(()=>requests.length).toBe(2);expect(requests[1].selectedSlot).toBe(draft.startsAt);expect(requests[1].confirmBooking).not.toBe(true);expect(requests[1].locale).toBe(other);await expect(page.getByTestId(\"booking-confirm-booking\")).toBeVisible();\n     |                                                                                                   ^\n  44 |   await page.getByTestId(\"booking-confirm-booking\").click();await expect(page.getByTestId(\"booking-chat-log\")).toContainText(\"CONS-1234ABCD\");await expect(page.locator('input[name=\"chatMessage\"]')).toBeEnabled();expect(requests).toHaveLength(3);\n  45 |   await page.getByTestId(\"public-language-switch\").click();await expect(page.getByTestId(\"booking-chat-log\")).toContainText(\"CONS-1234ABCD\");await expect(page.getByTestId(\"booking-confirm-booking\")).toHaveCount(0);expect(requests).toHaveLength(3);\n  46 |  });\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:43:99"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-11T20:14:56.340Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-ar-la-f8e62-erence-without-auto-booking-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-ar-la-f8e62-erence-without-auto-booking-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                    "column": 99,
+                    "line": 43
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d952b87d65d0833f00b2-ba84b20ff35b869562e2",
+          "file": "batch5-chat-recovery.spec.ts",
+          "line": 39,
+          "column": 6
+        },
+        {
+          "title": "ar: language preserves inquiry and blocks oversized unsent transfer",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 14118,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('booking-chat-log')\nExpected substring: \u001b[32m\"\u001b[7mAdd the booking reference and the phone or email used in the request\u001b[27m.\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[7mHello. I can help you book a consultation or check a previous booking reference. I will collect only the details needed for team review\u001b[27m.\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('booking-chat-log')\u001b[22m\n\u001b[2m    6 × locator resolved to <div role=\"log\" aria-busy=\"false\" data-testid=\"booking-chat-log\" class=\"kmt-chat-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8\">…</div>\u001b[22m\n\u001b[2m      - unexpected value \"Please choose the conversation language. / من فضلك اختر لغة المحادثة.العربيةEnglish\"\u001b[22m\n\u001b[2m    15 × locator resolved to <div role=\"log\" aria-busy=\"false\" data-testid=\"booking-chat-log\" class=\"kmt-chat-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"Hello. I can help you book a consultation or check a previous booking reference. I will collect only the details needed for team review.\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('booking-chat-log')\nExpected substring: \u001b[32m\"\u001b[7mAdd the booking reference and the phone or email used in the request\u001b[27m.\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[7mHello. I can help you book a consultation or check a previous booking reference. I will collect only the details needed for team review\u001b[27m.\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('booking-chat-log')\u001b[22m\n\u001b[2m    6 × locator resolved to <div role=\"log\" aria-busy=\"false\" data-testid=\"booking-chat-log\" class=\"kmt-chat-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8\">…</div>\u001b[22m\n\u001b[2m      - unexpected value \"Please choose the conversation language. / من فضلك اختر لغة المحادثة.العربيةEnglish\"\u001b[22m\n\u001b[2m    15 × locator resolved to <div role=\"log\" aria-busy=\"false\" data-testid=\"booking-chat-log\" class=\"kmt-chat-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"Hello. I can help you book a consultation or check a previous booking reference. I will collect only the details needed for team review.\"\u001b[22m\n\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:48:344",
+                    "location": {
+                      "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                      "column": 344,
+                      "line": 48
+                    },
+                    "snippet": "  46 |  });\n  47 |  test(`${locale}: language preserves inquiry and blocks oversized unsent transfer`,async({page})=>{\n> 48 |   await page.goto(path);await page.getByTestId(`booking-language-${locale}`).click();await page.getByTestId(\"booking-quick-inquiry\").click();const input=page.locator('input[name=\"chatMessage\"]');await input.fill(\"My pending question\");await page.getByTestId(\"public-language-switch\").click();await expect(page.getByTestId(\"booking-chat-log\")).toContainText(getPublicContent(other).bookingChat.inquiryPrompt);await expect(input).toHaveValue(\"My pending question\");\n     |                                                                                                                                                                                                                                                                                                                                                        ^\n  49 |   const long=\"x\".repeat(20001);await input.fill(long);const before=page.url();await page.getByTestId(\"public-language-switch\").click();await expect(page).toHaveURL(before);await expect(input).toHaveValue(long);expect(await page.evaluate(()=>sessionStorage.getItem(\"kmt.booking.language-transfer\"))).toBeNull();\n  50 |  });\n  51 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                        "column": 344,
+                        "line": 48
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('booking-chat-log')\nExpected substring: \u001b[32m\"\u001b[7mAdd the booking reference and the phone or email used in the request\u001b[27m.\"\u001b[39m\nReceived string:    \u001b[31m\"\u001b[7mHello. I can help you book a consultation or check a previous booking reference. I will collect only the details needed for team review\u001b[27m.\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('booking-chat-log')\u001b[22m\n\u001b[2m    6 × locator resolved to <div role=\"log\" aria-busy=\"false\" data-testid=\"booking-chat-log\" class=\"kmt-chat-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8\">…</div>\u001b[22m\n\u001b[2m      - unexpected value \"Please choose the conversation language. / من فضلك اختر لغة المحادثة.العربيةEnglish\"\u001b[22m\n\u001b[2m    15 × locator resolved to <div role=\"log\" aria-busy=\"false\" data-testid=\"booking-chat-log\" class=\"kmt-chat-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8\">…</div>\u001b[22m\n\u001b[2m       - unexpected value \"Hello. I can help you book a consultation or check a previous booking reference. I will collect only the details needed for team review.\"\u001b[22m\n\n\n  46 |  });\n  47 |  test(`${locale}: language preserves inquiry and blocks oversized unsent transfer`,async({page})=>{\n> 48 |   await page.goto(path);await page.getByTestId(`booking-language-${locale}`).click();await page.getByTestId(\"booking-quick-inquiry\").click();const input=page.locator('input[name=\"chatMessage\"]');await input.fill(\"My pending question\");await page.getByTestId(\"public-language-switch\").click();await expect(page.getByTestId(\"booking-chat-log\")).toContainText(getPublicContent(other).bookingChat.inquiryPrompt);await expect(input).toHaveValue(\"My pending question\");\n     |                                                                                                                                                                                                                                                                                                                                                        ^\n  49 |   const long=\"x\".repeat(20001);await input.fill(long);const before=page.url();await page.getByTestId(\"public-language-switch\").click();await expect(page).toHaveURL(before);await expect(input).toHaveValue(long);expect(await page.evaluate(()=>sessionStorage.getItem(\"kmt.booking.language-transfer\"))).toBeNull();\n  50 |  });\n  51 | }\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:48:344"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-11T20:15:12.318Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-ar-la-ed3f4-s-oversized-unsent-transfer-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-ar-la-ed3f4-s-oversized-unsent-transfer-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                    "column": 344,
+                    "line": 48
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d952b87d65d0833f00b2-def7fe96d3b84ba285d6",
+          "file": "batch5-chat-recovery.spec.ts",
+          "line": 47,
+          "column": 6
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-11T20:14:19.706Z",
+    "duration": 67232.024,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}

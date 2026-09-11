@@ -1,6 +1,6 @@
 # Batch 4: booking availability and real booking lifecycle
 
-Date: 2026-09-11. Baseline: `194f6bebf36595d9d9c02146dd71b6308bc25640`, batch 3 approved and pushed. Batch 2 was approved/pushed as `ea186fd`. This batch requires supervisor review before push. No Spec Kit invocation or specs changes.
+Date: 2026-09-11. Baseline: `194f6bebf36595d9d9c02146dd71b6308bc25640`, batch 3 approved and pushed. Batch 2 was approved/pushed as `ea186fd`. Subsequently approved and pushed to origin/main as `cf1b835fb6fdd8191889bca5dcca91c81bbd1afd`. No Spec Kit invocation or specs changes.
 
 ## Confirmed changes
 

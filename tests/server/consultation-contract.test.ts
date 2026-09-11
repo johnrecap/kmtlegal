@@ -155,7 +155,7 @@ describe("public consultation contract", () => {
     expect(source).toContain("createFreeConsultationBooking({ body: bookingBody, request: input.request, requestId: input.requestId })");
     expect(source).toContain("createPublicConsultationCheckout");
 
-    const startsAtBranch = source.indexOf('if (missingFields.includes("startsAt"))');
+    const startsAtBranch = source.indexOf('if (missingFields.length === 1 && missingFields.includes("startsAt"))');
     const aiFallbackBranch = source.indexOf("if ((mergeResult.aiUnavailable || mergeResult.lowConfidence) && firstNonSlotMissing)");
     expect(startsAtBranch).toBeGreaterThan(-1);
     expect(aiFallbackBranch).toBeGreaterThan(-1);

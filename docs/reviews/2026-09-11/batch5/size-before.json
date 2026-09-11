@@ -1,0 +1,155 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "tests/e2e/batch5-chat-recovery.spec.ts",
+      "--grep",
+      "oversized language transfer stays",
+      "--workers=1",
+      "--reporter=list,json"
+    ],
+    "configFile": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\playwright.config.ts",
+    "rootDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/.playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "batch5-chat-recovery.spec.ts",
+      "file": "batch5-chat-recovery.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "oversized language transfer stays on the current page with its complete unsent text",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 18513,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected: \u001b[32m\"http://127.0.0.1:3109/book-consultation\"\u001b[39m\nReceived: \u001b[31m\"http://127.0.0.1:3109/\u001b[7mar/\u001b[27mbook-consultation\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    20 × unexpected value \"http://127.0.0.1:3109/ar/book-consultation\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected: \u001b[32m\"http://127.0.0.1:3109/book-consultation\"\u001b[39m\nReceived: \u001b[31m\"http://127.0.0.1:3109/\u001b[7mar/\u001b[27mbook-consultation\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    20 × unexpected value \"http://127.0.0.1:3109/ar/book-consultation\"\u001b[22m\n\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:53:300",
+                    "location": {
+                      "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                      "column": 300,
+                      "line": 53
+                    },
+                    "snippet": "  51 | }\n  52 | test(\"oversized language transfer stays on the current page with its complete unsent text\",async({page})=>{\n> 53 |  await page.goto(\"/book-consultation\");await page.getByTestId(\"booking-language-en\").click();const input=page.locator('input[name=\"chatMessage\"]');const long=\"x\".repeat(20001);await input.fill(long);const before=page.url();await page.getByTestId(\"public-language-switch\").click();await expect(page).toHaveURL(before);await expect(input).toHaveValue(long);expect(await page.evaluate(()=>sessionStorage.getItem(\"kmt.booking.language-transfer\"))).toBeNull();\n     |                                                                                                                                                                                                                                                                                                            ^\n  54 | });\n  55 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                        "column": 300,
+                        "line": 53
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected: \u001b[32m\"http://127.0.0.1:3109/book-consultation\"\u001b[39m\nReceived: \u001b[31m\"http://127.0.0.1:3109/\u001b[7mar/\u001b[27mbook-consultation\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    20 × unexpected value \"http://127.0.0.1:3109/ar/book-consultation\"\u001b[22m\n\n\n  51 | }\n  52 | test(\"oversized language transfer stays on the current page with its complete unsent text\",async({page})=>{\n> 53 |  await page.goto(\"/book-consultation\");await page.getByTestId(\"booking-language-en\").click();const input=page.locator('input[name=\"chatMessage\"]');const long=\"x\".repeat(20001);await input.fill(long);const before=page.url();await page.getByTestId(\"public-language-switch\").click();await expect(page).toHaveURL(before);await expect(input).toHaveValue(long);expect(await page.evaluate(()=>sessionStorage.getItem(\"kmt.booking.language-transfer\"))).toBeNull();\n     |                                                                                                                                                                                                                                                                                                            ^\n  54 | });\n  55 |\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:53:300"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-11T20:16:27.616Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-overs-8ece2-th-its-complete-unsent-text-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-overs-8ece2-th-its-complete-unsent-text-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                    "column": 300,
+                    "line": 53
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d952b87d65d0833f00b2-dd68f871cfe04660200d",
+          "file": "batch5-chat-recovery.spec.ts",
+          "line": 52,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-11T20:16:26.876Z",
+    "duration": 19956.238999999998,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

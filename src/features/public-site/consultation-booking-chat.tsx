@@ -114,6 +114,14 @@ type AssistantApiBody = {
 };
 
 type BookingChatCopy = PublicContent["bookingChat"];
+type LatestBookingResult = { kind: "booking"; reference: string; appointments: Array<{ title: string; startsAt: string; status: string }> }
+  | { kind: "inquiry"; message: string; appointments: Array<{ title: string; startsAt: string; status: string }> };
+type LanguageTransfer = {
+  destination: string; createdAt: number; freeMessage: string; draft: BookingDraft;
+  flow: "booking" | "inquiry" | null; selectedSlot: string; result: LatestBookingResult | null;
+};
+const languageTransferKey = "kmt.booking.language-transfer";
+const languageTransferLimit = 20_000;
 
 const darkSurfaceClasses = cn(
   publicMotionForm,
@@ -173,12 +181,83 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   const [freeTextTurnsAfterLanguage, setFreeTextTurnsAfterLanguage] = useState(0);
   const [failureCount, setFailureCount] = useState(0);
   const [quickActionsDismissed, setQuickActionsDismissed] = useState(false);
+  const [latestResult, setLatestResult] = useState<LatestBookingResult | null>(null);
+  const restoredSelection = useRef<BookingDraft | null>(null);
   const showTrustRail = !chatLocale;
   const showQuickActions = Boolean(chatLocale) && !quickActionsDismissed && !flow && !availableSlots.length && !readyToConfirm && !readyToCheckout;
 
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  useEffect(() => {
+    // One-use, same-tab handoff for the existing full-page language link only.
+    // Preserve current answers/result, never history, price or confirmation authority.
+    try {
+      const raw = sessionStorage.getItem(languageTransferKey);
+      sessionStorage.removeItem(languageTransferKey);
+      const saved = parseLanguageTransfer(raw, window.location.pathname);
+      if (!saved) return;
+      const restored = normalizeDraft(saved.draft);
+      setDraft(restored);
+      setFreeMessage(saved.freeMessage);
+      setChatLocale(locale);
+      setFlow(saved.flow);
+      setLatestResult(saved.result);
+      setSelectedSlot(saved.selectedSlot);
+      const nextCopy = getPublicContent(locale).bookingChat;
+      const restoredMessages: ChatMessage[] = [{ id: `language-resume-${locale}`, role: "assistant", text: nextCopy.greeting }];
+      if (saved.result) {
+        restoredMessages.push({ id: "language-result", role: "assistant", tone: "success", text: saved.result.kind === "booking"
+          ? `${nextCopy.successTitle} · ${nextCopy.reference}: ${saved.result.reference}` : saved.result.message });
+        for (const [index, appointment] of saved.result.appointments.entries()) restoredMessages.push({
+          id: `language-appointment-${index}`, role: "assistant", tone: "success", text: `${appointment.title} · ${formatPublicDate(appointment.startsAt, locale)}`
+        });
+      } else if (saved.flow === "inquiry") {
+        restoredMessages.push({ id: "language-inquiry", role: "assistant", text: nextCopy.inquiryPrompt });
+      }
+      setMessages(restoredMessages);
+      if (saved.flow === "booking" && saved.selectedSlot) restoredSelection.current = { ...restored, startsAt: saved.selectedSlot };
+    } catch {
+      // Storage may be unavailable; ordinary booking remains usable.
+    }
+  }, [locale]);
+
+  useEffect(() => {
+    if (!chatLocale || !restoredSelection.current) return;
+    const restored = restoredSelection.current;
+    restoredSelection.current = null;
+    // Re-enter the existing review flow, never send confirmBooking/consent or a cached price.
+    void sendBookingMessage(copy.book, { draftPatch: restored, selectedSlot: restored.startsAt });
+  });
+
+  useEffect(() => {
+    function transferLanguage(event: MouseEvent) {
+      const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[data-testid="public-language-switch"]') : null;
+      if (!link || !chatLocale || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      const destination = new URL(link.href);
+      if (destination.origin !== window.location.origin || !["/book-consultation", "/ar/book-consultation"].includes(destination.pathname)) return;
+      if (isBusy) { event.preventDefault(); return; }
+      try {
+        const raw = JSON.stringify({
+          destination: destination.pathname, createdAt: Date.now(), freeMessage,
+          draft, flow, selectedSlot, result: latestResult
+        } satisfies LanguageTransfer);
+        if (raw.length > languageTransferLimit) {
+          event.preventDefault();
+          appendRecoverableError(copy.languageTransferTooLarge);
+          return;
+        }
+        if (!parseLanguageTransfer(raw, destination.pathname)) throw new Error("Invalid language transfer");
+        sessionStorage.setItem(languageTransferKey, raw);
+      } catch {
+        event.preventDefault();
+        appendRecoverableError(copy.fallbackError);
+      }
+    }
+    document.addEventListener("click", transferLanguage);
+    return () => document.removeEventListener("click", transferLanguage);
+  });
 
   useEffect(() => {
     if (!isHydrated) {
@@ -339,6 +418,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     if (!chatLocale) return;
     setQuickActionsDismissed(true);
     setFlow("inquiry");
+    setLatestResult(null);
     setAvailableSlots([]);
     setSlotWindow(null);
     setReadyToConfirm(false);
@@ -403,6 +483,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         return;
       }
       setFailureCount(0);
+      setLatestResult({ kind: "inquiry", message: body.data?.message ?? copy.inquiryResult, appointments: body.data?.appointments ?? [] });
       append("assistant", body.data?.message ?? copy.inquiryResult, "success");
       for (const appointment of body.data?.appointments ?? []) {
         append("assistant", `${appointment.title} · ${formatPublicDate(appointment.startsAt, activeLocale)} · ${appointment.status}`, "success");
@@ -436,6 +517,9 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
     const nextDraft = normalizeDraft({ ...draft, ...options.draftPatch });
     const nextSlot = options.selectedSlot ?? selectedSlot ?? nextDraft.startsAt;
+    const restoreUnprocessedMessage = () => {
+      if (!options.confirmBooking && options.selectedSlot === undefined) setFreeMessage(message);
+    };
 
     try {
       const response = await fetch("/api/public/consultations/assistant", {
@@ -452,12 +536,14 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       const body = (await response.json().catch(() => ({}))) as AssistantApiBody;
       if (!response.ok) {
         trackClientAnalyticsEvent("booking.submit_failed", { locale: activeLocale, status: response.status });
+        restoreUnprocessedMessage();
         appendRecoverableError(errorMessage(body, copy));
         return;
       }
 
       const data = body.data;
       if (!data) {
+        restoreUnprocessedMessage();
         appendRecoverableError(copy.fallbackError);
         return;
       }
@@ -475,6 +561,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       append("assistant", data.message ?? copy.scopeReply, data.reference ? "success" : "default");
 
       if (data.reference) {
+        setLatestResult({ kind: "booking", reference: data.reference, appointments: data.appointment ? [data.appointment] : [] });
         append("assistant", `${copy.successTitle} · ${copy.reference}: ${data.reference}`, "success");
         append("assistant", copy.nextStepsAfterBooking, "success");
         if (data.appointment) {
@@ -493,6 +580,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       }
     } catch {
       trackClientAnalyticsEvent("booking.submit_failed", { locale: activeLocale, status: "network" });
+      restoreUnprocessedMessage();
       appendRecoverableError(copy.fallbackError);
     } finally {
       setIsBusy(false);
@@ -938,6 +1026,31 @@ function TypingIndicator({ label }: { label: string }) {
       </div>
     </div>
   );
+}
+
+function parseLanguageTransfer(raw: string | null, destination: string): LanguageTransfer | null {
+  if (!raw || raw.length > languageTransferLimit) return null;
+  try {
+    const saved = JSON.parse(raw);
+    if (!saved || saved.destination !== destination || !Number.isFinite(saved.createdAt) ||
+        Date.now() - saved.createdAt < 0 || Date.now() - saved.createdAt > 5 * 60_000 ||
+        ![null, "booking", "inquiry"].includes(saved.flow) || typeof saved.selectedSlot !== "string" ||
+        typeof saved.freeMessage !== "string" || !saved.draft || typeof saved.draft !== "object" || Array.isArray(saved.draft) ||
+        Object.entries(saved.draft).some(([field, value]) => field !== "availabilityPreference" && typeof value !== "string") ||
+        !["PHONE", "ONLINE", "OFFICE"].includes(saved.draft.preferredMode) ||
+        !["LOW", "NORMAL", "HIGH", "URGENT"].includes(saved.draft.urgency) ||
+        !saved.draft.availabilityPreference || typeof saved.draft.availabilityPreference !== "object" ||
+        Object.values(saved.draft.availabilityPreference).some(value => typeof value !== "string")) return null;
+    if (saved.result !== null) {
+      const result = saved.result;
+      if (!result || !["booking", "inquiry"].includes(result.kind) ||
+          (result.kind === "booking" ? typeof result.reference !== "string" : typeof result.message !== "string") ||
+          !Array.isArray(result.appointments) || result.appointments.some((appointment: { title?: unknown; startsAt?: unknown; status?: unknown } | null) =>
+            !appointment || typeof appointment.title !== "string" || typeof appointment.startsAt !== "string" ||
+            !Number.isFinite(new Date(appointment.startsAt).getTime()) || typeof appointment.status !== "string")) return null;
+    }
+    return saved as LanguageTransfer;
+  } catch { return null; }
 }
 
 function normalizeDraft(value: Partial<BookingDraft>): BookingDraft {

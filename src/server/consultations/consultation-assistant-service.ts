@@ -242,7 +242,7 @@ async function handlePublicBookingConversation(input: {
   }
 
   const draft = mergeResult.draft;
-  const explicitDate = toAsciiDigits(input.body.message).match(/\b(20\d{2}-\d{2}-\d{2})\b/)?.[1];
+  const explicitDate = toAsciiDigits(appointmentPreferenceText(input.body.message)).match(/\b(20\d{2}-\d{2}-\d{2})\b/)?.[1];
   if (explicitDate && !consultationSlotDateSchema.safeParse(explicitDate).success) {
     const nextDraft = normalizeBookingDraft({ ...draft, startsAt: "", availabilityPreference: normalizeAvailabilityPreference() });
     return bookingConversationResponse({
@@ -254,7 +254,13 @@ async function handlePublicBookingConversation(input: {
       message: publicBookingSlotConfirmationError(input.body.locale, "")
     });
   }
-  const selectedSlot = input.body.selectedSlot || draft.startsAt || input.body.startsAt || "";
+  const previous = normalizeBookingDraft(baseBookingDraft(input.body));
+  const changedBookingTerms = draft.serviceCategory !== previous.serviceCategory || draft.preferredMode !== previous.preferredMode;
+  const changedPreference = (["date", "fromTime", "toTime"] as const)
+    .some(key => draft.availabilityPreference[key] !== previous.availabilityPreference[key]);
+  const needsNewSlot = changedBookingTerms || changedPreference || wantsAlternativeSlots(input.body.message);
+  if (needsNewSlot) draft.startsAt = "";
+  const selectedSlot = needsNewSlot ? "" : input.body.selectedSlot || draft.startsAt || input.body.startsAt || "";
   const missingFields = requiredBookingFields({ ...input.body, ...draft, startsAt: selectedSlot });
 
   if (input.body.confirmBooking || (input.body.intent === "book_consultation_appointment" && input.body.consent === true && selectedSlot)) {
@@ -317,9 +323,9 @@ async function handlePublicBookingConversation(input: {
   }
 
   if (missingFields.length) {
-    if (missingFields.includes("startsAt")) {
+    if (missingFields.length === 1 && missingFields.includes("startsAt")) {
       const hasPreference = hasAvailabilityPreference(draft.availabilityPreference);
-      if (!hasPreference && !wantsAlternativeSlots(input.body.message)) {
+      if (!hasPreference && !needsNewSlot) {
         return bookingConversationResponse({
           locale: input.body.locale,
           draft,
@@ -622,15 +628,16 @@ function extractBookingDetails(
   const normalized = normalizedAssistantText(text);
   const next: Partial<ReturnType<typeof normalizeBookingDraft>> = {};
   const email = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0];
-  const phone = text.match(/(?:\+|00)?\d[\d\s().-]{6,}\d/)?.[0];
+  const phoneText = toAsciiDigits(text).replace(/\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}[/.]\d{1,2}[/.]\d{4}\b/g, "");
+  const phone = phoneText.match(/(?:\+|00)?\d[\d\s().-]{6,}\d/)?.[0];
 
-  if (email && !current.email) {
+  if (email && (!current.email || /my email|email is|بريدي|البريد|ايميلي/i.test(text) || text.trim() === email)) {
     next.email = email.toLowerCase();
   }
-  if (phone && !current.phone) {
+  if (phone && (!current.phone || /my phone|phone is|رقمي|هاتف|تليفون/i.test(text) || phoneText.trim() === phone) && isValidBookingPhone(phone.replace(/[^\d+]/g, ""))) {
     next.phone = phone.replace(/[^\d+]/g, "");
   }
-  if (!current.serviceCategory) {
+  if (!current.serviceCategory || /change|instead|switch|عايز|أريد|اريد|غير|بدل/i.test(text)) {
     const serviceCategory = serviceCategoryFromMessage(normalized);
     if (serviceCategory) {
       next.serviceCategory = serviceCategory;
@@ -652,8 +659,8 @@ function extractBookingDetails(
     next.availabilityPreference = availabilityPreference;
   }
 
-  const name = nameFromMessage(text);
-  if (name && !current.fullName) {
+  const name = nameFromMessage(text, Boolean(current.fullName));
+  if (name) {
     next.fullName = name;
   } else if (!current.fullName && likelyNameOnly(text) && !isInvalidBookingFullName(text) && !isAvailabilityOnlyMessage(text)) {
     next.fullName = text;
@@ -806,13 +813,14 @@ function bookingDraftFromAiExtraction(
     next.preferredMode = fields.preferredMode;
   }
   if (trustedBookingAiField(extraction, "availabilityPreference") && fields.availabilityPreference) {
-    next.availabilityPreference = normalizeAvailabilityPreference({
+    const preference = availabilityPreferenceSchema.safeParse({
       date: fields.availabilityPreference.date ?? undefined,
       label: fields.availabilityPreference.label ?? undefined,
       timeWindow: fields.availabilityPreference.timeWindow ?? undefined,
       fromTime: fields.availabilityPreference.fromTime ?? undefined,
       toTime: fields.availabilityPreference.toTime ?? undefined
     });
+    if (preference.success) next.availabilityPreference = normalizeAvailabilityPreference(preference.data);
   }
 
   return next;
@@ -971,6 +979,8 @@ function serviceCategoryFromMessage(text: string) {
 }
 
 function preferredModeFromMessage(text: string): ConsultationMode | "" {
+  // A contact number label does not request a phone consultation.
+  text = toAsciiDigits(text).replace(/(?:phone|هاتف|تليفون)[^,،\n]*?(?:\+|00)?\d[\d\s().-]{6,}\d/gi, "");
   if (containsAny(text, ["phone", "call", "هاتف", "تليفون", "مكالمة"])) {
     return "PHONE";
   }
@@ -996,8 +1006,10 @@ function urgencyFromMessage(text: string) {
   return "";
 }
 
-function nameFromMessage(text: string) {
-  const match = text.match(/(?:my name is|i am|انا اسمي|اسمي|الاسم)\s+([^,،\n]+)/i);
+function nameFromMessage(text: string, explicitOnly = false) {
+  const match = text.match(explicitOnly
+    ? /(?:my name is|انا اسمي|اسمي|الاسم)\s+([^,،\n]+)/i
+    : /(?:my name is|i am|انا اسمي|اسمي|الاسم)\s+([^,،\n]+)/i);
   return match?.[1]?.trim().slice(0, 120) ?? "";
 }
 
@@ -1008,7 +1020,8 @@ function cityFromMessage(text: string) {
 
 function likelyNameOnly(text: string) {
   const value = text.trim();
-  if (value.length < 2 || value.length > 80 || /[0-9@]/.test(value)) {
+  if (value.length < 2 || value.length > 80 || /[0-9@?؟]/.test(value) ||
+      /^(?:(?:i|انا|أنا)\s+)?(?:want|need|what|where|when|how|can|could|please|عايز|عايزة|أريد|اريد|ممكن|هل|ليه|ازاي)(?:\s|$)/i.test(value)) {
     return false;
   }
   const normalized = normalizedAssistantText(value);
@@ -1079,7 +1092,7 @@ function hasAvailabilityPreference(value?: Partial<AvailabilityPreference>) {
 }
 
 function availabilityPreferenceFromMessage(message: string, current?: Partial<AvailabilityPreference>, now = new Date()): AvailabilityPreference {
-  const text = normalizedAssistantText(message);
+  const text = normalizedAssistantText(appointmentPreferenceText(message));
   const next = normalizeAvailabilityPreference(current);
   const date = availabilityDateFromMessage(text, now);
   const timeWindow = availabilityWindowFromMessage(text);
@@ -1101,6 +1114,15 @@ function availabilityPreferenceFromMessage(message: string, current?: Partial<Av
   }
 
   return next;
+}
+
+function appointmentPreferenceText(message: string) {
+  // Exclude explicitly historical matter clauses, while retaining a separate booking request.
+  return message.split(/[,،;؛\n]|[.!?](?:\s|$)/).filter(clause => {
+    const historical = /\b(?:signed|occurred|happened|dated)\b|اتوقع|تم توقيع|حدث|حصل|بتاريخ/i.test(clause);
+    const scheduling = /\b(?:book|appointment|available)\b|حجز|موعد|ميعاد|متاح/i.test(clause);
+    return !historical || scheduling;
+  }).join(" ");
 }
 
 function availabilityDateFromMessage(text: string, now = new Date()) {

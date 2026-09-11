@@ -1,0 +1,38 @@
+{
+  "baseline": "cf1b835fb6fdd8191889bca5dcca91c81bbd1afd",
+  "scope": "Static source comparison; runtime/database-populated URLs remain unverified.",
+  "before": {
+    "pageFiles": 58,
+    "apiRouteFiles": 100,
+    "apiOperations": 119,
+    "sourceFiles": 364
+  },
+  "after": {
+    "pageFiles": 58,
+    "apiRouteFiles": 100,
+    "apiOperations": 119,
+    "sourceFiles": 364
+  },
+  "changes": {
+    "arabicPatterns": {
+      "removed": [],
+      "added": []
+    },
+    "files": {
+      "removed": [],
+      "added": []
+    },
+    "routes": {
+      "removed": [],
+      "added": []
+    },
+    "links": {
+      "removed": [],
+      "added": []
+    },
+    "contentSlugs": {
+      "removed": [],
+      "added": []
+    }
+  }
+}

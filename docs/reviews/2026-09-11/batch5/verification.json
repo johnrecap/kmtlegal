@@ -1,0 +1,71 @@
+{
+  "date": "2026-09-11",
+  "baseline": "cf1b835fb6fdd8191889bca5dcca91c81bbd1afd",
+  "unit": {
+    "passed": 506,
+    "failed": 0,
+    "skipped": 5
+  },
+  "browser": {
+    "stats": {
+      "startTime": "2026-09-11T20:19:50.801Z",
+      "duration": 84758.157,
+      "expected": 11,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "boundary": "11 Chromium cases with controlled assistant HTTP responses, not real DB booking persistence",
+    "strengthenedRepeatedCases": {
+      "startTime": "2026-09-11T20:22:48.228Z",
+      "duration": 23818.501,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "newServiceCases": 31,
+  "newProviderBoundaryCases": 6,
+  "typecheck": "passed",
+  "lint": "passed",
+  "secretScan": "passed",
+  "build": {
+    "status": "passed",
+    "exitCode": 0,
+    "generatedStaticPages": 44,
+    "guardedWithoutDatabaseUrl": true,
+    "afterFinalSupervisorCorrections": true,
+    "warnings": [
+      "Non-fatal webpack cache snapshot warnings"
+    ]
+  },
+  "sourcePreservation": "58 page files, 100 API route files, 119 operations, 364 source files; no removed routes, links or slugs",
+  "environment": {
+    "databaseClusterCreated": false,
+    "batch5PostgresDirectoryCreated": false,
+    "privateFilesWritten": false,
+    "originalDCheckoutTouched": false,
+    "port5432Touched": false,
+    "server3109Stopped": true,
+    "port55437ListenerPresent": false
+  },
+  "commands": {
+    "unit": "npx vitest run --maxWorkers=2 --reporter=json --outputFile=.playwright/batch5-unit-results.json",
+    "browser": "KMT_PORT=3109 node scripts/run-playwright-with-server.mjs tests/e2e/batch5-chat-recovery.spec.ts --workers=1 --reporter=list,json",
+    "build": "ALLOW_BUILD_WITHOUT_DATABASE_URL=true DATABASE_URL= npm run build"
+  },
+  "limits": [
+    "All provider calls use fetch stubs or local mock. No real keys or provider network.",
+    "No new database/real payment evidence. Price resolution is boundary-spied; batch4 real DB evidence remains separate.",
+    "Explicit historical-clause filter is heuristic, not general semantic date disambiguation.",
+    "One-use sessionStorage handoff includes current contact/matter/unsent text, selected appointment, active flow and latest structured result; no transcript, price, payment token or confirmation authority. Five-minute restoration validity; deletion on booking mount or browser tab lifetime."
+  ],
+  "intermediateFindings": [
+    "Initial test module mock omitted a required export; changed to partial module mock before the recorded baseline cases ran.",
+    "Two source-shape tests were updated deliberately: contact-before-slot order and narrowly bounded language draft handoff instead of a blanket sessionStorage prohibition.",
+    "Browser dev logged an aborted request during navigation and non-fatal webpack cache warnings; all final six cases passed."
+  ],
+  "stopRequested": true,
+  "nextAction": "Supervisor review, then approved push only; payment review after the user resumes."
+}

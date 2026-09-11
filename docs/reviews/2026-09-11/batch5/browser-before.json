@@ -1,0 +1,360 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "tests/e2e/batch5-chat-recovery.spec.ts",
+      "--workers=1",
+      "--reporter=list,json"
+    ],
+    "configFile": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\playwright.config.ts",
+    "rootDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/.playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "batch5-chat-recovery.spec.ts",
+      "file": "batch5-chat-recovery.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "en: restores unprocessed message on network and service failure",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 17523,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('input[name=\"chatMessage\"]')\nExpected: \u001b[32m\"My email is new@example.test\"\u001b[39m\nReceived: \u001b[31m\"\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"chatMessage\"]')\u001b[22m\n\u001b[2m    23 × locator resolved to <input value=\"\" autocomplete=\"off\" name=\"chatMessage\" id=\"chatMessage-_R_6rainebn9etb_\" placeholder=\"Type a booking request or reference question\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted kmt-motion-control !border-kmt-gold/25 !bg-black/35 !text-white placehold…/>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('input[name=\"chatMessage\"]')\nExpected: \u001b[32m\"My email is new@example.test\"\u001b[39m\nReceived: \u001b[31m\"\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"chatMessage\"]')\u001b[22m\n\u001b[2m    23 × locator resolved to <input value=\"\" autocomplete=\"off\" name=\"chatMessage\" id=\"chatMessage-_R_6rainebn9etb_\" placeholder=\"Type a booking request or reference question\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted kmt-motion-control !border-kmt-gold/25 !bg-black/35 !text-white placehold…/>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:12:73",
+                    "location": {
+                      "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                      "column": 73,
+                      "line": 12
+                    },
+                    "snippet": "  10 |   await input.fill(\"Book a consultation\");await submit.click();await expect(input).toBeEnabled();\n  11 |   const correction=locale===\"ar\"?\"بريدي الجديد new@example.test\":\"My email is new@example.test\";\n> 12 |   await input.fill(correction);await submit.click();await expect(input).toHaveValue(correction);await expect(input).toBeEnabled();\n     |                                                                         ^\n  13 |   await submit.click();await expect(input).toHaveValue(correction);await expect(input).toBeEnabled();\n  14 |   await submit.click();await expect(input).toBeEnabled();expect(requests).toHaveLength(4);for(const r of requests.slice(1)){expect(r.draft.phone).toBe(contact.phone);expect(r.message).toBe(correction);}\n  15 |  });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                        "column": 73,
+                        "line": 12
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('input[name=\"chatMessage\"]')\nExpected: \u001b[32m\"My email is new@example.test\"\u001b[39m\nReceived: \u001b[31m\"\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"chatMessage\"]')\u001b[22m\n\u001b[2m    23 × locator resolved to <input value=\"\" autocomplete=\"off\" name=\"chatMessage\" id=\"chatMessage-_R_6rainebn9etb_\" placeholder=\"Type a booking request or reference question\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted kmt-motion-control !border-kmt-gold/25 !bg-black/35 !text-white placehold…/>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n\n\n  10 |   await input.fill(\"Book a consultation\");await submit.click();await expect(input).toBeEnabled();\n  11 |   const correction=locale===\"ar\"?\"بريدي الجديد new@example.test\":\"My email is new@example.test\";\n> 12 |   await input.fill(correction);await submit.click();await expect(input).toHaveValue(correction);await expect(input).toBeEnabled();\n     |                                                                         ^\n  13 |   await submit.click();await expect(input).toHaveValue(correction);await expect(input).toBeEnabled();\n  14 |   await submit.click();await expect(input).toBeEnabled();expect(requests).toHaveLength(4);for(const r of requests.slice(1)){expect(r.draft.phone).toBe(contact.phone);expect(r.message).toBe(correction);}\n  15 |  });\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:12:73"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-11T19:59:11.235Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-en-re-f8d27-network-and-service-failure-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-en-re-f8d27-network-and-service-failure-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                    "column": 73,
+                    "line": 12
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d952b87d65d0833f00b2-8c61e366c7d32caac827",
+          "file": "batch5-chat-recovery.spec.ts",
+          "line": 5,
+          "column": 6
+        },
+        {
+          "title": "en: public language navigation retains contact and unsent text without persisting a confirmation",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 19009,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('input[name=\"chatMessage\"]')\nExpected: \u001b[32m\"Unsent question\"\u001b[39m\nReceived: \u001b[31m\"\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"chatMessage\"]')\u001b[22m\n\u001b[2m    21 × locator resolved to <input disabled value=\"\" autocomplete=\"off\" name=\"chatMessage\" id=\"chatMessage-_R_dml5esnebn9etb_\" placeholder=\"اختر العربية أو English للبدء\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted kmt-motion-control !border-kmt-gold/25 !bg-black/35 !text-white placeholder:!…/>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('input[name=\"chatMessage\"]')\nExpected: \u001b[32m\"Unsent question\"\u001b[39m\nReceived: \u001b[31m\"\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"chatMessage\"]')\u001b[22m\n\u001b[2m    21 × locator resolved to <input disabled value=\"\" autocomplete=\"off\" name=\"chatMessage\" id=\"chatMessage-_R_dml5esnebn9etb_\" placeholder=\"اختر العربية أو English للبدء\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted kmt-motion-control !border-kmt-gold/25 !bg-black/35 !text-white placeholder:!…/>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:21:80",
+                    "location": {
+                      "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                      "column": 80,
+                      "line": 21
+                    },
+                    "snippet": "  19 |   await page.goto(locale===\"ar\"?\"/ar/book-consultation\":\"/book-consultation\");await page.getByTestId(`booking-language-${locale}`).click();\n  20 |   const input=page.locator('input[name=\"chatMessage\"]');const submit=page.getByTestId(\"booking-chat-composer\").locator('button[type=\"submit\"]');await input.fill(\"Book consultation\");await submit.click();await expect(input).toBeEnabled();await input.fill(\"Unsent question\");\n> 21 |   await page.getByTestId(\"public-language-switch\").click();await expect(input).toHaveValue(\"Unsent question\");await expect(input).toBeEnabled();await submit.click();await expect(input).toBeEnabled();expect(received.draft.phone).toBe(contact.phone);expect(received.draft.fullName).toBe(contact.fullName);expect(received.locale).toBe(locale===\"ar\"?\"en\":\"ar\");expect(received.confirmBooking).not.toBe(true);expect(received.selectedSlot).toBe(\"\");\n     |                                                                                ^\n  22 |   expect(await page.evaluate(()=>sessionStorage.getItem(\"kmt.booking.language-transfer\"))).toBeNull();\n  23 |  });\n  24 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                        "column": 80,
+                        "line": 21
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('input[name=\"chatMessage\"]')\nExpected: \u001b[32m\"Unsent question\"\u001b[39m\nReceived: \u001b[31m\"\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"chatMessage\"]')\u001b[22m\n\u001b[2m    21 × locator resolved to <input disabled value=\"\" autocomplete=\"off\" name=\"chatMessage\" id=\"chatMessage-_R_dml5esnebn9etb_\" placeholder=\"اختر العربية أو English للبدء\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted kmt-motion-control !border-kmt-gold/25 !bg-black/35 !text-white placeholder:!…/>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n\n\n  19 |   await page.goto(locale===\"ar\"?\"/ar/book-consultation\":\"/book-consultation\");await page.getByTestId(`booking-language-${locale}`).click();\n  20 |   const input=page.locator('input[name=\"chatMessage\"]');const submit=page.getByTestId(\"booking-chat-composer\").locator('button[type=\"submit\"]');await input.fill(\"Book consultation\");await submit.click();await expect(input).toBeEnabled();await input.fill(\"Unsent question\");\n> 21 |   await page.getByTestId(\"public-language-switch\").click();await expect(input).toHaveValue(\"Unsent question\");await expect(input).toBeEnabled();await submit.click();await expect(input).toBeEnabled();expect(received.draft.phone).toBe(contact.phone);expect(received.draft.fullName).toBe(contact.fullName);expect(received.locale).toBe(locale===\"ar\"?\"en\":\"ar\");expect(received.confirmBooking).not.toBe(true);expect(received.selectedSlot).toBe(\"\");\n     |                                                                                ^\n  22 |   expect(await page.evaluate(()=>sessionStorage.getItem(\"kmt.booking.language-transfer\"))).toBeNull();\n  23 |  });\n  24 | }\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:21:80"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-11T19:59:30.161Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-en-pu-31956-t-persisting-a-confirmation-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-en-pu-31956-t-persisting-a-confirmation-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                    "column": 80,
+                    "line": 21
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d952b87d65d0833f00b2-1de46c625a4f49248f77",
+          "file": "batch5-chat-recovery.spec.ts",
+          "line": 16,
+          "column": 6
+        },
+        {
+          "title": "ar: restores unprocessed message on network and service failure",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 15276,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('input[name=\"chatMessage\"]')\nExpected: \u001b[32m\"بريدي الجديد new@example.test\"\u001b[39m\nReceived: \u001b[31m\"\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"chatMessage\"]')\u001b[22m\n\u001b[2m    23 × locator resolved to <input value=\"\" autocomplete=\"off\" name=\"chatMessage\" id=\"chatMessage-_R_dml5esnebn9etb_\" placeholder=\"اكتب طلب حجز أو سؤال عن رقم مرجع\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted kmt-motion-control !border-kmt-gold/25 !bg-black/35 !text-white placeholder:!text-a…/>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('input[name=\"chatMessage\"]')\nExpected: \u001b[32m\"بريدي الجديد new@example.test\"\u001b[39m\nReceived: \u001b[31m\"\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"chatMessage\"]')\u001b[22m\n\u001b[2m    23 × locator resolved to <input value=\"\" autocomplete=\"off\" name=\"chatMessage\" id=\"chatMessage-_R_dml5esnebn9etb_\" placeholder=\"اكتب طلب حجز أو سؤال عن رقم مرجع\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted kmt-motion-control !border-kmt-gold/25 !bg-black/35 !text-white placeholder:!text-a…/>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:12:73",
+                    "location": {
+                      "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                      "column": 73,
+                      "line": 12
+                    },
+                    "snippet": "  10 |   await input.fill(\"Book a consultation\");await submit.click();await expect(input).toBeEnabled();\n  11 |   const correction=locale===\"ar\"?\"بريدي الجديد new@example.test\":\"My email is new@example.test\";\n> 12 |   await input.fill(correction);await submit.click();await expect(input).toHaveValue(correction);await expect(input).toBeEnabled();\n     |                                                                         ^\n  13 |   await submit.click();await expect(input).toHaveValue(correction);await expect(input).toBeEnabled();\n  14 |   await submit.click();await expect(input).toBeEnabled();expect(requests).toHaveLength(4);for(const r of requests.slice(1)){expect(r.draft.phone).toBe(contact.phone);expect(r.message).toBe(correction);}\n  15 |  });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                        "column": 73,
+                        "line": 12
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('input[name=\"chatMessage\"]')\nExpected: \u001b[32m\"بريدي الجديد new@example.test\"\u001b[39m\nReceived: \u001b[31m\"\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"chatMessage\"]')\u001b[22m\n\u001b[2m    23 × locator resolved to <input value=\"\" autocomplete=\"off\" name=\"chatMessage\" id=\"chatMessage-_R_dml5esnebn9etb_\" placeholder=\"اكتب طلب حجز أو سؤال عن رقم مرجع\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted kmt-motion-control !border-kmt-gold/25 !bg-black/35 !text-white placeholder:!text-a…/>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n\n\n  10 |   await input.fill(\"Book a consultation\");await submit.click();await expect(input).toBeEnabled();\n  11 |   const correction=locale===\"ar\"?\"بريدي الجديد new@example.test\":\"My email is new@example.test\";\n> 12 |   await input.fill(correction);await submit.click();await expect(input).toHaveValue(correction);await expect(input).toBeEnabled();\n     |                                                                         ^\n  13 |   await submit.click();await expect(input).toHaveValue(correction);await expect(input).toBeEnabled();\n  14 |   await submit.click();await expect(input).toBeEnabled();expect(requests).toHaveLength(4);for(const r of requests.slice(1)){expect(r.draft.phone).toBe(contact.phone);expect(r.message).toBe(correction);}\n  15 |  });\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:12:73"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-11T19:59:50.562Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-ar-re-d5728-network-and-service-failure-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-ar-re-d5728-network-and-service-failure-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                    "column": 73,
+                    "line": 12
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d952b87d65d0833f00b2-94e83bbe436f540b0305",
+          "file": "batch5-chat-recovery.spec.ts",
+          "line": 5,
+          "column": 6
+        },
+        {
+          "title": "ar: public language navigation retains contact and unsent text without persisting a confirmation",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 14855,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('input[name=\"chatMessage\"]')\nExpected: \u001b[32m\"Unsent question\"\u001b[39m\nReceived: \u001b[31m\"\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"chatMessage\"]')\u001b[22m\n\u001b[2m    19 × locator resolved to <input disabled value=\"\" autocomplete=\"off\" name=\"chatMessage\" id=\"chatMessage-_R_6rainebn9etb_\" placeholder=\"Choose Arabic or English to start\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted kmt-motion-control !border-kmt-gold/25 !bg-black/35 !text-white placeholder…/>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('input[name=\"chatMessage\"]')\nExpected: \u001b[32m\"Unsent question\"\u001b[39m\nReceived: \u001b[31m\"\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"chatMessage\"]')\u001b[22m\n\u001b[2m    19 × locator resolved to <input disabled value=\"\" autocomplete=\"off\" name=\"chatMessage\" id=\"chatMessage-_R_6rainebn9etb_\" placeholder=\"Choose Arabic or English to start\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted kmt-motion-control !border-kmt-gold/25 !bg-black/35 !text-white placeholder…/>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:21:80",
+                    "location": {
+                      "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                      "column": 80,
+                      "line": 21
+                    },
+                    "snippet": "  19 |   await page.goto(locale===\"ar\"?\"/ar/book-consultation\":\"/book-consultation\");await page.getByTestId(`booking-language-${locale}`).click();\n  20 |   const input=page.locator('input[name=\"chatMessage\"]');const submit=page.getByTestId(\"booking-chat-composer\").locator('button[type=\"submit\"]');await input.fill(\"Book consultation\");await submit.click();await expect(input).toBeEnabled();await input.fill(\"Unsent question\");\n> 21 |   await page.getByTestId(\"public-language-switch\").click();await expect(input).toHaveValue(\"Unsent question\");await expect(input).toBeEnabled();await submit.click();await expect(input).toBeEnabled();expect(received.draft.phone).toBe(contact.phone);expect(received.draft.fullName).toBe(contact.fullName);expect(received.locale).toBe(locale===\"ar\"?\"en\":\"ar\");expect(received.confirmBooking).not.toBe(true);expect(received.selectedSlot).toBe(\"\");\n     |                                                                                ^\n  22 |   expect(await page.evaluate(()=>sessionStorage.getItem(\"kmt.booking.language-transfer\"))).toBeNull();\n  23 |  });\n  24 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                        "column": 80,
+                        "line": 21
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('input[name=\"chatMessage\"]')\nExpected: \u001b[32m\"Unsent question\"\u001b[39m\nReceived: \u001b[31m\"\"\u001b[39m\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('input[name=\"chatMessage\"]')\u001b[22m\n\u001b[2m    19 × locator resolved to <input disabled value=\"\" autocomplete=\"off\" name=\"chatMessage\" id=\"chatMessage-_R_6rainebn9etb_\" placeholder=\"Choose Arabic or English to start\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted kmt-motion-control !border-kmt-gold/25 !bg-black/35 !text-white placeholder…/>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n\n\n  19 |   await page.goto(locale===\"ar\"?\"/ar/book-consultation\":\"/book-consultation\");await page.getByTestId(`booking-language-${locale}`).click();\n  20 |   const input=page.locator('input[name=\"chatMessage\"]');const submit=page.getByTestId(\"booking-chat-composer\").locator('button[type=\"submit\"]');await input.fill(\"Book consultation\");await submit.click();await expect(input).toBeEnabled();await input.fill(\"Unsent question\");\n> 21 |   await page.getByTestId(\"public-language-switch\").click();await expect(input).toHaveValue(\"Unsent question\");await expect(input).toBeEnabled();await submit.click();await expect(input).toBeEnabled();expect(received.draft.phone).toBe(contact.phone);expect(received.draft.fullName).toBe(contact.fullName);expect(received.locale).toBe(locale===\"ar\"?\"en\":\"ar\");expect(received.confirmBooking).not.toBe(true);expect(received.selectedSlot).toBe(\"\");\n     |                                                                                ^\n  22 |   expect(await page.evaluate(()=>sessionStorage.getItem(\"kmt.booking.language-transfer\"))).toBeNull();\n  23 |  });\n  24 | }\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts:21:80"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-11T20:00:07.266Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-ar-pu-611fe-t-persisting-a-confirmation-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch5-chat-recovery-ar-pu-611fe-t-persisting-a-confirmation-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch5-chat-recovery.spec.ts",
+                    "column": 80,
+                    "line": 21
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "d952b87d65d0833f00b2-1100df39e7c2cbfbfd18",
+          "file": "batch5-chat-recovery.spec.ts",
+          "line": 16,
+          "column": 6
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-11T19:59:10.366Z",
+    "duration": 72396.545,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 4,
+    "flaky": 0
+  }
+}

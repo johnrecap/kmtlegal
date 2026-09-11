@@ -1,0 +1,42 @@
+import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { handlePublicConsultationAssistant } from "@/server/consultations/consultation-assistant-service";
+import * as availability from "@/server/consultations/consultation-availability-service";
+vi.mock("@/server/rate-limit/memory-rate-limit",()=>({enforceRateLimit:vi.fn(),rateLimiters:{ai:{},booking:{}}}));
+vi.mock("@/server/consultations/consultation-booking-settings",async importOriginal=>({...await importOriginal<typeof import("@/server/consultations/consultation-booking-settings")>(),getPublicConsultationBookingMode:vi.fn(async()=>"AI_CHAT_PAID")}));
+import { prisma } from "@/server/db/prisma";
+import * as pricing from "@/server/payments/pricing-service";
+import * as conflicts from "@/server/appointments/appointment-conflict-service";
+import { Prisma } from "@prisma/client";
+const full={fullName:"Mona Adel",phone:"+201000001234",email:"mona@example.test",city:"Cairo",summary:"A supplier contract requires a document review meeting.",serviceCategory:"corporate-business-services",preferredMode:"ONLINE",urgency:"NORMAL"};
+const slot={id:"slot",startsAt:"2026-09-15T10:00:00.000Z",endsAt:"2026-09-15T11:00:00.000Z",mode:"ONLINE" as const};
+const ask=async(message:string,draft:unknown={},locale:"ar"|"en"="en",extra={})=>await handlePublicConsultationAssistant({body:{locale,message,draft,...extra},request:new Request("http://example.test/api/public/consultations/assistant"),requestId:"batch5"}) as any;
+beforeEach(()=>{vi.useFakeTimers();vi.setSystemTime(new Date("2026-09-11T08:00:00Z"));vi.stubEnv("AI_PROVIDER","mock");vi.spyOn(availability,"listPublicConsultationSlots").mockResolvedValue([slot]);});
+afterEach(()=>{vi.useRealTimers();vi.restoreAllMocks();vi.unstubAllEnvs();});
+describe("batch5 conversation scenario matrix (mock provider, service boundary)",()=>{
+ it.each([
+  ["en","My name is Mona Adel, phone +201000001234, email mona@example.test, city Cairo, contract review online tomorrow afternoon"],
+  ["ar","انا اسمي منى عادل، تليفوني +201000001234، البريد mona@example.test، مدينة القاهرة، مراجعة عقد شركة اونلاين بكرة بعد الظهر"],
+  ["ar","اسمي منى عادل، الهاتف +201000001234، البريد mona@example.test، مدينة القاهرة، أريد مراجعة عقد شركة أونلاين غدا بعد الظهر"]
+ ] as const)("collects multiple fields %s %s",async(locale,message)=>{const r=await ask(message,{},locale);expect(r.draft.phone).toBe(full.phone);expect(r.draft.email).toBe(full.email);expect(r.draft.preferredMode).toBe("ONLINE");expect(r.missingFields).not.toContain("fullName");expect(r.missingFields).not.toContain("phone");expect(r.reference).toBeUndefined();});
+ it.each([["en","My name is Salma Hassan","fullName","Salma Hassan"],["ar","اسمي سلمى حسن","fullName","سلمى حسن"],["en","My phone is +201000009876","phone","+201000009876"],["ar","رقمي +201000009876","phone","+201000009876"],["en","My email is salma@example.test","email","salma@example.test"],["ar","بريدي salma@example.test","email","salma@example.test"]] as const)("applies explicit correction %s %s",async(locale,message,key,value)=>{const r=await ask(message,{...full,startsAt:slot.startsAt},locale,{selectedSlot:slot.startsAt});expect(r.draft[key]).toBe(value);expect(r.message).toContain(value);expect(r.reference).toBeUndefined();});
+ it.each(["tomorrow afternoon","مواعيد تانية","another time"])("invalidates an old slot for %s",async(message)=>{const r=await ask(message,{...full,startsAt:slot.startsAt},"en",{selectedSlot:slot.startsAt});expect(r.draft.startsAt).toBe("");expect(r.readyToConfirm).toBe(false);expect(r.availableSlots.length).toBeGreaterThan(0);});
+ it.each([["Change to a real estate consultation","real-estate-legal-support","ONLINE"],["عايز استشارة عقارية","real-estate-legal-support","ONLINE"],["Change to an office visit","corporate-business-services","OFFICE"]])("reselects after service/mode change %s",async(message,category,mode)=>{const r=await ask(message,{...full,startsAt:slot.startsAt},"en",{selectedSlot:slot.startsAt});expect(r.draft.serviceCategory).toBe(category);expect(r.draft.preferredMode).toBe(mode);expect(r.draft.startsAt).toBe("");expect(r.readyToConfirm).toBe(false);expect(availability.listPublicConsultationSlots).toHaveBeenCalledWith(expect.objectContaining({mode}));});
+ it.each(["The contract was signed on 2025-02-20 and needs document review.","العقد اتوقع يوم 2025-02-20 وعايز مراجعة بنود العقد"])("keeps matter date out of appointment preference: %s",async message=>{const r=await ask(message,{...full,summary:""});expect(r.draft.availabilityPreference.date).toBe("");expect(r.needsAvailabilityPreference).toBe(true);});
+ it("asks for a missing phone before scheduling",async()=>{const r=await ask("Book",{...full,phone:""});expect(r.message).toMatch(/phone|number/i);expect(r.missingFields).not.toContain("fullName");});
+ it.each(["Will I win the case?","هل أكسب القضية؟"])("does not promise a legal result: %s",async message=>{const r=await ask(message,full);expect(r.reference).toBeUndefined();expect(r.readyToConfirm).not.toBe(true);expect(r.action).toBe("handoff_to_human");});
+ it("keeps a complete draft when switching request locale",async()=>{const en=await ask("Book",full);const ar=await ask("حجز",en.draft,"ar");expect(ar.draft.phone).toBe(full.phone);expect(ar.draft.fullName).toBe(full.fullName);});
+ it("resolves authoritative price and slot after changed terms and explicit fresh confirmation",async()=>{
+  vi.spyOn(prisma.consultationRequest,"findFirst").mockResolvedValue(null);vi.spyOn(conflicts,"assertNoAppointmentConflict").mockResolvedValue(undefined);
+  const checked=vi.spyOn(availability,"assertPublicConsultationSlotAvailable").mockResolvedValue({...slot,mode:"OFFICE"});
+  const price=vi.spyOn(pricing,"resolveConsultationPrice").mockResolvedValue({amount:new Prisma.Decimal(725),amountText:"725.00",currency:"EGP",pricingRuleId:"fixture-price",priceVersion:8,serviceCategory:"corporate-business-services",mode:"OFFICE",label:null});
+  const changed=await ask("Change to an office visit",{...full,startsAt:slot.startsAt},"en",{selectedSlot:slot.startsAt});expect(price).not.toHaveBeenCalled();expect(changed.readyToCheckout).toBe(false);
+  const review=await ask("Selected time",{...changed.draft,startsAt:slot.startsAt},"en",{selectedSlot:slot.startsAt});expect(review.readyToConfirm).toBe(true);expect(review.message).toContain(full.fullName);expect(price).not.toHaveBeenCalled();
+  const paid=await ask("Confirm",review.draft,"en",{selectedSlot:slot.startsAt,confirmBooking:true});expect(checked).toHaveBeenCalledWith(expect.objectContaining({mode:"OFFICE"}));expect(price).toHaveBeenCalledWith({serviceCategory:full.serviceCategory,mode:"OFFICE"});expect(paid.paymentReview).toMatchObject({amount:"725.00",priceVersion:8,mode:"OFFICE"});expect(paid.reference).toBeUndefined();
+ });
+ it.each(["What is the weather?","عايز وصفة أكل","Can you arrange a spaceship license?"])("does not invent a service, fee or confirmation for %s",async message=>{const r=await ask(message);expect(r.reference).toBeUndefined();expect(r.paymentReview).toBeUndefined();expect(r.draft?.fullName ?? "").toBe("");expect(r.readyToConfirm).not.toBe(true);expect(["", "legal-consultation", "corporate-business-services", "real-estate-legal-support", "claims-collections"]).toContain(r.draft?.serviceCategory ?? "");});
+ it.each(["My email is new@example.test, appointment tomorrow afternoon","بريدي new@example.test، وعايز ميعاد للمقابلة بكرة بعد الظهر عشان يناسب التزاماتي في بقية اليوم"])("mixed correction and appointment invalidates the old slot: %s",async message=>{const r=await ask(message,{...full,startsAt:slot.startsAt},"en",{selectedSlot:slot.startsAt});expect(r.draft.email).toBe("new@example.test");expect(r.draft.startsAt).toBe("");expect(r.readyToConfirm).toBe(false);expect(r.availableSlots.length).toBeGreaterThan(0);});
+ it("Arabic-number contact label does not override online mode",async()=>{const r=await ask("هاتفي ٠١٠١٢٣٤٥٦٧٨، أريد المقابلة أونلاين",full,"ar");expect(r.draft.preferredMode).toBe("ONLINE");expect(r.draft.phone).toBe("01012345678");});
+ it("retains a natural Egyptian appointment date",async()=>{const r=await ask("عايز ميعاد بتاريخ2026-09-20",full,"ar");expect(r.draft.availabilityPreference.date).toBe("2026-09-20");});
+ it.each(["I am available tomorrow afternoon","I am looking for an online appointment"])("does not replace an existing name from a statement: %s",async message=>{const r=await ask(message,full);expect(r.draft.fullName).toBe(full.fullName);});
+
+});

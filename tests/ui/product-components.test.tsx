@@ -418,7 +418,16 @@ describe("product UI primitives", () => {
     expect(brandLogoSource).toContain("/brand/kmt-logo-full.webp");
     expect(clientContent).toContain("لا أقدم رأيًا قانونيًا");
     expect(`${publicChatSource}\n${clientChatSource}\n${teamChatSource}`).not.toContain("localStorage");
-    expect(`${publicChatSource}\n${clientChatSource}\n${teamChatSource}`).not.toContain("sessionStorage");
+    expect(`${clientChatSource}\n${teamChatSource}`).not.toContain("sessionStorage");
+    // Public booking has a one-use language-navigation draft handoff, not a transcript store.
+    expect(publicChatSource).toContain('sessionStorage.removeItem(languageTransferKey)');
+    const transferStart = publicChatSource.indexOf('const raw = JSON.stringify({');
+    const transferEnd = publicChatSource.indexOf('} catch', transferStart);
+    const transfer = publicChatSource.slice(transferStart, transferEnd);
+    expect(transfer).toContain('draft, flow, selectedSlot, result: latestResult');
+    expect(transfer).not.toContain("messages");
+    expect(transfer).not.toContain("paymentReview");
+    expect(transfer).not.toContain("readyToConfirm");
   });
 
   it("renders Tabs as a pressed button group, not incomplete ARIA tabs", () => {
