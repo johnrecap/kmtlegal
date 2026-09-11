@@ -326,8 +326,9 @@ async function seedPublicData(users) {
   }
 
   await prisma.article.upsert({
-    where: { slug: "contract-risk-basics" },
+    where: { locale_slug: { locale: "ar", slug: "contract-risk-basics" } },
     create: {
+      locale: "ar",
       title: "أساسيات تقليل مخاطر العقود",
       slug: "contract-risk-basics",
       excerpt: "نقاط عملية تساعد على مراجعة بنود المسؤولية والجزاءات قبل توقيع عقد تجاري.",
@@ -346,8 +347,9 @@ async function seedPublicData(users) {
   });
 
   await prisma.caseStudy.upsert({
-    where: { slug: "anonymous-commercial-dispute" },
+    where: { locale_slug: { locale: "ar", slug: "anonymous-commercial-dispute" } },
     create: {
+      locale: "ar",
       title: "نزاع تجاري مجهول الهوية",
       slug: "anonymous-commercial-dispute",
       category: "commercial",

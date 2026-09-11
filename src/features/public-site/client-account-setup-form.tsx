@@ -3,6 +3,7 @@
 import { type FormEvent, type InputHTMLAttributes, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { PublicContent } from "@/content/public-content";
+import { useHydrated } from "@/lib/use-hydrated";
 import { cn } from "@/lib/cn";
 import { MaterialSymbol } from "@/components/ui";
 import { publicMotionButton, publicMotionControl } from "./public-motion";
@@ -38,6 +39,7 @@ const inputClasses = cn(
 
 export function ClientAccountSetupForm({ token, initialEmail, copy }: ClientAccountSetupFormProps) {
   const router = useRouter();
+  const isHydrated = useHydrated();
   const [email, setEmail] = useState(initialEmail ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -89,8 +91,9 @@ export function ClientAccountSetupForm({ token, initialEmail, copy }: ClientAcco
   }
 
   return (
-    <form className="space-y-5" noValidate onSubmit={onSubmit}>
+    <form className="space-y-5" method="post" noValidate onSubmit={onSubmit}>
       <Field
+        disabled={!isHydrated || isSubmitting}
         autoComplete="email"
         dir="ltr"
         error={fieldErrors.email}
@@ -109,6 +112,7 @@ export function ClientAccountSetupForm({ token, initialEmail, copy }: ClientAcco
         value={email}
       />
       <Field
+        disabled={!isHydrated || isSubmitting}
         autoComplete="new-password"
         error={fieldErrors.password}
         hint={copy.passwordHint}
@@ -124,6 +128,7 @@ export function ClientAccountSetupForm({ token, initialEmail, copy }: ClientAcco
         value={password}
       />
       <Field
+        disabled={!isHydrated || isSubmitting}
         autoComplete="new-password"
         error={fieldErrors.confirmPassword}
         label={copy.confirmPasswordLabel}
@@ -149,7 +154,7 @@ export function ClientAccountSetupForm({ token, initialEmail, copy }: ClientAcco
           "inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-kmt-gold bg-kmt-gold px-5 text-sm font-semibold text-[#120d07] transition-colors hover:bg-[#c7a363] disabled:cursor-not-allowed disabled:opacity-60",
           publicMotionButton
         )}
-        disabled={isSubmitting}
+        disabled={!isHydrated || isSubmitting}
         type="submit"
       >
         {isSubmitting ? <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> : <MaterialSymbol name="account_circle" />}

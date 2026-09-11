@@ -1,0 +1,40 @@
+{
+  "baseline": "7ad0010ffad2191bcada37ac45ba8a7ac8a973c4",
+  "scope": "Static source comparison; runtime/database-populated URLs remain unverified.",
+  "before": {
+    "pageFiles": 58,
+    "apiRouteFiles": 100,
+    "apiOperations": 119,
+    "sourceFiles": 363
+  },
+  "after": {
+    "pageFiles": 58,
+    "apiRouteFiles": 100,
+    "apiOperations": 119,
+    "sourceFiles": 364
+  },
+  "changes": {
+    "arabicPatterns": {
+      "removed": [],
+      "added": []
+    },
+    "files": {
+      "removed": [],
+      "added": [
+        "src/lib/use-hydrated.ts"
+      ]
+    },
+    "routes": {
+      "removed": [],
+      "added": []
+    },
+    "links": {
+      "removed": [],
+      "added": []
+    },
+    "contentSlugs": {
+      "removed": [],
+      "added": []
+    }
+  }
+}

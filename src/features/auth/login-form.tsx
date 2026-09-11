@@ -5,6 +5,7 @@ import { type FormEvent, useState } from "react";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, MaterialSymbol, TextInput } from "@/components/ui";
 import { getAuthContent } from "@/content/auth-content";
 import type { ClientLocale } from "@/content/client-content";
+import { useHydrated } from "@/lib/use-hydrated";
 import { signedInRedirectPath } from "@/lib/auth-routing";
 
 type LoginResponse = {
@@ -60,6 +61,7 @@ export function LoginForm({ locale }: { locale: ClientLocale }) {
   const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isHydrated = useHydrated();
 
   function updateEmail(value: string) {
     setEmail(value);
@@ -127,13 +129,14 @@ export function LoginForm({ locale }: { locale: ClientLocale }) {
         <CardDescription>{copy.formDescription}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="space-y-5" noValidate onSubmit={onSubmit}>
+        <form className="space-y-5" method="post" noValidate onSubmit={onSubmit}>
           {notice ? (
             <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-800" role="status">
               {notice}
             </div>
           ) : null}
           <TextInput
+            disabled={!isHydrated || isSubmitting}
             autoComplete="email"
             dir="ltr"
             error={fieldErrors.email}
@@ -147,6 +150,7 @@ export function LoginForm({ locale }: { locale: ClientLocale }) {
             value={email}
           />
           <TextInput
+            disabled={!isHydrated || isSubmitting}
             autoComplete="current-password"
             error={fieldErrors.password}
             label={copy.password}
@@ -162,6 +166,7 @@ export function LoginForm({ locale }: { locale: ClientLocale }) {
             </div>
           ) : null}
           <Button
+            disabled={!isHydrated || isSubmitting}
             className="w-full"
             loading={isSubmitting}
             trailingIcon={<MaterialSymbol className="text-[18px] rtl:rotate-180" name="arrow_forward" />}

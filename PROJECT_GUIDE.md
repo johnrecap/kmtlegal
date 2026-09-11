@@ -12,7 +12,7 @@ For a current-state PRD and external model review brief, use `docs/KMT_LEGAL_CUR
 - `PLAN-39` is locally verified. Contact inquiries create privacy-safe alerts for active authorized readers; `/portal`, `/product-system`, and `/stitch-clone` are retired runtime families; `/client` and login are bilingual and use the saved client locale.
 - `PLAN-35` through `PLAN-39` still have separately recorded database, authenticated-browser, deployment, or live evidence gates. See `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md` before making a production-readiness claim.
 - The public `/privacy` and `/ar/privacy` routes provide a bilingual, responsive privacy and job-applicant notice covering the verified Meta recruitment intake, email CV flow, website forms, client services, privacy rights, retention criteria, Meta processing, and first-party analytics boundaries.
-- `PLAN-04` still needs a real PostgreSQL runtime check: run migrations and seed against a running `DATABASE_URL`, then rerun seed to verify idempotency.
+- A disposable PostgreSQL 18.6 cluster passed 17 migrations and repeated seed in batch 2; production database migration/deployment remains unverified.
 - DB-backed E2E flows need PostgreSQL plus seed data before they can run end to end.
 - PLAN-34 makes Paymob the prepared primary provider, keeps PayTabs disabled standby, leaves paid booking disabled, adds expiring minimized receipts, PostgreSQL rate limiting, async scrypt, required production ClamAV scanning, optional privacy-safe Sentry, locale/error/accessibility/image hardening, and behavior-preserving module decomposition. DB-backed/provider/live deployment evidence remains a release gate.
 
@@ -201,3 +201,13 @@ Production readiness is exposed at `/api/health`. It returns `200` only after en
 - Staff TOTP is intentionally deferred; do not enable `STAFF_2FA_MODE=totp` until a future Staff 2FA Rework plan is implemented and tested.
 - PLAN-27 live-site QA remediation is partially implemented locally; do not claim production readiness until broader static/mobile smoke, DB-backed staging checks, and deployed-site evidence pass.
 - PLAN-34 local static gates pass, but real PostgreSQL migrations/DB E2E, Paymob sandbox, real ClamAV EICAR verification, and post-deploy live/mobile/admin evidence are still required.
+
+## 2026-09-11 ordinary delivery checkpoint
+
+Batch 1 was pushed to origin/main as `7ad0010ffad2191bcada37ac45ba8a7ac8a973c4`.
+Batch 2 repairs Cairo winter slot conversion, malformed-cookie logout, localized seed upserts,
+and initial credential-form submission. Its isolated PostgreSQL 18.6 lane applied 17 migrations
+and verified seed idempotency, sessions, client/document service isolation and free-booking races.
+See `docs/reviews/2026-09-11/batch2/BATCH-2.md` for exact browser evidence, cleanup and remaining fourteen-step scope.
+Batch 2 remains local for supervisor review before push. This does not close prior deployment,
+provider, full authorization, backup or whole-project evidence gates.

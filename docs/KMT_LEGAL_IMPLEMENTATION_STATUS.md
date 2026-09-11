@@ -3,8 +3,8 @@
 Last updated: 2026-09-11
 
 2026-09-11 ordinary delivery checkpoint (Spec Kit not activated): the first dependency/session/
-booking-recovery batch is prepared on `codex/kmt-batch1-hardening` for supervisor review before
-push. See `docs/reviews/2026-09-11/BATCH-1.md` for changes, source preservation comparison,
+booking-recovery batch was pushed as `7ad0010` to origin/main. Batch 2 remains local for
+supervisor review; see `docs/reviews/2026-09-11/batch2/BATCH-2.md` for bounded real database/browser evidence. See `docs/reviews/2026-09-11/BATCH-1.md` for changes, source preservation comparison,
 verification and remaining database/payment/visual gates. Existing plan evidence states below
 are unchanged; this checkpoint does not mark any whole-project audit or release complete.
 

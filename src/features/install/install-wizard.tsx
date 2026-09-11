@@ -2,6 +2,7 @@
 
 import { type FormEvent, useEffect, useState } from "react";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, TextInput } from "@/components/ui";
+import { useHydrated } from "@/lib/use-hydrated";
 import { booleanDisplayLabel, localizeApiMessage } from "@/lib/ui-copy";
 
 type InstallerStatus = {
@@ -56,6 +57,7 @@ const hostingModes: Array<{
 ];
 
 export function InstallWizard({ initialToken }: InstallWizardProps) {
+  const isHydrated = useHydrated();
   const [token, setToken] = useState(initialToken);
   const [hostingMode, setHostingMode] = useState<HostingMode>("terminal-vps");
   const [status, setStatus] = useState<InstallerStatus | null>(null);
@@ -252,21 +254,21 @@ export function InstallWizard({ initialToken }: InstallWizardProps) {
               <CardDescription>يتم إنشاء الحساب الأول مرة واحدة فقط. لا توجد خطوة TOTP في هذه النسخة.</CardDescription>
             </CardHeader>
             <CardContent>
-              <form className="grid gap-4" onSubmit={bootstrap}>
+              <form className="grid gap-4" method="post" onSubmit={bootstrap}>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <TextInput disabled={isBusy || Boolean(blockedReason)} label="اسم المكتب" name="firmName" required />
-                  <TextInput disabled={isBusy || Boolean(blockedReason)} label="البريد العام للمكتب" name="publicEmail" type="email" />
+                  <TextInput disabled={!isHydrated || isBusy || Boolean(blockedReason)} label="اسم المكتب" name="firmName" required />
+                  <TextInput disabled={!isHydrated || isBusy || Boolean(blockedReason)} label="البريد العام للمكتب" name="publicEmail" type="email" />
                 </div>
-                <TextInput disabled={isBusy || Boolean(blockedReason)} label="الهاتف العام" name="publicPhone" />
+                <TextInput disabled={!isHydrated || isBusy || Boolean(blockedReason)} label="الهاتف العام" name="publicPhone" />
                 <div className="grid gap-4 md:grid-cols-2">
-                  <TextInput disabled={isBusy || Boolean(blockedReason)} label="اسم مدير النظام" name="adminName" required />
-                  <TextInput disabled={isBusy || Boolean(blockedReason)} label="بريد مدير النظام" name="adminEmail" required type="email" />
+                  <TextInput disabled={!isHydrated || isBusy || Boolean(blockedReason)} label="اسم مدير النظام" name="adminName" required />
+                  <TextInput disabled={!isHydrated || isBusy || Boolean(blockedReason)} label="بريد مدير النظام" name="adminEmail" required type="email" />
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <TextInput autoComplete="new-password" disabled={isBusy || Boolean(blockedReason)} label="كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
-                  <TextInput autoComplete="new-password" disabled={isBusy || Boolean(blockedReason)} label="تأكيد كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
+                  <TextInput autoComplete="new-password" disabled={!isHydrated || isBusy || Boolean(blockedReason)} label="كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
+                  <TextInput autoComplete="new-password" disabled={!isHydrated || isBusy || Boolean(blockedReason)} label="تأكيد كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
                 </div>
-                <Button disabled={isBusy || Boolean(blockedReason)} loading={isBusy} type="submit">
+                <Button disabled={!isHydrated || isBusy || Boolean(blockedReason)} loading={isBusy} type="submit">
                   إنشاء مدير النظام الأول
                 </Button>
               </form>

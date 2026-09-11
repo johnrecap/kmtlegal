@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import ts from "typescript";
 import { execFileSync } from "node:child_process";
+import { deriveArabicPublicRoutes } from "./lib/public-route-inventory.mjs";
 
 // Source discovery only: expressions are retained, never executed as application code.
 const root = process.cwd();
@@ -67,13 +68,15 @@ const records = files.sort().map(full => {
     : null;
   return { file, route, methods, imports, links, contentSlugs, actions, controls, calls, evidence: "source-discovery-only" };
 });
-const arabicPatterns = ["/ar", ...["services", "team", "articles", "case-studies", "media", "contact", "privacy", "terms"].map(p => `/ar/${p}`), ...["services", "team", "articles", "case-studies"].map(p => `/ar/${p}/[slug]`)];
+const dispatcherFile = "src/features/public-site/public-pages.tsx";
+const dispatcherSource = baseline ? git(["show", `HEAD:${dispatcherFile}`]) : fs.readFileSync(dispatcherFile, "utf8");
+const arabicRoutes = await deriveArabicPublicRoutes(dispatcherSource);
 const result = {
   date: "2026-09-11",
   revision: baseline ? git(["rev-parse", "HEAD"]).trim() : "working-tree",
   limitations: "Not runtime verification or an authorization proof. Dynamic IDs/slugs are route patterns, not a count of live pages. JSX expressions and call arguments require consumer/service review. Arabic patterns checked against renderPublicPath; database content is not enumerated.",
   counts: { pageFiles: records.filter(r => r.file.endsWith("/page.tsx")).length, apiRouteFiles: records.filter(r => r.file.startsWith("src/app/api/") && r.file.endsWith("/route.ts")).length, apiOperations: records.filter(r => r.file.startsWith("src/app/api/")).reduce((sum, r) => sum + r.methods.length, 0), sourceFiles: records.length },
-  arabicCatchAll: { source: "src/features/public-site/public-pages.tsx:188", patterns: arabicPatterns },
+  arabicCatchAll: { source: dispatcherFile, evidence: "dispatcher-executed-with-inert-views", patterns: arabicRoutes.map(route => route.pattern), routes: arabicRoutes },
   records
 };
 fs.mkdirSync(path.dirname(output), { recursive: true });
@@ -82,6 +85,7 @@ const beforePath = path.join(path.dirname(output), "surface-before.json");
 if (!baseline && fs.existsSync(beforePath)) {
   const before = JSON.parse(fs.readFileSync(beforePath, "utf8"));
   const select = data => ({
+    arabicPatterns: data.arabicCatchAll.patterns,
     files: data.records.map(r => r.file),
     routes: data.records.filter(r => r.route).map(r => `${r.file}: ${r.route}`),
     links: data.records.flatMap(r => r.links.map(link => `${r.file}: ${link.attribute}=${link.expression}`)),

@@ -1,0 +1,211 @@
+{
+  "date": "2026-09-11",
+  "ordinaryVitest": {
+    "passed": 451,
+    "failed": 0,
+    "skipped": 5,
+    "total": 456
+  },
+  "isolatedDatabaseVitest": {
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "total": 5
+  },
+  "browser": {
+    "startTime": "2026-09-11T18:50:56.653Z",
+    "duration": 64425.488999999994,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "lint": "passed",
+  "typecheck": "passed",
+  "finalBuild": {
+    "status": "passed",
+    "exitCode": 0,
+    "staticPagesGenerated": 44,
+    "afterAllCredentialFormChanges": true,
+    "guardedWithoutDatabaseUrl": true,
+    "warnings": [
+      "Webpack cache dependency snapshot warnings; compilation and build succeeded."
+    ]
+  },
+  "staffSubmission": {
+    "stats": {
+      "startTime": "2026-09-11T18:54:16.160Z",
+      "duration": 60696.818,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "cases": [
+      {
+        "title": "batch2-staff-forms.spec.ts / isolated staff credential submissions / create and reset user and client passwords through hydrated forms",
+        "results": [
+          {
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "limitations": "Service-level isolation checks do not prove every HTTP authorization path; all browser requests used disposable local fixtures, no production or provider calls.",
+  "browserCases": [
+    {
+      "title": "batch2-security.spec.ts / batch 2 isolated auth routes / malformed-cookie logout clears the cookie instead of returning 500",
+      "results": [
+        {
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "batch2-security.spec.ts / batch 2 isolated auth routes / unhydrated login cannot submit credentials into a URL",
+      "results": [
+        {
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "batch2-security.spec.ts / batch 2 isolated auth routes / a real client session cannot use the staff client directory",
+      "results": [
+        {
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "batch2-sensitive-forms.spec.ts / isolated sensitive form hydration / valid setup invitation and installer are inert without JavaScript",
+      "results": [
+        {
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "batch2-sensitive-forms.spec.ts / isolated sensitive form hydration / staff credential forms rendered on first load are inert without JavaScript",
+      "results": [
+        {
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "batch2-sensitive-forms.spec.ts / isolated sensitive form hydration / valid setup submits JSON and creates a working client session",
+      "results": [
+        {
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "db-backed.spec.ts / DB-backed MVP readiness / staff login opens the admin dashboard without 2FA in the installer release",
+      "results": [
+        {
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "db-backed.spec.ts / DB-backed MVP readiness / client login does not require 2FA and opens the portal",
+      "results": [
+        {
+          "status": "expected",
+          "attempts": [
+            "passed"
+          ]
+        }
+      ]
+    }
+  ],
+  "isolatedDatabaseCases": [
+    {
+      "title": "batch 2 isolated PostgreSQL behavior reruns the seed without duplicate localized content or operational rows",
+      "status": "passed"
+    },
+    {
+      "title": "batch 2 isolated PostgreSQL behavior resolves live permissions and rejects suspended, inactive-role, expired and revoked sessions",
+      "status": "passed"
+    },
+    {
+      "title": "batch 2 isolated PostgreSQL behavior isolates case details and private document bytes across clients and visibility",
+      "status": "passed"
+    },
+    {
+      "title": "batch 2 isolated PostgreSQL behavior commits only one actual free booking when two contacts race for one slot",
+      "status": "passed"
+    },
+    {
+      "title": "batch 2 isolated PostgreSQL behavior does not duplicate a contact when two confirmations target different slots",
+      "status": "passed"
+    }
+  ],
+  "commands": {
+    "ordinary": "npm test -- --reporter=json --outputFile=.playwright/batch2-unit-results.json",
+    "isolated": "npm test -- tests/server/batch2-isolated-db.test.ts --reporter=json --outputFile=.playwright/batch2-db-results.json",
+    "browser": "npm run test:e2e -- tests/e2e/db-backed.spec.ts tests/e2e/batch2-security.spec.ts tests/e2e/batch2-sensitive-forms.spec.ts --workers=1 --reporter=list,json",
+    "staff": "npm run test:e2e -- tests/e2e/batch2-staff-forms.spec.ts --workers=1 --reporter=list,json",
+    "build": "ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build",
+    "environment": "DB-backed lanes require APP_ENV=local, BATCH2_ISOLATED_DB=true; DATABASE_URL must select user/database kmt_batch2 on 127.0.0.1 port 55437 with a disposable password. UPLOADS_DIR=<worktree>/_workspace/batch2-postgres/uploads, KMT_PORT=3109. Sensitive-form lane also INSTALLER_ENABLED=true. No real secrets."
+  },
+  "independentRegressionCases": [
+    {
+      "title": "Arabic dispatcher preservation keeps every accepted route reachable through the actual dispatcher",
+      "status": "passed"
+    },
+    {
+      "title": "Arabic dispatcher preservation detects removal of a routing branch from an in-memory sample",
+      "status": "passed"
+    },
+    {
+      "title": "batch 2 source-confirmed regressions lets a malformed-cookie logout finish without touching a database",
+      "status": "passed"
+    },
+    {
+      "title": "batch 2 source-confirmed regressions offers 10:00 Cairo at the correct instant on 2026-01-12",
+      "status": "passed"
+    },
+    {
+      "title": "batch 2 source-confirmed regressions offers 10:00 Cairo at the correct instant on 2026-07-13",
+      "status": "passed"
+    },
+    {
+      "title": "batch 2 source-confirmed regressions skips the nonexistent Cairo spring-forward hour rather than shifting it",
+      "status": "passed"
+    },
+    {
+      "title": "batch 2 source-confirmed regressions offers the first repeated fall-back hour once with real duration, lead time and conflicts",
+      "status": "passed"
+    }
+  ],
+  "secretScan": "passed",
+  "diffCheck": "passed"
+}

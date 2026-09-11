@@ -4,8 +4,8 @@ import { appendAuditLog, auditLogCreateData } from "@/server/audit/audit-service
 import { verifyPassword } from "./password";
 import { hasPermission } from "./policy";
 import { openSealedSecret } from "./secret";
-import { hashSessionToken, SESSION_COOKIE_NAME } from "./session";
-import { safeUser, createSessionForUser, getAuthContextFromRequest, isActiveAuthUser, type AuthContext } from "./session-store";
+import { hashSessionToken } from "./session";
+import { safeUser, createSessionForUser, getAuthContextFromRequest, getSessionTokenFromCookieHeader, isActiveAuthUser, type AuthContext } from "./session-store";
 import {
   EMAIL_OTP_MAX_ATTEMPTS,
   EMAIL_OTP_PURPOSE,
@@ -92,18 +92,14 @@ export async function loginWithPassword({
 
 export async function logoutByRequest(request: Request) {
   const cookieHeader = request.headers.get("cookie") ?? "";
-  const token = cookieHeader
-    .split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith(`${SESSION_COOKIE_NAME}=`))
-    ?.slice(SESSION_COOKIE_NAME.length + 1);
+  const token = getSessionTokenFromCookieHeader(cookieHeader);
 
   if (!token) {
     return;
   }
 
   await prisma.session.updateMany({
-    where: { tokenHash: hashSessionToken(decodeURIComponent(token)), revokedAt: null },
+    where: { tokenHash: hashSessionToken(token), revokedAt: null },
     data: { status: "REVOKED", revokedAt: new Date() }
   });
 }

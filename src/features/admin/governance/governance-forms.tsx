@@ -1,5 +1,7 @@
 "use client";
 
+import { useHydrated } from "@/lib/use-hydrated";
+
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { Button, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, InlineFeedback, Select, StateBlock, TextInput } from "@/components/ui";
@@ -76,6 +78,7 @@ function ActionFeedback({ message }: { message: ActionMessage | null }) {
 
 export function AdminUserCreateForm({ roles }: { roles: RoleOption[] }) {
   const router = useRouter();
+  const isHydrated = useHydrated();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
@@ -136,35 +139,35 @@ export function AdminUserCreateForm({ roles }: { roles: RoleOption[] }) {
         <CardDescription>متاح لمدير النظام فقط. يتم إنشاء البريد وكلمة المرور يدويًا بدون إرسال SMTP.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="grid gap-4" onSubmit={createUser}>
+        <form className="grid gap-4" method="post" onSubmit={createUser}>
           <div className="grid gap-4 md:grid-cols-2">
-            <TextInput disabled={isBusy} idPrefix="admin-user-create" label="الاسم" name="name" required />
-            <TextInput disabled={isBusy} idPrefix="admin-user-create" label="البريد الإلكتروني" name="email" required type="email" />
+            <TextInput disabled={!isHydrated || isBusy} idPrefix="admin-user-create" label="الاسم" name="name" required />
+            <TextInput disabled={!isHydrated || isBusy} idPrefix="admin-user-create" label="البريد الإلكتروني" name="email" required type="email" />
           </div>
           <div className="grid gap-4 md:grid-cols-3">
-            <TextInput disabled={isBusy} idPrefix="admin-user-create" label="الهاتف" name="phone" />
-            <Select disabled={isBusy} idPrefix="admin-user-create" label="الدور" name="roleId" required>
+            <TextInput disabled={!isHydrated || isBusy} idPrefix="admin-user-create" label="الهاتف" name="phone" />
+            <Select disabled={!isHydrated || isBusy} idPrefix="admin-user-create" label="الدور" name="roleId" required>
               {roles.map((role) => (
                 <option key={role.id} value={role.id}>
                   {roleDisplayLabel(role.name)}
                 </option>
               ))}
             </Select>
-            <Select defaultValue="ACTIVE" disabled={isBusy} idPrefix="admin-user-create" label="الحالة" name="status">
+            <Select defaultValue="ACTIVE" disabled={!isHydrated || isBusy} idPrefix="admin-user-create" label="الحالة" name="status">
               <option value="ACTIVE">نشط</option>
               <option value="INVITED">مدعو</option>
               <option value="SUSPENDED">موقوف</option>
             </Select>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
-            <Select defaultValue="ar" disabled={isBusy} idPrefix="admin-user-create" label="اللغة" name="locale">
+            <Select defaultValue="ar" disabled={!isHydrated || isBusy} idPrefix="admin-user-create" label="اللغة" name="locale">
               <option value="ar">العربية</option>
               <option value="en">English</option>
             </Select>
-            <TextInput autoComplete="new-password" disabled={isBusy} idPrefix="admin-user-create" label="كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
-            <TextInput autoComplete="new-password" disabled={isBusy} idPrefix="admin-user-create" label="تأكيد كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
+            <TextInput autoComplete="new-password" disabled={!isHydrated || isBusy} idPrefix="admin-user-create" label="كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
+            <TextInput autoComplete="new-password" disabled={!isHydrated || isBusy} idPrefix="admin-user-create" label="تأكيد كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
           </div>
-          <Button loading={isBusy} type="submit">
+          <Button disabled={!isHydrated || isBusy} loading={isBusy} type="submit">
             إنشاء الحساب
           </Button>
           <ActionFeedback message={message} />
@@ -352,6 +355,7 @@ export function AdminUserActionPanel({
 
 function AdminUserPasswordForm({ userId }: { userId: string }) {
   const router = useRouter();
+  const isHydrated = useHydrated();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
@@ -407,11 +411,11 @@ function AdminUserPasswordForm({ userId }: { userId: string }) {
         <CardDescription>متاح لمدير النظام فقط. لا يتم إرسال كلمة المرور بالبريد لأن SMTP غير مفعل في هذه النسخة.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="grid gap-4" onSubmit={changePassword}>
-          <TextInput autoComplete="new-password" disabled={isBusy} idPrefix={`admin-user-password-${userId}`} label="كلمة المرور الجديدة" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
-          <TextInput autoComplete="new-password" disabled={isBusy} idPrefix={`admin-user-password-${userId}`} label="تأكيد كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
-          <CheckboxField defaultChecked disabled={isBusy} idPrefix={`admin-user-password-${userId}`} label="إنهاء الجلسات الحالية لهذا المستخدم بعد تغيير كلمة المرور" name="revokeSessions" />
-          <Button loading={isBusy} type="submit" variant="secondary">
+        <form className="grid gap-4" method="post" onSubmit={changePassword}>
+          <TextInput autoComplete="new-password" disabled={!isHydrated || isBusy} idPrefix={`admin-user-password-${userId}`} label="كلمة المرور الجديدة" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
+          <TextInput autoComplete="new-password" disabled={!isHydrated || isBusy} idPrefix={`admin-user-password-${userId}`} label="تأكيد كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
+          <CheckboxField defaultChecked disabled={!isHydrated || isBusy} idPrefix={`admin-user-password-${userId}`} label="إنهاء الجلسات الحالية لهذا المستخدم بعد تغيير كلمة المرور" name="revokeSessions" />
+          <Button disabled={!isHydrated || isBusy} loading={isBusy} type="submit" variant="secondary">
             تغيير كلمة المرور
           </Button>
           <ActionFeedback message={message} />

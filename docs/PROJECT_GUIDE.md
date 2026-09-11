@@ -311,3 +311,13 @@ bash deploy/install/aapanel-pm2-update.sh
 The server must load its real production environment before migrations, build, and restart. See
 `SERVER_COMMANDS.md`, `INSTALL_AAPANEL.md`, and `RELEASE_QA_CHECKLIST.md`; never use the local
 no-database build guard as a production substitute.
+
+## 2026-09-11 ordinary delivery checkpoint
+
+Batch 1 was pushed to origin/main as `7ad0010ffad2191bcada37ac45ba8a7ac8a973c4`.
+Batch 2 repairs Cairo winter slot conversion, malformed-cookie logout, localized seed upserts,
+and initial credential-form submission. Its isolated PostgreSQL 18.6 lane applied 17 migrations
+and verified seed idempotency, sessions, client/document service isolation and free-booking races.
+See `reviews/2026-09-11/batch2/BATCH-2.md` for exact browser evidence, cleanup and remaining fourteen-step scope.
+Batch 2 remains local for supervisor review before push. This does not close prior deployment,
+provider, full authorization, backup or whole-project evidence gates.

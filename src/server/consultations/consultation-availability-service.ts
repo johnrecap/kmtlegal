@@ -9,6 +9,10 @@ import { parseWithSchema } from "@/server/validation/schemas";
 
 export const CONSULTATION_AVAILABILITY_SETTING_KEY = "consultation.availability";
 export const CONSULTATION_TIMEZONE = "Africa/Cairo";
+const cairoClockFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: CONSULTATION_TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit",
+  hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+});
 
 const appointmentModeSchema = z.enum(["PHONE", "ONLINE", "OFFICE"]);
 const timeSchema = z.string().regex(/^\d{2}:\d{2}$/, "Time must use HH:mm format.");
@@ -228,6 +232,7 @@ export function generateConsultationSlots(input: {
         continue;
       }
       const startsAt = cairoDateTime(date, minute);
+      if (!startsAt) continue;
       const endsAt = new Date(startsAt.getTime() + duration * 60_000);
       if (startsAt < availableFrom) {
         continue;
@@ -306,7 +311,22 @@ function timeFromMinutes(value: number) {
 }
 
 function cairoDateTime(date: string, minutes: number) {
-  return new Date(`${date}T${timeFromMinutes(minutes)}:00+03:00`);
+  const target = Date.parse(`${date}T${timeFromMinutes(minutes)}:00Z`);
+  if (!Number.isFinite(target)) return null;
+  const wallTimeAt = (instant: number) => {
+    const parts = cairoClockFormatter.formatToParts(new Date(instant));
+    const part = (type: string) => Number(parts.find(value => value.type === type)?.value);
+    return Date.UTC(part("year"), part("month") - 1, part("day"), part("hour"), part("minute"));
+  };
+  // Inspect offsets on both sides of a transition. A missing spring-forward
+  // wall time has no match. A repeated wall time is offered once, at its first
+  // occurrence (preserving the former +03:00 choice during Cairo's fall-back).
+  const offsets = new Set([-1, 0, 1].map(day => {
+    const probe = target + day * 86_400_000;
+    return wallTimeAt(probe) - probe;
+  }));
+  const matches = [...offsets].map(offset => target - offset).filter(instant => wallTimeAt(instant) === target);
+  return matches.length ? new Date(Math.min(...matches)) : null;
 }
 
 function cairoDateString(date: Date) {

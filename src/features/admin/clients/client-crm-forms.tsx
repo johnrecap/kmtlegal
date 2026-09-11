@@ -1,5 +1,6 @@
 "use client";
 
+import { useHydrated } from "@/lib/use-hydrated";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import {
@@ -178,6 +179,7 @@ export function ClientActionPanel({
   canManageAccount: boolean;
 }) {
   const router = useRouter();
+  const isHydrated = useHydrated();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
@@ -340,26 +342,26 @@ export function ClientActionPanel({
                   <p className="font-semibold text-kmt-ink">{client.user.email}</p>
                   <p className="text-kmt-muted">الحالة: {client.user.status}</p>
                 </div>
-                <form className="grid gap-3" onSubmit={resetClientAccountPassword}>
-                  <TextInput disabled={isBusy} idPrefix={`client-account-password-${client.id}`} label="كلمة مرور جديدة" minLength={10} name="password" required type="password" />
+                <form className="grid gap-3" method="post" onSubmit={resetClientAccountPassword}>
+                  <TextInput disabled={!isHydrated || isBusy} idPrefix={`client-account-password-${client.id}`} label="كلمة مرور جديدة" minLength={10} name="password" required type="password" />
                   <label className="flex items-center gap-2 text-sm text-kmt-muted">
                     <input className="h-4 w-4 rounded border-kmt-border" defaultChecked id={`client-account-password-${client.id}-revokeSessions`} name="revokeSessions" type="checkbox" />
                     إنهاء جلسات العميل الحالية
                   </label>
-                  <Button loading={isBusy} type="submit" variant="secondary">
+                  <Button disabled={!isHydrated || isBusy} loading={isBusy} type="submit" variant="secondary">
                     تحديث كلمة المرور
                   </Button>
                 </form>
               </div>
             ) : (
-              <form className="grid gap-3" onSubmit={createClientAccount}>
-                <TextInput defaultValue={client.email ?? ""} disabled={isBusy} idPrefix={`client-account-create-${client.id}`} label="البريد الإلكتروني" name="email" required type="email" />
-                <TextInput disabled={isBusy} idPrefix={`client-account-create-${client.id}`} label="كلمة المرور" minLength={10} name="password" required type="password" />
-                <Select defaultValue="ar" disabled={isBusy} idPrefix={`client-account-create-${client.id}`} label="لغة الحساب" name="locale">
+              <form className="grid gap-3" method="post" onSubmit={createClientAccount}>
+                <TextInput defaultValue={client.email ?? ""} disabled={!isHydrated || isBusy} idPrefix={`client-account-create-${client.id}`} label="البريد الإلكتروني" name="email" required type="email" />
+                <TextInput disabled={!isHydrated || isBusy} idPrefix={`client-account-create-${client.id}`} label="كلمة المرور" minLength={10} name="password" required type="password" />
+                <Select defaultValue="ar" disabled={!isHydrated || isBusy} idPrefix={`client-account-create-${client.id}`} label="لغة الحساب" name="locale">
                   <option value="ar">العربية</option>
                   <option value="en">English</option>
                 </Select>
-                <Button loading={isBusy} type="submit" variant="secondary">
+                <Button disabled={!isHydrated || isBusy} loading={isBusy} type="submit" variant="secondary">
                   إنشاء حساب عميل
                 </Button>
               </form>
