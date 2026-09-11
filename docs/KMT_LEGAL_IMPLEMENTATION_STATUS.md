@@ -7,8 +7,12 @@ booking-recovery batch was pushed as `7ad0010` to origin/main. Batch 2 was subse
 verification and remaining database/payment/visual gates. Existing plan evidence states below
 are unchanged; this checkpoint does not mark any whole-project audit or release complete.
 
-Batch 3 adds bounded document HTTP/upload and local restore evidence plus upload-form safety.
+Batch 3 was approved and pushed as `194f6be`; it adds bounded document HTTP/upload and local restore evidence plus upload-form safety.
 See `docs/reviews/2026-09-11/batch3/BATCH-3.md`; no prior whole-plan release gate is automatically closed.
+
+Batch 4 is prepared locally for supervisor review: bounded booking confirmation, strict date/time filters,
+chat recovery and real reschedule/cancellation/client-view evidence. See `docs/reviews/2026-09-11/batch4/BATCH-4.md`.
+The fourteen-step program is still partial; external AI/payment, broad operational and design work remain.
 
 This is the main tracking file for 40 Spec Kit plan IDs (`PLAN-00` through `PLAN-39`).
 

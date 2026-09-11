@@ -1,7 +1,7 @@
 # Batch 3: document HTTP boundaries and disposable restore
 
 Baseline: `ea186fdb2e0a3b46572879bdb1683bd0098a153e` (pushed after supervisor approval).
-Date: 2026-09-11. Status: HTTP/restore verification and cleanup passed; final guarded build passed (exit 0, 44 static pages). Local review required before this batch is pushed.
+Date: 2026-09-11. Status: HTTP/restore verification and cleanup passed; final guarded build passed (exit 0, 44 static pages). Subsequently approved and pushed to origin/main as `194f6bebf36595d9d9c02146dd71b6308bc25640`.
 
 ## Confirmed repair
 

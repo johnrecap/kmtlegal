@@ -6,6 +6,7 @@ import { Button, MaterialSymbol, TextInput } from "@/components/ui";
 import { findPublicService, getPublicContent, type PublicContent } from "@/content/public-content";
 import { trackClientAnalyticsEvent } from "@/lib/analytics-client";
 import { cn } from "@/lib/cn";
+import { useHydrated } from "@/lib/use-hydrated";
 import type { PublicLocale } from "@/lib/public-locale";
 import {
   bookingModeLabel as modeLabel,
@@ -758,13 +759,14 @@ function BookingProgress({
 }
 
 function LanguageChoicePanel({ copy, onSelect }: { copy: BookingChatCopy; onSelect: (locale: PublicLocale) => void }) {
+  const hydrated = useHydrated();
   return (
     <div className="flex flex-wrap justify-start gap-3 ps-16 max-sm:ps-0" data-testid="booking-language-choice">
-      <Button className={chipButtonClasses} data-testid="booking-language-ar" type="button" variant="secondary" onClick={() => onSelect("ar")}>
+      <Button className={chipButtonClasses} data-testid="booking-language-ar" disabled={!hydrated} type="button" variant="secondary" onClick={() => onSelect("ar")}>
         <MaterialSymbol className="text-xl" name="translate" />
         {copy.languageArabic}
       </Button>
-      <Button className={chipButtonClasses} data-testid="booking-language-en" type="button" variant="secondary" onClick={() => onSelect("en")}>
+      <Button className={chipButtonClasses} data-testid="booking-language-en" disabled={!hydrated} type="button" variant="secondary" onClick={() => onSelect("en")}>
         <MaterialSymbol className="text-xl" name="translate" />
         {copy.languageEnglish}
       </Button>

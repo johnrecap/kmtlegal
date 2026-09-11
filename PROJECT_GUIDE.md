@@ -18,6 +18,9 @@ For a current-state PRD and external model review brief, use `docs/KMT_LEGAL_CUR
 
 ## Recent Changes
 
+- 2026-09-11 - Batches 1, 2 and 3 were approved and pushed as `7ad0010`, `ea186fd`, and `194f6be`. Batch 3 adds real document HTTP/upload boundaries and a disposable restore drill.
+- 2026-09-11 - Batch 4 is prepared locally for supervisor review: exact-date slot confirmation, real date/time validation, bilingual chat date recovery, language hydration safety, and seven real HTTP/browser booking lifecycle cases. See `docs/reviews/2026-09-11/batch4/BATCH-4.md` for the fourteen-step coverage and remaining external/provider/design gates.
+
 - 2026-09-11 - Prepared the first hardening/review batch on `codex/kmt-batch1-hardening` (supervisor review before push).
   - Changed: dependency security updates, matched Prisma CLI/client/adapter 7.10.0, malformed session-cookie handling, stale-slot clearing, payment restoration error handling and checkout handoff validation.
   - Evidence: source inventory preserves 58 page files, 100 API route files and 119 HTTP operations; dynamic patterns and source content slugs are separate. See `docs/reviews/2026-09-11/BATCH-1.md` for verification and explicit runtime limits.

@@ -30,6 +30,9 @@ import { emailSchema, parseWithSchema } from "@/server/validation/schemas";
 import {
   assertPublicConsultationSlotAvailable,
   CONSULTATION_TIMEZONE,
+  consultationSlotDateSchema,
+  consultationStartTimeSchema,
+  consultationEndTimeSchema,
   listPublicConsultationSlots,
   type ConsultationMode,
   type PublicConsultationSlot
@@ -68,11 +71,11 @@ const assistantActionSchema = z.enum([
 ]);
 
 const availabilityPreferenceSchema = z.object({
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
+  date: z.string().trim().pipe(consultationSlotDateSchema.or(z.literal(""))).optional(),
   label: z.string().trim().max(80).optional().or(z.literal("")),
   timeWindow: z.enum(["MORNING", "AFTERNOON", "EVENING", "ANYTIME"]).optional().or(z.literal("")),
-  fromTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal("")),
-  toTime: z.string().regex(/^\d{2}:\d{2}$/).optional().or(z.literal(""))
+  fromTime: z.string().trim().pipe(consultationStartTimeSchema.or(z.literal(""))).optional(),
+  toTime: z.string().trim().pipe(consultationEndTimeSchema.or(z.literal(""))).optional()
 });
 type AvailabilityPreference = z.infer<typeof availabilityPreferenceSchema>;
 
@@ -239,6 +242,18 @@ async function handlePublicBookingConversation(input: {
   }
 
   const draft = mergeResult.draft;
+  const explicitDate = toAsciiDigits(input.body.message).match(/\b(20\d{2}-\d{2}-\d{2})\b/)?.[1];
+  if (explicitDate && !consultationSlotDateSchema.safeParse(explicitDate).success) {
+    const nextDraft = normalizeBookingDraft({ ...draft, startsAt: "", availabilityPreference: normalizeAvailabilityPreference() });
+    return bookingConversationResponse({
+      locale: input.body.locale,
+      draft: nextDraft,
+      missingFields: requiredBookingFields({ ...input.body, ...nextDraft }),
+      selectedSlot: "",
+      needsAvailabilityPreference: true,
+      message: publicBookingSlotConfirmationError(input.body.locale, "")
+    });
+  }
   const selectedSlot = input.body.selectedSlot || draft.startsAt || input.body.startsAt || "";
   const missingFields = requiredBookingFields({ ...input.body, ...draft, startsAt: selectedSlot });
 
@@ -1103,7 +1118,7 @@ function availabilityDateFromMessage(text: string, now = new Date()) {
 
   const isoDate = digitText.match(/\b(20\d{2}-\d{2}-\d{2})\b/)?.[1];
   if (isoDate) {
-    return { date: isoDate, label: isoDate };
+    return consultationSlotDateSchema.safeParse(isoDate).success ? { date: isoDate, label: isoDate } : { date: "", label: "" };
   }
 
   const numericDate = numericDateFromMessage(digitText, today);

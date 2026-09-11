@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { listPublicConsultationSlots } from "@/server/consultations/consultation-availability-service";
+import { consultationSlotFilterSchema, listPublicConsultationSlots } from "@/server/consultations/consultation-availability-service";
 import { errorToResponse, getRequestId } from "@/server/http/errors";
 import { parseQueryParams } from "@/server/validation/schemas";
 
 export const dynamic = "force-dynamic";
 
-const slotsQuerySchema = z.object({
+const slotsQuerySchema = consultationSlotFilterSchema.extend({
   mode: z.enum(["PHONE", "ONLINE", "OFFICE"]).optional(),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  fromTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
-  toTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   limit: z.coerce.number().int().min(1).max(50).optional()
 });
 

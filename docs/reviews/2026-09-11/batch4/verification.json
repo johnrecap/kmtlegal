@@ -1,0 +1,124 @@
+{
+  "date": "2026-09-11",
+  "baseline": "194f6bebf36595d9d9c02146dd71b6308bc25640",
+  "unit": {
+    "passed": 469,
+    "failed": 0,
+    "skipped": 5
+  },
+  "browserHttp": {
+    "stats": {
+      "startTime": "2026-09-11T19:41:44.776Z",
+      "duration": 65128.280000000006,
+      "expected": 7,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "cases": [
+      {
+        "title": "late-day displayed slot confirms over HTTP only after explicit confirmation and retry does not duplicate",
+        "tests": [
+          {
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "impossible filters and working times return 400; 24:00 remains an end only",
+        "tests": [
+          {
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "staff reschedule enforces authorization and conflicts and releases the old slot",
+        "tests": [
+          {
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "reschedule racing a public confirmation never creates overlapping active appointments",
+        "tests": [
+          {
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "future cancellation through reject enforces roles and version, closes the record and releases the slot",
+        "tests": [
+          {
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "bilingual invalid chat dates recover without poisoned drafts; date-only and time-only preferences work",
+        "tests": [
+          {
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      },
+      {
+        "title": "browser free booking preserves data after slot loss and appears for staff and client",
+        "tests": [
+          {
+            "status": "expected",
+            "attempts": [
+              "passed"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "typecheck": "passed",
+  "lint": "passed",
+  "secretScan": "passed",
+  "surfaceComparison": "passed; 58 page files, 100 API route files, 119 operations, 364 source files",
+  "build": {
+    "status": "passed",
+    "exitCode": 0,
+    "generatedStaticPages": 44,
+    "guardedWithoutDatabaseUrl": true,
+    "warnings": [
+      "Non-fatal webpack cache snapshot warnings"
+    ]
+  },
+  "commands": {
+    "unit": "npx vitest run --maxWorkers=2 --reporter=json --outputFile=.playwright/batch4-unit-results.json",
+    "browser": "node scripts/run-playwright-with-server.mjs tests/e2e/batch4-booking.spec.ts --workers=1 --reporter=list,json",
+    "environment": "APP_ENV=local; BATCH4_ISOLATED_DB=true; AI_PROVIDER=mock; AI_API_KEY empty; DATABASE_URL disposable kmt_batch4 at 127.0.0.1:55437; UPLOADS_DIR=<worktree>/_workspace/batch4-postgres/uploads; KMT_PORT=3109",
+    "build": "ALLOW_BUILD_WITHOUT_DATABASE_URL=true DATABASE_URL= npm run build"
+  },
+  "notes": [
+    "First full unit run had one backup resolver failure with STACK_TRACE_ERROR while dev compilation was active. Re-run with two workers after stopping dev passed all 469 tests; no backup code changed. Root cause of initial failure is not established.",
+    "Five pre-existing optional database tests skipped in ordinary Vitest lane; seven separate isolated real HTTP/browser cases passed.",
+    "No external AI/payment calls; mock provider and deterministic parsing only.",
+    "Initial outcome-only cancellation inference and past fixture were replaced by actual future reject HTTP test.",
+    "Initial typecheck exposed a missing locale/message spread in the new helper call; corrected before final typecheck/build."
+  ]
+}

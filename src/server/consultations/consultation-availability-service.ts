@@ -15,14 +15,24 @@ const cairoClockFormatter = new Intl.DateTimeFormat("en-CA", {
 });
 
 const appointmentModeSchema = z.enum(["PHONE", "ONLINE", "OFFICE"]);
-const timeSchema = z.string().regex(/^\d{2}:\d{2}$/, "Time must use HH:mm format.");
+export const consultationStartTimeSchema = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/, "Time must use HH:mm format.");
+export const consultationEndTimeSchema = z.string().regex(/^(?:(?:[01]\d|2[0-3]):[0-5]\d|24:00)$/, "Time must use HH:mm format.");
+export const consultationSlotDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(value => {
+  const date = new Date(value + "T00:00:00Z");
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+});
+export const consultationSlotFilterSchema = z.object({
+  date: consultationSlotDateSchema.optional(),
+  fromTime: consultationStartTimeSchema.optional(),
+  toTime: consultationEndTimeSchema.optional()
+});
 
 export const consultationAvailabilityDaySchema = z
   .object({
     weekday: z.number().int().min(0).max(6),
     enabled: z.boolean(),
-    start: timeSchema,
-    end: timeSchema,
+    start: consultationStartTimeSchema,
+    end: consultationEndTimeSchema,
     modes: z.array(appointmentModeSchema).min(1)
   })
   .superRefine((value, context) => {
@@ -183,7 +193,12 @@ export async function assertPublicConsultationSlotAvailable(input: {
   mode: ConsultationMode;
   now?: Date;
 }) {
-  const slots = await listPublicConsultationSlots({ mode: input.mode, now: input.now, limit: 500 });
+  const parts = cairoClockFormatter.formatToParts(input.startsAt);
+  const clock = (type: string) => parts.find(part => part.type === type)?.value ?? "";
+  const slots = await listPublicConsultationSlots({
+    mode: input.mode, now: input.now, date: cairoDateString(input.startsAt),
+    fromTime: clock("hour") + ":" + clock("minute"), limit: 1
+  });
   const match = slots.find((slot) => slot.startsAt === input.startsAt.toISOString());
   if (!match) {
     throw new ApiError(409, "CONFLICT", "This consultation slot is no longer available. Please choose another time.");
@@ -209,7 +224,8 @@ export function generateConsultationSlots(input: {
   const mode = input.mode ?? "ONLINE";
   const duration = input.availability.slotDurationMinutes;
   const limit = input.limit ?? 12;
-  const firstDate = normalizeSlotDate(input.date) || cairoDateString(now);
+  const filter = parseWithSchema(consultationSlotFilterSchema, input, "Consultation slot query is invalid.");
+  const firstDate = filter.date || cairoDateString(now);
   const daysToScan = input.date ? 1 : input.availability.bookingWindowDays;
   const fromMinutes = input.fromTime ? minutesFromTime(input.fromTime) : null;
   const toMinutes = input.toTime ? minutesFromTime(input.toTime) : null;
@@ -253,13 +269,6 @@ export function generateConsultationSlots(input: {
   }
 
   return slots;
-}
-
-function normalizeSlotDate(value?: string) {
-  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-    return "";
-  }
-  return value;
 }
 
 function assertCanManageAvailability(actor: Principal) {
