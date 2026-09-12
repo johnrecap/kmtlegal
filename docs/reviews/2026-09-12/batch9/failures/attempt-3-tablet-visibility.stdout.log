@@ -5,7 +5,7 @@
      · sri
      ✓ globalNotFound
      · clientTraceMetadata
-[next] 
+[next]
 [next]  ✓ Starting...
 [next]  ○ Compiling /instrumentation ...
 [next]  ✓ Compiled /instrumentation in 3.5s (1177 modules)
@@ -127,7 +127,7 @@ Running 5 tests using 1 worker
 [next]  GET /api/admin/notifications?limit=5 200 in 597ms
 [next]  GET /api/admin/notifications?limit=5 200 in 577ms
 [next]  GET /api/admin/notifications?limit=5 200 in 539ms
-  1) [chromium] › tests\e2e\batch9-documents.spec.ts:230:7 › Batch 9 isolated document acceptance › requires keyboard confirmation, sends one delete, hides the row, and preserves bytes 
+  1) [chromium] › tests\e2e\batch9-documents.spec.ts:230:7 › Batch 9 isolated document acceptance › requires keyboard confirmation, sends one delete, hides the row, and preserves bytes
 
     Test timeout of 180000ms exceeded.
 
@@ -174,5 +174,5 @@ Running 5 tests using 1 worker
 
 
   1 failed
-    [chromium] › tests\e2e\batch9-documents.spec.ts:230:7 › Batch 9 isolated document acceptance › requires keyboard confirmation, sends one delete, hides the row, and preserves bytes 
+    [chromium] › tests\e2e\batch9-documents.spec.ts:230:7 › Batch 9 isolated document acceptance › requires keyboard confirmation, sends one delete, hides the row, and preserves bytes
   4 passed (4.5m)

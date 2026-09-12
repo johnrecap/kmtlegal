@@ -119,7 +119,7 @@ Running 5 tests using 1 worker
 [next]  GET /admin/documents?q=%5BBATCH9%3A68decc5a-98cf-4284-84a4-dcc39c3a5274%5D+ui-delete.pdf 200 in 818ms
 [next]  GET /admin/documents?q=%5BBATCH9%3A68decc5a-98cf-4284-84a4-dcc39c3a5274%5D+ui-delete.pdf 200 in 669ms
 [next]  GET /admin/documents?q=%5BBATCH9%3A68decc5a-98cf-4284-84a4-dcc39c3a5274%5D%20ui-delete.pdf 200 in 1054ms
-  1) [chromium] › tests\e2e\batch9-documents.spec.ts:270:7 › Batch 9 isolated document acceptance › requires keyboard confirmation, sends one delete, hides the row, and preserves bytes 
+  1) [chromium] › tests\e2e\batch9-documents.spec.ts:270:7 › Batch 9 isolated document acceptance › requires keyboard confirmation, sends one delete, hides the row, and preserves bytes
 
     Error: expect(locator).toBeVisible() failed
 
@@ -158,5 +158,5 @@ Running 5 tests using 1 worker
 
 
   1 failed
-    [chromium] › tests\e2e\batch9-documents.spec.ts:270:7 › Batch 9 isolated document acceptance › requires keyboard confirmation, sends one delete, hides the row, and preserves bytes 
+    [chromium] › tests\e2e\batch9-documents.spec.ts:270:7 › Batch 9 isolated document acceptance › requires keyboard confirmation, sends one delete, hides the row, and preserves bytes
   4 passed (1.8m)

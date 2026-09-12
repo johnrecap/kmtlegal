@@ -49,7 +49,7 @@ Call log:
   153 |     expect(await prisma.document.count({ where: { fileName: { startsWith: marker } } })).toBe(beforeRows);
   154 |     expect(await fileCount()).toBe(beforeFiles);
   155 |   });
-  156 | 
+  156 |
   157 |   test("enforces independent office, lawyer, client, and guest document scopes", async ({ browser }) => {
   158 |     const visible = await createDocument({ name: "case-visible", caseId: fixture.targetCase.id, visibility: "CLIENT_VISIBLE" });
   159 |     const staff = await createDocument({ name: "case-staff", ownerClientId: fixture.owner.id, caseId: fixture.targetCase.id, visibility: "STAFF_ONLY" });
@@ -92,7 +92,7 @@ Call log:
   196 |       } finally { await prisma.legalCase.update({ where: { id: fixture.targetCase.id }, data: { deletedAt: null } }); }
   197 |     } finally { await Promise.all(contexts.map((context) => context.close())); }
   198 |   });
-  199 | 
+  199 |
   200 |   test("serializes update-first, delete-first, and double-delete outcomes with one audit per success", async ({ page }) => {
   201 |     await loginPage(page, fixture.office.email, "/admin/documents");
   202 |     const valid = { status: "ACCEPTED", category: "OTHER", visibility: "CLIENT_VISIBLE" };
@@ -122,7 +122,7 @@ Call log:
   226 |     expect(deletes.map((response) => response.status()).sort()).toEqual([200, 404]);
   227 |     expect(await prisma.auditLog.count({ where: { documentId: third.id, action: "document.delete" } })).toBe(1);
   228 |   });
-  229 | 
+  229 |
   230 |   test("requires keyboard confirmation, sends one delete, hides the row, and preserves bytes", async ({ page }, testInfo) => {
   231 |     const document = await createDocument({ name: "ui-delete", caseId: fixture.targetCase.id, visibility: "CLIENT_VISIBLE" });
   232 |     let deleteRequests = 0;
@@ -153,5 +153,5 @@ Call log:
   256 |     expect((await page.request.get(`/api/files/${document.id}/download`)).status()).toBe(404);
   257 |   });
   258 | });
-  259 | 
+  259 |
 ```

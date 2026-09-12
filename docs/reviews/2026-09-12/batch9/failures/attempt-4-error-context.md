@@ -258,7 +258,7 @@ Call log:
   196 |       } finally { await prisma.legalCase.update({ where: { id: fixture.targetCase.id }, data: { deletedAt: null } }); }
   197 |     } finally { await Promise.all(contexts.map((context) => context.close())); }
   198 |   });
-  199 | 
+  199 |
   200 |   test("serializes update-first, delete-first, and double-delete outcomes with one audit per success", async ({ page }) => {
   201 |     await loginPage(page, fixture.office.email, "/admin/documents");
   202 |     const valid = { status: "ACCEPTED", category: "OTHER", visibility: "CLIENT_VISIBLE" };
@@ -328,7 +328,7 @@ Call log:
   266 |     expect(deletes.map((response) => response.status()).sort()).toEqual([200, 404]);
   267 |     expect(await prisma.auditLog.count({ where: { documentId: third.id, action: "document.delete" } })).toBe(1);
   268 |   });
-  269 | 
+  269 |
   270 |   test("requires keyboard confirmation, sends one delete, hides the row, and preserves bytes", async ({ page }, testInfo) => {
   271 |     const document = await createDocument({ name: "ui-delete", caseId: fixture.targetCase.id, visibility: "CLIENT_VISIBLE" });
   272 |     let deleteRequests = 0;
@@ -368,5 +368,5 @@ Call log:
   305 |     expect((await page.request.get(`/api/files/${document.id}/download`)).status()).toBe(404);
   306 |   });
   307 | });
-  308 | 
+  308 |
 ```
