@@ -334,8 +334,8 @@ Total plans: 40
 ## Batch 10 local verification (2026-09-13)
 
 - Completed: status-qualified PostgreSQL row locking for existing conversation writes, stale-poll protection in both conversation panels, and public-contact rejected-request recovery with the existing hydration/content systems.
-- Passed: isolated real PostgreSQL 18.6 controlled-race test (3 cases), 31 focused server/component tests, typecheck, lint, and secret scan.
-- Open: capture final production-build result, browser evidence at 390/768/1440, and the 58-page comparison before any release claim. Keep the concurrent first-active-thread creation question as a separate contract/data-model follow-up; no migration is included in Batch 10.
+- Passed: isolated real PostgreSQL 18.6 controlled-race test (4 cases, including session route access), 10 focused component tests, the 533-test full suite with 26 skips, typecheck, lint, secret scan, production build, and 4 browser flows at 390/768/1440 px.
+- Evidence complete: the page inventory stayed at 58 with no additions/removals; synthetic records were zeroed, ports 3114/55441 were closed, scratch database/storage directories and failed trace artifacts were removed. Concurrent first-active-thread creation remains a separate contract/data-model follow-up; no migration is included in Batch 10.
 
 ## Immediate Next Steps
 

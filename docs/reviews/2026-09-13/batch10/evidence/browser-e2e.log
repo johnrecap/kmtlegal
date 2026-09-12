@@ -1,0 +1,12 @@
+
+Running 4 tests using 1 worker
+
+
+
+(node:2424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/4] [chromium] › tests\e2e\batch10-conversation-recovery.spec.ts:131:7 › Batch 10 browser recovery evidence › contact form preserves input and retries in English at 390px
+[2/4] [chromium] › tests\e2e\batch10-conversation-recovery.spec.ts:135:7 › Batch 10 browser recovery evidence › contact form preserves input and retries in Arabic at 768px
+[3/4] [chromium] › tests\e2e\batch10-conversation-recovery.spec.ts:139:7 › Batch 10 browser recovery evidence › client team chat sends from the real page with synthetic database state at 390px
+[4/4] [chromium] › tests\e2e\batch10-conversation-recovery.spec.ts:158:7 › Batch 10 browser recovery evidence › staff chat sends from the real page with synthetic database state at 1440px
+  4 passed (52.0s)

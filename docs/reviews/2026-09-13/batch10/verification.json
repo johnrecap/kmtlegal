@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "batch": "Batch 10",
+  "date": "2026-09-13",
+  "baselineCommit": "4e1fd9c559104b4f135947a9f7f6456828a737be",
+  "database": {
+    "engine": "PostgreSQL 18.6",
+    "host": "127.0.0.1",
+    "port": 55441,
+    "database": "kmt_batch10",
+    "user": "kmt_batch10",
+    "marker": "synthetic-batch10-only",
+    "integration": {
+      "status": "passed",
+      "testsPassed": 4,
+      "testsFailed": 0,
+      "evidenceType": "in-process service and route-handler tests with real PostgreSQL sessions",
+      "artifact": "evidence/postgres-integration.log"
+    }
+  },
+  "checks": [
+    { "name": "focused-component-tests", "status": "passed", "passed": 10, "failed": 0, "artifact": "evidence/focused-ui.log" },
+    { "name": "full-vitest", "status": "passed", "filesPassed": 71, "filesSkipped": 2, "passed": 533, "skipped": 26, "artifact": "evidence/full-tests.log" },
+    { "name": "typecheck", "status": "passed", "artifact": "evidence/typecheck.log" },
+    { "name": "lint", "status": "passed", "artifact": "evidence/lint.log" },
+    { "name": "secret-scan", "status": "passed", "artifact": "evidence/secret-scan.log" },
+    { "name": "production-build", "status": "passed", "environment": "ALLOW_BUILD_WITHOUT_DATABASE_URL=true", "artifact": "evidence/build.log", "priorAttemptArtifact": "evidence/build-attempt-without-database-url.log" },
+    { "name": "browser-acceptance", "status": "passed", "passed": 4, "failed": 0, "durationSeconds": 52.0, "artifact": "evidence/browser-e2e.log" },
+    { "name": "contact-screenshot-recapture", "status": "passed", "passed": 2, "failed": 0, "artifact": "evidence/browser-contact-recapture.log" }
+  ],
+  "pageInventory": {
+    "baseline": 58,
+    "current": 58,
+    "added": [],
+    "removed": [],
+    "status": "passed",
+    "artifact": "evidence/page-inventory.json"
+  },
+  "screenshots": [
+    "evidence/contact-en-failure-390.png",
+    "evidence/contact-en-retry-390.png",
+    "evidence/contact-ar-failure-768.png",
+    "evidence/contact-ar-retry-768.png",
+    "evidence/client-chat-390.png",
+    "evidence/admin-chat-1440.png"
+  ],
+  "cleanup": {
+    "syntheticCountsBeforeShutdown": { "users": 0, "clients": 0, "threads": 0, "messages": 0 },
+    "portsClosed": [3114, 55441],
+    "pathsRemoved": ["_workspace/batch10-postgres", "_workspace/batch10-storage"],
+    "failedPlaywrightArtifactsRemoved": true,
+    "artifact": "evidence/cleanup.log"
+  },
+  "correctedAttempts": [
+    "Seeded role-name uniqueness was handled by fixture role/permission upserts.",
+    "The browser database assertion now waits for the chat reply response.",
+    "Contact screenshots were recaptured from the top of the page.",
+    "A build without DATABASE_URL stopped at the production environment gate; the documented build-only bypass then completed successfully."
+  ],
+  "limitations": [
+    "The contact network failure is browser-mocked; chat flows use the real local app and database.",
+    "Route session evidence is in-process route-handler coverage, not network HTTP coverage.",
+    "Concurrent creation of the first active thread remains a separate contract/data-model decision.",
+    "The pg deprecation warning comes from controlled test orchestration.",
+    "The English 390 px public header crowding is deferred to general responsive polish."
+  ]
+}

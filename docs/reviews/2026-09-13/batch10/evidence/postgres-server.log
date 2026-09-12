@@ -1,0 +1,2 @@
+2026-09-13 01:12:45.722 EEST [15376] FATAL:  lock file "postmaster.pid" already exists
+2026-09-13 01:12:45.722 EEST [15376] HINT:  Is another postmaster (PID 7664) running in data directory "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/batch10-postgres/data"?

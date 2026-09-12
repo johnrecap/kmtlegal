@@ -1,0 +1,58 @@
+The files belonging to this database system will be owned by user "SOUQ".
+This user must also own the server process.
+
+The database cluster will be initialized with locale "Arabic_Egypt.1256".
+The default database encoding has accordingly been set to "WIN1256".
+The default text search configuration will be set to "arabic".
+
+Data page checksums are enabled.
+
+creating directory C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/batch10-postgres/data ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 100
+selecting default "shared_buffers" ... 128MB
+selecting default time zone ... Africa/Cairo
+creating configuration files ... ok
+running bootstrap script ... ok
+performing post-bootstrap initialization ... ok
+syncing data to disk ... ok
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Program^ Files^\PostgreSQL^\18^\bin^\pg^_ctl^" -D ^"C^:^\Users^\SOUQ^\^.codex^\worktrees^\a701^\kmt^ legal^ office^\^_workspace^\batch10^-postgres^\data^" -l logfile start
+
+waiting for server to start....2026-09-13 01:11:07.391 EEST [7664] LOG:  starting PostgreSQL 18.6 on x86_64-windows, compiled by msvc-19.44.35228, 64-bit
+2026-09-13 01:11:07.403 EEST [7664] LOG:  listening on IPv6 address "::1", port 55441
+2026-09-13 01:11:07.403 EEST [7664] LOG:  listening on IPv4 address "127.0.0.1", port 55441
+2026-09-13 01:11:07.504 EEST [9528] LOG:  database system was shut down at 2026-09-13 01:10:59 EEST
+2026-09-13 01:11:07.521 EEST [7664] LOG:  database system is ready to accept connections
+ done
+server started
+2026-09-13 01:12:11.566 EEST [15252] FATAL:  database "kmt_batch10" does not exist
+2026-09-13 01:13:31.194 EEST [3668] FATAL:  database "kmt_batch10" does not exist
+2026-09-13 01:13:31.275 EEST [8236] FATAL:  database "kmt_batch10" does not exist
+2026-09-13 01:14:23.617 EEST [9100] ERROR:  duplicate key value violates unique constraint "roles_name_key"
+2026-09-13 01:14:23.617 EEST [9100] DETAIL:  Key (name)=(Client) already exists.
+2026-09-13 01:14:23.617 EEST [9100] STATEMENT:  INSERT INTO "public"."roles" ("id","name","status","createdAt","updatedAt") VALUES ($1,$2,CAST($3::text AS "public"."RoleStatus"),$4,$5), ($6,$7,CAST($8::text AS "public"."RoleStatus"),$9,$10)
+2026-09-13 01:15:11.378 EEST [12516] WARNING:  there is no transaction in progress
+2026-09-13 01:15:11.460 EEST [13520] WARNING:  there is no transaction in progress
+2026-09-13 01:15:11.541 EEST [12264] WARNING:  there is no transaction in progress
+2026-09-13 01:15:11.698 EEST [1620] WARNING:  there is no transaction in progress
+2026-09-13 01:16:07.484 EEST [10104] LOG:  checkpoint starting: time
+2026-09-13 01:18:54.189 EEST [10104] LOG:  checkpoint complete: wrote 1469 buffers (9.0%), wrote 3 SLRU buffers; 1 WAL file(s) added, 0 removed, 0 recycled; write=163.710 s, sync=2.459 s, total=166.706 s; sync files=651, longest=0.045 s, average=0.004 s; distance=7107 kB, estimate=7107 kB; lsn=0/1EDE3B8, redo lsn=0/1ED93A8
+2026-09-13 01:21:07.251 EEST [10104] LOG:  checkpoint starting: time
+2026-09-13 01:21:13.252 EEST [10104] LOG:  checkpoint complete: wrote 51 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=5.607 s, sync=0.344 s, total=6.001 s; sync files=52, longest=0.018 s, average=0.007 s; distance=34 kB, estimate=6400 kB; lsn=0/1EE1EA0, redo lsn=0/1EE1E10
+2026-09-13 01:26:07.249 EEST [10104] LOG:  checkpoint starting: time
+2026-09-13 01:26:11.035 EEST [10104] LOG:  checkpoint complete: wrote 32 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=3.463 s, sync=0.197 s, total=3.786 s; sync files=33, longest=0.012 s, average=0.006 s; distance=20 kB, estimate=5762 kB; lsn=0/1EE7208, redo lsn=0/1EE71B0
+2026-09-13 01:31:08.535 EEST [10104] LOG:  checkpoint starting: immediate force wait
+2026-09-13 01:31:08.579 EEST [10104] LOG:  checkpoint complete: wrote 1 buffers (0.0%), wrote 0 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=0.007 s, total=0.044 s; sync files=1, longest=0.007 s, average=0.007 s; distance=1 kB, estimate=5186 kB; lsn=0/1EE76E0, redo lsn=0/1EE7688
+2026-09-13 01:31:08.843 EEST [7664] LOG:  received fast shutdown request
+2026-09-13 01:31:08.852 EEST [7664] LOG:  aborting any active transactions
+2026-09-13 01:31:08.876 EEST [7664] LOG:  background worker "logical replication launcher" (PID 7260) exited with exit code 1
+2026-09-13 01:31:08.876 EEST [10104] LOG:  shutting down
+2026-09-13 01:31:08.885 EEST [10104] LOG:  checkpoint starting: shutdown immediate
+2026-09-13 01:31:08.924 EEST [10104] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.009 s, total=0.048 s; sync files=1, longest=0.009 s, average=0.009 s; distance=0 kB, estimate=4667 kB; lsn=0/1EE7820, redo lsn=0/1EE7820
+2026-09-13 01:31:08.969 EEST [7664] LOG:  database system is shut down
+createdb: error: connection to server at "127.0.0.1", port 55441 failed: Connection refused (0x0000274D/10061)
+	Is the server running on that host and accepting TCP/IP connections?

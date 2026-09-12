@@ -81,9 +81,12 @@ export function AdminMessageThreadPanel({
   const draftVersion = useRef(0);
   const isClosed = thread.status === "CLOSED" || thread.status === "ARCHIVED";
 
-  useEffect(() => () => {
-    mounted.current = false;
-    mutationVersion.current += 1;
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      mutationVersion.current += 1;
+    };
   }, []);
 
   useEffect(() => {
@@ -127,7 +130,7 @@ export function AdminMessageThreadPanel({
   async function sendReply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmed = message.trim();
-    if (!trimmed || isSending || isUpdating || !canReply || isClosed) {
+    if (!trimmed || mutationPending.current || isSending || isUpdating || !canReply || isClosed) {
       return;
     }
 
@@ -161,7 +164,7 @@ export function AdminMessageThreadPanel({
   }
 
   async function updateThread(body: { status?: string; assignedToId?: string | null }) {
-    if (isSending || isUpdating) return;
+    if (mutationPending.current || isSending || isUpdating) return;
     const operationVersion = ++mutationVersion.current;
     mutationPending.current = true;
     setIsUpdating(true);

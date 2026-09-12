@@ -214,11 +214,13 @@ message or success audit. It also prevents stale polling results from replacing 
 and makes the public contact form recover from a rejected request while retaining the visitor's
 input. The interactive component test lane uses development-only `jsdom` with Vitest.
 
-The isolated PostgreSQL 18.6 verification used only synthetic data on port 55441 and passed the
-client/staff/create-or-continue race and ownership scenarios. Focused tests (31), typecheck, lint,
-and secret scan passed. The production build reached optimized compilation but its final result,
-browser screenshots, and 58-page comparison require follow-up before release claims. See
-`docs/reviews/2026-09-13/batch10/BATCH-10.md`.
+The isolated PostgreSQL 18.6 verification used only synthetic data on port 55441 and passed four
+controlled scenarios, including client/staff/create-or-continue write races, ordered reply-then-close,
+and in-process route-handler session access. The focused component suite passed 10/10; the full suite
+passed 533 tests with 26 skips. Typecheck, lint, secret scan, production build, and four browser flows
+at 390/768/1440 px passed. The page inventory remained 58 with no additions or removals. The exact
+synthetic records, ports, database/storage directories, and failed trace artifacts were cleaned after
+evidence capture. See `docs/reviews/2026-09-13/batch10/BATCH-10.md`.
 
 The separate possibility of concurrent first-time requests creating two active threads is tracked
 as an explicit product-contract and data-model follow-up; no uniqueness migration was added.

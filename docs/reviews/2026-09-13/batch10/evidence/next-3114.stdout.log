@@ -1,0 +1,78 @@
+   ▲ Next.js 15.5.25
+   - Local:        http://127.0.0.1:3114
+   - Network:      http://127.0.0.1:3114
+   - Experiments (use with caution):
+     · sri
+     ✓ globalNotFound
+     · clientTraceMetadata
+
+ ✓ Starting...
+ ○ Compiling /instrumentation ...
+ ✓ Compiled /instrumentation in 3.8s (1177 modules)
+ ✓ Ready in 14.2s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 670ms (915 modules)
+ ○ Compiling / ...
+ ✓ Compiled / in 13.6s (3511 modules)
+ GET / 200 in 2352ms
+ GET / 200 in 118ms
+ GET / 200 in 933ms
+ GET / 200 in 652ms
+ ○ Compiling /contact ...
+ ✓ Compiled /contact in 2.6s (3513 modules)
+ ✓ Compiled in 1442ms (734 modules)
+ GET /contact 200 in 4158ms
+ ○ Compiling /ar/[[...path]] ...
+ ✓ Compiled /ar/[[...path]] in 1336ms (3493 modules)
+ GET /ar/contact 200 in 4631ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 2.1s (3518 modules)
+ GET /login?next=%2Fclient%2Fassistant 200 in 3069ms
+ ○ Compiling /api/auth/login ...
+ ✓ Compiled /api/auth/login in 2s (3588 modules)
+ POST /api/auth/login 200 in 3185ms
+ ○ Compiling /client/assistant ...
+ ✓ Compiled /client/assistant in 4.9s (3634 modules)
+ GET /client/assistant 200 in 7910ms
+ GET /client/assistant 200 in 427ms
+ GET /client/assistant 200 in 1048ms
+ ○ Compiling /api/client/messages ...
+ ✓ Compiled /api/client/messages in 2.4s (3638 modules)
+ GET /api/client/messages 200 in 3223ms
+ GET /api/client/messages 200 in 3252ms
+ ○ Compiling /api/client/messages/[threadId] ...
+ ✓ Compiled /api/client/messages/[threadId] in 1529ms (3640 modules)
+ GET /api/client/messages/b62457a8-12e3-4363-8d12-dea825ace1b2 200 in 5256ms
+ GET /api/client/messages/b62457a8-12e3-4363-8d12-dea825ace1b2 200 in 5264ms
+ ○ Compiling /api/client/messages/[threadId]/messages ...
+ ✓ Compiled /api/client/messages/[threadId]/messages in 1925ms (3642 modules)
+ GET /contact 200 in 1316ms
+ GET /ar/contact 200 in 733ms
+ GET /login?next=%2Fclient%2Fassistant 200 in 419ms
+ POST /api/auth/login 200 in 535ms
+ GET /client/assistant 200 in 627ms
+ GET /client/assistant 200 in 482ms
+ GET /client/assistant 200 in 633ms
+ GET /api/client/messages 200 in 363ms
+ GET /api/client/messages 200 in 343ms
+ GET /api/client/messages/af914bd2-8bdb-4a2c-bbfa-c291e77ed9d3 200 in 391ms
+ GET /api/client/messages/af914bd2-8bdb-4a2c-bbfa-c291e77ed9d3 200 in 394ms
+ POST /api/client/messages/af914bd2-8bdb-4a2c-bbfa-c291e77ed9d3/messages 200 in 828ms
+ GET /login?next=%2Fadmin%2Fmessages%2Faf914bd2-8bdb-4a2c-bbfa-c291e77ed9d3 200 in 363ms
+ POST /api/auth/login 200 in 375ms
+ ○ Compiling /admin/messages/[threadId] ...
+ ✓ Compiled /admin/messages/[threadId] in 8.1s (3682 modules)
+ GET /admin/messages/af914bd2-8bdb-4a2c-bbfa-c291e77ed9d3 200 in 12799ms
+ GET /admin/messages/af914bd2-8bdb-4a2c-bbfa-c291e77ed9d3 200 in 789ms
+ GET /admin/messages/af914bd2-8bdb-4a2c-bbfa-c291e77ed9d3 200 in 1399ms
+ ○ Compiling /api/admin/messages/[threadId]/messages ...
+ ✓ Compiled /api/admin/messages/[threadId]/messages in 2.6s (3684 modules)
+ POST /api/admin/messages/af914bd2-8bdb-4a2c-bbfa-c291e77ed9d3/messages 200 in 6041ms
+ ✓ Compiled in 6.9s (3611 modules)
+ ○ Compiling /contact ...
+ ✓ Compiled /contact in 1145ms (2874 modules)
+ GET /contact 200 in 2687ms
+ ○ Compiling /ar/[[...path]] ...
+ ✓ Compiled /ar/[[...path]] in 1170ms (2877 modules)
+ GET /ar/contact 200 in 2611ms
+[?25h

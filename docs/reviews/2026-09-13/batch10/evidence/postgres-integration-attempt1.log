@@ -1,0 +1,54 @@
+
+> kmt-legal-platform@0.1.0 test
+> vitest run --run tests/integration/batch10-conversation-postgres.test.ts --no-file-parallelism
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office
+
+stdout | tests/integration/batch10-conversation-postgres.test.ts > batch10 real PostgreSQL conversation write lock
+prisma:error
+Invalid `prisma.role.createMany()` invocation in
+C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/integration/batch10-conversation-postgres.test.ts:165:23
+
+  162 describePostgres("batch10 real PostgreSQL conversation write lock", () => {
+  163   beforeAll(async () => {
+  164     await assertSyntheticEnvironment();
+→ 165     await prisma.role.createMany(
+Unique constraint failed on the constraint: `roles_name_key`
+
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/batch10-conversation-postgres.test.ts > batch10 real PostgreSQL conversation write lock
+PrismaClientKnownRequestError:
+Invalid `prisma.role.createMany()` invocation in
+C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/integration/batch10-conversation-postgres.test.ts:165:23
+
+  162 describePostgres("batch10 real PostgreSQL conversation write lock", () => {
+  163   beforeAll(async () => {
+  164     await assertSyntheticEnvironment();
+→ 165     await prisma.role.createMany(
+Unique constraint failed on the constraint: `roles_name_key`
+ ❯ vn.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:238:12
+ ❯ vn.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:184:11
+ ❯ vn.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:153:11
+ ❯ a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:1014:23
+ ❯ tests/integration/batch10-conversation-postgres.test.ts:165:5
+    163|   beforeAll(async () => {
+    164|     await assertSyntheticEnvironment();
+    165|     await prisma.role.createMany({ data: [
+       |     ^
+    166|       { id: ids.role, name: "Client", status: "ACTIVE" },
+    167|       { id: ids.staffRole, name: "Super Admin", status: "ACTIVE" }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+ ❯ tests/integration/batch10-conversation-postgres.test.ts (4 tests | 4 skipped) 444ms
+
+ Test Files  1 failed (1)
+      Tests  4 skipped (4)
+   Start at  01:14:21
+   Duration  2.42s (transform 319ms, setup 0ms, import 765ms, tests 444ms, environment 0ms)

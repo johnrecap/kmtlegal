@@ -1,0 +1,17 @@
+
+> kmt-legal-platform@0.1.0 test
+> vitest run --run tests/integration/batch10-conversation-postgres.test.ts --no-file-parallelism
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office
+
+(node:2004) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  01:15:09
+   Duration  2.16s (transform 332ms, setup 0ms, import 783ms, tests 1.02s, environment 0ms)

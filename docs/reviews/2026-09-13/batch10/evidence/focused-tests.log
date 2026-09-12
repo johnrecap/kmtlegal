@@ -1,0 +1,15 @@
+
+> kmt-legal-platform@0.1.0 test
+> vitest run --run tests/server/conversation-service.test.ts tests/server/contact-message-service.test.ts tests/server/admin-contact-messages.test.ts tests/server/admin-notifications.test.ts tests/ui/admin-contact-message-inbox.test.tsx tests/ui/admin-notification-center.test.tsx tests/ui/contact-form-recovery.test.tsx tests/ui/conversation-poll-consistency.test.tsx --no-file-parallelism
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office
+
+
+ Test Files  8 passed (8)
+      Tests  36 passed (36)
+   Start at  01:20:27
+   Duration  18.48s (transform 1.37s, setup 0ms, import 4.89s, tests 1.52s, environment 9.68s)

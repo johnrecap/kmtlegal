@@ -74,6 +74,7 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reloadVersion, setReloadVersion] = useState(0);
   const mutationVersion = useRef(0);
   const mutationPending = useRef(false);
   const contextVersion = useRef(0);
@@ -87,9 +88,12 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
     return () => { contextVersion.current += 1; };
   }, [locale]);
 
-  useEffect(() => () => {
-    mounted.current = false;
-    mutationVersion.current += 1;
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      mutationVersion.current += 1;
+    };
   }, []);
 
   useEffect(() => {
@@ -138,7 +142,7 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
     return () => {
       mounted = false;
     };
-  }, [copy, locale]);
+  }, [copy, locale, reloadVersion]);
 
   useEffect(() => {
     if (!thread?.id || isClosed) {
@@ -186,7 +190,7 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmed = message.trim();
-    if (!trimmed || isSending) {
+    if (!trimmed || mutationPending.current || isSending) {
       return;
     }
 
@@ -207,7 +211,7 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
       if (mounted.current && operationContext === contextVersion.current && operationVersion === mutationVersion.current) {
         setThread(payload.data ?? null);
       }
-      if (mounted.current && operationContext === contextVersion.current && draftVersion.current === sentDraftVersion) {
+      if (mounted.current && draftVersion.current === sentDraftVersion) {
         setMessage("");
       }
     } catch (sendError) {
@@ -217,7 +221,12 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
     } finally {
       mutationPending.current = false;
       mutationVersion.current += 1;
-      if (mounted.current) setIsSending(false);
+      if (mounted.current) {
+        setIsSending(false);
+        if (operationContext !== contextVersion.current) {
+          setReloadVersion((version) => version + 1);
+        }
+      }
     }
   }
 

@@ -1,0 +1,45 @@
+ current_database | current_user | inet_server_port |                                    current_setting
+------------------+--------------+------------------+---------------------------------------------------------------------------------------
+ kmt_batch10      | kmt_batch10  |            55441 | C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/batch10-postgres/data
+(1 row)
+
+         marker
+------------------------
+ synthetic-batch10-only
+(1 row)
+
+ batch10_users
+---------------
+             0
+(1 row)
+
+ batch10_clients
+-----------------
+               0
+(1 row)
+
+ batch10_threads
+-----------------
+               0
+(1 row)
+
+ batch10_messages
+------------------
+                0
+(1 row)
+
+
+LocalAddress LocalPort OwningProcess
+------------ --------- -------------
+::1              55441          7664
+127.0.0.1        55441          7664
+127.0.0.1         3114          8624
+
+
+
+Port3114Closed      : True
+Port55441Closed     : True
+PostgresPathRemoved : True
+StoragePathRemoved  : True
+
+FailedPlaywrightArtifactsRemoved : True
