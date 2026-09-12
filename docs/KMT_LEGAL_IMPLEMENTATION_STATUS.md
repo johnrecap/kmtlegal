@@ -310,6 +310,19 @@ Total plans: 40
 - npm audit warnings were recorded but not auto-fixed because dependency upgrades are outside this focused repair.
 - Live acceptance is still pending: deploy through `bash deploy/install/aapanel-pm2-update.sh`, require the pushed release in ready health, and require a `kmtlegal.org`-only sitemap before disabling the former domain.
 
+## Latest Batch 8 Local Verification
+
+- Client appointment ownership now consistently hides links to soft-deleted cases while retaining case-less consultations and business-archived case appointments on both `/client` and `/client/court-dates`.
+- The admin calendar now paginates with stable equal-time ordering, additive totals/page metadata, page clamping, preserved Cairo filters, and current-page day counts.
+- Task edits now use atomic `updatedAt` compare-and-swap behavior with localized `409` recovery, draft preservation, success-only audit logging, and the existing direct-assignee OR case-lawyer policy.
+- Task edit/create forms preserve the already-linked current case when it is absent from scoped options or beyond the 100-option cap. A direct assignee cannot switch to another hidden case.
+- Task create/update controls remain disabled until hydration, preventing native GET submission on slow or unavailable scripts; successful create uses a captured form reference before reset/refresh.
+- Historical document and invoice visibility was explicitly checked after a linked case soft delete and remains unchanged.
+- Stable-source browser verification passed 9/9, and the final connected case-create follow-up passed 1/1. Final repository checks passed: typecheck, lint, 522 tests with 22 skips, production build, and `git diff --check`.
+- Evidence and the connected surface map are in `docs/reviews/2026-09-12/batch8/BATCH-8.md`. The task-board width observed with UUID-heavy synthetic titles is deferred to the next UI layout phase.
+- The synthetic record counts were zero before shutdown; ports `3112` and `55439` were closed and the disposable Batch 8 database/password/scratch directories were removed.
+- Batch 8 remains local for supervisor review and has not been pushed or deployed.
+
 ## Remaining Count
 
 - Fully not started: 0 plans.

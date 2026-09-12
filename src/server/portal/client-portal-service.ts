@@ -45,6 +45,15 @@ export function ownCaseWhere(actor: Principal, caseId?: string): Prisma.LegalCas
   };
 }
 
+export function ownVisiblePortalAppointmentWhere(actor: Principal): Prisma.AppointmentWhereInput {
+  const clientId = assertClientPortalAccess(actor);
+
+  return {
+    clientId,
+    OR: [{ caseId: null }, { case: { deletedAt: null } }]
+  };
+}
+
 export function clientVisibleDocumentWhere(clientId: string): Prisma.DocumentWhereInput {
   return {
     deletedAt: null,
@@ -72,9 +81,11 @@ export async function getPortalDashboard(actor: Principal) {
     }),
     prisma.appointment.findMany({
       where: {
-        clientId,
-        startsAt: { gte: new Date() },
-        status: { in: ["SCHEDULED", "RESCHEDULED"] }
+        AND: [
+          ownVisiblePortalAppointmentWhere(actor),
+          { startsAt: { gte: new Date() } },
+          { status: { in: ["SCHEDULED", "RESCHEDULED"] } }
+        ]
       },
       include: {
         consultationRequest: { select: { id: true, status: true, assignedLawyerId: true } },
@@ -166,9 +177,8 @@ export async function listPortalDocuments(actor: Principal) {
 }
 
 export async function listPortalAppointments(actor: Principal) {
-  const clientId = assertClientPortalAccess(actor);
   return prisma.appointment.findMany({
-    where: { clientId },
+    where: ownVisiblePortalAppointmentWhere(actor),
     include: {
       lawyer: { select: { id: true, name: true } },
       case: { select: { id: true, title: true, internalFileNumber: true } },

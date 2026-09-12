@@ -54,6 +54,7 @@ export const adminCalendarQuerySchema = z.object({
   status: appointmentStatusSchema.optional().or(z.literal("")),
   mode: appointmentModeSchema.optional().or(z.literal("")),
   lawyerId: uuidSchema.optional().or(z.literal("")),
+  page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(50)
 });
 
@@ -544,6 +545,9 @@ export async function listAdminCalendarAppointments(input: { actor: Principal; q
   const filters = normalizeCalendarQuery(input.query);
   const where = calendarWhere(input.actor, filters);
   const window = calendarWindow(filters);
+  const total = await prisma.appointment.count({ where });
+  const page = Math.min(filters.page, Math.max(1, Math.ceil(total / filters.pageSize)));
+  const pagination = toPagination({ ...filters, page });
 
   const appointments = await prisma.appointment.findMany({
     where,
@@ -565,8 +569,9 @@ export async function listAdminCalendarAppointments(input: { actor: Principal; q
       case: { select: { id: true, internalFileNumber: true, title: true, assignedLawyerId: true, deletedAt: true } },
       consultationRequest: { select: { outcomeStatus: true } }
     },
-    orderBy: { startsAt: "asc" },
-    take: filters.pageSize
+    orderBy: [{ startsAt: "asc" }, { id: "asc" }],
+    skip: pagination.skip,
+    take: pagination.take
   });
 
   return {
@@ -576,7 +581,10 @@ export async function listAdminCalendarAppointments(input: { actor: Principal; q
     })),
     filters,
     from: window.from,
-    to: window.to
+    to: window.to,
+    total,
+    page: pagination.page,
+    pageSize: pagination.pageSize
   };
 }
 

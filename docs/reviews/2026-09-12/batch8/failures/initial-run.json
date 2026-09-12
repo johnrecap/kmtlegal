@@ -1,0 +1,232 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "tests/e2e/batch8-office.spec.ts",
+      "--workers=1",
+      "--reporter=json"
+    ],
+    "configFile": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\playwright.config.ts",
+    "rootDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/.playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "batch8-office.spec.ts",
+      "file": "batch8-office.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Batch 8 isolated DB/browser acceptance",
+          "file": "batch8-office.spec.ts",
+          "line": 95,
+          "column": 15,
+          "specs": [
+            {
+              "title": "client pages hide soft-deleted linked cases, retain archived and consultation appointments, then restore",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 33171,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] deleted appointment', { exact: true })\nExpected: visible\nError: strict mode violation: getByText('[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] deleted appointment', { exact: true }) resolved to 2 elements:\n    1) <div class=\"break-words text-base font-semibold text-kmt-ink\">[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] del…</div> aka locator('div').filter({ hasText: /^\\[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b\\] deleted appointment$/ })\n    2) <p class=\"font-semibold text-kmt-ink\">[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] del…</p> aka getByRole('table').getByText('[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] deleted appointment')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText('[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] deleted appointment', { exact: true })\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] deleted appointment', { exact: true })\nExpected: visible\nError: strict mode violation: getByText('[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] deleted appointment', { exact: true }) resolved to 2 elements:\n    1) <div class=\"break-words text-base font-semibold text-kmt-ink\">[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] del…</div> aka locator('div').filter({ hasText: /^\\[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b\\] deleted appointment$/ })\n    2) <p class=\"font-semibold text-kmt-ink\">[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] del…</p> aka getByRole('table').getByText('[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] deleted appointment')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText('[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] deleted appointment', { exact: true })\u001b[22m\n\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch8-office.spec.ts:117:99",
+                        "location": {
+                          "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch8-office.spec.ts",
+                          "column": 99,
+                          "line": 117
+                        },
+                        "snippet": "  115 |     try {\n  116 |       await login(ownerPage, fixture.primaryUser.email, \"/client/court-dates\");\n> 117 |       await expect(ownerPage.getByText(`${fixture.marker} deleted appointment`, { exact: true })).toBeVisible();\n      |                                                                                                   ^\n  118 |       await ownerPage.goto(\"/client\", { waitUntil: \"domcontentloaded\" });\n  119 |       await expect(ownerPage.getByText(`${fixture.marker} deleted appointment`, { exact: true })).toBeVisible();\n  120 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch8-office.spec.ts",
+                            "column": 99,
+                            "line": 117
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByText('[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] deleted appointment', { exact: true })\nExpected: visible\nError: strict mode violation: getByText('[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] deleted appointment', { exact: true }) resolved to 2 elements:\n    1) <div class=\"break-words text-base font-semibold text-kmt-ink\">[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] del…</div> aka locator('div').filter({ hasText: /^\\[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b\\] deleted appointment$/ })\n    2) <p class=\"font-semibold text-kmt-ink\">[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] del…</p> aka getByRole('table').getByText('[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] deleted appointment')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for getByText('[BATCH8:407eff62-304d-4f3d-b452-170ce8c1ec3b] deleted appointment', { exact: true })\u001b[22m\n\n\n  115 |     try {\n  116 |       await login(ownerPage, fixture.primaryUser.email, \"/client/court-dates\");\n> 117 |       await expect(ownerPage.getByText(`${fixture.marker} deleted appointment`, { exact: true })).toBeVisible();\n      |                                                                                                   ^\n  118 |       await ownerPage.goto(\"/client\", { waitUntil: \"domcontentloaded\" });\n  119 |       await expect(ownerPage.getByText(`${fixture.marker} deleted appointment`, { exact: true })).toBeVisible();\n  120 |\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch8-office.spec.ts:117:99"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T17:24:23.286Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch8-office-Batch-8-isol-00aec-n-appointments-then-restore-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch8-office-Batch-8-isol-00aec-n-appointments-then-restore-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch8-office-Batch-8-isol-00aec-n-appointments-then-restore-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch8-office.spec.ts",
+                        "column": 99,
+                        "line": 117
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "b95feb3558f0ed6f1125-abb732b3fd8403fd7c44",
+              "file": "batch8-office.spec.ts",
+              "line": 109,
+              "column": 7
+            },
+            {
+              "title": "calendar paginates every matching row with stable ordering and scope",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T17:25:03.298Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b95feb3558f0ed6f1125-e7b11d39288c9067edcd",
+              "file": "batch8-office.spec.ts",
+              "line": 146,
+              "column": 7
+            },
+            {
+              "title": "task update accepts one version, rejects stale/missing/invalid versions, and preserves browser input on conflict",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": -1,
+                      "parallelIndex": -1,
+                      "status": "skipped",
+                      "duration": 0,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T17:25:03.298Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b95feb3558f0ed6f1125-413b349bf37a857df622",
+              "file": "batch8-office.spec.ts",
+              "line": 187,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-12T17:24:21.932Z",
+    "duration": 41437.16,
+    "expected": 0,
+    "skipped": 2,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

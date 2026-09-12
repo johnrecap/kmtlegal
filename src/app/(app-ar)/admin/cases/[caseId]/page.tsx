@@ -336,7 +336,7 @@ function TasksTab({ data }: { data: CaseTaskDocumentTabs }) {
           {data.tasks.length ? (
             <div className="space-y-3">
               {data.tasks.map((task) => (
-                <article key={task.id} className="rounded border border-kmt-border p-4">
+                <article key={task.id} className="rounded border border-kmt-border p-4" data-task-id={task.id}>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <p className="font-semibold text-kmt-ink">{task.title}</p>
@@ -359,12 +359,14 @@ function TasksTab({ data }: { data: CaseTaskDocumentTabs }) {
                       cases={data.options.cases}
                       task={{
                         id: task.id,
+                        updatedAt: task.updatedAt,
                         title: task.title,
                         description: task.description,
                         status: task.status,
                         priority: task.priority,
                         assignedToId: task.assignedToId,
                         caseId: task.caseId,
+                        case: task.case,
                         dueDate: task.dueDate
                       }}
                     />
@@ -385,7 +387,7 @@ function TasksTab({ data }: { data: CaseTaskDocumentTabs }) {
         </CardHeader>
         <CardContent>
           {data.access.canCreateTask ? (
-            <TaskCreateForm assignees={data.options.assignees} cases={data.options.cases} defaultCaseId={data.caseId} />
+            <TaskCreateForm assignees={data.options.assignees} cases={data.options.cases} defaultCase={data.currentCase} />
           ) : (
             <StateBlock tone="permission" title="إنشاء المهام غير متاح" description="حسابك يمكنه قراءة المهام داخل نطاقه فقط." />
           )}

@@ -1,0 +1,63 @@
+
+Running 3 tests using 1 worker
+
+
+
+[1/3] [chromium] › tests\e2e\batch8-office.spec.ts:120:7 › Batch 8 isolated DB/browser acceptance › client pages hide soft-deleted linked cases, retain archived and consultation appointments, then restore
+[2/3] [chromium] › tests\e2e\batch8-office.spec.ts:157:7 › Batch 8 isolated DB/browser acceptance › calendar paginates every matching row with stable ordering and scope
+  1) [chromium] › tests\e2e\batch8-office.spec.ts:157:7 › Batch 8 isolated DB/browser acceptance › calendar paginates every matching row with stable ordering and scope
+
+    Test timeout of 60000ms exceeded.
+
+    Error: browserContext.close: Test ended.
+    Browser logs:
+
+    <launching> C:\Users\SOUQ\AppData\Local\ms-playwright\chromium_headless_shell-1228\chrome-headless-shell-win64\chrome-headless-shell.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\Users\SOUQ\AppData\Local\Temp\playwright_chromiumdev_profile-ilZdOY --remote-debugging-pipe --no-startup-window
+    <launched> pid=824
+    [pid=824][err] [0912/203508.003:INFO:CONSOLE:19] "[Client Instrumentation Hook] Slow execution detected: 126ms (Note: Code download overhead is not included in this measurement)", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/lib/require-instrumentation-client.js (19)
+    [pid=824][err] [0912/203508.080:INFO:CONSOLE:25631] "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (25631)
+    [pid=824][err] [0912/203517.386:INFO:CONSOLE:19] "[Client Instrumentation Hook] Slow execution detected: 110ms (Note: Code download overhead is not included in this measurement)", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/lib/require-instrumentation-client.js (19)
+    [pid=824][err] [0912/203517.454:INFO:CONSOLE:25631] "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (25631)
+    [pid=824][err] [0912/203520.541:INFO:CONSOLE:19] "[Client Instrumentation Hook] Slow execution detected: 142ms (Note: Code download overhead is not included in this measurement)", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/lib/require-instrumentation-client.js (19)
+    [pid=824][err] [0912/203520.621:INFO:CONSOLE:25631] "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (25631)
+    [pid=824][err] [0912/203525.071:INFO:CONSOLE:19] "[Client Instrumentation Hook] Slow execution detected: 115ms (Note: Code download overhead is not included in this measurement)", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/lib/require-instrumentation-client.js (19)
+    [pid=824][err] [0912/203525.144:INFO:CONSOLE:25631] "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (25631)
+    [pid=824][err] [0912/203528.833:INFO:CONSOLE:19] "[Client Instrumentation Hook] Slow execution detected: 179ms (Note: Code download overhead is not included in this measurement)", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/lib/require-instrumentation-client.js (19)
+    [pid=824][err] [0912/203528.925:INFO:CONSOLE:25631] "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (25631)
+    [pid=824][err] [0912/203530.754:INFO:CONSOLE:19] "[Client Instrumentation Hook] Slow execution detected: 136ms (Note: Code download overhead is not included in this measurement)", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/lib/require-instrumentation-client.js (19)
+    [pid=824][err] [0912/203530.833:INFO:CONSOLE:25631] "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (25631)
+    [pid=824][err] [0912/203535.009:INFO:CONSOLE:19] "[Client Instrumentation Hook] Slow execution detected: 122ms (Note: Code download overhead is not included in this measurement)", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/lib/require-instrumentation-client.js (19)
+    [pid=824][err] [0912/203535.084:INFO:CONSOLE:25631] "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (25631)
+    [pid=824][err] [0912/203542.550:INFO:CONSOLE:19] "[Client Instrumentation Hook] Slow execution detected: 141ms (Note: Code download overhead is not included in this measurement)", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/lib/require-instrumentation-client.js (19)
+    [pid=824][err] [0912/203542.623:INFO:CONSOLE:25631] "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (25631)
+    [pid=824][err] [0912/203550.456:INFO:CONSOLE:19] "[Client Instrumentation Hook] Slow execution detected: 153ms (Note: Code download overhead is not included in this measurement)", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/lib/require-instrumentation-client.js (19)
+    [pid=824][err] [0912/203550.535:INFO:CONSOLE:25631] "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold", source: webpack-internal:///(app-pages-browser)/./node_modules/next/dist/compiled/react-dom/cjs/react-dom-client.development.js (25631)
+    [pid=824] <gracefully close start>
+
+      194 |       expect((await filtered.json() as { data: { total: number } }).data.total).toBe(1);
+      195 |     } finally {
+    > 196 |       await Promise.all([officeContext.close(), lawyerContext.close()]);
+          |       ^
+      197 |     }
+      198 |   });
+      199 |
+        at C:\Users\SOUQ\.codex\worktrees\a701\kmt legal office\tests\e2e\batch8-office.spec.ts:196:7
+
+    Error Context: .playwright\test-results\batch8-office-Batch-8-isol-bf042-h-stable-ordering-and-scope-chromium\error-context.md
+
+    Error Context: .playwright\test-results\batch8-office-Batch-8-isol-bf042-h-stable-ordering-and-scope-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\test-results\batch8-office-Batch-8-isol-bf042-h-stable-ordering-and-scope-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\test-results\batch8-office-Batch-8-isol-bf042-h-stable-ordering-and-scope-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[3/3] [chromium] › tests\e2e\batch8-office.spec.ts:200:7 › Batch 8 isolated DB/browser acceptance › task update accepts one version, rejects stale/missing/invalid versions, and preserves browser input on conflict
+  1 failed
+    [chromium] › tests\e2e\batch8-office.spec.ts:157:7 › Batch 8 isolated DB/browser acceptance › calendar paginates every matching row with stable ordering and scope
+  1 did not run
+  1 passed (1.8m)

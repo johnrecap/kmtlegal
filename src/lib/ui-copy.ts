@@ -199,7 +199,7 @@ export const plan35AdminRecoveryCopy = {
 
 export const plan35AdminListAccessibilityCopy = {
   auditLog: { filters: "فلاتر سجل التدقيق", search: "البحث في سجل التدقيق", table: "أحداث سجل التدقيق" },
-  calendar: { filters: "فلاتر مواعيد التقويم" },
+  calendar: { filters: "فلاتر مواعيد التقويم", pagination: "تقسيم صفحات مواعيد التقويم" },
   cases: { filters: "فلاتر القضايا", search: "البحث في القضايا", table: "قائمة القضايا" },
   clients: { filters: "فلاتر العملاء", search: "البحث في العملاء", table: "قائمة العملاء" },
   consultations: { filters: "فلاتر طلبات الاستشارة", search: "البحث في طلبات الاستشارة", table: "طلبات الاستشارة" },
@@ -230,6 +230,15 @@ export const plan35AdminListAccessibilityCopy = {
     documentsTable: "نموذج مكتبة المستندات",
     auditTable: "نموذج سجل التدقيق"
   }
+} as const;
+
+export const plan35CalendarUiCopy = {
+  visibleSummary: (total: number, visible: number, page: number, totalPages: number) =>
+    `${total} موعد داخل الفترة المعروضة — المعروض ${visible} في الصفحة ${page} من ${totalPages}`,
+  page: (page: number, totalPages: number) => `صفحة ${page} من ${totalPages}`,
+  groupVisibleCount: (count: number) => `${count} موعد معروض في هذه الصفحة`,
+  previous: "السابق",
+  next: "التالي"
 } as const;
 
 export const plan35ContactInboxUiCopy = {
@@ -594,6 +603,19 @@ export const plan35ApiErrorSourceMessages = {
   SETTING_READ_ONLY: "Storage runtime settings are managed by the server environment and cannot be changed from the admin dashboard."
 } as const;
 
+export const plan35TaskApiErrorSourceMessages = {
+  TASK_STATE_CHANGED: "Task data changed after this form was loaded."
+} as const;
+
+export const plan35TaskUiCopy = {
+  createFormLabel: "إنشاء مهمة",
+  feedback: {
+    stale: "تغيرت المهمة بعد فتح النموذج. حدّث الصفحة ثم راجع آخر نسخة قبل الحفظ."
+  },
+  reviewLatest: "تحديث البيانات للمراجعة",
+  retainedCase: "مرتبطة حاليًا"
+} as const;
+
 export const plan36ApiErrorSourceMessages = {
   CONSULTATION_OUTCOME_NOT_READY: "The consultation outcome is not ready to be recorded yet.",
   CONSULTATION_STATE_CHANGED: "The consultation changed after this view was loaded. Refresh and try again.",
@@ -813,6 +835,7 @@ const apiExactMessages: Record<string, string> = {
   [plan35ApiErrorSourceMessages.APPOINTMENT_CONFLICT]: plan35ApiErrorCopy.APPOINTMENT_CONFLICT.message,
   [plan35ApiErrorSourceMessages.CASE_REFERENCE_CONFLICT]: plan35ApiErrorCopy.CASE_REFERENCE_CONFLICT.message,
   [plan35ApiErrorSourceMessages.SETTING_READ_ONLY]: plan35ApiErrorCopy.SETTING_READ_ONLY.message,
+  [plan35TaskApiErrorSourceMessages.TASK_STATE_CHANGED]: plan35TaskUiCopy.feedback.stale,
   [plan36ApiErrorSourceMessages.CONSULTATION_OUTCOME_NOT_READY]: plan36ApiErrorCopy.CONSULTATION_OUTCOME_NOT_READY.message,
   [plan36ApiErrorSourceMessages.CONSULTATION_STATE_CHANGED]: plan36ApiErrorCopy.CONSULTATION_STATE_CHANGED.message,
   [plan36ApiErrorSourceMessages.CONSULTATION_REOPEN_REQUIRED]: plan36ApiErrorCopy.CONSULTATION_REOPEN_REQUIRED.message,
@@ -979,6 +1002,7 @@ const apiEnglishMessages: Record<string, string> = {
   [plan35ApiErrorCopy.APPOINTMENT_CONFLICT.message]: plan35ApiErrorSourceMessages.APPOINTMENT_CONFLICT,
   [plan35ApiErrorCopy.CASE_REFERENCE_CONFLICT.message]: plan35ApiErrorSourceMessages.CASE_REFERENCE_CONFLICT,
   [plan35ApiErrorCopy.SETTING_READ_ONLY.message]: plan35ApiErrorSourceMessages.SETTING_READ_ONLY,
+  [plan35TaskUiCopy.feedback.stale]: plan35TaskApiErrorSourceMessages.TASK_STATE_CHANGED,
   [plan36ApiErrorCopy.CONSULTATION_OUTCOME_NOT_READY.message]: plan36ApiErrorSourceMessages.CONSULTATION_OUTCOME_NOT_READY,
   [plan36ApiErrorCopy.CONSULTATION_STATE_CHANGED.message]: plan36ApiErrorSourceMessages.CONSULTATION_STATE_CHANGED,
   [plan36ApiErrorCopy.CONSULTATION_REOPEN_REQUIRED.message]: plan36ApiErrorSourceMessages.CONSULTATION_REOPEN_REQUIRED,

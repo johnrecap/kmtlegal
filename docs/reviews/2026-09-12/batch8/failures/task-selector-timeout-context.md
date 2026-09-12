@@ -1,0 +1,308 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: batch8-office.spec.ts >> Batch 8 isolated DB/browser acceptance >> task update accepts one version, rejects stale/missing/invalid versions, and preserves browser input on conflict
+- Location: tests\e2e\batch8-office.spec.ts:202:7
+
+# Error details
+
+```
+Test timeout of 180000ms exceeded.
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e7]:
+          - generic [ref=e8]: KMT
+          - generic [ref=e9]: Legal
+          - generic [ref=e10]: إدارة المكتب
+        - generic [ref=e11]: إدارة
+      - navigation "التنقل في لوحة التحكم" [ref=e12]:
+        - generic [ref=e13]:
+          - paragraph [ref=e14]: تشغيل المكتب
+          - generic [ref=e15]:
+            - link "لوحة التحكم" [ref=e16] [cursor=pointer]:
+              - /url: /admin
+              - img [ref=e17]
+              - generic [ref=e22]: لوحة التحكم
+            - link "أوقات الاستشارات" [ref=e23] [cursor=pointer]:
+              - /url: /admin/consultation-availability
+              - img [ref=e24]
+              - generic [ref=e27]: أوقات الاستشارات
+            - link "طلبات الاستشارة" [ref=e28] [cursor=pointer]:
+              - /url: /admin/consultations
+              - img [ref=e29]
+              - generic [ref=e32]: طلبات الاستشارة
+            - link "العملاء" [ref=e33] [cursor=pointer]:
+              - /url: /admin/clients
+              - img [ref=e34]
+              - generic [ref=e38]: العملاء
+            - link "محادثات العملاء" [ref=e39] [cursor=pointer]:
+              - /url: /admin/messages
+              - img [ref=e40]
+              - generic [ref=e43]: محادثات العملاء
+            - link "القضايا" [ref=e44] [cursor=pointer]:
+              - /url: /admin/cases
+              - img [ref=e45]
+              - generic [ref=e47]: القضايا
+            - link "إنشاء قضية" [ref=e48] [cursor=pointer]:
+              - /url: /admin/cases/new
+              - img [ref=e49]
+              - generic [ref=e52]: إنشاء قضية
+            - link "التقويم" [ref=e53] [cursor=pointer]:
+              - /url: /admin/calendar
+              - img [ref=e54]
+              - generic [ref=e57]: التقويم
+            - link "المهام" [ref=e58] [cursor=pointer]:
+              - /url: /admin/tasks
+              - img [ref=e59]
+              - generic [ref=e62]: المهام
+            - link "رسائل التواصل" [ref=e63] [cursor=pointer]:
+              - /url: /admin/contact-messages
+              - img [ref=e64]
+              - generic [ref=e67]: رسائل التواصل
+            - link "الإشعارات" [ref=e68] [cursor=pointer]:
+              - /url: /admin/notifications
+              - img [ref=e69]
+              - generic [ref=e72]: الإشعارات
+        - generic [ref=e73]:
+          - paragraph [ref=e74]: الملفات والمالية
+          - generic [ref=e75]:
+            - link "المستندات" [ref=e76] [cursor=pointer]:
+              - /url: /admin/documents
+              - img [ref=e77]
+              - generic [ref=e79]: المستندات
+            - link "المالية" [ref=e80] [cursor=pointer]:
+              - /url: /admin/finance
+              - img [ref=e81]
+              - generic [ref=e84]: المالية
+            - link "التقارير" [ref=e85] [cursor=pointer]:
+              - /url: /admin/reports
+              - img [ref=e86]
+              - generic [ref=e89]: التقارير
+    - generic [ref=e90]:
+      - banner [ref=e91]:
+        - generic [ref=e92]:
+          - generic [ref=e94]:
+            - paragraph [ref=e95]: لوحة المكتب
+            - heading "مهام المكتب" [level=1] [ref=e96]
+          - generic [ref=e97]:
+            - group [ref=e98]:
+              - generic "فتح الإشعارات" [ref=e99]:
+                - img [ref=e100]
+            - generic [ref=e103]: مدير المكتب التجريبي
+            - button "تسجيل الخروج" [ref=e105] [cursor=pointer]:
+              - img [ref=e106]
+              - generic [ref=e108]: تسجيل الخروج
+      - main [ref=e109]:
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - search "فلاتر المهام" [ref=e113]:
+              - generic [ref=e114]:
+                - generic [ref=e115]: البحث في المهام
+                - img
+                - searchbox "البحث في المهام" [ref=e116]: "[BATCH8:691a5c39-73af-4ff5-b16a-5f31b74cf843]"
+              - generic [ref=e117]:
+                - generic [ref=e118]: النطاق
+                - generic [ref=e119]:
+                  - combobox "النطاق" [ref=e120]:
+                    - option "كل النطاق" [selected]
+                    - option "مهامي"
+                    - option "متأخرة"
+                  - generic:
+                    - img
+              - generic [ref=e121]:
+                - generic [ref=e122]: الحالة
+                - generic [ref=e123]:
+                  - combobox "الحالة" [ref=e124]:
+                    - option "كل الحالات" [selected]
+                    - option "جديدة"
+                    - option "قيد التنفيذ"
+                    - option "قيد المراجعة"
+                    - option "متأخرة"
+                    - option "مكتملة"
+                    - option "مؤرشفة"
+                  - generic:
+                    - img
+              - generic [ref=e125]:
+                - generic [ref=e126]: الأولوية
+                - generic [ref=e127]:
+                  - combobox "الأولوية" [ref=e128]:
+                    - option "كل الأولويات" [selected]
+                    - option "منخفضة"
+                    - option "عادية"
+                    - option "مرتفعة"
+                    - option "عاجلة"
+                  - generic:
+                    - img
+              - generic [ref=e129]:
+                - generic [ref=e130]: المسؤول
+                - generic [ref=e131]:
+                  - combobox "المسؤول" [ref=e132]:
+                    - option "كل المسؤولين" [selected]
+                    - option "مدير المكتب التجريبي"
+                    - option "مدير النظام التجريبي"
+                    - option "مريم خالد"
+                  - generic:
+                    - img
+              - generic [ref=e133]:
+                - generic [ref=e134]: الترتيب
+                - generic [ref=e135]:
+                  - combobox "الترتيب" [ref=e136]:
+                    - option "الاستحقاق" [selected]
+                    - option "آخر تحديث"
+                    - option "تاريخ الإنشاء"
+                    - option "الأولوية"
+                    - option "الحالة"
+                  - generic:
+                    - img
+              - generic [ref=e137]:
+                - generic [ref=e138]: الاتجاه
+                - generic [ref=e139]:
+                  - combobox "الاتجاه" [ref=e140]:
+                    - option "تصاعدي" [selected]
+                    - option "تنازلي"
+                  - generic:
+                    - img
+              - button "تطبيق" [ref=e141] [cursor=pointer]:
+                - generic [ref=e142]: تطبيق
+            - generic [ref=e143]:
+              - paragraph [ref=e144]: 1 مهمة داخل الفلاتر الحالية
+              - paragraph [ref=e145]: صفحة 1 من 1
+            - generic [ref=e146]:
+              - region "جديدة" [ref=e147]:
+                - generic [ref=e148]:
+                  - heading "جديدة" [level=2] [ref=e149]
+                  - generic [ref=e150]: "1"
+                - article [ref=e152]:
+                  - generic [ref=e153]:
+                    - generic [ref=e154]:
+                      - heading "[BATCH8:691a5c39-73af-4ff5-b16a-5f31b74cf843] loser" [level=3] [ref=e155]
+                      - paragraph [ref=e156]: مريم خالد · غير محدد
+                    - generic [ref=e157]: عادية
+                  - paragraph [ref=e158]: synthetic task
+                  - link "B8-A-691a5c3973af4ff5b16a - [BATCH8:691a5c39-73af-4ff5-b16a-5f31b74cf843] active case" [ref=e159] [cursor=pointer]:
+                    - /url: /admin/cases/591b6af6-d95d-491c-81cb-5821b4fdb283
+                  - group [ref=e160]:
+                    - generic "تعديل المهمة" [ref=e161] [cursor=pointer]
+                    - option "جديدة" [selected]
+                    - option "قيد التنفيذ"
+                    - option "قيد المراجعة"
+                    - option "مكتملة"
+                    - option "متأخرة"
+                    - option "مؤرشفة"
+                    - option "منخفضة"
+                    - option "عادية" [selected]
+                    - option "مرتفعة"
+                    - option "عاجلة"
+                    - option "مدير المكتب التجريبي"
+                    - option "مدير النظام التجريبي"
+                    - option "مريم خالد" [selected]
+                    - option "بدون قضية"
+                    - option "B8-D-691a5c3973af4ff5b16a - [BATCH8:691a5c39-73af-4ff5-b16a-5f31b74cf843] deleted case"
+                    - option "B8-A-691a5c3973af4ff5b16a - [BATCH8:691a5c39-73af-4ff5-b16a-5f31b74cf843] active case" [selected]
+                    - option "B8-R-691a5c3973af4ff5b16a - [BATCH8:691a5c39-73af-4ff5-b16a-5f31b74cf843] archived case"
+                    - option "B8-O-691a5c3973af4ff5b16a - [BATCH8:691a5c39-73af-4ff5-b16a-5f31b74cf843] office case"
+                    - option "KMT-2024-089 - مراجعة عقد توريد"
+              - region "قيد التنفيذ" [ref=e162]:
+                - generic [ref=e163]:
+                  - heading "قيد التنفيذ" [level=2] [ref=e164]
+                  - generic [ref=e165]: "0"
+                - paragraph [ref=e167]: لا توجد مهام هنا.
+              - region "قيد المراجعة" [ref=e168]:
+                - generic [ref=e169]:
+                  - heading "قيد المراجعة" [level=2] [ref=e170]
+                  - generic [ref=e171]: "0"
+                - paragraph [ref=e173]: لا توجد مهام هنا.
+              - region "متأخرة" [ref=e174]:
+                - generic [ref=e175]:
+                  - heading "متأخرة" [level=2] [ref=e176]
+                  - generic [ref=e177]: "0"
+                - paragraph [ref=e179]: لا توجد مهام هنا.
+              - region "مكتملة" [ref=e180]:
+                - generic [ref=e181]:
+                  - heading "مكتملة" [level=2] [ref=e182]
+                  - generic [ref=e183]: "0"
+                - paragraph [ref=e185]: لا توجد مهام هنا.
+              - region "مؤرشفة" [ref=e186]:
+                - generic [ref=e187]:
+                  - heading "مؤرشفة" [level=2] [ref=e188]
+                  - generic [ref=e189]: "0"
+                - paragraph [ref=e191]: لا توجد مهام هنا.
+            - link "مسح الفلاتر" [ref=e193] [cursor=pointer]:
+              - /url: /admin/tasks
+          - generic [ref=e194]:
+            - generic [ref=e195]:
+              - heading "مهمة جديدة" [level=3] [ref=e196]
+              - paragraph [ref=e197]: إنشاء مهمة داخلية وربطها بقضية عند الحاجة. كل تعديل يتم تسجيله في audit log.
+            - generic [ref=e199]:
+              - generic [ref=e200]:
+                - generic [ref=e201]: عنوان المهمة
+                - textbox "عنوان المهمة" [ref=e202]
+              - generic [ref=e203]:
+                - generic [ref=e204]: الوصف
+                - textbox "الوصف" [ref=e205]
+              - generic [ref=e206]:
+                - generic [ref=e207]:
+                  - generic [ref=e208]: الحالة
+                  - generic [ref=e209]:
+                    - combobox "الحالة" [ref=e210]:
+                      - option "جديدة" [selected]
+                      - option "قيد التنفيذ"
+                      - option "قيد المراجعة"
+                      - option "مكتملة"
+                      - option "متأخرة"
+                      - option "مؤرشفة"
+                    - generic:
+                      - img
+                - generic [ref=e211]:
+                  - generic [ref=e212]: الأولوية
+                  - generic [ref=e213]:
+                    - combobox "الأولوية" [ref=e214]:
+                      - option "منخفضة"
+                      - option "عادية" [selected]
+                      - option "مرتفعة"
+                      - option "عاجلة"
+                    - generic:
+                      - img
+              - generic [ref=e215]:
+                - generic [ref=e216]:
+                  - generic [ref=e217]: المسؤول
+                  - generic [ref=e218]:
+                    - combobox "المسؤول" [ref=e219]:
+                      - option "مدير المكتب التجريبي" [selected]
+                      - option "مدير النظام التجريبي"
+                      - option "مريم خالد"
+                    - generic:
+                      - img
+                - generic [ref=e220]:
+                  - generic [ref=e221]: تاريخ الاستحقاق
+                  - textbox "تاريخ الاستحقاق" [ref=e222]
+              - generic [ref=e223]:
+                - generic [ref=e224]: القضية
+                - generic [ref=e225]:
+                  - combobox "القضية" [ref=e226]:
+                    - option "بدون قضية" [selected]
+                    - option "B8-D-691a5c3973af4ff5b16a - [BATCH8:691a5c39-73af-4ff5-b16a-5f31b74cf843] deleted case"
+                    - option "B8-A-691a5c3973af4ff5b16a - [BATCH8:691a5c39-73af-4ff5-b16a-5f31b74cf843] active case"
+                    - option "B8-R-691a5c3973af4ff5b16a - [BATCH8:691a5c39-73af-4ff5-b16a-5f31b74cf843] archived case"
+                    - option "B8-O-691a5c3973af4ff5b16a - [BATCH8:691a5c39-73af-4ff5-b16a-5f31b74cf843] office case"
+                    - option "KMT-2024-089 - مراجعة عقد توريد"
+                  - generic:
+                    - img
+              - button "إنشاء المهمة" [ref=e227] [cursor=pointer]:
+                - generic [ref=e228]: إنشاء المهمة
+  - button "Open Next.js Dev Tools" [ref=e234] [cursor=pointer]:
+    - img [ref=e235]
+  - alert [ref=e238]
+```

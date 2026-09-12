@@ -87,7 +87,7 @@ function TaskCard({
   options: Awaited<ReturnType<typeof getAdminTaskOptions>>;
 }) {
   return (
-    <article className="rounded border border-kmt-border bg-white p-3">
+    <article className="rounded border border-kmt-border bg-white p-3" data-task-id={task.id}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h3 className="font-semibold leading-6 text-kmt-ink">{task.title}</h3>
@@ -112,12 +112,14 @@ function TaskCard({
           cases={options.cases}
           task={{
             id: task.id,
+            updatedAt: task.updatedAt,
             title: task.title,
             description: task.description,
             status: task.status,
             priority: task.priority,
             assignedToId: task.assignedToId,
             caseId: task.caseId,
+            case: task.case,
             dueDate: task.dueDate
           }}
         />

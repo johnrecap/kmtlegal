@@ -233,3 +233,20 @@ focused tests pass; 37 restored tables and 39 files match. The disposable cluste
 were stopped and removed. See `docs/reviews/2026-09-11/batch3/BATCH-3.md` for the final build result, original
 reports and explicit limits. Batch 3 remains local for review; production ClamAV, aaPanel
 restore and the full mutation permission matrix remain unverified.
+
+## 2026-09-12 batch 8 office consistency checkpoint
+
+Batch 8 aligns the client dashboard and court-date ownership rules around soft-deleted cases,
+adds deterministic pagination and page metadata to the Arabic office calendar, and protects
+task updates with atomic `updatedAt` compare-and-swap behavior. Task forms retain the current
+case when scoped options or the 100-item option cap omit it, remain inert before hydration,
+and preserve drafts through `409` recovery. Historical client-visible documents and issued
+invoices remain available after a linked case is soft-deleted.
+
+The disposable PostgreSQL 18/browser lane passed a stable-source 9-scenario suite plus a final
+focused case-detail create scenario. Repository typecheck, lint, 522 tests, and production build
+pass. See `docs/reviews/2026-09-12/batch8/BATCH-8.md` for the route/data inventory, evidence map,
+failure traces, viewport-specific screenshots, scope limits, and cleanup record. This checkpoint
+remains local for supervisor review; it has not been pushed or deployed. The synthetic records,
+browser server, PostgreSQL cluster, disposable password, and Batch 8 scratch directories were
+removed after the evidence archive was written.

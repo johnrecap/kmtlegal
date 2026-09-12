@@ -30,7 +30,7 @@ export const adminTaskListQuerySchema = z.object({
   pageSize: z.coerce.number().int().min(1).max(80).default(40)
 });
 
-export const adminTaskWriteSchema = z.object({
+const adminTaskFieldsSchema = z.object({
   title: z.string().trim().min(3).max(180),
   description: z.string().trim().max(1200).optional().or(z.literal("")),
   status: taskStatusSchema.default("NEW"),
@@ -39,6 +39,13 @@ export const adminTaskWriteSchema = z.object({
   caseId: uuidSchema.optional().or(z.literal("")),
   dueDate: optionalDateStringSchema
 });
+
+export const adminTaskCreateSchema = adminTaskFieldsSchema;
+export const adminTaskUpdateSchema = adminTaskFieldsSchema.extend({
+  updatedAt: z.string().datetime()
+});
+// Retained for existing create callers while update routes use the versioned schema.
+export const adminTaskWriteSchema = adminTaskCreateSchema;
 
 export const adminDocumentListQuerySchema = z.object({
   q: z.string().trim().max(120).optional().or(z.literal("")),
@@ -241,7 +248,7 @@ async function assertCaseVisible(actor: Principal, caseId: string) {
     where: {
       AND: [caseScopeWhereForPrincipal(actor), { id: caseId }]
     },
-    select: { id: true, clientId: true, assignedLawyerId: true, deletedAt: true }
+    select: { id: true, clientId: true, assignedLawyerId: true, internalFileNumber: true, title: true, deletedAt: true }
   });
 
   if (!legalCase || legalCase.deletedAt) {
@@ -349,7 +356,7 @@ export async function createAdminTask(input: { actor: Principal; body: unknown; 
     throw new ApiError(403, "PERMISSION_DENIED", "Task create permission is required.");
   }
 
-  const body = parseWithSchema(adminTaskWriteSchema, input.body, "Task payload is invalid.");
+  const body = parseWithSchema(adminTaskCreateSchema, input.body, "Task payload is invalid.");
   const caseId = body.caseId || null;
   if (caseId) {
     await assertCaseVisible(input.actor, caseId);
@@ -401,32 +408,52 @@ export async function updateAdminTask(input: { actor: Principal; taskId: string;
     throw new ApiError(403, "PERMISSION_DENIED", "Task update permission is required.");
   }
 
-  const body = parseWithSchema(adminTaskWriteSchema, input.body, "Task payload is invalid.");
+  const body = parseWithSchema(adminTaskUpdateSchema, input.body, "Task payload is invalid.");
   const caseId = body.caseId || null;
-  if (caseId) {
+  if (caseId && caseId !== existing.caseId) {
     await assertCaseVisible(input.actor, caseId);
   }
 
   const assignedToId = body.assignedToId || existing.assignedToId;
   await assertAssignableTaskUser(input.actor, assignedToId);
 
-  const task = await prisma.task.update({
-    where: { id: existing.id },
-    data: {
-      title: body.title,
-      description: body.description || null,
-      status: body.status,
-      priority: body.priority,
-      assignedToId,
-      caseId,
-      dueDate: parseOptionalDate(body.dueDate)
-    },
-    include: {
-      assignedTo: { select: { id: true, name: true, email: true } },
-      createdBy: { select: { id: true, name: true } },
-      case: { select: { id: true, internalFileNumber: true, title: true, assignedLawyerId: true } }
+  const expectedUpdatedAt = dateFromActionInput(body.updatedAt, "updatedAt");
+  const nextUpdatedAt = new Date(Math.max(Date.now(), expectedUpdatedAt.getTime() + 1));
+  const task = await prisma.$transaction(async (tx) => {
+    const updateResult = await tx.task.updateMany({
+      where: {
+        AND: [taskScopeWhereForPrincipal(input.actor), { id: existing.id, updatedAt: expectedUpdatedAt }]
+      },
+      data: {
+        title: body.title,
+        description: body.description || null,
+        status: body.status,
+        priority: body.priority,
+        assignedToId,
+        caseId,
+        dueDate: parseOptionalDate(body.dueDate),
+        updatedAt: nextUpdatedAt
+      }
+    });
+
+    if (updateResult.count !== 1) {
+      return null;
     }
+
+    return tx.task.findUniqueOrThrow({
+      where: { id: existing.id },
+      include: {
+        assignedTo: { select: { id: true, name: true, email: true } },
+        createdBy: { select: { id: true, name: true } },
+        case: { select: { id: true, internalFileNumber: true, title: true, assignedLawyerId: true } }
+      }
+    });
   });
+
+  if (!task) {
+    await findTaskForAction(input.actor, existing.id);
+    throw new ApiError(409, "CONFLICT", "Task data changed after this form was loaded.");
+  }
 
   await appendAuditLogBestEffort({
     actorId: input.actor.id,
@@ -648,6 +675,11 @@ export async function getCaseTaskDocumentTabs(input: { actor: Principal; caseId:
 
   return {
     caseId: legalCase.id,
+    currentCase: {
+      id: legalCase.id,
+      internalFileNumber: legalCase.internalFileNumber,
+      title: legalCase.title
+    },
     tasks,
     documents,
     options,

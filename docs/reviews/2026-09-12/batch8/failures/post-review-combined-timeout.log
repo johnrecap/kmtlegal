@@ -1,0 +1,60 @@
+
+Running 7 tests using 1 worker
+
+
+
+(node:9856) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/7] [chromium] › tests\e2e\batch8-office.spec.ts:168:7 › Batch 8 isolated DB/browser acceptance › client pages hide soft-deleted linked cases, retain archived and consultation appointments, then restore
+[2/7] [chromium] › tests\e2e\batch8-office.spec.ts:225:7 › Batch 8 isolated DB/browser acceptance › calendar paginates 105 same-day rows without gaps or duplicates and keeps Cairo filters in keyboard navigation
+[3/7] [chromium] › tests\e2e\batch8-office.spec.ts:272:7 › Batch 8 isolated DB/browser acceptance › calendar applies filters, returns a real empty page, and distinguishes office from assigned-lawyer scope
+[4/7] [chromium] › tests\e2e\batch8-office.spec.ts:303:7 › Batch 8 isolated DB/browser acceptance › task API accepts one simultaneous editor and rejects stale, missing, and invalid versions without extra success audit
+[5/7] [chromium] › tests\e2e\batch8-office.spec.ts:340:7 › Batch 8 isolated DB/browser acceptance › task permission remains direct-assignee OR case-lawyer and rejects a reassigned actor without writing
+[chromium] › tests\e2e\batch8-office.spec.ts:340:7 › Batch 8 isolated DB/browser acceptance › task permission remains direct-assignee OR case-lawyer and rejects a reassigned actor without writing
+prisma:error
+Invalid `prisma.legalCase.update()` invocation in
+C:\Users\SOUQ\.codex\worktrees\a701\kmt legal office\tests\e2e\batch8-office.spec.ts:408:30
+
+  405   expect(await prisma.task.findUniqueOrThrow({ where: { id: fixture.scopeTask.id } })).toEqual(deniedSnapshot);
+  406   expect(await prisma.auditLog.count({ where: { action: "task.update", resourceId: fixture.scopeTask.id } })).toBe(deniedAuditCount);
+  407 } finally {
+→ 408   await prisma.legalCase.update(
+An operation failed because it depends on one or more records that were required but not found. No record was found for an update.
+
+  1) [chromium] › tests\e2e\batch8-office.spec.ts:340:7 › Batch 8 isolated DB/browser acceptance › task permission remains direct-assignee OR case-lawyer and rejects a reassigned actor without writing
+
+    Test timeout of 180000ms exceeded.
+
+    Error: browserContext.close: Target page, context or browser has been closed
+
+      407 |     } finally {
+      408 |       await prisma.legalCase.update({ where: { id: fixture.activeCase.id }, data: { assignedLawyerId: originalCaseLawyerId } }).catch(() => undefined);
+    > 409 |       await lawyerContext.close();
+          |       ^
+      410 |     }
+      411 |   });
+      412 |
+        at C:\Users\SOUQ\.codex\worktrees\a701\kmt legal office\tests\e2e\batch8-office.spec.ts:409:7
+
+    Error Context: .playwright\test-results\batch8-office-Batch-8-isol-82496-igned-actor-without-writing-chromium\error-context.md
+
+    Error Context: .playwright\test-results\batch8-office-Batch-8-isol-82496-igned-actor-without-writing-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\test-results\batch8-office-Batch-8-isol-82496-igned-actor-without-writing-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\test-results\batch8-office-Batch-8-isol-82496-igned-actor-without-writing-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+(node:11680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[6/7] [chromium] › tests\e2e\batch8-office.spec.ts:413:7 › Batch 8 isolated DB/browser acceptance › task list preserves draft and version through another task refresh, then explicitly loads the winner after 409
+[7/7] [chromium] › tests\e2e\batch8-office.spec.ts:472:7 › Batch 8 isolated DB/browser acceptance › case task tab sends the current version and supports keyboard editing at mobile width
+  1 failed
+    [chromium] › tests\e2e\batch8-office.spec.ts:340:7 › Batch 8 isolated DB/browser acceptance › task permission remains direct-assignee OR case-lawyer and rejects a reassigned actor without writing
+  6 passed (5.8m)

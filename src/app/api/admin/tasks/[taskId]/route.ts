@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminTaskWriteSchema, updateAdminTask } from "@/server/admin/task-document-service";
+import { adminTaskUpdateSchema, updateAdminTask } from "@/server/admin/task-document-service";
 import { getAuthContextFromRequest } from "@/server/auth/session-store";
 import { errorToResponse, getRequestId, jsonError } from "@/server/http/errors";
 import { parseJsonRequest } from "@/server/validation/schemas";
@@ -22,7 +22,7 @@ export async function PATCH(request: Request, { params }: TaskRouteProps) {
       return jsonError(401, "UNAUTHENTICATED", "Authentication required.", requestId);
     }
 
-    const body = await parseJsonRequest(request, adminTaskWriteSchema, "Task payload is invalid.");
+    const body = await parseJsonRequest(request, adminTaskUpdateSchema, "Task payload is invalid.");
     const task = await updateAdminTask({
       actor: context.principal,
       taskId,

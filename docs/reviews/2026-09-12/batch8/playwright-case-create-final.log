@@ -1,0 +1,9 @@
+
+Running 1 test using 1 worker
+
+
+
+(node:7904) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/1] [chromium] › tests\e2e\batch8-office.spec.ts:395:7 › Batch 8 isolated DB/browser acceptance › task forms retain and create against the current case beyond the 100-option query cap
+  1 passed (23.3s)

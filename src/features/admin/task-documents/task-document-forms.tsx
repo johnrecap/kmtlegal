@@ -12,6 +12,7 @@ import {
   taskPriorityLabels,
   taskStatusLabels
 } from "@/lib/legal-format";
+import { plan35TaskUiCopy } from "@/lib/ui-copy";
 
 type AssigneeOption = {
   id: string;
@@ -37,12 +38,14 @@ type ClientOption = {
 
 type TaskValue = {
   id?: string;
+  updatedAt?: string | Date;
   title?: string;
   description?: string | null;
   status?: string;
   priority?: string;
   assignedToId?: string | null;
   caseId?: string | null;
+  case?: Pick<CaseOption, "id" | "internalFileNumber" | "title"> | null;
   dueDate?: string | Date | null;
 };
 
@@ -122,7 +125,8 @@ function taskPayloadFromForm(form: HTMLFormElement) {
     priority: formData.get("priority"),
     assignedToId: formData.get("assignedToId"),
     caseId: formData.get("caseId"),
-    dueDate: toIsoFromLocal(formData.get("dueDate"))
+    dueDate: toIsoFromLocal(formData.get("dueDate")),
+    updatedAt: formData.get("updatedAt") || undefined
   };
 }
 
@@ -137,15 +141,18 @@ async function postJson(path: string, method: "POST" | "PATCH", payload: unknown
 export function TaskCreateForm({
   assignees,
   cases,
-  defaultCaseId
+  defaultCase
 }: {
   assignees: AssigneeOption[];
   cases: CaseOption[];
-  defaultCaseId?: string;
+  defaultCase?: Pick<CaseOption, "id" | "internalFileNumber" | "title">;
 }) {
   const router = useRouter();
+  const isHydrated = useHydrated();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const controlsDisabled = !isHydrated || isBusy;
+  const retainedDefaultCase = defaultCase && !cases.some((legalCase) => legalCase.id === defaultCase.id) ? defaultCase : null;
 
   if (assignees.length === 0) {
     return <StateBlock tone="permission" title="لا يوجد مستخدمون قابلون للتكليف" description="إنشاء المهام يحتاج مستخدمًا نشطًا يمكن تعيين المهمة له." />;
@@ -153,17 +160,18 @@ export function TaskCreateForm({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setMessage(null);
     setIsBusy(true);
 
     try {
-      const response = await postJson("/api/admin/tasks", "POST", taskPayloadFromForm(event.currentTarget));
+      const response = await postJson("/api/admin/tasks", "POST", taskPayloadFromForm(form));
       if (!response.ok) {
         setMessage(errorMessage(await readMessage(response)));
         return;
       }
 
-      event.currentTarget.reset();
+      form.reset();
       setMessage(successMessage("تم إنشاء المهمة."));
       router.refresh();
     } catch {
@@ -174,18 +182,18 @@ export function TaskCreateForm({
   }
 
   return (
-    <form className="grid gap-4" onSubmit={submit}>
-      <TextInput disabled={isBusy} idPrefix="task-create" label="عنوان المهمة" name="title" required />
-      <Textarea disabled={isBusy} idPrefix="task-create" label="الوصف" name="description" />
+    <form aria-label={plan35TaskUiCopy.createFormLabel} className="grid gap-4" onSubmit={submit}>
+      <TextInput disabled={controlsDisabled} idPrefix="task-create" label="عنوان المهمة" name="title" required />
+      <Textarea disabled={controlsDisabled} idPrefix="task-create" label="الوصف" name="description" />
       <div className="grid gap-4 sm:grid-cols-2">
-        <Select defaultValue="NEW" disabled={isBusy} idPrefix="task-create" label="الحالة" name="status">
+        <Select defaultValue="NEW" disabled={controlsDisabled} idPrefix="task-create" label="الحالة" name="status">
           {taskStatusOptions.map((status) => (
             <option key={status} value={status}>
               {labelFrom(taskStatusLabels, status)}
             </option>
           ))}
         </Select>
-        <Select defaultValue="NORMAL" disabled={isBusy} idPrefix="task-create" label="الأولوية" name="priority">
+        <Select defaultValue="NORMAL" disabled={controlsDisabled} idPrefix="task-create" label="الأولوية" name="priority">
           {taskPriorityOptions.map((priority) => (
             <option key={priority} value={priority}>
               {labelFrom(taskPriorityLabels, priority)}
@@ -194,24 +202,29 @@ export function TaskCreateForm({
         </Select>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Select disabled={isBusy} idPrefix="task-create" label="المسؤول" name="assignedToId">
+        <Select disabled={controlsDisabled} idPrefix="task-create" label="المسؤول" name="assignedToId">
           {assignees.map((assignee) => (
             <option key={assignee.id} value={assignee.id}>
               {assignee.name}
             </option>
           ))}
         </Select>
-        <TextInput disabled={isBusy} idPrefix="task-create" label="تاريخ الاستحقاق" name="dueDate" type="date" />
+        <TextInput disabled={controlsDisabled} idPrefix="task-create" label="تاريخ الاستحقاق" name="dueDate" type="date" />
       </div>
-      <Select defaultValue={defaultCaseId ?? ""} disabled={isBusy} idPrefix="task-create" label="القضية" name="caseId">
+      <Select defaultValue={defaultCase?.id ?? ""} disabled={controlsDisabled} idPrefix="task-create" label="القضية" name="caseId">
         <option value="">بدون قضية</option>
+        {retainedDefaultCase ? (
+          <option value={retainedDefaultCase.id}>
+            {retainedDefaultCase.internalFileNumber} - {retainedDefaultCase.title} ({plan35TaskUiCopy.retainedCase})
+          </option>
+        ) : null}
         {cases.map((legalCase) => (
           <option key={legalCase.id} value={legalCase.id}>
             {legalCase.internalFileNumber} - {legalCase.title}
           </option>
         ))}
       </Select>
-      <Button loading={isBusy} type="submit">
+      <Button disabled={controlsDisabled} loading={isBusy} type="submit">
         إنشاء المهمة
       </Button>
       <ActionFeedback message={message} />
@@ -229,21 +242,32 @@ export function TaskUpdateForm({
   cases: CaseOption[];
 }) {
   const router = useRouter();
+  const isHydrated = useHydrated();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [needsReview, setNeedsReview] = useState(false);
+  const [expectedUpdatedAt, setExpectedUpdatedAt] = useState(() => (task.updatedAt ? new Date(task.updatedAt).toISOString() : ""));
+  const retainedCase = task.caseId && !cases.some((legalCase) => legalCase.id === task.caseId) ? task.case : null;
+  const controlsDisabled = !isHydrated || isBusy;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage(null);
+    setNeedsReview(false);
     setIsBusy(true);
 
     try {
       const response = await postJson(`/api/admin/tasks/${task.id}`, "PATCH", taskPayloadFromForm(event.currentTarget));
       if (!response.ok) {
+        setNeedsReview(response.status === 409);
         setMessage(errorMessage(await readMessage(response)));
         return;
       }
 
+      const responseBody = (await response.json()) as { data?: { updatedAt?: string } };
+      if (responseBody.data?.updatedAt) {
+        setExpectedUpdatedAt(new Date(responseBody.data.updatedAt).toISOString());
+      }
       setMessage(successMessage("تم حفظ المهمة."));
       router.refresh();
     } catch {
@@ -255,17 +279,18 @@ export function TaskUpdateForm({
 
   return (
     <form className="mt-3 grid gap-3 rounded border border-kmt-border bg-slate-50 p-3" onSubmit={submit}>
-      <TextInput defaultValue={task.title ?? ""} disabled={isBusy} idPrefix={`task-update-${task.id}`} label="العنوان" name="title" required />
-      <Textarea defaultValue={task.description ?? ""} disabled={isBusy} idPrefix={`task-update-${task.id}`} label="الوصف" name="description" />
+      <input id={`task-update-${task.id}-updatedAt`} name="updatedAt" type="hidden" value={expectedUpdatedAt} />
+      <TextInput defaultValue={task.title ?? ""} disabled={controlsDisabled} idPrefix={`task-update-${task.id}`} label="العنوان" name="title" required />
+      <Textarea defaultValue={task.description ?? ""} disabled={controlsDisabled} idPrefix={`task-update-${task.id}`} label="الوصف" name="description" />
       <div className="grid gap-3 sm:grid-cols-2">
-        <Select defaultValue={task.status ?? "NEW"} disabled={isBusy} idPrefix={`task-update-${task.id}`} label="الحالة" name="status">
+        <Select defaultValue={task.status ?? "NEW"} disabled={controlsDisabled} idPrefix={`task-update-${task.id}`} label="الحالة" name="status">
           {taskStatusOptions.map((status) => (
             <option key={status} value={status}>
               {labelFrom(taskStatusLabels, status)}
             </option>
           ))}
         </Select>
-        <Select defaultValue={task.priority ?? "NORMAL"} disabled={isBusy} idPrefix={`task-update-${task.id}`} label="الأولوية" name="priority">
+        <Select defaultValue={task.priority ?? "NORMAL"} disabled={controlsDisabled} idPrefix={`task-update-${task.id}`} label="الأولوية" name="priority">
           {taskPriorityOptions.map((priority) => (
             <option key={priority} value={priority}>
               {labelFrom(taskPriorityLabels, priority)}
@@ -274,27 +299,37 @@ export function TaskUpdateForm({
         </Select>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
-        <Select defaultValue={task.assignedToId ?? ""} disabled={isBusy} idPrefix={`task-update-${task.id}`} label="المسؤول" name="assignedToId">
+        <Select defaultValue={task.assignedToId ?? ""} disabled={controlsDisabled} idPrefix={`task-update-${task.id}`} label="المسؤول" name="assignedToId">
           {assignees.map((assignee) => (
             <option key={assignee.id} value={assignee.id}>
               {assignee.name}
             </option>
           ))}
         </Select>
-        <TextInput defaultValue={toDateLocal(task.dueDate)} disabled={isBusy} idPrefix={`task-update-${task.id}`} label="تاريخ الاستحقاق" name="dueDate" type="date" />
+        <TextInput defaultValue={toDateLocal(task.dueDate)} disabled={controlsDisabled} idPrefix={`task-update-${task.id}`} label="تاريخ الاستحقاق" name="dueDate" type="date" />
       </div>
-      <Select defaultValue={task.caseId ?? ""} disabled={isBusy} idPrefix={`task-update-${task.id}`} label="القضية" name="caseId">
+      <Select defaultValue={task.caseId ?? ""} disabled={controlsDisabled} idPrefix={`task-update-${task.id}`} label="القضية" name="caseId">
         <option value="">بدون قضية</option>
+        {retainedCase ? (
+          <option value={retainedCase.id}>
+            {retainedCase.internalFileNumber} - {retainedCase.title} ({plan35TaskUiCopy.retainedCase})
+          </option>
+        ) : null}
         {cases.map((legalCase) => (
           <option key={legalCase.id} value={legalCase.id}>
             {legalCase.internalFileNumber} - {legalCase.title}
           </option>
         ))}
       </Select>
-      <Button loading={isBusy} size="sm" type="submit" variant="secondary">
+      <Button disabled={controlsDisabled} loading={isBusy} size="sm" type="submit" variant="secondary">
         حفظ المهمة
       </Button>
       <ActionFeedback message={message} />
+      {needsReview ? (
+        <Button onClick={() => window.location.reload()} size="sm" type="button" variant="secondary">
+          {plan35TaskUiCopy.reviewLatest}
+        </Button>
+      ) : null}
     </form>
   );
 }

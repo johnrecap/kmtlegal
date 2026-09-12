@@ -8,7 +8,7 @@ import {
   CalendarAppointmentForm
 } from "@/features/admin/cases/case-action-forms";
 import { appointmentStatusLabels, appointmentTypeLabels, formatCairoDateInput, formatDate, formatDateTime, labelFrom, modeLabels } from "@/lib/legal-format";
-import { plan35AdminListAccessibilityCopy, plan36ConsultationOutcomeCopy } from "@/lib/ui-copy";
+import { plan35AdminListAccessibilityCopy, plan35CalendarUiCopy, plan36ConsultationOutcomeCopy } from "@/lib/ui-copy";
 import {
   getAdminCaseFilterOptions,
   canManageCalendarAppointment,
@@ -64,6 +64,7 @@ function calendarHref(filters: {
   status?: string;
   mode?: string;
   lawyerId?: string;
+  page?: string;
   pageSize?: string;
 }) {
   const params = new URLSearchParams();
@@ -116,6 +117,15 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
   const requestedCaseId = typeof query.caseId === "string" ? query.caseId : undefined;
   const defaultCaseId = caseOptions.some((legalCase: CalendarCaseOption) => legalCase.id === requestedCaseId) ? requestedCaseId : undefined;
   const groupedAppointments = groupAppointmentsByDay(result.items);
+  const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
+  const pageFilters = {
+    from: formatCairoDateInput(result.from),
+    to: formatCairoDateInput(result.to),
+    status: result.filters.status,
+    mode: result.filters.mode,
+    lawyerId: result.filters.lawyerId,
+    pageSize: String(result.pageSize)
+  };
 
   return (
     <DashboardShell
@@ -166,7 +176,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
           </form>
 
           <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
-            <p>{result.items.length} موعد داخل الفترة المعروضة</p>
+            <p>{plan35CalendarUiCopy.visibleSummary(result.total, result.items.length, result.page, totalPages)}</p>
             <Link className="font-semibold text-kmt-navy hover:underline" href="/admin/calendar">
               إعادة الضبط
             </Link>
@@ -180,7 +190,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                     <h2 id={`calendar-${group.key}`} className="text-base font-semibold text-kmt-ink">
                       {group.label}
                     </h2>
-                    <Badge>{group.items.length} موعد</Badge>
+                    <Badge>{plan35CalendarUiCopy.groupVisibleCount(group.items.length)}</Badge>
                   </div>
                   <div className="space-y-3">
                     {group.items.map((appointment) => (
@@ -251,6 +261,24 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
               }
             />
           )}
+
+          {result.total > result.pageSize ? (
+            <nav aria-label={plan35AdminListAccessibilityCopy.calendar.pagination} className="flex flex-wrap items-center justify-between gap-3 rounded border border-kmt-border bg-white p-3 text-sm">
+              <span className="text-kmt-muted">{plan35CalendarUiCopy.page(result.page, totalPages)}</span>
+              <div className="flex items-center gap-2">
+                {result.page > 1 ? (
+                  <Link className="font-semibold text-kmt-navy hover:underline" href={calendarHref({ ...pageFilters, page: String(result.page - 1) })}>
+                    {plan35CalendarUiCopy.previous}
+                  </Link>
+                ) : null}
+                {result.page < totalPages ? (
+                  <Link className="font-semibold text-kmt-navy hover:underline" href={calendarHref({ ...pageFilters, page: String(result.page + 1) })}>
+                    {plan35CalendarUiCopy.next}
+                  </Link>
+                ) : null}
+              </div>
+            </nav>
+          ) : null}
         </div>
 
         <div className="space-y-4">

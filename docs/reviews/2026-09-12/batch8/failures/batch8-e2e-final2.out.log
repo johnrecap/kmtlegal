@@ -1,0 +1,39 @@
+
+Running 3 tests using 1 worker
+
+
+
+[1/3] [chromium] › tests\e2e\batch8-office.spec.ts:122:7 › Batch 8 isolated DB/browser acceptance › client pages hide soft-deleted linked cases, retain archived and consultation appointments, then restore
+[2/3] [chromium] › tests\e2e\batch8-office.spec.ts:159:7 › Batch 8 isolated DB/browser acceptance › calendar paginates every matching row with stable ordering and scope
+[3/3] [chromium] › tests\e2e\batch8-office.spec.ts:202:7 › Batch 8 isolated DB/browser acceptance › task update accepts one version, rejects stale/missing/invalid versions, and preserves browser input on conflict
+  1) [chromium] › tests\e2e\batch8-office.spec.ts:202:7 › Batch 8 isolated DB/browser acceptance › task update accepts one version, rejects stale/missing/invalid versions, and preserves browser input on conflict
+
+    Test timeout of 180000ms exceeded.
+
+    Error: browserContext.close: Target page, context or browser has been closed
+
+      248 |       expect((await prisma.task.findUniqueOrThrow({ where: { id: fixture.task.id } })).title).toBe(`${fixture.marker} newer winner`);
+      249 |     } finally {
+    > 250 |       await Promise.all([officeContext.close(), lawyerContext.close()]);
+          |       ^
+      251 |     }
+      252 |   });
+      253 | });
+        at C:\Users\SOUQ\.codex\worktrees\a701\kmt legal office\tests\e2e\batch8-office.spec.ts:250:7
+
+    Error Context: .playwright\test-results\batch8-office-Batch-8-isol-6225a-s-browser-input-on-conflict-chromium\error-context.md
+
+    Error Context: .playwright\test-results\batch8-office-Batch-8-isol-6225a-s-browser-input-on-conflict-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\test-results\batch8-office-Batch-8-isol-6225a-s-browser-input-on-conflict-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\test-results\batch8-office-Batch-8-isol-6225a-s-browser-input-on-conflict-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  1 failed
+    [chromium] › tests\e2e\batch8-office.spec.ts:202:7 › Batch 8 isolated DB/browser acceptance › task update accepts one version, rejects stale/missing/invalid versions, and preserves browser input on conflict
+  2 passed (4.1m)

@@ -1,0 +1,17 @@
+
+Running 9 tests using 1 worker
+
+
+
+(node:15376) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/9] [chromium] › tests\e2e\batch8-office.spec.ts:168:7 › Batch 8 isolated DB/browser acceptance › client pages hide soft-deleted linked cases, retain archived and consultation appointments, then restore
+[2/9] [chromium] › tests\e2e\batch8-office.spec.ts:225:7 › Batch 8 isolated DB/browser acceptance › calendar paginates 105 same-day rows without gaps or duplicates and keeps Cairo filters in keyboard navigation
+[3/9] [chromium] › tests\e2e\batch8-office.spec.ts:272:7 › Batch 8 isolated DB/browser acceptance › calendar applies filters, returns a real empty page, and distinguishes office from assigned-lawyer scope
+[4/9] [chromium] › tests\e2e\batch8-office.spec.ts:303:7 › Batch 8 isolated DB/browser acceptance › task API accepts one simultaneous editor and rejects stale, missing, and invalid versions without extra success audit
+[5/9] [chromium] › tests\e2e\batch8-office.spec.ts:340:7 › Batch 8 isolated DB/browser acceptance › task permission remains direct-assignee OR case-lawyer and rejects a reassigned actor without writing
+[6/9] [chromium] › tests\e2e\batch8-office.spec.ts:395:7 › Batch 8 isolated DB/browser acceptance › task form retains its current case when that case falls beyond the 100-option query cap
+[7/9] [chromium] › tests\e2e\batch8-office.spec.ts:435:7 › Batch 8 isolated DB/browser acceptance › task forms stay inert before hydration on both task list and case detail placements
+[8/9] [chromium] › tests\e2e\batch8-office.spec.ts:459:7 › Batch 8 isolated DB/browser acceptance › task list preserves draft and version through another task refresh, then explicitly loads the winner after 409
+[9/9] [chromium] › tests\e2e\batch8-office.spec.ts:521:7 › Batch 8 isolated DB/browser acceptance › case task tab sends the current version and supports keyboard editing at mobile width
+  9 passed (3.4m)
