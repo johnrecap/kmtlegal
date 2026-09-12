@@ -1,5 +1,7 @@
+import { paymentRequiresReview } from "@/lib/legal-finance";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { paymentReviewCopy } from "@/lib/ui-copy";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import {
@@ -158,7 +160,7 @@ const recentPaymentColumns: Array<DataTableColumn<RecentPaymentRow>> = [
   {
     key: "status",
     header: "الحالة",
-    render: (row) => <Badge tone={statusTone(row.status)}>{labelFrom(paymentStatusLabels, row.status)}</Badge>
+    render: (row) => <Badge tone={paymentRequiresReview(row.paymentAttempt) ? "danger" : statusTone(row.status)}>{paymentRequiresReview(row.paymentAttempt) ? paymentReviewCopy.ar.review : labelFrom(paymentStatusLabels, row.status)}</Badge>
   }
 ];
 
@@ -171,7 +173,7 @@ function RecentPaymentMobileCard({ row }: { row: RecentPaymentRow }) {
         </Link>
       }
       description={formatDate(row.issueDate)}
-      badges={<Badge tone={statusTone(row.status)}>{labelFrom(paymentStatusLabels, row.status)}</Badge>}
+      badges={<Badge tone={paymentRequiresReview(row.paymentAttempt) ? "danger" : statusTone(row.status)}>{paymentRequiresReview(row.paymentAttempt) ? paymentReviewCopy.ar.review : labelFrom(paymentStatusLabels, row.status)}</Badge>}
       fields={[
         { label: "العميل", value: row.client.fullName },
         { label: "القضية", value: row.case?.internalFileNumber ?? "بدون قضية" },
@@ -229,7 +231,8 @@ export default async function AdminReportsPage({ searchParams }: { searchParams?
           <InlineFeedback title="التقارير المالية تعرض مجموعًا خامًا عند اختيار كل العملات. اختر عملة واحدة لقراءة مالية قابلة للمقارنة." tone="warning" />
         ) : null}
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <p className="text-sm text-kmt-muted">{paymentReviewCopy.ar.totals} {paymentReviewCopy.ar.count}: {report.finance.summary.reviewCount}. {paymentReviewCopy.ar.unallocated}: {report.finance.summary.unallocatedReviewCount}</p>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="إجمالي الفواتير"
             value={String(report.finance.summary.invoiceCount)}

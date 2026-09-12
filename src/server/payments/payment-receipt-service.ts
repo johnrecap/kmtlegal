@@ -141,7 +141,8 @@ export async function getPublicConsultationPaymentReceipt(input: { attemptId: st
       status: "PAID",
       paymentAttempt: {
         id: verified.attemptId,
-        status: "PAID"
+        status: "PAID",
+        OR: [{failureCode: null}, {failureCode: {notIn: ["PAYMENT_REVERSAL_REVIEW_REQUIRED", "PAYMENT_COLLECTION_REVIEW_REQUIRED"]}}]
       }
     },
     include: {

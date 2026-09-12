@@ -20,6 +20,7 @@ export function parseStoredNormalizedPayload(value: Prisma.JsonValue | null): No
     provider: typeof body.provider === "string" && ["paytabs", "paymob"].includes(body.provider) ? (body.provider as PaymentProviderName) : "paytabs",
     attemptId,
     providerTransactionId: typeof body.providerTransactionId === "string" ? body.providerTransactionId : null,
+    providerOrderId: typeof body.providerOrderId === "string" ? body.providerOrderId : undefined,
     rawStatus: typeof body.rawStatus === "string" ? body.rawStatus : "",
     status: mapProviderPaymentStatus(status),
     amount: typeof body.amount === "string" ? body.amount : "",

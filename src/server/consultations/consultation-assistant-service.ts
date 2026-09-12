@@ -37,7 +37,8 @@ import {
   type ConsultationMode,
   type PublicConsultationSlot
 } from "./consultation-availability-service";
-import { getPublicConsultationBookingMode } from "./consultation-booking-settings";
+import { getPublicConsultationBookingMode, getConsultationBookingMode } from "./consultation-booking-settings";
+import { paymentApiSourceMessages } from "@/lib/ui-copy";
 import { addCairoDays, cairoDateString, cairoWeekday } from "./consultation-date-utils";
 import { publicConsultationReference } from "./consultation-service";
 
@@ -139,7 +140,12 @@ export const publicConsultationCheckoutSchema = publicConsultationAssistantSchem
     consent: true
   })
   .extend({
-    confirmPayment: z.literal(true)
+      confirmPayment: z.literal(true),
+      expectedPrice: z.object({
+        amount: z.string().regex(/^\d+(\.\d{1,2})?$/), currency: z.string().min(3).max(3),
+        pricingRuleId: z.uuid(), priceVersion: z.number().int().positive(),
+        serviceCategory: z.string().min(1).max(80), mode: z.enum(["PHONE", "ONLINE", "OFFICE"])
+      })
   });
 
 export type PublicConsultationAssistantInput = z.infer<typeof publicConsultationAssistantSchema>;
@@ -1711,6 +1717,9 @@ export async function createPublicConsultationCheckout(input: {
   requestId: string;
 }) {
   const body = parseWithSchema(publicConsultationCheckoutSchema, input.body, "Consultation checkout payload is invalid.");
+  if (await getConsultationBookingMode() !== "AI_CHAT_PAID") {
+    throw new ApiError(409, "CONFLICT", paymentApiSourceMessages.reviewChanged);
+  }
   const draft = normalizeBookingDraft({
     ...mergeBookingDraft(body),
     startsAt: body.selectedSlot || body.startsAt || body.draft?.startsAt || ""
@@ -1760,6 +1769,17 @@ export async function createPublicConsultationCheckout(input: {
   const result = await runAppointmentConflictTransaction({
     mode: APPOINTMENT_TRANSACTION_MODES.externalSideEffectSingleAttempt,
     operation: async (tx) => {
+      if (await getConsultationBookingMode({client: tx}) !== "AI_CHAT_PAID") {
+        throw new ApiError(409, "CONFLICT", paymentApiSourceMessages.reviewChanged);
+      }
+      const currentPrice = await resolveConsultationPrice({serviceCategory: checkoutBody.serviceCategory!, mode: checkoutBody.preferredMode, client: tx});
+      const expected = body.expectedPrice;
+      if (!currentPrice.amount.equals(expected.amount) || currentPrice.currency !== expected.currency ||
+          currentPrice.pricingRuleId !== expected.pricingRuleId || currentPrice.priceVersion !== expected.priceVersion ||
+          currentPrice.serviceCategory !== expected.serviceCategory || currentPrice.mode !== expected.mode ||
+          !currentPrice.amount.equals(price.amount) || currentPrice.priceVersion !== price.priceVersion) {
+        throw new ApiError(409, "CONFLICT", paymentApiSourceMessages.reviewChanged);
+      }
       await assertNoBookingDuplicate(checkoutBody, tx);
       await assertNoAppointmentConflict({
         startsAt,
@@ -1813,7 +1833,7 @@ export async function createPublicConsultationCheckout(input: {
           endsAt: appointment.endsAt,
           mode: checkoutBody.preferredMode
         },
-        price,
+        price: currentPrice,
         request: input.request,
         locale: body.locale
       });

@@ -184,7 +184,7 @@ export async function listPortalPayments(actor: Principal) {
     where: { clientId },
     include: {
       case: { select: { id: true, title: true, internalFileNumber: true } },
-      paymentAttempt: { select: { id: true, provider: true, status: true, checkoutUrl: true, expiresAt: true, providerPaymentId: true } }
+      paymentAttempt: { select: { id: true, provider: true, providerOrderId: true, status: true, failureCode: true, checkoutUrl: true, expiresAt: true, providerPaymentId: true } }
     },
     orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }]
   });

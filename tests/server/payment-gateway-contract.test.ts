@@ -290,7 +290,7 @@ describe("payment gateway contract", () => {
     vi.stubEnv("PAYMOB_CHECKOUT_BASE_URL", "https://accept.test/unifiedcheckout/");
 
     const fetchMock = vi.fn(async (_url: string, _init?: RequestInit) =>
-      new Response(JSON.stringify({ id: "intent_1", client_secret: "client_secret_1" }), {
+      new Response(JSON.stringify({ id: "intent_1", intention_order_id: 2001, client_secret: "client_secret_1" }), {
         status: 201,
         headers: { "Content-Type": "application/json" }
       })
@@ -314,6 +314,7 @@ describe("payment gateway contract", () => {
 
       expect(result.provider).toBe("paymob");
       expect(result.providerSessionId).toBe("intent_1");
+      expect(result.providerOrderId).toBe("2001");
       expect(result.checkoutUrl).toContain("https://accept.test/unifiedcheckout/");
       expect(result.checkoutUrl).toContain("publicKey=paymob-public");
       expect(result.checkoutUrl).toContain("clientSecret=client_secret_1");
@@ -344,7 +345,7 @@ describe("payment gateway contract", () => {
     }
   });
 
-  it("verifies Paymob webhook HMAC signatures", () => {
+  it("rejects undocumented raw-body Paymob signatures", () => {
     const payload = {
       obj: {
         id: 123,
@@ -368,7 +369,7 @@ describe("payment gateway contract", () => {
         provider: "paymob",
         parsedBody: payload
       })
-    ).toBe(true);
+    ).toBe(false);
     expect(
       verifyWebhookSignature({
         rawBody,
@@ -377,7 +378,7 @@ describe("payment gateway contract", () => {
         provider: "paymob",
         parsedBody: payload
       })
-    ).toBe(true);
+    ).toBe(false);
     expect(
       verifyWebhookSignature({
         rawBody,

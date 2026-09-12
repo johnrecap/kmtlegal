@@ -1,6 +1,8 @@
 import { createHash } from "crypto";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
+import { paymentApiSourceMessages } from "@/lib/ui-copy";
+import { currencyValues, paymentRequiresReview, paymentNeedsOrderVerification } from "@/lib/legal-finance";
 import { appendAuditLog, appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import type { RedactableJson } from "@/server/audit/redaction";
 import { createConsultationReviewNotifications } from "@/server/admin/notification-service";
@@ -17,6 +19,7 @@ import {
   mapProviderPaymentStatus,
   normalizeProviderWebhookPayload,
   providerWebhookEventId,
+  paymobWebhookFingerprint,
   verifyWebhookSignature,
   webhookSignature,
   type NormalizedWebhookPayload
@@ -24,7 +27,6 @@ import {
 import {
   paymentReservationMinutes,
   paymentWebhookSecret,
-  requireVerifiedWebhookSignature
 } from "./payment-config";
 import {
   createPaymentStatusToken,
@@ -116,24 +118,25 @@ export async function expireOpenConsultationPaymentAttempts(
     return 0;
   }
 
-  await prisma.$transaction(async (tx) => {
-    await tx.paymentAttempt.updateMany({
-      where: { id: { in: attempts.map((attempt) => attempt.id) } },
+  return prisma.$transaction(async (tx) => {
+    // Recheck under the UPDATE row locks; the initial batch can become paid
+    // between selection and this transaction.
+    const expired = await tx.paymentAttempt.updateManyAndReturn({
+      where: { id: { in: attempts.map((attempt) => attempt.id) }, status: { in: ["CREATED", "PENDING"] }, expiresAt: { lt: now } },
       data: { status: "EXPIRED", failureCode: "ATTEMPT_EXPIRED" }
     });
 
     await tx.appointment.updateMany({
-      where: { id: { in: attempts.map((attempt) => attempt.appointmentId) }, status: "RESERVED" },
+      where: { id: { in: expired.map((attempt) => attempt.appointmentId) }, status: "RESERVED" },
       data: { status: "CANCELLED", notes: "Payment reservation expired before trusted payment confirmation." }
     });
 
     await tx.consultationRequest.updateMany({
-      where: { id: { in: attempts.map((attempt) => attempt.consultationRequestId) }, status: "PAYMENT_PENDING" },
+      where: { id: { in: expired.map((attempt) => attempt.consultationRequestId) }, status: "PAYMENT_PENDING" },
       data: { status: "REVIEWING" }
     });
+    return expired.length;
   });
-
-  return attempts.length;
 }
 
 export async function createConsultationPaymentAttempt(input: CreateConsultationPaymentAttemptInput) {
@@ -197,6 +200,7 @@ export async function createConsultationPaymentAttempt(input: CreateConsultation
     },
     request: input.request,
     statusToken: createPaymentStatusToken({ attemptId: attempt.id }),
+    expiresAt: attempt.expiresAt,
     locale: input.locale
   });
 
@@ -206,7 +210,8 @@ export async function createConsultationPaymentAttempt(input: CreateConsultation
       provider: checkout.provider,
       status: "PENDING",
       checkoutUrl: checkout.checkoutUrl,
-      providerSessionId: checkout.providerSessionId
+      providerSessionId: checkout.providerSessionId,
+      providerOrderId: checkout.providerOrderId
     }
   });
 
@@ -277,15 +282,38 @@ export async function getPublicPaymentAttemptStatus(input: { attemptId: string; 
 }
 
 export async function handlePaymentWebhook(input: { request: Request; rawBody: string; requestId: string; provider: PaymentProviderName }) {
-  const payloadHash = createHash("sha256").update(input.rawBody).digest("hex");
+  const rawPayloadHash = createHash("sha256").update(input.rawBody).digest("hex");
   const body = parseWebhookJson(input.rawBody);
   const payloadSnapshot = safeWebhookPayloadSnapshot(body);
   const provider = input.provider;
+  const payloadHash = provider === "paymob" ? paymobWebhookFingerprint(body) : rawPayloadHash;
   const eventId = providerWebhookEventId(body, provider, payloadHash);
   const secret = paymentWebhookSecret(provider);
   const signature = webhookSignature(input.request, provider, body);
   const signatureVerified = verifyWebhookSignature({ rawBody: input.rawBody, signature, secret, provider, parsedBody: body });
-  const signatureStatus = signatureVerified ? "VERIFIED" : secret || requireVerifiedWebhookSignature() ? "INVALID" : "UNVERIFIED";
+  const signatureStatus = signatureVerified ? "VERIFIED" : "INVALID";
+
+  if (!signatureVerified) {
+    // An unauthenticated caller must never reserve a genuine provider event ID.
+    await upsertWebhookEvent({ provider, eventId: `invalid:${rawPayloadHash}`, payloadHash: rawPayloadHash,
+      payloadSnapshot, signatureStatus, processingStatus: "FAILED", errorCode: "INVALID_SIGNATURE" });
+    throw new ApiError(400, "VALIDATION_ERROR", "Payment webhook signature is invalid.", [
+      { path: "signature", message: "Invalid webhook signature.", code: "invalid_signature" }
+    ]);
+  }
+
+  const normalized = normalizeProviderWebhookPayload(body, provider, payloadHash);
+  if (provider === "paymob") {
+    const bound = normalized.providerOrderId ? await prisma.paymentAttempt.findUnique({
+      where: { provider_providerOrderId: { provider, providerOrderId: normalized.providerOrderId } }
+    }) : null;
+    if (!bound || (normalized.attemptId && normalized.attemptId !== bound.id)) {
+      // Reject before reserving an event or mutating either attempt. Legacy
+      // unbound checkouts require provider reconciliation, never payload backfill.
+      throw new ApiError(409, "CONFLICT", paymentApiSourceMessages.orderMismatch);
+    }
+    normalized.attemptId = bound.id;
+  }
 
   const existing = await prisma.paymentWebhookEvent.findUnique({
     where: { provider_eventId: { provider, eventId } }
@@ -306,22 +334,6 @@ export async function handlePaymentWebhook(input: { request: Request; rawBody: s
     return { event: existing, idempotent: true };
   }
 
-  if (signatureStatus === "INVALID") {
-    const event = await upsertWebhookEvent({
-      provider,
-      eventId,
-      payloadHash,
-      payloadSnapshot,
-      signatureStatus,
-      processingStatus: "FAILED",
-      errorCode: "INVALID_SIGNATURE"
-    });
-    throw new ApiError(400, "VALIDATION_ERROR", "Payment webhook signature is invalid.", [
-      { path: "signature", message: "Invalid webhook signature.", code: "invalid_signature" }
-    ]);
-  }
-
-  const normalized = normalizeProviderWebhookPayload(body, provider, payloadHash);
   const event = await upsertWebhookEvent({
     provider,
     eventId,
@@ -332,6 +344,9 @@ export async function handlePaymentWebhook(input: { request: Request; rawBody: s
     attemptId: normalized.attemptId,
     normalizedPayload: normalized
   });
+  if (event.payloadHash !== payloadHash) {
+    throw new ApiError(409, "CONFLICT", "Payment webhook event payload does not match the original event.");
+  }
 
   try {
     const processed = await applyWebhookPaymentState({
@@ -372,6 +387,9 @@ export async function replayAdminPaymentWebhookEvent(input: { actor: Principal; 
 
   if (!event.attempt) {
     throw new ApiError(409, "CONFLICT", "Webhook event is not linked to a payment attempt.");
+  }
+  if (event.signatureStatus !== "VERIFIED") {
+    throw new ApiError(409, "CONFLICT", "Payment webhook signature is invalid.");
   }
 
   const replayed = await prisma.paymentWebhookEvent.update({
@@ -679,15 +697,7 @@ async function upsertWebhookEvent(input: {
       normalizedPayload: input.normalizedPayload ? (input.normalizedPayload as Prisma.InputJsonValue) : undefined,
       attemptId: isPaymentUuid(input.attemptId) ? input.attemptId : null
     },
-    update: {
-      payloadHash: input.payloadHash,
-      payloadSnapshot: input.payloadSnapshot as Prisma.InputJsonValue,
-      signatureStatus: input.signatureStatus,
-      processingStatus: input.processingStatus,
-      errorCode: input.errorCode ?? null,
-      normalizedPayload: input.normalizedPayload ? (input.normalizedPayload as Prisma.InputJsonValue) : undefined,
-      attemptId: isPaymentUuid(input.attemptId) ? input.attemptId : undefined
-    }
+    update: { eventId: input.eventId }
   });
 }
 
@@ -731,6 +741,10 @@ async function applyWebhookPaymentState(input: {
 }) {
   const attemptId = parseWithSchema(uuidSchema, input.payload.attemptId, "Payment attempt id is invalid.");
   return prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT id FROM payment_attempts WHERE id = ${attemptId}::uuid FOR UPDATE`;
+    const event = await tx.paymentWebhookEvent.findUniqueOrThrow({ where: { id: input.eventId } });
+    if (event.processingStatus === "PROCESSED") return event;
+    if (event.signatureStatus !== "VERIFIED") throw new ApiError(409, "CONFLICT", "Payment webhook signature is invalid.");
     const attempt = await tx.paymentAttempt.findUnique({
       where: { id: attemptId },
       include: {
@@ -747,9 +761,17 @@ async function applyWebhookPaymentState(input: {
     if (attempt.provider !== input.provider) {
       throw new ApiError(409, "CONFLICT", "Payment webhook provider does not match the original payment attempt provider.");
     }
+    if (input.provider === "paymob" && (!attempt.providerOrderId || attempt.providerOrderId !== input.payload.providerOrderId)) {
+      throw new ApiError(409, "CONFLICT", paymentApiSourceMessages.orderMismatch);
+    }
 
     const paidPayloadProblem =
       input.payload.status === "PAID" ? paidWebhookPayloadProblem({ payload: input.payload, attempt }) : null;
+    const reportedMoney = providerReportedMoney(input.payload);
+    const lateCollection = input.payload.status === "PAID" && !attempt.payment && paidAttemptWebhookConfirmationBlocker({
+      attemptStatus: attempt.status, expiresAt: attempt.expiresAt,
+      appointmentStatus: attempt.appointment.status, consultationStatus: attempt.consultationRequest.status
+    });
 
     const transaction = await upsertPaymentTransaction(tx, {
       eventId: input.eventId,
@@ -757,10 +779,10 @@ async function applyWebhookPaymentState(input: {
       provider: input.provider,
       providerTransactionId: input.payload.providerTransactionId,
       rawStatus: input.payload.rawStatus || null,
-      status: paidPayloadProblem ? "FAILED" : paymentTransactionStatus(input.payload.status),
-      amount: attempt.amount,
-      currency: attempt.currency,
-      paidAt: input.payload.status === "PAID" && !paidPayloadProblem ? new Date() : null
+      status: input.payload.status === "PAID" && !reportedMoney ? "FAILED" : paymentTransactionStatus(input.payload.status),
+      amount: reportedMoney?.amount ?? attempt.amount,
+      currency: reportedMoney?.currency ?? attempt.currency,
+      paidAt: input.payload.status === "PAID" && reportedMoney ? new Date() : null
     });
 
     await tx.paymentWebhookEvent.update({
@@ -768,13 +790,19 @@ async function applyWebhookPaymentState(input: {
       data: { attemptId: attempt.id, transactionId: transaction.id }
     });
 
-    if (paidPayloadProblem) {
-      await releaseFailedAttempt({ tx, attempt, status: "FAILED", failureCode: paidPayloadProblem.code });
+    const additionalCollection = input.payload.status === "PAID" && reportedMoney && await tx.paymentTransaction.findFirst({
+      where: { attemptId: attempt.id, id: { not: transaction.id }, paidAt: { not: null } },
+      select: { id: true }
+    });
+    if (paidPayloadProblem || lateCollection || additionalCollection) {
+      if (paidPayloadProblem) await releaseFailedAttempt({ tx, attempt, status: "FAILED", failureCode: paidPayloadProblem.code });
+      else await releaseFailedAttempt({tx,attempt,status:"EXPIRED",failureCode:"PAYMENT_COLLECTION_REVIEW_REQUIRED"});
+      await tx.paymentAttempt.update({where:{id:attempt.id},data:{failureCode:"PAYMENT_COLLECTION_REVIEW_REQUIRED"}});
       return tx.paymentWebhookEvent.update({
         where: { id: input.eventId },
         data: {
           processingStatus: "FAILED",
-          errorCode: paidPayloadProblem.code,
+          errorCode: paidPayloadProblem?.code ?? (additionalCollection ? "ADDITIONAL_PAYMENT_REVIEW_REQUIRED" : "LATE_PAYMENT_REVIEW_REQUIRED"),
           processedAt: new Date()
         }
       });
@@ -782,6 +810,16 @@ async function applyWebhookPaymentState(input: {
 
     if (input.payload.status === "PAID") {
       await confirmPaidAttempt({ tx, attempt, transaction, request: input.request, requestId: input.requestId });
+    } else if (input.payload.status === "REFUNDED" || input.payload.status === "DISPUTED" || (input.payload.status === "CANCELLED" && attempt.payment)) {
+      // Record the provider signal, not a new refund transfer or an inferred
+      // refunded amount. Existing Payment is the historical collection record.
+      await tx.paymentAttempt.update({ where: { id: attempt.id }, data: {
+        status: ["REFUNDED", "DISPUTED", "CANCELLED"].includes(transaction.status) ? transaction.status : input.payload.status,
+        failureCode: "PAYMENT_REVERSAL_REVIEW_REQUIRED"
+      } });
+      return tx.paymentWebhookEvent.update({ where: { id: input.eventId }, data: {
+        processingStatus: "FAILED", errorCode: "PAYMENT_REVERSAL_REVIEW_REQUIRED", processedAt: new Date()
+      } });
     } else if (input.payload.status === "FAILED" || input.payload.status === "EXPIRED" || input.payload.status === "CANCELLED") {
       await releaseFailedAttempt({ tx, attempt, status: input.payload.status, failureCode: input.payload.rawStatus || input.payload.status });
     } else {
@@ -819,16 +857,9 @@ async function upsertPaymentTransaction(
   });
 
   if (existingEvent?.transactionId) {
-    return tx.paymentTransaction.update({
-      where: { id: existingEvent.transactionId },
-      data: {
-        rawStatus: input.rawStatus,
-        status: input.status,
-        amount: input.amount,
-        currency: input.currency,
-        paidAt: input.paidAt
-      }
-    });
+    const linked = await tx.paymentTransaction.findUniqueOrThrow({ where: { id: existingEvent.transactionId } });
+    if (linked.attemptId !== input.attemptId) throw new ApiError(409, "CONFLICT", "Provider transaction is already linked to a different payment attempt.");
+    if (preserveTransactionState(linked.status, input.status, linked.paidAt)) return linked;
   }
 
   if (input.providerTransactionId) {
@@ -852,6 +883,8 @@ async function upsertPaymentTransaction(
         ]);
       }
 
+      if (preserveTransactionState(existingTransaction.status, input.status, existingTransaction.paidAt)) return existingTransaction;
+
       return tx.paymentTransaction.update({
         where: { id: existingTransaction.id },
         data: {
@@ -859,7 +892,7 @@ async function upsertPaymentTransaction(
           status: input.status,
           amount: input.amount,
           currency: input.currency,
-          paidAt: input.paidAt
+          paidAt: existingTransaction.paidAt ?? input.paidAt
         }
       });
     }
@@ -877,6 +910,19 @@ async function upsertPaymentTransaction(
       paidAt: input.paidAt
     }
   });
+}
+
+function preserveTransactionState(current: string, incoming: string, paidAt: Date | null) {
+  if (["REFUNDED", "DISPUTED"].includes(current) || (current === "CANCELLED" && paidAt)) return true;
+  return current === "PAID" && !["REFUNDED", "DISPUTED", "CANCELLED"].includes(incoming);
+}
+
+function providerReportedMoney(payload: NormalizedWebhookPayload) {
+  const currency = payload.currency.trim().toUpperCase();
+  if (!(currencyValues as readonly string[]).includes(currency) || !/^\d+(\.\d{1,2})?$/.test(payload.amount.trim())) return null;
+  const amount = new Prisma.Decimal(payload.amount);
+  if (!amount.isPositive() || amount.greaterThan("9999999999.99")) return null;
+  return {amount, currency: currency as (typeof currencyValues)[number]};
 }
 
 async function confirmPaidAttempt(input: {
@@ -983,7 +1029,7 @@ async function releaseFailedAttempt(input: {
   status: "FAILED" | "EXPIRED" | "CANCELLED";
   failureCode: string;
 }) {
-  if (input.attempt.payment || input.attempt.status === "PAID") {
+  if (input.attempt.payment || !confirmablePaidAttemptStatuses.includes(input.attempt.status as "CREATED" | "PENDING")) {
     return;
   }
 
@@ -1015,7 +1061,7 @@ async function updateOpenAttemptStatus(input: {
   attempt: Prisma.PaymentAttemptGetPayload<{ include: { appointment: true; consultationRequest: true; payment: true } }>;
   status: ReturnType<typeof mapProviderPaymentStatus>;
 }) {
-  if (input.attempt.payment || input.attempt.status === "PAID") {
+  if (input.attempt.payment || !confirmablePaidAttemptStatuses.includes(input.attempt.status as "CREATED" | "PENDING")) {
     return;
   }
   await input.tx.paymentAttempt.update({
@@ -1133,14 +1179,17 @@ function paymentAttemptDto(
   options: { includeSensitive?: boolean } = {}
 ) {
   const includeSensitive = options.includeSensitive === true;
+  const requiresFinancialReview = paymentRequiresReview(attempt);
   return {
     id: attempt.id,
     provider: attempt.provider,
     status: attempt.status,
+    requiresFinancialReview,
+    requiresOrderVerification: paymentNeedsOrderVerification(attempt),
     amount: attempt.amount.toString(),
     currency: attempt.currency,
     access: { verified: includeSensitive },
-    checkoutUrl: includeSensitive ? attempt.checkoutUrl : null,
+    checkoutUrl: includeSensitive && !requiresFinancialReview ? attempt.checkoutUrl : null,
     expiresAt: attempt.expiresAt.toISOString(),
     appointment: {
       id: attempt.appointment.id,
@@ -1150,7 +1199,7 @@ function paymentAttemptDto(
     },
     consultation: publicPaymentAttemptConsultationDto(attempt.consultationRequest, includeSensitive),
     resumeDraft:
-      includeSensitive && ["FAILED", "EXPIRED", "CANCELLED"].includes(attempt.status)
+      includeSensitive && !requiresFinancialReview && !attempt.payment && ["FAILED", "EXPIRED", "CANCELLED"].includes(attempt.status)
         ? {
             fullName: attempt.client.fullName,
             phone: attempt.client.phone,
@@ -1178,7 +1227,7 @@ function paymentAttemptDto(
           }
         : null,
     clientAccountSetup:
-      includeSensitive && attempt.payment && attempt.status === "PAID" && attempt.payment.status === "PAID"
+      includeSensitive && !requiresFinancialReview && attempt.payment && attempt.status === "PAID" && attempt.payment.status === "PAID"
         ? publicClientAccountSetupTarget({
             client: attempt.client,
             consultationId: attempt.consultationRequest.id,
@@ -1196,7 +1245,7 @@ function paymentAttemptDto(
           paymentMethod: attempt.payment.paymentMethod,
           paidAt: attempt.payment.paidAt?.toISOString() ?? null,
           receiptUrl:
-            includeSensitive && attempt.status === "PAID" && attempt.payment.status === "PAID"
+            includeSensitive && !requiresFinancialReview && attempt.status === "PAID" && attempt.payment.status === "PAID"
               ? publicPaymentReceiptUrl({ attemptId: attempt.id, paymentId: attempt.payment.id })
               : null
         }

@@ -1,5 +1,7 @@
+import { paymentRequiresReview, paymentNeedsOrderVerification } from "@/lib/legal-finance";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { paymentReviewCopy } from "@/lib/ui-copy";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import {
@@ -168,7 +170,7 @@ function columns(query: Record<string, string>): Array<DataTableColumn<PaymentRo
     {
       key: "status",
       header: "الحالة",
-      render: (row) => <Badge tone={statusTone(row.status)}>{labelFrom(paymentStatusLabels, row.status)}</Badge>
+      render: (row) => <Badge tone={paymentRequiresReview(row.paymentAttempt) ? "danger" : statusTone(row.status)}>{paymentRequiresReview(row.paymentAttempt) ? paymentReviewCopy.ar.review : labelFrom(paymentStatusLabels, row.status)}</Badge>
     },
     {
       key: "dates",
@@ -212,7 +214,7 @@ function PaymentMobileCard({ row, query }: { row: PaymentRow; query: Record<stri
     <DataRecordCard
       title={row.invoiceNumber}
       description={`أُنشئت بواسطة ${row.createdBy?.name ?? "النظام"}`}
-      badges={<Badge tone={statusTone(row.status)}>{labelFrom(paymentStatusLabels, row.status)}</Badge>}
+      badges={<Badge tone={paymentRequiresReview(row.paymentAttempt) ? "danger" : statusTone(row.status)}>{paymentRequiresReview(row.paymentAttempt) ? paymentReviewCopy.ar.review : labelFrom(paymentStatusLabels, row.status)}</Badge>}
       fields={[
         {
           label: "العميل",
@@ -283,7 +285,7 @@ function GatewayOperationsPanel({
               <div key={attempt.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-semibold text-kmt-ink">{attempt.client.fullName}</p>
-                  <Badge tone={attemptTone(attempt.status)}>{attempt.status}</Badge>
+                  <Badge tone={paymentRequiresReview(attempt) ? "danger" : attemptTone(attempt.status)}>{paymentNeedsOrderVerification(attempt) ? paymentReviewCopy.ar.orderVerification : paymentRequiresReview(attempt) ? paymentReviewCopy.ar.review : attempt.status}</Badge>
                 </div>
                 <p className="mt-1 text-kmt-muted">
                   {formatMoney(attempt.amount.toString(), attempt.currency)} · {formatDateTime(attempt.appointment.startsAt)}
@@ -488,7 +490,7 @@ function PaymentGatewayOperationsPanel({
                 <div key={attempt.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
                   <div className="flex items-center justify-between gap-3">
                     <p className="font-semibold text-kmt-ink">{attempt.client.fullName}</p>
-                    <Badge tone={attemptTone(attempt.status)}>{paymentAttemptStatusLabels[attempt.status] ?? attempt.status}</Badge>
+                    <Badge tone={paymentRequiresReview(attempt) ? "danger" : attemptTone(attempt.status)}>{paymentNeedsOrderVerification(attempt) ? paymentReviewCopy.ar.orderVerification : paymentRequiresReview(attempt) ? paymentReviewCopy.ar.review : paymentAttemptStatusLabels[attempt.status] ?? attempt.status}</Badge>
                   </div>
                   <p className="mt-1 text-kmt-muted">
                     {formatMoney(attempt.amount.toString(), attempt.currency)} · {attempt.provider} · {formatDateTime(attempt.appointment.startsAt)}
@@ -673,7 +675,8 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
           <MetricCard label="المتأخر" value={String(result.summary.overdueCount)} meta={summaryAmount(result.summary.overdueAmount, selectedCurrency)} />
         </div>
 
-        {!selectedCurrency ? (
+          <p className="text-sm text-kmt-muted">{paymentReviewCopy.ar.totals} {paymentReviewCopy.ar.count}: {result.summary.reviewCount}. {paymentReviewCopy.ar.unallocated}: {result.summary.unallocatedReviewCount}</p>
+          {!selectedCurrency ? (
           <div className="rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
             الأرقام المجمعة المعروضة هنا مجموع خام عبر العملات. استخدم فلتر العملة للحصول على قراءة مالية دقيقة.
           </div>

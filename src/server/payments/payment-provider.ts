@@ -1,5 +1,6 @@
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHash, createHmac, timingSafeEqual } from "crypto";
 import { ApiError } from "@/server/http/errors";
+import { paymentApiSourceMessages } from "@/lib/ui-copy";
 import {
   assertLiveProviderConfigured,
   paymobApiBaseUrl,
@@ -28,18 +29,21 @@ export type HostedCheckoutInput = {
   provider?: PaymentProviderName;
   statusToken?: string | null;
   locale?: "ar" | "en" | null;
+  expiresAt?: Date;
 };
 
 export type HostedCheckoutResult = {
   provider: PaymentProviderName;
   checkoutUrl: string;
   providerSessionId: string;
+  providerOrderId?: string;
 };
 
 export type NormalizedWebhookPayload = {
   provider: PaymentProviderName;
   attemptId: string;
   providerTransactionId: string | null;
+  providerOrderId?: string;
   rawStatus: string;
   status: ReturnType<typeof mapProviderPaymentStatus>;
   amount: string;
@@ -87,6 +91,7 @@ async function createPaymobHostedCheckout(input: HostedCheckoutInput): Promise<H
   const failureUrl = paymentFailureUrl(input.attemptId, input.request, statusReturnOptions(input));
   const payload = {
     amount: amountMinor,
+    ...(input.expiresAt ? {expiration: Math.max(1, Math.floor((input.expiresAt.getTime() - Date.now()) / 1000))} : {}),
     currency: input.currency,
     payment_methods: paymentMethods,
     items: [
@@ -139,15 +144,20 @@ async function createPaymobHostedCheckout(input: HostedCheckoutInput): Promise<H
   const clientSecret = stringValue(body.client_secret) || stringValue(body.clientSecret);
   const checkoutUrl = stringValue(body.checkout_url) || stringValue(body.checkoutUrl) || buildPaymobCheckoutUrl(clientSecret);
   const providerSessionId = stringValue(body.id) || stringValue(body.intention_id) || stringValue(body.intentionId) || input.attemptId;
+  const providerOrderId = stringValue(body.intention_order_id);
 
   if (!checkoutUrl) {
     throw new ApiError(502, "SERVICE_UNAVAILABLE", "Paymob checkout response did not include a checkout URL.");
+  }
+  if (!/^\d+$/.test(providerOrderId)) {
+    throw new ApiError(502, "SERVICE_UNAVAILABLE", paymentApiSourceMessages.checkoutOrderMissing);
   }
 
   return {
     provider: "paymob",
     checkoutUrl,
-    providerSessionId
+    providerSessionId,
+    providerOrderId
   };
 }
 
@@ -163,17 +173,13 @@ export function verifyWebhookSignature(input: {
   }
 
   const signature = normalizeSignature(input.signature);
+  if (input.provider === "paymob") {
+    const canonical = paymobWebhookHmacSource(input.parsedBody);
+    return Boolean(canonical && timingSafeHexEqual(signature, createHmac("sha512", input.secret).update(canonical).digest("hex")));
+  }
   const expected = [
     createHmac("sha256", input.secret).update(input.rawBody).digest("hex")
   ];
-
-  if (input.provider === "paymob") {
-    expected.push(createHmac("sha512", input.secret).update(input.rawBody).digest("hex"));
-    const canonical = paymobWebhookHmacSource(input.parsedBody);
-    if (canonical) {
-      expected.push(createHmac("sha512", input.secret).update(canonical).digest("hex"));
-    }
-  }
 
   return expected.some((candidate) => timingSafeHexEqual(signature, candidate));
 }
@@ -200,16 +206,16 @@ export function webhookSignature(request: Request, provider: PaymentProviderName
 export function providerWebhookEventId(body: Record<string, unknown>, provider: PaymentProviderName, payloadHash: string) {
   if (provider === "paymob") {
     const obj = paymobWebhookObject(body);
-    return (
-      stringValue(body.eventId) ||
-      stringValue(obj.eventId) ||
-      stringValue(obj.id) ||
-      stringValue(nestedValue(obj, ["order", "id"])) ||
-      payloadHash
-    );
+    // Paymob's id identifies a transaction, not a lifecycle event. Only signed
+    // fields define an observation; unsigned metadata cannot create another event.
+    return `${stringValue(obj.id)}:${paymobWebhookFingerprint(body)}`;
   }
 
   return String(body.eventId || body.id || body.tran_ref || body.transaction_id || body.cart_id || payloadHash);
+}
+
+export function paymobWebhookFingerprint(body: Record<string, unknown>) {
+  return createHash("sha256").update(paymobWebhookHmacSource(body)).digest("hex");
 }
 
 export function normalizeProviderWebhookPayload(
@@ -226,10 +232,10 @@ export function normalizeProviderWebhookPayload(
 
 export function mapProviderPaymentStatus(status: string) {
   const value = status.trim().toLowerCase();
-  if (["a", "paid", "success", "succeeded", "captured", "approved", "authorized", "true"].includes(value)) {
+  if (["a", "paid", "success", "succeeded", "captured", "approved", "true"].includes(value)) {
     return "PAID" as const;
   }
-  if (["p", "pending", "created", "processing"].includes(value)) {
+  if (["p", "pending", "created", "processing", "authorized", "auth"].includes(value)) {
     return "PENDING" as const;
   }
   if (["r", "refunded", "refund"].includes(value)) {
@@ -341,9 +347,11 @@ function buildPaymobCheckoutUrl(clientSecret: string) {
 function normalizePaytabsWebhookPayload(body: Record<string, unknown>, provider: PaymentProviderName): NormalizedWebhookPayload {
   const attemptId = String(body.attemptId || body.cart_id || body.cartId || "");
   const providerTransactionId = String(body.transactionId || body.tran_ref || body.transaction_id || body.providerTransactionId || "");
-  const rawStatus = String(body.status || body.respStatus || nestedValue(body, ["payment_result", "response_status"]) || "");
+  const responseStatus = String(body.status || body.respStatus || nestedValue(body, ["payment_result", "response_status"]) || "");
+  const transactionType = stringValue(body.tran_type).toLowerCase();
+  const status = paytabsPaymentStatus(responseStatus, transactionType);
   const amount = String(body.amount || body.cart_amount || "");
-  const currency = String(body.currency || body.cart_currency || "EGP");
+  const currency = String(body.currency || body.cart_currency || "");
 
   if (!attemptId) {
     throw new ApiError(400, "VALIDATION_ERROR", "Payment webhook attempt id is missing.");
@@ -353,11 +361,33 @@ function normalizePaytabsWebhookPayload(body: Record<string, unknown>, provider:
     provider,
     attemptId,
     providerTransactionId: providerTransactionId || null,
-    rawStatus,
-    status: mapProviderPaymentStatus(rawStatus),
+    rawStatus: responseStatus,
+    status,
     amount,
     currency
   };
+}
+
+export function paytabsPaymentStatus(responseStatus: string, transactionType: string) {
+  const code = responseStatus.trim().toUpperCase();
+  if (code === "A") {
+    if (["sale", "capture"].includes(transactionType)) return "PAID" as const;
+    if (transactionType === "refund") return "REFUNDED" as const;
+    if (transactionType === "void") return "CANCELLED" as const;
+    return "PENDING" as const;
+  }
+  if (["H", "P"].includes(code)) return "PENDING" as const;
+  if (code === "V") return "CANCELLED" as const;
+  if (code === "X") return "EXPIRED" as const;
+  if (["D", "E"].includes(code)) return "FAILED" as const;
+  // The standby template's existing full-word contract is separate from codes.
+  const status = mapProviderPaymentStatus(responseStatus);
+  if (status === "PAID") {
+    if (transactionType === "auth") return "PENDING" as const;
+    if (transactionType === "refund") return "REFUNDED" as const;
+    if (transactionType === "void") return "CANCELLED" as const;
+  }
+  return status;
 }
 
 function normalizePaymobWebhookPayload(body: Record<string, unknown>, payloadHash: string): NormalizedWebhookPayload {
@@ -371,19 +401,21 @@ function normalizePaymobWebhookPayload(body: Record<string, unknown>, payloadHas
     stringValue(nestedValue(obj, ["payment_key_claims", "extra", "attempt_id"])) ||
     stringValue(nestedValue(obj, ["extra", "attemptId"])) ||
     stringValue(nestedValue(obj, ["extras", "attemptId"]));
-  const providerTransactionId = stringValue(obj.id) || stringValue(body.transaction_id) || stringValue(body.id);
+  const providerTransactionId = stringValue(obj.id);
+  const providerOrderId = stringValue(nestedValue(obj, ["order", "id"])) || stringValue(obj.order);
   const rawStatus = paymobRawStatus(obj);
-  const amount = centsToAmountText(stringValue(obj.amount_cents) || stringValue(obj.amount) || "");
-  const currency = stringValue(obj.currency) || stringValue(body.currency) || "EGP";
+  const amount = centsToAmountText(stringValue(obj.amount_cents));
+  const currency = stringValue(obj.currency);
 
-  if (!attemptId) {
-    throw new ApiError(400, "VALIDATION_ERROR", "Payment webhook attempt id is missing.");
+  if (!providerOrderId || !providerTransactionId) {
+    throw new ApiError(400, "VALIDATION_ERROR", paymentApiSourceMessages.orderMissing);
   }
 
   return {
     provider: "paymob",
     attemptId,
     providerTransactionId: providerTransactionId || payloadHash,
+    providerOrderId,
     rawStatus,
     status: mapProviderPaymentStatus(rawStatus),
     amount,
@@ -392,21 +424,20 @@ function normalizePaymobWebhookPayload(body: Record<string, unknown>, payloadHas
 }
 
 function paymobRawStatus(obj: Record<string, unknown>) {
-  const explicit = stringValue(obj.status) || stringValue(obj.txn_response_code) || stringValue(obj.data_message);
-  if (explicit) {
-    return explicit;
-  }
-  if (booleanValue(obj.success)) {
-    return "paid";
-  }
-  if (booleanValue(obj.pending)) {
-    return "pending";
-  }
+  // These flags are covered by the canonical HMAC. status/txn_response_code,
+  // nested order totals and data messages are not authority for payment state.
   if (booleanValue(obj.is_refunded)) {
     return "refunded";
   }
   if (booleanValue(obj.is_voided)) {
     return "voided";
+  }
+  if (booleanValue(obj.pending)) return "pending";
+  if (booleanValue(obj.error_occured)) return "failed";
+  if (booleanValue(obj.success)) {
+    if (booleanValue(obj.is_auth)) return "authorized";
+    if (booleanValue(obj.is_capture) || booleanValue(obj.is_standalone_payment)) return "paid";
+    return "pending";
   }
   return "failed";
 }
@@ -476,6 +507,7 @@ function paymobHmacValue(field: string, value: unknown) {
 }
 
 function centsToAmountText(value: string) {
+  if (!/^\d+$/.test(value)) return value;
   if (!value) {
     return "";
   }

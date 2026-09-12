@@ -1,8 +1,8 @@
 # KMT Legal Implementation Status
 
-2026-09-11 stop checkpoint: user requested stopping after batch 5. Resume with supervisor review of `docs/reviews/2026-09-11/batch5/BATCH-5.md`; do not start payments or later work automatically. Batch 5 must not be pushed before approval.
+2026-09-12 resumed checkpoint: batch 5 was approved and pushed as `6be83e29f6a2418edf16d38d092a151c9c8c9264`. Batch 6 has completed local payment-trust/lifecycle verification and cleanup; see `docs/reviews/2026-09-12/batch6/BATCH-6.md` and verification.json. Exact-commit supervisor approval is required before push. No batch 7 or design work has started.
 
-Last updated: 2026-09-11
+Last updated: 2026-09-12
 
 2026-09-11 ordinary delivery checkpoint (Spec Kit not activated): the first dependency/session/
 booking-recovery batch was pushed as `7ad0010` to origin/main. Batch 2 was subsequently pushed as `ea186fd`; see `docs/reviews/2026-09-11/batch2/BATCH-2.md` for bounded real database/browser evidence. See `docs/reviews/2026-09-11/BATCH-1.md` for changes, source preservation comparison,
@@ -16,9 +16,9 @@ Batch 4 was approved and pushed as `cf1b835`: bounded booking confirmation, stri
 chat recovery and real reschedule/cancellation/client-view evidence. See `docs/reviews/2026-09-11/batch4/BATCH-4.md`.
 The fourteen-step program is still partial; external AI/payment, broad operational and design work remain.
 
-Batch 5 is prepared locally for review: bilingual conversation corrections, provider failure tests and
+Batch 5 was approved and pushed: bilingual conversation corrections, provider failure tests and
 network/language input preservation. See `docs/reviews/2026-09-11/batch5/BATCH-5.md`; no live AI/payment
-provider or new database evidence is claimed. Payment review is the next agreed batch.
+provider or new database evidence is claimed for batch 5. Batch 6 separately adds disposable database and simulated provider evidence; it does not close real-provider launch or the full fourteen-step program.
 
 This is the main tracking file for 40 Spec Kit plan IDs (`PLAN-00` through `PLAN-39`).
 

@@ -7,7 +7,7 @@ import { ApiError } from "@/server/http/errors";
 import { toPagination } from "@/server/http/pagination";
 import { canonicalPhoneForSearch } from "@/server/phone/phone-normalization";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
-import { currencyValues, paymentStatusValues } from "@/lib/legal-finance";
+import { currencyValues, paymentStatusValues, financialReviewCodes } from "@/lib/legal-finance";
 
 const paymentStatusSchema = z.enum(paymentStatusValues);
 const currencySchema = z.enum(currencyValues);
@@ -248,11 +248,13 @@ async function paymentSummary(where: Prisma.PaymentWhereInput) {
     ]
   });
 
-  const [all, paid, open, overdue] = await Promise.all([
+  const [all, paid, open, overdue, reviewCount, unallocatedReviewCount] = await Promise.all([
     prisma.payment.aggregate({ where, _count: { _all: true }, _sum: { amount: true } }),
     prisma.payment.aggregate({ where: andPaymentWhere(where, { status: "PAID" }), _count: { _all: true }, _sum: { amount: true } }),
     prisma.payment.aggregate({ where: openWhere, _count: { _all: true }, _sum: { amount: true } }),
-    prisma.payment.aggregate({ where: overdueWhere, _count: { _all: true }, _sum: { amount: true } })
+    prisma.payment.aggregate({ where: overdueWhere, _count: { _all: true }, _sum: { amount: true } }),
+    prisma.payment.count({where: andPaymentWhere(where, {paymentAttempt: {failureCode: {in:financialReviewCodes}}})}),
+    prisma.paymentAttempt.count({where:{payment:{is:null},failureCode:"PAYMENT_COLLECTION_REVIEW_REQUIRED"}})
   ]);
 
   return {
@@ -260,6 +262,8 @@ async function paymentSummary(where: Prisma.PaymentWhereInput) {
     totalAmount: decimalToNumber(all._sum.amount),
     paidCount: paid._count._all,
     paidAmount: decimalToNumber(paid._sum.amount),
+    reviewCount,
+    unallocatedReviewCount,
     openCount: open._count._all,
     openAmount: decimalToNumber(open._sum.amount),
     overdueCount: overdue._count._all,
@@ -458,6 +462,7 @@ export async function listAdminPayments(input: { actor: Principal; query: unknow
     prisma.payment.findMany({
       where,
       include: {
+        paymentAttempt: {select: {status:true, failureCode:true}},
         client: { select: { id: true, fullName: true, phone: true, email: true } },
         case: { select: { id: true, internalFileNumber: true, title: true } },
         createdBy: { select: { id: true, name: true, email: true } }
@@ -736,6 +741,7 @@ export async function getAdminReports(input: { actor: Principal; query: unknown 
       where: paymentWhere,
       include: {
         client: { select: { id: true, fullName: true } },
+        paymentAttempt: {select: {status:true, failureCode:true}},
         case: { select: { id: true, internalFileNumber: true, title: true } }
       },
       orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }],

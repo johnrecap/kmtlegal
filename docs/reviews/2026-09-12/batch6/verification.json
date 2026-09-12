@@ -1,0 +1,69 @@
+{
+  "date": "2026-09-12",
+  "baseline": "6be83e29f6a2418edf16d38d092a151c9c8c9264",
+  "scope": "Local batch 6 payment trust and lifecycle; not live-provider or whole-product certification",
+  "push": "Not pushed; exact local commit requires supervisor review",
+  "checks": {
+    "typecheck": "passed",
+    "lint": "passed; existing Next lint deprecation notice",
+    "unit": {
+      "command": "npx vitest run --maxWorkers=1 --reporter=json --outputFile=docs/reviews/2026-09-12/batch6/unit-suite.json",
+      "passed": 520,
+      "failed": 0,
+      "skipped": 22,
+      "skipReason": "17 batch6 database cases require BATCH6_ISOLATED_DB=true and are passed separately; 5 pre-existing database cases remain opt-in and were not run in this unit command"
+    },
+    "paymentTrust": { "file": "after-trust.json", "passed": 31, "failed": 0, "skipped": 0, "composition": "14 provider/pure cases plus 17 actual route-handler and disposable PostgreSQL cases; not network HTTP" },
+    "providerContract": { "file": "provider-contract.json", "passed": 21, "failed": 0, "note": "Earlier focused adapter contract run; these overlap the unit suite and are not an additional unique total" },
+    "networkBrowser": {
+      "file": "http-browser.json",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "environment": "Chromium with actual Next loopback HTTP and PostgreSQL, fake Paymob HTTP server",
+      "focusedFollowup": { "file": "http-browser-contrast.json", "passed": 1, "failed": 0, "note": "Repeats and strengthens legacy case after client contrast patch: English keyboard Enter and Arabic click both reach payment status. Eight unique scenarios, not nine." },
+      "finalSourceDelta": "The subsequent distinct-collection service guard is verified by the final 31-case handler/DB suite and final unit/type/lint/build checks; the full browser suite was not repeated for this bounded service guard."
+    },
+    "productionBuild": "passed: ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build, exit 0, 44/44 static pages; non-blocking webpack cache snapshot warnings",
+    "secretScan": "passed",
+    "diffCheck": "passed",
+    "surface": { "file": "surface-comparison.json", "pageFiles": 58, "apiRouteFiles": 100, "apiOperations": 119, "sourceFiles": 364, "removedOrAddedRoutesLinksSlugsFiles": 0, "limitation": "Static source evidence, not a count of runtime database-populated pages" }
+  },
+  "migration": {
+    "name": "20260912090000_payment_provider_order_binding",
+    "upgrade": "17 pre-existing migrations populated the disposable baseline; additive migration applied successfully, final completed count 18",
+    "pristine": "Independent empty kmt_batch6_clean database applied all 18 migrations; SQL verified one providerOrderId column and one provider/order unique index",
+    "legacy": "Null order bindings retained intentionally; public/client old checkout links held until independent authenticated provider reconciliation. No production backfill executed."
+  },
+  "visual": {
+    "reviewed": ["client-status-en-390.png", "client-status-ar-390.png", "admin-review-390.png"],
+    "scope": "Focused 390px payment review/status readability using existing client surface and text styles; no global theme/design acceptance"
+  },
+  "cleanup": {
+    "sqlIdentity": "kmt_batch6; worktree _workspace/batch6-postgres/data; port 55437; 18 applied migrations; zero other client backends before shutdown",
+    "postgresStopped": true,
+    "disposableClusterAndPasswordRemoved": true,
+    "loopback3109": "ECONNREFUSED",
+    "loopback3110": "ECONNREFUSED",
+    "loopback55437": "ECONNREFUSED",
+    "productionDatabaseAndPort5432": "untouched",
+    "originalCheckout": "D: checkout not modified; normal git worktree metadata only at commit",
+    "retained": "Synthetic evidence/screenshots and ignored local test helpers; no running helper servers"
+  },
+  "failedAttemptsAndCorrections": [
+    "before-trust.json proves two baseline security failures before the original trust fix.",
+    "before-extra-collection.json proves a second distinct signed collection did not mark financial review before the additional guard.",
+    "An intermediate browser recovery assertion used a generic visibility wait; explicit recovery-response synchronization passed focused and full runs.",
+    "An intermediate full unit run during browser compilation had one PostgreSQL backup-tool resolver STACK_TRACE_ERROR. Final serial full run passed all 520; no payment-production change was made for that runner failure.",
+    "Rapid repeated DB runs exposed timestamp-seconds fixture ID collisions; synthetic IDs now use a millisecond namespace. Final DB suite passed all 31.",
+    "An intermediate new-test receipt assertion used the wrong DTO path; corrected to payment.receiptUrl, with receipt endpoint rejection and client/staff review state also checked."
+  ],
+  "externalLimits": [
+    "No real payment keys, provider sandbox calls, transfers, settlement, SMTP messages or real client data.",
+    "PayTabs checkout remains a disabled standby hosted-URL template, not a complete live adapter.",
+    "Provider intention calls can outlive a failed local transaction; explicit retries may produce orphan provider intentions. No provider-wide idempotency or automatic reconciliation claim.",
+    "Financial review blocks misleading payment/receipt affordances; no resolution UI, automatic refund, inferred net funds or verified settlement introduced.",
+    "Production old-attempt reconciliation, provider sandbox acceptance and payment cutover remain launch gates."
+  ]
+}

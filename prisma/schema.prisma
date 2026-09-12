@@ -791,6 +791,7 @@ model PaymentAttempt {
   idempotencyKey        String               @unique
   checkoutUrl           String?
   providerSessionId     String?
+  providerOrderId       String?
   providerPaymentId     String?
   manualMethod          String?
   failureCode           String?
@@ -800,6 +801,7 @@ model PaymentAttempt {
   updatedAt             DateTime             @updatedAt
 
   @@index([provider])
+  @@unique([provider, providerOrderId])
   @@index([status])
   @@index([clientId])
   @@index([consultationRequestId])

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { paymentReviewCopy } from "@/lib/ui-copy";
 import { PublicShell } from "@/components/layout/public-shell";
 import { MaterialSymbol } from "@/components/ui";
 import { getPublicContent, navForPath, type PublicContent } from "@/content/public-content";
@@ -25,9 +26,9 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
   const content = getPublicContent(locale);
   const paymentReturnCopy = content.paymentReturn;
   const result = attemptId ? await getPaymentStatus(attemptId, token) : null;
-  const tone = statusTone(result?.status, paymentReturnCopy);
-  const isPaid = result?.status === "PAID" && result.payment;
-  const isPending = result?.status === "CREATED" || result?.status === "PENDING";
+  const tone = result?.requiresFinancialReview ? {...statusTone("FAILED", paymentReturnCopy), title: result.requiresOrderVerification ? paymentReviewCopy[locale].orderVerification : paymentReviewCopy[locale].review, description: result.requiresOrderVerification ? paymentReviewCopy[locale].orderDescription : paymentReviewCopy[locale].description} : statusTone(result?.status, paymentReturnCopy);
+  const isPaid = !result?.requiresFinancialReview && result?.status === "PAID" && result.payment;
+  const isPending = !result?.requiresFinancialReview && (result?.status === "CREATED" || result?.status === "PENDING");
   const bookingHref = resumeBookingHref(result, token, locale);
 
   return (
@@ -71,7 +72,7 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
 
               <dl className="grid gap-3 text-sm text-amber-50/86 sm:grid-cols-2">
                 <StatusItem label={paymentReturnCopy.labels.attemptId} value={result.id} dir="ltr" />
-                <StatusItem label={paymentReturnCopy.labels.status} value={result.status} />
+                <StatusItem label={paymentReturnCopy.labels.status} value={result.requiresFinancialReview ? tone.title : result.status} />
                 <StatusItem label={paymentReturnCopy.labels.amount} value={formatMoney(result.amount, result.currency)} />
                 <StatusItem label={paymentReturnCopy.labels.appointment} value={formatPaymentDate(result.appointment.startsAt, locale)} />
                 {result.payment ? <StatusItem label={paymentReturnCopy.labels.invoiceNumber} value={result.payment.invoiceNumber ?? "N/A"} dir="ltr" /> : null}
@@ -106,10 +107,10 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
                 {result.clientAccountSetup.status === "setup_available" ? paymentReturnCopy.actions.accountSetup : paymentReturnCopy.actions.accountLogin}
               </Link>
             ) : null}
-            <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 px-5 text-sm font-semibold text-amber-50 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold" href={bookingHref}>
+            {!result?.requiresFinancialReview ? <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 px-5 text-sm font-semibold text-amber-50 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold" href={bookingHref}>
               <MaterialSymbol name="event_available" />
               {paymentReturnCopy.actions.newBooking}
-            </Link>
+            </Link> : null}
           </div>
         </div>
       </section>

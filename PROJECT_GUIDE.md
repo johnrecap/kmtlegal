@@ -1,6 +1,8 @@
 # KMT Legal Platform Project Guide
 
-2026-09-11 stop checkpoint: user requested stopping after batch 5. Resume with supervisor review of `docs/reviews/2026-09-11/batch5/BATCH-5.md`; do not start payments or later work automatically. Batch 5 must not be pushed before approval.
+2026-09-12 resumed checkpoint: batch 5 was approved and pushed as `6be83e29f6a2418edf16d38d092a151c9c8c9264`. Batch 6 covers payment trust, local lifecycle and financial-review visibility; see `docs/reviews/2026-09-12/batch6/BATCH-6.md` and its verification.json. Supervisor approval of the exact local commit is required before push. Do not start batch 7 or design work yet.
+
+Payment integration handoff: new Paymob attempts save the server-created `intention_order_id` in the additive nullable unique providerOrderId column. Old open attempts need authenticated provider reconciliation before binding; unsigned metadata is never a backfill source. Read the batch 6 launch runbook before deployment. Checkout now requires expectedPrice from the latest reviewed summary. Financial review is separate from historical gross collection; no refund transfer or verified net settlement is implemented. Test fixtures use a disposable PG18 cluster and loopback provider only; real sandbox/cutover approval remains open.
 
 ## Start Here
 

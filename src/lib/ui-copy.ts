@@ -791,7 +791,23 @@ export const technicalValueDisplayLabels: Record<string, string> = {
   false: "لا"
 };
 
+export const paymentApiSourceMessages = {
+  orderMismatch: "Payment webhook order does not match a reserved payment attempt.",
+  orderMissing: "Payment webhook order or transaction id is missing.",
+  checkoutOrderMissing: "Paymob checkout response did not include a valid order ID.",
+  reviewChanged: "Booking payment details changed. Go back and review the booking before paying."
+} as const;
+
+export const paymentReviewCopy = {
+  ar: { review: "التحصيل قيد المراجعة المالية", description: "وصل إشعار مالي يحتاج مراجعة المكتب. لا تدفع مرة أخرى قبل التحقق من نتيجة التحصيل والحجز.", totals: "المدفوع هو إجمالي التحصيل التاريخي، ولا يمثل الصافي بعد الاسترداد أو الإلغاء. مبالغ العكس المالي قيد التحقق.", count: "تحصيلات تحتاج مراجعة", unallocated: "عدد عام للتحصيلات غير المرتبطة بفاتورة التي تحتاج مراجعة (كل العملاء والعملات والتواريخ)", orderVerification: "رابط الدفع يحتاج تحقق المكتب", orderDescription: "هذا رابط دفع سابق يحتاج التحقق من ربطه بطلب المزود. لا تواصل الدفع أو تدفع مجددًا حتى يتحقق المكتب من نتيجته. هذه الرسالة لا تؤكد وصول مبلغ." },
+  en: { review: "Collection under financial review", description: "A financial notification needs office review. Do not pay again until the collection and booking outcome have been verified.", totals: "Paid totals show historical collections, not net funds after refunds or voids. Reversed amounts require verification.", count: "Collections requiring review", unallocated: "Global unallocated review count (all clients, currencies and dates)", orderVerification: "Payment link needs office verification", orderDescription: "This earlier payment link needs verification against its provider order. Do not continue or pay again until the office checks its outcome. This notice does not confirm that money was received." }
+} as const;
+
 const apiExactMessages: Record<string, string> = {
+  [paymentApiSourceMessages.orderMismatch]: "طلب الدفع لا يطابق محاولة دفع محفوظة.",
+  [paymentApiSourceMessages.orderMissing]: "معرّف طلب الدفع أو المعاملة غير موجود.",
+  [paymentApiSourceMessages.checkoutOrderMissing]: "تعذر تجهيز رابط الدفع. حاول مرة أخرى لاحقًا.",
+  [paymentApiSourceMessages.reviewChanged]: "تغيّرت تفاصيل دفع الحجز. ارجع وراجع الحجز قبل الدفع.",
   "Authentication required.": "يجب تسجيل الدخول للمتابعة.",
   "Active session required.": "انتهت الجلسة أو لم تعد نشطة. سجل الدخول مرة أخرى.",
   [plan35ApiErrorSourceMessages.APPOINTMENT_CONFLICT]: plan35ApiErrorCopy.APPOINTMENT_CONFLICT.message,

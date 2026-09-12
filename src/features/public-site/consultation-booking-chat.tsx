@@ -626,6 +626,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
           draft: checkoutDraft,
           selectedSlot,
           consent: true,
+          expectedPrice: paymentReview,
           confirmPayment: true
         })
       });
@@ -633,6 +634,12 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       if (!response.ok) {
         trackClientAnalyticsEvent("booking.submit_failed", { locale: activeLocale, status: response.status, step: "checkout" });
         appendRecoverableError(errorMessage(body, copy));
+        if (response.status === 409) {
+          setReadyToCheckout(false);
+          setPaymentReview(null);
+          // Refresh the summary without confirming or starting another checkout.
+          await sendBookingMessage(copy.payBooking, { flow: "booking", selectedSlot, draftPatch: checkoutDraft });
+        }
         return;
       }
 

@@ -1,4 +1,6 @@
+import { paymentRequiresReview, paymentNeedsOrderVerification } from "@/lib/legal-finance";
 import Link from "next/link";
+import { paymentReviewCopy } from "@/lib/ui-copy";
 import { ClientPortalMetric, ClientSiteShell, clientPortalRowClass, clientPortalSecondaryActionClass, clientPortalTableClass } from "@/components/layout";
 import { Badge, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
@@ -38,7 +40,7 @@ function attemptTone(status: string) {
 }
 
 function paymentReceiptLink(payment: PaymentRow) {
-  if (payment.status !== "PAID" || !payment.paymentAttempt?.id) {
+  if (payment.status !== "PAID" || payment.paymentAttempt?.status !== "PAID" || paymentRequiresReview(payment.paymentAttempt)) {
     return null;
   }
 
@@ -70,7 +72,7 @@ function paymentColumns(copy: ClientContent, locale: ClientLocale): Array<DataTa
       )
   },
   { key: "amount", header: copy.common.amount, render: (row) => formatMoney(row.amount.toString(), row.currency, locale) },
-  { key: "status", header: copy.common.status, render: (row) => <Badge tone={statusTone(row.status)}>{copy.statuses.payment[row.status as keyof typeof copy.statuses.payment] ?? copy.common.unknown}</Badge> },
+  { key: "status", header: copy.common.status, render: (row) => <Badge tone={paymentRequiresReview(row.paymentAttempt) ? "danger" : statusTone(row.status)}>{paymentRequiresReview(row.paymentAttempt) ? paymentReviewCopy[locale].review : copy.statuses.payment[row.status as keyof typeof copy.statuses.payment] ?? copy.common.unknown}</Badge> },
   { key: "issueDate", header: copy.common.issued, render: (row) => formatDateTime(row.issueDate, locale) },
   { key: "dueDate", header: copy.common.dueDate, render: (row) => formatDateTime(row.dueDate, locale) },
   {
@@ -98,7 +100,7 @@ function MobileCard({ row, copy, locale }: { row: PaymentRow; copy: ClientConten
       className={clientPortalRowClass}
       title={row.invoiceNumber}
       description={row.receiptNumber ? `${copy.common.receipt}: ${row.receiptNumber}` : undefined}
-      badges={<Badge tone={statusTone(row.status)}>{copy.statuses.payment[row.status as keyof typeof copy.statuses.payment] ?? copy.common.unknown}</Badge>}
+      badges={<Badge tone={paymentRequiresReview(row.paymentAttempt) ? "danger" : statusTone(row.status)}>{paymentRequiresReview(row.paymentAttempt) ? paymentReviewCopy[locale].review : copy.statuses.payment[row.status as keyof typeof copy.statuses.payment] ?? copy.common.unknown}</Badge>}
       fields={[
         {
           label: copy.common.case,
@@ -142,23 +144,23 @@ function GatewayAttemptCards({ attempts, copy, locale }: { attempts: PaymentAtte
   return (
     <section className="space-y-3" aria-labelledby="client-payment-attempts-title">
       <div>
-        <h2 id="client-payment-attempts-title" className="text-lg font-semibold text-kmt-ink">
+        <h2 id="client-payment-attempts-title" className="text-lg font-semibold text-white">
           {copy.payments.bookingAttempts}
         </h2>
-        <p className="mt-1 text-sm text-kmt-muted">{copy.payments.bookingAttemptsDescription}</p>
+        <p className="mt-1 text-sm text-slate-300">{copy.payments.bookingAttemptsDescription}</p>
       </div>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {attempts.map((attempt) => (
-          <div key={attempt.id} className="rounded border border-kmt-border bg-white p-4 shadow-sm">
+          <div key={attempt.id} className={clientPortalRowClass}>
             <div className="flex items-center justify-between gap-3">
               <p className="font-semibold text-kmt-ink">{formatMoney(attempt.amount.toString(), attempt.currency, locale)}</p>
-              <Badge tone={attemptTone(attempt.status)}>{copy.statuses.paymentAttempt[attempt.status as keyof typeof copy.statuses.paymentAttempt] ?? copy.common.unknown}</Badge>
+              <Badge tone={paymentRequiresReview(attempt) ? "danger" : attemptTone(attempt.status)}>{paymentNeedsOrderVerification(attempt) ? paymentReviewCopy[locale].orderVerification : paymentRequiresReview(attempt) ? paymentReviewCopy[locale].review : copy.statuses.paymentAttempt[attempt.status as keyof typeof copy.statuses.paymentAttempt] ?? copy.common.unknown}</Badge>
             </div>
             <p className="mt-2 text-sm leading-6 text-kmt-muted">{attempt.appointment.title}</p>
             <p className="text-sm leading-6 text-kmt-muted">{formatDateTime(attempt.appointment.startsAt, locale)}</p>
             {attempt.payment ? <p className="mt-2 text-sm text-kmt-muted">{copy.payments.paymentInvoice}: {attempt.payment.invoiceNumber}</p> : null}
             <div className="mt-4 flex flex-wrap gap-2">
-              {attempt.checkoutUrl && ["CREATED", "PENDING"].includes(attempt.status) ? (
+              {attempt.checkoutUrl && !paymentRequiresReview(attempt) && ["CREATED", "PENDING"].includes(attempt.status) ? (
                 <Link className={buttonClasses({ variant: "primary", size: "sm", className: `min-h-11 ${clientPortalSecondaryActionClass}` })} href={attempt.checkoutUrl}>
                   {copy.payments.continuePayment}
                 </Link>
@@ -198,6 +200,7 @@ export default async function ClientPaymentsPage() {
           <ClientPortalMetric icon="account_balance_wallet" label={copy.payments.dueTotal} tone={dueBalance > 0 ? "due" : "default"} value={formatMoney(dueBalance, "EGP", locale)} meta={copy.payments.dueTotalMeta} />
           <ClientPortalMetric icon="receipt_long" label={copy.payments.records} value={String(payments.length)} meta={copy.payments.allRecordsMeta} />
         </div>
+        {payments.some(row => paymentRequiresReview(row.paymentAttempt)) ? <p className="text-sm text-kmt-muted">{paymentReviewCopy[locale].totals}</p> : null}
         <GatewayAttemptCards attempts={activeGatewayAttempts} copy={copy} locale={locale} />
         <DataTable
           className={clientPortalTableClass}

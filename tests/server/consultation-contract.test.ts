@@ -623,7 +623,8 @@ describe("public consultation contract", () => {
       },
       selectedSlot: "2026-07-05T10:00:00+03:00",
       consent: true,
-      confirmPayment: true
+      confirmPayment: true,
+      expectedPrice: {amount:"750",currency:"EGP",pricingRuleId:"11111111-1111-4111-8111-111111111111",priceVersion:1,serviceCategory:"corporate-business-services",mode:"ONLINE"}
     });
 
     expect(checkout.confirmPayment).toBe(true);
