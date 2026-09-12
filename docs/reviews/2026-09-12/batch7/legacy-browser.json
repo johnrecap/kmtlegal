@@ -1,0 +1,372 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config",
+      "_workspace/batch7-legacy.config.ts",
+      "plan36-consultation-outcomes.spec.ts",
+      "plan37-consultation-overdue-unbooked.spec.ts",
+      "--workers=1",
+      "--reporter=json"
+    ],
+    "configFile": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\_workspace\\batch7-legacy.config.ts",
+    "rootDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\_workspace\\batch7-legacy-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/.playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "plan36-consultation-outcomes.spec.ts",
+      "file": "plan36-consultation-outcomes.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "PLAN-36 consultation outcome queues",
+          "file": "plan36-consultation-outcomes.spec.ts",
+          "line": 24,
+          "column": 6,
+          "specs": [
+            {
+              "title": "keeps all outcome tabs shareable and RTL at 1440px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8611,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:23:59.807Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d74c891bf543e89fe6f7-3e95e5972d4afc0caf50",
+              "file": "plan36-consultation-outcomes.spec.ts",
+              "line": 28,
+              "column": 9
+            },
+            {
+              "title": "keeps all outcome tabs shareable and RTL at 390px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4475,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:24:08.943Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d74c891bf543e89fe6f7-4573d15f20f2c8bc4b83",
+              "file": "plan36-consultation-outcomes.spec.ts",
+              "line": 28,
+              "column": 9
+            }
+          ]
+        },
+        {
+          "title": "PLAN-36 manual result confirmation",
+          "file": "plan36-consultation-outcomes.spec.ts",
+          "line": 52,
+          "column": 6,
+          "specs": [
+            {
+              "title": "records a successful result, rejects a stale editor, and audits the correction",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 19085,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:24:13.440Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d74c891bf543e89fe6f7-09e9e6d0622bef04433b",
+              "file": "plan36-consultation-outcomes.spec.ts",
+              "line": 58,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "PLAN-36 missed consultation recovery",
+          "file": "plan36-consultation-outcomes.spec.ts",
+          "line": 118,
+          "column": 6,
+          "specs": [
+            {
+              "title": "preserves entered values after a conflict and then reopens with a free future slot",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9922,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:24:32.547Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d74c891bf543e89fe6f7-c934d7a1927e946a5eb5",
+              "file": "plan36-consultation-outcomes.spec.ts",
+              "line": 129,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "plan37-consultation-overdue-unbooked.spec.ts",
+      "file": "plan37-consultation-overdue-unbooked.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "PLAN-37 overdue-unbooked queue",
+          "file": "plan37-consultation-overdue-unbooked.spec.ts",
+          "line": 23,
+          "column": 6,
+          "specs": [
+            {
+              "title": "keeps the overdue queue shareable, explained, and RTL at 1440px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8916,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:24:42.510Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "989c33ac3174ae0ac8fe-39959194f231174758bd",
+              "file": "plan37-consultation-overdue-unbooked.spec.ts",
+              "line": 27,
+              "column": 9
+            },
+            {
+              "title": "keeps the overdue queue shareable, explained, and RTL at 390px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4572,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:24:51.462Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "989c33ac3174ae0ac8fe-0e0687ab68fd7d7760d7",
+              "file": "plan37-consultation-overdue-unbooked.spec.ts",
+              "line": 27,
+              "column": 9
+            }
+          ]
+        },
+        {
+          "title": "PLAN-37 atomic initial scheduling",
+          "file": "plan37-consultation-overdue-unbooked.spec.ts",
+          "line": 62,
+          "column": 6,
+          "specs": [
+            {
+              "title": "preserves the form on conflict and schedules a free future slot on mobile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 9655,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:24:56.054Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "989c33ac3174ae0ac8fe-476b6ff8adc49cc64a37",
+              "file": "plan37-consultation-overdue-unbooked.spec.ts",
+              "line": 73,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-12T16:23:55.374Z",
+    "duration": 70605.471,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

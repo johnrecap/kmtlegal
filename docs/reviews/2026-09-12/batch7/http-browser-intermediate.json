@@ -1,0 +1,612 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "tests/e2e/batch7-office.spec.ts",
+      "--workers=1",
+      "--reporter=json"
+    ],
+    "configFile": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\playwright.config.ts",
+    "rootDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/.playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "batch7-office.spec.ts",
+      "file": "batch7-office.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "batch7 isolated office network",
+          "file": "batch7-office.spec.ts",
+          "line": 22,
+          "column": 6,
+          "specs": [
+            {
+              "title": "client cannot retrieve the staff-only detail of their own case",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4482,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:26:31.399Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-9ea61d9e834c93832f14",
+              "file": "batch7-office.spec.ts",
+              "line": 44,
+              "column": 7
+            },
+            {
+              "title": "client cannot retrieve the staff-only CRM detail of their own profile",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4379,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:26:41.610Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-49df9389936af09268b1",
+              "file": "batch7-office.spec.ts",
+              "line": 48,
+              "column": 7
+            },
+            {
+              "title": "assigned client CRM does not reveal another lawyer's case through nested summaries",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 823,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:26:46.026Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-2137d9987a3ec5ed95d2",
+              "file": "batch7-office.spec.ts",
+              "line": 52,
+              "column": 7
+            },
+            {
+              "title": "assignment accepts an active lawyer and synchronizes resources while revoking former assigned access",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13470,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:26:46.882Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-dbb75030f36c5760eda0",
+              "file": "batch7-office.spec.ts",
+              "line": 60,
+              "column": 7
+            },
+            {
+              "title": "past outcome correction rejects stale editors and concurrent conversion creates one linked case",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 10185,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:27:00.421Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-226ff577d6dcf74ccea8",
+              "file": "batch7-office.spec.ts",
+              "line": 77,
+              "column": 7
+            },
+            {
+              "title": "future appointments reject completed outcomes and cancel through the existing rejection action",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4866,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:27:10.637Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-4fc6b053d3937760932d",
+              "file": "batch7-office.spec.ts",
+              "line": 97,
+              "column": 7
+            },
+            {
+              "title": "manual case token is idempotent and edits enforce versions and reassignment boundaries",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 2658,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[32m-   200,\u001b[39m\n\u001b[2m    201,\u001b[22m\n\u001b[31m+   409,\u001b[39m\n\u001b[2m  ]\u001b[22m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[32m-   200,\u001b[39m\n\u001b[2m    201,\u001b[22m\n\u001b[31m+   409,\u001b[39m\n\u001b[2m  ]\u001b[22m\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts:106:47",
+                        "location": {
+                          "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                          "column": 47,
+                          "line": 106
+                        },
+                        "snippet": "  104 |   test(\"manual case token is idempotent and edits enforce versions and reassignment boundaries\",async()=>{\n  105 |     const body=manualBody();const created=await Promise.all([post(actors[0].api,\"/api/admin/cases\",body),post(actors[0].api,\"/api/admin/cases\",body)]);\n> 106 |     expect(created.map(r=>r.status()).sort()).toEqual([200,201]);expect(await prisma.legalCase.count({where:{id:body.requestToken}})).toBe(1);\n      |                                               ^\n  107 |     expect((await post(actors[0].api,\"/api/admin/cases\",{...body,title:\"Changed payload\"})).status()).toBe(409);\n  108 |     expect((await post(actors[1].api,\"/api/admin/cases\",manualBody())).status()).toBe(403);\n  109 |     const url=`/api/admin/cases/${body.requestToken}`;const existing=(await(await actors[0].api.get(url)).json()).data;"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                            "column": 47,
+                            "line": 106
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[32m-   200,\u001b[39m\n\u001b[2m    201,\u001b[22m\n\u001b[31m+   409,\u001b[39m\n\u001b[2m  ]\u001b[22m\n\n  104 |   test(\"manual case token is idempotent and edits enforce versions and reassignment boundaries\",async()=>{\n  105 |     const body=manualBody();const created=await Promise.all([post(actors[0].api,\"/api/admin/cases\",body),post(actors[0].api,\"/api/admin/cases\",body)]);\n> 106 |     expect(created.map(r=>r.status()).sort()).toEqual([200,201]);expect(await prisma.legalCase.count({where:{id:body.requestToken}})).toBe(1);\n      |                                               ^\n  107 |     expect((await post(actors[0].api,\"/api/admin/cases\",{...body,title:\"Changed payload\"})).status()).toBe(409);\n  108 |     expect((await post(actors[1].api,\"/api/admin/cases\",manualBody())).status()).toBe(403);\n  109 |     const url=`/api/admin/cases/${body.requestToken}`;const existing=(await(await actors[0].api.get(url)).json()).data;\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts:106:47"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:27:15.537Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-1dfe5-and-reassignment-boundaries-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-1dfe5-and-reassignment-boundaries-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-1dfe5-and-reassignment-boundaries-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                        "column": 47,
+                        "line": 106
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-40b629c73bd5449905a8",
+              "file": "batch7-office.spec.ts",
+              "line": 104,
+              "column": 7
+            },
+            {
+              "title": "other clients and unprivileged staff cannot access lists details writes or internal notes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 16333,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:27:19.388Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-96ba51ddfadebcf9f1e1",
+              "file": "batch7-office.spec.ts",
+              "line": 119,
+              "column": 7
+            },
+            {
+              "title": "archival preserves historical access but blocks new manual cases for archived clients",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 13615,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:27:38.885Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-88ab72fecd98cbe912ef",
+              "file": "batch7-office.spec.ts",
+              "line": 131,
+              "column": 7
+            },
+            {
+              "title": "CRM related appointments requests and counts match independent scopes, including a client-only reader",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7723,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:27:52.561Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-e58d0de48a132efae51e",
+              "file": "batch7-office.spec.ts",
+              "line": 140,
+              "column": 7
+            },
+            {
+              "title": "manual case browser journey preserves invalid input and opens scoped results at 390px",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 150000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 21690,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/admin\\/cases\\/2a3b195a-f626-4aab-b020-ad3e7be13aa0/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:3111/admin/cases/new?clientId=f69e2726-86ce-4743-b2e4-19673748543f\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    22 × unexpected value \"http://127.0.0.1:3111/admin/cases/new?clientId=f69e2726-86ce-4743-b2e4-19673748543f\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/admin\\/cases\\/2a3b195a-f626-4aab-b020-ad3e7be13aa0/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:3111/admin/cases/new?clientId=f69e2726-86ce-4743-b2e4-19673748543f\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    22 × unexpected value \"http://127.0.0.1:3111/admin/cases/new?clientId=f69e2726-86ce-4743-b2e4-19673748543f\"\u001b[22m\n\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts:180:24",
+                        "location": {
+                          "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                          "column": 24,
+                          "line": 180
+                        },
+                        "snippet": "  178 |     const response=page.waitForResponse(r=>new URL(r.url()).pathname===\"/api/admin/cases\"&&r.request().method()===\"POST\");\n  179 |     await form.locator('button[type=\"submit\"]').click();const created=await response;expect(created.status()).toBe(201);const data=(await created.json()).data.case;\n> 180 |     await expect(page).toHaveURL(new RegExp(`/admin/cases/${data.id}`));await expect(page.locator(\"body\")).toContainText(title);\n      |                        ^\n  181 |     await page.goto(`/admin/cases?q=${encodeURIComponent(title)}`);const link=page.locator(`a[href=\"/admin/cases/${data.id}\"]`).filter({visible:true}).first();await expect(link).toBeVisible();await link.click();\n  182 |     await expect(page).toHaveURL(new RegExp(`/admin/cases/${data.id}`));\n  183 |     expect(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(1);"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                            "column": 24,
+                            "line": 180
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mpage\u001b[39m\u001b[2m).\u001b[22mtoHaveURL\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nExpected pattern: \u001b[32m/\\/admin\\/cases\\/2a3b195a-f626-4aab-b020-ad3e7be13aa0/\u001b[39m\nReceived string:  \u001b[31m\"http://127.0.0.1:3111/admin/cases/new?clientId=f69e2726-86ce-4743-b2e4-19673748543f\"\u001b[39m\nTimeout: 10000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveURL\" with timeout 10000ms\u001b[22m\n\u001b[2m    22 × unexpected value \"http://127.0.0.1:3111/admin/cases/new?clientId=f69e2726-86ce-4743-b2e4-19673748543f\"\u001b[22m\n\n\n  178 |     const response=page.waitForResponse(r=>new URL(r.url()).pathname===\"/api/admin/cases\"&&r.request().method()===\"POST\");\n  179 |     await form.locator('button[type=\"submit\"]').click();const created=await response;expect(created.status()).toBe(201);const data=(await created.json()).data.case;\n> 180 |     await expect(page).toHaveURL(new RegExp(`/admin/cases/${data.id}`));await expect(page.locator(\"body\")).toContainText(title);\n      |                        ^\n  181 |     await page.goto(`/admin/cases?q=${encodeURIComponent(title)}`);const link=page.locator(`a[href=\"/admin/cases/${data.id}\"]`).filter({visible:true}).first();await expect(link).toBeVisible();await link.click();\n  182 |     await expect(page).toHaveURL(new RegExp(`/admin/cases/${data.id}`));\n  183 |     expect(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(1);\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts:180:24"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:28:00.329Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-8a591-ens-scoped-results-at-390px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-8a591-ens-scoped-results-at-390px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-8a591-ens-scoped-results-at-390px-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                        "column": 24,
+                        "line": 180
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-d3929c69e2ba7889d54e",
+              "file": "batch7-office.spec.ts",
+              "line": 167,
+              "column": 42
+            },
+            {
+              "title": "manual case browser journey preserves invalid input and opens scoped results at 768px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 150000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 22537,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:28:24.144Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-ac2f76562053337eba20",
+              "file": "batch7-office.spec.ts",
+              "line": 167,
+              "column": 42
+            },
+            {
+              "title": "manual case browser journey preserves invalid input and opens scoped results at 1440px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 150000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 15637,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:28:50.093Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-e6f713409f6071890365",
+              "file": "batch7-office.spec.ts",
+              "line": 167,
+              "column": 42
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-12T16:26:30.129Z",
+    "duration": 155934.544,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

@@ -242,7 +242,8 @@
     {
       "path": "src/app/(client)/client/cases/[caseId]/page.tsx",
       "contracts": [
-        "ButtonLink"
+        "ButtonLink",
+        "design-system-tokens"
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/product-components.test.tsx"
@@ -252,7 +253,8 @@
       "contracts": [
         "DataTable",
         "DataTableColumn",
-        "button"
+        "button",
+        "design-system-tokens"
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/product-components.test.tsx"

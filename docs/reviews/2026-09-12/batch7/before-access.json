@@ -1,0 +1,312 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "tests/e2e/batch7-office.spec.ts",
+      "--workers=1",
+      "--reporter=json"
+    ],
+    "configFile": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\playwright.config.ts",
+    "rootDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/.playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "batch7-office.spec.ts",
+      "file": "batch7-office.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "batch7 isolated office network",
+          "file": "batch7-office.spec.ts",
+          "line": 13,
+          "column": 6,
+          "specs": [
+            {
+              "title": "client cannot retrieve the staff-only detail of their own case",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 4361,
+                      "error": {
+                        "message": "Error: {\"data\":{\"id\":\"5c61ae12-53d5-4159-9fb8-9629f55c5e11\",\"internalFileNumber\":\"BATCH7-efda60ac-0\",\"clientId\":\"fdebc414-c9fd-4862-bbec-21326c8c97ad\",\"assignedLawyerId\":\"e111c401-5533-48af-a89a-7bbf87a88c8d\",\"consultationRequestId\":null,\"title\":\"BATCH7-efda60ac case 0\",\"caseType\":\"BATCH7-efda60ac type 0\",\"courtName\":null,\"externalCaseNumber\":null,\"status\":\"ACTIVE\",\"priority\":\"NORMAL\",\"summary\":\"Synthetic client-safe summary\",\"nextSessionAt\":null,\"createdAt\":\"2026-09-12T16:07:53.732Z\",\"updatedAt\":\"2026-09-12T16:07:53.732Z\",\"deletedAt\":null,\"client\":{\"id\":\"fdebc414-c9fd-4862-bbec-21326c8c97ad\",\"fullName\":\"BATCH7-efda60ac client 0\",\"phone\":\"+201292737080\",\"email\":null,\"city\":null,\"userId\":\"422732fc-6cd8-4837-8260-ceb35dde8e03\"},\"assignedLawyer\":{\"id\":\"e111c401-5533-48af-a89a-7bbf87a88c8d\",\"name\":\"BATCH7-efda60ac actor 1\",\"email\":\"batch7-efda60ac-1@example.test\"},\"parties\":[{\"id\":\"520f73d6-b2ed-47e5-938a-b0d159231482\",\"name\":\"Synthetic party\",\"partyType\":\"OTHER\",\"notes\":\"BATCH7-efda60ac INTERNAL PARTY NOTE\"}],\"sessions\":[],\"appointments\":[],\"_count\":{\"parties\":1,\"sessions\":0,\"appointments\":0,\"documents\":0,\"tasks\":0},\"access\":{\"canUpdate\":false,\"canManageSessions\":false}},\"requestId\":\"e3fff802-ccd7-4a02-8ec7-63aee9807a3d\"}\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m200\u001b[39m\nReceived array: \u001b[31m[403, 404]\u001b[39m",
+                        "stack": "Error: {\"data\":{\"id\":\"5c61ae12-53d5-4159-9fb8-9629f55c5e11\",\"internalFileNumber\":\"BATCH7-efda60ac-0\",\"clientId\":\"fdebc414-c9fd-4862-bbec-21326c8c97ad\",\"assignedLawyerId\":\"e111c401-5533-48af-a89a-7bbf87a88c8d\",\"consultationRequestId\":null,\"title\":\"BATCH7-efda60ac case 0\",\"caseType\":\"BATCH7-efda60ac type 0\",\"courtName\":null,\"externalCaseNumber\":null,\"status\":\"ACTIVE\",\"priority\":\"NORMAL\",\"summary\":\"Synthetic client-safe summary\",\"nextSessionAt\":null,\"createdAt\":\"2026-09-12T16:07:53.732Z\",\"updatedAt\":\"2026-09-12T16:07:53.732Z\",\"deletedAt\":null,\"client\":{\"id\":\"fdebc414-c9fd-4862-bbec-21326c8c97ad\",\"fullName\":\"BATCH7-efda60ac client 0\",\"phone\":\"+201292737080\",\"email\":null,\"city\":null,\"userId\":\"422732fc-6cd8-4837-8260-ceb35dde8e03\"},\"assignedLawyer\":{\"id\":\"e111c401-5533-48af-a89a-7bbf87a88c8d\",\"name\":\"BATCH7-efda60ac actor 1\",\"email\":\"batch7-efda60ac-1@example.test\"},\"parties\":[{\"id\":\"520f73d6-b2ed-47e5-938a-b0d159231482\",\"name\":\"Synthetic party\",\"partyType\":\"OTHER\",\"notes\":\"BATCH7-efda60ac INTERNAL PARTY NOTE\"}],\"sessions\":[],\"appointments\":[],\"_count\":{\"parties\":1,\"sessions\":0,\"appointments\":0,\"documents\":0,\"tasks\":0},\"access\":{\"canUpdate\":false,\"canManageSessions\":false}},\"requestId\":\"e3fff802-ccd7-4a02-8ec7-63aee9807a3d\"}\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m200\u001b[39m\nReceived array: \u001b[31m[403, 404]\u001b[39m\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts:37:45",
+                        "location": {
+                          "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                          "column": 45,
+                          "line": 37
+                        },
+                        "snippet": "  35 |   test(\"client cannot retrieve the staff-only detail of their own case\",async()=>{\n  36 |     const response=await actors[3].api.get(`/api/admin/cases/${cases[0].id}`);\n> 37 |     expect([403,404],await response.text()).toContain(response.status());\n     |                                             ^\n  38 |   });\n  39 |   test(\"client cannot retrieve the staff-only CRM detail of their own profile\",async()=>{\n  40 |     const response=await actors[3].api.get(`/api/admin/clients/${clients[0].id}`);"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                            "column": 45,
+                            "line": 37
+                          },
+                          "message": "Error: {\"data\":{\"id\":\"5c61ae12-53d5-4159-9fb8-9629f55c5e11\",\"internalFileNumber\":\"BATCH7-efda60ac-0\",\"clientId\":\"fdebc414-c9fd-4862-bbec-21326c8c97ad\",\"assignedLawyerId\":\"e111c401-5533-48af-a89a-7bbf87a88c8d\",\"consultationRequestId\":null,\"title\":\"BATCH7-efda60ac case 0\",\"caseType\":\"BATCH7-efda60ac type 0\",\"courtName\":null,\"externalCaseNumber\":null,\"status\":\"ACTIVE\",\"priority\":\"NORMAL\",\"summary\":\"Synthetic client-safe summary\",\"nextSessionAt\":null,\"createdAt\":\"2026-09-12T16:07:53.732Z\",\"updatedAt\":\"2026-09-12T16:07:53.732Z\",\"deletedAt\":null,\"client\":{\"id\":\"fdebc414-c9fd-4862-bbec-21326c8c97ad\",\"fullName\":\"BATCH7-efda60ac client 0\",\"phone\":\"+201292737080\",\"email\":null,\"city\":null,\"userId\":\"422732fc-6cd8-4837-8260-ceb35dde8e03\"},\"assignedLawyer\":{\"id\":\"e111c401-5533-48af-a89a-7bbf87a88c8d\",\"name\":\"BATCH7-efda60ac actor 1\",\"email\":\"batch7-efda60ac-1@example.test\"},\"parties\":[{\"id\":\"520f73d6-b2ed-47e5-938a-b0d159231482\",\"name\":\"Synthetic party\",\"partyType\":\"OTHER\",\"notes\":\"BATCH7-efda60ac INTERNAL PARTY NOTE\"}],\"sessions\":[],\"appointments\":[],\"_count\":{\"parties\":1,\"sessions\":0,\"appointments\":0,\"documents\":0,\"tasks\":0},\"access\":{\"canUpdate\":false,\"canManageSessions\":false}},\"requestId\":\"e3fff802-ccd7-4a02-8ec7-63aee9807a3d\"}\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m200\u001b[39m\nReceived array: \u001b[31m[403, 404]\u001b[39m\n\n  35 |   test(\"client cannot retrieve the staff-only detail of their own case\",async()=>{\n  36 |     const response=await actors[3].api.get(`/api/admin/cases/${cases[0].id}`);\n> 37 |     expect([403,404],await response.text()).toContain(response.status());\n     |                                             ^\n  38 |   });\n  39 |   test(\"client cannot retrieve the staff-only CRM detail of their own profile\",async()=>{\n  40 |     const response=await actors[3].api.get(`/api/admin/clients/${clients[0].id}`);\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts:37:45"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:07:47.770Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-2e925-ly-detail-of-their-own-case-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-2e925-ly-detail-of-their-own-case-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-2e925-ly-detail-of-their-own-case-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                        "column": 45,
+                        "line": 37
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-9ea61d9e834c93832f14",
+              "file": "batch7-office.spec.ts",
+              "line": 35,
+              "column": 7
+            },
+            {
+              "title": "client cannot retrieve the staff-only CRM detail of their own profile",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 4303,
+                      "error": {
+                        "message": "Error: {\"data\":{\"id\":\"6cf367ab-4568-4c73-946a-483848d8a8aa\",\"userId\":\"18376a45-5239-492a-a4f4-4be3d6d5464c\",\"fullName\":\"BATCH7-1b259cd5 client 0\",\"phone\":\"+201292824200\",\"phoneCanonical\":null,\"email\":null,\"city\":null,\"source\":\"BATCH7-1b259cd5\",\"status\":\"ACTIVE\",\"assignedLawyerId\":\"3adcf89a-fa27-4dae-95b1-a8563d43f1c2\",\"createdAt\":\"2026-09-12T16:08:02.421Z\",\"updatedAt\":\"2026-09-12T16:08:02.421Z\",\"deletedAt\":null,\"user\":{\"id\":\"18376a45-5239-492a-a4f4-4be3d6d5464c\",\"email\":\"batch7-1b259cd5-3@example.test\",\"phone\":null,\"status\":\"ACTIVE\",\"locale\":\"ar\"},\"assignedLawyer\":{\"id\":\"3adcf89a-fa27-4dae-95b1-a8563d43f1c2\",\"name\":\"BATCH7-1b259cd5 actor 1\",\"email\":\"batch7-1b259cd5-1@example.test\"},\"cases\":[{\"id\":\"3a3edb37-8c06-43e9-ba46-3fd9a5f2ed80\",\"internalFileNumber\":\"BATCH7-1b259cd5-1\",\"title\":\"BATCH7-1b259cd5 case 1\",\"caseType\":\"BATCH7-1b259cd5 type 1\",\"status\":\"ACTIVE\",\"priority\":\"NORMAL\",\"nextSessionAt\":null,\"assignedLawyer\":{\"id\":\"4877ee3d-183b-49ea-82cb-625cb0e4bff2\",\"name\":\"BATCH7-1b259cd5 actor 2\"}},{\"id\":\"198307e0-a1a3-4a7f-8727-9a1827356e24\",\"internalFileNumber\":\"BATCH7-1b259cd5-0\",\"title\":\"BATCH7-1b259cd5 case 0\",\"caseType\":\"BATCH7-1b259cd5 type 0\",\"status\":\"ACTIVE\",\"priority\":\"NORMAL\",\"nextSessionAt\":null,\"assignedLawyer\":{\"id\":\"3adcf89a-fa27-4dae-95b1-a8563d43f1c2\",\"name\":\"BATCH7-1b259cd5 actor 1\"}}],\"consultationRequests\":[],\"appointments\":[],\"_count\":{\"cases\":2,\"appointments\":0,\"documents\":0,\"consultationRequests\":0}},\"requestId\":\"d8342347-11e6-4da7-aa6e-5aac3a6001b1\"}\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m200\u001b[39m\nReceived array: \u001b[31m[403, 404]\u001b[39m",
+                        "stack": "Error: {\"data\":{\"id\":\"6cf367ab-4568-4c73-946a-483848d8a8aa\",\"userId\":\"18376a45-5239-492a-a4f4-4be3d6d5464c\",\"fullName\":\"BATCH7-1b259cd5 client 0\",\"phone\":\"+201292824200\",\"phoneCanonical\":null,\"email\":null,\"city\":null,\"source\":\"BATCH7-1b259cd5\",\"status\":\"ACTIVE\",\"assignedLawyerId\":\"3adcf89a-fa27-4dae-95b1-a8563d43f1c2\",\"createdAt\":\"2026-09-12T16:08:02.421Z\",\"updatedAt\":\"2026-09-12T16:08:02.421Z\",\"deletedAt\":null,\"user\":{\"id\":\"18376a45-5239-492a-a4f4-4be3d6d5464c\",\"email\":\"batch7-1b259cd5-3@example.test\",\"phone\":null,\"status\":\"ACTIVE\",\"locale\":\"ar\"},\"assignedLawyer\":{\"id\":\"3adcf89a-fa27-4dae-95b1-a8563d43f1c2\",\"name\":\"BATCH7-1b259cd5 actor 1\",\"email\":\"batch7-1b259cd5-1@example.test\"},\"cases\":[{\"id\":\"3a3edb37-8c06-43e9-ba46-3fd9a5f2ed80\",\"internalFileNumber\":\"BATCH7-1b259cd5-1\",\"title\":\"BATCH7-1b259cd5 case 1\",\"caseType\":\"BATCH7-1b259cd5 type 1\",\"status\":\"ACTIVE\",\"priority\":\"NORMAL\",\"nextSessionAt\":null,\"assignedLawyer\":{\"id\":\"4877ee3d-183b-49ea-82cb-625cb0e4bff2\",\"name\":\"BATCH7-1b259cd5 actor 2\"}},{\"id\":\"198307e0-a1a3-4a7f-8727-9a1827356e24\",\"internalFileNumber\":\"BATCH7-1b259cd5-0\",\"title\":\"BATCH7-1b259cd5 case 0\",\"caseType\":\"BATCH7-1b259cd5 type 0\",\"status\":\"ACTIVE\",\"priority\":\"NORMAL\",\"nextSessionAt\":null,\"assignedLawyer\":{\"id\":\"3adcf89a-fa27-4dae-95b1-a8563d43f1c2\",\"name\":\"BATCH7-1b259cd5 actor 1\"}}],\"consultationRequests\":[],\"appointments\":[],\"_count\":{\"cases\":2,\"appointments\":0,\"documents\":0,\"consultationRequests\":0}},\"requestId\":\"d8342347-11e6-4da7-aa6e-5aac3a6001b1\"}\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m200\u001b[39m\nReceived array: \u001b[31m[403, 404]\u001b[39m\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts:41:45",
+                        "location": {
+                          "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                          "column": 45,
+                          "line": 41
+                        },
+                        "snippet": "  39 |   test(\"client cannot retrieve the staff-only CRM detail of their own profile\",async()=>{\n  40 |     const response=await actors[3].api.get(`/api/admin/clients/${clients[0].id}`);\n> 41 |     expect([403,404],await response.text()).toContain(response.status());\n     |                                             ^\n  42 |   });\n  43 |   test(\"assigned client CRM does not reveal another lawyer's case through nested summaries\",async()=>{\n  44 |     expect([403,404]).toContain((await actors[1].api.get(`/api/admin/cases/${cases[1].id}`)).status());"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                            "column": 45,
+                            "line": 41
+                          },
+                          "message": "Error: {\"data\":{\"id\":\"6cf367ab-4568-4c73-946a-483848d8a8aa\",\"userId\":\"18376a45-5239-492a-a4f4-4be3d6d5464c\",\"fullName\":\"BATCH7-1b259cd5 client 0\",\"phone\":\"+201292824200\",\"phoneCanonical\":null,\"email\":null,\"city\":null,\"source\":\"BATCH7-1b259cd5\",\"status\":\"ACTIVE\",\"assignedLawyerId\":\"3adcf89a-fa27-4dae-95b1-a8563d43f1c2\",\"createdAt\":\"2026-09-12T16:08:02.421Z\",\"updatedAt\":\"2026-09-12T16:08:02.421Z\",\"deletedAt\":null,\"user\":{\"id\":\"18376a45-5239-492a-a4f4-4be3d6d5464c\",\"email\":\"batch7-1b259cd5-3@example.test\",\"phone\":null,\"status\":\"ACTIVE\",\"locale\":\"ar\"},\"assignedLawyer\":{\"id\":\"3adcf89a-fa27-4dae-95b1-a8563d43f1c2\",\"name\":\"BATCH7-1b259cd5 actor 1\",\"email\":\"batch7-1b259cd5-1@example.test\"},\"cases\":[{\"id\":\"3a3edb37-8c06-43e9-ba46-3fd9a5f2ed80\",\"internalFileNumber\":\"BATCH7-1b259cd5-1\",\"title\":\"BATCH7-1b259cd5 case 1\",\"caseType\":\"BATCH7-1b259cd5 type 1\",\"status\":\"ACTIVE\",\"priority\":\"NORMAL\",\"nextSessionAt\":null,\"assignedLawyer\":{\"id\":\"4877ee3d-183b-49ea-82cb-625cb0e4bff2\",\"name\":\"BATCH7-1b259cd5 actor 2\"}},{\"id\":\"198307e0-a1a3-4a7f-8727-9a1827356e24\",\"internalFileNumber\":\"BATCH7-1b259cd5-0\",\"title\":\"BATCH7-1b259cd5 case 0\",\"caseType\":\"BATCH7-1b259cd5 type 0\",\"status\":\"ACTIVE\",\"priority\":\"NORMAL\",\"nextSessionAt\":null,\"assignedLawyer\":{\"id\":\"3adcf89a-fa27-4dae-95b1-a8563d43f1c2\",\"name\":\"BATCH7-1b259cd5 actor 1\"}}],\"consultationRequests\":[],\"appointments\":[],\"_count\":{\"cases\":2,\"appointments\":0,\"documents\":0,\"consultationRequests\":0}},\"requestId\":\"d8342347-11e6-4da7-aa6e-5aac3a6001b1\"}\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: \u001b[32m200\u001b[39m\nReceived array: \u001b[31m[403, 404]\u001b[39m\n\n  39 |   test(\"client cannot retrieve the staff-only CRM detail of their own profile\",async()=>{\n  40 |     const response=await actors[3].api.get(`/api/admin/clients/${clients[0].id}`);\n> 41 |     expect([403,404],await response.text()).toContain(response.status());\n     |                                             ^\n  42 |   });\n  43 |   test(\"assigned client CRM does not reveal another lawyer's case through nested summaries\",async()=>{\n  44 |     expect([403,404]).toContain((await actors[1].api.get(`/api/admin/cases/${cases[1].id}`)).status());\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts:41:45"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:07:59.300Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-3c5a2-detail-of-their-own-profile-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-3c5a2-detail-of-their-own-profile-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-3c5a2-detail-of-their-own-profile-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                        "column": 45,
+                        "line": 41
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-49df9389936af09268b1",
+              "file": "batch7-office.spec.ts",
+              "line": 39,
+              "column": 7
+            },
+            {
+              "title": "assigned client CRM does not reveal another lawyer's case through nested summaries",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 858,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: not \u001b[32m\"07482a4e-ac56-4603-91ac-02be1d6cf922\"\u001b[39m\nReceived array:     \u001b[31m[\u001b[7m\"07482a4e-ac56-4603-91ac-02be1d6cf922\"\u001b[27m, \"50485365-49b5-49fd-a07b-749396b31973\"]\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: not \u001b[32m\"07482a4e-ac56-4603-91ac-02be1d6cf922\"\u001b[39m\nReceived array:     \u001b[31m[\u001b[7m\"07482a4e-ac56-4603-91ac-02be1d6cf922\"\u001b[27m, \"50485365-49b5-49fd-a07b-749396b31973\"]\u001b[39m\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts:47:61",
+                        "location": {
+                          "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                          "column": 61,
+                          "line": 47
+                        },
+                        "snippet": "  45 |     const response=await actors[1].api.get(`/api/admin/clients/${clients[0].id}`);expect(response.status()).toBe(200);\n  46 |     const data=(await response.json()).data;expect(data.cases.map((item:{id:string})=>item.id)).toContain(cases[0].id);\n> 47 |     expect(data.cases.map((item:{id:string})=>item.id)).not.toContain(cases[1].id);\n     |                                                             ^\n  48 |     expect(data._count.cases).toBe(1);\n  49 |   });\n  50 | });"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                            "column": 61,
+                            "line": 47
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mnot\u001b[2m.\u001b[22mtoContain\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // indexOf\u001b[22m\n\nExpected value: not \u001b[32m\"07482a4e-ac56-4603-91ac-02be1d6cf922\"\u001b[39m\nReceived array:     \u001b[31m[\u001b[7m\"07482a4e-ac56-4603-91ac-02be1d6cf922\"\u001b[27m, \"50485365-49b5-49fd-a07b-749396b31973\"]\u001b[39m\n\n  45 |     const response=await actors[1].api.get(`/api/admin/clients/${clients[0].id}`);expect(response.status()).toBe(200);\n  46 |     const data=(await response.json()).data;expect(data.cases.map((item:{id:string})=>item.id)).toContain(cases[0].id);\n> 47 |     expect(data.cases.map((item:{id:string})=>item.id)).not.toContain(cases[1].id);\n     |                                                             ^\n  48 |     expect(data._count.cases).toBe(1);\n  49 |   });\n  50 | });\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts:47:61"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:08:07.926Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-34c4f-se-through-nested-summaries-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-34c4f-se-through-nested-summaries-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\.playwright\\test-results\\batch7-office-batch7-isola-34c4f-se-through-nested-summaries-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\batch7-office.spec.ts",
+                        "column": 61,
+                        "line": 47
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "8188f42fb6a21fc046b1-2137d9987a3ec5ed95d2",
+              "file": "batch7-office.spec.ts",
+              "line": 43,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-12T16:07:46.335Z",
+    "duration": 25840.326999999997,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

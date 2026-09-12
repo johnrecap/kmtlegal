@@ -1,0 +1,146 @@
+{
+  "date": "2026-09-12",
+  "baseline": "ff988e8bbaf2b3ca7e82612071270819a4a5265e",
+  "scope": "Bounded Step 6 consultation/client/case operations; local commit for exact-hash supervisor review",
+  "network": {
+    "transport": "Actual Next HTTP plus isolated PostgreSQL 18, synthetic fixtures, no mocked HTTP or repository",
+    "mainUniqueScenarios": 14,
+    "latestPassingScenarios": 14,
+    "latestRemainingFailures": 0,
+    "scenarioMapping": "scenario-results.json",
+    "fullIntermediateRun": {
+      "passed": 11,
+      "failed": 2,
+      "report": "http-browser-intermediate.json"
+    },
+    "resolvedBy": [
+      "focused-final.json",
+      "visual-final.json"
+    ],
+    "legacyExistingBrowser": {
+      "passed": 7,
+      "skipped": 0,
+      "report": "legacy-browser.json"
+    },
+    "separateHandlerDatabaseSuite": false
+  },
+  "unit": {
+    "command": "npx vitest run --maxWorkers=1 --reporter=json --outputFile=docs/reviews/2026-09-12/batch7/unit-suite.json",
+    "passed": 522,
+    "failed": 0,
+    "skipped": 22,
+    "skipBreakdown": {
+      "batch2-isolated-db": 5,
+      "batch6-payment-trust": 17
+    },
+    "initialFailure": "Consumer disposition lacked two new existing-token imports; updated artifact and reran full suite"
+  },
+  "static": {
+    "typecheck": {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    "lint": {
+      "command": "npm run lint",
+      "exitCode": 0
+    },
+    "diffCheck": {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  },
+  "build": {
+    "command": "ALLOW_BUILD_WITHOUT_DATABASE_URL=true npm run build",
+    "exitCode": 0,
+    "staticPagesGenerated": 44,
+    "log": "build.log",
+    "warnings": "Webpack persistent-cache snapshot warnings; build completed successfully"
+  },
+  "visual": {
+    "widths": [
+      390,
+      768,
+      1440
+    ],
+    "locale": "ar",
+    "passed": 3,
+    "report": "visual-final.json",
+    "neutralBadgeForeground": "#64748b",
+    "neutralBadgeBackground": "#ffffff",
+    "contrastRatioApprox": 4.76,
+    "scope": "Client case list/detail only; keyboard and validation recovery; actual detail URL before screenshot; not broad design approval"
+  },
+  "database": {
+    "identity": {
+      "directory": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/batch7-postgres/data",
+      "port": 55438,
+      "database": "kmt_batch7"
+    },
+    "appliedMigrations": 18,
+    "otherConnections": 0,
+    "syntheticOnly": true
+  },
+  "cleanup": {
+    "clusterRemoved": true,
+    "ports": [
+      {
+        "port": 3111,
+        "open": false
+      },
+      {
+        "port": 55438,
+        "open": false
+      }
+    ]
+  },
+  "sourcePreservation": {
+    "baseline": "ff988e8bbaf2b3ca7e82612071270819a4a5265e",
+    "scope": "Static source comparison; runtime/database-populated URLs remain unverified.",
+    "before": {
+      "pageFiles": 58,
+      "apiRouteFiles": 100,
+      "apiOperations": 119,
+      "sourceFiles": 364
+    },
+    "after": {
+      "pageFiles": 58,
+      "apiRouteFiles": 100,
+      "apiOperations": 119,
+      "sourceFiles": 364
+    },
+    "changes": {
+      "arabicPatterns": {
+        "removed": [],
+        "added": []
+      },
+      "files": {
+        "removed": [],
+        "added": []
+      },
+      "routes": {
+        "removed": [],
+        "added": []
+      },
+      "links": {
+        "removed": [],
+        "added": []
+      },
+      "contentSlugs": {
+        "removed": [],
+        "added": []
+      }
+    }
+  },
+  "limitations": [
+    "Already-corrupted historical manual-create audit hashes not backfilled",
+    "No whole-office or production readiness claim",
+    "No live provider or deployment execution",
+    "English UI not exercised in this batch",
+    "No automatic closure of earlier release gates"
+  ],
+  "delivery": {
+    "pushPerformed": false,
+    "deploymentPerformed": false,
+    "requires": "Supervisor approval of exact local commit before push"
+  }
+}

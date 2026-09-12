@@ -110,7 +110,7 @@ export function canListAdminCases(actor: Principal) {
 }
 
 export function canReadAdminCase(actor: Principal, legalCase: CasePermissionProbe) {
-  return canReadCase(actor, {
+  return canListAdminCases(actor) && canReadCase(actor, {
     assignedLawyerId: legalCase.assignedLawyerId,
     clientUserId: legalCase.client?.userId ?? null
   });

@@ -1,0 +1,477 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config",
+      "_workspace/batch7-legacy.config.ts",
+      "plan36-consultation-outcomes.spec.ts",
+      "plan37-consultation-overdue-unbooked.spec.ts",
+      "--workers=1",
+      "--reporter=json"
+    ],
+    "configFile": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\_workspace\\batch7-legacy.config.ts",
+    "rootDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\_workspace\\batch7-legacy-setup.ts",
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/.playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "plan36-consultation-outcomes.spec.ts",
+      "file": "plan36-consultation-outcomes.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "PLAN-36 consultation outcome queues",
+          "file": "plan36-consultation-outcomes.spec.ts",
+          "line": 24,
+          "column": 6,
+          "specs": [
+            {
+              "title": "keeps all outcome tabs shareable and RTL at 1440px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8926,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:20:18.923Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d74c891bf543e89fe6f7-3e95e5972d4afc0caf50",
+              "file": "plan36-consultation-outcomes.spec.ts",
+              "line": 28,
+              "column": 9
+            },
+            {
+              "title": "keeps all outcome tabs shareable and RTL at 390px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5001,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:20:28.478Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "d74c891bf543e89fe6f7-4573d15f20f2c8bc4b83",
+              "file": "plan36-consultation-outcomes.spec.ts",
+              "line": 28,
+              "column": 9
+            }
+          ]
+        },
+        {
+          "title": "PLAN-36 manual result confirmation",
+          "file": "plan36-consultation-outcomes.spec.ts",
+          "line": 52,
+          "column": 6,
+          "specs": [
+            {
+              "title": "records a successful result, rejects a stale editor, and audits the correction",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 11802,
+                      "error": {
+                        "message": "Error: locator.selectOption: Error: strict mode violation: locator('select[name=\"reasonCode\"]') resolved to 2 elements:\n    1) <select required=\"\" name=\"reasonCode\" id=\"consultation-outcome-0b3d6fc7-b799-443d-bf9a-77096d0f307c-reasonCode\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka locator('form').filter({ hasText: 'النتيجة النهائيةاستشارة ناجحةلم يحضرملغاةسبب النتيجةاكتملت في موعدهاالعميل لم يح' }).getByLabel('سبب النتيجة')\n    2) <select required=\"\" name=\"reasonCode\" id=\"consultation-reject-0b3d6fc7-b799-443d-bf9a-77096d0f307c-reasonCode\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka locator('form').filter({ hasText: 'سبب النتيجةألغى المكتبألغى العميلسبب آخرسبب داخلي مختصررفض الطلب' }).getByLabel('سبب النتيجة')\n\nCall log:\n\u001b[2m  - waiting for locator('select[name=\"reasonCode\"]')\u001b[22m\n",
+                        "stack": "Error: locator.selectOption: Error: strict mode violation: locator('select[name=\"reasonCode\"]') resolved to 2 elements:\n    1) <select required=\"\" name=\"reasonCode\" id=\"consultation-outcome-0b3d6fc7-b799-443d-bf9a-77096d0f307c-reasonCode\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka locator('form').filter({ hasText: 'النتيجة النهائيةاستشارة ناجحةلم يحضرملغاةسبب النتيجةاكتملت في موعدهاالعميل لم يح' }).getByLabel('سبب النتيجة')\n    2) <select required=\"\" name=\"reasonCode\" id=\"consultation-reject-0b3d6fc7-b799-443d-bf9a-77096d0f307c-reasonCode\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka locator('form').filter({ hasText: 'سبب النتيجةألغى المكتبألغى العميلسبب آخرسبب داخلي مختصررفض الطلب' }).getByLabel('سبب النتيجة')\n\nCall log:\n\u001b[2m  - waiting for locator('select[name=\"reasonCode\"]')\u001b[22m\n\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan36-consultation-outcomes.spec.ts:69:53",
+                        "location": {
+                          "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan36-consultation-outcomes.spec.ts",
+                          "column": 53,
+                          "line": 69
+                        },
+                        "snippet": "  67 |\n  68 |     await page.locator('select[name=\"status\"]').selectOption(\"SUCCESSFUL\");\n> 69 |     await page.locator('select[name=\"reasonCode\"]').selectOption(\"COMPLETED_AS_SCHEDULED\");\n     |                                                     ^\n  70 |     await page.locator('input[name=\"confirm\"]').check();\n  71 |\n  72 |     const responsePromise = page.waitForResponse((response) =>"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan36-consultation-outcomes.spec.ts",
+                            "column": 53,
+                            "line": 69
+                          },
+                          "message": "Error: locator.selectOption: Error: strict mode violation: locator('select[name=\"reasonCode\"]') resolved to 2 elements:\n    1) <select required=\"\" name=\"reasonCode\" id=\"consultation-outcome-0b3d6fc7-b799-443d-bf9a-77096d0f307c-reasonCode\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka locator('form').filter({ hasText: 'النتيجة النهائيةاستشارة ناجحةلم يحضرملغاةسبب النتيجةاكتملت في موعدهاالعميل لم يح' }).getByLabel('سبب النتيجة')\n    2) <select required=\"\" name=\"reasonCode\" id=\"consultation-reject-0b3d6fc7-b799-443d-bf9a-77096d0f307c-reasonCode\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka locator('form').filter({ hasText: 'سبب النتيجةألغى المكتبألغى العميلسبب آخرسبب داخلي مختصررفض الطلب' }).getByLabel('سبب النتيجة')\n\nCall log:\n\u001b[2m  - waiting for locator('select[name=\"reasonCode\"]')\u001b[22m\n\n\n  67 |\n  68 |     await page.locator('select[name=\"status\"]').selectOption(\"SUCCESSFUL\");\n> 69 |     await page.locator('select[name=\"reasonCode\"]').selectOption(\"COMPLETED_AS_SCHEDULED\");\n     |                                                     ^\n  70 |     await page.locator('input[name=\"confirm\"]').check();\n  71 |\n  72 |     const responsePromise = page.waitForResponse((response) =>\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan36-consultation-outcomes.spec.ts:69:53"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:20:33.501Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\_workspace\\.playwright\\test-results\\plan36-consultation-outcom-3503b-r-and-audits-the-correction-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\_workspace\\.playwright\\test-results\\plan36-consultation-outcom-3503b-r-and-audits-the-correction-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan36-consultation-outcomes.spec.ts",
+                        "column": 53,
+                        "line": 69
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d74c891bf543e89fe6f7-09e9e6d0622bef04433b",
+              "file": "plan36-consultation-outcomes.spec.ts",
+              "line": 58,
+              "column": 7
+            }
+          ]
+        },
+        {
+          "title": "PLAN-36 missed consultation recovery",
+          "file": "plan36-consultation-outcomes.spec.ts",
+          "line": 117,
+          "column": 6,
+          "specs": [
+            {
+              "title": "preserves entered values after a conflict and then reopens with a free future slot",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 3656,
+                      "error": {
+                        "message": "Error: locator.selectOption: Error: strict mode violation: locator('form:has(select[name=\"assignedLawyerId\"])').locator('select[name=\"assignedLawyerId\"]') resolved to 3 elements:\n    1) <select required=\"\" name=\"assignedLawyerId\" id=\"consultation-reopen-2fc3a143-c0eb-4fa3-847d-7a4a552c401e-assignedLawyerId\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka getByLabel('المحامي المسؤول').first()\n    2) <select disabled required=\"\" name=\"assignedLawyerId\" id=\"consultation-assign-2fc3a143-c0eb-4fa3-847d-7a4a552c401e-assignedLawyerId\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka getByLabel('المحامي المسؤول').nth(1)\n    3) <select disabled name=\"assignedLawyerId\" id=\"consultation-convert-2fc3a143-c0eb-4fa3-847d-7a4a552c401e-assignedLawyerId\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka locator('form').filter({ hasText: 'المحامي المسؤولاستخدم التعيين الحاليBATCH7-1b259cd5 actor 1BATCH7-1b259cd5' }).getByLabel('المحامي المسؤول')\n\nCall log:\n\u001b[2m  - waiting for locator('form:has(select[name=\"assignedLawyerId\"])').locator('select[name=\"assignedLawyerId\"]')\u001b[22m\n",
+                        "stack": "Error: locator.selectOption: Error: strict mode violation: locator('form:has(select[name=\"assignedLawyerId\"])').locator('select[name=\"assignedLawyerId\"]') resolved to 3 elements:\n    1) <select required=\"\" name=\"assignedLawyerId\" id=\"consultation-reopen-2fc3a143-c0eb-4fa3-847d-7a4a552c401e-assignedLawyerId\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka getByLabel('المحامي المسؤول').first()\n    2) <select disabled required=\"\" name=\"assignedLawyerId\" id=\"consultation-assign-2fc3a143-c0eb-4fa3-847d-7a4a552c401e-assignedLawyerId\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka getByLabel('المحامي المسؤول').nth(1)\n    3) <select disabled name=\"assignedLawyerId\" id=\"consultation-convert-2fc3a143-c0eb-4fa3-847d-7a4a552c401e-assignedLawyerId\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka locator('form').filter({ hasText: 'المحامي المسؤولاستخدم التعيين الحاليBATCH7-1b259cd5 actor 1BATCH7-1b259cd5' }).getByLabel('المحامي المسؤول')\n\nCall log:\n\u001b[2m  - waiting for locator('form:has(select[name=\"assignedLawyerId\"])').locator('select[name=\"assignedLawyerId\"]')\u001b[22m\n\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan36-consultation-outcomes.spec.ts:138:59",
+                        "location": {
+                          "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan36-consultation-outcomes.spec.ts",
+                          "column": 59,
+                          "line": 138
+                        },
+                        "snippet": "  136 |\n  137 |     const form = page.locator('form:has(select[name=\"assignedLawyerId\"])');\n> 138 |     await form.locator('select[name=\"assignedLawyerId\"]').selectOption(assignedLawyerId);\n      |                                                           ^\n  139 |     await form.locator('input[name=\"startsAt\"]').fill(conflictingLocalTime);\n  140 |     await form.locator('input[name=\"durationMinutes\"]').fill(\"60\");\n  141 |     await form.locator('textarea[name=\"note\"]').fill(\"PLAN36 disposable conflict recovery\");"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan36-consultation-outcomes.spec.ts",
+                            "column": 59,
+                            "line": 138
+                          },
+                          "message": "Error: locator.selectOption: Error: strict mode violation: locator('form:has(select[name=\"assignedLawyerId\"])').locator('select[name=\"assignedLawyerId\"]') resolved to 3 elements:\n    1) <select required=\"\" name=\"assignedLawyerId\" id=\"consultation-reopen-2fc3a143-c0eb-4fa3-847d-7a4a552c401e-assignedLawyerId\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka getByLabel('المحامي المسؤول').first()\n    2) <select disabled required=\"\" name=\"assignedLawyerId\" id=\"consultation-assign-2fc3a143-c0eb-4fa3-847d-7a4a552c401e-assignedLawyerId\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka getByLabel('المحامي المسؤول').nth(1)\n    3) <select disabled name=\"assignedLawyerId\" id=\"consultation-convert-2fc3a143-c0eb-4fa3-847d-7a4a552c401e-assignedLawyerId\" class=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12\">…</select> aka locator('form').filter({ hasText: 'المحامي المسؤولاستخدم التعيين الحاليBATCH7-1b259cd5 actor 1BATCH7-1b259cd5' }).getByLabel('المحامي المسؤول')\n\nCall log:\n\u001b[2m  - waiting for locator('form:has(select[name=\"assignedLawyerId\"])').locator('select[name=\"assignedLawyerId\"]')\u001b[22m\n\n\n  136 |\n  137 |     const form = page.locator('form:has(select[name=\"assignedLawyerId\"])');\n> 138 |     await form.locator('select[name=\"assignedLawyerId\"]').selectOption(assignedLawyerId);\n      |                                                           ^\n  139 |     await form.locator('input[name=\"startsAt\"]').fill(conflictingLocalTime);\n  140 |     await form.locator('input[name=\"durationMinutes\"]').fill(\"60\");\n  141 |     await form.locator('textarea[name=\"note\"]').fill(\"PLAN36 disposable conflict recovery\");\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan36-consultation-outcomes.spec.ts:138:59"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:20:46.506Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\_workspace\\.playwright\\test-results\\plan36-consultation-outcom-133d1-ens-with-a-free-future-slot-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\_workspace\\.playwright\\test-results\\plan36-consultation-outcom-133d1-ens-with-a-free-future-slot-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan36-consultation-outcomes.spec.ts",
+                        "column": 59,
+                        "line": 138
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "d74c891bf543e89fe6f7-c934d7a1927e946a5eb5",
+              "file": "plan36-consultation-outcomes.spec.ts",
+              "line": 128,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "plan37-consultation-overdue-unbooked.spec.ts",
+      "file": "plan37-consultation-overdue-unbooked.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "PLAN-37 overdue-unbooked queue",
+          "file": "plan37-consultation-overdue-unbooked.spec.ts",
+          "line": 23,
+          "column": 6,
+          "specs": [
+            {
+              "title": "keeps the overdue queue shareable, explained, and RTL at 1440px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4334,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:20:51.515Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "989c33ac3174ae0ac8fe-39959194f231174758bd",
+              "file": "plan37-consultation-overdue-unbooked.spec.ts",
+              "line": 27,
+              "column": 9
+            },
+            {
+              "title": "keeps the overdue queue shareable, explained, and RTL at 390px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4058,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:20:56.265Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "989c33ac3174ae0ac8fe-0e0687ab68fd7d7760d7",
+              "file": "plan37-consultation-overdue-unbooked.spec.ts",
+              "line": 27,
+              "column": 9
+            }
+          ]
+        },
+        {
+          "title": "PLAN-37 atomic initial scheduling",
+          "file": "plan37-consultation-overdue-unbooked.spec.ts",
+          "line": 62,
+          "column": 6,
+          "specs": [
+            {
+              "title": "preserves the form on conflict and schedules a free future slot on mobile",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 11707,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Failed to load resource: the server responded with a status of 409 (Conflict)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Failed to load resource: the server responded with a status of 409 (Conflict)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan37-consultation-overdue-unbooked.spec.ts:107:27",
+                        "location": {
+                          "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan37-consultation-overdue-unbooked.spec.ts",
+                          "column": 27,
+                          "line": 107
+                        },
+                        "snippet": "  105 |     await expect(page.getByRole(\"heading\", { name: \"جدولة الطلب وإسناد محامٍ\" })).toHaveCount(0);\n  106 |     expect(await documentOverflow(page)).toBeLessThanOrEqual(1);\n> 107 |     expect(browserErrors).toEqual([]);\n      |                           ^\n  108 |   });\n  109 | });\n  110 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan37-consultation-overdue-unbooked.spec.ts",
+                            "column": 27,
+                            "line": 107
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Failed to load resource: the server responded with a status of 409 (Conflict)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  105 |     await expect(page.getByRole(\"heading\", { name: \"جدولة الطلب وإسناد محامٍ\" })).toHaveCount(0);\n  106 |     expect(await documentOverflow(page)).toBeLessThanOrEqual(1);\n> 107 |     expect(browserErrors).toEqual([]);\n      |                           ^\n  108 |   });\n  109 | });\n  110 |\n    at C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan37-consultation-overdue-unbooked.spec.ts:107:27"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-09-12T16:21:00.345Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\_workspace\\.playwright\\test-results\\plan37-consultation-overdu-5dfc7--free-future-slot-on-mobile-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\_workspace\\.playwright\\test-results\\plan37-consultation-overdu-5dfc7--free-future-slot-on-mobile-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\SOUQ\\.codex\\worktrees\\a701\\kmt legal office\\tests\\e2e\\plan37-consultation-overdue-unbooked.spec.ts",
+                        "column": 27,
+                        "line": 107
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "989c33ac3174ae0ac8fe-476b6ff8adc49cc64a37",
+              "file": "plan37-consultation-overdue-unbooked.spec.ts",
+              "line": 73,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-12T16:20:14.158Z",
+    "duration": 60329.729,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

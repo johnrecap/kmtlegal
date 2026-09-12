@@ -57,17 +57,18 @@ test.describe("PLAN-36 manual result confirmation", () => {
 
   test("records a successful result, rejects a stale editor, and audits the correction", async ({ page, context }) => {
     const consultationId = awaitingConsultationId!;
-    const browserErrors = collectBrowserErrors(page);
+    const browserErrors = collectBrowserErrors(page, `/api/admin/consultations/${consultationId}/outcome`);
     const stalePage = await context.newPage();
-    const staleBrowserErrors = collectBrowserErrors(stalePage);
+    const staleBrowserErrors = collectBrowserErrors(stalePage, `/api/admin/consultations/${consultationId}/outcome`);
     await Promise.all([
       page.goto(`/admin/consultations/${consultationId}`, { waitUntil: "networkidle" }),
       stalePage.goto(`/admin/consultations/${consultationId}`, { waitUntil: "networkidle" })
     ]);
 
-    await page.locator('select[name="status"]').selectOption("SUCCESSFUL");
-    await page.locator('select[name="reasonCode"]').selectOption("COMPLETED_AS_SCHEDULED");
-    await page.locator('input[name="confirm"]').check();
+    const outcomeForm = page.locator('form:has(select[name="status"])');
+    await outcomeForm.locator('select[name="status"]').selectOption("SUCCESSFUL");
+    await outcomeForm.locator('select[name="reasonCode"]').selectOption("COMPLETED_AS_SCHEDULED");
+    await outcomeForm.locator('input[name="confirm"]').check();
 
     const responsePromise = page.waitForResponse((response) =>
       response.url().endsWith(`/api/admin/consultations/${consultationId}/outcome`) &&
@@ -130,11 +131,11 @@ test.describe("PLAN-36 missed consultation recovery", () => {
     const assignedLawyerId = reopenLawyerId!;
     const conflictingLocalTime = conflictStartsAt!;
     const availableLocalTime = availableStartsAt!;
-    const browserErrors = collectBrowserErrors(page);
+    const browserErrors = collectBrowserErrors(page, `/api/admin/consultations/${consultationId}/reopen`);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/admin/consultations/${consultationId}`, { waitUntil: "networkidle" });
 
-    const form = page.locator('form:has(select[name="assignedLawyerId"])');
+    const form = page.locator('form:has(select[id^="consultation-reopen-"])');
     await form.locator('select[name="assignedLawyerId"]').selectOption(assignedLawyerId);
     await form.locator('input[name="startsAt"]').fill(conflictingLocalTime);
     await form.locator('input[name="durationMinutes"]').fill("60");
@@ -162,10 +163,13 @@ test.describe("PLAN-36 missed consultation recovery", () => {
   });
 });
 
-function collectBrowserErrors(page: Page) {
+function collectBrowserErrors(page: Page, expectedConflictPath?: string) {
   const errors: string[] = [];
   page.on("console", (message) => {
-    if (message.type() === "error") errors.push(message.text());
+    if (message.type() !== "error") return;
+    // The conflict response is asserted explicitly by the scenario.
+    if (expectedConflictPath && message.location().url.endsWith(expectedConflictPath) && message.text().includes("status of 409")) return;
+    errors.push(message.text());
   });
   page.on("pageerror", (error) => errors.push(error.message));
   return errors;

@@ -2,7 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db/prisma";
 import { getIpAddress, getUserAgent } from "@/server/auth/session-store";
 import { safeLog } from "@/server/observability/safe-log";
-import { plan35AuditMetadataForStorage } from "./audit-event-catalog";
+import { PLAN35_AUDIT_ACTIONS, plan35AuditMetadataForStorage } from "./audit-event-catalog";
 import { redactMetadata } from "./redaction";
 
 export type AuditEventInput = {
@@ -43,6 +43,18 @@ export async function appendAuditLogBestEffort(input: Omit<AuditEventInput, "cli
 }
 
 export function auditLogCreateData(input: AuditEventInput): Prisma.AuditLogUncheckedCreateInput {
+  const safeMetadata = plan35AuditMetadataForStorage(input.action, input.metadata);
+  const metadata = redactMetadata(safeMetadata);
+  // This server-generated digest is the manual-case replay identity. Numeric
+  // runs within a validated SHA-256 are not phone numbers or customer content.
+  if (input.action === PLAN35_AUDIT_ACTIONS.manualCaseCreate &&
+      safeMetadata && typeof safeMetadata === "object" && !Array.isArray(safeMetadata) &&
+      metadata && typeof metadata === "object" && !Array.isArray(metadata)) {
+    const requestHash = (safeMetadata as Record<string, unknown>).requestHash;
+    if (typeof requestHash === "string" && /^[a-f\d]{64}$/i.test(requestHash)) {
+      metadata.requestHash = requestHash;
+    }
+  }
   return {
     actorId: input.actorId ?? null,
     action: input.action,
@@ -54,7 +66,7 @@ export function auditLogCreateData(input: AuditEventInput): Prisma.AuditLogUnche
     appointmentId: input.appointmentId ?? null,
     documentId: input.documentId ?? null,
     paymentId: input.paymentId ?? null,
-    metadata: redactMetadata(plan35AuditMetadataForStorage(input.action, input.metadata)) as Prisma.InputJsonValue,
+    metadata: metadata as Prisma.InputJsonValue,
     ipAddress: input.request ? getIpAddress(input.request) : null,
     userAgent: input.request ? getUserAgent(input.request) : null
   };

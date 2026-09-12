@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { kmtTokens } from "@/lib/design-system/tokens";
 import { ClientSiteShell, clientPortalRowClass, clientPortalSecondaryActionClass, clientPortalTableClass } from "@/components/layout";
 import { Badge, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
@@ -31,11 +32,11 @@ function caseColumns(copy: ClientContent, locale: ClientLocale): Array<DataTable
       </div>
     )
   },
-  { key: "status", header: copy.common.status, render: (row) => <Badge tone={row.status === "ACTIVE" ? "active" : "neutral"}>{copy.statuses.case[row.status as keyof typeof copy.statuses.case] ?? copy.common.unknown}</Badge> },
+  { key: "status", header: copy.common.status, render: (row) => <Badge style={row.status === "ACTIVE" ? undefined : { color: kmtTokens.color.muted }} tone={row.status === "ACTIVE" ? "active" : "neutral"}>{copy.statuses.case[row.status as keyof typeof copy.statuses.case] ?? copy.common.unknown}</Badge> },
   {
     key: "priority",
     header: copy.common.priority,
-    render: (row) => <Badge tone={row.priority === "URGENT" || row.priority === "HIGH" ? "pending" : "neutral"}>{copy.statuses.priority[row.priority as keyof typeof copy.statuses.priority] ?? copy.common.unknown}</Badge>
+    render: (row) => <Badge style={row.priority === "URGENT" || row.priority === "HIGH" ? undefined : { color: kmtTokens.color.muted }} tone={row.priority === "URGENT" || row.priority === "HIGH" ? "pending" : "neutral"}>{copy.statuses.priority[row.priority as keyof typeof copy.statuses.priority] ?? copy.common.unknown}</Badge>
   },
   { key: "lawyer", header: copy.common.lawyer, render: (row) => row.assignedLawyer.name },
   { key: "next", header: copy.common.nextDate, render: (row) => formatDateTime(row.nextSessionAt, locale) }
@@ -54,8 +55,8 @@ function MobileCard({ row, copy, locale }: { row: CaseRow; copy: ClientContent; 
       description={row.internalFileNumber}
       badges={
         <>
-          <Badge tone={row.status === "ACTIVE" ? "active" : "neutral"}>{copy.statuses.case[row.status as keyof typeof copy.statuses.case] ?? copy.common.unknown}</Badge>
-          <Badge tone={row.priority === "URGENT" || row.priority === "HIGH" ? "pending" : "neutral"}>{copy.statuses.priority[row.priority as keyof typeof copy.statuses.priority] ?? copy.common.unknown}</Badge>
+          <Badge style={row.status === "ACTIVE" ? undefined : { color: kmtTokens.color.muted }} tone={row.status === "ACTIVE" ? "active" : "neutral"}>{copy.statuses.case[row.status as keyof typeof copy.statuses.case] ?? copy.common.unknown}</Badge>
+          <Badge style={row.priority === "URGENT" || row.priority === "HIGH" ? undefined : { color: kmtTokens.color.muted }} tone={row.priority === "URGENT" || row.priority === "HIGH" ? "pending" : "neutral"}>{copy.statuses.priority[row.priority as keyof typeof copy.statuses.priority] ?? copy.common.unknown}</Badge>
         </>
       }
       fields={[

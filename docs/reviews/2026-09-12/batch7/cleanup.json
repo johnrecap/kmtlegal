@@ -1,0 +1,13 @@
+{
+  "clusterRemoved": true,
+  "ports": [
+    {
+      "port": 3111,
+      "open": false
+    },
+    {
+      "port": 55438,
+      "open": false
+    }
+  ]
+}

@@ -70,6 +70,7 @@ describe("admin client CRM contract", () => {
     expect(canReadAdminClient(officeAdmin, { assignedLawyerId: null })).toBe(true);
     expect(canReadAdminClient(lawyer, { assignedLawyerId: lawyer.id })).toBe(true);
     expect(canReadAdminClient(lawyer, { assignedLawyerId: officeAdmin.id })).toBe(false);
+    expect(canReadAdminClient({id:"client-user",roleName:ROLES.client,permissions:["client.read.self"]}, {userId:"client-user"})).toBe(false);
   });
 
   it("validates CRM list filters and write payloads", () => {

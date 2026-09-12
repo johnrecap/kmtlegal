@@ -8,6 +8,9 @@ import { ApiError } from "@/server/http/errors";
 import { toPagination } from "@/server/http/pagination";
 import { canonicalPhone } from "@/server/phone/phone-normalization";
 import { emailSchema, parseWithSchema, uuidSchema } from "@/server/validation/schemas";
+import { appointmentScopeWhereForPrincipal, canListAdminCases, caseScopeWhereForPrincipal } from "./case-operations-service";
+import { consultationScopeWhereForPrincipal } from "./consultation-review-service";
+import { canListAdminDocuments, documentScopeWhereForPrincipal } from "./task-document-service";
 
 const clientStatusSchema = z.enum(["LEAD", "ACTIVE", "INACTIVE", "ARCHIVED", "DELETED"]);
 const editableClientStatusSchema = z.enum(["LEAD", "ACTIVE", "INACTIVE", "ARCHIVED"]);
@@ -88,7 +91,28 @@ export function clientScopeWhereForPrincipal(actor: Principal): Prisma.ClientWhe
 }
 
 export function canReadAdminClient(actor: Principal, client: { userId?: string | null; assignedLawyerId?: string | null }) {
-  return canReadClient(actor, client);
+  return canListAdminClients(actor) && canReadClient(actor, client);
+}
+
+function clientRelationFilters(actor: Principal) {
+  const denied = { id: { in: [] as string[] } };
+  return {
+    cases: canListAdminCases(actor) ? caseScopeWhereForPrincipal(actor) : denied,
+    appointments: hasPermission(actor, "appointment.manage.any") || hasPermission(actor, "appointment.read.assigned") || hasPermission(actor, "case.read.assigned")
+      ? appointmentScopeWhereForPrincipal(actor) : denied,
+    consultationRequests: hasPermission(actor, "consultation.review.any") || hasPermission(actor, "consultation.review.assigned")
+      ? consultationScopeWhereForPrincipal(actor) : denied,
+    documents: canListAdminDocuments(actor) ? documentScopeWhereForPrincipal(actor) : denied
+  };
+}
+
+function clientRelationCounts(filters: ReturnType<typeof clientRelationFilters>) {
+  return {
+    cases: { where: filters.cases },
+    appointments: { where: filters.appointments },
+    documents: { where: filters.documents },
+    consultationRequests: { where: filters.consultationRequests }
+  };
 }
 
 function normalizeListQuery(input: unknown) {
@@ -132,6 +156,7 @@ export async function listAdminClients(input: { actor: Principal; query: unknown
   const filters = normalizeListQuery(input.query);
   const pagination = toPagination(filters);
   const where = clientListWhere(input.actor, filters);
+  const related = clientRelationFilters(input.actor);
 
   const [items, total] = await Promise.all([
     prisma.client.findMany({
@@ -139,12 +164,7 @@ export async function listAdminClients(input: { actor: Principal; query: unknown
       include: {
         assignedLawyer: { select: { id: true, name: true, email: true } },
         _count: {
-          select: {
-            cases: true,
-            appointments: true,
-            documents: true,
-            consultationRequests: true
-          }
+          select: clientRelationCounts(related)
         }
       },
       orderBy: orderByFor(filters),
@@ -192,13 +212,15 @@ export async function getAdminClientDetail(input: { actor: Principal; clientId: 
     throw new ApiError(403, "PERMISSION_DENIED", "Client record is not allowed.");
   }
 
+  const related = clientRelationFilters(input.actor);
+
   const client = await prisma.client.findUnique({
     where: { id: clientId },
     include: {
       user: { select: { id: true, email: true, phone: true, status: true, locale: true } },
       assignedLawyer: { select: { id: true, name: true, email: true } },
       cases: {
-        where: { deletedAt: null },
+        where: related.cases,
         orderBy: [{ nextSessionAt: "asc" }, { createdAt: "desc" }],
         take: 10,
         select: {
@@ -213,6 +235,7 @@ export async function getAdminClientDetail(input: { actor: Principal; clientId: 
         }
       },
       consultationRequests: {
+        where: related.consultationRequests,
         orderBy: { createdAt: "desc" },
         take: 8,
         select: {
@@ -225,6 +248,7 @@ export async function getAdminClientDetail(input: { actor: Principal; clientId: 
         }
       },
       appointments: {
+        where: related.appointments,
         orderBy: { startsAt: "asc" },
         take: 8,
         select: {
@@ -239,12 +263,7 @@ export async function getAdminClientDetail(input: { actor: Principal; clientId: 
         }
       },
       _count: {
-        select: {
-          cases: true,
-          appointments: true,
-          documents: true,
-          consultationRequests: true
-        }
+        select: clientRelationCounts(related)
       }
     }
   });

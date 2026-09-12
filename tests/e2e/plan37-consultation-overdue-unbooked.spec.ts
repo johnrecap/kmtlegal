@@ -71,7 +71,7 @@ test.describe("PLAN-37 atomic initial scheduling", () => {
   );
 
   test("preserves the form on conflict and schedules a free future slot on mobile", async ({ page }) => {
-    const browserErrors = collectBrowserErrors(page);
+    const browserErrors = collectBrowserErrors(page, `/api/admin/consultations/${consultationId}/schedule`);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/admin/consultations/${consultationId}`, { waitUntil: "networkidle" });
 
@@ -108,10 +108,13 @@ test.describe("PLAN-37 atomic initial scheduling", () => {
   });
 });
 
-function collectBrowserErrors(page: Page) {
+function collectBrowserErrors(page: Page, expectedConflictPath?: string) {
   const errors: string[] = [];
   page.on("console", (message) => {
-    if (message.type() === "error") errors.push(message.text());
+    if (message.type() !== "error") return;
+    // The conflict response is asserted explicitly by the scenario.
+    if (expectedConflictPath && message.location().url.endsWith(expectedConflictPath) && message.text().includes("status of 409")) return;
+    errors.push(message.text());
   });
   page.on("pageerror", (error) => errors.push(error.message));
   return errors;

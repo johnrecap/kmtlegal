@@ -1,6 +1,8 @@
 # KMT Legal Implementation Status
 
-2026-09-12 resumed checkpoint: batch 5 was approved and pushed as `6be83e29f6a2418edf16d38d092a151c9c8c9264`. Batch 6 has completed local payment-trust/lifecycle verification and cleanup; see `docs/reviews/2026-09-12/batch6/BATCH-6.md` and verification.json. Exact-commit supervisor approval is required before push. No batch 7 or design work has started.
+2026-09-12 batch 7 checkpoint: batch 6 was accepted and pushed as `ff988e8bbaf2b3ca7e82612071270819a4a5265e`. Batch 7 fixes staff-detail access by clients, nested CRM resource scopes and SHA-256 replay identity redaction, and improves neutral client-case badge contrast with existing tokens. Fourteen unique real HTTP/PostgreSQL scenarios have passing latest evidence across the recorded runs, plus seven existing consultation browser scenarios; unit checks pass 522 with 22 opt-in DB cases skipped. See `docs/reviews/2026-09-12/batch7/BATCH-7.md`, `scenario-results.json` and `verification.json` for precise evidence, intermediate failures, cleanup and remaining gates. No schema or production-role changes. Previously corrupted audit hashes are not automatically repaired. Local commit only pending exact-commit supervisor approval; later office/design work remains deferred.
+
+Historical pre-push batch 6 checkpoint: batch 5 was approved and pushed as `6be83e29f6a2418edf16d38d092a151c9c8c9264`. Batch 6 has completed local payment-trust/lifecycle verification and cleanup; see `docs/reviews/2026-09-12/batch6/BATCH-6.md` and verification.json. Exact-commit supervisor approval is required before push. No batch 7 or design work has started.
 
 Last updated: 2026-09-12
 

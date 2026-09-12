@@ -1,0 +1,58 @@
+{
+  "client cannot retrieve the staff-only detail of their own case": {
+    "report": "http-browser-intermediate.json",
+    "passed": true
+  },
+  "client cannot retrieve the staff-only CRM detail of their own profile": {
+    "report": "http-browser-intermediate.json",
+    "passed": true
+  },
+  "assigned client CRM does not reveal another lawyer's case through nested summaries": {
+    "report": "http-browser-intermediate.json",
+    "passed": true
+  },
+  "assignment accepts an active lawyer and synchronizes resources while revoking former assigned access": {
+    "report": "http-browser-intermediate.json",
+    "passed": true
+  },
+  "past outcome correction rejects stale editors and concurrent conversion creates one linked case": {
+    "report": "http-browser-intermediate.json",
+    "passed": true
+  },
+  "future appointments reject completed outcomes and cancel through the existing rejection action": {
+    "report": "http-browser-intermediate.json",
+    "passed": true
+  },
+  "manual case token is idempotent and edits enforce versions and reassignment boundaries": {
+    "report": "focused-final.json",
+    "passed": true
+  },
+  "other clients and unprivileged staff cannot access lists details writes or internal notes": {
+    "report": "http-browser-intermediate.json",
+    "passed": true
+  },
+  "archival preserves historical access but blocks new manual cases for archived clients": {
+    "report": "http-browser-intermediate.json",
+    "passed": true
+  },
+  "CRM related appointments requests and counts match independent scopes, including a client-only reader": {
+    "report": "http-browser-intermediate.json",
+    "passed": true
+  },
+  "manual case browser journey preserves invalid input and opens scoped results at 390px": {
+    "report": "visual-final.json",
+    "passed": true
+  },
+  "manual case browser journey preserves invalid input and opens scoped results at 768px": {
+    "report": "visual-final.json",
+    "passed": true
+  },
+  "manual case browser journey preserves invalid input and opens scoped results at 1440px": {
+    "report": "visual-final.json",
+    "passed": true
+  },
+  "lawyer search and rendered filter choices cannot widen resource scope": {
+    "report": "focused-final.json",
+    "passed": true
+  }
+}

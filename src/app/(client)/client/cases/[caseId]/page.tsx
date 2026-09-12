@@ -1,3 +1,4 @@
+import { kmtTokens } from "@/lib/design-system/tokens";
 import {
   ClientPortalDetailItem,
   ClientPortalEmpty,
@@ -57,8 +58,8 @@ export default async function ClientCaseDetailPage({ params }: PageProps) {
         <ClientPortalPanel
           action={
             <div className="flex flex-wrap gap-2">
-              <Badge tone={legalCase.status === "ACTIVE" ? "active" : "neutral"}>{copy.statuses.case[legalCase.status as keyof typeof copy.statuses.case] ?? copy.common.unknown}</Badge>
-              <Badge tone={legalCase.priority === "URGENT" || legalCase.priority === "HIGH" ? "pending" : "neutral"}>{copy.statuses.priority[legalCase.priority as keyof typeof copy.statuses.priority] ?? copy.common.unknown}</Badge>
+              <Badge style={legalCase.status === "ACTIVE" ? undefined : { color: kmtTokens.color.muted }} tone={legalCase.status === "ACTIVE" ? "active" : "neutral"}>{copy.statuses.case[legalCase.status as keyof typeof copy.statuses.case] ?? copy.common.unknown}</Badge>
+              <Badge style={legalCase.priority === "URGENT" || legalCase.priority === "HIGH" ? undefined : { color: kmtTokens.color.muted }} tone={legalCase.priority === "URGENT" || legalCase.priority === "HIGH" ? "pending" : "neutral"}>{copy.statuses.priority[legalCase.priority as keyof typeof copy.statuses.priority] ?? copy.common.unknown}</Badge>
             </div>
           }
           description={legalCase.caseType}

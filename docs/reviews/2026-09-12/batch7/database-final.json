@@ -1,0 +1,10 @@
+{
+  "identity": {
+    "directory": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/batch7-postgres/data",
+    "port": 55438,
+    "database": "kmt_batch7"
+  },
+  "appliedMigrations": 18,
+  "otherConnections": 0,
+  "syntheticOnly": true
+}

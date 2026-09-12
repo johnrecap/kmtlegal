@@ -1,0 +1,31 @@
+{
+  "scope": "Synthetic intermediate failures inspected before focused correction",
+  "manualConcurrentCreate": {
+    "run": "http-browser-intermediate.json",
+    "statuses": [201, 409],
+    "responseFromTrace": {
+      "code": "CONFLICT",
+      "message": "رمز المحاولة مستخدم بالفعل مع طلب قضية مختلف. ابدأ محاولة جديدة بعد مراجعة البيانات."
+    },
+    "independentSqlObservation": {
+      "table": "audit_logs",
+      "action": "case.manual_create",
+      "storedRequestHash": "1f1c6d3f2feb2abca[REDACTED_PHONE]ecedea84c1d2043ed1e40aec993873e9acb1e"
+    },
+    "deterministicRegression": "before-request-hash.json: valid 64-character hex digest with a 10-digit run changed by redaction; after-request-hash.json proves preservation plus continued sensitive-field redaction",
+    "fixScope": "Preserve only the catalog-validated SHA-256 requestHash for case.manual_create after generic redaction; generic metadata and sensitive fields keep existing behavior. No automatic backfill of already-corrupted audit records."
+  },
+  "mobileNavigation": {
+    "run": "http-browser-intermediate.json",
+    "caseId": "2a3b195a-f626-4aab-b020-ad3e7be13aa0",
+    "traceObservations": [
+      { "path": "/api/admin/cases", "method": "POST", "status": 201, "started": "2026-09-12T16:28:10.522Z", "durationMs": 346.485 },
+      { "path": "/admin/cases/2a3b195a-f626-4aab-b020-ad3e7be13aa0", "method": "GET", "status": 200, "started": "2026-09-12T16:28:10.894Z", "durationMs": 8030.966 },
+      { "path": "/admin/cases/2a3b195a-f626-4aab-b020-ad3e7be13aa0", "method": "GET", "status": 200, "started": "2026-09-12T16:28:17.925Z", "durationMs": 1486.603 }
+    ],
+    "javascriptErrorsObserved": [],
+    "interpretation": "Cold detail compilation/module loading consumed most of the generic 10-second URL assertion. Production submit calls push and refresh; two successful detail requests were observed, not a failed creation. This is a timing diagnosis, not proof of a production navigation failure.",
+    "testCorrection": "Wait for the actual GET of the new detail resource, assert its status and exact ID, then assert URL/rendering before taking screenshots. No global timeout increase or navigation-source modification.",
+    "provenance": "Root extracted response body and network timing from the failing Playwright traces using read-only ZIP inspection; these observations are recorded separately from final pass results."
+  }
+}

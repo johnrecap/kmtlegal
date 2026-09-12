@@ -67,6 +67,7 @@ describe("admin cases contract", () => {
     expect(canReadAdminCase(officeAdmin, assignedCase)).toBe(true);
     expect(canReadAdminCase(assignedLawyer, assignedCase)).toBe(true);
     expect(canReadAdminCase(otherLawyer, assignedCase)).toBe(false);
+    expect(canReadAdminCase({id:assignedCase.client.userId,roleName:ROLES.client,permissions:["case.read.own"]}, assignedCase)).toBe(false);
 
     expect(canUpdateAdminCase(officeAdmin, assignedCase)).toBe(true);
     expect(canUpdateAdminCase(assignedLawyer, assignedCase)).toBe(true);
