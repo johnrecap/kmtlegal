@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import {
+  AdminDocumentUploadForm,
   DocumentActionForm,
   DocumentDeleteForm,
   TaskUpdateForm
@@ -85,6 +86,20 @@ describe("PLAN-35 admin UI/RTL convergence", () => {
     expect(html).toContain('id="document-delete-doc-a-confirmDelete"');
     expect(html.match(/name="title"/g)).toHaveLength(2);
     expect(html.match(/name="status"/g)).toHaveLength(4);
+  });
+
+  it("retains a case-tab document upload default that is outside the option cap", () => {
+    const html = renderToStaticMarkup(
+      <AdminDocumentUploadForm
+        canManage
+        cases={[{ id: "case-recent", internalFileNumber: "KMT-1", title: "قضية حديثة" }]}
+        clients={[]}
+        defaultCase={{ id: "case-current", internalFileNumber: "KMT-101", title: "قضية الصفحة" }}
+      />
+    );
+
+    expect(html).toContain('option value="case-current"');
+    expect(html).toContain("قضية الصفحة");
   });
 
   it("adopts prefixed field relationships and semantic feedback in every migrated form file", () => {

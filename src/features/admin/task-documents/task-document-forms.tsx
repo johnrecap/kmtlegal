@@ -338,17 +338,18 @@ export function AdminDocumentUploadForm({
   cases,
   clients,
   canManage,
-  defaultCaseId
+  defaultCase
 }: {
   cases: CaseOption[];
   clients: ClientOption[];
   canManage: boolean;
-  defaultCaseId?: string;
+  defaultCase?: Pick<CaseOption, "id" | "internalFileNumber" | "title">;
 }) {
   const router = useRouter();
   const isHydrated = useHydrated();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const retainedDefaultCase = defaultCase && !cases.some((legalCase) => legalCase.id === defaultCase.id) ? defaultCase : null;
 
   if (!canManage) {
     return <StateBlock tone="permission" title="رفع المستندات غير متاح" description="يمكنك قراءة المستندات داخل نطاقك، لكن الرفع أو تغيير الحالة يحتاج صلاحية إدارة المستندات." />;
@@ -384,8 +385,13 @@ export function AdminDocumentUploadForm({
 
   return (
     <form className="grid gap-4" method="post" onSubmit={upload}>
-      <Select defaultValue={defaultCaseId ?? ""} disabled={!isHydrated || isUploading} idPrefix="document-upload" label="القضية" name="caseId">
+      <Select defaultValue={defaultCase?.id ?? ""} disabled={!isHydrated || isUploading} idPrefix="document-upload" label="القضية" name="caseId">
         <option value="">بدون قضية</option>
+        {retainedDefaultCase ? (
+          <option value={retainedDefaultCase.id}>
+            {retainedDefaultCase.internalFileNumber} - {retainedDefaultCase.title} ({plan35TaskUiCopy.retainedCase})
+          </option>
+        ) : null}
         {cases.map((legalCase) => (
           <option key={legalCase.id} value={legalCase.id}>
             {legalCase.internalFileNumber} - {legalCase.title}

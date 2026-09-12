@@ -14,6 +14,7 @@ const taskPrioritySchema = z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]);
 const taskViewSchema = z.enum(["all", "mine", "overdue"]);
 const taskSortBySchema = z.enum(["dueDate", "updatedAt", "createdAt", "priority", "status"]);
 const documentStatusSchema = z.enum(["NEW", "UNDER_REVIEW", "NEEDS_CLARIFICATION", "ACCEPTED", "REJECTED", "DELETED"]);
+const documentUpdateStatusSchema = documentStatusSchema.exclude(["DELETED"]);
 const documentSortBySchema = z.enum(["createdAt", "updatedAt", "fileName", "status", "category"]);
 const optionalDateStringSchema = z.string().trim().max(40).optional().or(z.literal(""));
 
@@ -61,7 +62,7 @@ export const adminDocumentListQuerySchema = z.object({
 });
 
 export const adminDocumentUpdateSchema = z.object({
-  status: documentStatusSchema,
+  status: documentUpdateStatusSchema,
   category: documentCategorySchema,
   visibility: documentVisibilitySchema,
   note: z.string().trim().max(500).optional().or(z.literal(""))
@@ -567,26 +568,37 @@ export async function updateAdminDocument(input: { actor: Principal; documentId:
 
   const existing = await findDocumentForAction(input.actor, input.documentId);
   const body = parseWithSchema(adminDocumentUpdateSchema, input.body, "Document payload is invalid.");
-  const deletedAt = body.status === "DELETED" ? new Date() : null;
+  const document = await prisma.$transaction(async (tx) => {
+    const updated = await tx.document.updateMany({
+      where: { id: existing.id, deletedAt: null },
+      data: {
+        status: body.status,
+        category: body.category,
+        visibility: body.visibility
+      }
+    });
 
-  const document = await prisma.document.update({
-    where: { id: existing.id },
-    data: {
-      status: body.status,
-      category: body.category,
-      visibility: body.visibility,
-      deletedAt
-    },
-    include: {
-      ownerClient: { select: { id: true, fullName: true, phone: true, assignedLawyerId: true } },
-      case: { select: { id: true, internalFileNumber: true, title: true, assignedLawyerId: true } },
-      uploadedBy: { select: { id: true, name: true, email: true } }
+    if (updated.count !== 1) {
+      return null;
     }
+
+    return tx.document.findUnique({
+      where: { id: existing.id },
+      include: {
+        ownerClient: { select: { id: true, fullName: true, phone: true, assignedLawyerId: true } },
+        case: { select: { id: true, internalFileNumber: true, title: true, assignedLawyerId: true } },
+        uploadedBy: { select: { id: true, name: true, email: true } }
+      }
+    });
   });
+
+  if (!document) {
+    throw new ApiError(404, "NOT_FOUND", "Document was not found.");
+  }
 
   await appendAuditLogBestEffort({
     actorId: input.actor.id,
-    action: body.status === "DELETED" ? "document.delete" : "document.update",
+    action: "document.update",
     resourceType: "Document",
     resourceId: document.id,
     clientId: document.ownerClientId,
@@ -616,10 +628,22 @@ export async function deleteAdminDocument(input: { actor: Principal; documentId:
   const existing = await findDocumentForAction(input.actor, input.documentId);
   const body = parseWithSchema(adminDocumentDeleteSchema, input.body, "Document delete payload is invalid.");
 
-  const document = await prisma.document.update({
-    where: { id: existing.id },
-    data: { status: "DELETED", deletedAt: new Date() }
+  const document = await prisma.$transaction(async (tx) => {
+    const deleted = await tx.document.updateMany({
+      where: { id: existing.id, deletedAt: null },
+      data: { status: "DELETED", deletedAt: new Date() }
+    });
+
+    if (deleted.count !== 1) {
+      return null;
+    }
+
+    return tx.document.findUnique({ where: { id: existing.id } });
   });
+
+  if (!document) {
+    throw new ApiError(404, "NOT_FOUND", "Document was not found.");
+  }
 
   await appendAuditLogBestEffort({
     actorId: input.actor.id,

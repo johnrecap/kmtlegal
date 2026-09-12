@@ -457,7 +457,7 @@ function DocumentsTab({ data, documentOptions }: { data: CaseTaskDocumentTabs; d
             canManage={data.access.canManageDocuments}
             cases={documentOptions.cases}
             clients={documentOptions.clients}
-            defaultCaseId={data.caseId}
+            defaultCase={data.currentCase}
           />
         </CardContent>
       </Card>

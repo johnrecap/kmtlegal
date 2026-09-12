@@ -153,6 +153,11 @@ describe("admin task and document management contract", () => {
     });
 
     expect(update.visibility).toBe("CLIENT_VISIBLE");
+    expect(() => adminDocumentUpdateSchema.parse({
+      status: "DELETED",
+      category: "COURT_FILE",
+      visibility: "CLIENT_VISIBLE"
+    })).toThrow();
     expect(() => adminDocumentDeleteSchema.parse({ reason: "duplicate", confirmDelete: false })).toThrow();
     expect(adminDocumentDeleteSchema.parse({ reason: "duplicate", confirmDelete: true }).confirmDelete).toBe(true);
   });
