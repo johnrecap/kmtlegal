@@ -1,0 +1,166 @@
+
+> kmt-legal-platform@0.1.0 db:migrate
+> prisma migrate deploy
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "kmt_batch10", schema "public" at "127.0.0.1:55441"
+
+18 migrations found in prisma/migrations
+
+Applying migration `20260623191000_plan_04_05_init`
+Applying migration `20260624011500_plan_21_analytics_events`
+Applying migration `20260624023000_plan_24_remediation`
+Applying migration `20260626032000_backend_reliability_contact_messages`
+Applying migration `20260627090000_plan_29_public_localization`
+Applying migration `20260628103000_plan_32_client_ai_secretary`
+Applying migration `20260629150000_client_live_messages`
+Applying migration `20260703120000_plan_33_payment_gateway`
+Applying migration `20260705130000_consultation_secretary_notifications`
+Applying migration `20260707033000_payment_ops_hardening`
+Applying migration `20260707050000_payment_ops_followup`
+Applying migration `20260707062000_payment_audit_followup`
+Applying migration `20260710120000_plan_34_paymob_default`
+Applying migration `20260710123000_plan_34_shared_rate_limits`
+Applying migration `20260722120000_plan_35_admin_operations`
+Applying migration `20260722180000_plan_36_consultation_outcomes`
+Applying migration `20260728203000_plan_39_consultation_locale`
+Applying migration `20260912090000_payment_provider_order_binding`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260623191000_plan_04_05_init/
+    └─ migration.sql
+  └─ 20260624011500_plan_21_analytics_events/
+    └─ migration.sql
+  └─ 20260624023000_plan_24_remediation/
+    └─ migration.sql
+  └─ 20260626032000_backend_reliability_contact_messages/
+    └─ migration.sql
+  └─ 20260627090000_plan_29_public_localization/
+    └─ migration.sql
+  └─ 20260628103000_plan_32_client_ai_secretary/
+    └─ migration.sql
+  └─ 20260629150000_client_live_messages/
+    └─ migration.sql
+  └─ 20260703120000_plan_33_payment_gateway/
+    └─ migration.sql
+  └─ 20260705130000_consultation_secretary_notifications/
+    └─ migration.sql
+  └─ 20260707033000_payment_ops_hardening/
+    └─ migration.sql
+  └─ 20260707050000_payment_ops_followup/
+    └─ migration.sql
+  └─ 20260707062000_payment_audit_followup/
+    └─ migration.sql
+  └─ 20260710120000_plan_34_paymob_default/
+    └─ migration.sql
+  └─ 20260710123000_plan_34_shared_rate_limits/
+    └─ migration.sql
+  └─ 20260722120000_plan_35_admin_operations/
+    └─ migration.sql
+  └─ 20260722180000_plan_36_consultation_outcomes/
+    └─ migration.sql
+  └─ 20260728203000_plan_39_consultation_locale/
+    └─ migration.sql
+  └─ 20260912090000_payment_provider_order_binding/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+
+> kmt-legal-platform@0.1.0 db:seed
+> prisma db seed
+
+Loaded Prisma config from prisma.config.ts.
+
+Running seed command `node prisma/seed.mjs` ...
+Seed completed: roles, permissions, demo users, public data, and operational demo records.
+
+The seed command has been executed.
+CREATE TABLE
+INSERT 0 1
+
+> kmt-legal-platform@0.1.0 db:migrate
+> prisma migrate deploy
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "kmt_batch10", schema "public" at "127.0.0.1:55441"
+
+18 migrations found in prisma/migrations
+
+Applying migration `20260623191000_plan_04_05_init`
+Applying migration `20260624011500_plan_21_analytics_events`
+Applying migration `20260624023000_plan_24_remediation`
+Applying migration `20260626032000_backend_reliability_contact_messages`
+Applying migration `20260627090000_plan_29_public_localization`
+Applying migration `20260628103000_plan_32_client_ai_secretary`
+Applying migration `20260629150000_client_live_messages`
+Applying migration `20260703120000_plan_33_payment_gateway`
+Applying migration `20260705130000_consultation_secretary_notifications`
+Applying migration `20260707033000_payment_ops_hardening`
+Applying migration `20260707050000_payment_ops_followup`
+Applying migration `20260707062000_payment_audit_followup`
+Applying migration `20260710120000_plan_34_paymob_default`
+Applying migration `20260710123000_plan_34_shared_rate_limits`
+Applying migration `20260722120000_plan_35_admin_operations`
+Applying migration `20260722180000_plan_36_consultation_outcomes`
+Applying migration `20260728203000_plan_39_consultation_locale`
+Applying migration `20260912090000_payment_provider_order_binding`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260623191000_plan_04_05_init/
+    └─ migration.sql
+  └─ 20260624011500_plan_21_analytics_events/
+    └─ migration.sql
+  └─ 20260624023000_plan_24_remediation/
+    └─ migration.sql
+  └─ 20260626032000_backend_reliability_contact_messages/
+    └─ migration.sql
+  └─ 20260627090000_plan_29_public_localization/
+    └─ migration.sql
+  └─ 20260628103000_plan_32_client_ai_secretary/
+    └─ migration.sql
+  └─ 20260629150000_client_live_messages/
+    └─ migration.sql
+  └─ 20260703120000_plan_33_payment_gateway/
+    └─ migration.sql
+  └─ 20260705130000_consultation_secretary_notifications/
+    └─ migration.sql
+  └─ 20260707033000_payment_ops_hardening/
+    └─ migration.sql
+  └─ 20260707050000_payment_ops_followup/
+    └─ migration.sql
+  └─ 20260707062000_payment_audit_followup/
+    └─ migration.sql
+  └─ 20260710120000_plan_34_paymob_default/
+    └─ migration.sql
+  └─ 20260710123000_plan_34_shared_rate_limits/
+    └─ migration.sql
+  └─ 20260722120000_plan_35_admin_operations/
+    └─ migration.sql
+  └─ 20260722180000_plan_36_consultation_outcomes/
+    └─ migration.sql
+  └─ 20260728203000_plan_39_consultation_locale/
+    └─ migration.sql
+  └─ 20260912090000_payment_provider_order_binding/
+    └─ migration.sql
+
+All migrations have been successfully applied.
+
+> kmt-legal-platform@0.1.0 db:seed
+> prisma db seed
+
+Loaded Prisma config from prisma.config.ts.
+
+Running seed command `node prisma/seed.mjs` ...
+Seed completed: roles, permissions, demo users, public data, and operational demo records.
+
+The seed command has been executed.
+CREATE TABLE
+INSERT 0 1

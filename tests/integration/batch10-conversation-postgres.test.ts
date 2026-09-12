@@ -5,6 +5,7 @@ import type { Principal } from "@/server/auth/policy";
 import { SESSION_COOKIE_NAME, createSessionToken, hashSessionToken } from "@/server/auth/session";
 import { prisma } from "@/server/db/prisma";
 import { getAdminConversationDetail, getClientConversationDetail, replyAdminConversation, replyClientConversation, createOrContinueClientConversation } from "@/server/conversations/conversation-service";
+import { POST as postClientMessagesRoute } from "@/app/api/client/messages/route";
 import { GET as getClientThreadRoute } from "@/app/api/client/messages/[threadId]/route";
 import { POST as postClientThreadMessageRoute } from "@/app/api/client/messages/[threadId]/messages/route";
 import { GET as getAdminThreadRoute } from "@/app/api/admin/messages/[threadId]/route";
@@ -24,6 +25,8 @@ const ids = {
 };
 let clientRoleId = "";
 let staffRoleId = "";
+const isolatedClientIds: string[] = [];
+const isolatedUserIds: string[] = [];
 
 const clientActor: Principal = {
   id: ids.clientUser,
@@ -46,7 +49,7 @@ async function createThread(subject: string) {
   });
 }
 
-async function waitForBlockedThreadLocks(observer: Client, blockerPid: number, minimumWaiting = 1) {
+async function waitForBlockedLocks(observer: Client, blockerPid: number, minimumWaiting = 1) {
   for (let attempt = 0; attempt < 500; attempt += 1) {
     const result = await observer.query<{ waiting: number }>(`
       SELECT count(*)::int AS waiting
@@ -58,7 +61,75 @@ async function waitForBlockedThreadLocks(observer: Client, blockerPid: number, m
     if ((result.rows[0]?.waiting ?? 0) >= minimumWaiting) return;
     await new Promise<void>((resolve) => setImmediate(resolve));
   }
-  throw new Error("The reply transaction did not wait for the controlled conversation lock.");
+  throw new Error("The transaction did not wait for the controlled PostgreSQL lock.");
+}
+
+async function waitForLockWaiters(observer: Client, minimumWaiting: number) {
+  for (let attempt = 0; attempt < 500; attempt += 1) {
+    const result = await observer.query<{ waiting: number }>(`
+      SELECT count(*)::int AS waiting
+      FROM pg_stat_activity
+      WHERE datname = current_database()
+        AND wait_event_type = 'Lock'
+    `);
+    if ((result.rows[0]?.waiting ?? 0) >= minimumWaiting) return;
+    await new Promise<void>((resolve) => setImmediate(resolve));
+  }
+  throw new Error("The expected concurrent PostgreSQL lock waiters did not arrive.");
+}
+
+async function createIsolatedClientActor(label: string) {
+  const userId = randomUUID();
+  const clientId = randomUUID();
+  const suffix = randomUUID().replaceAll("-", "");
+  await prisma.user.create({
+    data: {
+      id: userId,
+      name: `${marker}:${label}`,
+      email: `${label}.${suffix}@example.test`,
+      roleId: clientRoleId,
+      status: "ACTIVE"
+    }
+  });
+  await prisma.client.create({
+    data: {
+      id: clientId,
+      userId,
+      fullName: `${marker}:${label}`,
+      phone: `20${suffix.slice(0, 10)}`,
+      status: "ACTIVE"
+    }
+  });
+  isolatedUserIds.push(userId);
+  isolatedClientIds.push(clientId);
+  return {
+    userId,
+    clientId,
+    actor: {
+      id: userId,
+      roleName: "Client",
+      clientId,
+      permissions: ["client.read.self", "conversation.read.own", "conversation.create.own", "conversation.reply.own"]
+    } satisfies Principal
+  };
+}
+
+function twoPartyBarrier() {
+  let arrivals = 0;
+  let release: (() => void) | undefined;
+  const released = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  return {
+    async wait() {
+      arrivals += 1;
+      if (arrivals === 2) {
+        release?.();
+      }
+      await released;
+    }
+  };
 }
 
 async function waitForClientWaitOnLock(observer: Client, clientPid: number) {
@@ -88,7 +159,7 @@ async function closeWhileReplyWaits(input: {
     await locker.query("BEGIN");
     await locker.query('SELECT "id" FROM "conversation_threads" WHERE "id" = $1::uuid FOR UPDATE', [input.threadId]);
     reply = input.reply();
-    await waitForBlockedThreadLocks(observer, connection!.pid);
+    await waitForBlockedLocks(observer, connection!.pid);
     await locker.query('UPDATE "conversation_threads" SET "status" = $2::"ConversationThreadStatus", "closedAt" = CURRENT_TIMESTAMP WHERE "id" = $1::uuid', [input.threadId, input.status ?? "CLOSED"]);
     await locker.query("COMMIT");
     await expect(reply).rejects.toMatchObject({ status: 409, code: "CONFLICT" });
@@ -112,7 +183,7 @@ async function replyBeforeClose(input: { threadId: string; reply: () => Promise<
     await locker.query("BEGIN");
     await locker.query('SELECT "id" FROM "conversation_threads" WHERE "id" = $1::uuid FOR UPDATE', [input.threadId]);
     reply = input.reply();
-    await waitForBlockedThreadLocks(observer, connection!.pid);
+    await waitForBlockedLocks(observer, connection!.pid);
     close = closer.query(
       'UPDATE "conversation_threads" SET "status" = \'CLOSED\'::"ConversationThreadStatus", "closedAt" = CURRENT_TIMESTAMP WHERE "id" = $1::uuid',
       [input.threadId]
@@ -192,10 +263,13 @@ describePostgres("batch10 real PostgreSQL conversation write lock", () => {
 
   afterAll(async () => {
     await assertSyntheticEnvironment();
-    await prisma.conversationThread.deleteMany({ where: { clientId: { in: [ids.client, ids.otherClient] } } });
-    await prisma.auditLog.deleteMany({ where: { clientId: { in: [ids.client, ids.otherClient] } } });
-    await prisma.client.deleteMany({ where: { id: { in: [ids.client, ids.otherClient] } } });
-    await prisma.user.deleteMany({ where: { id: { in: [ids.clientUser, ids.otherClientUser, ids.staffUser] } } });
+    const clientIds = [ids.client, ids.otherClient, ...isolatedClientIds];
+    const userIds = [ids.clientUser, ids.otherClientUser, ids.staffUser, ...isolatedUserIds];
+    await prisma.conversationThread.deleteMany({ where: { clientId: { in: clientIds } } });
+    await prisma.auditLog.deleteMany({ where: { OR: [{ clientId: { in: clientIds } }, { actorId: { in: userIds } }] } });
+    await prisma.session.deleteMany({ where: { userId: { in: userIds } } });
+    await prisma.client.deleteMany({ where: { id: { in: clientIds } } });
+    await prisma.user.deleteMany({ where: { id: { in: userIds } } });
     await prisma.$disconnect();
   });
 
@@ -227,6 +301,106 @@ describePostgres("batch10 real PostgreSQL conversation write lock", () => {
     await expect(prisma.auditLog.count({ where: { clientId: ids.client, action: { startsWith: "conversation." } } })).resolves.toBe(0);
   });
 
+  it("reproduces the unlocked first-message decision, then serializes two real first requests into one thread", async () => {
+    const unlocked = await createIsolatedClientActor("unlocked-first-message");
+    const barrier = twoPartyBarrier();
+    const reproduceUnlockedDecision = (message: string) =>
+      prisma.$transaction(async (tx) => {
+        const existing = await tx.conversationThread.findFirst({
+          where: { clientId: unlocked.clientId, status: { in: ["OPEN", "WAITING_STAFF", "WAITING_CLIENT"] } },
+          orderBy: [{ lastMessageAt: "desc" }, { createdAt: "desc" }]
+        });
+        await barrier.wait();
+        const thread = existing ?? await tx.conversationThread.create({
+          data: { clientId: unlocked.clientId, subject: "pre-fix decision reproduction", status: "OPEN" }
+        });
+        const createdMessage = await tx.conversationMessage.create({
+          data: { threadId: thread.id, senderType: "CLIENT", senderUserId: unlocked.userId, body: message }
+        });
+        return tx.conversationThread.update({
+          where: { id: thread.id },
+          data: { status: "WAITING_STAFF", lastMessageAt: createdMessage.createdAt }
+        });
+      });
+
+    const [unlockedFirst, unlockedSecond] = await Promise.all([
+      reproduceUnlockedDecision("unlocked first message"),
+      reproduceUnlockedDecision("unlocked second message")
+    ]);
+    expect(unlockedFirst.id).not.toBe(unlockedSecond.id);
+    await expect(prisma.conversationThread.count({ where: { clientId: unlocked.clientId } })).resolves.toBe(2);
+
+    const locked = await createIsolatedClientActor("locked-first-message");
+    const locker = new Client({ connectionString: databaseUrl });
+    const observer = new Client({ connectionString: databaseUrl });
+    await Promise.all([locker.connect(), observer.connect()]);
+    let first: Promise<Awaited<ReturnType<typeof createOrContinueClientConversation>>> | null = null;
+    let second: Promise<Awaited<ReturnType<typeof createOrContinueClientConversation>>> | null = null;
+    try {
+      const { rows: [connection] } = await locker.query<{ pid: number }>("SELECT pg_backend_pid() AS pid");
+      await locker.query("BEGIN");
+      await locker.query('SELECT "id" FROM "clients" WHERE "id" = $1::uuid FOR UPDATE', [locked.clientId]);
+      first = createOrContinueClientConversation({ actor: locked.actor, body: { message: "locked first message" } });
+      second = createOrContinueClientConversation({ actor: locked.actor, body: { message: "locked second message" } });
+      await waitForLockWaiters(observer, 2);
+      await locker.query("COMMIT");
+
+      const [firstResult, secondResult] = await Promise.all([first, second]);
+      expect(firstResult.id).toBe(secondResult.id);
+      const threads = await prisma.conversationThread.findMany({
+        where: { clientId: locked.clientId },
+        include: { messages: { orderBy: { body: "asc" } } }
+      });
+      expect(threads).toHaveLength(1);
+      expect(threads[0]?.messages.map((message) => message.body)).toEqual(["locked first message", "locked second message"]);
+      await expect(prisma.auditLog.count({
+        where: { clientId: locked.clientId, action: "conversation.client_message" }
+      })).resolves.toBe(2);
+    } finally {
+      await locker.query("ROLLBACK").catch(() => undefined);
+      await first?.catch(() => undefined);
+      await second?.catch(() => undefined);
+      await Promise.all([locker.end(), observer.end()]);
+    }
+  });
+
+  it("does not block another client's first conversation while this client's row is locked", async () => {
+    const blockedClient = await createIsolatedClientActor("client-scope-blocked");
+    const independentClient = await createIsolatedClientActor("client-scope-independent");
+    const locker = new Client({ connectionString: databaseUrl });
+    const observer = new Client({ connectionString: databaseUrl });
+    await Promise.all([locker.connect(), observer.connect()]);
+    let blockedRequest: Promise<Awaited<ReturnType<typeof createOrContinueClientConversation>>> | null = null;
+    try {
+      const { rows: [connection] } = await locker.query<{ pid: number }>("SELECT pg_backend_pid() AS pid");
+      await locker.query("BEGIN");
+      await locker.query('SELECT "id" FROM "clients" WHERE "id" = $1::uuid FOR UPDATE', [blockedClient.clientId]);
+      blockedRequest = createOrContinueClientConversation({ actor: blockedClient.actor, body: { message: "blocked client message" } });
+      await waitForBlockedLocks(observer, connection!.pid);
+
+      const independentResult = await createOrContinueClientConversation({
+        actor: independentClient.actor,
+        body: { message: "independent client message" }
+      });
+      await expect(prisma.conversationThread.count({ where: { clientId: independentClient.clientId } })).resolves.toBe(1);
+      await locker.query("COMMIT");
+      const blockedResult = await blockedRequest;
+      expect(blockedResult.id).not.toBe(independentResult.id);
+    } finally {
+      await locker.query("ROLLBACK").catch(() => undefined);
+      await blockedRequest?.catch(() => undefined);
+      await Promise.all([locker.end(), observer.end()]);
+    }
+  });
+
+  it("rejects a missing client scope without creating a conversation", async () => {
+    const missingClientId = randomUUID();
+    await expect(createOrContinueClientConversation({
+      actor: { ...clientActor, id: randomUUID(), clientId: missingClientId },
+      body: { message: "missing client must not create a conversation" }
+    })).rejects.toMatchObject({ status: 404, code: "NOT_FOUND" });
+    await expect(prisma.conversationThread.count({ where: { clientId: missingClientId } })).resolves.toBe(0);
+  });
   it("allows a reply that obtains the write lock before a later close, then leaves the thread closed", async () => {
     const thread = await createThread("reply-before-close");
     await replyBeforeClose({
@@ -261,11 +435,22 @@ describePostgres("batch10 real PostgreSQL conversation write lock", () => {
     const otherClientReply = await postClientThreadMessageRoute(new Request(`http://batch10.test/api/client/messages/${thread.id}/messages`, {
       method: "POST", headers: { "Content-Type": "application/json", cookie: otherCookie }, body: JSON.stringify({ message: "synthetic other-client reply" })
     }), params);
+    const initialRouteClient = await createIsolatedClientActor("route-first-message");
+    const initialRouteCookie = await createSessionCookie(initialRouteClient.userId);
+    const initialRouteResponse = await postClientMessagesRoute(new Request("http://batch10.test/api/client/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", cookie: initialRouteCookie },
+      body: JSON.stringify({ message: "synthetic route first message", subject: "Synthetic route conversation" })
+    }));
+    const initialRoutePayload = await initialRouteResponse.json() as { data?: { id?: string } };
     expect(unauthenticated.status).toBe(401);
     expect(owner.status).toBe(200);
     expect(otherClient.status).toBe(404);
     expect(staff.status).toBe(200);
     expect(unauthenticatedReply.status).toBe(401);
     expect(otherClientReply.status).toBe(404);
+    expect(initialRouteResponse.status).toBe(200);
+    expect(initialRoutePayload.data?.id).toBeTruthy();
+    await expect(prisma.conversationThread.count({ where: { clientId: initialRouteClient.clientId } })).resolves.toBe(1);
   });
 });

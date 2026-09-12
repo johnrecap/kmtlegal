@@ -233,6 +233,24 @@ function assertThreadIsReplyable(status: string) {
 }
 
 /**
+ * Serializes the active-thread selection/creation decision for one client.
+ * A thread row cannot be locked when this is the client's first conversation,
+ * so the existing client row is the stable lock target.
+ */
+async function lockClientConversationScope(tx: Prisma.TransactionClient, clientId: string) {
+  const locked = await tx.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+    SELECT "id"
+    FROM "clients"
+    WHERE "id" = (${clientId})::uuid
+    FOR UPDATE
+  `);
+
+  if (!locked.length) {
+    throw new ApiError(404, "NOT_FOUND", "Client account was not found.");
+  }
+}
+
+/**
  * Locks an active thread before inserting a message. The status predicate must
  * be evaluated while holding the row lock: a pre-transaction detail read is
  * only an authorization/fast-fail check and cannot safely authorize a write.
@@ -285,6 +303,7 @@ export async function createOrContinueClientConversation(input: {
   const body = parseWithSchema(clientConversationCreateSchema, input.body, "Conversation message payload is invalid.");
 
   const updatedThread = await prisma.$transaction(async (tx) => {
+    await lockClientConversationScope(tx, clientId);
     const existing = await tx.conversationThread.findFirst({
       where: { clientId, status: { in: [...ACTIVE_THREAD_STATUSES] } },
       orderBy: [{ lastMessageAt: "desc" }, { createdAt: "desc" }]

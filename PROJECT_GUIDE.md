@@ -224,6 +224,13 @@ evidence capture. See `docs/reviews/2026-09-13/batch10/BATCH-10.md`.
 
 The separate possibility of concurrent first-time requests creating two active threads is tracked
 as an explicit product-contract and data-model follow-up; no uniqueness migration was added.
+The Batch 10 browser contact-form recovery check mocked both the rejected request and the successful `201` retry. It demonstrates retained input and UI recovery only; it does not demonstrate persisted contact data or email delivery.
+
+## 2026-09-13 Batch 11 local checkpoint
+
+Batch 11 serializes a client's first conversation lookup and creation by locking the existing client row at the start of `createOrContinueClientConversation`; existing-thread writes then retain their conversation-thread lock. The real PostgreSQL controlled-race suite passed seven cases, including a deterministic in-test reproduction of the old unlocked decision sequence, two concurrent service calls converging on one thread, per-client independence, explicit missing-client `404` behavior, and the retained route/session/close-race coverage. This is a local checkpoint only and has not been pushed or deployed.
+
+The temporary PostgreSQL 18.6 test server used only synthetic data on port 55441 and was removed after evidence capture. `PRISMA_POOL_MAX=4` and the local `pg_read_all_settings` and marker-table read grants were limited to that disposable test environment. Staff reopening of closed or archived conversations remains unchanged and can still create multiple active threads; Batch 11 does not add a uniqueness constraint or alter that policy. See `docs/reviews/2026-09-13/batch11/BATCH-11.md`.
 
 ## Blocked Local Checks In This Workspace
 

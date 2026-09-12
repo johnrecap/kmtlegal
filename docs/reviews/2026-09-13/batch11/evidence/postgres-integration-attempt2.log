@@ -1,0 +1,31 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office
+
+(node:16156) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ❯ tests/integration/batch10-conversation-postgres.test.ts (6 tests | 1 failed) 2214ms
+     × reproduces the unlocked first-message decision, then serializes two real first requests into one thread 827ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/batch10-conversation-postgres.test.ts > batch10 real PostgreSQL conversation write lock > reproduces the unlocked first-message decision, then serializes two real first requests into one thread
+Error: The transaction did not wait for the controlled PostgreSQL lock.
+ ❯ waitForBlockedLocks tests/integration/batch10-conversation-postgres.test.ts:64:9
+     62|     await new Promise<void>((resolve) => setImmediate(resolve));
+     63|   }
+     64|   throw new Error("The transaction did not wait for the controlled Pos…
+       |         ^
+     65| }
+     66|
+ ❯ tests/integration/batch10-conversation-postgres.test.ts:331:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  02:12:33
+   Duration  3.36s (transform 359ms, setup 0ms, import 833ms, tests 2.21s, environment 0ms)

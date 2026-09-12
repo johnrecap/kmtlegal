@@ -1,0 +1,63 @@
+Batch 11 cleanup started.
+Synthetic record count before teardown:
+ record_type | count
+-------------+-------
+ users       |     0
+ clients     |     0
+ threads     |     0
+ messages    |     0
+ audits      |     0
+ sessions    |     0
+(6 rows)
+
+ERROR:  column "value" does not exist
+LINE 1: SELECT value FROM batch10_marker;
+               ^
+psql: error: connection to server at "127.0.0.1", port 55441 failed: FATAL:  role "postgres" does not exist
+psql: error: connection to server at "127.0.0.1", port 55441 failed: FATAL:  role "postgres" does not exist
+psql: error: connection to server at "127.0.0.1", port 55441 failed: FATAL:  role "postgres" does not exist
+pg_ctl: directory "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/batch10-postgres" is not a database cluster directory
+Corrected cleanup: resolved cluster data directory and local superuser.
+         marker
+------------------------
+ synthetic-batch10-only
+(1 row)
+
+ pg_terminate_backend
+----------------------
+(0 rows)
+
+DROP DATABASE
+DROP ROLE
+waiting for server to shut down.... done
+server stopped
+Database kmt_batch10 dropped.
+Role kmt_batch10 dropped.
+Port 55441 closed.
+Temporary database directory removed.
+No test password was created; trust authentication was used only inside the disposable local cluster.
+Batch 11 cleanup passed.
+Final cleanup after explicit missing-client verification:
+ record_type | count
+-------------+-------
+ users       |     0
+ clients     |     0
+ threads     |     0
+ messages    |     0
+ audits      |     0
+ sessions    |     0
+(6 rows)
+
+ pg_terminate_backend
+----------------------
+(0 rows)
+
+DROP DATABASE
+DROP ROLE
+waiting for server to shut down.... done
+server stopped
+Final database kmt_batch10 dropped.
+Final role kmt_batch10 dropped.
+Final port 55441 closure confirmed.
+Final temporary database directory removed.
+Batch 11 final cleanup passed.

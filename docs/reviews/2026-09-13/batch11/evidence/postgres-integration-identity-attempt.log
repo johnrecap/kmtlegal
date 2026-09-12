@@ -1,0 +1,71 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office
+
+stdout | tests/integration/batch10-conversation-postgres.test.ts > batch10 real PostgreSQL conversation write lock
+prisma:error
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `permission denied to examine "data_directory"`
+
+stdout | tests/integration/batch10-conversation-postgres.test.ts > batch10 real PostgreSQL conversation write lock
+prisma:error
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `permission denied to examine "data_directory"`
+
+ ❯ tests/integration/batch10-conversation-postgres.test.ts (6 tests | 6 skipped) 276ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/batch10-conversation-postgres.test.ts > batch10 real PostgreSQL conversation write lock
+PrismaClientKnownRequestError:
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `permission denied to examine "data_directory"`
+ ❯ vn.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:238:12
+ ❯ vn.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:184:11
+ ❯ vn.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:153:11
+ ❯ a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:1014:23
+ ❯ assertSyntheticEnvironment tests/integration/batch10-conversation-postgres.test.ts:208:20
+    206|     throw new Error("Batch10 database test requires its authorized iso…
+    207|   }
+    208|   const identity = await prisma.$queryRaw<Array<{ database: string; us…
+       |                    ^
+    209|     SELECT current_database() AS database, current_user AS username, i…
+    210|   `;
+ ❯ tests/integration/batch10-conversation-postgres.test.ts:221:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/batch10-conversation-postgres.test.ts > batch10 real PostgreSQL conversation write lock
+PrismaClientKnownRequestError:
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `permission denied to examine "data_directory"`
+ ❯ vn.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:238:12
+ ❯ vn.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:184:11
+ ❯ vn.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:153:11
+ ❯ a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:1014:23
+ ❯ assertSyntheticEnvironment tests/integration/batch10-conversation-postgres.test.ts:208:20
+    206|     throw new Error("Batch10 database test requires its authorized iso…
+    207|   }
+    208|   const identity = await prisma.$queryRaw<Array<{ database: string; us…
+       |                    ^
+    209|     SELECT current_database() AS database, current_user AS username, i…
+    210|   `;
+ ❯ tests/integration/batch10-conversation-postgres.test.ts:251:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 skipped (6)
+   Start at  02:11:13
+   Duration  1.68s (transform 342ms, setup 0ms, import 879ms, tests 276ms, environment 0ms)

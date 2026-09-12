@@ -1,0 +1,71 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office
+
+stdout | tests/integration/batch10-conversation-postgres.test.ts > batch10 real PostgreSQL conversation write lock
+prisma:error
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `permission denied for table batch10_marker`
+
+stdout | tests/integration/batch10-conversation-postgres.test.ts > batch10 real PostgreSQL conversation write lock
+prisma:error
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `permission denied for table batch10_marker`
+
+ ❯ tests/integration/batch10-conversation-postgres.test.ts (7 tests | 7 skipped) 229ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/batch10-conversation-postgres.test.ts > batch10 real PostgreSQL conversation write lock
+PrismaClientKnownRequestError:
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `permission denied for table batch10_marker`
+ ❯ vn.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:238:12
+ ❯ vn.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:184:11
+ ❯ vn.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:153:11
+ ❯ a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:1014:23
+ ❯ assertSyntheticEnvironment tests/integration/batch10-conversation-postgres.test.ts:229:21
+    227|     throw new Error("Batch10 database identity or data directory verif…
+    228|   }
+    229|   const markerRow = await prisma.$queryRaw<Array<{ marker: string }>>`…
+       |                     ^
+    230|   if (markerRow[0]?.marker !== "synthetic-batch10-only") throw new Err…
+    231| }
+ ❯ tests/integration/batch10-conversation-postgres.test.ts:235:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/batch10-conversation-postgres.test.ts > batch10 real PostgreSQL conversation write lock
+PrismaClientKnownRequestError:
+Invalid `prisma.$queryRaw()` invocation:
+
+
+Raw query failed. Code: `42501`. Message: `permission denied for table batch10_marker`
+ ❯ vn.handleRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:238:12
+ ❯ vn.handleAndLogRequestError node_modules/@prisma/client/src/runtime/RequestHandler.ts:184:11
+ ❯ vn.request node_modules/@prisma/client/src/runtime/RequestHandler.ts:153:11
+ ❯ a node_modules/@prisma/client/src/runtime/getPrismaClient.ts:1014:23
+ ❯ assertSyntheticEnvironment tests/integration/batch10-conversation-postgres.test.ts:229:21
+    227|     throw new Error("Batch10 database identity or data directory verif…
+    228|   }
+    229|   const markerRow = await prisma.$queryRaw<Array<{ marker: string }>>`…
+       |                     ^
+    230|   if (markerRow[0]?.marker !== "synthetic-batch10-only") throw new Err…
+    231| }
+ ❯ tests/integration/batch10-conversation-postgres.test.ts:265:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  7 skipped (7)
+   Start at  02:30:40
+   Duration  1.53s (transform 359ms, setup 0ms, import 818ms, tests 229ms, environment 0ms)

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "batch": "Batch 11",
+  "date": "2026-09-13",
+  "baselineCommit": "1e7d0811dcf5caedd51d9f27e36d82418ca90874",
+  "scope": "Serialize first client conversation selection and creation with an existing Client row lock.",
+  "database": {
+    "engine": "PostgreSQL 18.6",
+    "host": "127.0.0.1",
+    "port": 55441,
+    "database": "kmt_batch10",
+    "marker": "synthetic-batch10-only",
+    "applicationEnvironment": "local",
+    "testOnlyPoolMax": 4,
+    "testOnlyRoleGrants": ["pg_read_all_settings", "SELECT ON batch10_marker"]
+  },
+  "verification": {
+    "postgresIntegration": { "tests": 7, "status": "passed", "log": "evidence/postgres-integration.log" },
+    "fullTestSuite": { "tests": 533, "skipped": 29, "status": "passed", "log": "evidence/full-tests.log" },
+    "typecheck": { "status": "passed", "log": "evidence/typecheck.log" },
+    "lint": { "status": "passed", "log": "evidence/lint.log" },
+    "secretScan": { "status": "passed", "log": "evidence/secret-scan.log" },
+    "build": { "status": "passed", "log": "evidence/build.log" },
+    "pageInventory": { "baseline": 58, "current": 58, "status": "passed", "artifact": "evidence/page-inventory.json" }
+  },
+  "evidenceNotes": [
+    "The in-test unlocked reproduction models the previous decision sequence; it is not historical product execution or a failed baseline product test.",
+    "Attempt logs are retained: initial identity inspection lacked the local-only role grant; a pool size of one could not start both controlled transactions; a lock-queue observer was refined to count actual lock waiters; the final rerun also corrected local marker-table read access.",
+    "The pg client deprecation warning in the final integration log comes from the existing controlled test orchestration; the test run passed."
+  ],
+  "cleanup": {
+    "status": "passed",
+    "syntheticRecordsBeforeTeardown": 0,
+    "databaseDropped": true,
+    "roleDropped": true,
+    "port55441Closed": true,
+    "temporaryDirectoryRemoved": true,
+    "passwordCreated": false,
+    "log": "evidence/cleanup.log"
+  },
+  "limitation": "Staff updateAdminConversation can still reopen CLOSED or ARCHIVED threads. This batch does not add a one-active-thread constraint or change reopen policy."
+}

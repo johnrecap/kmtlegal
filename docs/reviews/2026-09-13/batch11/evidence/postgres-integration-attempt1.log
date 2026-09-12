@@ -1,0 +1,47 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office
+
+(node:656) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ❯ tests/integration/batch10-conversation-postgres.test.ts (6 tests | 2 failed) 8105ms
+     × reproduces the unlocked first-message decision, then serializes two real first requests into one thread 2028ms
+     × does not block another client's first conversation while this client's row is locked 5016ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/integration/batch10-conversation-postgres.test.ts > batch10 real PostgreSQL conversation write lock > reproduces the unlocked first-message decision, then serializes two real first requests into one thread
+PrismaClientKnownRequestError: Transaction API error: Unable to start a transaction in the given time.
+ ❯ yr.#c node_modules/@prisma/client/src/runtime/core/engines/client/ClientEngine.ts:309:13
+ ❯ error node_modules/@prisma/client/src/runtime/core/engines/client/ClientEngine.ts:462:40
+ ❯ Proxy._transactionWithCallback node_modules/@prisma/client/src/runtime/getPrismaClient.ts:849:15
+ ❯ tests/integration/batch10-conversation-postgres.test.ts:312:45
+    310|       });
+    311|
+    312|     const [unlockedFirst, unlockedSecond] = await Promise.all([
+       |                                             ^
+    313|       reproduceUnlockedDecision("unlocked first message"),
+    314|       reproduceUnlockedDecision("unlocked second message")
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/integration/batch10-conversation-postgres.test.ts > batch10 real PostgreSQL conversation write lock > does not block another client's first conversation while this client's row is locked
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/integration/batch10-conversation-postgres.test.ts:353:3
+    351|   });
+    352|
+    353|   it("does not block another client's first conversation while this cl…
+       |   ^
+    354|     const blockedClient = await createIsolatedClientActor("client-scop…
+    355|     const independentClient = await createIsolatedClientActor("client-…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 4 passed (6)
+   Start at  02:11:50
+   Duration  9.96s (transform 361ms, setup 0ms, import 857ms, tests 8.10s, environment 0ms)
