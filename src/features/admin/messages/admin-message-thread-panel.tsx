@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Badge, Button, MaterialSymbol } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { conversationStatusLabels, formatDateTime, labelFrom } from "@/lib/legal-format";
@@ -75,21 +75,44 @@ export function AdminMessageThreadPanel({
   const [error, setError] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const mutationVersion = useRef(0);
+  const mutationPending = useRef(false);
+  const mounted = useRef(true);
+  const draftVersion = useRef(0);
   const isClosed = thread.status === "CLOSED" || thread.status === "ARCHIVED";
+
+  useEffect(() => () => {
+    mounted.current = false;
+    mutationVersion.current += 1;
+  }, []);
 
   useEffect(() => {
     let mounted = true;
+    let pollInFlight = false;
     const poll = async () => {
+      if (pollInFlight || mutationPending.current) return;
+      pollInFlight = true;
+      const versionAtStart = mutationVersion.current;
       try {
         const response = await fetch(`/api/admin/messages/${thread.id}`, { cache: "no-store" });
         const payload = await readJson(response);
-        if (mounted) {
+        if (
+          mounted &&
+          !mutationPending.current &&
+          versionAtStart === mutationVersion.current
+        ) {
           setThread(payload.data);
         }
       } catch {
-        if (mounted) {
+        if (
+          mounted &&
+          !mutationPending.current &&
+          versionAtStart === mutationVersion.current
+        ) {
           setError("تعذر تحديث المحادثة الآن.");
         }
+      } finally {
+        pollInFlight = false;
       }
     };
     const timer = window.setInterval(poll, 5000);
@@ -104,10 +127,13 @@ export function AdminMessageThreadPanel({
   async function sendReply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmed = message.trim();
-    if (!trimmed || isSending || !canReply || isClosed) {
+    if (!trimmed || isSending || isUpdating || !canReply || isClosed) {
       return;
     }
 
+    const operationVersion = ++mutationVersion.current;
+    const sentDraftVersion = draftVersion.current;
+    mutationPending.current = true;
     setIsSending(true);
     setError(null);
     try {
@@ -117,16 +143,27 @@ export function AdminMessageThreadPanel({
         body: JSON.stringify({ message: trimmed })
       });
       const payload = await readJson(response);
-      setThread(payload.data);
-      setMessage("");
+      if (mounted.current && operationVersion === mutationVersion.current) {
+        setThread(payload.data);
+      }
+      if (mounted.current && draftVersion.current === sentDraftVersion) {
+        setMessage("");
+      }
     } catch (replyError) {
-      setError(replyError instanceof Error ? replyError.message : "تعذر إرسال الرد.");
+      if (mounted.current) {
+        setError(replyError instanceof Error ? replyError.message : "تعذر إرسال الرد.");
+      }
     } finally {
-      setIsSending(false);
+      mutationPending.current = false;
+      mutationVersion.current += 1;
+      if (mounted.current) setIsSending(false);
     }
   }
 
   async function updateThread(body: { status?: string; assignedToId?: string | null }) {
+    if (isSending || isUpdating) return;
+    const operationVersion = ++mutationVersion.current;
+    mutationPending.current = true;
     setIsUpdating(true);
     setError(null);
     try {
@@ -136,11 +173,17 @@ export function AdminMessageThreadPanel({
         body: JSON.stringify(body)
       });
       const payload = await readJson(response);
-      setThread(payload.data);
+      if (mounted.current && operationVersion === mutationVersion.current) {
+        setThread(payload.data);
+      }
     } catch (updateError) {
-      setError(updateError instanceof Error ? updateError.message : "تعذر تحديث المحادثة.");
+      if (mounted.current) {
+        setError(updateError instanceof Error ? updateError.message : "تعذر تحديث المحادثة.");
+      }
     } finally {
-      setIsUpdating(false);
+      mutationPending.current = false;
+      mutationVersion.current += 1;
+      if (mounted.current) setIsUpdating(false);
     }
   }
 
@@ -199,12 +242,15 @@ export function AdminMessageThreadPanel({
             <textarea
               className="min-h-20 min-w-0 flex-1 resize-y rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6 outline-none transition focus:border-kmt-gold"
               value={message}
-              onChange={(event) => setMessage(event.target.value)}
+              onChange={(event) => {
+                draftVersion.current += 1;
+                setMessage(event.target.value);
+              }}
               placeholder={isClosed ? "المحادثة مغلقة." : "اكتب رد الفريق للعميل..."}
-              disabled={!canReply || isClosed || isSending}
+              disabled={!canReply || isClosed || isSending || isUpdating}
               maxLength={2000}
             />
-            <Button className="self-end" type="submit" loading={isSending} disabled={!message.trim() || !canReply || isClosed}>
+            <Button className="self-end" type="submit" loading={isSending} disabled={!message.trim() || !canReply || isClosed || isSending || isUpdating}>
               إرسال
             </Button>
           </div>
@@ -238,7 +284,7 @@ export function AdminMessageThreadPanel({
               <select
                 className="mt-2 min-h-11 w-full rounded border border-kmt-border bg-white px-3 text-kmt-ink outline-none focus:border-kmt-gold"
                 value={thread.assignedTo?.id ?? ""}
-                disabled={!canAssign || isUpdating}
+                disabled={!canAssign || isUpdating || isSending}
                 onChange={(event) => updateThread({ assignedToId: event.target.value || null })}
               >
                 <option value="">غير معين</option>
@@ -255,7 +301,7 @@ export function AdminMessageThreadPanel({
               <select
                 className="mt-2 min-h-11 w-full rounded border border-kmt-border bg-white px-3 text-kmt-ink outline-none focus:border-kmt-gold"
                 value={thread.status}
-                disabled={!canManage || isUpdating}
+                disabled={!canManage || isUpdating || isSending}
                 onChange={(event) => updateThread({ status: event.target.value })}
               >
                 {Object.entries(conversationStatusLabels).map(([value, label]) => (

@@ -232,6 +232,36 @@ function assertThreadIsReplyable(status: string) {
   }
 }
 
+/**
+ * Locks an active thread before inserting a message. The status predicate must
+ * be evaluated while holding the row lock: a pre-transaction detail read is
+ * only an authorization/fast-fail check and cannot safely authorize a write.
+ */
+async function lockActiveConversationThread(
+  tx: Prisma.TransactionClient,
+  input: { threadId: string; clientId?: string }
+) {
+  const clientScope = input.clientId
+    ? Prisma.sql`AND "clientId" = (${input.clientId})::uuid`
+    : Prisma.empty;
+  const locked = await tx.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+    SELECT "id"
+    FROM "conversation_threads"
+    WHERE "id" = (${input.threadId})::uuid
+      ${clientScope}
+      AND "status" IN (
+        'OPEN'::"ConversationThreadStatus",
+        'WAITING_STAFF'::"ConversationThreadStatus",
+        'WAITING_CLIENT'::"ConversationThreadStatus"
+      )
+    FOR UPDATE
+  `);
+
+  if (!locked.length) {
+    throw new ApiError(409, "CONFLICT", "Conversation thread is closed.");
+  }
+}
+
 export async function listClientConversations(input: { actor: Principal }) {
   const clientId = assertClientConversationAccess(input.actor);
   const items = await prisma.conversationThread.findMany({
@@ -269,6 +299,10 @@ export async function createOrContinueClientConversation(input: {
           status: "OPEN"
         }
       }));
+
+    if (existing) {
+      await lockActiveConversationThread(tx, { threadId: thread.id, clientId });
+    }
 
     const message = await tx.conversationMessage.create({
       data: {
@@ -323,6 +357,7 @@ export async function replyClientConversation(input: {
   const body = normalizeMessageBody(input.body);
 
   const updatedThread = await prisma.$transaction(async (tx) => {
+    await lockActiveConversationThread(tx, { threadId: thread.id, clientId });
     const message = await tx.conversationMessage.create({
       data: {
         threadId: thread.id,
@@ -402,6 +437,7 @@ export async function replyAdminConversation(input: {
   const body = normalizeMessageBody(input.body);
 
   const updatedThread = await prisma.$transaction(async (tx) => {
+    await lockActiveConversationThread(tx, { threadId: thread.id });
     const message = await tx.conversationMessage.create({
       data: {
         threadId: thread.id,

@@ -331,6 +331,12 @@ Total plans: 40
 - Partially open/planned: 11 plans.
 - Done: 27 plans.
 
+## Batch 10 local verification (2026-09-13)
+
+- Completed: status-qualified PostgreSQL row locking for existing conversation writes, stale-poll protection in both conversation panels, and public-contact rejected-request recovery with the existing hydration/content systems.
+- Passed: isolated real PostgreSQL 18.6 controlled-race test (3 cases), 31 focused server/component tests, typecheck, lint, and secret scan.
+- Open: capture final production-build result, browser evidence at 390/768/1440, and the 58-page comparison before any release claim. Keep the concurrent first-active-thread creation question as a separate contract/data-model follow-up; no migration is included in Batch 10.
+
 ## Immediate Next Steps
 
 1. Start PostgreSQL with `docker compose up -d db`, or configure a real `DATABASE_URL`, then run `npm run qa:db`.

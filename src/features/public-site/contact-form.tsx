@@ -1,11 +1,12 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { Button, Select, Textarea, TextInput } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
 import { publicMotionButton, publicMotionControl, publicMotionCta, publicMotionForm, publicMotionStatus } from "@/features/public-site/public-motion";
 import { cn } from "@/lib/cn";
 import type { PublicLocale } from "@/lib/public-locale";
+import { useHydrated } from "@/lib/use-hydrated";
 
 type ContactStatus =
   | { type: "idle" }
@@ -39,16 +40,13 @@ const darkSecondaryButtonClasses =
 
 export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
   const copy = getPublicContent(locale).contactForm;
-  const [isHydrated, setIsHydrated] = useState(false);
+  const isHydrated = useHydrated();
   const [values, setValues] = useState(initialValues);
   const [status, setStatus] = useState<ContactStatus>({ type: "idle" });
+  const submitInFlight = useRef(false);
   const isSubmitting = status.type === "submitting";
   const isLockedAfterSuccess = status.type === "success";
-  const fieldsDisabled = isSubmitting || isLockedAfterSuccess;
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+  const fieldsDisabled = !isHydrated || isSubmitting || isLockedAfterSuccess;
 
   function updateValue<Key extends keyof typeof initialValues>(key: Key, value: (typeof initialValues)[Key]) {
     setValues((current) => ({ ...current, [key]: value }));
@@ -61,30 +59,40 @@ export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (isLockedAfterSuccess) {
+    if (!isHydrated || isSubmitting || submitInFlight.current || isLockedAfterSuccess) {
       return;
     }
 
+    submitInFlight.current = true;
     setStatus({ type: "submitting" });
 
-    const response = await fetch(`/api/public/contact?locale=${locale}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...values, locale })
-    });
-    const body = await response.json().catch(() => null);
+    try {
+      const response = await fetch(`/api/public/contact?locale=${locale}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...values, locale })
+      });
+      const body = await response.json().catch(() => null);
 
-    if (!response.ok) {
+      if (!response.ok) {
+        setStatus({
+          type: "error",
+          message: body?.error?.message ?? copy.fallbackError,
+          requestId: body?.error?.requestId
+        });
+        return;
+      }
+
+      setStatus({ type: "success", message: copy.success, requestId: body?.requestId });
+      setValues(initialValues);
+    } catch {
       setStatus({
         type: "error",
-        message: body?.error?.message ?? copy.fallbackError,
-        requestId: body?.error?.requestId
+        message: copy.fallbackError
       });
-      return;
+    } finally {
+      submitInFlight.current = false;
     }
-
-    setStatus({ type: "success", message: copy.success, requestId: body?.requestId });
-    setValues(initialValues);
   }
 
   return (
@@ -134,7 +142,7 @@ export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
         </p>
       ) : null}
       <div className="mt-5 flex flex-wrap gap-3">
-        <Button className={cn(publicMotionButton, publicMotionCta)} disabled={isLockedAfterSuccess} loading={isSubmitting} type="submit">
+        <Button className={cn(publicMotionButton, publicMotionCta)} disabled={!isHydrated || isSubmitting || isLockedAfterSuccess} loading={isSubmitting} type="submit">
           {copy.submit}
         </Button>
         {isLockedAfterSuccess ? (
