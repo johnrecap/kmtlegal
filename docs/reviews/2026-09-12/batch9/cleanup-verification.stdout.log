@@ -1,0 +1,11 @@
+kmt_batch9|kmt_batch9|55440|C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/batch9-postgres/data
+batch9_users=0
+batch9_clients=0
+batch9_cases=0
+batch9_documents=0
+storage_root_exists=False
+
+postgres_dir_exists=False
+storage_dir_exists=False
+port_3113_listeners=0
+port_55440_listeners=0

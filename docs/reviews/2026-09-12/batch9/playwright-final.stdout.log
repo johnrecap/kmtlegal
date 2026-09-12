@@ -1,0 +1,127 @@
+[next]    ▲ Next.js 15.5.25
+[next]    - Local:        http://127.0.0.1:3113
+   - Network:      http://127.0.0.1:3113
+   - Experiments (use with caution):
+     · sri
+     ✓ globalNotFound
+     · clientTraceMetadata
+
+ ✓ Starting...
+[next]  ○ Compiling /instrumentation ...
+[next]  ✓ Compiled /instrumentation in 2.7s (1177 modules)
+[next]  ✓ Ready in 8.8s
+[next]  ○ Compiling /middleware ...
+[next]  ✓ Compiled /middleware in 621ms (915 modules)
+[next]  ○ Compiling / ...
+[next]  ✓ Compiled / in 6.5s (3488 modules)
+[next]  GET / 200 in 375ms
+[next]  GET / 200 in 613ms
+
+Running 5 tests using 1 worker
+
+
+
+(node:12484) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/5] [chromium] › tests\e2e\batch9-documents.spec.ts:112:7 › Batch 9 isolated document acceptance › retains an old current case outside the first 100 and refreshes the case tab after upload
+[next]  ○ Compiling /login ...
+[next]  ✓ Compiled /login in 4.8s (3536 modules)
+[next]  GET /login?next=%2Fadmin%2Fcases%2Feed78e53-c2b7-4275-85d4-7d0862e419d9%3Ftab%3Ddocuments 200 in 6277ms
+[next]  ○ Compiling /api/auth/login ...
+[next]  ✓ Compiled /api/auth/login in 2.4s (3606 modules)
+[next]  GET /login?next=%2Fadmin%2Fcases%2Feed78e53-c2b7-4275-85d4-7d0862e419d9%3Ftab%3Ddocuments 200 in 997ms
+[next]  POST /api/auth/login 200 in 3600ms
+[next]  ○ Compiling /admin/cases/[caseId] ...
+[next]  ✓ Compiled /admin/cases/[caseId] in 4s (3654 modules)
+[next]  GET /admin/cases/eed78e53-c2b7-4275-85d4-7d0862e419d9?tab=documents 200 in 8978ms
+[next]  GET /admin/cases/eed78e53-c2b7-4275-85d4-7d0862e419d9?tab=documents 200 in 1095ms
+[next]  GET /admin/cases/eed78e53-c2b7-4275-85d4-7d0862e419d9?tab=documents 200 in 1945ms
+[next]  ○ Compiling /api/files/upload ...
+[next]  ✓ Compiled /api/files/upload in 2.8s (3679 modules)
+[next]  POST /api/files/upload 201 in 4509ms
+[next]  GET /admin/cases/eed78e53-c2b7-4275-85d4-7d0862e419d9?tab=documents 200 in 1925ms
+[next]  GET /admin/cases/eed78e53-c2b7-4275-85d4-7d0862e419d9?tab=documents 200 in 1254ms
+[2/5] [chromium] › tests\e2e\batch9-documents.spec.ts:131:7 › Batch 9 isolated document acceptance › uploads from the general library and rejects mismatched or foreign targets without residue
+[next]  GET /login?next=%2Fadmin%2Fdocuments 200 in 876ms
+[next]  POST /api/auth/login 200 in 452ms
+[next]  ○ Compiling /admin/documents ...
+[next]  ✓ Compiled /admin/documents in 2.6s (3661 modules)
+[next]  GET /admin/documents 200 in 3788ms
+[next]  GET /admin/documents 200 in 691ms
+[next]  GET /admin/documents 200 in 1463ms
+[next]  POST /api/files/upload 201 in 385ms
+[next]  POST /api/files/upload 400 in 555ms
+[next]  GET /admin/documents 200 in 1628ms
+[next]  POST /api/auth/login 200 in 494ms
+[next]  POST /api/files/upload 403 in 298ms
+[3/5] [chromium] › tests\e2e\batch9-documents.spec.ts:157:7 › Batch 9 isolated document acceptance › enforces independent office, lawyer, client, and guest document scopes
+[next]  POST /api/auth/login 200 in 349ms
+[next]  ○ Compiling /api/admin/documents ...
+[next]  ✓ Compiled /api/admin/documents in 1628ms (3663 modules)
+[next]  GET /api/admin/documents?pageSize=80 200 in 2330ms
+[next]  ○ Compiling /api/files/[documentId]/download ...
+[next]  ✓ Compiled /api/files/[documentId]/download in 1785ms (3665 modules)
+[next]  GET /api/files/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8/download 200 in 5173ms
+[next]  GET /api/files/688f92a2-0c8a-4193-90c1-eae5bccfc29a/download 200 in 330ms
+[next]  POST /api/auth/login 200 in 419ms
+[next]  GET /api/admin/documents?pageSize=80 200 in 336ms
+[next]  GET /api/files/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8/download 200 in 308ms
+[next]  GET /api/files/688f92a2-0c8a-4193-90c1-eae5bccfc29a/download 200 in 302ms
+[next]  ○ Compiling /api/admin/documents/[documentId] ...
+[next]  ✓ Compiled /api/admin/documents/[documentId] in 1849ms (3667 modules)
+[next]  PATCH /api/admin/documents/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8 403 in 4747ms
+[next]  ○ Compiling /api/admin/documents/[documentId]/delete ...
+[next]  ✓ Compiled /api/admin/documents/[documentId]/delete in 1566ms (3635 modules)
+[next]  POST /api/admin/documents/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8/delete 403 in 4546ms
+[next]  POST /api/auth/login 200 in 414ms
+[next]  GET /api/admin/documents?pageSize=80 200 in 283ms
+[next]  GET /api/files/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8/download 403 in 323ms
+[next]  GET /api/files/688f92a2-0c8a-4193-90c1-eae5bccfc29a/download 403 in 308ms
+[next]  PATCH /api/admin/documents/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8 403 in 318ms
+[next]  POST /api/admin/documents/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8/delete 403 in 317ms
+[next]  POST /api/auth/login 200 in 340ms
+[next]  GET /api/admin/documents?pageSize=80 403 in 296ms
+[next]  GET /api/files/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8/download 200 in 332ms
+[next]  GET /api/files/688f92a2-0c8a-4193-90c1-eae5bccfc29a/download 403 in 353ms
+[next]  PATCH /api/admin/documents/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8 403 in 325ms
+[next]  POST /api/admin/documents/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8/delete 403 in 274ms
+[next]  POST /api/auth/login 200 in 359ms
+[next]  GET /api/admin/documents?pageSize=80 403 in 330ms
+[next]  GET /api/files/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8/download 403 in 289ms
+[next]  GET /api/files/688f92a2-0c8a-4193-90c1-eae5bccfc29a/download 403 in 279ms
+[next]  PATCH /api/admin/documents/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8 403 in 304ms
+[next]  POST /api/admin/documents/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8/delete 403 in 303ms
+[next]  GET /api/admin/documents?pageSize=80 401 in 306ms
+[next]  GET /api/files/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8/download 401 in 272ms
+[next]  GET /api/files/688f92a2-0c8a-4193-90c1-eae5bccfc29a/download 401 in 278ms
+[next]  PATCH /api/admin/documents/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8 401 in 323ms
+[next]  POST /api/admin/documents/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8/delete 401 in 316ms
+[next]  ○ Compiling /client/files ...
+[next]  ✓ Compiled /client/files in 5.4s (3677 modules)
+[next]  GET /client/files 200 in 10323ms
+[next]  GET /client/files 200 in 1199ms
+[next]  GET /api/files/f6e3108f-f8bc-4dd6-b6d9-4a81b6fa0ec8/download 200 in 415ms
+[4/5] [chromium] › tests\e2e\batch9-documents.spec.ts:200:7 › Batch 9 isolated document acceptance › serializes update-first, delete-first, and double-delete outcomes with one audit per success
+[next]  GET /login?next=%2Fadmin%2Fdocuments 200 in 447ms
+[next]  POST /api/auth/login 200 in 476ms
+[next]  GET /admin/documents 200 in 1261ms
+[next]  GET /admin/documents 200 in 916ms
+[next]  GET /admin/documents 200 in 1599ms
+[next] (node:8464) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[next]  PATCH /api/admin/documents/558d878b-d1ed-4844-8407-fc9e1bcaa58e 200 in 810ms
+[next]  POST /api/admin/documents/558d878b-d1ed-4844-8407-fc9e1bcaa58e/delete 200 in 392ms
+[next]  PATCH /api/admin/documents/be3bec64-f2ab-4319-90c9-ac7f70ccb1aa 404 in 369ms
+[next]  POST /api/admin/documents/be3bec64-f2ab-4319-90c9-ac7f70ccb1aa/delete 200 in 741ms
+[next]  POST /api/admin/documents/3910be8e-a29c-4f3b-945a-3e5caee7cfe3/delete 200 in 358ms
+[next]  POST /api/admin/documents/3910be8e-a29c-4f3b-945a-3e5caee7cfe3/delete 404 in 366ms
+[5/5] [chromium] › tests\e2e\batch9-documents.spec.ts:270:7 › Batch 9 isolated document acceptance › requires keyboard confirmation, sends one delete, hides the row, and preserves bytes
+[next]  GET /login?next=%2Fadmin%2Fdocuments%3Fq%3D%255BBATCH9%253A1323bef9-3be6-4498-8d14-795ab9d2850f%255D%2520ui-delete.pdf 200 in 422ms
+[next]  POST /api/auth/login 200 in 368ms
+[next]  GET /admin/documents?q=%5BBATCH9%3A1323bef9-3be6-4498-8d14-795ab9d2850f%5D+ui-delete.pdf 200 in 788ms
+[next]  GET /admin/documents?q=%5BBATCH9%3A1323bef9-3be6-4498-8d14-795ab9d2850f%5D+ui-delete.pdf 200 in 698ms
+[next]  GET /admin/documents?q=%5BBATCH9%3A1323bef9-3be6-4498-8d14-795ab9d2850f%5D%20ui-delete.pdf 200 in 1100ms
+[next]  POST /api/admin/documents/2cf4ae4e-d4fa-40f0-8086-8daf6fac018d/delete 200 in 316ms
+[next]  GET /admin/documents?q=%5BBATCH9%3A1323bef9-3be6-4498-8d14-795ab9d2850f%5D+ui-delete.pdf 200 in 631ms
+[next]  GET /api/files/2cf4ae4e-d4fa-40f0-8086-8daf6fac018d/download 404 in 319ms
+  5 passed (1.9m)

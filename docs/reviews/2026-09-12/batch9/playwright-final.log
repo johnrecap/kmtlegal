@@ -1,9 +1,0 @@
-Batch 9 isolated document lifecycle
-
-Environment identity: PostgreSQL 18 at 127.0.0.1:55440; database/user kmt_batch9; workspace-only data and private uploads paths.
-Command: node scripts/run-playwright-with-server.mjs tests/e2e/batch9-documents.spec.ts --workers=1
-
-2 passed (1.1m)
-
-- retained current case outside the first 100 options, uploaded it from the case tab with 201, and observed it after router refresh
-- rejected PATCH status=DELETED and unconfirmed delete with 400; accepted normal PATCH; concurrent delete requests returned 200/404; download returned 404 after soft deletion while private bytes remained

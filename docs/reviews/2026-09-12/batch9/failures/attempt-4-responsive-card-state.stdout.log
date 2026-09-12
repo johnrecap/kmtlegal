@@ -1,0 +1,162 @@
+[next]    ▲ Next.js 15.5.25
+[next]    - Local:        http://127.0.0.1:3113
+   - Network:      http://127.0.0.1:3113
+   - Experiments (use with caution):
+     · sri
+     ✓ globalNotFound
+     · clientTraceMetadata
+
+ ✓ Starting...
+[next]  ○ Compiling /instrumentation ...
+[next]  ✓ Compiled /instrumentation in 2.5s (1177 modules)
+[next]  ✓ Ready in 8.9s
+[next]  ○ Compiling /middleware ...
+[next]  ✓ Compiled /middleware in 608ms (915 modules)
+[next]  ○ Compiling / ...
+[next]  ✓ Compiled / in 9.1s (3511 modules)
+[next]  GET / 200 in 326ms
+[next]  GET / 200 in 667ms
+
+Running 5 tests using 1 worker
+
+
+
+(node:15376) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/5] [chromium] › tests\e2e\batch9-documents.spec.ts:112:7 › Batch 9 isolated document acceptance › retains an old current case outside the first 100 and refreshes the case tab after upload
+[next]  ○ Compiling /login ...
+[next]  ✓ Compiled /login in 2.7s (3536 modules)
+[next]  GET /login?next=%2Fadmin%2Fcases%2F777fa162-e35b-43a1-b8f1-ba7aa9672c37%3Ftab%3Ddocuments 200 in 4137ms
+[next]  ○ Compiling /api/auth/login ...
+[next]  ✓ Compiled /api/auth/login in 2.5s (3583 modules)
+[next]  POST /api/auth/login 200 in 3930ms
+[next]  ○ Compiling /admin/cases/[caseId] ...
+[next]  ✓ Compiled /admin/cases/[caseId] in 3.9s (3654 modules)
+[next]  GET /admin/cases/777fa162-e35b-43a1-b8f1-ba7aa9672c37?tab=documents 200 in 8093ms
+[next]  GET /admin/cases/777fa162-e35b-43a1-b8f1-ba7aa9672c37?tab=documents 200 in 1037ms
+[next]  GET /admin/cases/777fa162-e35b-43a1-b8f1-ba7aa9672c37?tab=documents 200 in 1929ms
+[next]  ○ Compiling /api/files/upload ...
+[next]  ✓ Compiled /api/files/upload in 1617ms (3656 modules)
+[next]  POST /api/files/upload 201 in 2252ms
+[next]  GET /admin/cases/777fa162-e35b-43a1-b8f1-ba7aa9672c37?tab=documents 200 in 857ms
+[2/5] [chromium] › tests\e2e\batch9-documents.spec.ts:131:7 › Batch 9 isolated document acceptance › uploads from the general library and rejects mismatched or foreign targets without residue
+[next]  GET /login?next=%2Fadmin%2Fdocuments 200 in 777ms
+[next]  POST /api/auth/login 200 in 435ms
+[next]  ○ Compiling /admin/documents ...
+[next]  ✓ Compiled /admin/documents in 2.4s (3661 modules)
+[next]  GET /admin/documents 200 in 3528ms
+[next]  GET /admin/documents 200 in 690ms
+[next]  GET /admin/documents 200 in 1408ms
+[next]  POST /api/files/upload 201 in 329ms
+[next]  POST /api/files/upload 400 in 522ms
+[next]  GET /admin/documents 200 in 801ms
+[next]  POST /api/auth/login 200 in 394ms
+[next]  POST /api/files/upload 403 in 322ms
+[3/5] [chromium] › tests\e2e\batch9-documents.spec.ts:157:7 › Batch 9 isolated document acceptance › enforces independent office, lawyer, client, and guest document scopes
+[next]  POST /api/auth/login 200 in 399ms
+[next]  ○ Compiling /api/admin/documents ...
+[next]  ✓ Compiled /api/admin/documents in 1452ms (3663 modules)
+[next]  GET /api/admin/documents?pageSize=80 200 in 2244ms
+[next]  ○ Compiling /api/files/[documentId]/download ...
+[next]  ✓ Compiled /api/files/[documentId]/download in 1492ms (3665 modules)
+[next]  GET /api/files/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7/download 200 in 4100ms
+[next]  GET /api/files/fe35438c-63cf-4412-8c6b-8c022727f228/download 200 in 316ms
+[next]  POST /api/auth/login 200 in 368ms
+[next]  GET /api/admin/documents?pageSize=80 200 in 323ms
+[next]  GET /api/files/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7/download 200 in 334ms
+[next]  GET /api/files/fe35438c-63cf-4412-8c6b-8c022727f228/download 200 in 317ms
+[next]  ○ Compiling /api/admin/documents/[documentId] ...
+[next]  ✓ Compiled /api/admin/documents/[documentId] in 1613ms (3667 modules)
+[next]  PATCH /api/admin/documents/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7 403 in 4482ms
+[next]  ○ Compiling /api/admin/documents/[documentId]/delete ...
+[next]  ✓ Compiled /api/admin/documents/[documentId]/delete in 1583ms (3669 modules)
+[next]  POST /api/admin/documents/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7/delete 403 in 4258ms
+[next]  POST /api/auth/login 200 in 393ms
+[next]  GET /api/admin/documents?pageSize=80 200 in 288ms
+[next]  GET /api/files/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7/download 403 in 360ms
+[next]  GET /api/files/fe35438c-63cf-4412-8c6b-8c022727f228/download 403 in 274ms
+[next]  PATCH /api/admin/documents/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7 403 in 307ms
+[next]  POST /api/admin/documents/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7/delete 403 in 309ms
+[next]  POST /api/auth/login 200 in 337ms
+[next]  GET /api/admin/documents?pageSize=80 403 in 282ms
+[next]  GET /api/files/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7/download 200 in 294ms
+[next]  GET /api/files/fe35438c-63cf-4412-8c6b-8c022727f228/download 403 in 287ms
+[next]  PATCH /api/admin/documents/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7 403 in 318ms
+[next]  POST /api/admin/documents/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7/delete 403 in 286ms
+[next]  POST /api/auth/login 200 in 334ms
+[next]  GET /api/admin/documents?pageSize=80 403 in 287ms
+[next]  GET /api/files/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7/download 403 in 274ms
+[next]  GET /api/files/fe35438c-63cf-4412-8c6b-8c022727f228/download 403 in 285ms
+[next]  PATCH /api/admin/documents/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7 403 in 283ms
+[next]  POST /api/admin/documents/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7/delete 403 in 290ms
+[next]  GET /api/admin/documents?pageSize=80 401 in 268ms
+[next]  GET /api/files/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7/download 401 in 280ms
+[next]  GET /api/files/fe35438c-63cf-4412-8c6b-8c022727f228/download 401 in 285ms
+[next]  PATCH /api/admin/documents/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7 401 in 360ms
+[next]  POST /api/admin/documents/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7/delete 401 in 276ms
+[next]  ○ Compiling /client/files ...
+[next]  ✓ Compiled /client/files in 4.4s (3677 modules)
+[next]  GET /client/files 200 in 6395ms
+[next]  GET /client/files 200 in 602ms
+[next]  GET /api/files/f45458eb-c4b4-43e7-bfd6-c1b25ee489a7/download 200 in 409ms
+[4/5] [chromium] › tests\e2e\batch9-documents.spec.ts:200:7 › Batch 9 isolated document acceptance › serializes update-first, delete-first, and double-delete outcomes with one audit per success
+[next]  GET /login?next=%2Fadmin%2Fdocuments 200 in 424ms
+[next]  POST /api/auth/login 200 in 423ms
+[next]  GET /admin/documents 200 in 1016ms
+[next]  GET /admin/documents 200 in 818ms
+[next]  GET /admin/documents 200 in 1475ms
+[next] (node:6344) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[next]  PATCH /api/admin/documents/e2a46b43-969a-484e-be01-aa9b3f6e39ce 200 in 796ms
+[next]  POST /api/admin/documents/e2a46b43-969a-484e-be01-aa9b3f6e39ce/delete 200 in 381ms
+[next]  PATCH /api/admin/documents/25cbe14e-9a91-4c37-bd28-dd5e1327835f 404 in 370ms
+[next]  POST /api/admin/documents/25cbe14e-9a91-4c37-bd28-dd5e1327835f/delete 200 in 753ms
+[next]  POST /api/admin/documents/15285977-b87d-4e29-b4b3-b0a2837f3be4/delete 404 in 386ms
+[next]  POST /api/admin/documents/15285977-b87d-4e29-b4b3-b0a2837f3be4/delete 200 in 401ms
+[5/5] [chromium] › tests\e2e\batch9-documents.spec.ts:270:7 › Batch 9 isolated document acceptance › requires keyboard confirmation, sends one delete, hides the row, and preserves bytes
+[next]  GET /login?next=%2Fadmin%2Fdocuments%3Fq%3D%255BBATCH9%253A68decc5a-98cf-4284-84a4-dcc39c3a5274%255D%2520ui-delete.pdf 200 in 406ms
+[next]  POST /api/auth/login 200 in 355ms
+[next]  GET /admin/documents?q=%5BBATCH9%3A68decc5a-98cf-4284-84a4-dcc39c3a5274%5D+ui-delete.pdf 200 in 818ms
+[next]  GET /admin/documents?q=%5BBATCH9%3A68decc5a-98cf-4284-84a4-dcc39c3a5274%5D+ui-delete.pdf 200 in 669ms
+[next]  GET /admin/documents?q=%5BBATCH9%3A68decc5a-98cf-4284-84a4-dcc39c3a5274%5D%20ui-delete.pdf 200 in 1054ms
+  1) [chromium] › tests\e2e\batch9-documents.spec.ts:270:7 › Batch 9 isolated document acceptance › requires keyboard confirmation, sends one delete, hides the row, and preserves bytes 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator:  locator('details:visible').filter({ hasText: '[BATCH9:68decc5a-98cf-4284-84a4-dcc39c3a5274] ui-delete.pdf' }).first().locator('form').filter({ has: locator('input[name="confirmDelete"]') })
+    Expected: visible
+    Received: hidden
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('details:visible').filter({ hasText: '[BATCH9:68decc5a-98cf-4284-84a4-dcc39c3a5274] ui-delete.pdf' }).first().locator('form').filter({ has: locator('input[name="confirmDelete"]') })
+        22 × locator resolved to <form class="mt-3 space-y-3 rounded border border-kmt-danger-border bg-kmt-danger-surface p-3">…</form>
+           - unexpected value "hidden"
+
+
+      290 |     await card.locator("summary").click();
+      291 |     await page.setViewportSize({ width: 768, height: 1024 });
+    > 292 |     await expect(deleteForm).toBeVisible();
+          |                              ^
+      293 |     await checkbox.focus();
+      294 |     await checkbox.press("Space");
+      295 |     await expect(checkbox).toBeChecked();
+        at C:\Users\SOUQ\.codex\worktrees\a701\kmt legal office\tests\e2e\batch9-documents.spec.ts:292:30
+
+    Error Context: .playwright\test-results\batch9-documents-Batch-9-i-472b4-the-row-and-preserves-bytes-chromium\error-context.md
+
+    Error Context: .playwright\test-results\batch9-documents-Batch-9-i-472b4-the-row-and-preserves-bytes-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\test-results\batch9-documents-Batch-9-i-472b4-the-row-and-preserves-bytes-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\test-results\batch9-documents-Batch-9-i-472b4-the-row-and-preserves-bytes-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  1 failed
+    [chromium] › tests\e2e\batch9-documents.spec.ts:270:7 › Batch 9 isolated document acceptance › requires keyboard confirmation, sends one delete, hides the row, and preserves bytes 
+  4 passed (1.8m)

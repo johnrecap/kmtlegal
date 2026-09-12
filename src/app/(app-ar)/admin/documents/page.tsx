@@ -336,7 +336,7 @@ export default async function AdminDocumentsPage({ searchParams }: { searchParam
             mobileRender={(document) => <DocumentCard document={document} options={options} />}
           />
 
-          <div className="hidden space-y-3 lg:block">
+          <div className="hidden space-y-3 md:block">
             {result.items.map((document) => (
               <DocumentCard key={document.id} document={document} options={options} />
             ))}
