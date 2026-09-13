@@ -26,6 +26,11 @@ For a current-state PRD and external model review brief, use `docs/KMT_LEGAL_CUR
 
 ## Recent Changes
 
+- 2026-09-13 - Added the active UI and motion checklist requested by the user.
+  - Scope: [52 open tasks](docs/KMT_UI_MOTION_TASKS.md) cover component inventory, reviewed previews, custom styling, motion, all visitor/client/admin pages, Tailwind removal, and acceptance evidence.
+  - Status: these are pending redesign tasks, separate from completed hardening batches; preserve all 58 pages or obtain explicit approval before any reduction.
+  - Verification: unique task IDs, open checkboxes, local links, agreed scope and documentation-only changes were checked; no runtime behavior or library changed.
+
 - 2026-09-11 - Batch 5 is prepared locally for supervisor review: bilingual correction/slot revalidation, provider-failure boundaries and input recovery. A one-use same-tab draft handoff preserves data on the existing full-page language switch; no transcript, price or confirmation is stored. See `docs/reviews/2026-09-11/batch5/BATCH-5.md` for scope, retention details, original evidence and remaining design/provider work.
 
 - 2026-09-11 - Batches 1, 2 and 3 were approved and pushed as `7ad0010`, `ea186fd`, and `194f6be`. Batch 3 adds real document HTTP/upload boundaries and a disposable restore drill.
