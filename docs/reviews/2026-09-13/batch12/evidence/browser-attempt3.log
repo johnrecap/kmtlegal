@@ -1,0 +1,41 @@
+[next]    ▲ Next.js 15.5.25
+[next]    - Local:        http://127.0.0.1:3115
+   - Network:      http://127.0.0.1:3115
+   - Experiments (use with caution):
+[next]      · sri
+[next]      ✓ globalNotFound
+[next]      · clientTraceMetadata
+[next]
+[next]  ✓ Starting...
+[next]  ○ Compiling /instrumentation ...
+[next]  ✓ Compiled /instrumentation in 3.1s (1177 modules)
+[next]  ✓ Ready in 9.6s
+[next]  ○ Compiling /middleware ...
+[next]  ✓ Compiled /middleware in 713ms (915 modules)
+[next]  ○ Compiling / ...
+[next]  ✓ Compiled / in 7.5s (3488 modules)
+[next]  GET / 200 in 1948ms
+[next]  GET / 200 in 490ms
+[next]  GET / 200 in 686ms
+SyntaxError: C:\Users\SOUQ\.codex\worktrees\a701\kmt legal office\tests\e2e\batch12-admin-password.spec.ts: Unexpected token, expected "," (115:89)
+
+  113 |     expect(await verifyPassword(finalPassword, (await prisma.user.findUniqueOrThrow({ where: { id: ids.target }, select: { passwordHash: true } })).passwordHash)).toBe(true);
+  114 |     expect(consoleErrors.filter((message) => !message.includes("409 (Conflict)"))).toEqual([]);
+> 115 |     expect(consoleErrors.some((message) => message.includes("409 (Conflict)")).toBe(true);
+      |                                                                                          ^
+  116 |     expect(pageErrors).toEqual([]);
+  117 |   });
+  118 | });
+
+   at batch12-admin-password.spec.ts:115
+
+  113 |     expect(await verifyPassword(finalPassword, (await prisma.user.findUniqueOrThrow({ where: { id: ids.target }, select: { passwordHash: true } })).passwordHash)).toBe(true);
+  114 |     expect(consoleErrors.filter((message) => !message.includes("409 (Conflict)"))).toEqual([]);
+> 115 |     expect(consoleErrors.some((message) => message.includes("409 (Conflict)")).toBe(true);
+      |                                                                                         ^
+  116 |     expect(pageErrors).toEqual([]);
+  117 |   });
+  118 | });
+Error: No tests found.
+Make sure that arguments are regular expressions matching test files.
+You may need to escape symbols like "$" or "*" and quote the arguments.

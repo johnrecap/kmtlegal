@@ -259,7 +259,14 @@ describe("admin governance contract", () => {
       })
     ).toThrow();
 
-    expect(adminUserPasswordUpdateSchema.parse({ password: "LongEnoughPassword1", revokeSessions: "true" }).revokeSessions).toBe(true);
+    const passwordPayload = adminUserPasswordUpdateSchema.parse({
+      password: "LongEnoughPassword1",
+      revokeSessions: "true",
+      updatedAt: observedUserAt.toISOString()
+    });
+    expect(passwordPayload.revokeSessions).toBe(true);
+    expect(passwordPayload.updatedAt).toBe(observedUserAt.toISOString());
+    expect(() => adminUserPasswordUpdateSchema.parse({ password: "LongEnoughPassword1" })).toThrow();
     expect(() => adminUserPasswordUpdateSchema.parse({ password: "short" })).toThrow();
   });
 

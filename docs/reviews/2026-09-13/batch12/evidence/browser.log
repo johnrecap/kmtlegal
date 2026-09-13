@@ -1,0 +1,40 @@
+[next]    ▲ Next.js 15.5.25
+[next]    - Local:        http://127.0.0.1:3115
+   - Network:      http://127.0.0.1:3115
+   - Experiments (use with caution):
+     · sri
+     ✓ globalNotFound
+     · clientTraceMetadata
+
+ ✓ Starting...
+[next]  ○ Compiling /instrumentation ...
+[next]  ✓ Compiled /instrumentation in 2.9s (1177 modules)
+[next]  ✓ Ready in 8.9s
+[next]  ○ Compiling /middleware ...
+[next]  ✓ Compiled /middleware in 631ms (915 modules)
+[next]  ○ Compiling / ...
+[next]  ✓ Compiled / in 6.7s (3488 modules)
+[next]  GET / 200 in 646ms
+
+Running 1 test using 1 worker
+
+(node:7800) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[next]  ○ Compiling /api/auth/login ...
+[next]  ✓ Compiled /api/auth/login in 5.3s (3582 modules)
+[next]  ✓ Compiled in 1225ms (735 modules)
+[next]  POST /api/auth/login 200 in 6746ms
+[next]  ○ Compiling /admin/users/[userId] ...
+[next]  ✓ Compiled /admin/users/[userId] in 3.6s (3640 modules)
+[next]  GET /admin/users/47b07618-d4ad-4be6-9f8c-c06799aaaddf 200 in 8596ms
+[next]  ○ Compiling /api/admin/users/[userId]/password ...
+[next]  ✓ Compiled /api/admin/users/[userId]/password in 2.4s (3642 modules)
+[next]  POST /api/admin/users/47b07618-d4ad-4be6-9f8c-c06799aaaddf/password 200 in 5959ms
+[next]  GET /admin/users/47b07618-d4ad-4be6-9f8c-c06799aaaddf 200 in 1121ms
+[next]  POST /api/admin/users/47b07618-d4ad-4be6-9f8c-c06799aaaddf/password 409 in 462ms
+[next]  GET /admin/users/47b07618-d4ad-4be6-9f8c-c06799aaaddf 200 in 1594ms
+[next]  POST /api/admin/users/47b07618-d4ad-4be6-9f8c-c06799aaaddf/password 200 in 426ms
+[next]  GET /admin/users/47b07618-d4ad-4be6-9f8c-c06799aaaddf 200 in 530ms
+  ok 1 [chromium] › tests\e2e\batch12-admin-password.spec.ts:66:7 › batch12 admin password conflict recovery › succeeds on desktop and recovers explicitly from a stale mobile form (30.2s)
+
+  1 passed (32.9s)

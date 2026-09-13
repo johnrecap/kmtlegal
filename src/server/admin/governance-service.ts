@@ -54,8 +54,9 @@ export const adminUserCreateSchema = z.object({
 
 export const adminUserPasswordUpdateSchema = z.object({
   password: z.string().min(10).max(256),
-  revokeSessions: z.coerce.boolean().default(true)
-});
+  revokeSessions: z.coerce.boolean().default(true),
+  updatedAt: z.string().datetime({ offset: true })
+}).strict();
 
 export const adminAuditLogQuerySchema = z.object({
   q: z.string().trim().max(120).optional().or(z.literal("")),
@@ -465,7 +466,7 @@ export async function getAdminUserOptions(actor: Principal, client: typeof prism
   };
 }
 
-async function assignableRole(client: typeof prisma, roleId: string) {
+async function assignableRole(client: Pick<Prisma.TransactionClient, "role">, roleId: string) {
   const role = await client.role.findUnique({
     where: { id: roleId },
     select: {
@@ -481,55 +482,121 @@ async function assignableRole(client: typeof prisma, roleId: string) {
   return role;
 }
 
+async function liveSensitiveAdminActor(
+  client: Pick<Prisma.TransactionClient, "session">,
+  actor: Principal,
+  actorSessionId: string,
+  now: Date
+) {
+  const activeSession = await client.session.findFirst({
+    where: {
+      id: actorSessionId,
+      userId: actor.id,
+      status: "ACTIVE",
+      revokedAt: null,
+      expiresAt: { gt: now },
+      user: {
+        status: "ACTIVE",
+        deletedAt: null,
+        role: { name: ROLES.superAdmin, status: "ACTIVE" }
+      }
+    },
+    select: {
+      user: {
+        select: {
+          id: true,
+          role: {
+            select: {
+              name: true,
+              permissions: { select: { permission: { select: { key: true } } } }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  if (!activeSession) {
+    throw new ApiError(403, "PERMISSION_DENIED", "An active exact Super Admin session is required.");
+  }
+
+  return {
+    id: activeSession.user.id,
+    roleName: activeSession.user.role.name,
+    permissions: permissionKeysForRole(activeSession.user.role)
+  } satisfies Principal;
+}
+
 export async function createAdminUser(input: {
   actor: Principal;
+  actorSessionId: string;
   body: unknown;
   request?: Request;
   client?: typeof prisma;
 }) {
   assertUserCreatePermission(input.actor);
+  const actorSessionId = parseWithSchema(uuidSchema, input.actorSessionId, "Session id is invalid.");
   const body = parseWithSchema(adminUserCreateSchema, input.body, "User create payload is invalid.");
   const client = input.client ?? prisma;
-  const nextRole = await assignableRole(client, body.roleId);
+  await assignableRole(client, body.roleId);
   const existing = await client.user.findUnique({ where: { email: body.email }, select: { id: true } });
   if (existing) {
     throw new ApiError(409, "CONFLICT", "A user with this email already exists.");
   }
 
   const passwordHash = await hashPassword(body.password);
-  const user = await client.$transaction(async (tx) => {
-    const created = await tx.user.create({
-      data: {
-        email: body.email,
-        name: body.name,
-        phone: body.phone || null,
-        passwordHash,
-        roleId: nextRole.id,
-        status: body.status,
-        locale: body.locale,
-        deletedAt: body.status === "DELETED" ? new Date() : null
-      },
-      select: adminUserListSelect
-    });
-    await appendAuditLog({
-      client: tx,
-      actorId: input.actor.id,
-      action: "user.create",
-      resourceType: "User",
-      resourceId: created.id,
-      metadata: {
-        role: created.role.name,
-        status: created.status,
-        locale: created.locale,
-        passwordSetBySuperAdmin: true,
-        emailDelivery: "disabled"
-      },
-      request: input.request
-    });
-    return created;
-  });
+  try {
+    const user = await client.$transaction(
+      async (tx) => {
+        const now = new Date();
+        const liveActor = await liveSensitiveAdminActor(tx, input.actor, actorSessionId, now);
+        assertUserCreatePermission(liveActor);
+        const nextRole = await assignableRole(tx, body.roleId);
+        const duplicate = await tx.user.findUnique({ where: { email: body.email }, select: { id: true } });
+        if (duplicate) {
+          throw new ApiError(409, "CONFLICT", "A user with this email already exists.");
+        }
 
-  return toAdminUserListItem(user);
+        const created = await tx.user.create({
+          data: {
+            email: body.email,
+            name: body.name,
+            phone: body.phone || null,
+            passwordHash,
+            roleId: nextRole.id,
+            status: body.status,
+            locale: body.locale,
+            deletedAt: body.status === "DELETED" ? now : null
+          },
+          select: adminUserListSelect
+        });
+        await appendAuditLog({
+          client: tx,
+          actorId: input.actor.id,
+          action: "user.create",
+          resourceType: "User",
+          resourceId: created.id,
+          metadata: {
+            role: created.role.name,
+            status: created.status,
+            locale: created.locale,
+            passwordSetBySuperAdmin: true,
+            emailDelivery: "disabled"
+          },
+          request: input.request
+        });
+        return created;
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+    );
+
+    return toAdminUserListItem(user);
+  } catch (error) {
+    if (isSerializationConflict(error)) {
+      throw new ApiError(409, "CONFLICT", "User access changed concurrently. Reload and try again.");
+    }
+    throw error;
+  }
 }
 
 function delegatedCanTarget(actor: Principal, role: {
@@ -715,61 +782,90 @@ export async function updateAdminUser(input: {
 
 export async function updateAdminUserPassword(input: {
   actor: Principal;
-  actorSessionId?: string;
+  actorSessionId: string;
   userId: string;
   body: unknown;
   request?: Request;
 }) {
   assertPasswordChangePermission(input.actor);
+  const actorSessionId = parseWithSchema(uuidSchema, input.actorSessionId, "Session id is invalid.");
   const userId = parseWithSchema(uuidSchema, input.userId, "User id is invalid.");
   const body = parseWithSchema(adminUserPasswordUpdateSchema, input.body, "Password payload is invalid.");
 
   const existing = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, role: { select: { name: true } } }
+    select: { id: true }
   });
 
   if (!existing) {
     throw new ApiError(404, "NOT_FOUND", "User was not found.");
   }
 
-  const now = new Date();
   const passwordHash = await hashPassword(body.password);
-  await prisma.$transaction(async (tx) => {
-    await tx.user.update({
-      where: { id: existing.id },
-      data: { passwordHash }
-    });
-
-    if (body.revokeSessions) {
-      await tx.session.updateMany({
-        where: {
-          userId: existing.id,
-          revokedAt: null,
-          ...(input.actor.id === existing.id && input.actorSessionId ? { id: { not: input.actorSessionId } } : {})
-        },
-        data: {
-          status: "REVOKED",
-          revokedAt: now
+  try {
+    return await prisma.$transaction(
+      async (tx) => {
+        const now = new Date();
+        const liveActor = await liveSensitiveAdminActor(tx, input.actor, actorSessionId, now);
+        assertPasswordChangePermission(liveActor);
+        const current = await tx.user.findUnique({
+          where: { id: existing.id },
+          select: { id: true, role: { select: { name: true } } }
+        });
+        if (!current) {
+          throw new ApiError(404, "NOT_FOUND", "User was not found.");
         }
-      });
-    }
 
-    await appendAuditLog({
-      client: tx,
-      actorId: input.actor.id,
-      action: "user.password.update",
-      resourceType: "User",
-      resourceId: existing.id,
-      metadata: {
-        role: existing.role.name,
-        revokeSessions: body.revokeSessions
+        const updateResult = await tx.user.updateMany({
+          where: { id: current.id, updatedAt: new Date(body.updatedAt) },
+          data: { passwordHash, updatedAt: now }
+        });
+        if (updateResult.count !== 1) {
+          throw new ApiError(409, "CONFLICT", "User data changed after this form was loaded.");
+        }
+
+        if (body.revokeSessions) {
+          await tx.session.updateMany({
+            where: {
+              userId: current.id,
+              revokedAt: null,
+              ...(input.actor.id === current.id ? { id: { not: actorSessionId } } : {})
+            },
+            data: {
+              status: "REVOKED",
+              revokedAt: now
+            }
+          });
+        }
+
+        await appendAuditLog({
+          client: tx,
+          actorId: input.actor.id,
+          action: "user.password.update",
+          resourceType: "User",
+          resourceId: current.id,
+          metadata: {
+            role: current.role.name,
+            revokeSessions: body.revokeSessions
+          },
+          request: input.request
+        });
+
+        return {
+          id: current.id,
+          passwordUpdated: true,
+          sessionsRevoked: body.revokeSessions,
+          updatedAt: now.toISOString()
+        };
       },
-      request: input.request
-    });
-  });
-
-  return { id: existing.id, passwordUpdated: true, sessionsRevoked: body.revokeSessions };
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+    );
+  } catch (error) {
+    if (isSerializationConflict(error)) {
+      throw new ApiError(409, "CONFLICT", "User access changed concurrently. Reload and try again.");
+    }
+    throw error;
+  }
 }
 
 function parseDateBoundary(value: string | undefined, field: string, endOfDay = false) {

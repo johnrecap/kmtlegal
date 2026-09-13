@@ -346,18 +346,22 @@ export function AdminUserActionPanel({
         </Card>
       ) : null}
 
-      {canChangePassword ? <AdminUserPasswordForm userId={user.id} /> : null}
+      {canChangePassword ? (
+        <AdminUserPasswordForm key={`${user.id}:${user.updatedAt}`} updatedAt={user.updatedAt} userId={user.id} />
+      ) : null}
 
       <ActionFeedback message={message} />
     </div>
   );
 }
 
-function AdminUserPasswordForm({ userId }: { userId: string }) {
+function AdminUserPasswordForm({ userId, updatedAt }: { userId: string; updatedAt: string }) {
   const router = useRouter();
   const isHydrated = useHydrated();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [isStale, setIsStale] = useState(false);
+  const [expectedUpdatedAt, setExpectedUpdatedAt] = useState(updatedAt);
 
   async function changePassword(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -385,17 +389,27 @@ function AdminUserPasswordForm({ userId }: { userId: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           password,
-          revokeSessions: checkedValue(formData, "revokeSessions")
+          revokeSessions: checkedValue(formData, "revokeSessions"),
+          updatedAt: expectedUpdatedAt
         })
       });
 
       if (!response.ok) {
-        setMessage({ tone: "error", text: await readMessage(response) });
+        const responseMessage = await readMessage(response);
+        if (response.status === 409) {
+          setIsStale(true);
+          setMessage({ tone: "error", text: plan35UserGovernanceUiCopy.password.stale });
+          return;
+        }
+        setMessage({ tone: "error", text: responseMessage });
         return;
       }
 
+      const payload = await response.json() as { data: { updatedAt: string } };
+      setExpectedUpdatedAt(payload.data.updatedAt);
+      setIsStale(false);
       form.reset();
-      setMessage({ tone: "success", text: "تم تغيير كلمة المرور وتسجيل العملية." });
+      setMessage({ tone: "success", text: plan35UserGovernanceUiCopy.password.saved });
       router.refresh();
     } catch {
       setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
@@ -412,12 +426,17 @@ function AdminUserPasswordForm({ userId }: { userId: string }) {
       </CardHeader>
       <CardContent>
         <form className="grid gap-4" method="post" onSubmit={changePassword}>
-          <TextInput autoComplete="new-password" disabled={!isHydrated || isBusy} idPrefix={`admin-user-password-${userId}`} label="كلمة المرور الجديدة" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
-          <TextInput autoComplete="new-password" disabled={!isHydrated || isBusy} idPrefix={`admin-user-password-${userId}`} label="تأكيد كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
-          <CheckboxField defaultChecked disabled={!isHydrated || isBusy} idPrefix={`admin-user-password-${userId}`} label="إنهاء الجلسات الحالية لهذا المستخدم بعد تغيير كلمة المرور" name="revokeSessions" />
-          <Button disabled={!isHydrated || isBusy} loading={isBusy} type="submit" variant="secondary">
+          <TextInput autoComplete="new-password" disabled={!isHydrated || isBusy || isStale} idPrefix={`admin-user-password-${userId}`} label="كلمة المرور الجديدة" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
+          <TextInput autoComplete="new-password" disabled={!isHydrated || isBusy || isStale} idPrefix={`admin-user-password-${userId}`} label="تأكيد كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
+          <CheckboxField defaultChecked disabled={!isHydrated || isBusy || isStale} idPrefix={`admin-user-password-${userId}`} label="إنهاء الجلسات الحالية لهذا المستخدم بعد تغيير كلمة المرور" name="revokeSessions" />
+          <Button disabled={!isHydrated || isBusy || isStale} loading={isBusy} type="submit" variant="secondary">
             تغيير كلمة المرور
           </Button>
+          {isStale ? (
+            <Button onClick={() => window.location.reload()} type="button" variant="secondary">
+              {plan35UserGovernanceUiCopy.password.reload}
+            </Button>
+          ) : null}
           <ActionFeedback message={message} />
         </form>
       </CardContent>

@@ -1,0 +1,15 @@
+
+> kmt-legal-platform@0.1.0 test
+> vitest run
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office
+
+
+ Test Files  72 passed | 3 skipped (75)
+      Tests  535 passed | 36 skipped (571)
+   Start at  03:36:37
+   Duration  31.11s (transform 5.23s, setup 0ms, import 40.09s, tests 12.33s, environment 8.57s)

@@ -780,7 +780,12 @@ export const plan35RoleGovernanceUiCopy = {
 
 export const plan35UserGovernanceUiCopy = {
   systemAction: "إجراء نظامي",
-  saveSucceeded: "تم حفظ بيانات المستخدم وإنهاء جلساته السابقة إذا تغير الوصول."
+  saveSucceeded: "تم حفظ بيانات المستخدم وإنهاء جلساته السابقة إذا تغير الوصول.",
+  password: {
+    saved: "تم تغيير كلمة المرور وتسجيل العملية.",
+    stale: "تغيرت بيانات المستخدم بعد فتح الصفحة. احتفظنا بكلمة المرور الجديدة؛ حمّل النسخة الحالية ثم أدخلها من جديد بعد المراجعة.",
+    reload: "تحميل أحدث نسخة"
+  }
 } as const;
 
 export function permissionGroupForKey(permissionKey: string): PermissionGroupKey {
@@ -887,6 +892,7 @@ const apiExactMessages: Record<string, string> = {
   "You cannot change your own active Super Admin access.": "لا يمكنك تعديل صلاحية حساب مدير النظام النشط الذي تستخدمه الآن.",
   "Exact Super Admin role and both role and permission management permissions are required.": "إدارة صلاحيات الأدوار تتطلب حساب مدير نظام فعليًا مع صلاحيتي إدارة الأدوار والصلاحيات.",
   "An active exact Super Admin account is required.": "يلزم حساب مدير نظام نشط لإدارة الأدوار والصلاحيات.",
+  "An active exact Super Admin session is required.": "انتهت جلسة مدير النظام أو لم تعد مخولة. سجل الدخول مرة أخرى.",
   "No active Super Admin governance path remains.": "لا يوجد مسار حوكمة نشط لمدير النظام. لم يتم حفظ التغيير.",
   "Protected roles cannot be changed.": "هذا الدور محمي ولا يمكن تعديل صلاحياته.",
   "Only canonical operational roles can be changed.": "يمكن تعديل الأدوار التشغيلية المعتمدة فقط.",

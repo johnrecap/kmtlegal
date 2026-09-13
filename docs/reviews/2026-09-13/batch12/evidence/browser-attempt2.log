@@ -1,0 +1,41 @@
+[next]    ▲ Next.js 15.5.25
+[next]    - Local:        http://127.0.0.1:3115
+   - Network:      http://127.0.0.1:3115
+   - Experiments (use with caution):
+     · sri
+     ✓ globalNotFound
+     · clientTraceMetadata
+
+ ✓ Starting...
+[next]  ○ Compiling /instrumentation ...
+[next]  ✓ Compiled /instrumentation in 3.4s (1177 modules)
+[next]  ✓ Ready in 9.4s
+[next]  ○ Compiling /middleware ...
+[next]  ✓ Compiled /middleware in 934ms (915 modules)
+[next]  ○ Compiling / ...
+[next]  ✓ Compiled / in 6.3s (3488 modules)
+[next]  GET / 200 in 2260ms
+[next]  GET / 200 in 224ms
+[next]  GET / 200 in 644ms
+SyntaxError: C:\Users\SOUQ\.codex\worktrees\a701\kmt legal office\tests\e2e\batch12-admin-password.spec.ts: Unexpected token, expected "," (114:93)
+
+  112 |     await expect(page.getByText("تم تغيير كلمة المرور وتسجيل العملية.")).toBeVisible();
+  113 |     expect(await verifyPassword(finalPassword, (await prisma.user.findUniqueOrThrow({ where: { id: ids.target }, select: { passwordHash: true } })).passwordHash)).toBe(true);
+> 114 |     expect(consoleErrors.filter((message) => !message.includes("409 (Conflict)")).toEqual([]);
+      |                                                                                              ^
+  115 |     expect(consoleErrors.some((message) => message.includes("409 (Conflict)")).toBe(true);
+  116 |     expect(pageErrors).toEqual([]);
+  117 |   });
+
+   at batch12-admin-password.spec.ts:114
+
+  112 |     await expect(page.getByText("تم تغيير كلمة المرور وتسجيل العملية.")).toBeVisible();
+  113 |     expect(await verifyPassword(finalPassword, (await prisma.user.findUniqueOrThrow({ where: { id: ids.target }, select: { passwordHash: true } })).passwordHash)).toBe(true);
+> 114 |     expect(consoleErrors.filter((message) => !message.includes("409 (Conflict)")).toEqual([]);
+      |                                                                                             ^
+  115 |     expect(consoleErrors.some((message) => message.includes("409 (Conflict)")).toBe(true);
+  116 |     expect(pageErrors).toEqual([]);
+  117 |   });
+Error: No tests found.
+Make sure that arguments are regular expressions matching test files.
+You may need to escape symbols like "$" or "*" and quote the arguments.

@@ -1,8 +1,8 @@
 # KMT Legal Platform — Engineering Handoff
 
-**Last updated**: 2026-09-11
+**Last updated**: 2026-09-13
 
-**Current delivery focus**: PLAN-39 Site Cleanup, Contact Alerts, and Client Localization
+**Current delivery focus**: Batch 12 admin-account authorization and password-write concurrency
 
 **Primary setup guide**: `../PROJECT_GUIDE.md`
 
@@ -43,6 +43,14 @@ Do not recreate runtime Stitch clone pages or connect product code/dynamic data 
 not edit the exported Stitch source as part of ordinary product work.
 
 ## Recent Changes
+
+- 2026-09-13 - Batch 12 hardened sensitive admin-account writes.
+  - Account creation and password reset now revalidate the actor's live exact-Super account,
+    current active session, and user-management policy inside a serializable write transaction.
+  - Password reset claims the target's observed `User.updatedAt` before changing the hash, revoking
+    sessions, or auditing success; stale and competing requests return `409` without partial effects.
+  - The admin password form preserves a stale draft, blocks resubmission, and requires an explicit
+    reload before a reviewed retry. Evidence: `reviews/2026-09-13/batch12/BATCH-12.md`.
 
 - 2026-09-11 - First hardening/review batch prepared for supervisor review before push.
   - Cookie decoding fails closed; booking discards server-invalidated slots and distinguishes
@@ -135,6 +143,12 @@ records. Delegated `user.manage.any` can see and assign only active editable rol
 sets are subsets of the actor's live role permissions. Update re-reads actor, target, and next role,
 claims `User.updatedAt`, revokes target sessions when role/status access changes, writes the audit in
 the same transaction, and cannot remove the final active exact Super Admin.
+
+Account creation and password reset hash outside the transaction, then revalidate the route's
+session ownership/status/expiry and the actor's live exact-Super account inside the serializable
+write transaction. Creation rechecks its destination role there. Password reset requires the
+detail page's target `User.updatedAt`; only the winning version can change the hash, revoke target
+sessions, and append the success audit. A stale form must reload before resubmission.
 
 Password login and session resolution require an active nondeleted user and an active role. This
 makes a suspended/deleted user, inactive role, or revoked session unusable on the next request.

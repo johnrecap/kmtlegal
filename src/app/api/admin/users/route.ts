@@ -36,7 +36,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json().catch(() => null);
-    const user = await createAdminUser({ actor: context.principal, body, request });
+    const user = await createAdminUser({
+      actor: context.principal,
+      actorSessionId: context.sessionId,
+      body,
+      request
+    });
 
     return NextResponse.json({ data: user, requestId }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) {

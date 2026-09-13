@@ -86,6 +86,7 @@ describe("server contract foundation", () => {
     expect(localizeApiMessage("Payment payload is invalid.")).toBe("الفاتورة غير مكتملة أو غير صحيحة.");
     expect(localizeApiMessage("Article was not found.")).toBe("لم يتم العثور على المقال.");
     expect(localizeApiMessage("Only Super Admin can change user passwords.")).toBe("تغيير كلمات مرور المستخدمين متاح لمدير النظام فقط.");
+    expect(localizeApiMessage("An active exact Super Admin session is required.")).toBe("انتهت جلسة مدير النظام أو لم تعد مخولة. سجل الدخول مرة أخرى.");
     expect(roleDisplayLabel("Super Admin")).toBe("مدير النظام");
     expect(roleDisplayLabel("Office Admin")).toBe("مدير المكتب");
     expect(sourceTypeDisplayLabel("manual")).toBe("يدوي");

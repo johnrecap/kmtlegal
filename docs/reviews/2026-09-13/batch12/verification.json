@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "batch": "Batch 12",
+  "date": "2026-09-13",
+  "baselineCommit": "283dbf390c4b6d46b575a14732865b584ed9696e",
+  "scope": "Revalidate live Super Admin authority and session for account creation/password reset, and make password resets target-version conditional.",
+  "database": {
+    "engine": "PostgreSQL 18",
+    "host": "127.0.0.1",
+    "port": 55441,
+    "database": "kmt_batch10",
+    "user": "kmt_batch10",
+    "marker": "synthetic-batch10-only",
+    "applicationEnvironment": "local",
+    "testOnlyPoolMax": 4,
+    "testOnlyRoleGrants": ["pg_read_all_settings", "SELECT ON batch10_marker"]
+  },
+  "verification": {
+    "preFixPostgres": { "testsPassed": 2, "testsFailed": 5, "status": "expected-failure-captured", "log": "evidence/baseline-postgres-before-fix.log" },
+    "postgresIntegration": { "tests": 7, "status": "passed", "log": "evidence/postgres-integration.log" },
+    "focusedTests": { "tests": 22, "status": "passed", "log": "evidence/focused-tests.log" },
+    "fullTestSuite": { "tests": 535, "skipped": 36, "status": "passed", "log": "evidence/full-tests.log" },
+    "browser": { "tests": 1, "status": "passed", "viewports": ["1440x1000", "390x844"], "log": "evidence/browser.log" },
+    "typecheck": { "status": "passed", "log": "evidence/typecheck.log" },
+    "lint": { "status": "passed", "log": "evidence/lint.log" },
+    "secretScan": { "status": "passed", "log": "evidence/secret-scan.log" },
+    "build": { "status": "passed", "log": "evidence/build.log" },
+    "pageInventory": { "baseline": 58, "current": 58, "status": "passed", "artifact": "evidence/page-inventory.json" }
+  },
+  "cleanup": {
+    "status": "passed",
+    "syntheticUsersBeforeTeardown": 0,
+    "syntheticSessionsBeforeTeardown": 0,
+    "syntheticAuditsBeforeTeardown": 0,
+    "databaseDropped": true,
+    "roleDropped": true,
+    "port55441Closed": true,
+    "port3115Closed": true,
+    "temporaryDirectoryRemoved": true,
+    "passwordCreated": false,
+    "log": "evidence/cleanup.log"
+  },
+  "limitations": [
+    "The ordering guarantee covers revocation or authority loss committed before the post-hash live authorization check; arbitrary overlapping schedules are not claimed.",
+    "Production deployment and live production identity-provider behavior were not exercised."
+  ]
+}

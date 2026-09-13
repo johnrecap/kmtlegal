@@ -1,5 +1,15 @@
 # KMT Legal Implementation Status
 
+2026-09-13 Batch 12 checkpoint: sensitive staff-account creation and password-reset writes now
+revalidate the actual active exact-Super account and its current active session after hashing and
+inside the serializable write transaction. Password reset uses target `User.updatedAt` as an atomic
+precondition, so a stale edit or competing reset cannot overwrite a newer credential or produce
+session/audit side effects. Seven controlled PostgreSQL cases, 22 focused tests, 535 full-suite
+tests with 36 opt-in skips, typecheck, warning-free lint, secret scan, production build, and an
+actual 1440/390 browser success-conflict-reload flow passed. See
+`docs/reviews/2026-09-13/batch12/BATCH-12.md`. No schema, role-policy, inactive-target eligibility,
+SMTP/2FA, office-profile, dependency, page-count, push, or deployment change.
+
 2026-09-12 Batch 9 checkpoint: document case-tab uploads retain a current case omitted by the capped option list; PATCH excludes `DELETED`, and document update/delete writes are guarded against soft-delete races. Controlled update/delete ordering, double-delete, independent office/lawyer/client/guest scopes, historical case-linked access, general and case upload boundaries, and keyboard-confirmed deletion pass in the isolated PostgreSQL/browser lane. The tablet action gap was fixed by exposing detail actions from the table's `md` breakpoint. Typecheck, warning-free lint, 523 tests, guarded build, secret scan, 58-page preservation, screenshots and cleanup evidence are recorded in `docs/reviews/2026-09-12/batch9/BATCH-9.md`. Production and live ClamAV verification remain separate release gates.
 
 2026-09-12 batch 7 checkpoint: batch 6 was accepted and pushed as `ff988e8bbaf2b3ca7e82612071270819a4a5265e`. Batch 7 fixes staff-detail access by clients, nested CRM resource scopes and SHA-256 replay identity redaction, and improves neutral client-case badge contrast with existing tokens. Fourteen unique real HTTP/PostgreSQL scenarios have passing latest evidence across the recorded runs, plus seven existing consultation browser scenarios; unit checks pass 522 with 22 opt-in DB cases skipped. See `docs/reviews/2026-09-12/batch7/BATCH-7.md`, `scenario-results.json` and `verification.json` for precise evidence, intermediate failures, cleanup and remaining gates. No schema or production-role changes. Previously corrupted audit hashes are not automatically repaired. Local commit only pending exact-commit supervisor approval; later office/design work remains deferred.

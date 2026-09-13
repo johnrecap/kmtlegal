@@ -1,0 +1,75 @@
+[next]    ▲ Next.js 15.5.25
+[next]    - Local:        http://127.0.0.1:3115
+   - Network:      http://127.0.0.1:3115
+   - Experiments (use with caution):
+     · sri
+     ✓ globalNotFound
+     · clientTraceMetadata
+
+ ✓ Starting...
+[next]  ○ Compiling /instrumentation ...
+[next]  ✓ Compiled /instrumentation in 3.6s (1177 modules)
+[next]  ✓ Ready in 11s
+[next]  ○ Compiling /middleware ...
+[next]  ✓ Compiled /middleware in 942ms (915 modules)
+[next]  ○ Compiling / ...
+[next]  ✓ Compiled / in 10.1s (3511 modules)
+[next]  GET / 200 in 730ms
+[next]  GET / 200 in 647ms
+
+Running 1 test using 1 worker
+
+(node:3860) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[next]  ○ Compiling /api/auth/login ...
+[next]  ✓ Compiled /api/auth/login in 2.2s (3582 modules)
+[next]  POST /api/auth/login 200 in 4192ms
+[next]  ○ Compiling /admin/users/[userId] ...
+[next]  ✓ Compiled /admin/users/[userId] in 10s (3640 modules)
+[next]  GET /admin/users/df45171a-ad4d-4be7-90e6-0583cd3edb74 200 in 18628ms
+[next]  ○ Compiling /api/admin/users/[userId]/password ...
+[next]  ✓ Compiled /api/admin/users/[userId]/password in 3.2s (3642 modules)
+[next]  POST /api/admin/users/df45171a-ad4d-4be7-90e6-0583cd3edb74/password 200 in 7265ms
+[next]  GET /admin/users/df45171a-ad4d-4be7-90e6-0583cd3edb74 200 in 1498ms
+[next]  POST /api/admin/users/df45171a-ad4d-4be7-90e6-0583cd3edb74/password 409 in 455ms
+[next]  GET /admin/users/df45171a-ad4d-4be7-90e6-0583cd3edb74 200 in 1455ms
+[next]  POST /api/admin/users/df45171a-ad4d-4be7-90e6-0583cd3edb74/password 200 in 413ms
+[next]  GET /admin/users/df45171a-ad4d-4be7-90e6-0583cd3edb74 200 in 730ms
+  x  1 [chromium] › tests\e2e\batch12-admin-password.spec.ts:66:7 › batch12 admin password conflict recovery › succeeds on desktop and recovers explicitly from a stale mobile form (41.6s)
+
+
+  1) [chromium] › tests\e2e\batch12-admin-password.spec.ts:66:7 › batch12 admin password conflict recovery › succeeds on desktop and recovers explicitly from a stale mobile form
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Failed to load resource: the server responded with a status of 409 (Conflict)",
+    + ]
+
+      110 |     await expect(page.getByText("تم تغيير كلمة المرور وتسجيل العملية.")).toBeVisible();
+      111 |     expect(await verifyPassword(finalPassword, (await prisma.user.findUniqueOrThrow({ where: { id: ids.target }, select: { passwordHash: true } })).passwordHash)).toBe(true);
+    > 112 |     expect(consoleErrors).toEqual([]);
+          |                           ^
+      113 |   });
+      114 | });
+      115 |
+        at C:\Users\SOUQ\.codex\worktrees\a701\kmt legal office\tests\e2e\batch12-admin-password.spec.ts:112:27
+
+    Error Context: .playwright\test-results\batch12-admin-password-bat-ba0bb-ly-from-a-stale-mobile-form-chromium\error-context.md
+
+    Error Context: .playwright\test-results\batch12-admin-password-bat-ba0bb-ly-from-a-stale-mobile-form-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\test-results\batch12-admin-password-bat-ba0bb-ly-from-a-stale-mobile-form-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\test-results\batch12-admin-password-bat-ba0bb-ly-from-a-stale-mobile-form-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\batch12-admin-password.spec.ts:66:7 › batch12 admin password conflict recovery › succeeds on desktop and recovers explicitly from a stale mobile form
