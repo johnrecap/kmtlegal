@@ -1,5 +1,7 @@
 # KMT Legal Implementation Status
 
+2026-09-13 Batch 16 checkpoint: added a server-gated, isolated public UI preview at `/preview/ui` for local review only. It demonstrates an architectural home, a documented service detail, and a simulated consultation request in Arabic and English; it makes no booking, payment, provider, database, or product-route change. See `docs/reviews/2026-09-13/batch16/BATCH-16.md`. KMT-UI checkboxes remain under supervisor control.
+
 2026-09-13 Batch 15 checkpoint: static inventory for the approved UI/motion rollout records all 58 current page files, route groups, shared layouts, component decisions, current tokens/content sources, and the unimplemented administration theme gap. It verifies Motion `13.1.1` and `@base-ui/react` `1.8.0` from their official sources without installing either package; the 25 KB motion budget remains unmeasured. See `docs/reviews/2026-09-13/batch15/BATCH-15.md` and `ui-inventory.json`. All KMT-UI-001..052 checkboxes remain open pending preview, runtime, visual and measurement evidence. No product code, style, dependency, page-count, schema, role, price, booking, provider, push or deployment change.
 
 2026-09-13 Batch 13 checkpoint: office-profile saves now use an explicit database version,
