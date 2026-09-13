@@ -838,6 +838,7 @@ export const paymentReviewCopy = {
 } as const;
 
 export const contentLifecycleUiCopy = {
+  duplicateSlug: "معرّف الرابط مستخدم بالفعل. اختر معرّفًا مختلفًا.",
   protectedEdit: (status: string) => `الحالة الحالية: ${status}. يلزم مسؤول يملك صلاحية الاعتماد لتعديل هذا السجل المحمي.`
 } as const;
 
@@ -848,6 +849,7 @@ const apiExactMessages: Record<string, string> = {
   [paymentApiSourceMessages.reviewChanged]: "تغيّرت تفاصيل دفع الحجز. ارجع وراجع الحجز قبل الدفع.",
   "Authentication required.": "يجب تسجيل الدخول للمتابعة.",
   "Active session required.": "انتهت الجلسة أو لم تعد نشطة. سجل الدخول مرة أخرى.",
+  "Slug already exists.": contentLifecycleUiCopy.duplicateSlug,
   "An approver is required to edit content that is already approved, scheduled, or published.": "يلزم مسؤول يملك صلاحية الاعتماد لتعديل محتوى معتمد أو مجدول أو منشور.",
   "Content state changed after this form was loaded. Refresh and review the current state before trying again.": "تغيّرت حالة المحتوى بعد فتح النموذج. احتفظنا بما أدخلته؛ حدّث الصفحة وراجع الحالة الحالية قبل إعادة المحاولة.",
   [plan35ApiErrorSourceMessages.APPOINTMENT_CONFLICT]: plan35ApiErrorCopy.APPOINTMENT_CONFLICT.message,

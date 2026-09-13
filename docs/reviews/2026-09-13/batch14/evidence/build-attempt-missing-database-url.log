@@ -1,0 +1,35 @@
+
+> kmt-legal-platform@0.1.0 prebuild
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+✔ Generated Prisma Client (v7.10.0) to .\node_modules\@prisma\client in 791ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+
+
+> kmt-legal-platform@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.25
+   - Experiments (use with caution):
+     · sri
+     ✓ globalNotFound
+     · clientTraceMetadata
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 35.3s
+   Linting and checking validity of types ...
+   Collecting page data ...
+Error: DATABASE_URL is required in production.
+    at h (C:\Users\SOUQ\.codex\worktrees\a701\kmt legal office\.next\server\app\api\admin\audit-log\route.js:1:6604)
+    at <unknown> (C:\Users\SOUQ\.codex\worktrees\a701\kmt legal office\.next\server\app\api\admin\audit-log\route.js:1:6741)
+
+> Build error occurred
+[Error: Failed to collect page data for /api/admin/audit-log] {
+  type: 'Error'
+}

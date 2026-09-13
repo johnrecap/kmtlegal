@@ -1,0 +1,38 @@
+
+Running 1 test using 1 worker
+
+(node:15296) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\batch14-content-lifecycle.spec.ts:75:7 › batch14 content lifecycle browser › shows protected creator view at desktop and publishes creator drafts through an approver at mobile (16.3s)
+
+
+  1) [chromium] › tests\e2e\batch14-content-lifecycle.spec.ts:75:7 › batch14 content lifecycle browser › shows protected creator view at desktop and publishes creator drafts through an approver at mobile
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 404
+    Received: 500
+
+      89 |     await page.screenshot({ path: "docs/reviews/2026-09-13/batch14/evidence/protected-article-1440.png", fullPage: true, caret: "initial" });
+      90 |
+    > 91 |     expect((await page.request.get(`/api/public/articles/${`draft-${ids.draftArticle}`}?locale=en`)).status()).toBe(404);
+         |                                                                                                                ^
+      92 |     expect((await page.request.get(`/api/public/case-studies/${`study-${ids.draftStudy}`}?locale=en`)).status()).toBe(404);
+      93 |     await page.goto(`/admin/content?tab=articles&editType=article&editId=${ids.draftArticle}`, { waitUntil: "domcontentloaded" });
+      94 |     const creatorEditForm = page.locator("form").filter({ has: page.getByRole("button", { name: "حفظ المقال" }) });
+        at C:\Users\SOUQ\.codex\worktrees\a701\kmt legal office\tests\e2e\batch14-content-lifecycle.spec.ts:91:112
+
+    Error Context: .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\error-context.md
+
+    Error Context: .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\batch14-content-lifecycle.spec.ts:75:7 › batch14 content lifecycle browser › shows protected creator view at desktop and publishes creator drafts through an approver at mobile

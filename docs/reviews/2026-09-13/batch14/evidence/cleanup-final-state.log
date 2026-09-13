@@ -1,0 +1,12 @@
+
+Name  : port55441Listeners
+Value : 0
+
+Name  : port3115Listeners
+Value : 0
+
+Name  : clusterExists
+Value : False
+
+Name  : uploadsExists
+Value : False

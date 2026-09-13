@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { Button, InlineFeedback, Select, TextInput, Textarea } from "@/components/ui";
 import {
   articleStatusLabels,
@@ -14,7 +14,8 @@ import {
   socialPlatformValues
 } from "@/lib/legal-content";
 import { labelFrom } from "@/lib/legal-format";
-import { contentLifecycleUiCopy, sourceTypeDisplayLabel } from "@/lib/ui-copy";
+import { contentLifecycleUiCopy, localizeApiMessage, sourceTypeDisplayLabel } from "@/lib/ui-copy";
+import { useHydrated } from "@/lib/use-hydrated";
 
 type ApiMessage = {
   error?: {
@@ -67,7 +68,7 @@ type SocialDraftValue = {
 
 async function readMessage(response: Response) {
   const body = (await response.json().catch(() => ({}))) as ApiMessage;
-  return body.error?.message ?? "تعذر تنفيذ الإجراء الآن.";
+  return body.error?.message ? localizeApiMessage(body.error.message) : "تعذر تنفيذ الإجراء الآن.";
 }
 
 function textValue(formData: FormData, key: string) {
@@ -154,11 +155,15 @@ export function ArticleForm({ article, canApprove }: { article?: ArticleValue; c
   const router = useRouter();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const isHydrated = useHydrated();
+  const submitLock = useRef(false);
   const isEdit = Boolean(article?.id);
   const isProtected = isEdit && !canApprove && article?.status === "PUBLISHED";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!isHydrated || submitLock.current) return;
+    submitLock.current = true;
     const form = event.currentTarget;
     const formData = new FormData(form);
     setMessage(null);
@@ -189,14 +194,15 @@ export function ArticleForm({ article, canApprove }: { article?: ArticleValue; c
     } catch {
       setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
+      submitLock.current = false;
       setIsBusy(false);
     }
   }
 
   return (
-    <form className="grid gap-4" onSubmit={submit}>
+    <form aria-busy={isBusy} className="grid gap-4" onSubmit={submit}>
       {isProtected ? <InlineFeedback title={contentLifecycleUiCopy.protectedEdit(labelFrom(articleStatusLabels, article?.status ?? "PUBLISHED"))} tone="warning" /> : null}
-      <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected}>
+      <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected || !isHydrated}>
       <TextInput defaultValue={article?.title ?? ""} disabled={isBusy} idPrefix={`article-${article?.id ?? "create"}`} label="عنوان المقال" name="title" required />
       <TextInput defaultValue={article?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case مثل contract-risk-basics." idPrefix={`article-${article?.id ?? "create"}`} label="معرّف الرابط (Slug)" name="slug" required />
       <div className="grid gap-4 sm:grid-cols-2">
@@ -231,11 +237,15 @@ export function CaseStudyForm({ study, canApprove }: { study?: CaseStudyValue; c
   const router = useRouter();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const isHydrated = useHydrated();
+  const submitLock = useRef(false);
   const isEdit = Boolean(study?.id);
   const isProtected = isEdit && !canApprove && ["APPROVED", "PUBLISHED"].includes(study?.status ?? "");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!isHydrated || submitLock.current) return;
+    submitLock.current = true;
     const form = event.currentTarget;
     const formData = new FormData(form);
     setMessage(null);
@@ -269,14 +279,15 @@ export function CaseStudyForm({ study, canApprove }: { study?: CaseStudyValue; c
     } catch {
       setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
+      submitLock.current = false;
       setIsBusy(false);
     }
   }
 
   return (
-    <form className="grid gap-4" onSubmit={submit}>
+    <form aria-busy={isBusy} className="grid gap-4" onSubmit={submit}>
       {isProtected ? <InlineFeedback title={contentLifecycleUiCopy.protectedEdit(labelFrom(caseStudyStatusLabels, study?.status ?? "PUBLISHED"))} tone="warning" /> : null}
-      <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected}>
+      <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected || !isHydrated}>
       <TextInput defaultValue={study?.title ?? ""} disabled={isBusy} idPrefix={`case-study-${study?.id ?? "create"}`} label="عنوان دراسة الحالة" name="title" required />
       <TextInput defaultValue={study?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case." idPrefix={`case-study-${study?.id ?? "create"}`} label="معرّف الرابط (Slug)" name="slug" required />
       <div className="grid gap-4 sm:grid-cols-2">
@@ -314,11 +325,15 @@ export function SocialDraftForm({ draft, canApprove }: { draft?: SocialDraftValu
   const router = useRouter();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const isHydrated = useHydrated();
+  const submitLock = useRef(false);
   const isEdit = Boolean(draft?.id);
   const isProtected = isEdit && !canApprove && ["APPROVED", "SCHEDULED", "PUBLISHED"].includes(draft?.status ?? "");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!isHydrated || submitLock.current) return;
+    submitLock.current = true;
     const form = event.currentTarget;
     const formData = new FormData(form);
     setMessage(null);
@@ -348,14 +363,15 @@ export function SocialDraftForm({ draft, canApprove }: { draft?: SocialDraftValu
     } catch {
       setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
     } finally {
+      submitLock.current = false;
       setIsBusy(false);
     }
   }
 
   return (
-    <form className="grid gap-4" onSubmit={submit}>
+    <form aria-busy={isBusy} className="grid gap-4" onSubmit={submit}>
       {isProtected ? <InlineFeedback title={contentLifecycleUiCopy.protectedEdit(labelFrom(socialDraftStatusLabels, draft?.status ?? "PUBLISHED"))} tone="warning" /> : null}
-      <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected}>
+      <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected || !isHydrated}>
       <TextInput defaultValue={draft?.title ?? ""} disabled={isBusy} idPrefix={`social-draft-${draft?.id ?? "create"}`} label="عنوان داخلي" name="title" required />
       <div className="grid gap-4 sm:grid-cols-2">
         <Select defaultValue={draft?.platform ?? "linkedin"} disabled={isBusy} idPrefix={`social-draft-${draft?.id ?? "create"}`} label="المنصة" name="platform">

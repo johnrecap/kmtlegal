@@ -1,0 +1,8 @@
+
+Running 1 test using 1 worker
+
+(node:15592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\batch14-content-lifecycle.spec.ts:81:7 › batch14 content lifecycle browser › shows protected creator view at desktop and publishes creator drafts through an approver at mobile (28.8s)
+
+  1 passed (31.8s)

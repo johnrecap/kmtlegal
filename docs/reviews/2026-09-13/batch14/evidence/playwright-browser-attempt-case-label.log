@@ -1,0 +1,41 @@
+
+Running 1 test using 1 worker
+
+(node:11836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\batch14-content-lifecycle.spec.ts:74:7 › batch14 content lifecycle browser › shows protected creator view at desktop and publishes creator drafts through an approver at mobile (29.6s)
+
+
+  1) [chromium] › tests\e2e\batch14-content-lifecycle.spec.ts:74:7 › batch14 content lifecycle browser › shows protected creator view at desktop and publishes creator drafts through an approver at mobile
+
+    Error: locator.selectOption: Error: strict mode violation: locator('form').filter({ has: getByRole('button', { name: 'حفظ دراسة الحالة' }) }).getByLabel('الحالة') resolved to 2 elements:
+        1) <input required="" name="title" value="Draft browser study" id="case-study-cc1e6154-ef0b-4f6c-b111-14180f562bd2-title" class="w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted"/> aka getByRole('textbox', { name: 'عنوان دراسة الحالة' })
+        2) <select name="status" id="case-study-cc1e6154-ef0b-4f6c-b111-14180f562bd2-status" class="w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12">…</select> aka getByRole('group').getByLabel('الحالة', { exact: true })
+
+    Call log:
+      - waiting for locator('form').filter({ has: getByRole('button', { name: 'حفظ دراسة الحالة' }) }).getByLabel('الحالة')
+
+
+      132 |     await page.goto(`/admin/content?tab=case-studies&editType=caseStudy&editId=${ids.draftStudy}`, { waitUntil: "domcontentloaded" });
+      133 |     const approverStudyForm = page.locator("form").filter({ has: page.getByRole("button", { name: "حفظ دراسة الحالة" }) });
+    > 134 |     await approverStudyForm.getByLabel("الحالة").selectOption("PUBLISHED");
+          |                                                  ^
+      135 |     await approverStudyForm.getByRole("button", { name: "حفظ دراسة الحالة" }).click();
+      136 |     await expect(page.getByText("تم حفظ دراسة الحالة.")).toBeVisible();
+      137 |     expect((await page.request.get(`/api/public/case-studies/${`study-${ids.draftStudy}`}?locale=en`)).status()).toBe(200);
+        at C:\Users\SOUQ\.codex\worktrees\a701\kmt legal office\tests\e2e\batch14-content-lifecycle.spec.ts:134:50
+
+    Error Context: .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\error-context.md
+
+    Error Context: .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\batch14-content-lifecycle.spec.ts:74:7 › batch14 content lifecycle browser › shows protected creator view at desktop and publishes creator drafts through an approver at mobile

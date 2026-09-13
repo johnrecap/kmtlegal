@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "batch": "Batch 14",
+  "date": "2026-09-13",
+  "productBaselineCommit": "853b94a367d0b17600460638bfa98d867824ed55",
+  "scope": "Serialize protected content updates, preserve creator rework, and make all three admin content forms safe across hydration, rejection, success reset, and refresh.",
+  "database": {
+    "engine": "PostgreSQL 18",
+    "host": "127.0.0.1",
+    "port": 55441,
+    "database": "kmt_batch10",
+    "user": "kmt_batch10",
+    "marker": "synthetic-batch10-only",
+    "applicationEnvironment": "local",
+    "testOnlyPoolMax": 4,
+    "dataDirectory": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/batch10-postgres/data"
+  },
+  "verification": {
+    "postgresLifecycle": {
+      "newTests": 7,
+      "retainedContractTests": 5,
+      "status": "passed",
+      "lockWaitWitness": "pg_stat_activity plus pg_blocking_pids with distinct backend PIDs",
+      "log": "evidence/focused-tests.log"
+    },
+    "componentForms": { "tests": 5, "status": "passed", "log": "evidence/focused-tests.log" },
+    "focusedTests": { "tests": 17, "status": "passed", "log": "evidence/focused-tests.log" },
+    "postCleanupRecheck": { "tests": 10, "status": "passed", "log": "evidence/post-cleanup-recheck.log" },
+    "providerBoundaryRetry": { "tests": 6, "status": "passed", "log": "evidence/provider-boundary-retry.log" },
+    "fullTestSuite": { "tests": 544, "skipped": 53, "status": "passed", "log": "evidence/full-tests.log" },
+    "browser": {
+      "tests": 1,
+      "status": "passed",
+      "viewports": ["1440x1000", "390x844"],
+      "realConflict": true,
+      "createResetAndRefresh": true,
+      "publicCacheWarmBeforePublish": true,
+      "postRefreshCardWitness": true,
+      "unexpectedConsoleErrors": 0,
+      "pageErrors": 0,
+      "log": "evidence/playwright-browser.log",
+      "screenshots": [
+        "evidence/protected-article-1440.png",
+        "evidence/published-study-390.png"
+      ]
+    },
+    "typecheck": { "status": "passed", "log": "evidence/typecheck.log" },
+    "lint": { "status": "passed", "warnings": 0, "log": "evidence/lint.log" },
+    "secretScan": { "status": "passed", "log": "evidence/secret-scan.log" },
+    "build": { "status": "passed", "mode": "ALLOW_BUILD_WITHOUT_DATABASE_URL=true", "log": "evidence/build.log" },
+    "pageInventory": { "baseline": 58, "current": 58, "status": "passed", "artifact": "evidence/page-inventory.json" }
+  },
+  "retainedAttempts": [
+    "evidence/attempt-notes.md",
+    "evidence/build-attempt-missing-database-url.log",
+    "evidence/cleanup-db-attempt1.log",
+    "evidence/playwright-browser-attempt-before-card-refresh.log",
+    "evidence/playwright-browser-attempt-build-dev-collision.log",
+    "evidence/playwright-browser-attempt-case-label.log",
+    "evidence/playwright-browser-attempt-console.log",
+    "evidence/playwright-browser-attempt-empty-style-hydration.log",
+    "evidence/playwright-browser-attempt-filtered-hydration.log",
+    "evidence/playwright-browser-attempt-strict-label.log",
+    "evidence/playwright-browser-attempt-wrong-port.log"
+  ],
+  "cleanup": {
+    "status": "passed",
+    "usersBeforeTeardown": 0,
+    "rolesBeforeTeardown": 0,
+    "sessionsBeforeTeardown": 0,
+    "articlesBeforeTeardown": 0,
+    "caseStudiesBeforeTeardown": 0,
+    "socialDraftsBeforeTeardown": 0,
+    "auditsBeforeTeardown": 0,
+    "databaseDropped": true,
+    "roleDropped": true,
+    "port55441Closed": true,
+    "port3115Closed": true,
+    "clusterDirectoryRemoved": true,
+    "uploadsDirectoryAbsent": true,
+    "logs": [
+      "evidence/cleanup-preflight.log",
+      "evidence/cleanup-db.log",
+      "evidence/cleanup-stop.log",
+      "evidence/cleanup-final-state.log"
+    ]
+  },
+  "boundaries": [
+    "No schema, migration, dependency, role-policy, API URL, report, payment, booking, provider, or page-count change.",
+    "No production database, external provider, push, deployment, or external social publication.",
+    "The 52-item UI and motion redesign remains pending and unchanged."
+  ]
+}

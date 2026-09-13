@@ -1,0 +1,41 @@
+
+Running 1 test using 1 worker
+
+(node:2008) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\batch14-content-lifecycle.spec.ts:74:7 › batch14 content lifecycle browser › shows protected creator view at desktop and publishes creator drafts through an approver at mobile (33.8s)
+
+
+  1) [chromium] › tests\e2e\batch14-content-lifecycle.spec.ts:74:7 › batch14 content lifecycle browser › shows protected creator view at desktop and publishes creator drafts through an approver at mobile
+
+    Error: locator.fill: Error: strict mode violation: locator('form').filter({ has: getByRole('button', { name: 'إنشاء مقال' }) }).getByLabel('المحتوى') resolved to 2 elements:
+        1) <select name="locale" id="article-create-locale" class="w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted appearance-none bg-none pe-12">…</select> aka getByLabel('لغة المحتوى')
+        2) <textarea required="" name="content" id="article-create-content" class="w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted min-h-28 resize-y min-h-48"></textarea> aka getByRole('textbox', { name: 'المحتوى' })
+
+    Call log:
+      - waiting for locator('form').filter({ has: getByRole('button', { name: 'إنشاء مقال' }) }).getByLabel('المحتوى')
+
+
+      112 |     await createArticleForm.getByLabel("التصنيف").fill("Contracts");
+      113 |     await createArticleForm.getByLabel("الملخص").fill("Browser creation excerpt with enough detail");
+    > 114 |     await createArticleForm.getByLabel("المحتوى").fill("Browser creation content with enough detail for the validated content contract.");
+          |                                                   ^
+      115 |     await createArticleForm.getByRole("button", { name: "إنشاء مقال" }).click();
+      116 |     await expect(page.getByText("Slug already exists.")).toBeVisible();
+      117 |     await expect(createArticleForm.getByLabel("عنوان المقال")).toHaveValue("Typed browser rejection");
+        at C:\Users\SOUQ\.codex\worktrees\a701\kmt legal office\tests\e2e\batch14-content-lifecycle.spec.ts:114:51
+
+    Error Context: .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\error-context.md
+
+    Error Context: .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\batch14-content-lifecycle.spec.ts:74:7 › batch14 content lifecycle browser › shows protected creator view at desktop and publishes creator drafts through an approver at mobile

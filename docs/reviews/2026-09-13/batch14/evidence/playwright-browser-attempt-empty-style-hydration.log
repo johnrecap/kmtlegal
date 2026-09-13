@@ -1,0 +1,289 @@
+
+Running 1 test using 1 worker
+
+(node:13836) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\batch14-content-lifecycle.spec.ts:74:7 › batch14 content lifecycle browser › shows protected creator view at desktop and publishes creator drafts through an approver at mobile (1.2m)
+
+
+  1) [chromium] › tests\e2e\batch14-content-lifecycle.spec.ts:74:7 › batch14 content lifecycle browser › shows protected creator view at desktop and publishes creator drafts through an approver at mobile
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -   1
+    + Received  + 249
+
+    - Array []
+    + Array [
+    +   "A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+    +
+    + - A server/client branch `if (typeof window !== 'undefined')`.
+    + - Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+    + - Date formatting in a user's locale which doesn't match the server.
+    + - External changing data without sending a snapshot of it along with the HTML.
+    + - Invalid HTML tag nesting.
+    +
+    + It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+    +
+    + %s%s https://react.dev/link/hydration-mismatch
+    +
+    +   ...
+    +     <LoadingBoundary loading={null}>
+    +       <HTTPAccessFallbackBoundary notFound={undefined} forbidden={undefined} unauthorized={undefined}>
+    +         <RedirectBoundary>
+    +           <RedirectErrorBoundary router={{...}}>
+    +             <InnerLayoutRouter url={\"/admin/c...\"} tree={[...]} cacheNode={{lazyData:null, ...}} segmentPath={[...]}>
+    +               <SegmentViewNode type=\"page\" pagePath=\"(app-ar)/a...\">
+    +                 <SegmentTrieNode>
+    +                 <AdminContentPage>
+    +                   <DashboardShell>
+    +                     <DashboardShellView>
+    +                       <div className=\"min-h-scre...\">
+    +                         <aside>
+    +                         ...
+    +                           <div className=\"space-y-6\">
+    +                             <div>
+    +                             <div>
+    +                             <div className=\"grid gap-5...\">
+    +                               <div className=\"space-y-5\">
+    +                                 <form action=\"/admin/con...\" method=\"get\">
+    +                                   <input
+    +                                     name=\"tab\"
+    +                                     type=\"hidden\"
+    +                                     value=\"articles\"
+    + -                                   style={{}}
+    +                                   >
+    +                                   <FilterBar>
+    +                                     <div className={\"grid w-f...\"} aria-label=\"فلاتر المحتوى\" role=\"search\">
+    +                                       <SearchInput>
+    +                                         <label className=\"relative b...\">
+    +                                           <span>
+    +                                           <svg>
+    +                                           <input
+    +                                             defaultValue=\"\"
+    +                                             name=\"q\"
+    +                                             aria-label=\"البحث في المحتوى\"
+    +                                             className=\"min-h-11 w-full rounded border border-slate-300 bg-white py-2.5...\"
+    +                                             placeholder=\"البحث في المحتوى...\"
+    +                                             type=\"search\"
+    + -                                           style={{}}
+    +                                           >
+    +                                       ...
+    +                                 ...
+    +                               <div className=\"space-y-5\">
+    +                                 ...
+    +                                   <fieldset className=\"grid gap-4...\" disabled={true}>
+    +                                     <TextInput defaultValue=\"Protected ...\" disabled={false} idPrefix=\"article-bb...\" ...>
+    +                                       <FieldShell htmlFor=\"article-bb...\" label=\"عنوان المقال\" hint={undefined} ...>
+    +                                         <div className=\"space-y-2\">
+    +                                           <label>
+    +                                           <input
+    +                                             defaultValue=\"Protected browser article\"
+    +                                             disabled={false}
+    +                                             name=\"title\"
+    +                                             required={true}
+    +                                             id=\"article-bb7f78e7-2798-4893-9f79-7be84480fbdf-title\"
+    +                                             className=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2....\"
+    +                                             dir={undefined}
+    +                                             type={undefined}
+    +                                             aria-invalid={undefined}
+    +                                             aria-describedby={undefined}
+    +                                             aria-errormessage={undefined}
+    + -                                           style={{}}
+    +                                           >
+    +                                     <TextInput defaultValue=\"protected-...\" disabled={false} hint=\"صيغة lower...\" ...>
+    +                                       <FieldShell htmlFor=\"article-bb...\" label=\"معرّف الرا...\" hint=\"صيغة lower...\" ...>
+    +                                         <div className=\"space-y-2\">
+    +                                           <label>
+    +                                           <input
+    +                                             defaultValue=\"protected-bb7f78e7-2798-4893-9f79-7be84480fbdf\"
+    +                                             disabled={false}
+    +                                             name=\"slug\"
+    +                                             required={true}
+    +                                             id=\"article-bb7f78e7-2798-4893-9f79-7be84480fbdf-slug\"
+    +                                             className=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2....\"
+    +                                             dir={undefined}
+    +                                             type={undefined}
+    +                                             aria-invalid={undefined}
+    +                                             aria-describedby=\"article-bb7f78e7-2798-4893-9f79-7be84480fbdf-slug-hint\"
+    +                                             aria-errormessage={undefined}
+    + -                                           style={{}}
+    +                                           >
+    +                                           ...
+    +                                     <div className=\"grid gap-4...\">
+    +                                       <Select>
+    +                                       <TextInput defaultValue=\"Contracts\" disabled={false} idPrefix=\"article-bb...\" ...>
+    +                                         <FieldShell htmlFor=\"article-bb...\" label=\"التصنيف\" hint={undefined} ...>
+    +                                           <div className=\"space-y-2\">
+    +                                             <label>
+    +                                             <input
+    +                                               defaultValue=\"Contracts\"
+    +                                               disabled={false}
+    +                                               name=\"category\"
+    +                                               required={true}
+    +                                               id=\"article-bb7f78e7-2798-4893-9f79-7be84480fbdf-category\"
+    +                                               className=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-...\"
+    +                                               dir={undefined}
+    +                                               type={undefined}
+    +                                               aria-invalid={undefined}
+    +                                               aria-describedby={undefined}
+    +                                               aria-errormessage={undefined}
+    + -                                             style={{}}
+    +                                             >
+    +                                     <Textarea defaultValue=\"Protected ...\" disabled={false} idPrefix=\"article-bb...\" ...>
+    +                                       <FieldShell htmlFor=\"article-bb...\" label=\"الملخص\" hint={undefined} ...>
+    +                                         <div className=\"space-y-2\">
+    +                                           <label>
+    +                                           <textarea
+    +                                             defaultValue=\"Protected browser article excerpt\"
+    +                                             disabled={false}
+    +                                             name=\"excerpt\"
+    +                                             required={true}
+    +                                             id=\"article-bb7f78e7-2798-4893-9f79-7be84480fbdf-excerpt\"
+    +                                             className=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2....\"
+    +                                             aria-invalid={undefined}
+    +                                             aria-describedby={undefined}
+    +                                             aria-errormessage={undefined}
+    + -                                           style={{}}
+    +                                           >
+    +                                     <Textarea className=\"min-h-48\" defaultValue=\"Protected ...\" disabled={false} ...>
+    +                                       <FieldShell htmlFor=\"article-bb...\" label=\"المحتوى\" hint={undefined} ...>
+    +                                         <div className=\"space-y-2\">
+    +                                           <label>
+    +                                           <textarea
+    +                                             defaultValue=\"Protected browser article content with enough validated detail.\"
+    +                                             disabled={false}
+    +                                             name=\"content\"
+    +                                             required={true}
+    +                                             id=\"article-bb7f78e7-2798-4893-9f79-7be84480fbdf-content\"
+    +                                             className=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2....\"
+    +                                             aria-invalid={undefined}
+    +                                             aria-describedby={undefined}
+    +                                             aria-errormessage={undefined}
+    + -                                           style={{}}
+    +                                           >
+    +                                     <div className=\"grid gap-4...\">
+    +                                       <Select>
+    +                                       <TextInput defaultValue=\"2026-09-13\" disabled={false} idPrefix=\"article-bb...\" ...>
+    +                                         <FieldShell htmlFor=\"article-bb...\" label=\"تاريخ النشر\" hint={undefined} ...>
+    +                                           <div className=\"space-y-2\">
+    +                                             <label>
+    +                                             <input
+    +                                               defaultValue=\"2026-09-13\"
+    +                                               disabled={false}
+    +                                               name=\"publishedAt\"
+    +                                               id=\"article-bb7f78e7-2798-4893-9f79-7be84480fbdf-publishedAt\"
+    +                                               className=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-...\"
+    +                                               dir=\"ltr\"
+    +                                               type=\"date\"
+    +                                               aria-invalid={undefined}
+    +                                               aria-describedby={undefined}
+    +                                               aria-errormessage={undefined}
+    + -                                             style={{}}
+    +                                             >
+    +                                     ...
+    +                                 ...
+    +                                   <AiSocialDraftForm>
+    +                                     <form className=\"grid gap-4\" onSubmit={function submit}>
+    +                                       <TextInput disabled={false} idPrefix=\"ai-social-...\" label=\"عنوان المسودة\" ...>
+    +                                         <FieldShell htmlFor=\"ai-social-...\" label=\"عنوان المسودة\" hint={undefined} ...>
+    +                                           <div className=\"space-y-2\">
+    +                                             <label>
+    +                                             <input
+    +                                               disabled={false}
+    +                                               name=\"title\"
+    +                                               required={true}
+    +                                               id=\"ai-social-draft-title\"
+    +                                               className=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-...\"
+    +                                               dir={undefined}
+    +                                               type={undefined}
+    +                                               aria-invalid={undefined}
+    +                                               aria-describedby={undefined}
+    +                                               aria-errormessage={undefined}
+    + -                                             style={{}}
+    +                                             >
+    +                                       <div>
+    +                                       <div className=\"grid gap-4...\">
+    +                                         <input
+    +                                           name=\"sourceType\"
+    +                                           type=\"hidden\"
+    +                                           value=\"manual\"
+    + -                                         style={{}}
+    +                                         >
+    +                                         <TextInput defaultValue=\"يدوي\" disabled={true} idPrefix=\"ai-social-...\" ...>
+    +                                           <FieldShell htmlFor=\"ai-social-...\" label=\"نوع المصدر\" hint={undefined} ...>
+    +                                             <div className=\"space-y-2\">
+    +                                               <label>
+    +                                               <input
+    +                                                 defaultValue=\"يدوي\"
+    +                                                 disabled={true}
+    +                                                 name=\"sourceTypeDisplay\"
+    +                                                 id=\"ai-social-draft-sourceTypeDisplay\"
+    +                                                 className=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 p...\"
+    +                                                 dir={undefined}
+    +                                                 type={undefined}
+    +                                                 aria-invalid={undefined}
+    +                                                 aria-describedby={undefined}
+    +                                                 aria-errormessage={undefined}
+    + -                                               style={{}}
+    +                                               >
+    +                                         <TextInput disabled={false} idPrefix=\"ai-social-...\" label=\"معرف المصدر\" ...>
+    +                                           <FieldShell htmlFor=\"ai-social-...\" label=\"معرف المصدر\" hint={undefined} ...>
+    +                                             <div className=\"space-y-2\">
+    +                                               <label>
+    +                                               <input
+    +                                                 disabled={false}
+    +                                                 name=\"sourceId\"
+    +                                                 id=\"ai-social-draft-sourceId\"
+    +                                                 className=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 p...\"
+    +                                                 dir={undefined}
+    +                                                 type={undefined}
+    +                                                 aria-invalid={undefined}
+    +                                                 aria-describedby={undefined}
+    +                                                 aria-errormessage={undefined}
+    + -                                               style={{}}
+    +                                               >
+    +                                       <Textarea className=\"min-h-32\" disabled={false} idPrefix=\"ai-social-...\" ...>
+    +                                         <FieldShell htmlFor=\"ai-social-...\" label=\"المادة الخ...\" hint={undefined} ...>
+    +                                           <div className=\"space-y-2\">
+    +                                             <label>
+    +                                             <textarea
+    +                                               disabled={false}
+    +                                               name=\"sourceText\"
+    +                                               required={true}
+    +                                               id=\"ai-social-draft-sourceText\"
+    +                                               className=\"w-full rounded border border-kmt-border bg-kmt-paper px-3 py-...\"
+    +                                               aria-invalid={undefined}
+    +                                               aria-describedby={undefined}
+    +                                               aria-errormessage={undefined}
+    + -                                             style={{}}
+    +                                             >
+    +                                       ...
+    +               ...
+    +             ...
+    + ",
+    + ]
+
+      138 |     await page.screenshot({ path: "docs/reviews/2026-09-13/batch14/evidence/published-study-390.png", fullPage: true });
+      139 |     const unexpectedConsoleErrors = consoleErrors.filter((message) => !message.includes("status of 409 (Conflict)"));
+    > 140 |     expect(unexpectedConsoleErrors).toEqual([]);
+          |                                     ^
+      141 |     expect(pageErrors).toEqual([]);
+      142 |   });
+      143 | });
+        at C:\Users\SOUQ\.codex\worktrees\a701\kmt legal office\tests\e2e\batch14-content-lifecycle.spec.ts:140:37
+
+    Error Context: .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\error-context.md
+
+    Error Context: .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\test-results\batch14-content-lifecycle--5ebfe-rough-an-approver-at-mobile-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\batch14-content-lifecycle.spec.ts:74:7 › batch14 content lifecycle browser › shows protected creator view at desktop and publishes creator drafts through an approver at mobile

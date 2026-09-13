@@ -368,9 +368,9 @@ Total plans: 40
 
 ## Batch 14 protected content lifecycle writes (2026-09-13)
 
-- A creator can no longer alter an existing published article, approved/published case study, or approved/scheduled/published social draft without the matching approval permission. The PostgreSQL conditional write makes that source-state rule atomic against intervening publication; rejected and archived rework remains allowed.
-- Non-approver edit forms now retain and show the protected status with an Arabic approval explanation and disabled fields/save action. Draft/review editing and per-type create/approve permissions remain separate.
-- Local evidence: focused real PostgreSQL HTTP tests (7 passed), typecheck, lint and secret scan passed. The full suite has one unrelated Batch 5 slow-provider timeout; controlled-write race, authenticated browser, warm-cache public, and final build completion evidence remain unverified. See `docs/reviews/2026-09-13/batch14/BATCH-14.md`.
+- A creator can no longer alter an existing published article, approved/published case study, or approved/scheduled/published social draft without the matching approval permission. Row locking makes the protected-source decision and before/after snapshot atomic; rejected and archived rework remains allowed.
+- Non-approver edit forms retain and show the protected status with catalog-backed Arabic guidance and disabled controls. All three create handlers now guard hydration and duplicate submission, reset only after success, and retain drafts after rejection.
+- Final local evidence passed: seven guarded PostgreSQL lifecycle cases plus five retained service contracts and five component tests (17/17 focused), an authenticated Chromium flow at 1440/390 with real `409`, refresh/reload persistence and warmed public endpoints, the 544-test full suite with 53 opt-in skips, typecheck, lint, secret scan, production build, and a stable 58-page inventory. See `docs/reviews/2026-09-13/batch14/BATCH-14.md`.
 - The earlier Batch 14 report-count finding is withdrawn: Batch 6 and the existing localized label intentionally make unallocated financial-review attempts global across all client/currency/date scopes. No finance or report behaviour changed.
 
 ## Immediate Next Steps
