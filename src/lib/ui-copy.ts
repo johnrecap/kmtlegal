@@ -837,6 +837,10 @@ export const paymentReviewCopy = {
   en: { review: "Collection under financial review", description: "A financial notification needs office review. Do not pay again until the collection and booking outcome have been verified.", totals: "Paid totals show historical collections, not net funds after refunds or voids. Reversed amounts require verification.", count: "Collections requiring review", unallocated: "Global unallocated review count (all clients, currencies and dates)", orderVerification: "Payment link needs office verification", orderDescription: "This earlier payment link needs verification against its provider order. Do not continue or pay again until the office checks its outcome. This notice does not confirm that money was received." }
 } as const;
 
+export const contentLifecycleUiCopy = {
+  protectedEdit: (status: string) => `الحالة الحالية: ${status}. يلزم مسؤول يملك صلاحية الاعتماد لتعديل هذا السجل المحمي.`
+} as const;
+
 const apiExactMessages: Record<string, string> = {
   [paymentApiSourceMessages.orderMismatch]: "طلب الدفع لا يطابق محاولة دفع محفوظة.",
   [paymentApiSourceMessages.orderMissing]: "معرّف طلب الدفع أو المعاملة غير موجود.",
@@ -844,6 +848,8 @@ const apiExactMessages: Record<string, string> = {
   [paymentApiSourceMessages.reviewChanged]: "تغيّرت تفاصيل دفع الحجز. ارجع وراجع الحجز قبل الدفع.",
   "Authentication required.": "يجب تسجيل الدخول للمتابعة.",
   "Active session required.": "انتهت الجلسة أو لم تعد نشطة. سجل الدخول مرة أخرى.",
+  "An approver is required to edit content that is already approved, scheduled, or published.": "يلزم مسؤول يملك صلاحية الاعتماد لتعديل محتوى معتمد أو مجدول أو منشور.",
+  "Content state changed after this form was loaded. Refresh and review the current state before trying again.": "تغيّرت حالة المحتوى بعد فتح النموذج. احتفظنا بما أدخلته؛ حدّث الصفحة وراجع الحالة الحالية قبل إعادة المحاولة.",
   [plan35ApiErrorSourceMessages.APPOINTMENT_CONFLICT]: plan35ApiErrorCopy.APPOINTMENT_CONFLICT.message,
   [plan35ApiErrorSourceMessages.CASE_REFERENCE_CONFLICT]: plan35ApiErrorCopy.CASE_REFERENCE_CONFLICT.message,
   [plan35ApiErrorSourceMessages.SETTING_READ_ONLY]: plan35ApiErrorCopy.SETTING_READ_ONLY.message,

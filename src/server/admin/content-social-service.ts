@@ -182,6 +182,20 @@ export function assertSocialDraftStatusAllowed(actor: Principal, status: string)
   }
 }
 
+const protectedSourceStatuses = {
+  article: ["PUBLISHED"],
+  caseStudy: ["APPROVED", "PUBLISHED"],
+  socialDraft: ["APPROVED", "SCHEDULED", "PUBLISHED"]
+} as const;
+
+function protectedSourceError() {
+  return new ApiError(403, "PERMISSION_DENIED", "An approver is required to edit content that is already approved, scheduled, or published.");
+}
+
+function contentStateChangedError() {
+  return new ApiError(409, "CONFLICT", "Content state changed after this form was loaded. Refresh and review the current state before trying again.");
+}
+
 function parseOptionalDate(value: string | undefined | null, field: string) {
   const trimmed = value?.trim();
   if (!trimmed) {
@@ -662,11 +676,19 @@ export async function updateAdminArticle(input: { actor: Principal; articleId: s
   }
 
   try {
-    const article = await prisma.article.update({
-      where: { id: articleId },
-      data: articleData(input.actor, body),
-      include: { author: { select: { id: true, name: true, email: true } } }
-    });
+    const data = articleData(input.actor, body);
+    if (!canApproveArticles(input.actor)) {
+      const result = await prisma.article.updateMany({ where: { id: articleId, status: { notIn: ["PUBLISHED"] } }, data });
+      if (result.count === 0) {
+        const current = await prisma.article.findUnique({ where: { id: articleId }, select: { status: true } });
+        if (!current) throw new ApiError(404, "NOT_FOUND", "Article was not found.");
+        if ((protectedSourceStatuses.article as readonly string[]).includes(current.status)) throw protectedSourceError();
+        throw contentStateChangedError();
+      }
+    } else {
+      await prisma.article.update({ where: { id: articleId }, data });
+    }
+    const article = await prisma.article.findUniqueOrThrow({ where: { id: articleId }, include: { author: { select: { id: true, name: true, email: true } } } });
 
     await appendAuditLogBestEffort({
       actorId: input.actor.id,
@@ -722,11 +744,19 @@ export async function updateAdminCaseStudy(input: { actor: Principal; caseStudyI
   }
 
   try {
-    const study = await prisma.caseStudy.update({
-      where: { id: caseStudyId },
-      data: caseStudyData(input.actor, body),
-      include: { approvedBy: { select: { id: true, name: true, email: true } } }
-    });
+    const data = caseStudyData(input.actor, body);
+    if (!canApproveCaseStudies(input.actor)) {
+      const result = await prisma.caseStudy.updateMany({ where: { id: caseStudyId, status: { notIn: ["APPROVED", "PUBLISHED"] } }, data });
+      if (result.count === 0) {
+        const current = await prisma.caseStudy.findUnique({ where: { id: caseStudyId }, select: { status: true } });
+        if (!current) throw new ApiError(404, "NOT_FOUND", "Case study was not found.");
+        if ((protectedSourceStatuses.caseStudy as readonly string[]).includes(current.status)) throw protectedSourceError();
+        throw contentStateChangedError();
+      }
+    } else {
+      await prisma.caseStudy.update({ where: { id: caseStudyId }, data });
+    }
+    const study = await prisma.caseStudy.findUniqueOrThrow({ where: { id: caseStudyId }, include: { approvedBy: { select: { id: true, name: true, email: true } } } });
 
     await appendAuditLogBestEffort({
       actorId: input.actor.id,
@@ -778,13 +808,21 @@ export async function updateAdminSocialDraft(input: { actor: Principal; draftId:
     throw new ApiError(404, "NOT_FOUND", "Social draft was not found.");
   }
 
-  const draft = await prisma.socialPostDraft.update({
-    where: { id: draftId },
-    data: socialDraftData(input.actor, body),
-    include: {
-      createdBy: { select: { id: true, name: true, email: true } },
-      approvedBy: { select: { id: true, name: true, email: true } }
+  const data = socialDraftData(input.actor, body);
+  if (!canApproveSocialDrafts(input.actor)) {
+    const result = await prisma.socialPostDraft.updateMany({ where: { id: draftId, status: { notIn: ["APPROVED", "SCHEDULED", "PUBLISHED"] } }, data });
+    if (result.count === 0) {
+      const current = await prisma.socialPostDraft.findUnique({ where: { id: draftId }, select: { status: true } });
+      if (!current) throw new ApiError(404, "NOT_FOUND", "Social draft was not found.");
+      if ((protectedSourceStatuses.socialDraft as readonly string[]).includes(current.status)) throw protectedSourceError();
+      throw contentStateChangedError();
     }
+  } else {
+    await prisma.socialPostDraft.update({ where: { id: draftId }, data });
+  }
+  const draft = await prisma.socialPostDraft.findUniqueOrThrow({
+    where: { id: draftId },
+    include: { createdBy: { select: { id: true, name: true, email: true } }, approvedBy: { select: { id: true, name: true, email: true } } }
   });
 
   await appendAuditLogBestEffort({

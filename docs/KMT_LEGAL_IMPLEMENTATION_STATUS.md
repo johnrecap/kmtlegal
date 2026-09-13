@@ -366,6 +366,13 @@ Total plans: 40
 - Boundary: staff `updateAdminConversation` can still reopen `CLOSED` or `ARCHIVED` threads and may create multiple active threads. Batch 11 eliminates the automatic client-first-message race only. Batch 10's contact-form browser recovery mocked both failure and a `201` retry, so it does not prove a stored contact message or email delivery.
 - Evidence, secret-scan, cleanup, and final structural-check results are under `docs/reviews/2026-09-13/batch11/`.
 
+## Batch 14 protected content lifecycle writes (2026-09-13)
+
+- A creator can no longer alter an existing published article, approved/published case study, or approved/scheduled/published social draft without the matching approval permission. The PostgreSQL conditional write makes that source-state rule atomic against intervening publication; rejected and archived rework remains allowed.
+- Non-approver edit forms now retain and show the protected status with an Arabic approval explanation and disabled fields/save action. Draft/review editing and per-type create/approve permissions remain separate.
+- Local evidence: focused real PostgreSQL HTTP tests (7 passed), typecheck, lint and secret scan passed. The full suite has one unrelated Batch 5 slow-provider timeout; controlled-write race, authenticated browser, warm-cache public, and final build completion evidence remain unverified. See `docs/reviews/2026-09-13/batch14/BATCH-14.md`.
+- The earlier Batch 14 report-count finding is withdrawn: Batch 6 and the existing localized label intentionally make unallocated financial-review attempts global across all client/currency/date scopes. No finance or report behaviour changed.
+
 ## Immediate Next Steps
 
 1. Start PostgreSQL with `docker compose up -d db`, or configure a real `DATABASE_URL`, then run `npm run qa:db`.

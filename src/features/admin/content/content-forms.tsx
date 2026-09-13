@@ -14,7 +14,7 @@ import {
   socialPlatformValues
 } from "@/lib/legal-content";
 import { labelFrom } from "@/lib/legal-format";
-import { sourceTypeDisplayLabel } from "@/lib/ui-copy";
+import { contentLifecycleUiCopy, sourceTypeDisplayLabel } from "@/lib/ui-copy";
 
 type ApiMessage = {
   error?: {
@@ -134,16 +134,20 @@ function CheckboxField({
   );
 }
 
-function allowedArticleStatuses(canApprove: boolean) {
-  return articleStatusValues.filter((status) => canApprove || !["PUBLISHED", "ARCHIVED"].includes(status));
+function withCurrentStatus(statuses: readonly string[], currentStatus?: string) {
+  return currentStatus && !statuses.includes(currentStatus) ? [...statuses, currentStatus] : statuses;
 }
 
-function allowedCaseStudyStatuses(canApprove: boolean) {
-  return caseStudyStatusValues.filter((status) => canApprove || !["APPROVED", "PUBLISHED", "REJECTED", "ARCHIVED"].includes(status));
+function allowedArticleStatuses(canApprove: boolean, currentStatus?: string) {
+  return withCurrentStatus(articleStatusValues.filter((status) => canApprove || !["PUBLISHED", "ARCHIVED"].includes(status)), currentStatus);
 }
 
-function allowedSocialDraftStatuses(canApprove: boolean) {
-  return socialDraftStatusValues.filter((status) => canApprove || !["APPROVED", "SCHEDULED", "PUBLISHED", "REJECTED", "ARCHIVED"].includes(status));
+function allowedCaseStudyStatuses(canApprove: boolean, currentStatus?: string) {
+  return withCurrentStatus(caseStudyStatusValues.filter((status) => canApprove || !["APPROVED", "PUBLISHED", "REJECTED", "ARCHIVED"].includes(status)), currentStatus);
+}
+
+function allowedSocialDraftStatuses(canApprove: boolean, currentStatus?: string) {
+  return withCurrentStatus(socialDraftStatusValues.filter((status) => canApprove || !["APPROVED", "SCHEDULED", "PUBLISHED", "REJECTED", "ARCHIVED"].includes(status)), currentStatus);
 }
 
 export function ArticleForm({ article, canApprove }: { article?: ArticleValue; canApprove: boolean }) {
@@ -151,6 +155,7 @@ export function ArticleForm({ article, canApprove }: { article?: ArticleValue; c
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const isEdit = Boolean(article?.id);
+  const isProtected = isEdit && !canApprove && article?.status === "PUBLISHED";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -189,6 +194,8 @@ export function ArticleForm({ article, canApprove }: { article?: ArticleValue; c
 
   return (
     <form className="grid gap-4" onSubmit={submit}>
+      {isProtected ? <InlineFeedback title={contentLifecycleUiCopy.protectedEdit(labelFrom(articleStatusLabels, article?.status ?? "PUBLISHED"))} tone="warning" /> : null}
+      <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected}>
       <TextInput defaultValue={article?.title ?? ""} disabled={isBusy} idPrefix={`article-${article?.id ?? "create"}`} label="عنوان المقال" name="title" required />
       <TextInput defaultValue={article?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case مثل contract-risk-basics." idPrefix={`article-${article?.id ?? "create"}`} label="معرّف الرابط (Slug)" name="slug" required />
       <div className="grid gap-4 sm:grid-cols-2">
@@ -202,7 +209,7 @@ export function ArticleForm({ article, canApprove }: { article?: ArticleValue; c
       <Textarea className="min-h-48" defaultValue={article?.content ?? ""} disabled={isBusy} idPrefix={`article-${article?.id ?? "create"}`} label="المحتوى" name="content" required />
       <div className="grid gap-4 sm:grid-cols-2">
         <Select defaultValue={article?.status ?? "DRAFT"} disabled={isBusy} idPrefix={`article-${article?.id ?? "create"}`} label="الحالة" name="status">
-          {allowedArticleStatuses(canApprove).map((status) => (
+          {allowedArticleStatuses(canApprove, article?.status).map((status) => (
             <option key={status} value={status}>
               {labelFrom(articleStatusLabels, status)}
             </option>
@@ -213,6 +220,7 @@ export function ArticleForm({ article, canApprove }: { article?: ArticleValue; c
       <Button loading={isBusy} type="submit">
         {isEdit ? "حفظ المقال" : "إنشاء مقال"}
       </Button>
+      </fieldset>
       <ActionFeedback message={message} />
     </form>
   );
@@ -223,6 +231,7 @@ export function CaseStudyForm({ study, canApprove }: { study?: CaseStudyValue; c
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const isEdit = Boolean(study?.id);
+  const isProtected = isEdit && !canApprove && ["APPROVED", "PUBLISHED"].includes(study?.status ?? "");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -264,6 +273,8 @@ export function CaseStudyForm({ study, canApprove }: { study?: CaseStudyValue; c
 
   return (
     <form className="grid gap-4" onSubmit={submit}>
+      {isProtected ? <InlineFeedback title={contentLifecycleUiCopy.protectedEdit(labelFrom(caseStudyStatusLabels, study?.status ?? "PUBLISHED"))} tone="warning" /> : null}
+      <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected}>
       <TextInput defaultValue={study?.title ?? ""} disabled={isBusy} idPrefix={`case-study-${study?.id ?? "create"}`} label="عنوان دراسة الحالة" name="title" required />
       <TextInput defaultValue={study?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case." idPrefix={`case-study-${study?.id ?? "create"}`} label="معرّف الرابط (Slug)" name="slug" required />
       <div className="grid gap-4 sm:grid-cols-2">
@@ -280,7 +291,7 @@ export function CaseStudyForm({ study, canApprove }: { study?: CaseStudyValue; c
       <CheckboxField defaultChecked={study?.isAnonymized ?? false} disabled={isBusy} idPrefix={`case-study-${study?.id ?? "create"}`} label="تمت مراجعة إخفاء الهوية ولا توجد أسماء عملاء أو أرقام قضايا أو بيانات اتصال." name="isAnonymized" />
       <div className="grid gap-4 sm:grid-cols-2">
         <Select defaultValue={study?.status ?? "DRAFT"} disabled={isBusy} idPrefix={`case-study-${study?.id ?? "create"}`} label="الحالة" name="status">
-          {allowedCaseStudyStatuses(canApprove).map((status) => (
+          {allowedCaseStudyStatuses(canApprove, study?.status).map((status) => (
             <option key={status} value={status}>
               {labelFrom(caseStudyStatusLabels, status)}
             </option>
@@ -291,6 +302,7 @@ export function CaseStudyForm({ study, canApprove }: { study?: CaseStudyValue; c
       <Button loading={isBusy} type="submit">
         {isEdit ? "حفظ دراسة الحالة" : "إنشاء دراسة حالة"}
       </Button>
+      </fieldset>
       <ActionFeedback message={message} />
     </form>
   );
@@ -301,6 +313,7 @@ export function SocialDraftForm({ draft, canApprove }: { draft?: SocialDraftValu
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const isEdit = Boolean(draft?.id);
+  const isProtected = isEdit && !canApprove && ["APPROVED", "SCHEDULED", "PUBLISHED"].includes(draft?.status ?? "");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -338,6 +351,8 @@ export function SocialDraftForm({ draft, canApprove }: { draft?: SocialDraftValu
 
   return (
     <form className="grid gap-4" onSubmit={submit}>
+      {isProtected ? <InlineFeedback title={contentLifecycleUiCopy.protectedEdit(labelFrom(socialDraftStatusLabels, draft?.status ?? "PUBLISHED"))} tone="warning" /> : null}
+      <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected}>
       <TextInput defaultValue={draft?.title ?? ""} disabled={isBusy} idPrefix={`social-draft-${draft?.id ?? "create"}`} label="عنوان داخلي" name="title" required />
       <div className="grid gap-4 sm:grid-cols-2">
         <Select defaultValue={draft?.platform ?? "linkedin"} disabled={isBusy} idPrefix={`social-draft-${draft?.id ?? "create"}`} label="المنصة" name="platform">
@@ -348,7 +363,7 @@ export function SocialDraftForm({ draft, canApprove }: { draft?: SocialDraftValu
           ))}
         </Select>
         <Select defaultValue={draft?.status ?? "DRAFT"} disabled={isBusy} idPrefix={`social-draft-${draft?.id ?? "create"}`} label="الحالة" name="status">
-          {allowedSocialDraftStatuses(canApprove).map((status) => (
+          {allowedSocialDraftStatuses(canApprove, draft?.status).map((status) => (
             <option key={status} value={status}>
               {labelFrom(socialDraftStatusLabels, status)}
             </option>
@@ -364,6 +379,7 @@ export function SocialDraftForm({ draft, canApprove }: { draft?: SocialDraftValu
       <Button loading={isBusy} type="submit">
         {isEdit ? "حفظ المسودة" : "إنشاء مسودة"}
       </Button>
+      </fieldset>
       <ActionFeedback message={message} />
     </form>
   );
