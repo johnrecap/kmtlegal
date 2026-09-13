@@ -25,7 +25,25 @@
     "lint": { "status": "passed", "log": "evidence/lint.log" },
     "secretScan": { "status": "passed", "log": "evidence/secret-scan.log" },
     "build": { "status": "passed", "log": "evidence/build.log" },
-    "pageInventory": { "baseline": 58, "current": 58, "status": "passed", "artifact": "evidence/page-inventory.json" }
+    "pageInventory": { "baseline": 58, "current": 58, "status": "passed", "artifact": "evidence/page-inventory.json" },
+    "supervisedReviewCorrection": {
+      "baseCommit": "33d6783771545cfc71e91b71377aac5b473c1c61",
+      "scope": "Integration harness and evidence documentation only; product and browser code unchanged.",
+      "postgresIntegration": { "tests": 7, "status": "passed", "log": "evidence/postgres-integration-correction.log" },
+      "typecheck": { "status": "passed", "log": "evidence/typecheck-correction.log" },
+      "cleanup": {
+        "status": "passed",
+        "syntheticUsersBeforeTeardown": 0,
+        "syntheticSessionsBeforeTeardown": 0,
+        "syntheticAuditsBeforeTeardown": 0,
+        "databaseDropped": true,
+        "roleDropped": true,
+        "port55441Closed": true,
+        "port3115Closed": true,
+        "temporaryDirectoryRemoved": true,
+        "log": "evidence/postgres-correction-cleanup.log"
+      }
+    }
   },
   "cleanup": {
     "status": "passed",

@@ -14,17 +14,19 @@ The dedicated integration suite ran against PostgreSQL 18 on `127.0.0.1:55441`, 
 
 The pre-fix run in `evidence/baseline-postgres-before-fix.log` recorded five independent product failures and two preserved-policy passes: account creation continued after actor suspension/session revocation; password reset continued after actor-session revocation; creation accepted a destination role disabled during hashing; a target edit did not make the reset stale; and two resets for one observed version both returned success. The live exact-Super/delegate boundary and existing self-session/inactive-target policies already passed.
 
-The corrected `evidence/postgres-integration.log` passes seven cases. Test-only barriers pause calls after the real `scrypt` hash completes, then commit the competing local transaction before releasing the production service call. Rejected operations leave no created user, changed password, revoked target session, or success audit. Two resets using the same target version produce one `200`, one `409`, one surviving password, and only the winner's audit/session effects.
+The corrected `evidence/postgres-integration.log` passes seven cases. These route-contract tests invoke the Next.js handlers in-process with real authenticated sessions and PostgreSQL; they do not traverse a network listener. Test-only barriers pause calls after the real `scrypt` hash completes, then commit the competing local transaction before releasing the production service call. The multi-request barrier fails immediately if either request settles before both real hashes arrive, and its `finally` path always releases the gate and settles both requests. Rejected operations preserve the exact seeded target-session rows and leave no created user, changed password, or success audit. Two resets using the same target version produce one `200`, one `409`, one surviving password, and only the winner's audit/session effects.
+
+The supervised-review correction on top of commit `33d6783771545cfc71e91b71377aac5b473c1c61` changed only the integration harness and this evidence documentation. `evidence/postgres-integration-correction.log` passes the same seven cases after adding exact before/after assertions for two active target sessions in each rejected password-write case and unconditional release/settlement for the two-request barrier. The logged serialization error is the expected losing request that the route converts to `409`. `evidence/typecheck-correction.log` records the passing typecheck, and `evidence/postgres-correction-cleanup.log` records zero synthetic users, sessions, and audits before the disposable database, role, process, and directory were removed.
 
 ## Browser evidence
 
-The actual `/admin/users/:userId` page passed one synthetic Chromium flow through local Next.js at `http://127.0.0.1:3115`:
+The actual `/admin/users/:userId` page passed one synthetic Chromium flow over real network HTTP through local Next.js at `http://127.0.0.1:3115`:
 
 - desktop `1440x1000`: keyboard submission, successful reset, safe version refresh, and visible success feedback;
 - mobile `390x844`: real stale `409`, retained but disabled password draft, explicit keyboard-triggered reload, empty password fields after reload, and successful reviewed retry;
 - no page errors and no unexpected console errors; Chromium's expected failed-resource console entry for the deliberate `409` is asserted separately.
 
-Screenshots are `evidence/password-success-1440.png` and `evidence/password-conflict-390.png`. `browser-attempt1.log` records refinement of the expected-409 console assertion; `browser-attempt2.log` and `browser-attempt3.log` retain two test-syntax corrections. The final passing run is `evidence/browser.log`.
+Screenshots are `evidence/password-success-1440.png` and `evidence/password-conflict-390.png`. `browser-attempt1.log` records refinement of the expected-409 console assertion; `browser-attempt2.log` and `browser-attempt3.log` retain two test-syntax corrections. The earlier cascading seven-failure PostgreSQL attempt was observed during development but its log was not retained; `evidence/baseline-postgres-before-fix.log` is the preserved clean baseline with five independent failures and two policy passes. The final passing browser run is `evidence/browser.log`.
 
 ## Repository verification
 

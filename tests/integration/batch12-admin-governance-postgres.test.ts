@@ -101,14 +101,29 @@ function postRequest(path: string, cookie: string, body: Record<string, unknown>
   });
 }
 
-async function requireHashBarrier(reached: Promise<void>, request: Promise<Response>) {
+async function requireHashBarrier(reached: Promise<void>, requests: Promise<Response> | readonly Promise<Response>[]) {
+  const pendingRequests: readonly Promise<Response>[] = Array.isArray(requests)
+    ? requests
+    : [requests as Promise<Response>];
   const outcome = await Promise.race([
     reached.then(() => ({ kind: "reached" as const })),
-    request.then((response) => ({ kind: "resolved" as const, status: response.status }))
+    ...pendingRequests.map((request, index) => request.then((response) => ({
+      kind: "resolved" as const,
+      requestNumber: index + 1,
+      status: response.status
+    })))
   ]);
   if (outcome.kind === "resolved") {
-    throw new Error(`Request resolved with status ${outcome.status} before reaching the password hash barrier.`);
+    throw new Error(`Request ${outcome.requestNumber} resolved with status ${outcome.status} before reaching the password hash barrier.`);
   }
+}
+
+async function sessionState(sessionIds: string[]) {
+  return prisma.session.findMany({
+    where: { id: { in: sessionIds } },
+    orderBy: { id: "asc" },
+    select: { id: true, status: true, revokedAt: true }
+  });
 }
 
 function createPayload(email: string) {
@@ -238,8 +253,12 @@ describePostgres("batch12 live admin authorization and password concurrency", ()
     const payload = await passwordPayload(ids.target, passwordA);
     const before = await prisma.user.findUniqueOrThrow({ where: { id: ids.target }, select: { passwordHash: true } });
     const gate = passwordHashGate.arm(1);
+    const targetSessionIds: string[] = [];
     let request: Promise<Response> | null = null;
     try {
+      targetSessionIds.push((await createActiveSession(ids.target)).id);
+      targetSessionIds.push((await createActiveSession(ids.target)).id);
+      const sessionsBefore = await sessionState(targetSessionIds);
       request = updateAdminUserPasswordRoute(
         postRequest(`/api/admin/users/${ids.target}/password`, firstSuperSession.cookie, payload),
         { params: Promise.resolve({ userId: ids.target }) }
@@ -252,10 +271,12 @@ describePostgres("batch12 live admin authorization and password concurrency", ()
       expect(response.status).toBe(403);
       const after = await prisma.user.findUniqueOrThrow({ where: { id: ids.target }, select: { passwordHash: true } });
       expect(after.passwordHash === before.passwordHash).toBe(true);
+      expect(await sessionState(targetSessionIds)).toEqual(sessionsBefore);
       expect(await prisma.auditLog.count({ where: { actorId: ids.firstSuper, action: "user.password.update", resourceId: ids.target } })).toBe(0);
     } finally {
       gate.release();
       await request?.catch(() => undefined);
+      await prisma.session.deleteMany({ where: { id: { in: targetSessionIds } } });
       await resetFirstSuperAccess();
     }
   });
@@ -302,8 +323,12 @@ describePostgres("batch12 live admin authorization and password concurrency", ()
     const payload = await passwordPayload(ids.target, passwordA);
     const before = await prisma.user.findUniqueOrThrow({ where: { id: ids.target }, select: { passwordHash: true } });
     const gate = passwordHashGate.arm(1);
+    const targetSessionIds: string[] = [];
     let request: Promise<Response> | null = null;
     try {
+      targetSessionIds.push((await createActiveSession(ids.target)).id);
+      targetSessionIds.push((await createActiveSession(ids.target)).id);
+      const sessionsBefore = await sessionState(targetSessionIds);
       request = updateAdminUserPasswordRoute(
         postRequest(`/api/admin/users/${ids.target}/password`, firstSuperSession.cookie, payload),
         { params: Promise.resolve({ userId: ids.target }) }
@@ -317,39 +342,51 @@ describePostgres("batch12 live admin authorization and password concurrency", ()
       const after = await prisma.user.findUniqueOrThrow({ where: { id: ids.target }, select: { passwordHash: true, status: true } });
       expect(after.passwordHash === before.passwordHash).toBe(true);
       expect(after.status).toBe("SUSPENDED");
+      expect(await sessionState(targetSessionIds)).toEqual(sessionsBefore);
       expect(await prisma.auditLog.count({ where: { action: "user.password.update", resourceId: ids.target } })).toBe(0);
     } finally {
       gate.release();
       await request?.catch(() => undefined);
+      await prisma.session.deleteMany({ where: { id: { in: targetSessionIds } } });
       await prisma.user.update({ where: { id: ids.target }, data: { status: "ACTIVE" } });
     }
   });
 
   it("allows only one password reset for one observed target version", async () => {
     const target = await prisma.user.findUniqueOrThrow({ where: { id: ids.target }, select: { updatedAt: true } });
-    const sessions = await Promise.all([createActiveSession(ids.target), createActiveSession(ids.target)]);
     const auditBefore = await prisma.auditLog.count({ where: { action: "user.password.update", resourceId: ids.target } });
     const gate = passwordHashGate.arm(2);
-    const first = updateAdminUserPasswordRoute(
-      postRequest(`/api/admin/users/${ids.target}/password`, firstSuperSession.cookie, { password: passwordA, revokeSessions: true, updatedAt: target.updatedAt.toISOString() }),
-      { params: Promise.resolve({ userId: ids.target }) }
-    );
-    const second = updateAdminUserPasswordRoute(
-      postRequest(`/api/admin/users/${ids.target}/password`, secondSuperSession.cookie, { password: passwordB, revokeSessions: true, updatedAt: target.updatedAt.toISOString() }),
-      { params: Promise.resolve({ userId: ids.target }) }
-    );
-    await gate.reached;
-    gate.release();
-    const responses = await Promise.all([first, second]);
+    const sessionIds: string[] = [];
+    let requests: readonly Promise<Response>[] = [];
+    try {
+      sessionIds.push((await createActiveSession(ids.target)).id);
+      sessionIds.push((await createActiveSession(ids.target)).id);
+      const first = updateAdminUserPasswordRoute(
+        postRequest(`/api/admin/users/${ids.target}/password`, firstSuperSession.cookie, { password: passwordA, revokeSessions: true, updatedAt: target.updatedAt.toISOString() }),
+        { params: Promise.resolve({ userId: ids.target }) }
+      );
+      const second = updateAdminUserPasswordRoute(
+        postRequest(`/api/admin/users/${ids.target}/password`, secondSuperSession.cookie, { password: passwordB, revokeSessions: true, updatedAt: target.updatedAt.toISOString() }),
+        { params: Promise.resolve({ userId: ids.target }) }
+      );
+      requests = [first, second];
+      await requireHashBarrier(gate.reached, requests);
+      gate.release();
+      const responses = await Promise.all(requests);
 
-    expect(responses.map((response) => response.status).sort()).toEqual([200, 409]);
-    const updated = await prisma.user.findUniqueOrThrow({ where: { id: ids.target }, select: { passwordHash: true } });
-    const winningPassword = responses[0]?.status === 200 ? passwordA : passwordB;
-    const losingPassword = responses[0]?.status === 200 ? passwordB : passwordA;
-    expect(await verifyPassword(winningPassword, updated.passwordHash)).toBe(true);
-    expect(await verifyPassword(losingPassword, updated.passwordHash)).toBe(false);
-    expect(await prisma.auditLog.count({ where: { action: "user.password.update", resourceId: ids.target } })).toBe(auditBefore + 1);
-    expect(await prisma.session.count({ where: { id: { in: sessions.map(({ id }) => id) }, status: "REVOKED", revokedAt: { not: null } } })).toBe(2);
+      expect(responses.map((response) => response.status).sort()).toEqual([200, 409]);
+      const updated = await prisma.user.findUniqueOrThrow({ where: { id: ids.target }, select: { passwordHash: true } });
+      const winningPassword = responses[0]?.status === 200 ? passwordA : passwordB;
+      const losingPassword = responses[0]?.status === 200 ? passwordB : passwordA;
+      expect(await verifyPassword(winningPassword, updated.passwordHash)).toBe(true);
+      expect(await verifyPassword(losingPassword, updated.passwordHash)).toBe(false);
+      expect(await prisma.auditLog.count({ where: { action: "user.password.update", resourceId: ids.target } })).toBe(auditBefore + 1);
+      expect(await prisma.session.count({ where: { id: { in: sessionIds }, status: "REVOKED", revokedAt: { not: null } } })).toBe(2);
+    } finally {
+      gate.release();
+      await Promise.allSettled(requests);
+      await prisma.session.deleteMany({ where: { id: { in: sessionIds } } });
+    }
   });
 
   it("preserves self-session exclusion and revokeSessions=false for an already inactive target", async () => {
