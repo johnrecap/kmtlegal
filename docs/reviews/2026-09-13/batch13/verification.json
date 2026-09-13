@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "batch": "Batch 13",
+  "date": "2026-09-13",
+  "productBaselineCommit": "7aee178290ce39d3bd08a5d597bc00a21d7a8dfc",
+  "repositoryBaseCommit": "f48e5981f37f1beecb80c5eab162ad144ea141c1",
+  "scope": "Make office-profile settings writes version-conditional, audit only the winning write, revalidate live settings authority, and preserve recoverable form drafts.",
+  "baselineRuntime": {
+    "status": "not_exercised",
+    "basis": "Accepted pre-Batch-13 source at the product baseline; no before-fix runtime claim is made."
+  },
+  "database": {
+    "engine": "PostgreSQL 18",
+    "host": "127.0.0.1",
+    "port": 55441,
+    "database": "kmt_batch10",
+    "user": "kmt_batch10",
+    "marker": "synthetic-batch10-only",
+    "applicationEnvironment": "local",
+    "testOnlyPoolMax": 4,
+    "dataDirectory": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/batch10-postgres/data"
+  },
+  "verification": {
+    "postgresIntegration": { "tests": 10, "status": "passed", "log": "evidence/postgres-integration.log" },
+    "focusedTests": { "tests": 34, "status": "passed", "log": "evidence/focused-tests.log" },
+    "fullTestSuite": { "tests": 539, "skipped": 46, "status": "passed", "log": "evidence/full-tests.log" },
+    "browser": {
+      "tests": 2,
+      "status": "passed",
+      "viewports": ["1440x1000", "390x844"],
+      "realConflict": true,
+      "injectedNetworkFailure": true,
+      "log": "evidence/browser.log",
+      "screenshots": [
+        "evidence/office-profile-success-1440.png",
+        "evidence/office-profile-conflict-390.png"
+      ]
+    },
+    "typecheck": { "status": "passed", "log": "evidence/typecheck.log" },
+    "lint": { "status": "passed", "warnings": 0, "log": "evidence/lint.log" },
+    "secretScan": { "status": "passed", "log": "evidence/secret-scan.log" },
+    "build": { "status": "passed", "log": "evidence/build.log" },
+    "pageInventory": { "baseline": 58, "current": 58, "status": "passed", "artifact": "evidence/page-inventory.json" }
+  },
+  "retainedAttempts": [
+    "evidence/browser-attempt1.log",
+    "evidence/browser-attempt2.log",
+    "evidence/browser-attempt3.log",
+    "evidence/full-tests-attempt1.log",
+    "evidence/typecheck-attempt1.log",
+    "evidence/cleanup-attempt1.log"
+  ],
+  "cleanup": {
+    "status": "passed",
+    "syntheticUsersBeforeTeardown": 0,
+    "syntheticSessionsBeforeTeardown": 0,
+    "settingsUpdateAuditsBeforeTeardown": 0,
+    "syntheticSettingsBeforeTeardown": 0,
+    "databaseDropped": true,
+    "roleDropped": true,
+    "port55441Closed": true,
+    "port3115Closed": true,
+    "clusterDirectoryRemoved": true,
+    "uploadsDirectoryAbsent": true,
+    "logs": ["evidence/cleanup.log", "evidence/cleanup-db.log", "evidence/cleanup-final-state.log"]
+  },
+  "boundaries": [
+    "No schema, migration, dependency, role-definition, public-route, payment, consultation, installer, SMTP activation, staff-2FA activation, or page-count change.",
+    "No production database, external provider, push, deployment, or live environment was contacted.",
+    "The 52-item UI and motion redesign remains pending and unchanged."
+  ]
+}

@@ -1,0 +1,10 @@
+Batch 13 typecheck attempt 1 — test typing failure
+
+The runtime source typechecked, but two assertions accessed `updatedAt` on the full
+discriminated-union result without narrowing the `key` branch first:
+
+  tests/server/admin-governance.test.ts(501,82): TS2339
+  tests/server/admin-governance.test.ts(502,104): TS2339
+
+The test now narrows `key === "office.profile"` before reading `updatedAt`. The final
+`typecheck.log` is clean.

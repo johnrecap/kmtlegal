@@ -1,0 +1,12 @@
+Batch 13 browser attempt 3 — product failure captured
+
+The server and browser both used http://127.0.0.1:3115. A fast keyboard submission occurred
+before React hydration attached the office form handler. The browser performed its native GET:
+
+  GET /admin/settings?firmName=KMT+Browser+First&publicPhone=&publicEmail=&primaryLocale=ar 200
+  expected visible text: تم حفظ بيانات المكتب.
+  element not found
+  1 failed; 1 did not run
+
+Correction: the office form now uses the existing hydration guard for controls and declares
+method="post". The final browser evidence exercises the same fast keyboard path successfully.

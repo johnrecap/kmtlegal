@@ -26,7 +26,7 @@ type SettingRow = Awaited<ReturnType<typeof listAdminSettings>>["settings"][numb
 function SettingForm({ setting }: { setting: SettingRow }) {
   switch (setting.key) {
     case "office.profile":
-      return <OfficeProfileSettingForm value={setting.value} />;
+      return <OfficeProfileSettingForm value={setting.value} updatedAt={setting.updatedAt?.toISOString() ?? null} />;
     case "security.staff2fa":
       return <SecurityStaff2faSettingForm value={setting.value} />;
     case "email.policy":

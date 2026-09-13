@@ -3,12 +3,13 @@
 import { useHydrated } from "@/lib/use-hydrated";
 
 import { useRouter } from "next/navigation";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { Button, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, InlineFeedback, Select, StateBlock, TextInput } from "@/components/ui";
 import { formatDateTime } from "@/lib/legal-format";
 import {
   plan35StorageDiagnosticUiCopy,
   plan35UserGovernanceUiCopy,
+  officeProfileSettingUiCopy,
   roleDisplayLabel,
   technicalValueDisplayLabel
 } from "@/lib/ui-copy";
@@ -444,13 +445,19 @@ function AdminUserPasswordForm({ userId, updatedAt }: { userId: string; updatedA
   );
 }
 
-export function OfficeProfileSettingForm({ value }: { value: SettingValue }) {
+export function OfficeProfileSettingForm({ value, updatedAt }: { value: SettingValue; updatedAt: string | null }) {
   const router = useRouter();
+  const isHydrated = useHydrated();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [isStale, setIsStale] = useState(false);
+  const [expectedUpdatedAt, setExpectedUpdatedAt] = useState(updatedAt);
+  const submitLock = useRef(false);
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitLock.current || isStale) return;
+    submitLock.current = true;
     const formData = new FormData(event.currentTarget);
     setIsBusy(true);
     setMessage(null);
@@ -464,37 +471,52 @@ export function OfficeProfileSettingForm({ value }: { value: SettingValue }) {
           firmName: textValue(formData, "firmName"),
           publicPhone: textValue(formData, "publicPhone"),
           publicEmail: textValue(formData, "publicEmail"),
-          primaryLocale: textValue(formData, "primaryLocale")
+          primaryLocale: textValue(formData, "primaryLocale"),
+          updatedAt: expectedUpdatedAt
         })
       });
 
       if (!response.ok) {
+        if (response.status === 409) {
+          setIsStale(true);
+          setMessage({ tone: "error", text: officeProfileSettingUiCopy.stale });
+          return;
+        }
         setMessage({ tone: "error", text: await readMessage(response) });
         return;
       }
-      setMessage({ tone: "success", text: "تم حفظ بيانات المكتب." });
+      const payload = await response.json() as { data?: { updatedAt?: string } };
+      if (payload.data?.updatedAt) setExpectedUpdatedAt(payload.data.updatedAt);
+      setIsStale(false);
+      setMessage({ tone: "success", text: officeProfileSettingUiCopy.saved });
       router.refresh();
     } catch {
-      setMessage({ tone: "error", text: "لا يمكن الوصول إلى الخادم الآن." });
+      setMessage({ tone: "error", text: officeProfileSettingUiCopy.network });
     } finally {
+      submitLock.current = false;
       setIsBusy(false);
     }
   }
 
   return (
-    <form className="grid gap-4" onSubmit={save}>
-      <TextInput defaultValue={String(value.firmName ?? "KMT Legal")} disabled={isBusy} idPrefix="office-profile" label="اسم المكتب" name="firmName" required />
+    <form className="grid gap-4" method="post" onSubmit={save}>
+      <TextInput defaultValue={String(value.firmName ?? "KMT Legal")} disabled={!isHydrated || isBusy || isStale} idPrefix="office-profile" label="اسم المكتب" name="firmName" required />
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextInput defaultValue={String(value.publicPhone ?? "")} disabled={isBusy} idPrefix="office-profile" label="هاتف عام" name="publicPhone" />
-        <TextInput defaultValue={String(value.publicEmail ?? "")} disabled={isBusy} idPrefix="office-profile" label="بريد عام" name="publicEmail" type="email" />
+        <TextInput defaultValue={String(value.publicPhone ?? "")} disabled={!isHydrated || isBusy || isStale} idPrefix="office-profile" label="هاتف عام" name="publicPhone" />
+        <TextInput defaultValue={String(value.publicEmail ?? "")} disabled={!isHydrated || isBusy || isStale} idPrefix="office-profile" label="بريد عام" name="publicEmail" type="email" />
       </div>
-      <Select defaultValue={String(value.primaryLocale ?? "ar")} disabled={isBusy} idPrefix="office-profile" label="اللغة الأساسية" name="primaryLocale">
+      <Select defaultValue={String(value.primaryLocale ?? "ar")} disabled={!isHydrated || isBusy || isStale} idPrefix="office-profile" label="اللغة الأساسية" name="primaryLocale">
         <option value="ar">العربية</option>
         <option value="en">English</option>
       </Select>
-      <Button loading={isBusy} type="submit">
+      <Button disabled={!isHydrated || isStale} loading={isBusy} type="submit">
         حفظ
       </Button>
+      {isStale ? (
+        <Button onClick={() => window.location.reload()} type="button" variant="secondary">
+          {officeProfileSettingUiCopy.reload}
+        </Button>
+      ) : null}
       <ActionFeedback message={message} />
     </form>
   );

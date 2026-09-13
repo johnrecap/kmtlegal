@@ -99,7 +99,7 @@ const emailPolicySettingSchema = z.object({
 });
 
 export const adminSettingUpdateSchema = z.discriminatedUnion("key", [
-  officeProfileSettingSchema.extend({ key: z.literal("office.profile") }),
+  officeProfileSettingSchema.extend({ key: z.literal("office.profile"), updatedAt: z.string().datetime({ offset: true }).nullable() }),
   securityStaff2faSettingSchema.extend({ key: z.literal("security.staff2fa") }),
   emailPolicySettingSchema.extend({ key: z.literal("email.policy") })
 ]);
@@ -317,6 +317,51 @@ export function canChangeAdminUserPassword(actor: Principal) {
 
 export function canManageAdminSettings(actor: Principal) {
   return hasPermission(actor, "settings.manage.any");
+}
+
+async function liveSettingsActor(
+  client: Pick<Prisma.TransactionClient, "session">,
+  actor: Principal,
+  actorSessionId: string,
+  now: Date
+) {
+  const session = await client.session.findFirst({
+    where: {
+      id: actorSessionId,
+      userId: actor.id,
+      status: "ACTIVE",
+      revokedAt: null,
+      expiresAt: { gt: now },
+      user: { status: "ACTIVE", deletedAt: null, role: { status: "ACTIVE" } }
+    },
+    select: {
+      user: {
+        select: {
+          id: true,
+          role: {
+            select: {
+              name: true,
+              permissions: { select: { permission: { select: { key: true } } } }
+            }
+          }
+        }
+      }
+    }
+  });
+  if (!session) {
+    throw new ApiError(403, "PERMISSION_DENIED", "An active settings-management session is required.");
+  }
+  const liveActor = {
+    id: session.user.id,
+    roleName: session.user.role.name,
+    permissions: permissionKeysForRole(session.user.role)
+  } satisfies Principal;
+  assertAdminSettingsManagePermission(liveActor);
+  return liveActor;
+}
+
+function nextOfficeProfileVersion(observedAt: string, now: Date) {
+  return new Date(Math.max(now.getTime(), new Date(observedAt).getTime() + 1));
 }
 
 export function canReadAdminAuditLog(actor: Principal) {
@@ -1020,8 +1065,16 @@ export async function listAdminSettings(
   return { settings, storageRuntimeDiagnostic };
 }
 
-export async function updateAdminSetting(input: { actor: Principal; key: string; body: unknown; request?: Request }) {
+export async function updateAdminSetting(input: {
+  actor: Principal;
+  actorSessionId: string;
+  key: string;
+  body: unknown;
+  request?: Request;
+  now?: Date;
+}) {
   assertAdminSettingsManagePermission(input.actor);
+  const actorSessionId = parseWithSchema(uuidSchema, input.actorSessionId, "Session id is invalid.");
   const routeKey = parseWithSchema(settingKeySchema, input.key, "Setting key is invalid.");
   if (routeKey === "storage.policy") {
     throw new ApiError(409, "SETTING_READ_ONLY", plan35ApiErrorSourceMessages.SETTING_READ_ONLY);
@@ -1035,33 +1088,64 @@ export async function updateAdminSetting(input: { actor: Principal; key: string;
   const body = parseWithSchema(adminSettingUpdateSchema, { ...bodyObject, key }, "Setting payload is invalid.");
   const value = normalizeSettingValue(key, body);
 
-  const setting = await prisma.$transaction(async (tx) => {
-    const updated = await tx.systemSetting.upsert({
-      where: { key },
-      create: {
-        key,
-        value: value as Prisma.InputJsonValue,
-        updatedById: input.actor.id
-      },
-      update: {
-        value: value as Prisma.InputJsonValue,
-        updatedById: input.actor.id
-      },
-      include: { updatedBy: { select: { id: true, name: true, email: true } } }
-    });
+  try {
+    const setting = await prisma.$transaction(async (tx) => {
+      const now = input.now ?? new Date();
+      const liveActor = await liveSettingsActor(tx, input.actor, actorSessionId, now);
+      let updated;
+      if (body.key === "office.profile") {
+        if (body.updatedAt === null) {
+          updated = await tx.systemSetting.create({
+            data: { key, value: value as Prisma.InputJsonValue, updatedById: liveActor.id },
+            include: { updatedBy: { select: { id: true, name: true, email: true } } }
+          });
+        } else {
+          const claimed = await tx.systemSetting.updateMany({
+            where: { key, updatedAt: new Date(body.updatedAt) },
+            data: {
+              value: value as Prisma.InputJsonValue,
+              updatedById: liveActor.id,
+              updatedAt: nextOfficeProfileVersion(body.updatedAt, now)
+            }
+          });
+          if (claimed.count !== 1) {
+            throw new ApiError(409, "CONFLICT", "Office profile changed after this form was loaded.");
+          }
+          updated = await tx.systemSetting.findUniqueOrThrow({
+            where: { key },
+            include: { updatedBy: { select: { id: true, name: true, email: true } } }
+          });
+        }
+      } else {
+        updated = await tx.systemSetting.upsert({
+          where: { key },
+          create: { key, value: value as Prisma.InputJsonValue, updatedById: liveActor.id },
+          update: { value: value as Prisma.InputJsonValue, updatedById: liveActor.id },
+          include: { updatedBy: { select: { id: true, name: true, email: true } } }
+        });
+      }
 
-    await appendAuditLog({
-      client: tx,
-      actorId: input.actor.id,
-      action: "settings.update",
-      resourceType: "SystemSetting",
-      resourceId: updated.id,
-      metadata: { key: updated.key },
-      request: input.request
-    });
+      await appendAuditLog({
+        client: tx,
+        actorId: liveActor.id,
+        action: "settings.update",
+        resourceType: "SystemSetting",
+        resourceId: updated.id,
+        metadata: { key: updated.key },
+        request: input.request
+      });
 
-    return updated;
-  });
-
-  return setting;
+      return { ...updated, updatedAt: updated.updatedAt.toISOString() };
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+    return setting;
+  } catch (error) {
+    const isUniqueConflict = typeof error === "object" && error !== null && "code" in error && error.code === "P2002";
+    if (key === "office.profile" && (isSerializationConflict(error) || isUniqueConflict)) {
+      throw new ApiError(409, "CONFLICT", "Office profile changed after this form was loaded.");
+    }
+    if (isSerializationConflict(error)) {
+      throw new ApiError(409, "CONFLICT", "Setting changed concurrently. Reload and try again.");
+    }
+    throw error;
+  }
 }

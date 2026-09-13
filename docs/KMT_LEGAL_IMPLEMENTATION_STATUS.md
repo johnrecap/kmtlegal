@@ -1,5 +1,16 @@
 # KMT Legal Implementation Status
 
+2026-09-13 Batch 13 checkpoint: office-profile saves now use an explicit database version,
+serializable compare-and-swap writes, winner-only audits, and transaction-time revalidation of the
+actual session and live `settings.manage.any` authority. The form retains drafts on conflict or
+network failure, reloads current values only through the explicit recovery action, keeps its safe
+returned version across server refreshes, blocks duplicate and pre-hydration submissions, and
+reports localized recovery states. Ten controlled PostgreSQL cases, 34 focused tests, 539 full-suite
+tests with 46 opt-in skips, typecheck, warning-free lint, secret scan, production build, and two
+actual 1440/390 browser flows passed. See `docs/reviews/2026-09-13/batch13/BATCH-13.md`. The separate
+52-item UI and motion redesign remains pending in `docs/KMT_UI_MOTION_TASKS.md`; Batch 13 closes none
+of those tasks. No schema, dependency, page-count, push, deployment, or production-data change.
+
 2026-09-13 Batch 12 checkpoint: sensitive staff-account creation and password-reset writes now
 revalidate the actual active exact-Super account and its current active session after hashing and
 inside the serializable write transaction. Password reset uses target `User.updatedAt` as an atomic

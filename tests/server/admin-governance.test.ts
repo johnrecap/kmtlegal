@@ -491,6 +491,22 @@ describe("admin governance contract", () => {
       allowedTypes: "application/pdf,image/png"
     })).toThrow();
 
+    const officeProfile = {
+      key: "office.profile" as const,
+      firmName: "KMT Legal",
+      publicPhone: "",
+      publicEmail: "",
+      primaryLocale: "ar" as const
+    };
+    const newOfficeProfile = adminSettingUpdateSchema.parse({ ...officeProfile, updatedAt: null });
+    const existingOfficeProfile = adminSettingUpdateSchema.parse({ ...officeProfile, updatedAt: "2026-09-13T10:00:00.000Z" });
+    if (newOfficeProfile.key === "office.profile" && existingOfficeProfile.key === "office.profile") {
+      expect(newOfficeProfile.updatedAt).toBeNull();
+      expect(existingOfficeProfile.updatedAt).toBe("2026-09-13T10:00:00.000Z");
+    }
+    expect(() => adminSettingUpdateSchema.parse(officeProfile)).toThrow();
+    expect(() => adminSettingUpdateSchema.parse({ ...officeProfile, updatedAt: "yesterday" })).toThrow();
+
     const securitySetting = adminSettingUpdateSchema.parse({
       key: "security.staff2fa",
       requiredForStaff: true,
@@ -561,12 +577,14 @@ describe("admin governance contract", () => {
   it("rejects every legacy storage-policy mutation before database access", async () => {
     await expect(updateAdminSetting({
       actor: officeAdmin,
+      actorSessionId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       key: "storage.policy",
       body: {}
     })).rejects.toMatchObject({ status: 403, code: "PERMISSION_DENIED" });
 
     await expect(updateAdminSetting({
       actor: governanceDelegate,
+      actorSessionId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       key: "storage.policy",
       body: { key: "storage.policy", uploadsDir: "/private/attempted-change" }
     })).rejects.toMatchObject({ status: 409, code: "SETTING_READ_ONLY" });

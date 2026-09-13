@@ -1,0 +1,43 @@
+[next]    ▲ Next.js 15.5.25
+[next]    - Local:        http://127.0.0.1:3115
+   - Network:      http://127.0.0.1:3115
+   - Experiments (use with caution):
+     · sri
+     ✓ globalNotFound
+     · clientTraceMetadata
+
+ ✓ Starting...
+[next]  ○ Compiling /instrumentation ...
+[next]  ✓ Compiled /instrumentation in 2.9s (1177 modules)
+[next]  ✓ Ready in 9s
+[next]  ○ Compiling /middleware ...
+[next]  ✓ Compiled /middleware in 612ms (915 modules)
+[next]  ○ Compiling / ...
+[next]  ✓ Compiled / in 7s (3488 modules)
+[next]  GET / 200 in 1995ms
+[next]  GET / 200 in 662ms
+
+Running 2 tests using 1 worker
+
+(node:4276) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[next]  ○ Compiling /api/auth/login ...
+[next]  ✓ Compiled /api/auth/login in 5.3s (3582 modules)
+[next]  POST /api/auth/login 200 in 6675ms
+[next]  ○ Compiling /admin/settings ...
+[next]  ✓ Compiled /admin/settings in 3.5s (3626 modules)
+[next]  GET /admin/settings 200 in 5590ms
+[next]  ○ Compiling /api/admin/settings/[key] ...
+[next]  ✓ Compiled /api/admin/settings/[key] in 1948ms (3628 modules)
+[next]  PATCH /api/admin/settings/office.profile 200 in 5755ms
+[next]  GET /admin/settings 200 in 727ms
+[next]  PATCH /api/admin/settings/office.profile 409 in 344ms
+[next]  GET /admin/settings 200 in 1436ms
+[next]  PATCH /api/admin/settings/office.profile 200 in 342ms
+[next]  GET /admin/settings 200 in 510ms
+  ok 1 [chromium] › tests\e2e\batch13-office-profile.spec.ts:78:7 › batch13 office profile browser recovery › saves by keyboard, keeps success through refresh, and recovers from a real stale conflict (28.8s)
+[next]  POST /api/auth/login 200 in 388ms
+[next]  GET /admin/settings 200 in 1038ms
+  ok 2 [chromium] › tests\e2e\batch13-office-profile.spec.ts:141:7 › batch13 office profile browser recovery › retains the draft after a browser-injected network failure (4.2s)
+
+  2 passed (35.5s)

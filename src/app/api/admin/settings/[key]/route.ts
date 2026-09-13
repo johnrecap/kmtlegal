@@ -26,7 +26,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ ke
     }
 
     const body = await parseJsonRequest(request, adminSettingUpdateSchema, "Setting payload is invalid.");
-    const setting = await updateAdminSetting({ actor: context.principal, key, body, request });
+    const setting = await updateAdminSetting({ actor: context.principal, actorSessionId: context.sessionId, key, body, request });
 
     return NextResponse.json({ data: setting, requestId }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {

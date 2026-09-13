@@ -1,0 +1,14 @@
+  database   |  username   | port  |                                    data_directory
+-------------+-------------+-------+---------------------------------------------------------------------------------------
+ kmt_batch10 | kmt_batch10 | 55441 | C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/batch10-postgres/data
+(1 row)
+
+         marker
+------------------------
+ synthetic-batch10-only
+(1 row)
+
+ERROR:  column s.user_id does not exist
+LINE 1: ...ECT count(*) FROM sessions s JOIN users u ON u.id=s.user_id ...
+                                                             ^
+HINT:  Perhaps you meant to reference the column "s.userId".

@@ -1,0 +1,10 @@
+Batch 13 browser attempt 1 — harness configuration failure
+
+Next.js started on http://127.0.0.1:3000 while Playwright targeted http://127.0.0.1:3115.
+The first request failed before product behavior was exercised:
+
+  apiRequestContext.post: connect ECONNREFUSED 127.0.0.1:3115
+  1 failed; 1 did not run
+
+Cause: the launch supplied PORT=3115, but scripts/run-playwright-with-server.mjs reads KMT_PORT.
+Fixture teardown ran. No product conclusion was drawn from this attempt.

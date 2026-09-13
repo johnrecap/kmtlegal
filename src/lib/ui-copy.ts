@@ -788,6 +788,13 @@ export const plan35UserGovernanceUiCopy = {
   }
 } as const;
 
+export const officeProfileSettingUiCopy = {
+  saved: "تم حفظ بيانات المكتب.",
+  stale: "تغيرت بيانات المكتب بعد فتح النموذج. احتفظنا بمسودتك؛ حمّل أحدث البيانات وراجعها قبل الحفظ.",
+  reload: "تحميل أحدث بيانات المكتب",
+  network: "لا يمكن الوصول إلى الخادم الآن. احتفظنا بالبيانات المدخلة."
+} as const;
+
 export function permissionGroupForKey(permissionKey: string): PermissionGroupKey {
   const prefix = permissionKey.split(".", 1)[0];
   if (["appointment", "consultation"].includes(prefix)) return "appointments";
@@ -893,6 +900,9 @@ const apiExactMessages: Record<string, string> = {
   "Exact Super Admin role and both role and permission management permissions are required.": "إدارة صلاحيات الأدوار تتطلب حساب مدير نظام فعليًا مع صلاحيتي إدارة الأدوار والصلاحيات.",
   "An active exact Super Admin account is required.": "يلزم حساب مدير نظام نشط لإدارة الأدوار والصلاحيات.",
   "An active exact Super Admin session is required.": "انتهت جلسة مدير النظام أو لم تعد مخولة. سجل الدخول مرة أخرى.",
+  "An active settings-management session is required.": "انتهت جلسة إدارة الإعدادات أو لم تعد مخولة. سجل الدخول مرة أخرى.",
+  "Office profile changed after this form was loaded.": officeProfileSettingUiCopy.stale,
+  "Setting changed concurrently. Reload and try again.": "تغير الإعداد بالتزامن مع الحفظ. حمّل أحدث البيانات ثم حاول مرة أخرى.",
   "No active Super Admin governance path remains.": "لا يوجد مسار حوكمة نشط لمدير النظام. لم يتم حفظ التغيير.",
   "Protected roles cannot be changed.": "هذا الدور محمي ولا يمكن تعديل صلاحياته.",
   "Only canonical operational roles can be changed.": "يمكن تعديل الأدوار التشغيلية المعتمدة فقط.",

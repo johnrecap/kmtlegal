@@ -1,0 +1,13 @@
+  database   |  username   | port  |                                    data_directory
+-------------+-------------+-------+---------------------------------------------------------------------------------------
+ kmt_batch10 | kmt_batch10 | 55441 | C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/batch10-postgres/data
+(1 row)
+         marker
+------------------------
+ synthetic-batch10-only
+(1 row)
+
+ synthetic_users | synthetic_sessions | settings_update_audits | synthetic_settings
+-----------------+--------------------+------------------------+--------------------
+               0 |                  0 |                      0 |                  0
+(1 row)

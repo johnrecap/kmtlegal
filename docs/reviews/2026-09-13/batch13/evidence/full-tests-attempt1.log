@@ -1,0 +1,9 @@
+Batch 13 full-suite attempt 1 — timing-only failure
+
+  Test Files  1 failed | 72 passed | 4 skipped (77)
+  Tests       1 failed | 538 passed | 46 skipped (585)
+
+The unrelated test "uses the lowest matching pair newer than the server when no exact pair
+exists" completed in 8855 ms under parallel load and exceeded Vitest's default 5000 ms timeout.
+Its subsequent isolated run passed all 6 tests in 4.06 s. The final full-suite run used a 30 s
+test timeout and passed all 539 runnable tests.
