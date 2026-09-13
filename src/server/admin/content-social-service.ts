@@ -670,38 +670,36 @@ export async function updateAdminArticle(input: { actor: Principal; articleId: s
   assertCreateArticle(input.actor);
   const articleId = parseWithSchema(uuidSchema, input.articleId, "Article id is invalid.");
   const body = parseWithSchema(adminArticleWriteSchema, input.body, "Article payload is invalid.");
-  const existing = await prisma.article.findUnique({ where: { id: articleId }, select: { id: true, status: true, slug: true, locale: true } });
-  if (!existing) {
-    throw new ApiError(404, "NOT_FOUND", "Article was not found.");
-  }
-
   try {
     const data = articleData(input.actor, body);
-    if (!canApproveArticles(input.actor)) {
-      const result = await prisma.article.updateMany({ where: { id: articleId, status: { notIn: ["PUBLISHED"] } }, data });
-      if (result.count === 0) {
-        const current = await prisma.article.findUnique({ where: { id: articleId }, select: { status: true } });
+    const outcome = await prisma.$transaction(async (tx) => {
+      const existing = await tx.article.findUnique({ where: { id: articleId }, select: { id: true, status: true, slug: true, locale: true } });
+      if (!existing) throw new ApiError(404, "NOT_FOUND", "Article was not found.");
+      if (!canApproveArticles(input.actor)) {
+        const result = await tx.article.updateMany({ where: { id: articleId, status: { notIn: ["PUBLISHED"] } }, data });
+        if (result.count === 0) {
+          const current = await tx.article.findUnique({ where: { id: articleId }, select: { status: true } });
         if (!current) throw new ApiError(404, "NOT_FOUND", "Article was not found.");
         if ((protectedSourceStatuses.article as readonly string[]).includes(current.status)) throw protectedSourceError();
         throw contentStateChangedError();
       }
-    } else {
-      await prisma.article.update({ where: { id: articleId }, data });
-    }
-    const article = await prisma.article.findUniqueOrThrow({ where: { id: articleId }, include: { author: { select: { id: true, name: true, email: true } } } });
+      } else await tx.article.update({ where: { id: articleId }, data });
+      const article = await tx.article.findUniqueOrThrow({ where: { id: articleId }, include: { author: { select: { id: true, name: true, email: true } } } });
+      return { existing, article };
+    });
 
     await appendAuditLogBestEffort({
       actorId: input.actor.id,
       action: "content.article_update",
       resourceType: "Article",
-      resourceId: article.id,
-      metadata: { previousStatus: existing.status, status: article.status, previousSlug: existing.slug, slug: article.slug, previousLocale: existing.locale, locale: article.locale },
+      resourceId: outcome.article.id,
+      metadata: { previousStatus: outcome.existing.status, status: outcome.article.status, previousSlug: outcome.existing.slug, slug: outcome.article.slug, previousLocale: outcome.existing.locale, locale: outcome.article.locale },
       request: input.request
     });
 
     revalidatePublicContentCache();
 
-    return article;
+    return outcome.article;
   } catch (error) {
     handleUniqueSlugError(error);
   }
@@ -738,38 +736,36 @@ export async function updateAdminCaseStudy(input: { actor: Principal; caseStudyI
   assertCreateCaseStudy(input.actor);
   const caseStudyId = parseWithSchema(uuidSchema, input.caseStudyId, "Case study id is invalid.");
   const body = parseWithSchema(adminCaseStudyWriteSchema, input.body, "Case study payload is invalid.");
-  const existing = await prisma.caseStudy.findUnique({ where: { id: caseStudyId }, select: { id: true, status: true, slug: true, locale: true } });
-  if (!existing) {
-    throw new ApiError(404, "NOT_FOUND", "Case study was not found.");
-  }
-
   try {
     const data = caseStudyData(input.actor, body);
-    if (!canApproveCaseStudies(input.actor)) {
-      const result = await prisma.caseStudy.updateMany({ where: { id: caseStudyId, status: { notIn: ["APPROVED", "PUBLISHED"] } }, data });
+    const outcome = await prisma.$transaction(async (tx) => {
+      const existing = await tx.caseStudy.findUnique({ where: { id: caseStudyId }, select: { id: true, status: true, slug: true, locale: true } });
+      if (!existing) throw new ApiError(404, "NOT_FOUND", "Case study was not found.");
+      if (!canApproveCaseStudies(input.actor)) {
+        const result = await tx.caseStudy.updateMany({ where: { id: caseStudyId, status: { notIn: ["APPROVED", "PUBLISHED"] } }, data });
       if (result.count === 0) {
-        const current = await prisma.caseStudy.findUnique({ where: { id: caseStudyId }, select: { status: true } });
+        const current = await tx.caseStudy.findUnique({ where: { id: caseStudyId }, select: { status: true } });
         if (!current) throw new ApiError(404, "NOT_FOUND", "Case study was not found.");
         if ((protectedSourceStatuses.caseStudy as readonly string[]).includes(current.status)) throw protectedSourceError();
         throw contentStateChangedError();
       }
-    } else {
-      await prisma.caseStudy.update({ where: { id: caseStudyId }, data });
-    }
-    const study = await prisma.caseStudy.findUniqueOrThrow({ where: { id: caseStudyId }, include: { approvedBy: { select: { id: true, name: true, email: true } } } });
+      } else await tx.caseStudy.update({ where: { id: caseStudyId }, data });
+      const study = await tx.caseStudy.findUniqueOrThrow({ where: { id: caseStudyId }, include: { approvedBy: { select: { id: true, name: true, email: true } } } });
+      return { existing, study };
+    });
 
     await appendAuditLogBestEffort({
       actorId: input.actor.id,
       action: "content.case_study_update",
       resourceType: "CaseStudy",
-      resourceId: study.id,
-      metadata: { previousStatus: existing.status, status: study.status, previousSlug: existing.slug, slug: study.slug, previousLocale: existing.locale, locale: study.locale },
+      resourceId: outcome.study.id,
+      metadata: { previousStatus: outcome.existing.status, status: outcome.study.status, previousSlug: outcome.existing.slug, slug: outcome.study.slug, previousLocale: outcome.existing.locale, locale: outcome.study.locale },
       request: input.request
     });
 
     revalidatePublicContentCache();
 
-    return study;
+    return outcome.study;
   } catch (error) {
     handleUniqueSlugError(error);
   }
@@ -803,38 +799,36 @@ export async function updateAdminSocialDraft(input: { actor: Principal; draftId:
   assertCreateSocialDraft(input.actor);
   const draftId = parseWithSchema(uuidSchema, input.draftId, "Social draft id is invalid.");
   const body = parseWithSchema(adminSocialDraftWriteSchema, input.body, "Social draft payload is invalid.");
-  const existing = await prisma.socialPostDraft.findUnique({ where: { id: draftId }, select: { id: true, status: true } });
-  if (!existing) {
-    throw new ApiError(404, "NOT_FOUND", "Social draft was not found.");
-  }
-
   const data = socialDraftData(input.actor, body);
-  if (!canApproveSocialDrafts(input.actor)) {
-    const result = await prisma.socialPostDraft.updateMany({ where: { id: draftId, status: { notIn: ["APPROVED", "SCHEDULED", "PUBLISHED"] } }, data });
-    if (result.count === 0) {
-      const current = await prisma.socialPostDraft.findUnique({ where: { id: draftId }, select: { status: true } });
+  const outcome = await prisma.$transaction(async (tx) => {
+    const existing = await tx.socialPostDraft.findUnique({ where: { id: draftId }, select: { id: true, status: true } });
+    if (!existing) throw new ApiError(404, "NOT_FOUND", "Social draft was not found.");
+    if (!canApproveSocialDrafts(input.actor)) {
+      const result = await tx.socialPostDraft.updateMany({ where: { id: draftId, status: { notIn: ["APPROVED", "SCHEDULED", "PUBLISHED"] } }, data });
+      if (result.count === 0) {
+        const current = await tx.socialPostDraft.findUnique({ where: { id: draftId }, select: { status: true } });
       if (!current) throw new ApiError(404, "NOT_FOUND", "Social draft was not found.");
       if ((protectedSourceStatuses.socialDraft as readonly string[]).includes(current.status)) throw protectedSourceError();
       throw contentStateChangedError();
     }
-  } else {
-    await prisma.socialPostDraft.update({ where: { id: draftId }, data });
-  }
-  const draft = await prisma.socialPostDraft.findUniqueOrThrow({
-    where: { id: draftId },
-    include: { createdBy: { select: { id: true, name: true, email: true } }, approvedBy: { select: { id: true, name: true, email: true } } }
+    } else await tx.socialPostDraft.update({ where: { id: draftId }, data });
+    const draft = await tx.socialPostDraft.findUniqueOrThrow({
+      where: { id: draftId },
+      include: { createdBy: { select: { id: true, name: true, email: true } }, approvedBy: { select: { id: true, name: true, email: true } } }
+    });
+    return { existing, draft };
   });
 
   await appendAuditLogBestEffort({
     actorId: input.actor.id,
     action: "content.social_draft_update",
     resourceType: "SocialPostDraft",
-    resourceId: draft.id,
-    metadata: { previousStatus: existing.status, status: draft.status, platform: draft.platform },
+    resourceId: outcome.draft.id,
+    metadata: { previousStatus: outcome.existing.status, status: outcome.draft.status, platform: outcome.draft.platform },
     request: input.request
   });
 
-  return draft;
+  return outcome.draft;
 }
 
 export async function createAiSocialDraft(input: { actor: Principal; body: unknown; request?: Request }) {

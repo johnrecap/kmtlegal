@@ -8,8 +8,10 @@ import { prisma } from "@/server/db/prisma";
 
 const enabled = process.env.RUN_BATCH14_POSTGRES === "true";
 const describePostgres = enabled && process.env.DATABASE_URL ? describe : describe.skip;
+const expectedDataDirectory = "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/batch10-postgres/data";
 const ids = { creator: randomUUID(), approver: randomUUID() };
 const marker = "batch14-synthetic-content-lifecycle";
+const fixtureIds = { articles: new Set<string>(), studies: new Set<string>(), drafts: new Set<string>() };
 let creatorRoleId = "";
 let approverRoleId = "";
 let creatorCookie = "";
@@ -27,13 +29,25 @@ function request(path: string, cookie: string | null, body: Record<string, unkno
 
 async function reset() {
   await prisma.auditLog.deleteMany({ where: { actorId: { in: Object.values(ids) } } });
-  await prisma.article.deleteMany({ where: { authorId: { in: Object.values(ids) } } });
-  await prisma.caseStudy.deleteMany({ where: { approvedById: { in: Object.values(ids) } } });
-  await prisma.socialPostDraft.deleteMany({ where: { createdById: { in: Object.values(ids) } } });
+  await prisma.article.deleteMany({ where: { id: { in: [...fixtureIds.articles] } } });
+  await prisma.caseStudy.deleteMany({ where: { id: { in: [...fixtureIds.studies] } } });
+  await prisma.socialPostDraft.deleteMany({ where: { id: { in: [...fixtureIds.drafts] } } });
+  fixtureIds.articles.clear(); fixtureIds.studies.clear(); fixtureIds.drafts.clear();
+}
+
+async function assertSyntheticEnvironment() {
+  if (process.env.APP_ENV !== "local") throw new Error("Batch14 requires APP_ENV=local.");
+  const parsed = new URL(process.env.DATABASE_URL!);
+  if (parsed.hostname !== "127.0.0.1" || parsed.port !== "55441" || parsed.pathname !== "/kmt_batch10" || parsed.username !== "kmt_batch10") throw new Error("Batch14 requires the authorized isolated database identity.");
+  const rows = await prisma.$queryRaw<Array<{ database: string; username: string; port: number; dataDirectory: string }>>`SELECT current_database() AS database, current_user AS username, inet_server_port() AS port, current_setting('data_directory') AS "dataDirectory"`;
+  if (rows[0]?.database !== "kmt_batch10" || rows[0]?.username !== "kmt_batch10" || rows[0]?.port !== 55441 || rows[0]?.dataDirectory.replaceAll("\\", "/") !== expectedDataDirectory) throw new Error("Batch14 database identity verification failed.");
+  const markerRow = await prisma.$queryRaw<Array<{ marker: string }>>`SELECT marker FROM batch10_marker WHERE marker = 'synthetic-batch10-only'`;
+  if (markerRow[0]?.marker !== "synthetic-batch10-only") throw new Error("Batch14 marker missing.");
 }
 
 describePostgres.sequential("batch14 protected content lifecycle baseline", () => {
   beforeAll(async () => {
+    await assertSyntheticEnvironment();
     const permissions = ["content.create.any", "content.approve.any", "caseStudy.create.any", "caseStudy.approve.any", "socialDraft.create.any", "socialDraft.approve.any"];
     const [creatorRole, approverRole] = await Promise.all([
       prisma.role.create({ data: { name: `${marker}-creator`, status: "ACTIVE" } }),
@@ -55,6 +69,7 @@ describePostgres.sequential("batch14 protected content lifecycle baseline", () =
 
   beforeEach(reset);
   afterAll(async () => {
+    await assertSyntheticEnvironment();
     await reset();
     await prisma.session.deleteMany({ where: { userId: { in: Object.values(ids) } } });
     await prisma.user.deleteMany({ where: { id: { in: Object.values(ids) } } });
@@ -68,6 +83,7 @@ describePostgres.sequential("batch14 protected content lifecycle baseline", () =
       prisma.caseStudy.create({ data: { title: "Published study", slug: `study-${randomUUID()}`, locale: "en", category: "Contracts", challenge: "Safe general challenge", approach: "Safe general approach", generalOutcome: "Safe general outcome", lessons: "Safe general lessons", status: "PUBLISHED", isAnonymized: true, publishedAt: new Date(), approvedById: ids.approver } }),
       prisma.socialPostDraft.create({ data: { title: "Scheduled draft", platform: "linkedin", content: "Safe scheduled draft", status: "SCHEDULED", scheduledAt: new Date(Date.now() + 3600000), createdById: ids.approver, approvedById: ids.approver } })
     ]);
+    fixtureIds.articles.add(article.id); fixtureIds.studies.add(study.id); fixtureIds.drafts.add(draft.id);
     const articleResponse = await patchArticle(request(`/api/admin/content/articles/${article.id}`, creatorCookie, { title: "Creator overwrite", slug: article.slug, locale: "en", excerpt: article.excerpt, content: article.content, category: article.category, status: "DRAFT", publishedAt: "" }), { params: Promise.resolve({ articleId: article.id }) });
     const studyResponse = await patchCaseStudy(request(`/api/admin/content/case-studies/${study.id}`, creatorCookie, { title: "Creator overwrite", slug: study.slug, locale: "en", category: study.category, challenge: study.challenge, approach: study.approach, generalOutcome: study.generalOutcome, lessons: study.lessons, isAnonymized: true, status: "DRAFT", publishedAt: "" }), { params: Promise.resolve({ caseStudyId: study.id }) });
     const socialResponse = await patchSocialDraft(request(`/api/admin/content/social-drafts/${draft.id}`, creatorCookie, { title: "Creator overwrite", platform: draft.platform, content: draft.content, sourceType: "", sourceId: "", status: "DRAFT", scheduledAt: "" }), { params: Promise.resolve({ draftId: draft.id }) });
@@ -80,6 +96,7 @@ describePostgres.sequential("batch14 protected content lifecycle baseline", () =
 
   it("preserves guest denial, creator draft edits, rejected or archived rework, and approver updates", async () => {
     const article = await prisma.article.create({ data: { title: "Draft article", slug: `draft-${randomUUID()}`, locale: "en", excerpt: "A sufficiently descriptive draft excerpt", content: "A sufficiently descriptive draft article body for the validated content contract.", category: "Contracts", status: "DRAFT", authorId: ids.creator } });
+    fixtureIds.articles.add(article.id);
     const denied = await patchArticle(request(`/api/admin/content/articles/${article.id}`, null, { title: article.title, slug: article.slug, locale: "en", excerpt: article.excerpt, content: article.content, category: article.category, status: "DRAFT", publishedAt: "" }), { params: Promise.resolve({ articleId: article.id }) });
     const creator = await patchArticle(request(`/api/admin/content/articles/${article.id}`, creatorCookie, { title: "Creator draft edit", slug: article.slug, locale: "en", excerpt: article.excerpt, content: article.content, category: article.category, status: "REVIEW", publishedAt: "" }), { params: Promise.resolve({ articleId: article.id }) });
     const approved = await patchArticle(request(`/api/admin/content/articles/${article.id}`, approverCookie, { title: "Approver publication", slug: article.slug, locale: "en", excerpt: article.excerpt, content: article.content, category: article.category, status: "PUBLISHED", publishedAt: "2026-09-13" }), { params: Promise.resolve({ articleId: article.id }) });

@@ -159,7 +159,8 @@ export function ArticleForm({ article, canApprove }: { article?: ArticleValue; c
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     setMessage(null);
     setIsBusy(true);
 
@@ -181,7 +182,7 @@ export function ArticleForm({ article, canApprove }: { article?: ArticleValue; c
       }
 
       if (!isEdit) {
-        event.currentTarget.reset();
+        form.reset();
       }
       setMessage({ tone: "success", text: isEdit ? "تم حفظ المقال." : "تم إنشاء المقال." });
       router.refresh();
@@ -235,7 +236,8 @@ export function CaseStudyForm({ study, canApprove }: { study?: CaseStudyValue; c
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     setMessage(null);
     setIsBusy(true);
 
@@ -260,7 +262,7 @@ export function CaseStudyForm({ study, canApprove }: { study?: CaseStudyValue; c
       }
 
       if (!isEdit) {
-        event.currentTarget.reset();
+        form.reset();
       }
       setMessage({ tone: "success", text: isEdit ? "تم حفظ دراسة الحالة." : "تم إنشاء دراسة الحالة." });
       router.refresh();
@@ -317,7 +319,8 @@ export function SocialDraftForm({ draft, canApprove }: { draft?: SocialDraftValu
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     setMessage(null);
     setIsBusy(true);
 
@@ -338,7 +341,7 @@ export function SocialDraftForm({ draft, canApprove }: { draft?: SocialDraftValu
       }
 
       if (!isEdit) {
-        event.currentTarget.reset();
+        form.reset();
       }
       setMessage({ tone: "success", text: isEdit ? "تم حفظ مسودة السوشيال." : "تم إنشاء مسودة السوشيال." });
       router.refresh();
