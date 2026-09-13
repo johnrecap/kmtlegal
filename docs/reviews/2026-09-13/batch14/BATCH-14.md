@@ -8,6 +8,10 @@ Each update transaction now locks the target PostgreSQL row before reading its b
 
 The three admin forms retain the actual protected status, show a catalog-backed Arabic explanation, and disable every edit control for a non-approver. They use the shared hydration guard and a synchronous submit lock. Create success captures and resets the real form before refresh; rejected responses retain entered values. Duplicate slugs now show catalog-backed Arabic copy rather than exposing the service's English message.
 
+## Baseline runtime status
+
+The accepted product baseline is `853b94a367d0b17600460638bfa98d867824ed55`. Before the product fix, one temporary integration probe ran against that baseline product source and observed PATCH statuses `[400, 200, 200]` for article, case study, and social draft respectively. The article `400` came from an invalid test fixture, so it did not establish the baseline article lifecycle behavior. The case-study and social-draft `200` results are retained only as historical observations: the command output was not redirected to an evidence file, and no raw baseline-runtime log is claimed. The article fixture was not corrected and rerun on the baseline. Therefore no complete baseline runtime suite passed, and none of the passing corrected-source logs below is presented as baseline evidence.
+
 ## PostgreSQL evidence
 
 The guarded integration suite ran on PostgreSQL 18 at `127.0.0.1:55441`, database/user `kmt_batch10`, `APP_ENV=local`, pool maximum 4, the exact authorized workspace data directory, and marker `synthetic-batch10-only`.
@@ -25,7 +29,7 @@ One Chromium scenario exercises the actual `/admin/content` page over HTTP and P
 - mobile `390x844`: an approver publishes the case study, the warmed public endpoint changes from `404` to `200`, and the refreshed result card shows `منشور` plus the approver before capture;
 - no page errors or unexpected console errors; only the exact deliberate 409 resource entry is excluded.
 
-The final run passed in 1.4 minutes on a clean development cache. Screenshots are `evidence/protected-article-1440.png` and `evidence/published-study-390.png`; both were visually reviewed at full-page desktop/mobile dimensions. `caret: "initial"` prevents Playwright's screenshot caret styling from racing React hydration. The final log is `evidence/playwright-browser.log`. Earlier wrong-port, ambiguous-label, screenshot-style, and pre-card-refresh attempts are retained under `evidence/playwright-browser-attempt-*.log`; additional non-retained transcripts are identified in `evidence/attempt-notes.md`.
+The final run passed in 1.4 minutes on a clean development cache. Screenshots are `evidence/protected-article-1440.png` and `evidence/published-study-390.png`; both were visually reviewed at full-page desktop/mobile dimensions. The installed Playwright type documentation states that the default screenshot behavior hides the text caret while `caret: "initial"` leaves it unchanged. Using `"initial"` was a targeted explanation for the screenshot-time hydration mismatch, and the final run then passed while treating every console error except the deliberate `409` resource entry as unexpected. No independent experiment isolated caret styling as the sole cause, so it remains a supported hypothesis rather than a proven root cause. The earlier `evidence/playwright-browser-attempt-filtered-hydration.log` is a superseded passing attempt that filtered the hydration message and is not accepted evidence; the final `evidence/playwright-browser.log` performs the actual unfiltered hydration check. Other wrong-port, ambiguous-label, screenshot-style, and pre-card-refresh attempts are retained under `evidence/playwright-browser-attempt-*.log`; additional non-retained transcripts are identified in `evidence/attempt-notes.md`.
 
 ## Repository verification
 

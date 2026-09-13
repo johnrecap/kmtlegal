@@ -16,6 +16,18 @@
     "dataDirectory": "C:/Users/SOUQ/.codex/worktrees/a701/kmt legal office/_workspace/batch10-postgres/data"
   },
   "verification": {
+    "baselineRuntime": {
+      "revision": "853b94a367d0b17600460638bfa98d867824ed55",
+      "status": "inconclusive",
+      "attempted": true,
+      "acceptedEvidence": false,
+      "savedRawLog": false,
+      "correctedFixtureRerun": false,
+      "observedStatuses": { "article": 400, "caseStudy": 200, "socialDraft": 200 },
+      "articleInterpretation": "Invalid fixture; baseline article lifecycle behavior was not established.",
+      "caseStudyAndSocialInterpretation": "Historical observations only; command output was not retained as a raw evidence file.",
+      "correctedSourceLogsAreBaselineEvidence": false
+    },
     "postgresLifecycle": {
       "newTests": 7,
       "retainedContractTests": 5,
@@ -36,6 +48,9 @@
       "createResetAndRefresh": true,
       "publicCacheWarmBeforePublish": true,
       "postRefreshCardWitness": true,
+      "hydrationConsoleCheck": "passed; the final assertion excludes only the deliberate 409 resource entry",
+      "caretCauseAssessment": "supported hypothesis from Playwright's documented screenshot behavior and the passing final configuration; not independently isolated as the sole cause",
+      "supersededFilteredHydrationAttempt": "evidence/playwright-browser-attempt-filtered-hydration.log",
       "unexpectedConsoleErrors": 0,
       "pageErrors": 0,
       "log": "evidence/playwright-browser.log",
