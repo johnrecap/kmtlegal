@@ -21,6 +21,7 @@ import {
   publicMotionImage,
   publicMotionImageCard
 } from "@/features/public-site/public-motion";
+import { HeroParallaxLayers } from "@/components/motion-ui/hero-parallax-layers";
 import {
   DetailCta,
   IndustryGrid,
@@ -215,12 +216,14 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
 
   return (
     <PublicShell currentPath={currentPath} locale={locale} navItems={navForPath("/", locale)}>
-      <PageHero
+      <HeroParallaxLayers
         eyebrow={copy.heroEyebrow}
-        image="/stitch-assets/b392b48a7cb6b561.png"
-        imagePosition="object-[center_55%]"
         title={copy.heroTitle}
         description={copy.heroDescription}
+        image="/stitch-assets/b392b48a7cb6b561.png"
+        imagePosition="object-[center_55%]"
+        insights={copy.trustItems}
+        locale={locale}
         actions={
           <>
             <ButtonLink className={cn(publicMotionButton, publicMotionCta)} href={localizedPublicHref("/book-consultation", locale)} size="lg" trailingIcon={<MaterialSymbol className={cn(publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />}>
