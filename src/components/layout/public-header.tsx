@@ -112,12 +112,7 @@ export function PublicHeader({
             : "border-transparent bg-transparent"
         )}
       />
-      <div
-        className={cn(
-          "relative mx-auto flex max-w-[1200px] items-center justify-between gap-3 px-4 transition-all duration-300 sm:px-6 lg:px-10",
-          scrolled ? "min-h-16" : "min-h-[76px] md:min-h-[88px]"
-        )}
-      >
+      <div className="relative mx-auto flex min-h-[76px] max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -129,7 +124,7 @@ export function PublicHeader({
           >
             <MaterialSymbol className="text-2xl" name={mobileOpen ? "close" : "menu"} />
           </button>
-          <KmtBrandLogo href={localizedPublicHref("/", locale)} size={scrolled ? "sm" : "md"} surface="dark" variant="lockup" />
+          <KmtBrandLogo href={localizedPublicHref("/", locale)} size="md" surface="dark" variant="lockup" />
         </div>
         <nav aria-label={shell.mainNavLabel} className="hidden items-stretch gap-1 self-stretch lg:flex">
           {navItems.map((item) =>
