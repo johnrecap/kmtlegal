@@ -382,11 +382,11 @@ export const publicContentEn = {
     sectionTitle: "Learn From Anonymous Files",
     sectionDescription: "Every published case study here is anonymized and simplified, without client data, documents, or case numbers.",
     searchLabel: "Search case studies",
-    emptyTitle: "No matching studies",
-    anonymousMeta: "Anonymous"
+    emptyTitle: "No matching studies"
   },
   caseStudyDetail: {
     eyebrow: "Anonymous case study",
+    breadcrumbCaseStudies: "Case Studies",
     challenge: "Challenge",
     approach: "Approach",
     generalOutcome: "General Outcome",

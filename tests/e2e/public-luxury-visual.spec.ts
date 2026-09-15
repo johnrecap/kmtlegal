@@ -60,7 +60,7 @@ const publicHeroImagePages = [
   { path: "/services", name: "services", expectedObjectPosition: "50% 62%" },
   { path: "/team", name: "team", expectedObjectPosition: "50% 38%" },
   { path: "/articles", name: "articles", expectedObjectPosition: "50% 50%" },
-  { path: "/case-studies", name: "case-studies", expectedObjectPosition: "50% 60%" },
+  { path: "/case-studies", name: "case-studies", expectedObjectPosition: "50% 50%" },
   { path: "/media", name: "media", expectedObjectPosition: "50% 52%" },
   { path: "/contact", name: "contact", expectedObjectPosition: "50% 48%" },
   { path: "/book-consultation", name: "book-consultation", expectedObjectPosition: "50% 62%" },
@@ -68,7 +68,7 @@ const publicHeroImagePages = [
   { path: "/ar/services", name: "services-ar", expectedObjectPosition: "50% 62%" },
   { path: "/ar/team", name: "team-ar", expectedObjectPosition: "50% 38%" },
   { path: "/ar/articles", name: "articles-ar", expectedObjectPosition: "50% 50%" },
-  { path: "/ar/case-studies", name: "case-studies-ar", expectedObjectPosition: "50% 60%" },
+  { path: "/ar/case-studies", name: "case-studies-ar", expectedObjectPosition: "50% 50%" },
   { path: "/ar/media", name: "media-ar", expectedObjectPosition: "50% 52%" },
   { path: "/ar/contact", name: "contact-ar", expectedObjectPosition: "50% 48%" },
   { path: "/ar/book-consultation", name: "book-consultation-ar", expectedObjectPosition: "50% 62%" }

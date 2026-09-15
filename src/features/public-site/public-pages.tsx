@@ -670,7 +670,7 @@ export async function CaseStudiesPageView({ locale }: { locale: PublicLocale }) 
 
   return (
     <PublicShell currentPath={localizedPublicHref("/case-studies", locale)} locale={locale} navItems={navForPath("/case-studies", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/2484f68d86633ca8.png" imagePosition="object-[center_60%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
+      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/927e808522dfd86d.png" imagePosition="object-[center_50%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <DirectoryFilter
           emptyTitle={copy.emptyTitle}
@@ -681,7 +681,7 @@ export async function CaseStudiesPageView({ locale }: { locale: PublicLocale }) 
             href: `/case-studies/${study.slug}`,
             category: study.category,
             categoryLabel: study.category,
-            meta: copy.anonymousMeta
+            meta: study.publishedAt ? formatPublicYear(study.publishedAt, locale) : undefined
           }))}
           searchLabel={copy.searchLabel}
         />
@@ -696,6 +696,24 @@ export async function CaseStudyDetailPageView({ locale, slug }: { locale: Public
   const [study, alternateStudy] = await Promise.all([loadCaseStudy(locale, slug), loadCaseStudy(alternateLocale, slug)]);
   if (!study) notFound();
   const copy = content.caseStudyDetail;
+  const breadcrumbItems = [
+    { label: copy.breadcrumbCaseStudies, href: localizedPublicHref("/case-studies", locale) },
+    { label: study.title }
+  ];
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: copy.breadcrumbCaseStudies, item: localizedPublicHref("/case-studies", locale) },
+      { "@type": "ListItem", position: 2, name: study.title }
+    ]
+  };
+  const blocks = [
+    { title: copy.challenge, body: study.challenge },
+    { title: copy.approach, body: study.approach },
+    { title: copy.generalOutcome, body: study.generalOutcome },
+    { title: copy.lessons, body: study.lessons }
+  ];
 
   return (
     <PublicShell
@@ -704,18 +722,36 @@ export async function CaseStudyDetailPageView({ locale, slug }: { locale: Public
       locale={locale}
       navItems={navForPath("/case-studies", locale)}
     >
-      <PublicSection eyebrow={copy.eyebrow} title={study.title} description={study.summary}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <PublicSection
+        breadcrumbs={<PublicBreadcrumbs ariaLabel={content.serviceDetail.breadcrumbAriaLabel} items={breadcrumbItems} />}
+        eyebrow={copy.eyebrow}
+        headingLevel="h1"
+        title={study.title}
+        description={study.summary}
+      >
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <article className={cn(publicPanel, "p-6")}>
-            <Badge className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100">{study.category}</Badge>
-            <div className="mt-6 grid gap-5">
-              <CaseStudyBlock title={copy.challenge} body={study.challenge} />
-              <CaseStudyBlock title={copy.approach} body={study.approach} />
-              <CaseStudyBlock title={copy.generalOutcome} body={study.generalOutcome} />
-              <CaseStudyBlock title={copy.lessons} body={study.lessons} />
+            <div className="flex flex-wrap gap-2">
+              <Badge className={publicGoldChip}>{study.category}</Badge>
+              {study.publishedAt ? (
+                <Badge className={publicNeutralChip}>
+                  <bdi>{formatPublicPolicyDate(study.publishedAt, locale)}</bdi>
+                </Badge>
+              ) : null}
             </div>
-            <div className="mt-8 rounded-lg border border-amber-300/35 bg-amber-950/35 p-4 text-sm leading-7 text-amber-100">{study.disclaimer}</div>
-            <ButtonLink className={cn(publicMotionButton, publicMotionCta, "mt-6 !border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white")} href={localizedPublicHref("/case-studies", locale)} variant="secondary">
+            <div className="mt-6 grid gap-6">
+              {blocks.map((block, index) => (
+                <Reveal key={block.title} delay={index * 60}>
+                  <CaseStudyBlock index={index} title={block.title} body={block.body} />
+                </Reveal>
+              ))}
+            </div>
+            <div className="mt-8 rounded-lg border border-kmt-warning-border bg-kmt-warning-surface p-4 text-sm leading-7 text-kmt-warning-strong">{study.disclaimer}</div>
+            <ButtonLink className={cn(publicMotionButton, publicMotionCta, "mt-6 !border-kmt-gold/35 !text-[var(--kmt-public-text)] hover:!bg-kmt-gold hover:!text-primary-foreground")} href={localizedPublicHref("/case-studies", locale)} variant="secondary">
               {copy.backToCaseStudies}
             </ButtonLink>
           </article>
@@ -1016,11 +1052,18 @@ function shouldLoadDatabaseContent() {
   return Boolean(process.env.DATABASE_URL);
 }
 
-function CaseStudyBlock({ title, body }: { title: string; body: string }) {
+function CaseStudyBlock({ index, title, body }: { index: number; title: string; body: string }) {
   return (
-    <section>
-      <h2 className="text-xl font-semibold text-white">{title}</h2>
-      <p className={cn("mt-2 leading-8", publicMutedText)}>{body}</p>
+    <section className="border-t border-[var(--kmt-public-line)] pt-5">
+      <div className="flex gap-4">
+        <span aria-hidden="true" className={cn("mt-1 text-sm font-semibold tabular-nums", publicGoldText)}>
+          <bdi>{String(index + 1).padStart(2, "0")}</bdi>
+        </span>
+        <div>
+          <h2 className="text-xl font-semibold text-[var(--kmt-public-text)]">{title}</h2>
+          <p className={cn("mt-2 leading-8", publicMutedText)}>{body}</p>
+        </div>
+      </div>
     </section>
   );
 }
@@ -1037,6 +1080,13 @@ function PolicyBlock({ title, children }: { title: string; children: string }) {
 function formatPublicPolicyDate(value: string, locale: PublicLocale) {
   return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", {
     dateStyle: "long",
+    timeZone: "UTC"
+  }).format(new Date(`${value}T00:00:00Z`));
+}
+
+function formatPublicYear(value: string, locale: PublicLocale) {
+  return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-US", {
+    year: "numeric",
     timeZone: "UTC"
   }).format(new Date(`${value}T00:00:00Z`));
 }

@@ -355,11 +355,11 @@ export const publicContentAr = {
     sectionTitle: "تعلم من ملفات مجهولة",
     sectionDescription: "كل دراسة حالة منشورة هنا مجهولة ومبسطة، ولا تعرض بيانات عملاء أو مستندات أو أرقام قضايا.",
     searchLabel: "ابحث في دراسات الحالة",
-    emptyTitle: "لا توجد دراسات مطابقة",
-    anonymousMeta: "مجهولة"
+    emptyTitle: "لا توجد دراسات مطابقة"
   },
   caseStudyDetail: {
     eyebrow: "دراسة حالة مجهولة",
+    breadcrumbCaseStudies: "دراسات الحالة",
     challenge: "التحدي",
     approach: "طريقة التعامل",
     generalOutcome: "النتيجة العامة",
