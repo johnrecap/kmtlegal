@@ -220,6 +220,8 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
         eyebrow={copy.heroEyebrow}
         title={copy.heroTitle}
         description={copy.heroDescription}
+        image="/stitch-assets/b392b48a7cb6b561.png"
+        imagePosition="object-[center_55%]"
         pickerLabel={copy.heroPickerLabel}
         matters={content.practiceAreaMatrix.slice(0, 6)}
         docket={{

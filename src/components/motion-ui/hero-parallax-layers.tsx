@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import gsap from "gsap";
@@ -30,6 +31,8 @@ interface HeroParallaxLayersProps {
   eyebrow: string;
   title: string;
   description: string;
+  image: string;
+  imagePosition?: string;
   pickerLabel: string;
   matters: ReadonlyArray<HeroMatter>;
   docket: HeroDocketCopy;
@@ -47,6 +50,8 @@ export function HeroParallaxLayers({
   eyebrow,
   title,
   description,
+  image,
+  imagePosition = "object-center",
   pickerLabel,
   matters,
   docket,
@@ -86,6 +91,11 @@ export function HeroParallaxLayers({
           ease: "none",
           scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: 1 },
         });
+        gsap.to("[data-drift='photo']", {
+          yPercent: 10,
+          ease: "none",
+          scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: 1 },
+        });
         gsap.to("[data-drift='docket']", {
           y: -64,
           ease: "none",
@@ -98,6 +108,22 @@ export function HeroParallaxLayers({
 
   return (
     <section ref={rootRef} className="relative isolate overflow-hidden bg-[var(--kmt-public-surface)] text-[var(--kmt-public-text)]" data-testid="public-hero-parallax">
+      <div className="absolute -inset-y-[10%] inset-x-0" aria-hidden="true" data-drift="photo">
+        <Image
+          alt=""
+          aria-hidden="true"
+          className={cn("object-cover opacity-60", imagePosition)}
+          data-testid="public-page-hero-image"
+          fill
+          priority
+          sizes="100vw"
+          src={image}
+          onLoad={() => ScrollTrigger.refresh()}
+        />
+        <div className="absolute inset-0 bg-[#07090b]/70" aria-hidden="true" />
+      </div>
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#07090b]/70 to-transparent" aria-hidden="true" />
+      <div className="absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-b from-transparent via-[#07090b]/55 to-[var(--kmt-public-surface)]" aria-hidden="true" />
       <div className="absolute inset-0 text-[var(--kmt-public-gold)] opacity-[0.07] [mask-image:radial-gradient(ellipse_80%_70%_at_70%_20%,black,transparent)]" aria-hidden="true" data-drift="motif">
         <svg className="h-full w-full" aria-hidden="true">
           <defs>

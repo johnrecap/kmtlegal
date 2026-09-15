@@ -55,8 +55,8 @@ const publicCrawlSeedPages = [
   "/ar/privacy"
 ];
 
-// Note: "/" and "/ar" use the interactive booking-first hero (no photo), so they are intentionally absent here.
 const publicHeroImagePages = [
+  { path: "/", name: "home", expectedObjectPosition: "50% 55%" },
   { path: "/services", name: "services", expectedObjectPosition: "50% 62%" },
   { path: "/team", name: "team", expectedObjectPosition: "50% 38%" },
   { path: "/articles", name: "articles", expectedObjectPosition: "50% 50%" },
@@ -64,6 +64,7 @@ const publicHeroImagePages = [
   { path: "/media", name: "media", expectedObjectPosition: "50% 52%" },
   { path: "/contact", name: "contact", expectedObjectPosition: "50% 48%" },
   { path: "/book-consultation", name: "book-consultation", expectedObjectPosition: "50% 62%" },
+  { path: "/ar", name: "home-ar", expectedObjectPosition: "50% 55%" },
   { path: "/ar/services", name: "services-ar", expectedObjectPosition: "50% 62%" },
   { path: "/ar/team", name: "team-ar", expectedObjectPosition: "50% 38%" },
   { path: "/ar/articles", name: "articles-ar", expectedObjectPosition: "50% 50%" },
