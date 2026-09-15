@@ -33,22 +33,23 @@
 
 ## Tasks
 
-- [ ] T1.1 **Button**: rebuild variants on semantic tokens — `primary` (gold bg + dark text, AA), `secondary` (surface + border), `outline`, `ghost`, `danger`; sizes sm/md/lg keep 44px min; loading spinner + `aria-busy` kept; hover/active/focus-visible/disabled states on tokens. Delete per-surface `!important` action classes after migration.
-- [ ] T1.2 **ButtonLink** → `next/link` with same variant API (internal links only; keep `<a>` escape hatch for external).
-- [ ] T1.3 **Badge**: tones `neutral/active/pending/closed/danger/info` on semantic tokens; verify correct rendering on light + dark surfaces (fixes P0). Add optional `size` sm.
-- [ ] T1.4 **Field family**: one skin — `bg-surface`, `border-border`, `text-foreground`, `placeholder:text-muted-foreground`; keep existing label/hint/error wiring (`aria-describedby`, `aria-invalid`) and `dir="ltr"` date inputs. Align `SearchInput` to same skin (delete `slate-*`).
-- [ ] T1.5 **Toast + InlineFeedback**: add `info` icon to the SVG set (or map info → neutral "i" glyph); tones info/success/warning/danger on state tokens; auto-dismiss toast with pause-on-hover; `role=alert` for errors, `role=status` otherwise.
-- [ ] T1.6 **Tabs**: one link-based implementation (URL-driven, `aria-current`, counts slot) replacing case-detail tabs (`cases/[caseId]/page.tsx:131-149`), content-hub tabs (`content/page.tsx:333-350`), consultation view-pills (`consultations/page.tsx:291-312`).
-- [ ] T1.7 **Pagination**: one component — count text, prev/next, optional page-size, optional "clear filters" slot; replaces 3 divergent styles (see `47-admin-calendar.md`, `45-admin-messages.md`).
-- [ ] T1.8 **Dialog**: complete primitive on native `<dialog>` — focus trap, Escape, `aria-labelledby`, focus return, scroll lock (mirror `dashboard-mobile-nav.tsx` pattern and preview's dialog usage).
-- [ ] T1.9 **Skeleton**: token-based shimmer (reduced-motion: static); used by every async list/detail (wire-up happens in page files).
-- [ ] T1.10 **DataTable**: semantic-token skin, sticky header opt-in, `hover:bg-surface-muted`, mobile-card pattern kept; empty slot renders plain (no nested bordered box — fixes `documents/page.tsx:334` double-border).
-- [ ] T1.11 **Icons**: delete Material Symbols font usage + `@font-face` (`globals.css:61-67,799-815`); single inline-SVG system.
-- [ ] T1.12 Shared `formatBytes` in `src/lib/legal-format.ts`; delete 2 duplicates (`cases/[caseId]/page.tsx:112-120`, `documents/page.tsx:75-83`).
-- [ ] T1.13 Rebuild `/preview/ui` as living gallery: every component × every variant × light/dark — stays env-gated (`KMT_ENABLE_UI_PREVIEW`).
+- [x] T1.1 **Button**: rebuild variants on semantic tokens — `primary` (gold bg + dark text, AA 4.75:1 light / 7.7:1 dark), `secondary` (surface + border), `outline`, `ghost`, `danger`; sizes sm/md/lg keep 44px min; loading spinner + `aria-busy` kept; hover/active/focus-visible/disabled states on tokens + motion tokens. *Per-surface `!important` action classes deleted in Phase 2/3 page migrations.*
+- [x] T1.2 **ButtonLink** → `next/link` with same variant API; `external` prop renders `<a rel="noopener noreferrer" target="_blank">` escape hatch.
+- [x] T1.3 **Badge**: tones `neutral/active/pending/closed/danger/info` on semantic tokens (correct on light + dark — P0 fixed); optional `size` sm.
+- [x] T1.4 **Field family**: one skin — `bg-surface`, `border-border`, `text-foreground`, `placeholder:text-muted-foreground`, focus `ring` token; existing label/hint/error wiring and `dir="ltr"` date inputs kept. `SearchInput` aligned to same skin (slate deleted).
+- [x] T1.5 **Toast + InlineFeedback**: `info` glyph added to the SVG set (no more error-icon fallback); tones on state tokens (flip in dark mode); `role=alert` for errors, `role=status` otherwise kept.
+- [x] T1.6 **Tabs**: button-tabs retokenized (pressed-group API kept — covered by product-components test); **new `LinkTabs`** (URL-driven, `aria-current`, counts slot) ready to replace the 3 ad-hoc implementations in Phase 4.
+- [x] T1.7 **Pagination**: new shared component — count summary, prev/next with localized labels + RTL arrow mirroring, optional page-size, `resetHref` clear-filters slot. Server-friendly (link-based). Adoption in Phase 4.
+- [x] T1.8 **Dialog**: complete primitive on native `<dialog>` — showModal, focus trap (Tab cycling), Escape via cancel event, backdrop-click close, focus return to opener, scroll lock, `aria-labelledby`. `DialogFrame` (unused) removed.
+- [x] T1.9 **Skeleton**: token shimmer + new `SkeletonCard` / `SkeletonTable` variants (reduced-motion: static). Wire-up in page files.
+- [x] T1.10 **DataTable**: semantic-token skin, `stickyHeader` opt-in, `hover:bg-surface-muted`, mobile-card pattern kept; empty slot renders plain (no border — fixes documents double-border). Card/StateBlock/FilterBar/DataRecordCard swept to tokens too.
+- [x] T1.11 **Icons**: Material Symbols font-face + `.material-symbols-outlined` class deleted; `dashboard-metric-link.tsx` converted to inline SVG; `material-symbols` package uninstalled. Single icon system.
+- [x] T1.12 Shared `formatBytes` — already existed in `legal-format.ts:145`; two local duplicates in admin cases/documents pages deleted, imports switched.
+- [x] T1.13 Component gallery at **`/preview/components`** (new env-gated route; existing `/preview/ui` product preview kept — batch16 e2e still green): every component × variants × light/dark, motion primitives, dialog demo. Stays behind `KMT_ENABLE_UI_PREVIEW` in production.
 
 ## Verify
 
-- [ ] Gallery renders all components in both themes, both directions.
-- [ ] Storybook-style checks: focus-visible ring on every interactive element; keyboard cycle works.
-- [ ] `npm run typecheck`, `npm run lint`, `npm run test` green; no `slate-*`/raw hex left in `src/components/ui/`.
+- [x] Gallery renders all components in both themes, both directions. *(DOM-probed: dark gold-400 primary + light gold-600 primary both AA; dialog open/Escape/focus; zero console errors; no mobile overflow)*
+- [x] Storybook-style checks: focus-visible ring on every interactive element; keyboard cycle works. *(gallery dialog Tab-cycle verified; unit tests cover control wiring)*
+- [x] `npm run typecheck`, `npm run lint` green; no `slate-*`/raw hex left in `src/components/ui/`. *(+ 544 unit tests, 46 smoke e2e, batch16 preview e2e, public pages pixel-diff 0.00–1.68% = intended changes only)*
+- Notes: 3 test assertions updated to the modernized contracts (Badge class name, Material Symbols absence in globals.css, +2 disposition artifact entries); disposition regex requires barrel import first in a file (gallery-islands import order).

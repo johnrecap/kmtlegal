@@ -677,6 +677,35 @@
       "evidence": "tests/ui/public-pages.test.tsx"
     },
     {
+      "path": "src/features/ui-preview/component-gallery.tsx",
+      "contracts": [
+        "Badge",
+        "Button",
+        "ButtonLink",
+        "DataTable",
+        "DataTableColumn",
+        "FilterBar",
+        "InlineFeedback",
+        "SearchInput",
+        "Select",
+        "Skeleton",
+        "StateBlock",
+        "TextInput",
+        "Textarea",
+        "Toast"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/features/ui-preview/gallery-islands.tsx",
+      "contracts": [
+        "Button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
       "path": "src/server/auth/page-guards.tsx",
       "contracts": [
         "StateBlock"

@@ -28,23 +28,23 @@ export function DataRecordCard({
   className?: string;
 }) {
   return (
-    <article className={cn("rounded-lg border border-kmt-border bg-white p-4 shadow-sm shadow-slate-200/40", className)}>
+    <article className={cn("rounded-lg border border-border bg-surface p-4 shadow-kmt-popover", className)}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="break-words text-base font-semibold text-kmt-ink">{title}</div>
-          {description ? <div className="mt-1 break-words text-sm leading-6 text-kmt-muted">{description}</div> : null}
+          <div className="break-words text-base font-semibold text-foreground">{title}</div>
+          {description ? <div className="mt-1 break-words text-sm leading-6 text-muted-foreground">{description}</div> : null}
         </div>
         {badges ? <div className="flex shrink-0 flex-wrap items-center gap-2">{badges}</div> : null}
       </div>
 
-      {meta ? <div className="mt-3 text-sm leading-6 text-kmt-muted">{meta}</div> : null}
+      {meta ? <div className="mt-3 text-sm leading-6 text-muted-foreground">{meta}</div> : null}
 
       {fields.length ? (
         <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
           {fields.map((field, index) => (
             <div key={index} className={field.className}>
-              <dt className="font-semibold text-kmt-muted">{field.label}</dt>
-              <dd className="mt-1 break-words text-kmt-ink" dir={field.dir}>
+              <dt className="font-semibold text-muted-foreground">{field.label}</dt>
+              <dd className="mt-1 break-words text-foreground" dir={field.dir}>
                 {field.value}
               </dd>
             </div>
@@ -52,7 +52,7 @@ export function DataRecordCard({
         </dl>
       ) : null}
 
-      {footer ? <div className="mt-4 text-sm leading-6 text-kmt-muted">{footer}</div> : null}
+      {footer ? <div className="mt-4 text-sm leading-6 text-muted-foreground">{footer}</div> : null}
       {action ? <div className="mt-4">{action}</div> : null}
     </article>
   );

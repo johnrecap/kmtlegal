@@ -51,7 +51,7 @@ export const kmtSemanticLight = {
   border: "#e2e8f0",
   "muted-foreground": "#45464d",
   primary: "#997b44",
-  "primary-foreground": "#17130d",
+  "primary-foreground": "#0d0a06",
   accent: "#755a26",
   ring: "#997b44"
 } as const;

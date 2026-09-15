@@ -21,7 +21,7 @@ Full-site modernization: modern components, GSAP/Lenis/React-Bits motion, consol
 
 ### Infrastructure
 - [x] `00-foundation.md` — design tokens, dark/light theme, cn(), Tailwind config, motion tokens, dependencies *(done 2026-09-15; T0.12 cascade-remap deletion deferred to Phase 2/3)*
-- [ ] `01-component-library.md` — shared UI components (`src/components/ui/`)
+- [x] `01-component-library.md` — shared UI components (`src/components/ui/`) *(done 2026-09-15: Button/ButtonLink/Badge/Field/SearchInput/Toast/InlineFeedback/Tabs+LinkTabs/Pagination/Dialog/Skeleton×3/DataTable/Card/State/FilterBar/DataRecordCard on semantic tokens; Material Symbols font removed; formatBytes deduped; gallery at `/preview/components`)*
 
 ### Public site (Phase 2)
 - [ ] `10-public-shell.md` — header, footer, PublicShell (all public pages)

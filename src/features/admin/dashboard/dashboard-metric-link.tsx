@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MaterialSymbol } from "@/components/ui";
 import {
   plan35DashboardMetricCopy,
   plan35DashboardScopeCopy,
@@ -21,9 +22,7 @@ export function DashboardMetricLink({ metric }: { metric: DashboardMetric }) {
     >
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-semibold text-kmt-navy">{copy.label}</p>
-        <span aria-hidden="true" className="material-symbols-outlined text-xl text-kmt-gold">
-          arrow_back
-        </span>
+        <MaterialSymbol aria-hidden className="text-xl text-kmt-gold" name="arrow_back" />
       </div>
       <p className="mt-3 text-3xl font-semibold tabular-nums text-kmt-ink" data-visual-dynamic>
         {value}

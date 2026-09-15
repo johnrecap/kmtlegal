@@ -15,12 +15,12 @@ function FieldShell({ label, htmlFor, hint, error, children }: FieldShellProps) 
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-semibold text-kmt-ink" htmlFor={htmlFor}>
+      <label className="block text-sm font-semibold text-foreground" htmlFor={htmlFor}>
         {label}
       </label>
       {children}
       {hint ? (
-        <p id={descriptionId} className="text-sm leading-6 text-kmt-muted">
+        <p id={descriptionId} className="text-sm leading-6 text-muted-foreground">
           {hint}
         </p>
       ) : null}
@@ -34,7 +34,7 @@ function FieldShell({ label, htmlFor, hint, error, children }: FieldShellProps) 
 }
 
 const controlClasses =
-  "w-full rounded border border-kmt-border bg-kmt-paper px-3 py-2.5 text-base text-kmt-ink placeholder:text-kmt-muted shadow-none transition-colors focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 disabled:cursor-not-allowed disabled:bg-kmt-canvas disabled:text-kmt-muted";
+  "w-full rounded border border-border bg-surface px-3 py-2.5 text-base text-foreground placeholder:text-muted-foreground shadow-none transition-colors duration-kmt-fast ease-kmt-out motion-reduce:transition-none focus:border-ring focus:ring-2 focus:ring-ring/25 disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground";
 
 const selectClasses = cn(controlClasses, "appearance-none bg-none pe-12");
 const nativePickerInputTypes = new Set(["date", "datetime-local", "month", "time", "week"]);
@@ -110,7 +110,7 @@ export function Select({ id, idPrefix, label, hint, error, className, children, 
         >
           {children}
         </select>
-        <span className="pointer-events-none absolute inset-y-0 end-3 z-10 flex w-5 items-center justify-center text-kmt-navy/70" aria-hidden="true">
+        <span className="pointer-events-none absolute inset-y-0 end-3 z-10 flex w-5 items-center justify-center text-muted-foreground" aria-hidden="true">
           <svg className="h-5 w-5" viewBox="0 0 20 20" fill="none">
             <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
           </svg>

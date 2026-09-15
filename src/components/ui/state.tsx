@@ -4,13 +4,13 @@ import { cn } from "@/lib/cn";
 type StateTone = "empty" | "loading" | "info" | "success" | "warning" | "error" | "permission";
 
 const toneClasses: Record<StateTone, string> = {
-  empty: "border-kmt-border bg-white",
-  loading: "border-kmt-info-border bg-kmt-info-surface",
-  info: "border-kmt-info-border bg-kmt-info-surface",
-  success: "border-kmt-success-border bg-kmt-success-surface",
-  warning: "border-kmt-warning-border bg-kmt-warning-surface",
-  error: "border-kmt-danger-border bg-kmt-danger-surface",
-  permission: "border-kmt-warning-border bg-kmt-warning-surface"
+  empty: "border-border bg-surface",
+  loading: "border-info-border bg-info-surface",
+  info: "border-info-border bg-info-surface",
+  success: "border-success-border bg-success-surface",
+  warning: "border-warning-border bg-warning-surface",
+  error: "border-danger-border bg-danger-surface",
+  permission: "border-warning-border bg-warning-surface"
 };
 
 export function StateBlock({
@@ -28,8 +28,8 @@ export function StateBlock({
 }) {
   return (
     <div aria-live={tone === "error" ? "assertive" : "polite"} className={cn("rounded-lg border p-6", toneClasses[tone], className)} role={tone === "error" ? "alert" : "status"}>
-      <h3 className="text-lg font-semibold text-kmt-ink">{title}</h3>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-kmt-muted">{description}</p>
+      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{description}</p>
       {action ? <div className="mt-5">{action}</div> : null}
     </div>
   );

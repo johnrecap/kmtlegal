@@ -5,10 +5,10 @@ import { MaterialSymbol } from "./material-symbol";
 type ToastTone = "success" | "warning" | "error" | "info";
 
 const toneClasses: Record<ToastTone, string> = {
-  success: "border-kmt-success-border bg-kmt-success-surface text-kmt-success-strong",
-  warning: "border-kmt-warning-border bg-kmt-warning-surface text-kmt-warning-strong",
-  error: "border-kmt-danger-border bg-kmt-danger-surface text-kmt-danger-strong",
-  info: "border-kmt-info-border bg-kmt-info-surface text-kmt-info-strong"
+  success: "border-success-border bg-success-surface text-success-strong",
+  warning: "border-warning-border bg-warning-surface text-warning-strong",
+  error: "border-danger-border bg-danger-surface text-danger-strong",
+  info: "border-info-border bg-info-surface text-info-strong"
 };
 
 const iconNames: Record<ToastTone, string> = {

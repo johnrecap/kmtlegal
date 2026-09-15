@@ -9,11 +9,11 @@ export function SearchInput({ className, ariaLabel, "aria-label": nativeAriaLabe
   return (
     <label className={cn("relative block", className)}>
       <span className="sr-only">{accessibleLabel}</span>
-      <MaterialSymbol className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-[20px] text-kmt-muted ltr:left-3 rtl:right-3" name="search" />
+      <MaterialSymbol className="pointer-events-none absolute top-1/2 -translate-y-1/2 text-[20px] text-muted-foreground ltr:left-3 rtl:right-3" name="search" />
       <input
         {...props}
         aria-label={accessibleLabel}
-        className="min-h-11 w-full rounded border border-slate-300 bg-white py-2.5 text-base text-kmt-ink placeholder:text-slate-400 focus:border-kmt-navy focus:ring-2 focus:ring-kmt-gold/20 ltr:pl-10 ltr:pr-3 rtl:pl-3 rtl:pr-10"
+        className="min-h-11 w-full rounded border border-border bg-surface py-2.5 text-base text-foreground placeholder:text-muted-foreground transition-colors duration-kmt-fast ease-kmt-out motion-reduce:transition-none focus:border-ring focus:ring-2 focus:ring-ring/25 ltr:pl-10 ltr:pr-3 rtl:pl-3 rtl:pr-10"
         placeholder={placeholder}
         type="search"
       />

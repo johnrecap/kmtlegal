@@ -26,6 +26,7 @@ import {
   documentCategoryLabels,
   documentStatusLabels,
   documentVisibilityLabels,
+  formatBytes,
   formatDateTime,
   labelFrom
 } from "@/lib/legal-format";
@@ -70,16 +71,6 @@ function statusTone(status: string) {
 
 function visibilityTone(visibility: string) {
   return visibility === "CLIENT_VISIBLE" ? ("active" as const) : ("neutral" as const);
-}
-
-function formatBytes(value: number) {
-  if (value >= 1024 * 1024) {
-    return `${(value / (1024 * 1024)).toFixed(1)} MB`;
-  }
-  if (value >= 1024) {
-    return `${Math.ceil(value / 1024)} KB`;
-  }
-  return `${value} B`;
 }
 
 function listHref(

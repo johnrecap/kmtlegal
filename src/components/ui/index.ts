@@ -8,6 +8,7 @@ export * from "./filter-bar";
 export * from "./field";
 export * from "./inline-feedback";
 export * from "./material-symbol";
+export * from "./pagination";
 export * from "./search-input";
 export * from "./skeleton";
 export * from "./state";

@@ -173,7 +173,7 @@ describe("public website UI", () => {
     expect(layoutSource).not.toContain("material-symbols/outlined.css");
     expect(globalsSource).toContain('font-family: "Inter", "IBM Plex Sans Arabic"');
     expect(globalsSource).toContain('font-family: "IBM Plex Sans Arabic"');
-    expect(globalsSource).toContain('font-family: "Material Symbols Outlined"');
+    expect(globalsSource).not.toContain('font-family: "Material Symbols Outlined"');
     expect(globalsSource).toContain("font-display: swap");
   });
 

@@ -1,8 +1,9 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 import { forwardRef } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/cn";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
 type ButtonSize = "sm" | "md" | "lg";
 
 export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -14,9 +15,13 @@ export type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: "border-kmt-gold bg-kmt-gold text-white hover:bg-kmt-goldDark active:bg-kmt-goldDark",
-  secondary: "border-kmt-navy bg-transparent text-kmt-navy hover:bg-kmt-navy hover:text-white",
-  ghost: "border-transparent bg-transparent text-kmt-navy hover:bg-kmt-canvas",
+  primary:
+    "border-primary bg-primary text-primary-foreground hover:bg-accent hover:border-accent active:bg-accent active:border-accent",
+  secondary:
+    "border-border bg-surface text-foreground hover:bg-surface-muted active:bg-surface-muted",
+  outline:
+    "border-primary/60 bg-transparent text-accent hover:bg-primary/10 active:bg-primary/15",
+  ghost: "border-transparent bg-transparent text-foreground hover:bg-surface-muted",
   danger: "border-kmt-danger bg-kmt-danger text-white hover:border-kmt-danger-strong hover:bg-kmt-danger-strong"
 };
 
@@ -36,8 +41,8 @@ export function buttonClasses({
   className?: string;
 } = {}) {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded border font-medium transition-colors",
-    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold",
+    "inline-flex items-center justify-center gap-2 rounded border font-medium transition-colors duration-kmt-fast ease-kmt-out motion-reduce:transition-none",
+    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
     "disabled:cursor-not-allowed disabled:opacity-55",
     variantClasses[variant],
     sizeClasses[size],
@@ -76,22 +81,34 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
   );
 });
 
-export type ButtonLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
+export type ButtonLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & {
+  href: string;
   variant?: ButtonVariant;
   size?: ButtonSize;
   leadingIcon?: ReactNode;
   trailingIcon?: ReactNode;
+  external?: boolean;
 };
 
 export const ButtonLink = forwardRef<HTMLAnchorElement, ButtonLinkProps>(function ButtonLink(
-  { className, variant = "primary", size = "md", leadingIcon, trailingIcon, children, ...props },
+  { className, href, variant = "primary", size = "md", leadingIcon, trailingIcon, external = false, children, ...props },
   ref
 ) {
+  const classes = buttonClasses({ variant, size, className });
+  if (external) {
+    return (
+      <a ref={ref} className={classes} href={href} rel="noopener noreferrer" target="_blank" {...props}>
+        {leadingIcon}
+        <span>{children}</span>
+        {trailingIcon}
+      </a>
+    );
+  }
   return (
-    <a ref={ref} className={buttonClasses({ variant, size, className })} {...props}>
+    <Link ref={ref} className={classes} href={href} {...props}>
       {leadingIcon}
       <span>{children}</span>
       {trailingIcon}
-    </a>
+    </Link>
   );
 });

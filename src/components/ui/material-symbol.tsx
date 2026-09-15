@@ -174,6 +174,13 @@ const icons: Record<string, IconNode> = {
     </>
   ),
   home: <path {...strokeProps} d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4v-8.5Z" />,
+  info: (
+    <>
+      <circle {...strokeProps} cx="12" cy="12" r="8.5" />
+      <path {...strokeProps} d="M12 11v5.2" />
+      <circle cx="12" cy="7.8" r="1" fill="currentColor" />
+    </>
+  ),
   light_mode: (
     <>
       <circle {...strokeProps} cx="12" cy="12" r="4" />
