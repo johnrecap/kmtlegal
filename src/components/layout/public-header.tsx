@@ -59,6 +59,23 @@ export function PublicHeader({
   const shell = content.shell;
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const insightHrefs = ["/articles", "/case-studies", "/media"];
+  const insightItems = navItems.filter((item) => insightHrefs.includes(item.href));
+  const servicesItem = navItems.find((item) => item.href === "/services");
+  const practiceLinks = content.footerContent.practiceLinks.slice(0, 6);
+  const insightsGroupLabel = content.home.insightsEyebrow;
+  const [openGroup, setOpenGroup] = useState<string | null>(() => {
+    if (servicesItem?.active) return "services";
+    if (insightItems.some((item) => item.active)) return "insights";
+    return null;
+  });
+
+  const closeMobile = () => {
+    setMobileOpen(false);
+    setMenuOpen(false);
+  };
 
   useEffect(() => {
     let raf = 0;
@@ -77,16 +94,13 @@ export function PublicHeader({
     };
   }, []);
 
-  const servicesItem = navItems.find((item) => item.href === "/services");
-  const practiceLinks = content.footerContent.practiceLinks.slice(0, 6);
-
   return (
     <header className="sticky top-0 z-50 transition-all duration-300">
       <div
         aria-hidden="true"
         className={cn(
           "absolute inset-0 border-b transition-all duration-300",
-          scrolled || menuOpen
+          scrolled || menuOpen || mobileOpen
             ? "border-kmt-gold/20 bg-[color:var(--kmt-public-header)] shadow-[0_12px_40px_rgba(0,0,0,0.34)] backdrop-blur-xl"
             : "border-transparent bg-transparent"
         )}
@@ -97,7 +111,19 @@ export function PublicHeader({
           scrolled ? "min-h-16" : "min-h-[76px] md:min-h-[88px]"
         )}
       >
-        <KmtBrandLogo href={localizedPublicHref("/", locale)} size={scrolled ? "sm" : "md"} surface="dark" variant="lockup" />
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            aria-controls="public-mobile-menu"
+            aria-expanded={mobileOpen}
+            aria-label={shell.compactNavLabel}
+            onClick={() => setMobileOpen((open) => !open)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-white/15 text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold lg:hidden"
+          >
+            <MaterialSymbol className="text-2xl" name={mobileOpen ? "close" : "menu"} />
+          </button>
+          <KmtBrandLogo href={localizedPublicHref("/", locale)} size={scrolled ? "sm" : "md"} surface="dark" variant="lockup" />
+        </div>
         <nav aria-label={shell.mainNavLabel} className="hidden items-stretch gap-1 self-stretch lg:flex">
           {navItems.map((item) =>
             item.href === "/services" && servicesItem ? (
@@ -154,7 +180,7 @@ export function PublicHeader({
             </a>
           ) : null}
           <ClientLoginLink label={shell.clientLoginCta} locale={locale} />
-          <ConsultationLink className="px-3 sm:px-4" label={shell.consultationCta} locale={locale} />
+          <ConsultationLink className="px-3 max-sm:hidden sm:px-4" label={shell.consultationCta} locale={locale} />
         </div>
       </div>
 
@@ -212,23 +238,151 @@ export function PublicHeader({
         </div>
       ) : null}
 
-      <nav aria-label={shell.compactNavLabel} className="relative border-t border-white/10 bg-[#090806]/95 lg:hidden">
-        <div className="mx-auto flex max-w-[1200px] gap-2 overflow-x-auto px-4 py-2 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              aria-current={item.active ? "page" : undefined}
-              className={cn(
-                "shrink-0 border-b-2 px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold",
-                item.active ? "border-kmt-gold bg-kmt-gold/15 text-white" : "border-transparent text-stone-300 hover:border-kmt-gold/40 hover:text-white"
-              )}
-              href={localizedPublicHref(item.href, locale)}
-            >
-              {item.label}
-            </Link>
-          ))}
+      <div
+        id="public-mobile-menu"
+        className={cn(
+          "absolute inset-x-0 top-full transition-all duration-300 lg:hidden",
+          mobileOpen ? "visible translate-y-0 opacity-100" : "invisible -translate-y-3 opacity-0"
+        )}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") closeMobile();
+        }}
+      >
+        <div className="border-b border-kmt-gold/20 bg-[color:var(--kmt-public-header)] shadow-[0_32px_80px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+          <nav aria-label={shell.mainNavLabel} className="mx-auto max-h-[70vh] max-w-[1200px] overflow-y-auto px-4 py-4 sm:px-6">
+            <ConsultationLink className="w-full" label={shell.consultationCta} locale={locale} />
+            <ul className="mt-3 space-y-1">
+              {navItems
+                .filter((item) => !insightHrefs.includes(item.href))
+                .map((item) => {
+                  if (item.href === "/services" && servicesItem) {
+                    const expanded = openGroup === "services";
+                    return (
+                      <li key={item.href}>
+                        <div
+                          className={cn(
+                            "flex min-h-12 items-center rounded-lg transition-colors",
+                            item.active ? "bg-kmt-gold/15 text-white" : "text-stone-200 hover:bg-white/[0.04] hover:text-white"
+                          )}
+                        >
+                          <Link
+                            aria-current={item.active ? "page" : undefined}
+                            className="flex min-h-12 flex-1 items-center px-3 text-[15px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-kmt-gold"
+                            href={localizedPublicHref(item.href, locale)}
+                            onClick={closeMobile}
+                            tabIndex={mobileOpen ? undefined : -1}
+                          >
+                            {item.label}
+                          </Link>
+                          <button
+                            type="button"
+                            aria-expanded={expanded}
+                            aria-label={item.label}
+                            onClick={() => setOpenGroup(expanded ? null : "services")}
+                            tabIndex={mobileOpen ? undefined : -1}
+                            className="flex h-12 w-12 items-center justify-center rounded-lg text-stone-300 transition-colors hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-kmt-gold"
+                          >
+                            <MaterialSymbol className={cn("text-2xl transition-transform duration-300", expanded && "rotate-180")} name="expand_more" />
+                          </button>
+                        </div>
+                        <div className={cn("grid transition-all duration-300", expanded ? "[grid-template-rows:1fr] opacity-100" : "[grid-template-rows:0fr] opacity-0")}>
+                          <ul className="overflow-hidden">
+                            <li className="ms-3 border-s border-white/10 ps-2">
+                              <ul className="space-y-1 py-1">
+                                {practiceLinks.map((link) => (
+                                  <li key={link.href}>
+                                    <Link
+                                      className="flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-white/[0.04] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-kmt-gold"
+                                      href={localizedPublicHref(link.href, locale)}
+                                      onClick={closeMobile}
+                                      tabIndex={mobileOpen && expanded ? undefined : -1}
+                                    >
+                                      {link.label}
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            </li>
+                          </ul>
+                        </div>
+                      </li>
+                    );
+                  }
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        aria-current={item.active ? "page" : undefined}
+                        className={cn(
+                          "flex min-h-12 items-center rounded-lg px-3 text-[15px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-kmt-gold",
+                          item.active ? "bg-kmt-gold/15 text-white" : "text-stone-200 hover:bg-white/[0.04] hover:text-white"
+                        )}
+                        href={localizedPublicHref(item.href, locale)}
+                        onClick={closeMobile}
+                        tabIndex={mobileOpen ? undefined : -1}
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              {insightItems.length > 0 ? (
+                <li>
+                  <div
+                    className={cn(
+                      "flex min-h-12 items-center rounded-lg transition-colors",
+                      insightItems.some((item) => item.active) ? "bg-kmt-gold/15 text-white" : "text-stone-200 hover:bg-white/[0.04] hover:text-white"
+                    )}
+                  >
+                    <Link
+                      aria-current={insightItems.some((item) => item.active) ? "page" : undefined}
+                      className="flex min-h-12 flex-1 items-center px-3 text-[15px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-kmt-gold"
+                      href={localizedPublicHref("/articles", locale)}
+                      onClick={closeMobile}
+                      tabIndex={mobileOpen ? undefined : -1}
+                    >
+                      {insightsGroupLabel}
+                    </Link>
+                    <button
+                      type="button"
+                      aria-expanded={openGroup === "insights"}
+                      aria-label={insightsGroupLabel}
+                      onClick={() => setOpenGroup(openGroup === "insights" ? null : "insights")}
+                      tabIndex={mobileOpen ? undefined : -1}
+                      className="flex h-12 w-12 items-center justify-center rounded-lg text-stone-300 transition-colors hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-kmt-gold"
+                    >
+                      <MaterialSymbol className={cn("text-2xl transition-transform duration-300", openGroup === "insights" && "rotate-180")} name="expand_more" />
+                    </button>
+                  </div>
+                  <div className={cn("grid transition-all duration-300", openGroup === "insights" ? "[grid-template-rows:1fr] opacity-100" : "[grid-template-rows:0fr] opacity-0")}>
+                    <ul className="overflow-hidden">
+                      <li className="ms-3 border-s border-white/10 ps-2">
+                        <ul className="space-y-1 py-1">
+                          {insightItems.map((item) => (
+                            <li key={item.href}>
+                              <Link
+                                aria-current={item.active ? "page" : undefined}
+                                className={cn(
+                                  "flex min-h-11 items-center rounded-lg px-3 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-kmt-gold",
+                                  item.active ? "bg-kmt-gold/15 text-white" : "text-stone-300 hover:bg-white/[0.04] hover:text-white"
+                                )}
+                                href={localizedPublicHref(item.href, locale)}
+                                onClick={closeMobile}
+                                tabIndex={mobileOpen && openGroup === "insights" ? undefined : -1}
+                              >
+                                {item.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+              ) : null}
+            </ul>
+          </nav>
         </div>
-      </nav>
+      </div>
     </header>
   );
 }
