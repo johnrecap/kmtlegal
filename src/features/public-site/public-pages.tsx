@@ -21,7 +21,6 @@ import {
   publicMotionImage,
   publicMotionImageCard
 } from "@/features/public-site/public-motion";
-import { ApproachTimeline } from "@/components/motion-ui/approach-timeline";
 import { HeroParallaxLayers } from "@/components/motion-ui/hero-parallax-layers";
 import {
   DetailCta,
@@ -29,6 +28,7 @@ import {
   LuxuryFeaturePanel,
   PageHero,
   PracticeAreaCard,
+  ProcessSteps,
   PublicSection,
   RepresentativeMatterCard,
   TrustStrip,
@@ -264,7 +264,7 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
       </PublicSection>
 
       <PublicSection align="center" eyebrow={copy.approachEyebrow} title={copy.approachTitle} description={copy.approachDescription}>
-        <ApproachTimeline steps={copy.approachSteps} />
+        <ProcessSteps steps={copy.approachSteps} />
       </PublicSection>
 
       <PublicSection surface="muted" align="center" eyebrow={copy.representativeEyebrow} title={copy.representativeTitle} description={copy.representativeDescription}>
