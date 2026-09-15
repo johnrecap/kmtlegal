@@ -99,7 +99,7 @@ export function HeroParallaxLayers({
       });
       mm.add("(prefers-reduced-motion: no-preference) and (min-width: 1024px)", () => {
         gsap.to("[data-drift='docket']", {
-          y: -64,
+          y: -220,
           ease: "none",
           scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: 1 },
         });
@@ -204,7 +204,7 @@ export function HeroParallaxLayers({
           </div>
         </div>
 
-        <div data-drift="docket">
+        <div data-drift="docket" className="lg:mt-24">
           <div data-hero="docket" className="relative overflow-hidden rounded-2xl border border-kmt-gold/25 bg-[var(--kmt-public-surface-muted)] p-6 shadow-[0_40px_120px_-40px_rgb(153_123_68/0.45)] md:p-8" aria-live="polite">
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-[var(--kmt-public-gold)] to-transparent" aria-hidden="true" />
             <div className="flex items-center justify-between gap-3">
