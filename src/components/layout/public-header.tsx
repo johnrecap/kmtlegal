@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { KmtBrandLogo } from "@/components/brand";
 import { MaterialSymbol } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
@@ -58,8 +58,10 @@ export function PublicHeader({
   const content = getPublicContent(locale);
   const shell = content.shell;
   const [scrolled, setScrolled] = useState(false);
+  const [concealed, setConcealed] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const lastY = useRef(0);
 
   const insightHrefs = ["/articles", "/case-studies", "/media"];
   const insightItems = navItems.filter((item) => insightHrefs.includes(item.href));
@@ -81,7 +83,10 @@ export function PublicHeader({
     let raf = 0;
     const update = () => {
       raf = 0;
-      setScrolled(window.scrollY > 24);
+      const y = window.scrollY;
+      setScrolled(y > 24);
+      setConcealed(y > lastY.current && y > 320);
+      lastY.current = y;
     };
     const onScroll = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -94,8 +99,10 @@ export function PublicHeader({
     };
   }, []);
 
+  const headerVisible = !concealed || menuOpen || mobileOpen;
+
   return (
-    <header className="sticky top-0 z-50 transition-all duration-300">
+    <header className={cn("sticky top-0 z-50 transition-all duration-300", headerVisible ? "translate-y-0" : "-translate-y-full")}>
       <div
         aria-hidden="true"
         className={cn(
