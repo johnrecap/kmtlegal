@@ -599,6 +599,23 @@ a {
     animation: kmt-motion-panel-enter 360ms var(--kmt-motion-ease) both;
   }
 
+  @keyframes kmt-marquee-x {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .kmt-marquee-track {
+    animation: kmt-marquee-x 32s linear infinite;
+  }
+
+  .kmt-marquee:hover .kmt-marquee-track {
+    animation-play-state: paused;
+  }
+
   .kmt-motion-form {
     transition: border-color 190ms var(--kmt-motion-ease), box-shadow 190ms var(--kmt-motion-ease), transform 190ms var(--kmt-motion-ease);
   }
@@ -737,6 +754,7 @@ a {
   }
 
   .kmt-motion-reveal,
+  .kmt-marquee-track,
   .kmt-motion-hero-image,
   .kmt-motion-card,
   .kmt-motion-card-beam,

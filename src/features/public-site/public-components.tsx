@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Reveal } from "@/components/motion-ui/reveal";
 import { ButtonLink, MaterialSymbol } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
 import { cn } from "@/lib/cn";
@@ -15,8 +16,7 @@ import {
   publicMotionIcon,
   publicMotionIconHalo,
   publicMotionImage,
-  publicMotionImageCard,
-  publicMotionPanelEnter
+  publicMotionImageCard
 } from "@/features/public-site/public-motion";
 
 export const publicSectionSurface = "bg-[var(--kmt-public-surface)] text-white";
@@ -121,11 +121,13 @@ export function PageHero({
 }
 
 export function TrustStrip({ items }: { items: ReadonlyArray<{ icon: string; label: string }> }) {
+  const loop = [...items, ...items];
+
   return (
-    <div className="border-y border-white/10 bg-[#090d11]">
-      <div className="mx-auto grid max-w-[1200px] gap-4 px-4 py-5 text-sm text-slate-300 sm:px-6 md:grid-cols-3 lg:px-10">
-        {items.map((item) => (
-          <div key={item.label} className={cn("group flex items-center gap-2", publicMotionPanelEnter)}>
+    <div className="kmt-marquee overflow-hidden border-y border-white/10 bg-[#090d11]">
+      <div className="kmt-marquee-track flex w-max items-center py-5 text-sm text-slate-300 [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
+        {loop.map((item, index) => (
+          <div key={`${item.label}-${index}`} aria-hidden={index >= items.length} className="flex shrink-0 items-center gap-2 pe-12">
             <MaterialSymbol className={cn(publicMotionIcon, publicMotionIconHalo, publicGoldText)} name={item.icon} />
             {item.label}
           </div>
@@ -166,7 +168,7 @@ export function PracticeAreaCard({
   locale?: PublicLocale;
 }) {
   return (
-    <Link className={cn(publicPanel, publicPanelHover, "group flex min-h-[190px] flex-col p-5")} href={localizedPublicHref(href, locale)}>
+    <Link className={cn(publicPanel, publicPanelHover, "group flex h-full min-h-[190px] flex-col p-5")} href={localizedPublicHref(href, locale)}>
       <MaterialSymbol className={cn("text-4xl", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name={icon} />
       <h3 className="mt-4 text-xl font-semibold text-white">{title}</h3>
       <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{summary}</p>
@@ -177,15 +179,20 @@ export function PracticeAreaCard({
 
 export function ProcessSteps({ steps }: { steps: ReadonlyArray<{ number: string; title: string; summary: string; icon: string }> }) {
   return (
-    <ol className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {steps.map((step) => (
-        <li key={step.number} className={cn(publicMotionCardBeam, "group relative overflow-hidden rounded-lg border border-white/10 bg-white/[0.025] p-5")}>
-          <div className="flex items-center justify-between gap-4">
-            <MaterialSymbol className={cn("text-3xl", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name={step.icon} />
-            <span className={cn("text-sm font-semibold", publicGoldText)}>{step.number}</span>
-          </div>
-          <h3 className="mt-4 text-lg font-semibold text-white">{step.title}</h3>
-          <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{step.summary}</p>
+    <ol className="relative grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <span aria-hidden="true" className="absolute inset-x-10 top-9 hidden h-px bg-gradient-to-r from-transparent via-kmt-gold/40 to-transparent rtl:bg-gradient-to-l lg:block" />
+      {steps.map((step, index) => (
+        <li key={step.number} className="relative">
+          <Reveal delay={index * 100} className="h-full">
+            <div className={cn(publicMotionCardBeam, "group relative h-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.025] p-5")}>
+              <div className="flex items-center justify-between gap-4">
+                <MaterialSymbol className={cn("text-3xl", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name={step.icon} />
+                <span className={cn("text-sm font-semibold", publicGoldText)}>{step.number}</span>
+              </div>
+              <h3 className="mt-4 text-lg font-semibold text-white">{step.title}</h3>
+              <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{step.summary}</p>
+            </div>
+          </Reveal>
         </li>
       ))}
     </ol>

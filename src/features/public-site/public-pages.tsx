@@ -17,11 +17,10 @@ import {
   publicMotionCardBeam,
   publicMotionCta,
   publicMotionIcon,
-  publicMotionIconHalo,
-  publicMotionImage,
-  publicMotionImageCard
+  publicMotionIconHalo
 } from "@/features/public-site/public-motion";
 import { HeroParallaxLayers } from "@/components/motion-ui/hero-parallax-layers";
+import { Reveal } from "@/components/motion-ui/reveal";
 import {
   DetailCta,
   IndustryGrid,
@@ -239,8 +238,10 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
 
       <PublicSection align="center" eyebrow={copy.practiceEyebrow} title={copy.practiceTitle} description={copy.practiceDescription}>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {content.practiceAreaMatrix.map((area) => (
-            <PracticeAreaCard key={area.key} href={area.href} icon={area.icon} locale={locale} summary={area.summary} title={area.title} />
+          {content.practiceAreaMatrix.map((area, index) => (
+            <Reveal key={area.key} delay={index * 80} spotlight className="h-full">
+              <PracticeAreaCard href={area.href} icon={area.icon} locale={locale} summary={area.summary} title={area.title} />
+            </Reveal>
           ))}
         </div>
       </PublicSection>
@@ -281,10 +282,11 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
 
       <PublicSection surface="muted" eyebrow={copy.teamEyebrow} title={copy.teamTitle} description={copy.teamDescription}>
         <div className="grid gap-4 md:grid-cols-3">
-          {content.lawyers.map((lawyer) => (
-            <Link key={lawyer.slug} className={cn(publicPanel, publicPanelHover, publicMotionImageCard, "block overflow-hidden")} href={localizedPublicHref(`/team/${lawyer.slug}`, locale)}>
-              <div className="relative h-56 w-full">
-                <Image alt={lawyer.name} className={cn("object-cover opacity-90", publicMotionImage)} fill sizes="(min-width: 768px) 33vw, 100vw" src={lawyer.image} />
+          {content.lawyers.map((lawyer, index) => (
+            <Reveal key={lawyer.slug} delay={index * 100} className="h-full">
+            <Link className={cn(publicPanel, publicPanelHover, "group block h-full overflow-hidden")} href={localizedPublicHref(`/team/${lawyer.slug}`, locale)}>
+              <div className="relative h-56 w-full overflow-hidden">
+                <Image alt={lawyer.name} className="object-cover opacity-90 grayscale-[35%] transition-all duration-500 group-hover:scale-[1.03] group-hover:grayscale-0 group-hover:opacity-100" fill sizes="(min-width: 768px) 33vw, 100vw" src={lawyer.image} />
               </div>
               <div className="p-5">
                 <h3 className="text-xl font-semibold text-white">{lawyer.name}</h3>
@@ -298,6 +300,7 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
                 </div>
               </div>
             </Link>
+            </Reveal>
           ))}
         </div>
       </PublicSection>
