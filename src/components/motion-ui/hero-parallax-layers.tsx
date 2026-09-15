@@ -22,7 +22,9 @@ interface HeroParallaxLayersProps {
   locale?: "en" | "ar";
 }
 
-const INSIGHT_SPEEDS = [1.15, 0.9, 1.05];
+const INSIGHT_SPEEDS = [1.4, 0.7, 1.1];
+const INSIGHT_ALIGN = ["sm:ml-auto sm:mr-16", "sm:ml-auto", "sm:mr-auto"];
+const INSIGHT_DELAY = [0.55, 0.7, 0.85];
 
 function Reveal({ children, className, delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
   const style = { animationDelay: `${delay}s` } as CSSProperties;
@@ -101,15 +103,21 @@ export function HeroParallaxLayers({
         </ParallaxLayer>
 
         <div className="relative mx-auto max-w-5xl pb-16 md:pb-24">
-          <div className="relative -mt-10 grid gap-3 text-start sm:grid-cols-3">
+          <div className="relative -mt-10 flex flex-col gap-3">
             {insights.map((insight, index) => (
-              <ParallaxLayer key={insight.label} speed={INSIGHT_SPEEDS[index % INSIGHT_SPEEDS.length]}>
-                <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#0c1116]/95 p-4 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-kmt-gold">
-                    <MaterialSymbol className="text-xl" name={insight.icon} />
-                  </span>
-                  <p className="text-sm font-medium leading-6 text-slate-200">{insight.label}</p>
-                </div>
+              <ParallaxLayer
+                key={insight.label}
+                speed={INSIGHT_SPEEDS[index % INSIGHT_SPEEDS.length]}
+                className={cn("w-full sm:w-[58%]", INSIGHT_ALIGN[index % INSIGHT_ALIGN.length])}
+              >
+                <Reveal delay={INSIGHT_DELAY[index % INSIGHT_DELAY.length]}>
+                  <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#0c1116]/95 p-4 text-start shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-kmt-gold">
+                      <MaterialSymbol className="text-xl" name={insight.icon} />
+                    </span>
+                    <p className="text-sm font-medium leading-6 text-slate-200">{insight.label}</p>
+                  </div>
+                </Reveal>
               </ParallaxLayer>
             ))}
           </div>

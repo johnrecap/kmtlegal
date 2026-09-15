@@ -4,7 +4,7 @@ import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 const PROGRESS_VAR = "--px-progress";
-const LAYER_TRAVEL_PX = 160;
+const LAYER_TRAVEL_PX = 220;
 
 type SceneOffset = "start-start-end-start";
 
