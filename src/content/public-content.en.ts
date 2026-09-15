@@ -174,20 +174,28 @@ const publicIndustries = [
   { title: "Individuals and business owners", summary: "Private real estate, employment, and dispute requests with privacy and data minimization in mind." }
 ] as const;
 
+const officeHours = "Sunday - Thursday, 9:00 AM - 6:00 PM";
+
 const branches = [
   {
-    name: "Cairo Office Visits",
-    address: "Cairo office visits by confirmed appointment.",
-    phone: "Use the consultation request form",
+    name: "Cairo Office",
+    address: "New Cairo, Cairo, Egypt",
+    hours: officeHours,
     email: "contact@kmtlegal.com"
   },
   {
     name: "Remote Meetings",
-    address: "Online meetings are arranged after request review and appointment confirmation.",
-    phone: "Confirmed by the office team",
+    address: "Online meetings by video or phone call, arranged after request review.",
+    hours: officeHours,
     email: "booking@kmtlegal.com"
   }
 ] as const;
+
+const contactChannels = {
+  phoneDisplay: "",
+  phoneHref: "",
+  whatsappHref: ""
+} as const;
 
 const footerContent = {
   brandSummary: "Structured legal support for companies, investors, and individuals, with intake, document review, and office follow-up.",
@@ -225,6 +233,7 @@ export const publicContentEn = {
   mediaItems,
   publicIndustries,
   branches,
+  contactChannels,
   footerContent,
   shell: {
     consultationCta: "Request a Consultation",
@@ -240,7 +249,7 @@ export const publicContentEn = {
     viewAllPracticeAreas: "View All Services",
     officesTitle: "Offices",
     contactTitle: "Contact Us",
-    hours: "Sunday - Thursday, 9:00 AM - 6:00 PM",
+    hours: officeHours,
     copyright: "© 2026 KMT Legal. All rights reserved.",
     privacy: "Privacy Policy",
     terms: "Terms",
@@ -415,7 +424,10 @@ export const publicContentEn = {
     heroDescription: "Send a general message, or request a consultation if the matter needs structured legal review.",
     sectionEyebrow: "Contact",
     sectionTitle: "Contact the Office",
-    sectionDescription: "Use the contact form for general questions. For legal consultations, use the structured booking form."
+    sectionDescription: "Use the contact form for general questions. For legal consultations, use the structured booking form.",
+    locationsEyebrow: "Locations",
+    whatsappLabel: "Chat on WhatsApp",
+    whatsappNote: "Fastest way to reach the office for scheduling and general questions."
   },
   bookingPage: {
     metadataTitle: "Request an Initial Consultation | KMT Legal",
@@ -615,7 +627,7 @@ export const publicContentEn = {
     summaryItems: [
       { label: "Responsible entity", value: "KMT Legal" },
       { label: "Who this covers", value: "Website visitors, clients, consultation requesters, and job applicants" },
-      { label: "Recruitment contact", value: "careers@kmtlegal.org" },
+      { label: "Recruitment contact", value: "careers@kmtlegal.com" },
       { label: "General privacy contact", value: "contact@kmtlegal.com" }
     ],
     sections: [
@@ -627,7 +639,7 @@ export const publicContentEn = {
         ],
         bullets: [],
         links: [
-          { label: "careers@kmtlegal.org", href: "mailto:careers@kmtlegal.org" },
+          { label: "careers@kmtlegal.com", href: "mailto:careers@kmtlegal.com" },
           { label: "contact@kmtlegal.com", href: "mailto:contact@kmtlegal.com" }
         ]
       },
@@ -731,7 +743,7 @@ export const publicContentEn = {
         ],
         bullets: [],
         links: [
-          { label: "Applicant privacy request", href: "mailto:careers@kmtlegal.org?subject=Applicant%20privacy%20request" },
+          { label: "Applicant privacy request", href: "mailto:careers@kmtlegal.com?subject=Applicant%20privacy%20request" },
           { label: "Personal Data Protection Center", href: "https://pdpc.gov.eg" }
         ]
       },
@@ -796,7 +808,15 @@ export const publicContentEn = {
     submit: "Send Message",
     newMessage: "New Message",
     fallbackError: "The message could not be sent. Review the details and try again.",
-    success: "Your message has been received. The team will contact you after review."
+    success: "Your message has been received. The team will contact you after review.",
+    fieldErrors: {
+      fullName: "Write your full name (2-120 characters).",
+      email: "Write a valid email address.",
+      phone: "Write a valid phone number, or leave the field empty.",
+      topic: "Choose one of the listed topics.",
+      message: "Write a message between 10 and 2000 characters.",
+      consent: "You must agree to the data use before sending."
+    }
   },
   bookingForm: {
     steps: ["Contact details", "Request details", "Review and send"],

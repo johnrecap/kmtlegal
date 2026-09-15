@@ -1,9 +1,11 @@
 "use client";
 
 import { FormEvent, useRef, useState } from "react";
-import { Button, Select, Textarea, TextInput } from "@/components/ui";
+import { Button, MaterialSymbol, Select, Textarea, TextInput } from "@/components/ui";
+import { ShimmerButton } from "@/components/motion-ui/shimmer-button";
 import { getPublicContent } from "@/content/public-content";
-import { publicMotionButton, publicMotionControl, publicMotionCta, publicMotionForm, publicMotionStatus } from "@/features/public-site/public-motion";
+import { publicPanel } from "@/features/public-site/public-components";
+import { publicMotionButton, publicMotionForm, publicMotionStatus } from "@/features/public-site/public-motion";
 import { cn } from "@/lib/cn";
 import type { PublicLocale } from "@/lib/public-locale";
 import { useHydrated } from "@/lib/use-hydrated";
@@ -14,6 +16,17 @@ type ContactStatus =
   | { type: "success"; message: string; requestId?: string }
   | { type: "error"; message: string; requestId?: string };
 
+type ContactFieldKey = "fullName" | "email" | "phone" | "topic" | "message" | "consent";
+type ContactFieldErrors = Partial<Record<ContactFieldKey, string>>;
+
+type ContactErrorPayload = {
+  error?: {
+    message?: string;
+    requestId?: string;
+    details?: Array<{ path?: string; message?: string }>;
+  };
+};
+
 const initialValues = {
   fullName: "",
   email: "",
@@ -23,26 +36,15 @@ const initialValues = {
   consent: false
 };
 
-const darkFormClasses =
-  cn(
-    publicMotionForm,
-    "relative overflow-hidden rounded-lg border border-kmt-gold/25 bg-[linear-gradient(145deg,#17110a_0%,#0b0c0e_50%,#050505_100%)] p-5 shadow-[0_28px_90px_-56px_rgba(0,0,0,0.95)] before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-l before:from-transparent before:via-kmt-gold/70 before:to-transparent [&_label]:text-amber-100 [&_p[id$='-hint']]:text-slate-300 [&_p[id$='-error']]:text-red-200 [&_select+span]:text-kmt-gold"
-  );
-
-const darkControlClasses =
-  cn(
-    publicMotionControl,
-    "!border-kmt-gold/25 !bg-black/30 !text-white placeholder:!text-amber-100/45 focus:!border-kmt-gold focus:!ring-kmt-gold/25 disabled:!border-white/10 disabled:!bg-black/40 disabled:!text-slate-500"
-  );
-
-const darkSecondaryButtonClasses =
-  cn(publicMotionButton, publicMotionCta, "!border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white");
+const consentInputId = "contact-consent";
+const consentErrorId = "contact-consent-error";
 
 export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
   const copy = getPublicContent(locale).contactForm;
   const isHydrated = useHydrated();
   const [values, setValues] = useState(initialValues);
   const [status, setStatus] = useState<ContactStatus>({ type: "idle" });
+  const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({});
   const submitInFlight = useRef(false);
   const isSubmitting = status.type === "submitting";
   const isLockedAfterSuccess = status.type === "success";
@@ -50,6 +52,10 @@ export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
 
   function updateValue<Key extends keyof typeof initialValues>(key: Key, value: (typeof initialValues)[Key]) {
     setValues((current) => ({ ...current, [key]: value }));
+
+    if (fieldErrors[key] !== undefined) {
+      setFieldErrors((current) => ({ ...current, [key]: undefined }));
+    }
 
     if (status.type === "error") {
       setStatus({ type: "idle" });
@@ -64,6 +70,7 @@ export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
     }
 
     submitInFlight.current = true;
+    setFieldErrors({});
     setStatus({ type: "submitting" });
 
     try {
@@ -75,10 +82,12 @@ export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
       const body = await response.json().catch(() => null);
 
       if (!response.ok) {
+        const errorPayload = (body ?? {}) as ContactErrorPayload;
+        setFieldErrors(fieldErrorsFromDetails(errorPayload.error?.details, copy.fieldErrors));
         setStatus({
           type: "error",
-          message: body?.error?.message ?? copy.fallbackError,
-          requestId: body?.error?.requestId
+          message: errorPayload.error?.message ?? copy.fallbackError,
+          requestId: errorPayload.error?.requestId
         });
         return;
       }
@@ -96,12 +105,48 @@ export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
   }
 
   return (
-    <form aria-busy={isSubmitting} className={darkFormClasses} data-hydrated={isHydrated ? "true" : "false"} data-testid="contact-form" method="post" onSubmit={submit}>
+    <form
+      aria-busy={isSubmitting}
+      className={cn(publicPanel, publicMotionForm, "p-5 md:p-6")}
+      data-hydrated={isHydrated ? "true" : "false"}
+      data-testid="contact-form"
+      method="post"
+      onSubmit={submit}
+    >
       <div className="grid gap-4 md:grid-cols-2">
-        <TextInput className={darkControlClasses} disabled={fieldsDisabled} label={copy.fullName} name="fullName" required value={values.fullName} onChange={(event) => updateValue("fullName", event.target.value)} />
-        <TextInput className={darkControlClasses} disabled={fieldsDisabled} label={copy.email} name="email" required type="email" value={values.email} onChange={(event) => updateValue("email", event.target.value)} />
-        <TextInput className={darkControlClasses} disabled={fieldsDisabled} label={copy.phone} name="phone" value={values.phone} onChange={(event) => updateValue("phone", event.target.value)} />
-        <Select className={darkControlClasses} disabled={fieldsDisabled} label={copy.topic} name="topic" value={values.topic} onChange={(event) => updateValue("topic", event.target.value)}>
+        <TextInput
+          autoComplete="name"
+          disabled={fieldsDisabled}
+          error={fieldErrors.fullName}
+          label={copy.fullName}
+          name="fullName"
+          required
+          value={values.fullName}
+          onChange={(event) => updateValue("fullName", event.target.value)}
+        />
+        <TextInput
+          autoComplete="email"
+          disabled={fieldsDisabled}
+          error={fieldErrors.email}
+          label={copy.email}
+          name="email"
+          required
+          type="email"
+          value={values.email}
+          onChange={(event) => updateValue("email", event.target.value)}
+        />
+        <TextInput
+          autoComplete="tel"
+          dir="ltr"
+          disabled={fieldsDisabled}
+          error={fieldErrors.phone}
+          inputMode="tel"
+          label={copy.phone}
+          name="phone"
+          value={values.phone}
+          onChange={(event) => updateValue("phone", event.target.value)}
+        />
+        <Select disabled={fieldsDisabled} error={fieldErrors.topic} label={copy.topic} name="topic" value={values.topic} onChange={(event) => updateValue("topic", event.target.value)}>
           <option value="consultation">{copy.topics.consultation}</option>
           <option value="documents">{copy.topics.documents}</option>
           <option value="media">{copy.topics.media}</option>
@@ -110,48 +155,64 @@ export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
       </div>
       <div className="mt-4">
         <Textarea
-          className={darkControlClasses}
+          disabled={fieldsDisabled}
+          error={fieldErrors.message}
           label={copy.message}
           name="message"
           required
-          disabled={fieldsDisabled}
           value={values.message}
           onChange={(event) => updateValue("message", event.target.value)}
           hint={copy.hint}
         />
       </div>
-      <label className="mt-4 flex items-start gap-3 text-sm leading-7 !text-slate-300">
-        <input
-          checked={values.consent}
-          className="mt-1 rounded border-kmt-gold/40 bg-black/30 text-kmt-gold focus:ring-kmt-gold disabled:opacity-50"
-          disabled={fieldsDisabled}
-          required
-          type="checkbox"
-          onChange={(event) => updateValue("consent", event.target.checked)}
-        />
-        {copy.consent}
-      </label>
+      <div className="mt-4">
+        <label className="flex items-start gap-3 text-sm leading-7 text-foreground" htmlFor={consentInputId}>
+          <input
+            aria-describedby={fieldErrors.consent ? consentErrorId : undefined}
+            aria-invalid={fieldErrors.consent ? true : undefined}
+            checked={values.consent}
+            className="mt-1.5 h-4 w-4 shrink-0 rounded border-border accent-kmt-gold focus:ring-2 focus:ring-ring/25 disabled:opacity-55"
+            disabled={fieldsDisabled}
+            id={consentInputId}
+            name="consent"
+            required
+            type="checkbox"
+            onChange={(event) => updateValue("consent", event.target.checked)}
+          />
+          <span>{copy.consent}</span>
+        </label>
+        {fieldErrors.consent ? (
+          <p className="mt-1 ps-7 text-sm leading-6 text-kmt-danger" id={consentErrorId} role="alert">
+            {fieldErrors.consent}
+          </p>
+        ) : null}
+      </div>
       {status.type === "success" ? (
-        <p className={cn("mt-4 rounded border border-emerald-300/35 bg-emerald-950/45 p-3 text-sm leading-6 text-emerald-100", publicMotionStatus)} role="status">
-          {status.message}
-        </p>
+        <div
+          className={cn("mt-4 flex items-start gap-3 rounded border border-success-border bg-success-surface p-3 text-sm leading-6 text-success-strong", publicMotionStatus)}
+          role="status"
+        >
+          <MaterialSymbol className="kmt-motion-check mt-0.5 text-lg" name="check_circle" />
+          <p>{status.message}</p>
+        </div>
       ) : null}
       {status.type === "error" ? (
-        <p className={cn("mt-4 rounded border border-red-300/35 bg-red-950/50 p-3 text-sm leading-6 text-red-100", publicMotionStatus)} role="alert">
+        <p className={cn("mt-4 rounded border border-danger-border bg-danger-surface p-3 text-sm leading-6 text-danger-strong", publicMotionStatus)} role="alert">
           {status.message} {status.requestId ? <span className="ltr inline-block">({status.requestId})</span> : null}
         </p>
       ) : null}
       <div className="mt-5 flex flex-wrap gap-3">
-        <Button className={cn(publicMotionButton, publicMotionCta)} disabled={!isHydrated || isSubmitting || isLockedAfterSuccess} loading={isSubmitting} type="submit">
+        <ShimmerButton disabled={!isHydrated || isSubmitting || isLockedAfterSuccess} loading={isSubmitting} type="submit">
           {copy.submit}
-        </Button>
+        </ShimmerButton>
         {isLockedAfterSuccess ? (
           <Button
-            className={darkSecondaryButtonClasses}
+            className={publicMotionButton}
             type="button"
             variant="secondary"
             onClick={() => {
               setValues(initialValues);
+              setFieldErrors({});
               setStatus({ type: "idle" });
             }}
           >
@@ -161,4 +222,20 @@ export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
       </div>
     </form>
   );
+}
+
+function fieldErrorsFromDetails(
+  details: Array<{ path?: string; message?: string }> | undefined,
+  copy: Record<ContactFieldKey, string>
+): ContactFieldErrors {
+  const errors: ContactFieldErrors = {};
+
+  for (const detail of details ?? []) {
+    const key = detail.path as ContactFieldKey | undefined;
+    if (key && key in copy && errors[key] === undefined) {
+      errors[key] = copy[key];
+    }
+  }
+
+  return errors;
 }

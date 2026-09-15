@@ -158,10 +158,18 @@ const publicIndustries = [
   { title: "الأفراد وأصحاب الأعمال", summary: "طلبات عقارية وعمل ومنازعات خاصة مع مراعاة الخصوصية وتقليل مشاركة البيانات الحساسة." }
 ] as const;
 
+const officeHours = "الأحد - الخميس، 9:00 ص - 6:00 م";
+
 const branches = [
-  { name: "زيارة مكتب القاهرة", address: "زيارة المكتب في القاهرة بمواعيد مؤكدة مسبقًا", phone: "تواصل عبر نموذج الطلب", email: "contact@kmtlegal.com" },
-  { name: "اجتماعات عن بعد", address: "تُرتب الاجتماعات الأونلاين بعد مراجعة الطلب وتأكيد الموعد", phone: "يؤكدها فريق المكتب", email: "booking@kmtlegal.com" }
+  { name: "مكتب القاهرة", address: "القاهرة الجديدة، القاهرة، مصر", hours: officeHours, email: "contact@kmtlegal.com" },
+  { name: "اجتماعات عن بعد", address: "اجتماعات أونلاين بمكالمة فيديو أو هاتف، تُرتب بعد مراجعة الطلب.", hours: officeHours, email: "booking@kmtlegal.com" }
 ] as const;
+
+const contactChannels = {
+  phoneDisplay: "",
+  phoneHref: "",
+  whatsappHref: ""
+} as const;
 
 const footerContent = {
   brandSummary: "دعم قانوني منظم للشركات والمستثمرين والأفراد مع مراعاة السرية ومراجعة المكتب.",
@@ -199,6 +207,7 @@ export const publicContentAr = {
   mediaItems,
   publicIndustries,
   branches,
+  contactChannels,
   footerContent,
   shell: {
     consultationCta: "طلب استشارة",
@@ -214,7 +223,7 @@ export const publicContentAr = {
     viewAllPracticeAreas: "عرض كل الخدمات",
     officesTitle: "المكاتب",
     contactTitle: "تواصل معنا",
-    hours: "الأحد - الخميس، 9:00 ص - 6:00 م",
+    hours: officeHours,
     copyright: "© 2026 KMT Legal. جميع الحقوق محفوظة.",
     privacy: "سياسة الخصوصية",
     terms: "الشروط",
@@ -388,7 +397,10 @@ export const publicContentAr = {
     heroDescription: "أرسل رسالة عامة، أو اطلب استشارة إذا كان الموضوع يحتاج مراجعة قانونية منظمة.",
     sectionEyebrow: "تواصل",
     sectionTitle: "تواصل مع المكتب",
-    sectionDescription: "استخدم نموذج التواصل للأسئلة العامة. للاستشارات القانونية، استخدم نموذج الحجز المنظم."
+    sectionDescription: "استخدم نموذج التواصل للأسئلة العامة. للاستشارات القانونية، استخدم نموذج الحجز المنظم.",
+    locationsEyebrow: "المواقع",
+    whatsappLabel: "محادثة عبر واتساب",
+    whatsappNote: "أسرع طريقة للتواصل مع المكتب لتحديد المواعيد والأسئلة العامة."
   },
   bookingPage: {
     metadataTitle: "طلب استشارة أولية | KMT Legal",
@@ -588,7 +600,7 @@ export const publicContentAr = {
     summaryItems: [
       { label: "الجهة المسؤولة", value: "KMT Legal" },
       { label: "نطاق السياسة", value: "زوار الموقع والعملاء وطالبو الاستشارات والمتقدمون للوظائف" },
-      { label: "تواصل التوظيف", value: "careers@kmtlegal.org" },
+      { label: "تواصل التوظيف", value: "careers@kmtlegal.com" },
       { label: "تواصل الخصوصية العام", value: "contact@kmtlegal.com" }
     ],
     sections: [
@@ -600,7 +612,7 @@ export const publicContentAr = {
         ],
         bullets: [],
         links: [
-          { label: "careers@kmtlegal.org", href: "mailto:careers@kmtlegal.org" },
+          { label: "careers@kmtlegal.com", href: "mailto:careers@kmtlegal.com" },
           { label: "contact@kmtlegal.com", href: "mailto:contact@kmtlegal.com" }
         ]
       },
@@ -704,7 +716,7 @@ export const publicContentAr = {
         ],
         bullets: [],
         links: [
-          { label: "إرسال طلب خصوصية للمتقدمين", href: "mailto:careers@kmtlegal.org?subject=Applicant%20privacy%20request" },
+          { label: "إرسال طلب خصوصية للمتقدمين", href: "mailto:careers@kmtlegal.com?subject=Applicant%20privacy%20request" },
           { label: "مركز حماية البيانات الشخصية", href: "https://pdpc.gov.eg" }
         ]
       },
@@ -769,7 +781,15 @@ export const publicContentAr = {
     submit: "إرسال الرسالة",
     newMessage: "رسالة جديدة",
     fallbackError: "تعذر إرسال الرسالة. راجع البيانات وحاول مرة أخرى.",
-    success: "تم استلام رسالتك. سيتواصل الفريق معك بعد المراجعة."
+    success: "تم استلام رسالتك. سيتواصل الفريق معك بعد المراجعة.",
+    fieldErrors: {
+      fullName: "اكتب الاسم الكامل (من 2 إلى 120 حرفًا).",
+      email: "اكتب بريدًا إلكترونيًا صحيحًا.",
+      phone: "اكتب رقم هاتف صحيحًا أو اترك الحقل فارغًا.",
+      topic: "اختر أحد الموضوعات المتاحة.",
+      message: "اكتب رسالة من 10 إلى 2000 حرف.",
+      consent: "يجب الموافقة على استخدام البيانات قبل الإرسال."
+    }
   },
   bookingForm: {
     steps: ["بيانات التواصل", "تفاصيل الطلب", "مراجعة وإرسال"],

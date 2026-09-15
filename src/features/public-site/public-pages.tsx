@@ -853,6 +853,7 @@ export function MediaPageView({ locale }: { locale: PublicLocale }) {
 export function ContactPageView({ locale }: { locale: PublicLocale }) {
   const content = getPublicContent(locale);
   const copy = content.contactPage;
+  const channels = content.contactChannels;
 
   return (
     <PublicShell currentPath={localizedPublicHref("/contact", locale)} locale={locale} navItems={navForPath("/contact", locale)}>
@@ -863,15 +864,57 @@ export function ContactPageView({ locale }: { locale: PublicLocale }) {
           <aside className="grid gap-4">
             {content.branches.map((branch) => (
               <section key={branch.name} className={cn(publicPanel, publicMotionCardBeam, "p-5")}>
-                <h2 className="text-xl font-semibold text-white">{branch.name}</h2>
-                <p className={cn("mt-3 flex gap-2 text-sm leading-7", publicMutedText)}>
-                  <MaterialSymbol className={cn("mt-1 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="location_on" />
-                  {branch.address}
-                </p>
-                <p className={cn("mt-2 text-sm", publicMutedText)}>{branch.phone}</p>
-                <p className={cn("mt-1 text-sm", publicMutedText)}>{branch.email}</p>
+                <h2 className="text-xl font-semibold text-[var(--kmt-public-text)]">{branch.name}</h2>
+                <ul className="mt-4 space-y-3 text-sm">
+                  <li className="flex gap-3">
+                    <MaterialSymbol className={cn("mt-0.5 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="location_on" />
+                    <span className={cn("leading-6", publicMutedText)}>{branch.address}</span>
+                  </li>
+                  {channels.phoneHref && channels.phoneDisplay ? (
+                    <li className="flex gap-3">
+                      <MaterialSymbol className={cn("mt-0.5 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="call" />
+                      <a
+                        className="leading-6 text-[var(--kmt-public-text)] transition-colors hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
+                        dir="ltr"
+                        href={channels.phoneHref}
+                      >
+                        <bdi>{channels.phoneDisplay}</bdi>
+                      </a>
+                    </li>
+                  ) : null}
+                  <li className="flex gap-3">
+                    <MaterialSymbol className={cn("mt-0.5 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="schedule" />
+                    <span className={cn("leading-6", publicMutedText)}>{branch.hours}</span>
+                  </li>
+                  <li className="flex gap-3">
+                    <MaterialSymbol className={cn("mt-0.5 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="mail" />
+                    <a
+                      className="leading-6 text-[var(--kmt-public-text)] transition-colors hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
+                      dir="ltr"
+                      href={`mailto:${branch.email}`}
+                    >
+                      {branch.email}
+                    </a>
+                  </li>
+                </ul>
               </section>
             ))}
+            {channels.whatsappHref ? (
+              <section className={cn(publicPanel, publicMotionCardBeam, "p-5")}>
+                <div className="flex items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-[var(--kmt-public-gold)]">
+                    <MaterialSymbol className={cn("text-xl", publicMotionIcon, publicMotionIconHalo)} name="forum" />
+                  </span>
+                  <div>
+                    <h2 className="text-lg font-semibold text-[var(--kmt-public-text)]">{copy.whatsappLabel}</h2>
+                    <p className={cn("mt-1 text-sm leading-6", publicMutedText)}>{copy.whatsappNote}</p>
+                  </div>
+                </div>
+                <ButtonLink className={cn(publicMotionButton, publicMotionCta, "mt-4 w-full")} external href={channels.whatsappHref}>
+                  {copy.whatsappLabel}
+                </ButtonLink>
+              </section>
+            ) : null}
           </aside>
         </div>
       </PublicSection>

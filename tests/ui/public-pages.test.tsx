@@ -66,7 +66,7 @@ describe("public website UI", () => {
     expect(html).toContain("dateTime=\"2026-07-10\"");
     expect(html).toContain("href=\"#data-we-collect\"");
     expect(html).toContain("id=\"data-we-collect\"");
-    expect(html).toContain("mailto:careers@kmtlegal.org");
+    expect(html).toContain("mailto:careers@kmtlegal.com");
     expect(html).toContain("https://www.facebook.com/privacy/policy/");
     expect(html).toContain("https://pdpc.gov.eg");
     expect(html).not.toMatch(/TODO|placeholder/i);
@@ -81,7 +81,7 @@ describe("public website UI", () => {
     expect(html).toContain("lang=\"ar\"");
     expect(html).toContain("سياسة الخصوصية وبيانات المتقدمين للوظائف</h1>");
     expect(html).toContain("إمكانية العمل حضوريًا في العاصمة الإدارية الجديدة");
-    expect(html).toContain("careers@kmtlegal.org");
+    expect(html).toContain("careers@kmtlegal.com");
     expect(html).toContain("سياسة خصوصية Meta");
   });
 

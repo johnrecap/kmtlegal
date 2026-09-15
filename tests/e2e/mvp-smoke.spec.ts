@@ -40,8 +40,9 @@ async function expectDarkLuxurySurface(locator: Locator, label: string, style: "
   const className = (await locator.getAttribute("class")) ?? "";
 
   if (style === "public-tokens") {
-    // File 12 (services) migrated the directory surfaces from the PLAN-28
-    // hardcoded dark gradients to the theme-aware --kmt-public-* tokens.
+    // Files 12 (services) and 17 (contact) migrated the directory and contact
+    // surfaces from the PLAN-28 hardcoded dark gradients to the theme-aware
+    // --kmt-public-* tokens.
     expect(className, `${label} should use the theme-aware public surface tokens`).toContain("bg-[var(--kmt-public-");
     expect(className, `${label} should keep a token border`).toContain("border-[var(--kmt-public-line)]");
     return;
@@ -157,7 +158,7 @@ test.describe("MVP smoke without database", () => {
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.getByRole("heading", { level: 1, name: "سياسة الخصوصية وبيانات المتقدمين للوظائف" })).toBeVisible();
     await expect(page.getByTestId("privacy-policy")).toBeVisible();
-    await expect(page.getByRole("link", { name: "careers@kmtlegal.org" }).first()).toHaveAttribute("href", "mailto:careers@kmtlegal.org");
+    await expect(page.getByRole("link", { name: "careers@kmtlegal.com" }).first()).toHaveAttribute("href", "mailto:careers@kmtlegal.com");
     await expect(page.getByRole("link", { name: "سياسة خصوصية Meta" })).toHaveAttribute("href", "https://www.facebook.com/privacy/policy/");
 
     const firstSectionLink = page.locator('a[href="#who-we-are"]').first();
@@ -243,7 +244,7 @@ test.describe("MVP smoke without database", () => {
             await expectDarkLuxurySurface(
               surface,
               `${path} ${testId}`,
-              testId === "public-directory-filter" || testId === "public-directory-card" ? "public-tokens" : "legacy-gradient"
+              testId === "public-directory-filter" || testId === "public-directory-card" || testId === "contact-form" ? "public-tokens" : "legacy-gradient"
             );
           }
         }

@@ -60,4 +60,56 @@ describe("public contact form recovery", () => {
     resolveRequest?.({ ok: true, json: async () => ({ requestId: "synthetic-contact-pending" }) } as Response);
     await screen.findByRole("status");
   });
+
+  it.each(["en", "ar"] as const)("maps server validation details to localized field errors (%s)", async (locale) => {
+    const copy = getPublicContent(locale).contactForm;
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        json: async () => ({
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Contact form data is incomplete.",
+            requestId: "req-validation",
+            details: [
+              { path: "email", message: "Invalid email", code: "invalid_string" },
+              { path: "message", message: "Too short", code: "too_small" },
+              { path: "consent", message: "Consent required", code: "invalid_literal" },
+              { path: "unknownPath", message: "Unmapped detail", code: "custom" }
+            ]
+          }
+        })
+      } as Response)
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ requestId: "synthetic-contact-retry" }) } as Response);
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ContactForm locale={locale} />);
+
+    const submit = screen.getByRole("button", { name: copy.submit });
+    await waitFor(() => expect(submit).toBeEnabled());
+    fillRequiredFields(locale);
+    fireEvent.click(submit);
+
+    await waitFor(() => expect(screen.getByText(copy.fieldErrors.email)).toBeInTheDocument());
+    expect(screen.getByText(copy.fieldErrors.message)).toBeInTheDocument();
+    expect(screen.getByText(copy.fieldErrors.consent)).toBeInTheDocument();
+    expect(screen.queryByText(copy.fieldErrors.fullName)).not.toBeInTheDocument();
+    expect(screen.queryByText("Unmapped detail")).not.toBeInTheDocument();
+
+    const emailField = screen.getByLabelText(copy.email);
+    expect(emailField).toHaveAttribute("aria-invalid", "true");
+    expect(emailField.getAttribute("aria-describedby")).toContain("-error");
+    expect(screen.getByRole("checkbox")).toHaveAttribute("aria-invalid", "true");
+
+    fireEvent.change(emailField, { target: { value: "retained@example.test" } });
+    await waitFor(() => expect(screen.queryByText(copy.fieldErrors.email)).not.toBeInTheDocument());
+    expect(screen.getByText(copy.fieldErrors.message)).toBeInTheDocument();
+    expect(screen.getByLabelText(copy.email)).toHaveValue("retained@example.test");
+
+    fireEvent.click(submit);
+    await screen.findByRole("status");
+    expect(screen.getByRole("status")).toHaveTextContent(copy.success);
+    expect(screen.queryByText(copy.fieldErrors.message)).not.toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
 });
