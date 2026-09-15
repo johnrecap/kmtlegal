@@ -3,66 +3,16 @@ import Link from "next/link";
 import { KmtBrandLogo } from "@/components/brand";
 import { MaterialSymbol } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
-import { publicMotionButton, publicMotionCta, publicMotionIcon, publicMotionIconHalo, publicMotionNavLink, publicMotionTextLink } from "@/features/public-site/public-motion";
+import { publicMotionIcon, publicMotionIconHalo, publicMotionTextLink } from "@/features/public-site/public-motion";
 import { cn } from "@/lib/cn";
 import { localizedPublicHref, publicLocaleDirection, publicLocalePrefix, stripPublicLocalePrefix, type PublicLocale } from "@/lib/public-locale";
+import { ConsultationLink, PublicHeader } from "./public-header";
 
 export type PublicNavItem = {
   label: string;
   href: string;
   active?: boolean;
 };
-
-function publicNavLabel(item: PublicNavItem) {
-  return item.label;
-}
-
-function ConsultationLink({ className, locale, label }: { className?: string; locale: PublicLocale; label: string }) {
-  return (
-    <Link
-      className={cn(
-        "inline-flex min-h-11 items-center justify-center gap-2 border border-kmt-gold bg-kmt-gold px-4 text-sm font-semibold text-[#120d07] shadow-[0_10px_24px_rgba(153,123,68,0.22)] transition-colors hover:border-[#c7a363] hover:bg-[#c7a363] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold",
-        publicMotionButton,
-        publicMotionCta,
-        className
-      )}
-      href={localizedPublicHref("/book-consultation", locale)}
-    >
-      <span>{label}</span>
-      <MaterialSymbol className={cn("text-lg", publicMotionIcon, publicMotionIconHalo)} name="event_available" />
-    </Link>
-  );
-}
-
-function ClientLoginLink({ className, label, locale }: { className?: string; label: string; locale: PublicLocale }) {
-  return (
-    <Link
-      aria-label={label}
-      className={cn(
-        "inline-flex h-11 w-11 shrink-0 items-center justify-center border border-white/15 text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold",
-        publicMotionButton,
-        publicMotionCta,
-        className
-      )}
-      href={`/login?next=/client&locale=${locale}`}
-      title={label}
-    >
-      <MaterialSymbol className={cn("text-lg", publicMotionIcon, publicMotionIconHalo)} name="account_circle" />
-      <span className="sr-only">{label}</span>
-    </Link>
-  );
-}
-
-function PublicBrand({ condensed = false, locale }: { condensed?: boolean; locale: PublicLocale }) {
-  return (
-    <KmtBrandLogo
-      href={localizedPublicHref("/", locale)}
-      size={condensed ? "sm" : "md"}
-      surface="dark"
-      variant="lockup"
-    />
-  );
-}
 
 export function PublicShell({
   navItems,
@@ -92,60 +42,7 @@ export function PublicShell({
       dir={direction}
       lang={locale}
     >
-      <header className="sticky top-0 z-50 border-b border-kmt-gold/20 bg-[color:var(--kmt-public-header)] shadow-[0_12px_40px_rgba(0,0,0,0.34)] backdrop-blur-xl">
-        <div className="mx-auto flex min-h-[76px] max-w-[1200px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
-          <PublicBrand locale={locale} />
-          <nav aria-label={shell.mainNavLabel} className="hidden items-stretch gap-1 lg:flex">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                aria-current={item.active ? "page" : undefined}
-                className={cn(
-                  "inline-flex min-h-[76px] items-center px-3 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-6px] focus-visible:outline-kmt-gold",
-                  publicMotionNavLink,
-                  item.active ? "text-white" : "text-stone-300 hover:text-white"
-                )}
-                href={localizedPublicHref(item.href, locale)}
-              >
-                {publicNavLabel(item)}
-              </Link>
-            ))}
-          </nav>
-          <div className="flex shrink-0 items-center gap-2">
-            {languageHref ? (
-              <a
-                aria-label={shell.languageSwitchLabel}
-                className={cn("inline-flex h-11 w-11 items-center justify-center border border-white/15 text-xs font-semibold text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold sm:h-10 sm:w-auto sm:px-3", publicMotionButton, publicMotionCta)}
-                data-testid="public-language-switch"
-                href={languageHref}
-                hrefLang={locale === "ar" ? "en" : "ar"}
-              >
-                <MaterialSymbol className="text-lg sm:hidden" name="translate" />
-                <span className="sr-only sm:not-sr-only">{shell.languageSwitchLabel}</span>
-              </a>
-            ) : null}
-            <ClientLoginLink label={shell.clientLoginCta} locale={locale} />
-            <ConsultationLink className="px-3 sm:px-4" label={shell.consultationCta} locale={locale} />
-          </div>
-        </div>
-        <nav aria-label={shell.compactNavLabel} className="border-t border-white/10 bg-[#090806]/95 lg:hidden">
-          <div className="mx-auto flex max-w-[1200px] gap-2 overflow-x-auto px-4 py-2 sm:px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                aria-current={item.active ? "page" : undefined}
-                className={cn(
-                  "shrink-0 border-b-2 px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold",
-                  item.active ? "border-kmt-gold bg-kmt-gold/15 text-white" : "border-transparent text-stone-300 hover:border-kmt-gold/40 hover:text-white"
-                )}
-                href={localizedPublicHref(item.href, locale)}
-              >
-                {publicNavLabel(item)}
-              </Link>
-            ))}
-          </div>
-        </nav>
-      </header>
+      <PublicHeader languageHref={languageHref} locale={locale} navItems={navItems} />
       <main className="bg-[var(--kmt-public-canvas)]">{children}</main>
       <footer className="border-t border-kmt-gold/20 bg-[var(--kmt-public-header)] text-stone-300">
         <section className="border-b border-white/10 bg-[linear-gradient(90deg,rgba(153,123,68,0.20),rgba(153,123,68,0.05)_38%,rgba(0,0,0,0)_72%)]">
