@@ -28,9 +28,9 @@ interface HeroParallaxLayersProps {
 }
 
 const LAYER_TRAVEL_PX = 220;
-const CARD_SPEEDS = [1.4, 0.7, 1.1];
-const CARD_ALIGN = ["sm:ml-auto sm:mr-16", "sm:ml-auto", "sm:mr-auto"];
 
+// NOTE: surfaces and text resolve to --kmt-public-* theme vars so a future
+// day/night [data-theme] override flips this hero without touching this file.
 export function HeroParallaxLayers({
   eyebrow,
   title,
@@ -50,19 +50,19 @@ export function HeroParallaxLayers({
 
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
-        const enter = gsap.timeline({ defaults: { ease: "power3.out" } });
-        enter
-          .from("[data-hero='eyebrow']", { y: 24, autoAlpha: 0, duration: 0.7 })
-          .from("[data-hero='title']", { y: 36, autoAlpha: 0, duration: 0.8 }, "-=0.5")
-          .from("[data-hero='description']", { y: 28, autoAlpha: 0, duration: 0.7 }, "-=0.55")
-          .from("[data-hero='actions']", { y: 24, autoAlpha: 0, duration: 0.6 }, "-=0.5")
-          .from("[data-hero='window']", { y: 64, autoAlpha: 0, duration: 0.9 }, "-=0.45")
-          .from("[data-hero='card']", { y: 44, autoAlpha: 0, duration: 0.7, stagger: 0.15 }, "-=0.55");
+        gsap
+          .timeline({ defaults: { ease: "power3.out" } })
+          .from("[data-hero='eyebrow']", { y: 22, autoAlpha: 0, duration: 0.7 })
+          .from("[data-hero='title']", { y: 34, autoAlpha: 0, duration: 0.85 }, "-=0.5")
+          .from("[data-hero='rule']", { scaleX: 0, autoAlpha: 0, duration: 0.6 }, "-=0.55")
+          .from("[data-hero='description']", { y: 26, autoAlpha: 0, duration: 0.75 }, "-=0.5")
+          .from("[data-hero='actions']", { y: 22, autoAlpha: 0, duration: 0.65 }, "-=0.55")
+          .from("[data-hero='window']", { y: 56, autoAlpha: 0, duration: 0.95 }, "-=0.5")
+          .from("[data-hero='card']", { y: 36, autoAlpha: 0, duration: 0.7, stagger: 0.14 }, "-=0.6");
 
-        gsap.utils.toArray<HTMLElement>("[data-speed]").forEach((layer) => {
-          const speed = Number(layer.dataset.speed ?? "1");
-          gsap.to(layer, {
-            y: () => -(LAYER_TRAVEL_PX * speed),
+        const drift = (target: string, distance: number) => {
+          gsap.to(target, {
+            y: () => distance,
             ease: "none",
             scrollTrigger: {
               trigger: root,
@@ -71,10 +71,14 @@ export function HeroParallaxLayers({
               scrub: 1,
             },
           });
-        });
+        };
+
+        drift("[data-drift='headline']", -LAYER_TRAVEL_PX);
+        drift("[data-drift='window']", -LAYER_TRAVEL_PX * 0.35);
+        drift("[data-drift='cards']", -LAYER_TRAVEL_PX * 0.55);
 
         gsap.to("[data-hero='window-scale']", {
-          scale: 1.06,
+          scale: 1.05,
           ease: "none",
           scrollTrigger: {
             trigger: root,
@@ -89,7 +93,7 @@ export function HeroParallaxLayers({
   );
 
   return (
-    <section ref={rootRef} className="relative isolate overflow-hidden bg-[#07090b] text-white" data-testid="public-hero-parallax">
+    <section ref={rootRef} className="relative isolate overflow-hidden bg-[var(--kmt-public-surface)] text-[var(--kmt-public-text)]" data-testid="public-hero-parallax">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_0%,rgb(199_154_82/0.16),transparent_65%)]" aria-hidden="true" />
       <div
         className="absolute inset-0 bg-[linear-gradient(rgb(255_255_255/0.045)_1px,transparent_1px),linear-gradient(90deg,rgb(255_255_255/0.045)_1px,transparent_1px)] bg-[size:56px_56px] [mask-image:radial-gradient(ellipse_75%_60%_at_50%_35%,black,transparent)]"
@@ -97,16 +101,18 @@ export function HeroParallaxLayers({
       />
 
       <div className="relative mx-auto max-w-[1200px] px-4 pt-20 text-center sm:px-6 md:pt-28 lg:px-10">
-        <div data-speed="1">
+        <div data-drift="headline">
           <div data-hero="eyebrow">
-            <p className="inline-flex items-center rounded-full border border-kmt-gold/35 bg-kmt-gold/10 px-4 py-1.5 text-sm font-semibold text-amber-100">
+            <p className="inline-flex items-center gap-2 rounded-full border border-kmt-gold/35 bg-kmt-gold/10 px-4 py-1.5 text-sm font-semibold text-[var(--kmt-public-text)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--kmt-public-gold)]" aria-hidden="true" />
               {eyebrow}
             </p>
           </div>
           <h1 data-hero="title" className="mx-auto mt-6 max-w-4xl text-4xl font-semibold leading-tight drop-shadow-[0_4px_22px_rgba(0,0,0,0.88)] md:text-6xl">
             {title}
           </h1>
-          <p data-hero="description" className="mx-auto mt-5 max-w-2xl text-base leading-9 text-slate-200 md:text-lg">
+          <span data-hero="rule" className="mx-auto mt-6 block h-px w-24 origin-center bg-gradient-to-r from-transparent via-[var(--kmt-public-gold)] to-transparent" aria-hidden="true" />
+          <p data-hero="description" className="mx-auto mt-6 max-w-2xl text-base leading-9 text-[var(--kmt-public-muted)] md:text-lg">
             {description}
           </p>
           {actions ? (
@@ -116,14 +122,14 @@ export function HeroParallaxLayers({
           ) : null}
         </div>
 
-        <div data-speed="0.35" className="relative mx-auto mt-12 max-w-5xl md:mt-16">
+        <div data-drift="window" className="relative mx-auto mt-14 max-w-5xl md:mt-20">
           <div data-hero="window">
             <div data-hero="window-scale" className="overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-[0_40px_120px_-40px_rgb(153_123_68/0.45)]">
               <div className="flex items-center gap-2 border-b border-white/10 bg-white/[0.03] px-4 py-3" aria-hidden="true">
                 <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
                 <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
                 <span className="h-2.5 w-2.5 rounded-full bg-kmt-gold/60" />
-                <span className="ms-3 hidden rounded-md border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-slate-400 sm:block">
+                <span className="ms-3 hidden rounded-md border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-[var(--kmt-public-muted)] opacity-70 sm:block">
                   kmtlegal.org
                 </span>
               </div>
@@ -145,20 +151,23 @@ export function HeroParallaxLayers({
           </div>
         </div>
 
-        <div className="relative mx-auto max-w-5xl pb-16 md:pb-24">
-          <div className="relative -mt-10 flex flex-col gap-3">
+        <div data-drift="cards" className="relative mx-auto mt-8 max-w-5xl pb-16 md:mt-10 md:pb-24">
+          <div className="grid gap-4 text-start sm:grid-cols-3">
             {insights.map((insight, index) => (
               <div
                 key={insight.label}
-                data-speed={CARD_SPEEDS[index % CARD_SPEEDS.length]}
-                className={cn("w-full sm:w-[58%]", CARD_ALIGN[index % CARD_ALIGN.length])}
+                data-hero="card"
+                className="group rounded-xl border border-white/10 bg-[var(--kmt-public-surface-muted)] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.45)] transition-transform duration-300 ease-out hover:-translate-y-1"
               >
-                <div data-hero="card" className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#0c1116]/95 p-4 text-start shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-kmt-gold">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-[var(--kmt-public-gold)] transition-transform duration-300 ease-out group-hover:scale-110">
                     <MaterialSymbol className="text-xl" name={insight.icon} />
                   </span>
-                  <p className="text-sm font-medium leading-6 text-slate-200">{insight.label}</p>
+                  <span className="text-xs font-semibold tracking-widest text-[var(--kmt-public-muted)] opacity-60" aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
                 </div>
+                <p className="mt-4 text-sm font-medium leading-7 text-[var(--kmt-public-text)]">{insight.label}</p>
               </div>
             ))}
           </div>
