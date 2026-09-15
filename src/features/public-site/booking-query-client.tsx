@@ -35,7 +35,7 @@ export function RequestedLawyerQueryNotice({
   }
 
   return (
-    <p className={cn("mt-5 rounded border border-kmt-gold/25 bg-kmt-gold/10 p-3 text-sm text-amber-100", className)}>
+    <p className={cn("mt-5 rounded border border-kmt-gold/25 bg-kmt-gold/10 p-3 text-sm text-[var(--kmt-public-text)]", className)}>
       {label}: {lawyer}
     </p>
   );

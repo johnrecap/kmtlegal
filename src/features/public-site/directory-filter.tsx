@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import { Badge, ButtonLink, MaterialSymbol, TextInput } from "@/components/ui";
 import { getPublicContent, type PublicContent } from "@/content/public-content";
 import { normalizeText } from "@/lib/normalize-text";
 import { cn } from "@/lib/cn";
 import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
-import { publicGoldChip } from "@/features/public-site/public-components";
+import { publicGoldChip, publicPhotoTreatment } from "@/features/public-site/public-components";
 import {
   publicMotionArrow,
   publicMotionArrowTrail,
@@ -28,6 +29,9 @@ export type DirectoryItem = {
   meta?: string;
   chips?: readonly string[];
   searchText?: string;
+  image?: string;
+  imageAlt?: string;
+  imageSizes?: string;
 };
 
 const fieldScopeClasses =
@@ -148,36 +152,49 @@ export function DirectoryFilter({
             <article
               key={item.href}
               data-testid="public-directory-card"
-              className={cn(publicMotionCardBeam, "kmt-motion-card group relative overflow-hidden rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] p-5 transition-[border-color,transform,box-shadow] duration-150 hover:border-kmt-gold/55 hover:[box-shadow:var(--kmt-public-panel-shadow)]")}
+              className={cn(publicMotionCardBeam, "kmt-motion-card group relative overflow-hidden rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] transition-[border-color,transform,box-shadow] duration-150 hover:border-kmt-gold/55 hover:[box-shadow:var(--kmt-public-panel-shadow)]", item.image ? undefined : "p-5")}
             >
-              <div className="flex items-start justify-between gap-3">
-                <Badge className={publicGoldChip}>{item.categoryLabel}</Badge>
-                {item.meta ? (
-                  <span className="text-xs text-[var(--kmt-public-muted)]">
-                    <bdi>{item.meta}</bdi>
-                  </span>
-                ) : null}
-              </div>
-              <h3 className="mt-4 text-xl font-semibold text-[var(--kmt-public-text)]">{item.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-[var(--kmt-public-muted)]">{item.description}</p>
-              {item.chips?.length ? (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {item.chips.slice(0, 5).map((chip) => (
-                    <span key={chip} className={cn("rounded-full border px-3 py-1 text-xs font-semibold text-[var(--kmt-public-muted)]", publicGoldChip)}>
-                      {chip}
-                    </span>
-                  ))}
+              {item.image ? (
+                <div className="relative h-56 w-full overflow-hidden">
+                  <Image
+                    alt={item.imageAlt ?? item.title}
+                    className={publicPhotoTreatment}
+                    fill
+                    sizes={item.imageSizes ?? "(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"}
+                    src={item.image}
+                  />
                 </div>
               ) : null}
-              <ButtonLink
-                className={cn("mt-5 !border-kmt-gold/35 !text-[var(--kmt-public-text)] hover:!bg-kmt-gold hover:!text-primary-foreground", publicMotionButton, publicMotionCta)}
-                href={localizedPublicHref(item.href, locale)}
-                size="sm"
-                variant="secondary"
-                trailingIcon={<MaterialSymbol className={cn("text-base", publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />}
-              >
-                {content.shared.viewDetails}
-              </ButtonLink>
+              <div className={item.image ? "p-5" : undefined}>
+                <div className="flex items-start justify-between gap-3">
+                  <Badge className={publicGoldChip}>{item.categoryLabel}</Badge>
+                  {item.meta ? (
+                    <span className="text-xs text-[var(--kmt-public-muted)]">
+                      <bdi>{item.meta}</bdi>
+                    </span>
+                  ) : null}
+                </div>
+                <h3 className="mt-4 text-xl font-semibold text-[var(--kmt-public-text)]">{item.title}</h3>
+                <p className="mt-3 text-sm leading-7 text-[var(--kmt-public-muted)]">{item.description}</p>
+                {item.chips?.length ? (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {item.chips.slice(0, 5).map((chip) => (
+                      <span key={chip} className={cn("rounded-full border px-3 py-1 text-xs font-semibold text-[var(--kmt-public-muted)]", publicGoldChip)}>
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                <ButtonLink
+                  className={cn("mt-5 !border-kmt-gold/35 !text-[var(--kmt-public-text)] hover:!bg-kmt-gold hover:!text-primary-foreground", publicMotionButton, publicMotionCta)}
+                  href={localizedPublicHref(item.href, locale)}
+                  size="sm"
+                  variant="secondary"
+                  trailingIcon={<MaterialSymbol className={cn("text-base", publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />}
+                >
+                  {content.shared.viewDetails}
+                </ButtonLink>
+              </div>
             </article>
           ))}
         </div>

@@ -27,6 +27,9 @@ export const publicPanelHover = cn(publicMotionCardBeam, "kmt-motion-card transi
 export const publicMutedText = "text-[var(--kmt-public-muted)]";
 export const publicGoldText = "text-[var(--kmt-public-gold)]";
 export const publicGoldChip = "border-kmt-gold/35 bg-kmt-gold/10 text-[var(--kmt-public-text)]";
+export const publicNeutralChip = "border-[var(--kmt-public-line)] bg-[var(--kmt-public-surface-muted)] text-[var(--kmt-public-muted)]";
+export const publicPhotoTreatment =
+  "object-cover opacity-90 grayscale-[35%] transition-all duration-500 ease-kmt-out motion-reduce:transition-none group-hover:scale-[1.03] group-hover:grayscale-0 group-hover:opacity-100";
 
 export function PublicSection({
   eyebrow,

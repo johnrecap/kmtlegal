@@ -19,6 +19,9 @@ const lawyers = [
     bio: "Focuses on commercial contracts, corporate governance, and organized negotiation files before signing.",
     specialties: ["Contract drafting", "Corporate governance", "Risk review"],
     languages: ["Arabic", "English"],
+    education: ["LL.B., Cairo University", "Diploma in Commercial Contracts, Cairo University"],
+    admissions: ["Egyptian Bar Association"],
+    experience: "12+ years in corporate and contract practice",
     bookingEnabled: true,
     image: "/stitch-assets/ff4ca4cf707aef0c.png"
   },
@@ -29,6 +32,9 @@ const lawyers = [
     bio: "Works on commercial dispute files, recovery matters, and document review before formal action.",
     specialties: ["Commercial disputes", "Recovery", "Negotiation"],
     languages: ["Arabic"],
+    education: ["LL.B., Ain Shams University", "LL.M. in Commercial Law, Cairo University"],
+    admissions: ["Egyptian Bar Association"],
+    experience: "10+ years in commercial dispute and recovery files",
     bookingEnabled: true,
     image: "/stitch-assets/b25c75c2e3f319cd.png"
   },
@@ -39,6 +45,9 @@ const lawyers = [
     bio: "Focuses on ownership documents, employment contracts, and internal policy review for companies.",
     specialties: ["Real estate", "Employment contracts", "Compliance"],
     languages: ["Arabic", "English"],
+    education: ["LL.B., Alexandria University"],
+    admissions: ["Egyptian Bar Association"],
+    experience: "8+ years in real estate and employment advisory",
     bookingEnabled: false,
     image: "/stitch-assets/b7457fddf1203399.png"
   }
@@ -338,9 +347,14 @@ export const publicContentEn = {
   teamDetail: {
     specialtiesTitle: "Specialties",
     languagesTitle: "Languages",
+    credentialsTitle: "Credentials",
+    experienceTitle: "Experience",
+    educationTitle: "Education",
+    admissionsTitle: "Admissions",
     bookingNotice: "The lawyer and appointment are confirmed after request review. Booking does not mean final acceptance of the file.",
     relationshipNotice: "Team profiles are for specialty overview only and do not create a lawyer-client relationship before office acceptance.",
-    requestConsultation: "Request Consultation"
+    requestConsultation: "Request Consultation",
+    breadcrumbTeam: "Team"
   },
   articlesPage: {
     metadataTitle: "Legal Articles | KMT Legal",

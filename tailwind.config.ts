@@ -7,7 +7,6 @@ import {
   kmtMotion,
   kmtRadiusRamp,
   kmtSemanticBaseStyles,
-  kmtStateCssVariables,
   kmtTokens
 } from "./src/lib/design-system/tokens";
 
@@ -125,8 +124,7 @@ const config: Config = {
   plugins: [
     forms,
     containerQueries,
-    plugin(({ addBase }) => addBase(kmtSemanticBaseStyles)),
-    plugin(({ addBase }) => addBase({ ":root": kmtStateCssVariables }))
+    plugin(({ addBase }) => addBase(kmtSemanticBaseStyles))
   ]
 };
 

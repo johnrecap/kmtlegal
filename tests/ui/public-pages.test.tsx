@@ -7,7 +7,7 @@ import { PublicShell } from "@/components/layout";
 import { ButtonLink } from "@/components/ui";
 import { getPublicContent, navForPath } from "@/content/public-content";
 import { DetailCta, PageHero, PublicSection, TrustStrip } from "@/features/public-site/public-components";
-import { HomePageView, PrivacyPageView, ServiceDetailPageView, privacyMetadata } from "@/features/public-site/public-pages";
+import { HomePageView, PrivacyPageView, ServiceDetailPageView, TeamDetailPageView, privacyMetadata } from "@/features/public-site/public-pages";
 
 describe("public website UI", () => {
   it("renders public shell navigation with English default labels and active page", () => {
@@ -165,6 +165,27 @@ describe("public website UI", () => {
     expect(html).toContain("lg:sticky");
     expect(html).toContain("text-primary-foreground");
     expect(html).toContain(service.title);
+  });
+
+  it("renders team detail with h1, breadcrumbs, credentials, and warning-token notice", () => {
+    const content = getPublicContent("en");
+    const lawyer = content.lawyers[0];
+    const html = renderToStaticMarkup(<TeamDetailPageView locale="en" slug={lawyer.slug} />);
+
+    expect(html).toContain("<h1");
+    expect(html).toContain("aria-label=\"Breadcrumb\"");
+    expect(html).toContain("aria-current=\"page\"");
+    expect(html).toContain("href=\"/team\"");
+    expect(html).toContain("application/ld+json");
+    expect(html).toContain("\"@type\":\"BreadcrumbList\"");
+    expect(html).toContain("aspect-[4/5]");
+    expect(html).toContain("grayscale-[35%]");
+    expect(html).toContain("bg-kmt-warning-surface");
+    expect(html).toContain("text-kmt-warning-strong");
+    expect(html).toContain(lawyer.education[0]);
+    expect(html).toContain(lawyer.admissions[0]);
+    expect(html).toContain(lawyer.experience);
+    expect(html).toContain(`href="/book-consultation?lawyer=${encodeURIComponent(lawyer.name)}"`);
   });
 
   it("renders dark public section and detail CTA APIs", () => {

@@ -35,8 +35,10 @@ import {
   publicGoldChip,
   publicGoldText,
   publicMutedText,
+  publicNeutralChip,
   publicPanel,
-  publicPanelHover
+  publicPanelHover,
+  publicPhotoTreatment
 } from "@/features/public-site/public-components";
 import { ProcessSteps } from "@/features/public-site/process-steps";
 import { cn } from "@/lib/cn";
@@ -316,14 +318,14 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
               <TiltContent className="h-full">
                 <Link className={cn(publicPanel, publicPanelHover, "group block h-full overflow-hidden")} href={localizedPublicHref(`/team/${lawyer.slug}`, locale)}>
                   <div className="relative h-56 w-full overflow-hidden">
-                    <Image alt={lawyer.name} className="object-cover opacity-90 grayscale-[35%] transition-all duration-500 ease-kmt-out motion-reduce:transition-none group-hover:scale-[1.03] group-hover:grayscale-0 group-hover:opacity-100" fill sizes="(min-width: 768px) 33vw, 100vw" src={lawyer.image} />
+                    <Image alt={lawyer.name} className={publicPhotoTreatment} fill sizes="(min-width: 768px) 33vw, 100vw" src={lawyer.image} />
                   </div>
                   <div className="p-5">
                     <h3 className="text-xl font-semibold text-[var(--kmt-public-text)]">{lawyer.name}</h3>
                     <p className={cn("mt-1 text-sm", publicMutedText)}>{lawyer.title}</p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       {lawyer.specialties.slice(0, 2).map((specialty) => (
-                        <Badge key={specialty} className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100 dark:text-amber-100">
+                        <Badge key={specialty} className={publicGoldChip}>
                           {specialty}
                         </Badge>
                       ))}
@@ -492,7 +494,10 @@ export function TeamPageView({ locale }: { locale: PublicLocale }) {
             href: `/team/${lawyer.slug}`,
             category: lawyer.specialties[0] ?? "team",
             categoryLabel: lawyer.specialties[0] ?? copy.sectionEyebrow,
-            meta: lawyer.bookingEnabled ? copy.bookingAvailable : copy.officeReview
+            meta: lawyer.bookingEnabled ? copy.bookingAvailable : copy.officeReview,
+            chips: lawyer.specialties,
+            image: lawyer.image,
+            imageAlt: lawyer.name
           }))}
           searchLabel={copy.searchLabel}
         />
@@ -506,32 +511,82 @@ export function TeamDetailPageView({ locale, slug }: { locale: PublicLocale; slu
   const lawyer = content.lawyers.find((item) => item.slug === slug);
   if (!lawyer) notFound();
   const copy = content.teamDetail;
+  const breadcrumbItems = [
+    { label: copy.breadcrumbTeam, href: localizedPublicHref("/team", locale) },
+    { label: lawyer.name }
+  ];
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: copy.breadcrumbTeam, item: localizedPublicHref("/team", locale) },
+      { "@type": "ListItem", position: 2, name: lawyer.name }
+    ]
+  };
 
   return (
     <PublicShell currentPath={localizedPublicHref(`/team/${lawyer.slug}`, locale)} locale={locale} navItems={navForPath("/team", locale)}>
-      <PublicSection eyebrow={lawyer.title} title={lawyer.name} description={lawyer.bio}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <PublicSection
+        breadcrumbs={<PublicBreadcrumbs ariaLabel={content.serviceDetail.breadcrumbAriaLabel} items={breadcrumbItems} />}
+        eyebrow={lawyer.title}
+        headingLevel="h1"
+        title={lawyer.name}
+        description={lawyer.bio}
+      >
         <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-          <div className="relative h-[460px] w-full overflow-hidden rounded-lg border border-kmt-gold/25">
-            <Image alt={lawyer.name} className="object-cover opacity-90" fill sizes="(min-width: 1024px) 360px, 100vw" src={lawyer.image} />
+          <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-lg border border-[var(--kmt-public-line)]">
+            <Image alt={lawyer.name} className={publicPhotoTreatment} fill sizes="(min-width: 1024px) 360px, 100vw" src={lawyer.image} />
           </div>
           <div className={cn(publicPanel, "p-6")}>
-            <h2 className="text-2xl font-semibold text-white">{copy.specialtiesTitle}</h2>
+            <h2 className="text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.specialtiesTitle}</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {lawyer.specialties.map((specialty) => (
-                <Badge key={specialty} className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100">
+                <Badge key={specialty} className={publicGoldChip}>
                   {specialty}
                 </Badge>
               ))}
             </div>
-            <h2 className="mt-8 text-2xl font-semibold text-white">{copy.languagesTitle}</h2>
+            <h2 className="mt-8 text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.languagesTitle}</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {lawyer.languages.map((language) => (
-                <Badge key={language} className="border-white/15 bg-white/5 text-slate-200">
+                <Badge key={language} className={publicNeutralChip}>
                   {language}
                 </Badge>
               ))}
             </div>
-            <div className="mt-8 rounded-lg border border-amber-300/35 bg-amber-950/35 p-4 text-sm leading-7 text-amber-100">{copy.bookingNotice}</div>
+            <h2 className="mt-8 text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.credentialsTitle}</h2>
+            <div className="mt-4 space-y-6">
+              <div>
+                <p className={cn("text-sm font-semibold", publicGoldText)}>{copy.experienceTitle}</p>
+                <p className={cn("mt-1.5 text-sm leading-7", publicMutedText)}>{lawyer.experience}</p>
+              </div>
+              <div>
+                <p className={cn("text-sm font-semibold", publicGoldText)}>{copy.educationTitle}</p>
+                <ul className="mt-2 space-y-2">
+                  {lawyer.education.map((entry) => (
+                    <li key={entry} className={cn("flex gap-2 text-sm leading-7", publicMutedText)}>
+                      <MaterialSymbol className={cn("mt-1 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="history_edu" />
+                      <span>{entry}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className={cn("text-sm font-semibold", publicGoldText)}>{copy.admissionsTitle}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {lawyer.admissions.map((admission) => (
+                    <Badge key={admission} className={publicGoldChip}>
+                      {admission}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div className="mt-8 rounded-lg border border-kmt-warning-border bg-kmt-warning-surface p-4 text-sm leading-7 text-kmt-warning-strong">{copy.bookingNotice}</div>
             <p className={cn("mt-5 text-sm leading-7", publicMutedText)}>{copy.relationshipNotice}</p>
             <ButtonLink
               className={cn(publicMotionButton, publicMotionCta, "mt-6")}

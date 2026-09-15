@@ -19,6 +19,9 @@ const lawyers = [
     bio: "تركز على صياغة العقود التجارية وحوكمة الشركات وتنظيم ملفات التفاوض قبل التوقيع.",
     specialties: ["صياغة العقود", "حوكمة الشركات", "مراجعة المخاطر"],
     languages: ["العربية", "الإنجليزية"],
+    education: ["ليسانس حقوق، جامعة القاهرة", "دبلوم العقود التجارية، جامعة القاهرة"],
+    admissions: ["نقابة المحامين المصرية"],
+    experience: "أكثر من 12 عامًا في ممارسة أعمال الشركات والعقود",
     bookingEnabled: true,
     image: "/stitch-assets/ff4ca4cf707aef0c.png"
   },
@@ -29,6 +32,9 @@ const lawyers = [
     bio: "يعمل على تنظيم ملفات المنازعات التجارية والتحصيل ومراجعة المستندات قبل الإجراءات.",
     specialties: ["المنازعات التجارية", "التحصيل", "التفاوض"],
     languages: ["العربية"],
+    education: ["ليسانس حقوق، جامعة عين شمس", "ماجستير في القانون التجاري، جامعة القاهرة"],
+    admissions: ["نقابة المحامين المصرية"],
+    experience: "أكثر من 10 أعوام في ملفات المنازعات التجارية والتحصيل",
     bookingEnabled: true,
     image: "/stitch-assets/b25c75c2e3f319cd.png"
   },
@@ -39,6 +45,9 @@ const lawyers = [
     bio: "تركز على مراجعة مستندات الملكية وعقود العمل والسياسات الداخلية للشركات.",
     specialties: ["العقارات", "عقود العمل", "الامتثال"],
     languages: ["العربية", "الإنجليزية"],
+    education: ["ليسانس حقوق، جامعة الإسكندرية"],
+    admissions: ["نقابة المحامين المصرية"],
+    experience: "أكثر من 8 أعوام في الاستشارات العقارية وعقود العمل",
     bookingEnabled: false,
     image: "/stitch-assets/b7457fddf1203399.png"
   }
@@ -311,9 +320,14 @@ export const publicContentAr = {
   teamDetail: {
     specialtiesTitle: "التخصصات",
     languagesTitle: "اللغات",
+    credentialsTitle: "المؤهلات",
+    experienceTitle: "الخبرة",
+    educationTitle: "التعليم",
+    admissionsTitle: "القيد المهني",
     bookingNotice: "يتم تأكيد المحامي والموعد بعد مراجعة الطلب، ولا يمثل الحجز قبولا نهائيا للملف.",
     relationshipNotice: "بيانات الفريق هنا للتعريف بالتخصصات فقط، ولا تنشئ علاقة محاماة قبل قبول المكتب للملف.",
-    requestConsultation: "طلب استشارة"
+    requestConsultation: "طلب استشارة",
+    breadcrumbTeam: "الفريق"
   },
   articlesPage: {
     metadataTitle: "مقالات قانونية | KMT Legal",

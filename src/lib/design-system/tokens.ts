@@ -110,6 +110,25 @@ export const kmtStateCssVariables = {
   "--kmt-state-danger-strong": kmtTokens.state.danger.strong
 } as const;
 
+export const kmtStateDarkCssVariables = {
+  "--kmt-state-info": kmtStateDark.info.foreground,
+  "--kmt-state-info-surface": kmtStateDark.info.surface,
+  "--kmt-state-info-border": kmtStateDark.info.border,
+  "--kmt-state-info-strong": kmtStateDark.info.strong,
+  "--kmt-state-success": kmtStateDark.success.foreground,
+  "--kmt-state-success-surface": kmtStateDark.success.surface,
+  "--kmt-state-success-border": kmtStateDark.success.border,
+  "--kmt-state-success-strong": kmtStateDark.success.strong,
+  "--kmt-state-warning": kmtStateDark.warning.foreground,
+  "--kmt-state-warning-surface": kmtStateDark.warning.surface,
+  "--kmt-state-warning-border": kmtStateDark.warning.border,
+  "--kmt-state-warning-strong": kmtStateDark.warning.strong,
+  "--kmt-state-danger": kmtStateDark.danger.foreground,
+  "--kmt-state-danger-surface": kmtStateDark.danger.surface,
+  "--kmt-state-danger-border": kmtStateDark.danger.border,
+  "--kmt-state-danger-strong": kmtStateDark.danger.strong
+} as const;
+
 type KmtSemanticPalette = {
   background: string;
   foreground: string;
@@ -181,7 +200,8 @@ export const kmtSemanticBaseStyles = {
   },
   ".dark": {
     colorScheme: "dark",
-    ...kmtSemanticDarkCssVariables
+    ...kmtSemanticDarkCssVariables,
+    ...kmtStateDarkCssVariables
   }
 } as const;
 

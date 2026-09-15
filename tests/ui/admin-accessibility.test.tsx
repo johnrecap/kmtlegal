@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { DataTable, FilterBar, SearchInput, Select, Skeleton, StateBlock, Textarea, TextInput, Toast } from "@/components/ui";
-import { kmtStateCssVariables, kmtTokens } from "@/lib/design-system/tokens";
+import { kmtSemanticBaseStyles, kmtStateCssVariables, kmtStateDark, kmtTokens } from "@/lib/design-system/tokens";
 
 describe("PLAN-35 shared admin accessibility contracts", () => {
   it("keeps repeated names stable while DOM relationships remain unique", () => {
@@ -83,7 +83,10 @@ describe("PLAN-35 shared admin accessibility contracts", () => {
     expect(kmtStateCssVariables["--kmt-state-info"]).toBe(kmtTokens.state.info.foreground);
     expect(kmtStateCssVariables["--kmt-state-success-surface"]).toBe(kmtTokens.state.success.surface);
     expect(kmtStateCssVariables["--kmt-state-danger-strong"]).toBe(kmtTokens.state.danger.strong);
-    expect(tailwind).toContain("kmtStateCssVariables");
+    expect(tailwind).toContain("kmtSemanticBaseStyles");
+    expect(kmtSemanticBaseStyles[":root"]["--kmt-state-warning"]).toBe(kmtTokens.state.warning.foreground);
+    expect(kmtSemanticBaseStyles[".dark"]["--kmt-state-warning-surface"]).toBe(kmtStateDark.warning.surface);
+    expect(kmtSemanticBaseStyles[".dark"]["--kmt-state-danger-strong"]).toBe(kmtStateDark.danger.strong);
     expect(globals).not.toMatch(/--kmt-state-(?:info|success|warning|danger)\s*:/);
   });
 
