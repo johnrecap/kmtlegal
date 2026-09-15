@@ -225,6 +225,11 @@ export const publicContentAr = {
     heroEyebrow: "الخدمات",
     heroTitle: "دعم قانوني منظم للشركات والأفراد",
     heroDescription: "ابدأ طلبك من خلال نموذج واضح؛ يراجع المكتب الوقائع والمستندات قبل تحديد المسار المناسب والخطوة التالية.",
+    heroPickerLabel: "اختر الموضوع الأقرب لطلبك",
+    heroDocketTitle: "مسودة الطلب",
+    heroDocketMatter: "الموضوع",
+    heroDocketNext: "الخطوة التالية",
+    heroDocketEmpty: "اختر موضوعًا لمعاينة مسودة طلبك.",
     trustItems: [
       { icon: "verified_user", label: "مراجعة من المكتب قبل أي خطوة قانونية" },
       { icon: "lock", label: "التعامل مع بيانات العملاء بسرية" },

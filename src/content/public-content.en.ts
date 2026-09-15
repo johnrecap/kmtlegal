@@ -252,6 +252,11 @@ export const publicContentEn = {
     heroTitle: "Structured Legal Support for Business and Private Matters",
     heroDescription:
       "Submit your matter through a clear intake process. The office reviews the facts and documents before confirming the suitable next step.",
+    heroPickerLabel: "Choose the matter closest to your request",
+    heroDocketTitle: "Request draft",
+    heroDocketMatter: "Matter",
+    heroDocketNext: "Next step",
+    heroDocketEmpty: "Select a matter to preview your request draft.",
     trustItems: [
       { icon: "verified_user", label: "Reviewed by the office before any legal step" },
       { icon: "lock", label: "Client information is handled confidentially" },

@@ -220,20 +220,18 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
         eyebrow={copy.heroEyebrow}
         title={copy.heroTitle}
         description={copy.heroDescription}
-        image="/stitch-assets/b392b48a7cb6b561.png"
-        imagePosition="object-[center_55%]"
-        insights={copy.trustItems}
+        pickerLabel={copy.heroPickerLabel}
+        matters={content.practiceAreaMatrix.slice(0, 6)}
+        docket={{
+          title: copy.heroDocketTitle,
+          matter: copy.heroDocketMatter,
+          next: copy.heroDocketNext,
+          empty: copy.heroDocketEmpty
+        }}
+        nextStep={content.bookingPage.sectionDescription}
+        bookLabel={content.shared.bookConsultation}
+        browseLabel={content.shared.browsePracticeAreas}
         locale={locale}
-        actions={
-          <>
-            <ButtonLink className={cn(publicMotionButton, publicMotionCta)} href={localizedPublicHref("/book-consultation", locale)} size="lg" trailingIcon={<MaterialSymbol className={cn(publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />}>
-              {content.shared.bookConsultation}
-            </ButtonLink>
-            <ButtonLink className={cn(publicMotionButton, publicMotionCta, "!border-white/35 !text-white hover:!bg-white hover:!text-kmt-navy")} href={localizedPublicHref("/services", locale)} size="lg" variant="secondary">
-              {content.shared.browsePracticeAreas}
-            </ButtonLink>
-          </>
-        }
       />
       <TrustStrip items={copy.trustItems} />
 
