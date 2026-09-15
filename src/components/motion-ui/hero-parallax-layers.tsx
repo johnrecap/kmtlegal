@@ -101,7 +101,7 @@ export function HeroParallaxLayers({
         gsap.to("[data-drift='docket']", {
           y: -220,
           ease: "none",
-          scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: 1 },
+          scrollTrigger: { trigger: root, start: "top top", end: "+=700", scrub: 0.4 },
         });
       });
     },
