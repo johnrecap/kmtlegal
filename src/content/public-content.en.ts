@@ -317,7 +317,9 @@ export const publicContentEn = {
     includedTitle: "Services included",
     documentsTitle: "Documents That Help Review",
     outcomesTitle: "Expected Outputs",
-    backToServices: "Back to Services"
+    backToServices: "Back to Services",
+    breadcrumbAriaLabel: "Breadcrumb",
+    breadcrumbServices: "Services"
   },
   teamPage: {
     metadataTitle: "KMT Legal Team",

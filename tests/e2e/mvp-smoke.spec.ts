@@ -36,9 +36,16 @@ async function expectNoHorizontalScroll(page: Page, path: string) {
   expect(scrollWidth, `${path} should not create page-level horizontal scroll`).toBeLessThanOrEqual(clientWidth + 1);
 }
 
-async function expectDarkLuxurySurface(locator: Locator, label: string) {
+async function expectDarkLuxurySurface(locator: Locator, label: string, style: "legacy-gradient" | "public-tokens" = "legacy-gradient") {
   const className = (await locator.getAttribute("class")) ?? "";
 
+  if (style === "public-tokens") {
+    // File 12 (services) migrated the directory surfaces from the PLAN-28
+    // hardcoded dark gradients to the theme-aware --kmt-public-* tokens.
+    expect(className, `${label} should use the theme-aware public surface tokens`).toContain("bg-[var(--kmt-public-");
+    expect(className, `${label} should keep a token border`).toContain("border-[var(--kmt-public-line)]");
+    return;
+  }
   expect(className, `${label} should use the PLAN-28 layered dark surface`).toContain("bg-[linear-gradient");
   expect(className, `${label} should not keep the old light card border`).toContain("border-kmt-gold");
 }
@@ -233,7 +240,11 @@ test.describe("MVP smoke without database", () => {
           for (const testId of testIds) {
             const surface = page.getByTestId(testId).first();
             await expect(surface, `${path} ${testId} should be visible`).toBeVisible();
-            await expectDarkLuxurySurface(surface, `${path} ${testId}`);
+            await expectDarkLuxurySurface(
+              surface,
+              `${path} ${testId}`,
+              testId === "public-directory-filter" || testId === "public-directory-card" ? "public-tokens" : "legacy-gradient"
+            );
           }
         }
       });

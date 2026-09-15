@@ -290,7 +290,9 @@ export const publicContentAr = {
     includedTitle: "الخدمات المتضمنة",
     documentsTitle: "مستندات تساعد على المراجعة",
     outcomesTitle: "مخرجات متوقعة",
-    backToServices: "العودة للخدمات"
+    backToServices: "العودة للخدمات",
+    breadcrumbAriaLabel: "مسار التنقل",
+    breadcrumbServices: "الخدمات"
   },
   teamPage: {
     metadataTitle: "فريق KMT Legal",

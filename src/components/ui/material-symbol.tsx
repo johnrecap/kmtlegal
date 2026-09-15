@@ -80,6 +80,8 @@ const icons: Record<string, IconNode> = {
       <path {...strokeProps} d="m8.2 12.4 2.4 2.4 5.2-5.5" />
     </>
   ),
+  chevron_left: <path {...strokeProps} d="m15 5.5-6.5 6.5L15 18.5" />,
+  chevron_right: <path {...strokeProps} d="m9 5.5 6.5 6.5L9 18.5" />,
   contract: (
     <>
       <path {...strokeProps} d="M7 4h7l3 3v13H7V4Z" />

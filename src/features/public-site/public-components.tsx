@@ -26,6 +26,7 @@ export const publicPanel =
 export const publicPanelHover = cn(publicMotionCardBeam, "kmt-motion-card transition-colors hover:border-kmt-gold/70 hover:bg-[var(--kmt-public-hover)]");
 export const publicMutedText = "text-[var(--kmt-public-muted)]";
 export const publicGoldText = "text-[var(--kmt-public-gold)]";
+export const publicGoldChip = "border-kmt-gold/35 bg-kmt-gold/10 text-[var(--kmt-public-text)]";
 
 export function PublicSection({
   eyebrow,
@@ -35,7 +36,8 @@ export function PublicSection({
   className,
   align = "start",
   surface = "default",
-  headingLevel = "h2"
+  headingLevel = "h2",
+  breadcrumbs
 }: {
   eyebrow?: string;
   title: string;
@@ -45,6 +47,7 @@ export function PublicSection({
   align?: "start" | "center";
   surface?: "default" | "muted" | "transparent";
   headingLevel?: "h1" | "h2";
+  breadcrumbs?: ReactNode;
 }) {
   const surfaceClass =
     surface === "transparent"
@@ -59,6 +62,7 @@ export function PublicSection({
     <section className={cn(surfaceClass, className)}>
       <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:px-10 lg:py-16">
         <div className={cn("max-w-3xl", isCentered ? "mx-auto text-center" : undefined)}>
+          {breadcrumbs ? <div className="mb-5">{breadcrumbs}</div> : null}
           {eyebrow ? <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p> : null}
           <Heading className="mt-2 text-3xl font-semibold leading-tight text-[var(--kmt-public-text)] md:text-4xl">{title}</Heading>
           {description ? <p className={cn("mt-4 text-base leading-8", publicMutedText)}>{description}</p> : null}
@@ -99,8 +103,9 @@ export function PageHero({
         aria-hidden="true"
         className={cn("kmt-motion-hero-image object-cover", imageOpacity, imagePosition)}
         data-testid="public-page-hero-image"
+        fetchPriority="high"
         fill
-        priority={!isCompact}
+        priority
         sizes="100vw"
         src={image}
       />
@@ -136,6 +141,46 @@ export function TrustStrip({ items }: { items: ReadonlyArray<{ icon: string; lab
   );
 }
 
+export function PublicBreadcrumbs({
+  ariaLabel,
+  items
+}: {
+  ariaLabel: string;
+  items: ReadonlyArray<{ label: string; href?: string }>;
+}) {
+  return (
+    <nav aria-label={ariaLabel} className="text-sm">
+      <ol className="flex flex-wrap items-center gap-1.5">
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1;
+          return (
+            <li key={`${index}-${item.label}`} className="flex items-center gap-1.5">
+              {item.href && !isLast ? (
+                <Link
+                  className="rounded font-medium text-[var(--kmt-public-muted)] transition-colors hover:text-[var(--kmt-public-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
+                  href={item.href}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <span
+                  aria-current={isLast ? "page" : undefined}
+                  className={isLast ? "font-semibold text-[var(--kmt-public-text)]" : "text-[var(--kmt-public-muted)]"}
+                >
+                  {item.label}
+                </span>
+              )}
+              {isLast ? null : (
+                <MaterialSymbol aria-hidden={true} className="text-sm text-[var(--kmt-public-muted)] rtl:rotate-180" name="chevron_right" />
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
+
 export function DetailCta({ serviceTitle, locale = "en" }: { serviceTitle?: string; locale?: PublicLocale }) {
   const content = getPublicContent(locale);
   const href = serviceTitle
@@ -143,13 +188,13 @@ export function DetailCta({ serviceTitle, locale = "en" }: { serviceTitle?: stri
     : localizedPublicHref("/book-consultation", locale);
 
   return (
-    <div className={cn(publicPanel, "p-6")}>
-      <h2 className="text-2xl font-semibold text-white">{content.bookingPage.sectionTitle}</h2>
+    <aside className={cn(publicPanel, "p-6 backdrop-blur-md lg:sticky lg:top-24 lg:self-start")}>
+      <h2 className="text-2xl font-semibold text-[var(--kmt-public-text)]">{content.bookingPage.sectionTitle}</h2>
       <p className={cn("mt-3 leading-7", publicMutedText)}>{content.bookingPage.sectionDescription}</p>
       <ButtonLink className={cn(publicMotionButton, publicMotionCta, "mt-5")} href={href} trailingIcon={<MaterialSymbol className={cn("text-base", publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />}>
         {content.shared.bookConsultation}
       </ButtonLink>
-    </div>
+    </aside>
   );
 }
 

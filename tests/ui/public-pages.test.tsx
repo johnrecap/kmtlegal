@@ -7,7 +7,7 @@ import { PublicShell } from "@/components/layout";
 import { ButtonLink } from "@/components/ui";
 import { getPublicContent, navForPath } from "@/content/public-content";
 import { DetailCta, PageHero, PublicSection, TrustStrip } from "@/features/public-site/public-components";
-import { HomePageView, PrivacyPageView, privacyMetadata } from "@/features/public-site/public-pages";
+import { HomePageView, PrivacyPageView, ServiceDetailPageView, privacyMetadata } from "@/features/public-site/public-pages";
 
 describe("public website UI", () => {
   it("renders public shell navigation with English default labels and active page", () => {
@@ -144,11 +144,27 @@ describe("public website UI", () => {
 
     expect(html).toContain("min-h-[360px]");
     expect(html).toContain("md:min-h-[420px]");
-    expect(html).toContain("loading=\"lazy\"");
+    expect(html).not.toContain("loading=");
     expect(html).toContain("opacity-95");
     expect(html).toContain("bg-[rgb(var(--kmt-public-scrim)/0.42)]");
     expect(html).toContain("Find the Closest Service Path");
     expect(html).not.toContain("secondary-container");
+  });
+
+  it("renders service detail with h1, breadcrumbs, and structured data", () => {
+    const content = getPublicContent("en");
+    const service = content.legalServices[0];
+    const html = renderToStaticMarkup(<ServiceDetailPageView locale="en" slug={service.slug} />);
+
+    expect(html).toContain("<h1");
+    expect(html).toContain("aria-label=\"Breadcrumb\"");
+    expect(html).toContain("aria-current=\"page\"");
+    expect(html).toContain(`href="/services"`);
+    expect(html).toContain("application/ld+json");
+    expect(html).toContain("\"@type\":\"BreadcrumbList\"");
+    expect(html).toContain("lg:sticky");
+    expect(html).toContain("text-primary-foreground");
+    expect(html).toContain(service.title);
   });
 
   it("renders dark public section and detail CTA APIs", () => {

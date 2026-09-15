@@ -28,9 +28,11 @@ import {
   LuxuryFeaturePanel,
   PageHero,
   PracticeAreaCard,
+  PublicBreadcrumbs,
   PublicSection,
   RepresentativeMatterCard,
   TrustStrip,
+  publicGoldChip,
   publicGoldText,
   publicMutedText,
   publicPanel,
@@ -404,11 +406,32 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
   if (!service) notFound();
   const copy = content.serviceDetail;
   const currentSlug = canonicalPublicServiceSlug(slug);
+  const categoryLabel = content.serviceCategories[service.category as keyof typeof content.serviceCategories] ?? service.category;
+  const breadcrumbItems = [
+    { label: copy.breadcrumbServices, href: localizedPublicHref("/services", locale) },
+    { label: categoryLabel },
+    { label: service.title }
+  ];
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: copy.breadcrumbServices, item: localizedPublicHref("/services", locale) },
+      { "@type": "ListItem", position: 2, name: categoryLabel },
+      { "@type": "ListItem", position: 3, name: service.title }
+    ]
+  };
 
   return (
     <PublicShell currentPath={localizedPublicHref(`/services/${currentSlug}`, locale)} locale={locale} navItems={navForPath("/services", locale)}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <PublicSection
-        eyebrow={content.serviceCategories[service.category as keyof typeof content.serviceCategories] ?? service.category}
+        breadcrumbs={<PublicBreadcrumbs ariaLabel={copy.breadcrumbAriaLabel} items={breadcrumbItems} />}
+        eyebrow={categoryLabel}
+        headingLevel="h1"
         title={service.title}
         description={service.description}
       >
@@ -416,23 +439,23 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
           <article className={cn(publicPanel, "p-6")}>
             <MaterialSymbol className={cn("text-4xl", publicGoldText)} name={service.icon} />
             <p className={cn("mt-5 leading-8", publicMutedText)}>{service.content}</p>
-            <h2 className="mt-8 text-2xl font-semibold text-white">{copy.includedTitle}</h2>
+            <h2 className="mt-8 text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.includedTitle}</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {service.subServices.map((subService) => (
-                <Badge key={subService} className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100">
+                <Badge key={subService} className={publicGoldChip}>
                   {subService}
                 </Badge>
               ))}
             </div>
-            <h2 className="mt-8 text-2xl font-semibold text-white">{copy.documentsTitle}</h2>
+            <h2 className="mt-8 text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.documentsTitle}</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {service.requiredDocuments.map((document) => (
-                <Badge key={document} className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100">
+                <Badge key={document} className={publicGoldChip}>
                   {document}
                 </Badge>
               ))}
             </div>
-            <h2 className="mt-8 text-2xl font-semibold text-white">{copy.outcomesTitle}</h2>
+            <h2 className="mt-8 text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.outcomesTitle}</h2>
             <ul className={cn("mt-4 space-y-3", publicMutedText)}>
               {service.outcomes.map((outcome) => (
                 <li key={outcome} className="flex gap-2">
@@ -441,7 +464,7 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
                 </li>
               ))}
             </ul>
-            <ButtonLink className={cn(publicMotionButton, publicMotionCta, "mt-8 !border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white")} href={localizedPublicHref("/services", locale)} variant="secondary">
+            <ButtonLink className={cn(publicMotionButton, publicMotionCta, "mt-8 !border-kmt-gold/35 !text-[var(--kmt-public-text)] hover:!bg-kmt-gold hover:!text-primary-foreground")} href={localizedPublicHref("/services", locale)} variant="secondary">
               {copy.backToServices}
             </ButtonLink>
           </article>
