@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { KmtBrandLogo } from "@/components/brand";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Badge, MaterialSymbol, buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { plan35AdminShellCopy } from "@/lib/ui-copy";
@@ -55,6 +56,10 @@ export function DashboardShellView({
             </div>
             <div className="flex min-w-0 flex-wrap items-center justify-end gap-3">
               {mode === "admin" ? notificationBell : null}
+              <ThemeToggle
+                className="border border-kmt-border text-kmt-muted hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline-kmt-gold"
+                label={plan35AdminShellCopy.themeToggle}
+              />
               <span className="hidden min-w-0 max-w-56 truncate text-sm text-kmt-muted sm:inline">{userLabel}</span>
               <form action="/api/auth/logout" method="post">
                 <button

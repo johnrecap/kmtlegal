@@ -562,6 +562,7 @@ export const plan35AdminShellCopy = {
   closeNavigation: "إغلاق قائمة الإدارة",
   navigationTitle: "القائمة الرئيسية لمساحة العمل",
   logout: "تسجيل الخروج",
+  themeToggle: "تبديل بين الوضع الليلي والنهاري",
   unknownSection: "شاشة إدارية",
   fallbackUser: "فريق المكتب"
 } as const;

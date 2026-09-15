@@ -85,8 +85,8 @@
 
 body {
   margin: 0;
-  background: #f7f9fb;
-  color: #191c1e;
+  background: var(--background);
+  color: var(--foreground);
   font-family: "Inter", "IBM Plex Sans Arabic", Arial, sans-serif;
 }
 
@@ -103,7 +103,7 @@ a {
 }
 
 :focus-visible {
-  outline: 2px solid var(--kmt-gold);
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
 
@@ -605,6 +605,36 @@ a {
     }
     to {
       transform: translateX(-50%);
+    }
+  }
+
+  .kmt-spotlight {
+    isolation: isolate;
+  }
+
+  .kmt-spotlight::before {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: radial-gradient(
+      240px circle at var(--kmt-spotlight-x, 50%) var(--kmt-spotlight-y, 50%),
+      var(--kmt-spotlight-color, rgb(199 154 82 / 12%)),
+      transparent 65%
+    );
+    content: "";
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--kmt-duration-fast) var(--kmt-ease-out);
+  }
+
+  .kmt-spotlight:hover::before,
+  .kmt-spotlight:focus-within::before {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .kmt-spotlight::before {
+      transition: none;
     }
   }
 

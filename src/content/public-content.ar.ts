@@ -209,7 +209,8 @@ export const publicContentAr = {
     copyright: "© 2026 KMT Legal. جميع الحقوق محفوظة.",
     privacy: "سياسة الخصوصية",
     terms: "الشروط",
-    languageSwitchLabel: "English"
+    languageSwitchLabel: "English",
+    themeToggleLabel: "تبديل بين الوضع الليلي والنهاري"
   },
   shared: {
     bookConsultation: "طلب استشارة",

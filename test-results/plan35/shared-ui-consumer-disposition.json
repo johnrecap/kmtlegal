@@ -240,6 +240,31 @@
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
     },
     {
+      "path": "src/app/(app-ar)/error.tsx",
+      "contracts": [
+        "StateBlock"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/loading.tsx",
+      "contracts": [
+        "StateBlock"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/app/(app-ar)/not-found.tsx",
+      "contracts": [
+        "ButtonLink",
+        "StateBlock"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
       "path": "src/app/(client)/client/cases/[caseId]/page.tsx",
       "contracts": [
         "ButtonLink",
@@ -298,31 +323,6 @@
       "evidence": "tests/ui/product-components.test.tsx"
     },
     {
-      "path": "src/app/(app-ar)/error.tsx",
-      "contracts": [
-        "StateBlock"
-      ],
-      "disposition": "backward-compatible",
-      "evidence": "tests/ui/product-components.test.tsx"
-    },
-    {
-      "path": "src/app/(app-ar)/loading.tsx",
-      "contracts": [
-        "StateBlock"
-      ],
-      "disposition": "backward-compatible",
-      "evidence": "tests/ui/product-components.test.tsx"
-    },
-    {
-      "path": "src/app/(app-ar)/not-found.tsx",
-      "contracts": [
-        "ButtonLink",
-        "StateBlock"
-      ],
-      "disposition": "backward-compatible",
-      "evidence": "tests/ui/product-components.test.tsx"
-    },
-    {
       "path": "src/components/domain/legal-cards.tsx",
       "contracts": [
         "Button"
@@ -352,6 +352,14 @@
       "path": "src/components/layout/dashboard-shell-view.tsx",
       "contracts": [
         "buttonClasses"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/components/motion-ui/shimmer-button.tsx",
+      "contracts": [
+        "button"
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/product-components.test.tsx"

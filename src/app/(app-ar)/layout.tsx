@@ -1,5 +1,6 @@
 import { rootMetadata } from "../root-metadata";
 import { getApplicationReadiness } from "@/server/health/runtime-readiness";
+import { KMT_ADMIN_THEME_STORAGE_KEY, ThemeProvider } from "@/components/theme/theme-provider";
 import "../globals.css";
 
 export const metadata = rootMetadata;
@@ -13,8 +14,12 @@ export default async function AppArabicRootLayout({
   const page = readiness && !readiness.ready ? <ReadinessBlockedPage checks={readiness.checks} /> : children;
 
   return (
-    <html lang="ar" dir="rtl">
-      <body>{page}</body>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <body>
+        <ThemeProvider defaultTheme="light" storageKey={KMT_ADMIN_THEME_STORAGE_KEY}>
+          {page}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

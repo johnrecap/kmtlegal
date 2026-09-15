@@ -101,6 +101,7 @@ const icons: Record<string, IconNode> = {
       <rect {...strokeProps} x="14" y="14" width="6" height="6" rx="1.5" />
     </>
   ),
+  dark_mode: <path {...strokeProps} d="M20.2 14.2A8.3 8.3 0 0 1 9.8 3.8a8.3 8.3 0 1 0 10.4 10.4Z" />,
   description: (
     <>
       <path {...strokeProps} d="M7 4h7l3 3v13H7V4Z" />
@@ -173,6 +174,12 @@ const icons: Record<string, IconNode> = {
     </>
   ),
   home: <path {...strokeProps} d="M4 11.5 12 5l8 6.5V20h-5v-5H9v5H4v-8.5Z" />,
+  light_mode: (
+    <>
+      <circle {...strokeProps} cx="12" cy="12" r="4" />
+      <path {...strokeProps} d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M18.7 5.3l-1.4 1.4M6.7 17.3l-1.4 1.4" />
+    </>
+  ),
   location_on: (
     <>
       <path {...strokeProps} d="M12 21s6-5.2 6-10a6 6 0 0 0-12 0c0 4.8 6 10 6 10Z" />

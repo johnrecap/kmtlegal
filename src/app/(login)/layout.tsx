@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { normalizeClientLocale } from "@/content/client-content";
 import { rootMetadata } from "../root-metadata";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import "../globals.css";
 
 export const metadata = rootMetadata;
@@ -14,8 +15,10 @@ export default async function LoginRootLayout({
   const locale = normalizeClientLocale(requestHeaders.get("x-kmt-login-locale"));
 
   return (
-    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
-      <body>{children}</body>
+    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} suppressHydrationWarning>
+      <body>
+        <ThemeProvider defaultTheme="dark">{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

@@ -49,7 +49,7 @@ export async function ClientAccountSetupPage({
         <section className="grid gap-6 lg:grid-cols-[1fr_0.9fr] lg:items-start">
           <div className="rounded-[1.75rem] border border-kmt-gold/35 bg-[linear-gradient(145deg,#17110a_0%,#090b0d_54%,#020202_100%)] p-6 shadow-[0_34px_120px_-68px_rgba(183,134,64,0.58)] sm:p-8">
             <p className="text-sm font-semibold text-kmt-gold">{copy.eyebrow}</p>
-            <h1 className="mt-3 font-serif text-3xl font-semibold leading-tight text-white sm:text-4xl">
+            <h1 className="mt-3 text-3xl font-semibold leading-tight text-white sm:text-4xl">
               {context ? copy.title : copy.expiredTitle}
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-8 text-amber-50/78">

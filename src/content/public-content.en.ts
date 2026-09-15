@@ -235,7 +235,8 @@ export const publicContentEn = {
     copyright: "© 2026 KMT Legal. All rights reserved.",
     privacy: "Privacy Policy",
     terms: "Terms",
-    languageSwitchLabel: "العربية"
+    languageSwitchLabel: "العربية",
+    themeToggleLabel: "Toggle dark and light theme"
   },
   shared: {
     bookConsultation: "Request a Consultation",

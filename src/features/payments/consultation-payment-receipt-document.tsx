@@ -33,7 +33,7 @@ export function ConsultationPaymentReceiptDocument({ receipt }: { receipt: Payme
             <KmtBrandLogo size="md" sublabel="فاتورة حجز استشارة" surface="light" variant="lockup" />
             <div className="text-start sm:text-end">
               <p className="text-sm font-semibold text-kmt-gold">KMT Legal Office</p>
-              <h1 className="mt-2 font-serif text-3xl font-semibold">فاتورة وإيصال دفع</h1>
+              <h1 className="mt-2 text-3xl font-semibold">فاتورة وإيصال دفع</h1>
               <p className="mt-2 text-sm leading-6 text-kmt-muted">رسوم حجز استشارة قانونية مؤكدة من بوابة الدفع</p>
             </div>
           </div>

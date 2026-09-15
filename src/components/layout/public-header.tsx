@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { KmtBrandLogo } from "@/components/brand";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { MaterialSymbol } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
 import { publicMotionButton, publicMotionCta, publicMotionIcon, publicMotionIconHalo, publicMotionNavLink, publicMotionTextLink } from "@/features/public-site/public-motion";
@@ -187,6 +188,10 @@ export function PublicHeader({
               <span className="sr-only sm:not-sr-only">{shell.languageSwitchLabel}</span>
             </a>
           ) : null}
+          <ThemeToggle
+            className="border border-white/15 text-stone-200 hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline-kmt-gold"
+            label={shell.themeToggleLabel}
+          />
           <ClientLoginLink label={shell.clientLoginCta} locale={locale} />
           <ConsultationLink className="px-3 max-sm:hidden sm:px-4" label={shell.consultationCta} locale={locale} />
         </div>

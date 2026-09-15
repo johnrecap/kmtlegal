@@ -2,6 +2,7 @@ import { rootMetadata } from "../root-metadata";
 import { getClientContent, normalizeClientLocale } from "@/content/client-content";
 import { getAuthContextForPage } from "@/server/auth/page-guards";
 import { getApplicationReadiness } from "@/server/health/runtime-readiness";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import "../globals.css";
 
 export const metadata = rootMetadata;
@@ -20,8 +21,10 @@ export default async function ClientRootLayout({
     : children;
 
   return (
-    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
-      <body>{page}</body>
+    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} suppressHydrationWarning>
+      <body>
+        <ThemeProvider defaultTheme="dark">{page}</ThemeProvider>
+      </body>
     </html>
   );
 }

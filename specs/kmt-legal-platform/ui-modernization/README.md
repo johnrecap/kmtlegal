@@ -20,7 +20,7 @@ Full-site modernization: modern components, GSAP/Lenis/React-Bits motion, consol
 ## File index
 
 ### Infrastructure
-- [ ] `00-foundation.md` — design tokens, dark/light theme, cn(), Tailwind config, motion tokens, dependencies
+- [x] `00-foundation.md` — design tokens, dark/light theme, cn(), Tailwind config, motion tokens, dependencies *(done 2026-09-15; T0.12 cascade-remap deletion deferred to Phase 2/3)*
 - [ ] `01-component-library.md` — shared UI components (`src/components/ui/`)
 
 ### Public site (Phase 2)

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { KmtBrandLogo } from "@/components/brand";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { MaterialSymbol } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import type { DashboardNavItem } from "./dashboard-shell";
@@ -102,6 +103,10 @@ export function ClientSiteShell({
               {copy.shell.backToSite}
             </Link>
             <ClientLanguageSwitch locale={locale} />
+            <ThemeToggle
+              className="border border-white/15 text-stone-200 hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline-kmt-gold"
+              label={copy.shell.themeToggle}
+            />
             <span className="hidden max-w-56 truncate border border-kmt-gold/25 bg-kmt-gold/10 px-3 py-2 text-xs font-semibold text-amber-100 sm:inline-flex">
               {userLabel}
             </span>

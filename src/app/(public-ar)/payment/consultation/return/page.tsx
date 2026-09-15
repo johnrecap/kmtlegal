@@ -41,7 +41,7 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
             </span>
             <div className="min-w-0">
               <p className="text-sm font-semibold uppercase tracking-[0.16em] text-kmt-gold">{paymentReturnCopy.eyebrow}</p>
-              <h1 className="mt-3 font-serif text-3xl font-semibold leading-tight text-white sm:text-4xl">{tone.title}</h1>
+              <h1 className="mt-3 text-3xl font-semibold leading-tight text-white sm:text-4xl">{tone.title}</h1>
               <p className="mt-4 max-w-2xl text-base leading-8 text-amber-50/78">{tone.description}</p>
             </div>
           </div>

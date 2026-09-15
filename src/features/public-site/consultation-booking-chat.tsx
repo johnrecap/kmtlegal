@@ -693,7 +693,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
             <div className="flex min-w-0 items-center gap-4">
               <KmtBrandLogo label={copy.assistantName} shape="circle" size="lg" variant="mark" />
               <div className="min-w-0">
-                <p className="truncate font-serif text-[1.9rem] font-semibold leading-tight text-white max-sm:text-xl">{copy.assistantName}</p>
+                <p className="truncate text-[1.9rem] font-semibold leading-tight text-white max-sm:text-xl">{copy.assistantName}</p>
                 <p className="mt-2 flex items-center gap-2 text-sm font-medium text-[#7ad36a]">
                   <span className="h-2.5 w-2.5 rounded-full bg-[#7ad36a] shadow-[0_0_16px_rgba(122,211,106,0.85)]" aria-hidden="true" />
                   {copy.onlineNow}
@@ -980,7 +980,7 @@ function PaymentReviewPanel({
           <MaterialSymbol name="payments" />
         </span>
         <div>
-          <p className="font-serif text-xl font-semibold leading-tight">{copy.paymentReviewTitle}</p>
+          <p className="text-xl font-semibold leading-tight">{copy.paymentReviewTitle}</p>
           <p className="mt-1 text-sm text-amber-100/70">{copy.cancellationPolicy}</p>
         </div>
       </div>
