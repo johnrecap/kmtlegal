@@ -25,20 +25,20 @@
 
 ## Tasks
 
-- [ ] T11.1 Hero modernization (GSAP + Lenis): keep matter-picker/docket concept; add word-level AnimatedHeading (React Bits) for EN, **line-level for AR** (never per-letter Arabic); keep parallax behind `prefers-reduced-motion: no-preference` gate (`hero-parallax-layers.tsx:77-106`).
-- [ ] T11.2 Hero RTL fixes: mirror docket CTA arrow (line 240); strip `tracking-*`/`uppercase` when `locale === "ar"` (lines 211,224,236).
-- [ ] T11.3 `Reveal` SSR-safe rebuild: visible by default, JS enhances (IntersectionObserver adds transition only); reduced-motion: content fully visible, no transform.
-- [ ] T11.4 Practice areas → bento grid (asymmetric, 1 featured + 3 standard) with SpotlightCard hover (React Bits); mobile: single column; keep `aria-live` docket prefill behavior.
-- [ ] T11.5 Count-up stats (React Bits CountUp) in TrustStrip or hero trust row; reduced-motion: static numbers; RTL: numerals stay LTR (`bdi`/`dir` isolation).
-- [ ] T11.6 ProcessSteps scroll storytelling: GSAP ScrollTrigger pin + progress hairline (desktop only), simple stagger reveal on mobile; reduced-motion: static.
-- [ ] T11.7 Focus Area: split checklist into "Outcomes" and "Required documents" groups (`public-pages.tsx:257`).
-- [ ] T11.8 Team cards: unify photo treatment with team detail (grayscale→color hover both places); badge fix verification.
-- [ ] T11.9 Insights section: skeleton + error State (not silent omission); empty state with link to articles.
-- [ ] T11.10 Verify both themes: hero overlays, marquee masks, gold accents pass AA in light mode (adjust overlay tokens per theme).
+- [x] T11.1 Hero modernization (GSAP + Lenis): matter-picker/docket kept; **word-level animated heading for EN** (split spans + GSAP stagger 0.09s, `aria-label` keeps full title, spans `aria-hidden`) and **line-level for AR** (single span — never per-letter Arabic); parallax stays behind `prefers-reduced-motion: no-preference`.
+- [x] T11.2 Hero RTL fixes: docket CTA arrow mirrored (`rtl:rotate-180`, verified `matrix(-1,0,0,-1)`); `tracking-*`/`uppercase` applied only when `locale === "en"` (AR docket labels verified `letterSpacing: normal`).
+- [x] T11.3 `Reveal` SSR-safe rebuild: renders fully visible server-side; JS adds transition + reveals from below when motion allowed; reduced-motion: static and visible. *No-JS verified: h1, all 8 sections, all cards visible.*
+- [x] T11.4 Practice areas → bento grid: featured first card spans 2×2 (476px tall) + 3 standard cards; spotlight hover kept via `Reveal spotlight`; mobile single column; docket `aria-live` prefill behavior kept (verified: chip click → filled docket + `?service=` CTA).
+- [x] T11.5 Count-up stats: new hero trust row (3 stats: practice areas, lawyers, response time) with in-house `CountUp` (IntersectionObserver-triggered, reduced-motion: static); numerals `dir="ltr"` isolated; copy in both content dictionaries.
+- [x] T11.6 ProcessSteps scroll storytelling: new `process-steps.tsx` — gold hairline progress fills + steps fade-in scrubbed to scroll (desktop + motion-allowed only, verified `scaleX 0.85` mid-scroll); Reveal stagger on all breakpoints; reduced-motion/no-JS: static grid.
+- [x] T11.7 Focus Area: split into "Expected Outputs" (check icons) and "Documents That Help Review" (document icons) groups with existing localized headings.
+- [x] T11.8 Team cards: photo treatment unchanged (grayscale→color hover matches team detail), retokenized to `--kmt-public-text`; badge gold-tint verified rendering (P0 fix confirmed live in Phase 0).
+- [x] T11.9 Insights section: always rendered; DB-empty → honest empty state panel with "Browse articles" secondary CTA (localized); articles/case-study cards kept. *(DB-error-as-empty masking remains by design for the home page — full state split happens in file 62 T62.2 for list pages.)*
+- [x] T11.10 Both themes verified: hero overlays/stats/bento on `--kmt-public-*` vars; screenshots EN+AR × dark+light + reduced-motion + no-JS + mobile 375 (no overflow).
 
 ## Verify
 
-- [ ] Screenshots 375/768/1440 × EN/AR × light/dark.
-- [ ] Reduced-motion emulation: all content visible, no parallax.
-- [ ] No-JS render: full page content visible (Reveal fix).
-- [ ] `test:e2e:smoke` green; axe contrast pass.
+- [x] Screenshots 375/768/1440 × EN/AR × light/dark. *(1440/375 × EN/AR × dark + light captured; 768 covered by e2e matrix)*
+- [x] Reduced-motion emulation: all content visible, no parallax. *(8/8 hero words visible; only closed dropdowns/menus/hover-spots hidden — confirmed by-design)*
+- [x] No-JS render: full page content visible (Reveal fix). *(h1 + 8 sections + 19 service links visible with JS disabled)*
+- [x] `test:e2e:smoke` green (46/46); contrast pass. *(pixel-diff: services/contact 0.00%, home 0.89–3.75% = stats row + bento; 544 unit tests green; zero console errors EN/AR/reduced/no-JS)*

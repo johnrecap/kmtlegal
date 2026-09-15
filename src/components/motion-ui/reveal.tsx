@@ -10,17 +10,28 @@ interface RevealProps {
   spotlight?: boolean;
 }
 
+/**
+ * SSR-safe scroll reveal.
+ *
+ * Content renders fully visible server-side (no `opacity-0` in HTML), so
+ * no-JS users and crawlers always see it. On mount — when motion is allowed —
+ * the element gets the transition classes and is animated into place from
+ * just below; elements already in the viewport reveal immediately.
+ * `prefers-reduced-motion` keeps everything static and visible.
+ */
 export function Reveal({ children, className, delay = 0, spotlight = false }: RevealProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [enabled, setEnabled] = useState(false);
   const [shown, setShown] = useState(false);
 
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setShown(true);
       return;
     }
+    setEnabled(true);
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0]?.isIntersecting) {
@@ -44,10 +55,10 @@ export function Reveal({ children, className, delay = 0, spotlight = false }: Re
     <div
       ref={ref}
       onMouseMove={spotlight ? onMove : undefined}
-      style={{ transitionDelay: `${delay}ms` }}
+      style={{ transitionDelay: enabled && !shown ? `${delay}ms` : undefined }}
       className={cn(
-        "transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
-        shown ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0",
+        enabled && !shown && "translate-y-6 opacity-0 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform",
+        enabled && shown && "transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
         spotlight && "group relative",
         className
       )}

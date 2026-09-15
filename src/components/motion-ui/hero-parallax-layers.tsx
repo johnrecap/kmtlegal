@@ -8,16 +8,30 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ButtonLink, MaterialSymbol } from "@/components/ui";
+import { CountUp } from "@/components/motion-ui/count-up";
 import { cn } from "@/lib/cn";
 import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
+
+function splitHeading(title: string, locale: PublicLocale) {
+  if (locale === "ar") {
+    return [title];
+  }
+  return title.split(" ");
+}
 
 export interface HeroMatter {
   title: string;
   slug: string;
   summary: string;
   icon: string;
+}
+
+export interface HeroStat {
+  value: number;
+  suffix: string;
+  label: string;
 }
 
 export interface HeroDocketCopy {
@@ -36,6 +50,7 @@ interface HeroParallaxLayersProps {
   pickerLabel: string;
   matters: ReadonlyArray<HeroMatter>;
   docket: HeroDocketCopy;
+  stats?: ReadonlyArray<HeroStat>;
   nextStep: string;
   bookLabel: string;
   browseLabel: string;
@@ -55,6 +70,7 @@ export function HeroParallaxLayers({
   pickerLabel,
   matters,
   docket,
+  stats,
   nextStep,
   bookLabel,
   browseLabel,
@@ -79,7 +95,7 @@ export function HeroParallaxLayers({
         gsap
           .timeline({ defaults: { ease: "power3.out" } })
           .from("[data-hero='eyebrow']", { y: 22, autoAlpha: 0, duration: 0.7 })
-          .from("[data-hero='title']", { y: 34, autoAlpha: 0, duration: 0.85 }, "-=0.5")
+          .from("[data-hero='title-word']", { y: 34, autoAlpha: 0, duration: 0.85, stagger: 0.09 }, "-=0.5")
           .from("[data-hero='rule']", { scaleX: 0, autoAlpha: 0, duration: 0.6 }, "-=0.55")
           .from("[data-hero='description']", { y: 26, autoAlpha: 0, duration: 0.75 }, "-=0.5")
           .from("[data-hero='picker']", { y: 30, autoAlpha: 0, duration: 0.75 }, "-=0.5")
@@ -154,13 +170,31 @@ export function HeroParallaxLayers({
               {eyebrow}
             </p>
           </div>
-          <h1 data-hero="title" className="mt-6 max-w-xl text-4xl font-semibold leading-tight drop-shadow-[0_4px_22px_rgba(0,0,0,0.88)] md:text-5xl">
-            {title}
+          <h1 data-hero="title" className="mt-6 max-w-xl text-4xl font-semibold leading-tight drop-shadow-[var(--kmt-public-text-shadow)] md:text-5xl" aria-label={title}>
+            {splitHeading(title, locale).map((part, index, all) => (
+              <span key={`${part}-${index}`} aria-hidden="true" className="inline-block" data-hero="title-word">
+                {part}
+                {index < all.length - 1 ? "\u00A0" : null}
+              </span>
+            ))}
           </h1>
           <span data-hero="rule" className="mt-6 block h-px w-24 origin-center bg-gradient-to-r from-[var(--kmt-public-gold)] to-transparent rtl:bg-gradient-to-l" aria-hidden="true" />
           <p data-hero="description" className="mt-6 max-w-xl text-base leading-9 text-[var(--kmt-public-muted)] md:text-lg">
             {description}
           </p>
+          {stats && stats.length > 0 ? (
+            <dl data-hero="stats" className="mt-8 grid max-w-xl grid-cols-3 gap-3">
+              {stats.map((stat) => (
+                <div key={stat.label} className="rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] px-3 py-3">
+                  <dd dir="ltr" className="text-2xl font-semibold tabular-nums text-[var(--kmt-public-gold)]">
+                    <CountUp value={stat.value} />
+                    {stat.suffix}
+                  </dd>
+                  <dt className="mt-1 text-xs leading-5 text-[var(--kmt-public-muted)]">{stat.label}</dt>
+                </div>
+              ))}
+            </dl>
+          ) : null}
 
           <div data-hero="picker" className="mt-8 rounded-2xl border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] p-5 md:p-6">
             <p id="hero-matter-label" className="text-sm font-semibold text-[var(--kmt-public-text)]">
@@ -208,7 +242,7 @@ export function HeroParallaxLayers({
           <div data-hero="docket" className="relative overflow-hidden rounded-2xl border border-kmt-gold/25 bg-[var(--kmt-public-surface-muted)] p-6 shadow-[0_40px_120px_-40px_rgb(153_123_68/0.45)] md:p-8" aria-live="polite">
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-[var(--kmt-public-gold)] to-transparent" aria-hidden="true" />
             <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--kmt-public-muted)]">{docket.title}</p>
+              <p className={cn("text-xs font-semibold text-[var(--kmt-public-muted)]", locale === "en" && "uppercase tracking-[0.2em]")}>{docket.title}</p>
               <span
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full border",
@@ -221,7 +255,7 @@ export function HeroParallaxLayers({
             </div>
 
             <div className="mt-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--kmt-public-gold)]">{docket.matter}</p>
+              <p className={cn("text-xs font-semibold text-[var(--kmt-public-gold)]", locale === "en" && "uppercase tracking-[0.2em]")}>{docket.matter}</p>
               <p className="mt-2 min-h-8 text-xl font-semibold leading-8 text-[var(--kmt-public-text)]">
                 {selected ? selected.title : "—"}
               </p>
@@ -233,11 +267,11 @@ export function HeroParallaxLayers({
             <div className="my-6 border-t border-dashed border-[var(--kmt-public-line)]" aria-hidden="true" />
 
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--kmt-public-gold)]">{docket.next}</p>
+              <p className={cn("text-xs font-semibold text-[var(--kmt-public-gold)]", locale === "en" && "uppercase tracking-[0.2em]")}>{docket.next}</p>
               <p className="mt-2 text-sm leading-7 text-[var(--kmt-public-muted)]">{nextStep}</p>
             </div>
 
-            <ButtonLink className="mt-6 w-full" href={bookingHref} size="lg" trailingIcon={<MaterialSymbol className="text-base" name="arrow_forward" />}>
+            <ButtonLink className="mt-6 w-full" href={bookingHref} size="lg" trailingIcon={<MaterialSymbol className="text-base rtl:rotate-180" name="arrow_forward" />}>
               {bookLabel}
             </ButtonLink>
           </div>

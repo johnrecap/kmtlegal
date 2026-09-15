@@ -244,7 +244,10 @@ export const publicContentEn = {
     viewDetails: "View Details",
     clearFilters: "Clear Filters",
     noLegalAdvice: "This content is for general awareness and does not replace lawyer review based on the facts and documents.",
-    notFound: "The requested item was not found."
+    notFound: "The requested item was not found.",
+    insightsEmptyTitle: "Practical legal insights are being prepared",
+    insightsEmptyDescription: "Articles and anonymized case notes from the office will appear here once published.",
+    insightsEmptyCta: "Browse articles"
   },
   home: {
     metadataTitle: "KMT Legal | Structured Legal Support for Business and Private Matters",
@@ -258,6 +261,11 @@ export const publicContentEn = {
     heroDocketMatter: "Matter",
     heroDocketNext: "Next step",
     heroDocketEmpty: "Select a matter to preview your request draft.",
+    heroStats: [
+      { value: 4, suffix: "", label: "Practice areas" },
+      { value: 3, suffix: "", label: "Office lawyers" },
+      { value: 24, suffix: "h", label: "Response within one business day" }
+    ],
     trustItems: [
       { icon: "verified_user", label: "Reviewed by the office before any legal step" },
       { icon: "lock", label: "Client information is handled confidentially" },

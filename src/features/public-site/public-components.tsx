@@ -159,43 +159,33 @@ export function PracticeAreaCard({
   title,
   summary,
   href,
-  locale = "en"
+  locale = "en",
+  featured = false
 }: {
   icon: string;
   title: string;
   summary: string;
   href: string;
   locale?: PublicLocale;
+  featured?: boolean;
 }) {
   return (
-    <Link className={cn(publicPanel, publicPanelHover, "group flex h-full min-h-[190px] flex-col p-5")} href={localizedPublicHref(href, locale)}>
-      <MaterialSymbol className={cn("text-4xl", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name={icon} />
-      <h3 className="mt-4 text-xl font-semibold text-white">{title}</h3>
-      <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{summary}</p>
-      <MaterialSymbol className={cn("mt-auto pt-4 text-xl", publicGoldText, publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />
+    <Link
+      className={cn(
+        publicPanel,
+        publicPanelHover,
+        "group flex h-full min-h-[190px] flex-col p-5",
+        featured && "lg:min-h-[420px] lg:p-7"
+      )}
+      href={localizedPublicHref(href, locale)}
+    >
+      <div className={cn("flex items-start justify-between gap-3", featured && "lg:flex-none")}>
+        <MaterialSymbol className={cn(publicGoldText, publicMotionIcon, publicMotionIconHalo, featured ? "text-5xl lg:text-6xl" : "text-4xl")} name={icon} />
+        <MaterialSymbol className={cn("mt-1 text-xl", publicGoldText, publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />
+      </div>
+      <h3 className={cn("mt-4 text-xl font-semibold text-[var(--kmt-public-text)]", featured && "lg:mt-6 lg:text-2xl")}>{title}</h3>
+      <p className={cn("mt-3 text-sm leading-7", publicMutedText, featured && "lg:mt-4 lg:text-base lg:leading-8")}>{summary}</p>
     </Link>
-  );
-}
-
-export function ProcessSteps({ steps }: { steps: ReadonlyArray<{ number: string; title: string; summary: string; icon: string }> }) {
-  return (
-    <ol className="relative grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <span aria-hidden="true" className="absolute inset-x-10 top-9 hidden h-px bg-gradient-to-r from-transparent via-kmt-gold/40 to-transparent rtl:bg-gradient-to-l lg:block" />
-      {steps.map((step, index) => (
-        <li key={step.number} className="relative">
-          <Reveal delay={index * 100} className="h-full">
-            <div className={cn(publicMotionCardBeam, "group relative h-full overflow-hidden rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] p-5")}>
-              <div className="flex items-center justify-between gap-4">
-                <MaterialSymbol className={cn("text-3xl", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name={step.icon} />
-                <span className={cn("text-sm font-semibold", publicGoldText)}>{step.number}</span>
-              </div>
-              <h3 className="mt-4 text-lg font-semibold text-[var(--kmt-public-text)]">{step.title}</h3>
-              <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{step.summary}</p>
-            </div>
-          </Reveal>
-        </li>
-      ))}
-    </ol>
   );
 }
 

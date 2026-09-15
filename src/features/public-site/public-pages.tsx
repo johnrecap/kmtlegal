@@ -27,7 +27,6 @@ import {
   LuxuryFeaturePanel,
   PageHero,
   PracticeAreaCard,
-  ProcessSteps,
   PublicSection,
   RepresentativeMatterCard,
   TrustStrip,
@@ -36,6 +35,7 @@ import {
   publicPanel,
   publicPanelHover
 } from "@/features/public-site/public-components";
+import { ProcessSteps } from "@/features/public-site/process-steps";
 import { cn } from "@/lib/cn";
 import { alternatePublicLanguages, availableAlternatePublicLanguages, localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 import {
@@ -229,6 +229,7 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
           next: copy.heroDocketNext,
           empty: copy.heroDocketEmpty
         }}
+        stats={copy.heroStats}
         nextStep={content.bookingPage.sectionDescription}
         bookLabel={content.shared.bookConsultation}
         browseLabel={content.shared.browsePracticeAreas}
@@ -237,10 +238,15 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
       <TrustStrip items={copy.trustItems} />
 
       <PublicSection align="center" eyebrow={copy.practiceEyebrow} title={copy.practiceTitle} description={copy.practiceDescription}>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {content.practiceAreaMatrix.map((area, index) => (
-            <Reveal key={area.key} delay={index * 80} spotlight className="h-full">
-              <PracticeAreaCard href={area.href} icon={area.icon} locale={locale} summary={area.summary} title={area.title} />
+            <Reveal
+              key={area.key}
+              className={cn("h-full", index === 0 && "sm:col-span-2 lg:col-span-2 lg:row-span-2")}
+              delay={index * 80}
+              spotlight
+            >
+              <PracticeAreaCard featured={index === 0} href={area.href} icon={area.icon} locale={locale} summary={area.summary} title={area.title} />
             </Reveal>
           ))}
         </div>
@@ -253,13 +259,29 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
           title={focusService.title}
           description={focusService.content}
         >
-          <div className="grid gap-3 md:grid-cols-2">
-            {[...focusService.outcomes, ...focusService.requiredDocuments].slice(0, 8).map((item) => (
-              <div key={item} className="flex gap-2 text-sm leading-7 text-slate-300">
-                <MaterialSymbol className={cn("mt-1 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="check_circle" />
-                <span>{item}</span>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+              <p className={cn("text-sm font-semibold", publicGoldText)}>{content.serviceDetail.outcomesTitle}</p>
+              <div className="mt-3 space-y-2.5">
+                {focusService.outcomes.slice(0, 4).map((item) => (
+                  <div key={item} className="flex gap-2 text-sm leading-7 text-[var(--kmt-public-muted)]">
+                    <MaterialSymbol className={cn("mt-1 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="check_circle" />
+                    <span>{item}</span>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+            <div>
+              <p className={cn("text-sm font-semibold", publicGoldText)}>{content.serviceDetail.documentsTitle}</p>
+              <div className="mt-3 space-y-2.5">
+                {focusService.requiredDocuments.slice(0, 4).map((item) => (
+                  <div key={item} className="flex gap-2 text-sm leading-7 text-[var(--kmt-public-muted)]">
+                    <MaterialSymbol className={cn("mt-1 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="description" />
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </LuxuryFeaturePanel>
       </PublicSection>
@@ -286,14 +308,14 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
             <Reveal key={lawyer.slug} delay={index * 100} className="h-full">
             <Link className={cn(publicPanel, publicPanelHover, "group block h-full overflow-hidden")} href={localizedPublicHref(`/team/${lawyer.slug}`, locale)}>
               <div className="relative h-56 w-full overflow-hidden">
-                <Image alt={lawyer.name} className="object-cover opacity-90 grayscale-[35%] transition-all duration-500 group-hover:scale-[1.03] group-hover:grayscale-0 group-hover:opacity-100" fill sizes="(min-width: 768px) 33vw, 100vw" src={lawyer.image} />
+                <Image alt={lawyer.name} className="object-cover opacity-90 grayscale-[35%] transition-all duration-500 ease-kmt-out motion-reduce:transition-none group-hover:scale-[1.03] group-hover:grayscale-0 group-hover:opacity-100" fill sizes="(min-width: 768px) 33vw, 100vw" src={lawyer.image} />
               </div>
               <div className="p-5">
-                <h3 className="text-xl font-semibold text-white">{lawyer.name}</h3>
+                <h3 className="text-xl font-semibold text-[var(--kmt-public-text)]">{lawyer.name}</h3>
                 <p className={cn("mt-1 text-sm", publicMutedText)}>{lawyer.title}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {lawyer.specialties.slice(0, 2).map((specialty) => (
-                    <Badge key={specialty} className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100">
+                    <Badge key={specialty} className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100 dark:text-amber-100">
                       {specialty}
                     </Badge>
                   ))}
@@ -305,26 +327,36 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
         </div>
       </PublicSection>
 
-      {hasFeaturedContent ? (
-        <PublicSection eyebrow={copy.insightsEyebrow} title={copy.insightsTitle} description={copy.insightsDescription}>
+      <PublicSection eyebrow={copy.insightsEyebrow} title={copy.insightsTitle} description={copy.insightsDescription}>
+        {hasFeaturedContent ? (
           <div className="grid gap-4 lg:grid-cols-2">
             {featuredContent.articles.map((article) => (
               <Link key={article.slug} className={cn(publicPanel, publicPanelHover, "block p-5")} href={localizedPublicHref(`/articles/${article.slug}`, locale)}>
                 <p className={cn("text-sm font-semibold", publicGoldText)}>{article.readTime}</p>
-                <h3 className="mt-2 text-xl font-semibold text-white">{article.title}</h3>
+                <h3 className="mt-2 text-xl font-semibold text-[var(--kmt-public-text)]">{article.title}</h3>
                 <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{article.excerpt}</p>
               </Link>
             ))}
             {featuredContent.caseStudies.map((study) => (
               <Link key={study.slug} className={cn(publicPanel, publicPanelHover, "block p-5")} href={localizedPublicHref(`/case-studies/${study.slug}`, locale)}>
                 <p className={cn("text-sm font-semibold", publicGoldText)}>{copy.caseStudyAnonymous}</p>
-                <h3 className="mt-2 text-xl font-semibold text-white">{study.title}</h3>
+                <h3 className="mt-2 text-xl font-semibold text-[var(--kmt-public-text)]">{study.title}</h3>
                 <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{study.summary}</p>
               </Link>
             ))}
           </div>
-        </PublicSection>
-      ) : null}
+        ) : (
+          <div className={cn(publicPanel, "flex flex-wrap items-center justify-between gap-4 p-6")}>
+            <div className="min-w-0">
+              <p className="text-lg font-semibold text-[var(--kmt-public-text)]">{content.shared.insightsEmptyTitle}</p>
+              <p className={cn("mt-2 max-w-2xl text-sm leading-7", publicMutedText)}>{content.shared.insightsEmptyDescription}</p>
+            </div>
+            <ButtonLink href={localizedPublicHref("/articles", locale)} variant="secondary">
+              {content.shared.insightsEmptyCta}
+            </ButtonLink>
+          </div>
+        )}
+      </PublicSection>
 
     </PublicShell>
   );

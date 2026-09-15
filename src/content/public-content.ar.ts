@@ -218,7 +218,10 @@ export const publicContentAr = {
     viewDetails: "عرض التفاصيل",
     clearFilters: "مسح الفلاتر",
     noLegalAdvice: "هذا المحتوى للتوعية العامة ولا يغني عن مراجعة محام بناء على الوقائع والمستندات.",
-    notFound: "لم يتم العثور على العنصر المطلوب."
+    notFound: "لم يتم العثور على العنصر المطلوب.",
+    insightsEmptyTitle: "المقالات القانونية العملية قيد الإعداد",
+    insightsEmptyDescription: "ستظهر هنا مقالات وملاحظات قضايا مجهولة الهوية من المكتب فور نشرها.",
+    insightsEmptyCta: "تصفح المقالات"
   },
   home: {
     metadataTitle: "KMT Legal | دعم قانوني منظم للشركات والأفراد",
@@ -231,6 +234,11 @@ export const publicContentAr = {
     heroDocketMatter: "الموضوع",
     heroDocketNext: "الخطوة التالية",
     heroDocketEmpty: "اختر موضوعًا لمعاينة مسودة طلبك.",
+    heroStats: [
+      { value: 4, suffix: "", label: "مجالات ممارسة" },
+      { value: 3, suffix: "", label: "محامو المكتب" },
+      { value: 24, suffix: "س", label: "رد خلال يوم عمل واحد" }
+    ],
     trustItems: [
       { icon: "verified_user", label: "مراجعة من المكتب قبل أي خطوة قانونية" },
       { icon: "lock", label: "التعامل مع بيانات العملاء بسرية" },
