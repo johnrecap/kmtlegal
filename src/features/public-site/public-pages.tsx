@@ -11,6 +11,7 @@ import { canonicalPublicServiceSlug, findPublicService, getPublicContent, navFor
 import { ConsultationBookingChatFromQuery, RequestedLawyerQueryNotice } from "@/features/public-site/booking-query-client";
 import { ContactForm } from "@/features/public-site/contact-form";
 import { DirectoryFilter } from "@/features/public-site/directory-filter";
+import { PolicyToc } from "@/features/public-site/policy-toc";
 import {
   publicMotionArrow,
   publicMotionArrowTrail,
@@ -985,38 +986,24 @@ export function PrivacyPageView({ locale }: { locale: PublicLocale }) {
       <PublicSection eyebrow={copy.eyebrow} title={copy.title} description={copy.description} headingLevel="h1">
         <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
           <aside className={cn(publicPanel, "p-5 lg:sticky lg:top-28")}>
-            <nav aria-label={copy.contentsLabel}>
-              <h2 className="text-lg font-semibold text-white">{copy.contentsLabel}</h2>
-              <ol className="mt-4 space-y-2 text-sm">
-                {copy.sections.map((section) => (
-                  <li key={section.id}>
-                    <a
-                      className={cn(
-                        "flex min-h-10 items-center gap-2 rounded-md px-2 py-1.5 text-slate-300 transition-colors hover:bg-white/5 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
-                      )}
-                      href={`#${section.id}`}
-                    >
-                      <span>{section.title}</span>
-                    </a>
-                  </li>
-                ))}
-              </ol>
-            </nav>
+            <PolicyToc items={copy.sections} label={copy.contentsLabel} />
           </aside>
 
           <article className={cn(publicPanel, "p-5 text-sm leading-8 sm:p-8")} data-testid="privacy-policy">
-            <div className="rounded-lg border border-kmt-gold/30 bg-kmt-gold/10 p-5">
+            <div className="rounded-lg border border-kmt-gold/35 bg-kmt-gold/10 p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-xl font-semibold text-white">{copy.summaryTitle}</h2>
-                <p className="text-xs text-amber-100">
+                <h2 className="text-xl font-semibold text-[var(--kmt-public-text)]">{copy.summaryTitle}</h2>
+                <p className="text-xs text-[var(--kmt-public-muted)]">
                   {copy.lastUpdatedLabel}: <time dateTime={copy.lastUpdated}>{updatedAt}</time>
                 </p>
               </div>
               <dl className="mt-5 grid gap-4 sm:grid-cols-2">
                 {copy.summaryItems.map((item) => (
                   <div key={item.label}>
-                    <dt className="text-xs font-semibold text-kmt-gold">{item.label}</dt>
-                    <dd className="mt-1 leading-7 text-slate-200">{item.value}</dd>
+                    <dt className={cn("text-xs font-semibold", publicGoldText)}>{item.label}</dt>
+                    <dd className="mt-1 leading-7 text-[var(--kmt-public-muted)]">
+                      <bdi>{item.value}</bdi>
+                    </dd>
                   </div>
                 ))}
               </dl>
@@ -1024,14 +1011,14 @@ export function PrivacyPageView({ locale }: { locale: PublicLocale }) {
 
             <div className="mt-8 space-y-10">
               {copy.sections.map((section) => (
-                <section key={section.id} className="scroll-mt-28 border-t border-white/10 pt-8" id={section.id}>
-                  <h2 className="text-2xl font-semibold leading-tight text-white">{section.title}</h2>
-                  <div className={cn("mt-4 space-y-4", publicMutedText)}>
+                <section key={section.id} className="scroll-mt-28 border-t border-[var(--kmt-public-line)] pt-8" id={section.id}>
+                  <h2 className="text-2xl font-semibold leading-tight text-[var(--kmt-public-text)]">{section.title}</h2>
+                  <div className={cn("mt-4 max-w-[65ch] space-y-4", publicMutedText)}>
                     {section.paragraphs.map((paragraph) => (
                       <p key={paragraph}>{paragraph}</p>
                     ))}
                     {section.bullets.length > 0 ? (
-                      <ul className="list-disc space-y-2 ps-5 marker:text-kmt-gold">
+                      <ul className="list-disc space-y-2 ps-5 marker:text-[var(--kmt-public-gold)]">
                         {section.bullets.map((item) => (
                           <li key={item}>{item}</li>
                         ))}
@@ -1045,7 +1032,7 @@ export function PrivacyPageView({ locale }: { locale: PublicLocale }) {
                           return (
                             <li key={link.href}>
                               <a
-                                className="inline-flex min-h-11 items-center rounded-md border border-kmt-gold/35 px-3 py-2 font-semibold text-amber-100 transition-colors hover:border-kmt-gold hover:bg-kmt-gold/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
+                                className="inline-flex min-h-11 items-center rounded-md border border-kmt-gold/35 px-3 py-2 font-semibold text-[var(--kmt-public-text)] transition-colors duration-kmt-normal ease-kmt-out motion-reduce:transition-none hover:border-kmt-gold hover:bg-kmt-gold/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
                                 href={link.href}
                                 rel={external ? "noreferrer" : undefined}
                                 target={external ? "_blank" : undefined}
@@ -1071,16 +1058,36 @@ export function PrivacyPageView({ locale }: { locale: PublicLocale }) {
 export function TermsPageView({ locale }: { locale: PublicLocale }) {
   const content = getPublicContent(locale);
   const copy = content.termsPage;
+  const updatedAt = formatPublicPolicyDate(copy.lastUpdated, locale);
 
   return (
     <PublicShell currentPath={localizedPublicHref("/terms", locale)} locale={locale} navItems={navForPath("/terms", locale)}>
-      <PublicSection eyebrow={copy.eyebrow} title={copy.title} description={copy.description}>
-        <div className={cn(publicPanel, "space-y-8 p-6 text-sm leading-8")}>
-          {copy.blocks.map((block) => (
-            <PolicyBlock key={block.title} title={block.title}>
-              {block.body}
-            </PolicyBlock>
-          ))}
+      <PublicSection eyebrow={copy.eyebrow} title={copy.title} description={copy.description} headingLevel="h1">
+        <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
+          <aside className={cn(publicPanel, "p-5 lg:sticky lg:top-28")}>
+            <PolicyToc items={copy.sections} label={copy.contentsLabel} />
+          </aside>
+
+          <article className={cn(publicPanel, "p-5 text-sm leading-8 sm:p-8")} data-testid="terms-policy">
+            <div className="rounded-lg border border-kmt-gold/35 bg-kmt-gold/10 px-5 py-4">
+              <p className="text-xs text-[var(--kmt-public-muted)]">
+                {copy.lastUpdatedLabel}: <time dateTime={copy.lastUpdated}>{updatedAt}</time>
+              </p>
+            </div>
+
+            <div className="mt-8 space-y-10">
+              {copy.sections.map((section) => (
+                <section key={section.id} className="scroll-mt-28 border-t border-[var(--kmt-public-line)] pt-8" id={section.id}>
+                  <h2 className="text-2xl font-semibold leading-tight text-[var(--kmt-public-text)]">{section.title}</h2>
+                  <div className={cn("mt-4 max-w-[65ch] space-y-4", publicMutedText)}>
+                    {section.paragraphs.map((paragraph) => (
+                      <p key={paragraph}>{paragraph}</p>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </article>
         </div>
       </PublicSection>
     </PublicShell>
@@ -1218,15 +1225,6 @@ function ArticleBody({ content }: { content: string }) {
         );
       })}
     </div>
-  );
-}
-
-function PolicyBlock({ title, children }: { title: string; children: string }) {
-  return (
-    <section>
-      <h2 className="text-xl font-semibold text-white">{title}</h2>
-      <p className={cn("mt-3", publicMutedText)}>{children}</p>
-    </section>
   );
 }
 

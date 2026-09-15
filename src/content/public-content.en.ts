@@ -783,11 +783,46 @@ export const publicContentEn = {
     eyebrow: "Terms",
     title: "Website Use Notices",
     description: "This page explains the limits of public content and contact forms, and what may be relied on before office review.",
-    blocks: [
-      { title: "No Final Advice Through The Website", body: "Public content and request forms do not provide final legal advice and do not create a lawyer-client relationship before the office accepts the file." },
-      { title: "No Outcome Promises", body: "Any examples or published case studies are educational and anonymized, and do not guarantee a similar result." },
-      { title: "Data Accuracy", body: "The sender is responsible for providing accurate and updated data that supports initial review." },
-      { title: "Human Review", body: "Any automated organization or assistant summary requires human review before use in a legal decision." }
+    lastUpdatedLabel: "Last updated",
+    lastUpdated: "2026-07-10",
+    contentsLabel: "On this page",
+    sections: [
+      {
+        id: "no-final-advice",
+        title: "1. No final advice through the website",
+        paragraphs: [
+          "Public content and request forms do not provide final legal advice and do not create a lawyer-client relationship before the office accepts the file."
+        ],
+        bullets: [],
+        links: []
+      },
+      {
+        id: "no-outcome-promises",
+        title: "2. No outcome promises",
+        paragraphs: [
+          "Any examples or published case studies are educational and anonymized, and do not guarantee a similar result."
+        ],
+        bullets: [],
+        links: []
+      },
+      {
+        id: "data-accuracy",
+        title: "3. Data accuracy",
+        paragraphs: [
+          "The sender is responsible for providing accurate and updated data that supports initial review."
+        ],
+        bullets: [],
+        links: []
+      },
+      {
+        id: "human-review",
+        title: "4. Human review",
+        paragraphs: [
+          "Any automated organization or assistant summary requires human review before use in a legal decision."
+        ],
+        bullets: [],
+        links: []
+      }
     ]
   },
   directoryFilter: {

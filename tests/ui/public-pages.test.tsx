@@ -7,7 +7,7 @@ import { PublicShell } from "@/components/layout";
 import { ButtonLink } from "@/components/ui";
 import { getPublicContent, navForPath } from "@/content/public-content";
 import { DetailCta, PageHero, PublicSection, TrustStrip } from "@/features/public-site/public-components";
-import { HomePageView, PrivacyPageView, ServiceDetailPageView, TeamDetailPageView, privacyMetadata } from "@/features/public-site/public-pages";
+import { HomePageView, PrivacyPageView, ServiceDetailPageView, TermsPageView, TeamDetailPageView, privacyMetadata, termsMetadata } from "@/features/public-site/public-pages";
 
 describe("public website UI", () => {
   it("renders public shell navigation with English default labels and active page", () => {
@@ -83,6 +83,51 @@ describe("public website UI", () => {
     expect(html).toContain("إمكانية العمل حضوريًا في العاصمة الإدارية الجديدة");
     expect(html).toContain("careers@kmtlegal.com");
     expect(html).toContain("سياسة خصوصية Meta");
+  });
+
+  it("renders the English terms page with h1, sticky TOC, last-updated time, and anchored sections", () => {
+    const html = renderToStaticMarkup(<TermsPageView locale="en" />);
+    const metadata = termsMetadata("en");
+
+    expect(html).toContain("<h1");
+    expect(html).toContain("Website Use Notices</h1>");
+    expect(html).toContain("dateTime=\"2026-07-10\"");
+    expect(html).toContain('aria-label="On this page"');
+    expect(html).toContain('href="#no-final-advice"');
+    expect(html).toContain('id="no-final-advice"');
+    expect(html).toContain("1. No final advice through the website");
+    expect(html).toContain("scroll-mt-28");
+    expect(html).toContain("lg:sticky");
+    expect(html).toContain("max-w-[65ch]");
+    expect(html).not.toContain("text-white");
+    expect(html).not.toContain("text-slate-300");
+    expect(metadata.alternates?.canonical).toBe("/terms");
+    expect(metadata.alternates?.languages).toEqual({ en: "/terms", ar: "/ar/terms", "x-default": "/terms" });
+  });
+
+  it("renders the Arabic terms page in structural RTL with matching section anchors", () => {
+    const html = renderToStaticMarkup(<TermsPageView locale="ar" />);
+
+    expect(html).toContain("dir=\"rtl\"");
+    expect(html).toContain("lang=\"ar\"");
+    expect(html).toContain("تنبيهات استخدام الموقع</h1>");
+    expect(html).toContain("1. لا توجد استشارة نهائية عبر الموقع");
+    expect(html).toContain('aria-label="محتويات الصفحة"');
+    expect(html).toContain('href="#human-review"');
+    expect(html).toContain('id="human-review"');
+    expect(html).toContain("dateTime=\"2026-07-10\"");
+  });
+
+  it("renders the privacy TOC as a tokenized nav without hardcoded slate or white classes", () => {
+    const html = renderToStaticMarkup(<PrivacyPageView locale="en" />);
+
+    expect(html).toContain('aria-label="On this page"');
+    expect(html).toContain('href="#data-we-collect"');
+    expect(html).toContain("max-w-[65ch]");
+    expect(html).not.toContain("text-slate-300");
+    expect(html).not.toContain("hover:bg-white/5");
+    expect(html).not.toContain("text-amber-100");
+    expect(html).not.toContain("border-white/10");
   });
 
   it("keeps the Arabic homepage CTA and section eyebrows clean", async () => {
