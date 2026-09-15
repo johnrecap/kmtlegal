@@ -12,7 +12,6 @@ import {
   publicMotionButton,
   publicMotionCardBeam,
   publicMotionCta,
-  publicMotionHeroSpotlight,
   publicMotionIcon,
   publicMotionIconHalo,
   publicMotionImage,
@@ -23,7 +22,7 @@ export const publicSectionSurface = "bg-[var(--kmt-public-surface)] text-[var(--
 export const publicSectionMutedSurface = "bg-[var(--kmt-public-surface-muted)] text-[var(--kmt-public-text)]";
 export const publicBorder = "border-[var(--kmt-public-line)]";
 export const publicPanel =
-  "rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] text-[var(--kmt-public-text)] shadow-[var(--kmt-public-panel-shadow)]";
+  "rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] text-[var(--kmt-public-text)]";
 export const publicPanelHover = cn(publicMotionCardBeam, "kmt-motion-card transition-colors hover:border-kmt-gold/70 hover:bg-[var(--kmt-public-hover)]");
 export const publicMutedText = "text-[var(--kmt-public-muted)]";
 export const publicGoldText = "text-[var(--kmt-public-gold)]";
@@ -113,7 +112,7 @@ export function PageHero({
           <p className={cn("text-sm font-semibold drop-shadow-[var(--kmt-public-text-shadow)]", publicGoldText)}>{eyebrow}</p>
           <h1 className={cn("mt-4 max-w-3xl font-semibold leading-tight drop-shadow-[var(--kmt-public-text-shadow)]", isCompact ? "text-3xl md:text-5xl" : "text-4xl md:text-6xl")}>{title}</h1>
           <p className={cn("mt-5 max-w-2xl leading-9 text-[var(--kmt-public-muted)] drop-shadow-[var(--kmt-public-text-shadow)]", isCompact ? "text-base md:text-lg" : "text-lg")}>{description}</p>
-          {actions ? <div className={cn("kmt-motion-reveal kmt-motion-reveal-delay mt-8 flex flex-wrap gap-3", publicMotionHeroSpotlight)}>{actions}</div> : null}
+          {actions ? <div className="kmt-motion-reveal kmt-motion-reveal-delay mt-8 flex flex-wrap gap-3">{actions}</div> : null}
         </div>
       </div>
     </section>

@@ -78,7 +78,7 @@ export function DirectoryFilter({
       publicMotionButton,
       publicMotionCta,
       active
-        ? "border-kmt-gold bg-kmt-gold text-white shadow-[0_10px_28px_-18px_rgba(153,123,68,0.95)]"
+        ? "border-kmt-gold bg-kmt-gold text-primary-foreground"
         : "border-kmt-gold/25 bg-black/20 text-amber-100 hover:border-kmt-gold hover:bg-kmt-gold/10 hover:text-white"
     );
 
@@ -138,7 +138,7 @@ export function DirectoryFilter({
             <article
               key={item.href}
               data-testid="public-directory-card"
-              className={cn(publicMotionCardBeam, "kmt-motion-card group relative overflow-hidden rounded-lg border border-kmt-gold/20 bg-[linear-gradient(150deg,#15100a_0%,#0a0b0d_50%,#050505_100%)] p-5 shadow-[0_24px_80px_-54px_rgba(0,0,0,0.95)] transition-[border-color,box-shadow,transform] hover:-translate-y-0.5 hover:border-kmt-gold/55 hover:shadow-[0_30px_90px_-52px_rgba(153,123,68,0.55)]")}
+              className={cn(publicMotionCardBeam, "kmt-motion-card group relative overflow-hidden rounded-lg border border-kmt-gold/20 bg-[linear-gradient(150deg,#15100a_0%,#0a0b0d_50%,#050505_100%)] p-5 shadow-[0_24px_80px_-54px_rgba(0,0,0,0.95)] transition-[border-color,transform] hover:-translate-y-0.5 hover:border-kmt-gold/55")}
             >
               <div className="flex items-start justify-between gap-3">
                 <Badge className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100">{item.categoryLabel}</Badge>

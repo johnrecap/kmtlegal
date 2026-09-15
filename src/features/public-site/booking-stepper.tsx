@@ -83,7 +83,7 @@ const darkSecondaryButtonClasses =
 
 const stepItemClasses = (index: number, currentStep: number) => {
   if (index === currentStep) {
-    return cn(publicMotionStep, "rounded border border-kmt-gold bg-kmt-gold px-3 py-2 text-sm font-semibold text-white shadow-[0_12px_32px_-20px_rgba(153,123,68,0.95)]");
+    return cn(publicMotionStep, "rounded border border-kmt-gold bg-kmt-gold px-3 py-2 text-sm font-semibold text-primary-foreground");
   }
 
   if (index < currentStep) {

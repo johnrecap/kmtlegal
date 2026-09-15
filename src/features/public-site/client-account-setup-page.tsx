@@ -48,7 +48,7 @@ export async function ClientAccountSetupPage({
         dir={locale === "ar" ? "rtl" : "ltr"}
       >
         <section className="grid gap-6 lg:grid-cols-[1fr_0.9fr] lg:items-start">
-          <div className="rounded-[1.75rem] border border-kmt-gold/35 bg-[linear-gradient(145deg,#17110a_0%,#090b0d_54%,#020202_100%)] p-6 shadow-[0_34px_120px_-68px_rgba(183,134,64,0.58)] sm:p-8">
+          <div className="rounded-[1.75rem] border border-kmt-gold/35 bg-[linear-gradient(145deg,#17110a_0%,#090b0d_54%,#020202_100%)] p-6 sm:p-8">
             <p className="text-sm font-semibold text-kmt-gold">{copy.eyebrow}</p>
             <h1 className="mt-3 text-3xl font-semibold leading-tight text-white sm:text-4xl">
               {context ? copy.title : copy.expiredTitle}
@@ -132,7 +132,7 @@ function ConsultationSummary({
   ];
 
   return (
-    <aside className="rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-5 shadow-[0_26px_90px_-62px_rgba(183,134,64,0.5)] backdrop-blur sm:p-6">
+    <aside className="rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-5 backdrop-blur sm:p-6">
       <div className="mb-5 flex items-center gap-3">
         <span className="grid h-11 w-11 place-items-center rounded-xl border border-kmt-gold/35 bg-black/35 text-kmt-gold">
           <MaterialSymbol name="description" />

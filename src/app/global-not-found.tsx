@@ -20,7 +20,7 @@ export default function GlobalNotFound() {
         >
           <div
             aria-hidden="true"
-            className="absolute inset-0 -z-20 bg-[radial-gradient(circle_at_18%_12%,rgba(199,154,82,0.18),transparent_32%),radial-gradient(circle_at_82%_82%,rgba(153,123,68,0.12),transparent_30%),linear-gradient(145deg,#060504,#0b0f13_58%,#060504)]"
+            className="absolute inset-0 -z-20 bg-[linear-gradient(145deg,#060504,#0b0f13_58%,#060504)]"
           />
           <div
             aria-hidden="true"

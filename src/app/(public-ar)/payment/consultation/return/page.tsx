@@ -40,7 +40,7 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
   return (
     <PublicShell currentPath="/payment/consultation/return" languageHref={languageHref} locale={locale} navItems={navForPath("/", locale)}>
       <section className="mx-auto min-h-[68vh] max-w-[940px] px-4 py-16 sm:px-6 lg:px-10" dir={locale === "ar" ? "rtl" : "ltr"}>
-        <div className="rounded-[1.75rem] border border-kmt-gold/30 bg-[#100d08] p-6 shadow-[0_34px_120px_-68px_rgba(183,134,64,0.58)] sm:p-8">
+        <div className="rounded-[1.75rem] border border-kmt-gold/30 bg-[#100d08] p-6 sm:p-8">
           <div className="flex items-start gap-4">
             <span className={cn("flex h-12 w-12 shrink-0 items-center justify-center rounded-full border", tone.iconClass)}>
               <MaterialSymbol name={tone.icon} />

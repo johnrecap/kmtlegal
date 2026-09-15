@@ -125,7 +125,7 @@ const languageTransferLimit = 20_000;
 
 const darkSurfaceClasses = cn(
   publicMotionForm,
-  "relative isolate overflow-hidden rounded-[1.75rem] border border-kmt-gold/45 bg-[linear-gradient(145deg,#17110a_0%,#090b0d_48%,#020202_100%),radial-gradient(circle_at_top_left,rgba(183,134,64,0.16),transparent_34%)] shadow-[0_34px_120px_-54px_rgba(183,134,64,0.42)] before:absolute before:inset-x-8 before:top-0 before:h-px before:bg-gradient-to-l before:from-transparent before:via-kmt-gold/80 before:to-transparent after:pointer-events-none after:absolute after:inset-0 after:rounded-[1.75rem] after:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_0_80px_rgba(183,134,64,0.04)]"
+  "relative isolate overflow-hidden rounded-[1.75rem] border border-kmt-gold/45 bg-[linear-gradient(145deg,#17110a_0%,#090b0d_48%,#020202_100%)] before:absolute before:inset-x-8 before:top-0 before:h-px before:bg-gradient-to-l before:from-transparent before:via-kmt-gold/80 before:to-transparent after:pointer-events-none after:absolute after:inset-0 after:rounded-[1.75rem] after:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
 );
 
 const darkControlClasses = cn(
@@ -135,7 +135,7 @@ const darkControlClasses = cn(
 
 const chipButtonClasses = cn(
   publicMotionButton,
-  "min-h-11 rounded-full !border-kmt-gold/45 !bg-black/30 !px-4 !text-sm !text-amber-100 shadow-[0_12px_35px_-28px_rgba(183,134,64,0.9)] hover:!bg-kmt-gold hover:!text-[#120d07]"
+  "min-h-11 rounded-full !border-kmt-gold/45 !bg-black/30 !px-4 !text-sm !text-amber-100 hover:!bg-kmt-gold hover:!text-[#120d07]"
 );
 
 const initialDraft: BookingDraft = {
@@ -788,7 +788,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
             </div>
             <Button
               aria-label={copy.send}
-              className={cn(publicMotionButton, publicMotionCta, "mb-0 h-16 w-16 shrink-0 rounded-full !px-0 shadow-[0_16px_45px_-24px_rgba(183,134,64,1)]")}
+              className={cn(publicMotionButton, publicMotionCta, "mb-0 h-16 w-16 shrink-0 rounded-full !px-0")}
               disabled={!chatLocale || isBusy || !freeMessage.trim()}
               type="submit"
             >
@@ -808,8 +808,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
 function TrustRailItem({ icon, label }: { icon: string; label: string }) {
   return (
-    <div className="inline-flex min-h-8 max-w-full items-center justify-center gap-1 rounded-full border border-kmt-gold/25 bg-[#12100c]/72 px-2 text-center shadow-[0_12px_26px_-24px_rgba(183,134,64,0.9)] transition-colors hover:border-kmt-gold/40 hover:bg-[#17130d]/82">
-      <MaterialSymbol className="shrink-0 text-sm text-kmt-gold drop-shadow-[0_0_10px_rgba(183,134,64,0.26)]" name={icon} />
+    <div className="inline-flex min-h-8 max-w-full items-center justify-center gap-1 rounded-full border border-kmt-gold/25 bg-[#12100c]/72 px-2 text-center transition-colors hover:border-kmt-gold/40 hover:bg-[#17130d]/82">
+      <MaterialSymbol className="shrink-0 text-sm text-kmt-gold" name={icon} />
       <span className="min-w-0 truncate text-[0.68rem] font-medium leading-4 text-amber-50/90">{label}</span>
     </div>
   );
@@ -876,7 +876,7 @@ function ChatBubble({ message }: { message: ChatMessage }) {
     <div className={cn("flex items-end gap-4", isUser ? "justify-end" : "justify-start")}>
       {!isUser ? (
         message.tone === "error" || message.tone === "success" ? (
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-kmt-gold/40 bg-[linear-gradient(145deg,rgba(183,134,64,0.18),rgba(0,0,0,0.35))] text-kmt-gold shadow-[0_14px_35px_-28px_rgba(183,134,64,1)] max-sm:h-9 max-sm:w-9">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-kmt-gold/40 bg-[linear-gradient(145deg,rgba(183,134,64,0.18),rgba(0,0,0,0.35))] text-kmt-gold max-sm:h-9 max-sm:w-9">
             <MaterialSymbol className="text-2xl max-sm:text-lg" name={message.tone === "error" ? "error" : "check_circle"} />
           </span>
         ) : (
@@ -929,7 +929,7 @@ function SlotChoicePanel({
         </p>
       ) : null}
       {groups.map((group) => (
-        <div key={group.key} className="max-w-[42rem] rounded-3xl border border-kmt-gold/20 bg-black/20 p-3 shadow-[0_18px_48px_-38px_rgba(183,134,64,0.85)]">
+        <div key={group.key} className="max-w-[42rem] rounded-3xl border border-kmt-gold/20 bg-black/20 p-3">
           <div className="mb-3 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-[0.14em] text-amber-100/70">
             <MaterialSymbol className="text-base text-kmt-gold" name="event" />
             <span>{group.label}</span>
@@ -974,7 +974,7 @@ function PaymentReviewPanel({
   const emailText = draft.email?.trim() || bookingFormCopy.unknown;
 
   return (
-    <div className="ms-auto max-w-[42rem] rounded-3xl border border-kmt-gold/35 bg-black/30 p-4 shadow-[0_18px_58px_-42px_rgba(183,134,64,0.95)]" data-testid="booking-payment-review">
+    <div className="ms-auto max-w-[42rem] rounded-3xl border border-kmt-gold/35 bg-black/30 p-4" data-testid="booking-payment-review">
       <div className="mb-4 flex items-center gap-2 text-amber-50">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-kmt-gold/45 bg-kmt-gold/15 text-kmt-gold">
           <MaterialSymbol name="payments" />

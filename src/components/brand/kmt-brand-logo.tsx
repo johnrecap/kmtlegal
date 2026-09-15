@@ -104,7 +104,7 @@ function BrandMark({
   return (
     <span
       className={cn(
-        "grid shrink-0 place-items-center overflow-hidden border bg-black text-kmt-gold shadow-[0_0_26px_rgba(153,123,68,0.18)]",
+        "grid shrink-0 place-items-center overflow-hidden border bg-black text-kmt-gold",
         markSizeClasses[size],
         shape === "circle" ? "rounded-full" : "rounded-lg",
         surface === "dark" ? "border-kmt-gold/45" : "border-kmt-gold/30"

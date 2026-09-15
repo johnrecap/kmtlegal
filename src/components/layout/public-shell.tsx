@@ -55,7 +55,7 @@ export function PublicShell({
       <PublicHeader languageHref={languageHref} locale={locale} navItems={navItems} />
       <main className="bg-[var(--kmt-public-canvas)]">{children}</main>
       <footer className="border-t border-kmt-gold/25 bg-[var(--kmt-public-header)] text-[var(--kmt-public-muted)]">
-        <section className="border-b border-[var(--kmt-public-line)] bg-[linear-gradient(90deg,rgba(153,123,68,0.20),rgba(153,123,68,0.05)_38%,rgba(0,0,0,0)_72%)]">
+        <section className="border-b border-[var(--kmt-public-line)]">
           <div className="mx-auto grid max-w-[1200px] gap-5 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_auto] lg:items-center lg:px-10">
             <div className="max-w-2xl">
               <h2 className="text-2xl font-semibold leading-tight text-[var(--kmt-public-text)] md:text-3xl">{shell.footerCtaTitle}</h2>

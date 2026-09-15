@@ -27,7 +27,6 @@ import {
   LinkTabs
 } from "@/components/ui";
 import { ThemeProvider, ThemeToggle } from "@/components/theme";
-import { SpotlightCard } from "@/components/motion-ui/spotlight-card";
 import { CountUpDemo, DialogDemo, ShimmerDemo } from "./gallery-islands";
 
 type DemoRow = { id: string; matter: string; status: string; owner: string };
@@ -223,19 +222,12 @@ export function ComponentGallery() {
             </div>
           </GallerySection>
 
-          <GallerySection description="Motion primitives: spotlight hover follows the cursor; shimmer CTA layers the existing kmt-motion-cta effect." title="Motion">
+          <GallerySection description="Motion primitives: count-up numbers animate on scroll; hover states use lift and color only (no glow)." title="Motion">
             <div className="grid gap-4 md:grid-cols-3">
-              <SpotlightCard className="rounded-lg border border-border bg-surface p-5">
-                <p className="text-sm font-semibold">Spotlight card</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">Move the cursor across this card — a gold radial highlight tracks the pointer.</p>
-              </SpotlightCard>
-              <SpotlightCard className="rounded-lg border border-border bg-surface p-5" spotlightColor="rgb(199 154 82 / 20%)">
-                <p className="text-sm font-semibold">Tuned spotlight</p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">The highlight color is configurable per instance.</p>
-              </SpotlightCard>
               <div className="flex flex-col justify-center gap-3 rounded-lg border border-border bg-surface p-5">
                 <ShimmerDemo />
               </div>
+              <CountUpDemo />
             </div>
           </GallerySection>
         </main>

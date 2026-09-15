@@ -232,7 +232,7 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
 
   return (
     <ClientPortalPanel description={copy.teamChat.description} title={copy.teamChat.title}>
-      <div className="overflow-hidden rounded-[1.35rem] border border-kmt-gold/35 bg-[radial-gradient(circle_at_top_left,rgba(183,134,64,0.14),transparent_34%),linear-gradient(145deg,#17110a_0%,#090b0d_52%,#050505_100%)] shadow-[0_30px_100px_-58px_rgba(183,134,64,0.5)]">
+      <div className="overflow-hidden rounded-[1.35rem] border border-kmt-gold/35 bg-[linear-gradient(145deg,#17110a_0%,#090b0d_52%,#050505_100%)]">
         <header className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 bg-black/25 px-5 py-5">
           <div className="flex min-w-0 items-center gap-3">
             <KmtBrandLogo label={copy.teamChat.assistantName} shape="circle" size="md" variant="mark" />

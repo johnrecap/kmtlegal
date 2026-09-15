@@ -17,7 +17,7 @@ export function ConsultationLink({ className, locale, label }: { className?: str
   return (
     <Link
       className={cn(
-        "inline-flex min-h-11 items-center justify-center gap-2 border border-primary bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-[0_10px_24px_rgb(153_123_68/22)] transition-colors duration-kmt-fast ease-kmt-out hover:border-accent hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none",
+        "inline-flex min-h-11 items-center justify-center gap-2 border border-primary bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors duration-kmt-fast ease-kmt-out hover:border-accent hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none",
         publicMotionButton,
         publicMotionCta,
         className

@@ -342,15 +342,6 @@ a {
     }
   }
 
-  @keyframes kmt-motion-beam-spin {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(1turn);
-    }
-  }
-
   @keyframes kmt-motion-spotlight-rise {
     from {
       opacity: 0;
@@ -380,57 +371,9 @@ a {
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    transition-property: border-color, background-color, box-shadow, transform;
+    transition-property: border-color, background-color, transform;
     transition-duration: 260ms;
     transition-timing-function: var(--kmt-motion-ease);
-  }
-
-  .kmt-motion-card::before {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    border: 1px solid rgb(199 154 82 / 0%);
-    background:
-      linear-gradient(110deg, transparent 0%, rgb(199 154 82 / 10%) 42%, transparent 72%),
-      radial-gradient(circle at 18% 0%, rgb(199 154 82 / 12%), transparent 34%);
-    content: "";
-    opacity: 0;
-    transform: scale(0.985);
-    pointer-events: none;
-    transition: opacity 220ms var(--kmt-motion-ease), transform 220ms var(--kmt-motion-ease), border-color 220ms var(--kmt-motion-ease);
-  }
-
-  .kmt-motion-card-beam::after {
-    position: absolute;
-    inset: -1px;
-    z-index: 1;
-    border-radius: inherit;
-    padding: 1px;
-    background:
-      conic-gradient(
-        from 0deg,
-        rgb(199 154 82 / 0%) 0deg,
-        rgb(199 154 82 / 0%) 218deg,
-        rgb(244 207 136 / 94%) 252deg,
-        rgb(153 123 68 / 82%) 284deg,
-        rgb(199 154 82 / 0%) 326deg,
-        rgb(199 154 82 / 0%) 360deg
-      );
-    content: "";
-    opacity: 0;
-    pointer-events: none;
-    transform-origin: center;
-    animation: kmt-motion-beam-spin 1.9s linear infinite;
-    animation-play-state: paused;
-    transition: opacity 180ms var(--kmt-motion-ease);
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    mask-composite: exclude;
   }
 
   .kmt-motion-button,
@@ -438,47 +381,9 @@ a {
     position: relative;
     isolation: isolate;
     overflow: hidden;
-    transition-property: border-color, background-color, color, box-shadow, transform;
+    transition-property: border-color, background-color, color, transform;
     transition-duration: 190ms;
     transition-timing-function: var(--kmt-motion-ease);
-  }
-
-  .kmt-motion-cta::before {
-    position: absolute;
-    inset: 1px;
-    z-index: 0;
-    border-radius: inherit;
-    background:
-      radial-gradient(circle at 22% 16%, rgb(255 236 188 / 26%), transparent 34%),
-      linear-gradient(135deg, rgb(244 207 136 / 18%), transparent 42%, rgb(153 123 68 / 18%));
-    content: "";
-    opacity: 0.46;
-    pointer-events: none;
-    transition: opacity 190ms var(--kmt-motion-ease);
-  }
-
-  .kmt-motion-button::after,
-  .kmt-motion-cta::after {
-    position: absolute;
-    inset-block: 0;
-    inset-inline-start: -58%;
-    z-index: 1;
-    width: 44%;
-    background: linear-gradient(90deg, transparent, rgb(255 246 216 / 58%), transparent);
-    content: "";
-    opacity: 0;
-    transform: skewX(-16deg) translateX(-120%);
-    pointer-events: none;
-    transition: opacity 180ms var(--kmt-motion-ease), transform 640ms var(--kmt-motion-ease);
-  }
-
-  .kmt-motion-button:disabled::after,
-  .kmt-motion-button[aria-disabled="true"]::after,
-  .kmt-motion-cta:disabled::before,
-  .kmt-motion-cta:disabled::after,
-  .kmt-motion-cta[aria-disabled="true"]::before,
-  .kmt-motion-cta[aria-disabled="true"]::after {
-    display: none;
   }
 
   .kmt-motion-button:active:not(:disabled):not([aria-disabled="true"]),
@@ -487,7 +392,7 @@ a {
   }
 
   .kmt-motion-icon {
-    transition-property: color, text-shadow, transform;
+    transition-property: color, transform;
     transition-duration: 180ms;
     transition-timing-function: var(--kmt-motion-ease);
   }
@@ -495,8 +400,7 @@ a {
   .kmt-motion-icon-halo {
     border-radius: 999px;
     transform-origin: center;
-    filter: drop-shadow(0 0 0 rgb(199 154 82 / 0%));
-    transition: color 190ms var(--kmt-motion-ease), filter 190ms var(--kmt-motion-ease), text-shadow 190ms var(--kmt-motion-ease), transform 190ms var(--kmt-motion-ease);
+    transition: color 190ms var(--kmt-motion-ease), transform 190ms var(--kmt-motion-ease);
   }
 
   .kmt-motion-arrow {
@@ -552,7 +456,6 @@ a {
     content: "";
     opacity: 0;
     background: linear-gradient(90deg, transparent, rgb(244 207 136 / 96%) 42%, rgb(153 123 68 / 92%), transparent);
-    box-shadow: 0 0 18px rgb(199 154 82 / 42%);
     transform: scaleX(0);
     transform-origin: left center;
     transition: opacity 150ms var(--kmt-motion-ease), transform 190ms var(--kmt-motion-ease);
@@ -586,32 +489,6 @@ a {
     transform-origin: center;
   }
 
-  .kmt-motion-hero-spotlight {
-    position: relative;
-    isolation: isolate;
-  }
-
-  .kmt-motion-hero-spotlight::before {
-    position: absolute;
-    inset: -1.15rem -1.35rem;
-    z-index: -1;
-    border-radius: 999px;
-    background:
-      radial-gradient(ellipse at 32% 50%, rgb(199 154 82 / 28%), transparent 62%),
-      linear-gradient(90deg, rgb(199 154 82 / 14%), transparent 72%);
-    content: "";
-    opacity: 0.72;
-    filter: blur(9px);
-    pointer-events: none;
-    animation: kmt-motion-spotlight-rise 620ms 90ms var(--kmt-motion-ease) both;
-  }
-
-  html[dir="rtl"] .kmt-motion-hero-spotlight::before {
-    background:
-      radial-gradient(ellipse at 68% 50%, rgb(199 154 82 / 28%), transparent 62%),
-      linear-gradient(270deg, rgb(199 154 82 / 14%), transparent 72%);
-  }
-
   .kmt-motion-panel-enter {
     animation: kmt-motion-panel-enter 360ms var(--kmt-motion-ease) both;
   }
@@ -622,36 +499,6 @@ a {
     }
     to {
       transform: translateX(-50%);
-    }
-  }
-
-  .kmt-spotlight {
-    isolation: isolate;
-  }
-
-  .kmt-spotlight::before {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    background: radial-gradient(
-      240px circle at var(--kmt-spotlight-x, 50%) var(--kmt-spotlight-y, 50%),
-      var(--kmt-spotlight-color, rgb(199 154 82 / 12%)),
-      transparent 65%
-    );
-    content: "";
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity var(--kmt-duration-fast) var(--kmt-ease-out);
-  }
-
-  .kmt-spotlight:hover::before,
-  .kmt-spotlight:focus-within::before {
-    opacity: 1;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .kmt-spotlight::before {
-      transition: none;
     }
   }
 
@@ -669,9 +516,7 @@ a {
 
   .kmt-motion-form:focus-within {
     border-color: rgb(153 123 68 / 55%);
-    box-shadow:
-      0 0 0 1px rgb(244 207 136 / 20%),
-      0 30px 100px -58px rgb(153 123 68 / 64%);
+    box-shadow: 0 0 0 1px rgb(153 123 68 / 25%);
   }
 
   .kmt-motion-control {
@@ -705,24 +550,6 @@ a {
     .kmt-motion-card-beam:focus-visible,
     .kmt-motion-card-beam:focus-within {
       transform: translateY(-3px);
-      box-shadow:
-        0 0 0 1px rgb(244 207 136 / 18%),
-        0 34px 96px -52px rgb(153 123 68 / 62%);
-    }
-
-    .kmt-motion-card:hover::before,
-    .kmt-motion-card:focus-visible::before,
-    .kmt-motion-card:focus-within::before {
-      border-color: rgb(199 154 82 / 28%);
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    .kmt-motion-card-beam:hover::after,
-    .kmt-motion-card-beam:focus-visible::after,
-    .kmt-motion-card-beam:focus-within::after {
-      opacity: 1;
-      animation-play-state: running;
     }
 
     .kmt-motion-button:hover:not(:disabled):not([aria-disabled="true"]),
@@ -730,38 +557,14 @@ a {
     .kmt-motion-button:focus-visible:not(:disabled):not([aria-disabled="true"]),
     .kmt-motion-cta:focus-visible:not(:disabled):not([aria-disabled="true"]) {
       transform: translateY(-2px);
-      box-shadow:
-        inset 0 0 0 1px rgb(255 236 188 / 18%),
-        inset 0 1px 16px rgb(255 236 188 / 13%),
-        0 18px 42px -24px rgb(199 154 82 / 96%);
-    }
-
-    .kmt-motion-cta:hover:not(:disabled):not([aria-disabled="true"])::before,
-    .kmt-motion-cta:focus-visible:not(:disabled):not([aria-disabled="true"])::before {
-      opacity: 0.82;
-    }
-
-    .kmt-motion-button:hover:not(:disabled):not([aria-disabled="true"])::after,
-    .kmt-motion-button:focus-visible:not(:disabled):not([aria-disabled="true"])::after,
-    .kmt-motion-cta:hover:not(:disabled):not([aria-disabled="true"])::after,
-    .kmt-motion-cta:focus-visible:not(:disabled):not([aria-disabled="true"])::after {
-      opacity: 1;
-      transform: skewX(-16deg) translateX(520%);
     }
 
     :where(a, button, .group):is(:hover, :focus-visible) .kmt-motion-icon {
       transform: translateY(-2px);
-      text-shadow: 0 0 18px rgb(199 154 82 / 42%);
     }
 
     :where(a, button, .group):is(:hover, :focus-visible) .kmt-motion-icon-halo {
       transform: translateY(-2px) scale(1.1) rotate(-4deg);
-      filter:
-        drop-shadow(0 0 8px rgb(244 207 136 / 34%))
-        drop-shadow(0 0 18px rgb(153 123 68 / 24%));
-      text-shadow:
-        0 0 10px rgb(244 207 136 / 34%),
-        0 0 24px rgb(153 123 68 / 26%);
     }
 
     html[dir="rtl"] :where(a, button, .group):is(:hover, :focus-visible) .kmt-motion-icon-halo {
@@ -819,12 +622,6 @@ a {
     transform: none !important;
   }
 
-  .kmt-motion-card::before,
-  .kmt-motion-card-beam::after,
-  .kmt-motion-cta::before,
-  .kmt-motion-cta::after,
-  .kmt-motion-button::after,
-  .kmt-motion-hero-spotlight::before,
   .kmt-motion-arrow-trail::after {
     display: none !important;
   }

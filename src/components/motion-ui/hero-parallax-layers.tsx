@@ -160,7 +160,6 @@ export function HeroParallaxLayers({
           <rect width="100%" height="100%" fill="url(#kmt-arabesque)" />
         </svg>
       </div>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_45%_at_50%_0%,rgb(199_154_82/0.12),transparent_65%)]" aria-hidden="true" />
 
       <div className="relative mx-auto grid max-w-[1200px] items-center gap-10 px-4 pb-16 pt-20 sm:px-6 md:pb-24 md:pt-28 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14 lg:px-10">
         <div>
@@ -239,7 +238,7 @@ export function HeroParallaxLayers({
         </div>
 
         <div data-drift="docket" className="lg:mt-24">
-          <div data-hero="docket" className="relative overflow-hidden rounded-2xl border border-kmt-gold/25 bg-[var(--kmt-public-surface-muted)] p-6 shadow-[0_40px_120px_-40px_rgb(153_123_68/0.45)] md:p-8" aria-live="polite">
+          <div data-hero="docket" className="relative overflow-hidden rounded-2xl border border-kmt-gold/25 bg-[var(--kmt-public-surface-muted)] p-6 md:p-8" aria-live="polite">
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-[var(--kmt-public-gold)] to-transparent" aria-hidden="true" />
             <div className="flex items-center justify-between gap-3">
               <p className={cn("text-xs font-semibold text-[var(--kmt-public-muted)]", locale === "en" && "uppercase tracking-[0.2em]")}>{docket.title}</p>

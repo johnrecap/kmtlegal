@@ -244,7 +244,6 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
               key={area.key}
               className={cn("h-full", index === 0 && "sm:col-span-2 lg:col-span-2 lg:row-span-2")}
               delay={index * 80}
-              spotlight
             >
               <PracticeAreaCard featured={index === 0} href={area.href} icon={area.icon} locale={locale} summary={area.summary} title={area.title} />
             </Reveal>
