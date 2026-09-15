@@ -122,10 +122,10 @@ export function HeroParallaxLayers({
           src={image}
           onLoad={() => ScrollTrigger.refresh()}
         />
-        <div className="absolute inset-0 bg-[#07090b]/70" aria-hidden="true" />
+        <div className="absolute inset-0 bg-[rgb(var(--kmt-public-scrim)/0.7)]" aria-hidden="true" />
       </div>
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#07090b]/70 to-transparent" aria-hidden="true" />
-      <div className="absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-b from-transparent via-[#07090b]/55 to-[var(--kmt-public-surface)]" aria-hidden="true" />
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[rgb(var(--kmt-public-scrim)/0.7)] to-transparent" aria-hidden="true" />
+      <div className="absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-b from-transparent via-[rgb(var(--kmt-public-scrim)/0.55)] to-[var(--kmt-public-surface)]" aria-hidden="true" />
       <div className="absolute inset-0 text-[var(--kmt-public-gold)] opacity-[0.07] [mask-image:radial-gradient(ellipse_80%_70%_at_70%_20%,black,transparent)]" aria-hidden="true" data-drift="motif">
         <svg className="h-full w-full" aria-hidden="true">
           <defs>
@@ -162,7 +162,7 @@ export function HeroParallaxLayers({
             {description}
           </p>
 
-          <div data-hero="picker" className="mt-8 rounded-2xl border border-white/10 bg-white/[0.025] p-5 md:p-6">
+          <div data-hero="picker" className="mt-8 rounded-2xl border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] p-5 md:p-6">
             <p id="hero-matter-label" className="text-sm font-semibold text-[var(--kmt-public-text)]">
               {pickerLabel}
             </p>
@@ -180,9 +180,9 @@ export function HeroParallaxLayers({
                     className={cn(
                       "flex min-h-14 items-center gap-3 rounded-xl border px-4 py-3 text-start transition-colors duration-200",
                       "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold",
-                      active
-                        ? "border-kmt-gold/70 bg-kmt-gold/15 text-[var(--kmt-public-text)]"
-                        : "border-white/10 bg-white/[0.02] text-[var(--kmt-public-muted)] hover:border-kmt-gold/50 hover:text-[var(--kmt-public-text)]"
+                    active
+                      ? "border-kmt-gold/70 bg-kmt-gold/15 text-[var(--kmt-public-text)]"
+                      : "border-[var(--kmt-public-line)] bg-transparent text-[var(--kmt-public-muted)] hover:border-kmt-gold/50 hover:text-[var(--kmt-public-text)]"
                     )}
                   >
                     <MaterialSymbol className={cn("text-2xl", active ? "text-[var(--kmt-public-gold)]" : "text-[var(--kmt-public-muted)]")} name={matter.icon} />
@@ -212,7 +212,7 @@ export function HeroParallaxLayers({
               <span
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-full border",
-                  selected ? "border-kmt-gold/60 bg-kmt-gold/15 text-[var(--kmt-public-gold)]" : "border-white/10 bg-white/[0.03] text-[var(--kmt-public-muted)]"
+                   selected ? "border-kmt-gold/60 bg-kmt-gold/15 text-[var(--kmt-public-gold)]" : "border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] text-[var(--kmt-public-muted)]"
                 )}
                 aria-hidden="true"
               >
@@ -230,7 +230,7 @@ export function HeroParallaxLayers({
               </p>
             </div>
 
-            <div className="my-6 border-t border-dashed border-white/15" aria-hidden="true" />
+            <div className="my-6 border-t border-dashed border-[var(--kmt-public-line)]" aria-hidden="true" />
 
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--kmt-public-gold)]">{docket.next}</p>
@@ -244,7 +244,7 @@ export function HeroParallaxLayers({
         </div>
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[#07090b]" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[var(--kmt-public-surface)]" aria-hidden="true" />
       <span className="sr-only">{locale === "ar" ? "مقدمة الموقع" : "Site introduction"}</span>
     </section>
   );

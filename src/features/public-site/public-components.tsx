@@ -19,12 +19,12 @@ import {
   publicMotionImageCard
 } from "@/features/public-site/public-motion";
 
-export const publicSectionSurface = "bg-[var(--kmt-public-surface)] text-white";
-export const publicSectionMutedSurface = "bg-[var(--kmt-public-surface-muted)] text-white";
-export const publicBorder = "border-white/10";
+export const publicSectionSurface = "bg-[var(--kmt-public-surface)] text-[var(--kmt-public-text)]";
+export const publicSectionMutedSurface = "bg-[var(--kmt-public-surface-muted)] text-[var(--kmt-public-text)]";
+export const publicBorder = "border-[var(--kmt-public-line)]";
 export const publicPanel =
-  "rounded-lg border border-white/10 bg-[var(--kmt-public-panel)] text-white shadow-[0_24px_80px_rgba(0,0,0,0.28)]";
-export const publicPanelHover = cn(publicMotionCardBeam, "kmt-motion-card transition-colors hover:border-kmt-gold/70 hover:bg-white/[0.055]");
+  "rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] text-[var(--kmt-public-text)] shadow-[var(--kmt-public-panel-shadow)]";
+export const publicPanelHover = cn(publicMotionCardBeam, "kmt-motion-card transition-colors hover:border-kmt-gold/70 hover:bg-[var(--kmt-public-hover)]");
 export const publicMutedText = "text-[var(--kmt-public-muted)]";
 export const publicGoldText = "text-[var(--kmt-public-gold)]";
 
@@ -49,7 +49,7 @@ export function PublicSection({
 }) {
   const surfaceClass =
     surface === "transparent"
-      ? "text-white"
+      ? "text-[var(--kmt-public-text)]"
       : surface === "muted"
         ? publicSectionMutedSurface
         : publicSectionSurface;
@@ -61,7 +61,7 @@ export function PublicSection({
       <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:px-10 lg:py-16">
         <div className={cn("max-w-3xl", isCentered ? "mx-auto text-center" : undefined)}>
           {eyebrow ? <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p> : null}
-          <Heading className="mt-2 text-3xl font-semibold leading-tight text-white md:text-4xl">{title}</Heading>
+          <Heading className="mt-2 text-3xl font-semibold leading-tight text-[var(--kmt-public-text)] md:text-4xl">{title}</Heading>
           {description ? <p className={cn("mt-4 text-base leading-8", publicMutedText)}>{description}</p> : null}
         </div>
         <div className="mt-8">{children}</div>
@@ -91,10 +91,10 @@ export function PageHero({
   const imageOpacity = "opacity-95";
   const heroHeight = isCompact ? "min-h-[360px] md:min-h-[420px]" : "min-h-[560px]";
   const contentHeight = isCompact ? "min-h-[360px] py-14 md:min-h-[420px]" : "min-h-[560px] py-16";
-  const ambientOverlay = isCompact ? "bg-[#020403]/42" : "bg-[#020403]/38";
+  const ambientOverlay = isCompact ? "bg-[rgb(var(--kmt-public-scrim)/0.42)]" : "bg-[rgb(var(--kmt-public-scrim)/0.38)]";
 
   return (
-    <section className={cn("relative isolate overflow-hidden bg-kmt-navy text-white", heroHeight)}>
+    <section className={cn("relative isolate overflow-hidden bg-[var(--kmt-public-surface)] text-[var(--kmt-public-text)]", heroHeight)}>
       <Image
         alt=""
         aria-hidden="true"
@@ -106,13 +106,13 @@ export function PageHero({
         src={image}
       />
       <div className={cn("absolute inset-0", ambientOverlay)} />
-      <div className="absolute inset-y-0 w-[92%] from-[#050607]/95 via-[#050607]/76 to-transparent ltr:left-0 ltr:bg-gradient-to-r rtl:right-0 rtl:bg-gradient-to-l sm:w-[82%] lg:w-[74%]" />
-      <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-[#07090b]" />
+      <div className="absolute inset-y-0 w-[92%] from-[rgb(var(--kmt-public-scrim)/0.95)] via-[rgb(var(--kmt-public-scrim)/0.76)] to-transparent ltr:left-0 ltr:bg-gradient-to-r rtl:right-0 rtl:bg-gradient-to-l sm:w-[82%] lg:w-[74%]" />
+      <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-[var(--kmt-public-surface)]" />
       <div className={cn("relative mx-auto flex max-w-[1200px] items-center px-4 sm:px-6 lg:px-10", contentHeight)}>
         <div className="kmt-motion-reveal max-w-3xl">
-          <p className={cn("text-sm font-semibold drop-shadow-[0_2px_10px_rgba(0,0,0,0.82)]", publicGoldText)}>{eyebrow}</p>
-          <h1 className={cn("mt-4 max-w-3xl font-semibold leading-tight drop-shadow-[0_4px_22px_rgba(0,0,0,0.88)]", isCompact ? "text-3xl md:text-5xl" : "text-4xl md:text-6xl")}>{title}</h1>
-          <p className={cn("mt-5 max-w-2xl leading-9 text-slate-100 drop-shadow-[0_3px_16px_rgba(0,0,0,0.86)]", isCompact ? "text-base md:text-lg" : "text-lg")}>{description}</p>
+          <p className={cn("text-sm font-semibold drop-shadow-[var(--kmt-public-text-shadow)]", publicGoldText)}>{eyebrow}</p>
+          <h1 className={cn("mt-4 max-w-3xl font-semibold leading-tight drop-shadow-[var(--kmt-public-text-shadow)]", isCompact ? "text-3xl md:text-5xl" : "text-4xl md:text-6xl")}>{title}</h1>
+          <p className={cn("mt-5 max-w-2xl leading-9 text-[var(--kmt-public-muted)] drop-shadow-[var(--kmt-public-text-shadow)]", isCompact ? "text-base md:text-lg" : "text-lg")}>{description}</p>
           {actions ? <div className={cn("kmt-motion-reveal kmt-motion-reveal-delay mt-8 flex flex-wrap gap-3", publicMotionHeroSpotlight)}>{actions}</div> : null}
         </div>
       </div>
@@ -124,8 +124,8 @@ export function TrustStrip({ items }: { items: ReadonlyArray<{ icon: string; lab
   const loop = [...items, ...items];
 
   return (
-    <div className="kmt-marquee overflow-hidden border-y border-white/10 bg-[#090d11]">
-      <div className="kmt-marquee-track flex w-max items-center py-5 text-sm text-slate-300 [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
+    <div className="kmt-marquee overflow-hidden border-y border-[var(--kmt-public-line)] bg-[var(--kmt-public-surface-muted)]">
+      <div className={cn("kmt-marquee-track flex w-max items-center py-5 text-sm [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]", publicMutedText)}>
         {loop.map((item, index) => (
           <div key={`${item.label}-${index}`} aria-hidden={index >= items.length} className="flex shrink-0 items-center gap-2 pe-12">
             <MaterialSymbol className={cn(publicMotionIcon, publicMotionIconHalo, publicGoldText)} name={item.icon} />
@@ -184,12 +184,12 @@ export function ProcessSteps({ steps }: { steps: ReadonlyArray<{ number: string;
       {steps.map((step, index) => (
         <li key={step.number} className="relative">
           <Reveal delay={index * 100} className="h-full">
-            <div className={cn(publicMotionCardBeam, "group relative h-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.025] p-5")}>
+            <div className={cn(publicMotionCardBeam, "group relative h-full overflow-hidden rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] p-5")}>
               <div className="flex items-center justify-between gap-4">
                 <MaterialSymbol className={cn("text-3xl", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name={step.icon} />
                 <span className={cn("text-sm font-semibold", publicGoldText)}>{step.number}</span>
               </div>
-              <h3 className="mt-4 text-lg font-semibold text-white">{step.title}</h3>
+              <h3 className="mt-4 text-lg font-semibold text-[var(--kmt-public-text)]">{step.title}</h3>
               <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{step.summary}</p>
             </div>
           </Reveal>
@@ -203,8 +203,8 @@ export function IndustryGrid({ industries }: { industries: ReadonlyArray<{ title
   return (
     <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
       {industries.map((industry) => (
-        <article key={industry.title} className={cn(publicMotionCardBeam, "rounded-lg border border-white/10 bg-white/[0.025] p-5")}>
-          <h3 className="text-lg font-semibold text-white">{industry.title}</h3>
+        <article key={industry.title} className={cn(publicMotionCardBeam, "rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] p-5")}>
+          <h3 className="text-lg font-semibold text-[var(--kmt-public-text)]">{industry.title}</h3>
           <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{industry.summary}</p>
         </article>
       ))}
@@ -234,12 +234,12 @@ export function RepresentativeMatterCard({
   return (
     <Link className={cn(publicPanel, publicPanelHover, "group block p-5")} href={localizedPublicHref(href, locale)}>
       <p className={cn("text-xs font-semibold", publicGoldText)}>{label}</p>
-      <h3 className="mt-3 text-xl font-semibold leading-8 text-white">{title}</h3>
-      <p className="mt-1 text-xs text-slate-400">
+      <h3 className="mt-3 text-xl font-semibold leading-8 text-[var(--kmt-public-text)]">{title}</h3>
+      <p className={cn("mt-1 text-xs", publicMutedText)}>
         {region} · {year}
       </p>
       <p className={cn("mt-4 text-sm leading-7", publicMutedText)}>{summary}</p>
-      <p className="mt-4 border-t border-white/10 pt-3 text-xs leading-6 text-slate-400">{privacyNote}</p>
+      <p className={cn("mt-4 border-t border-[var(--kmt-public-line)] pt-3 text-xs leading-6", publicMutedText)}>{privacyNote}</p>
     </Link>
   );
 }
@@ -264,7 +264,7 @@ export function LuxuryFeaturePanel({
       </div>
       <div className="p-6 lg:p-8">
         <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p>
-        <h3 className="mt-3 text-3xl font-semibold leading-tight text-white">{title}</h3>
+        <h3 className="mt-3 text-3xl font-semibold leading-tight text-[var(--kmt-public-text)]">{title}</h3>
         <p className={cn("mt-4 leading-8", publicMutedText)}>{description}</p>
         <div className="mt-6">{children}</div>
       </div>
@@ -272,30 +272,3 @@ export function LuxuryFeaturePanel({
   );
 }
 
-export function FinalCtaBand({
-  title,
-  description,
-  href = "/book-consultation",
-  locale = "en"
-}: {
-  title: string;
-  description: string;
-  href?: string;
-  locale?: PublicLocale;
-}) {
-  const content = getPublicContent(locale);
-
-  return (
-    <section className="border-y border-white/10 bg-[#0f1112] text-white">
-      <div className="mx-auto grid max-w-[1200px] gap-5 px-4 py-8 sm:px-6 md:grid-cols-[1fr_auto] md:items-center lg:px-10">
-        <div>
-          <h2 className="text-3xl font-semibold leading-tight">{title}</h2>
-          <p className={cn("mt-3 max-w-2xl leading-8", publicMutedText)}>{description}</p>
-        </div>
-        <ButtonLink className={cn(publicMotionButton, publicMotionCta)} href={localizedPublicHref(href, locale)} size="lg" trailingIcon={<MaterialSymbol className={cn("text-base", publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />}>
-          {content.shared.bookConsultation}
-        </ButtonLink>
-      </div>
-    </section>
-  );
-}

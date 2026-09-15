@@ -30,9 +30,15 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
   const isPaid = !result?.requiresFinancialReview && result?.status === "PAID" && result.payment;
   const isPending = !result?.requiresFinancialReview && (result?.status === "CREATED" || result?.status === "PENDING");
   const bookingHref = resumeBookingHref(result, token, locale);
+  const languageSearchParams = new URLSearchParams(
+    Object.entries(params ?? {})
+      .filter((entry): entry is [string, string] => typeof entry[1] === "string" && entry[1] !== "")
+      .map(([key, value]) => [key, key === "locale" ? (locale === "ar" ? "en" : "ar") : value])
+  );
+  const languageHref = `/payment/consultation/return?${languageSearchParams.toString()}`;
 
   return (
-    <PublicShell currentPath="/payment/consultation/return" locale={locale} navItems={navForPath("/", locale)}>
+    <PublicShell currentPath="/payment/consultation/return" languageHref={languageHref} locale={locale} navItems={navForPath("/", locale)}>
       <section className="mx-auto min-h-[68vh] max-w-[940px] px-4 py-16 sm:px-6 lg:px-10" dir={locale === "ar" ? "rtl" : "ltr"}>
         <div className="rounded-[1.75rem] border border-kmt-gold/30 bg-[#100d08] p-6 shadow-[0_34px_120px_-68px_rgba(183,134,64,0.58)] sm:p-8">
           <div className="flex items-start gap-4">

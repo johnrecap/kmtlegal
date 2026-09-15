@@ -24,7 +24,7 @@ Full-site modernization: modern components, GSAP/Lenis/React-Bits motion, consol
 - [x] `01-component-library.md` — shared UI components (`src/components/ui/`) *(done 2026-09-15: Button/ButtonLink/Badge/Field/SearchInput/Toast/InlineFeedback/Tabs+LinkTabs/Pagination/Dialog/Skeleton×3/DataTable/Card/State/FilterBar/DataRecordCard on semantic tokens; Material Symbols font removed; formatBytes deduped; gallery at `/preview/components`)*
 
 ### Public site (Phase 2)
-- [ ] `10-public-shell.md` — header, footer, PublicShell (all public pages)
+- [x] `10-public-shell.md` — header, footer, PublicShell (all public pages) *(done 2026-09-15: theme-aware `--kmt-public-*` vars, retokenized header/footer, language-switch query preservation, mobile scroll lock + focus trap, FinalCtaBand deleted, latent scrim bug fixed)*
 - [ ] `11-public-home.md` — home page EN + AR
 - [ ] `12-public-services.md` — services list + detail
 - [ ] `13-public-team.md` — team list + detail

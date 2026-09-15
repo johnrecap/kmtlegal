@@ -39,6 +39,7 @@ export async function ClientAccountSetupPage({
   return (
     <PublicShell
       currentPath={locale === "ar" ? "/ar/client-account/setup" : "/client-account/setup"}
+      languageSearch={token ? `token=${encodeURIComponent(token)}` : undefined}
       locale={locale}
       navItems={navForPath("/", locale)}
     >

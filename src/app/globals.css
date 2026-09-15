@@ -65,6 +65,24 @@
   --kmt-border: #e2e8f0;
   --kmt-focus: 0 0 0 3px rgb(153 123 68 / 18%);
   --kmt-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --kmt-public-canvas: #f6f3ec;
+  --kmt-public-surface: #fdfbf6;
+  --kmt-public-surface-muted: #ede8dc;
+  --kmt-public-header: rgb(253 251 246 / 90%);
+  --kmt-public-panel: rgb(28 22 12 / 3.5%);
+  --kmt-public-text: #1c1812;
+  --kmt-public-muted: #57503f;
+  --kmt-public-gold: #755a26;
+  --kmt-public-line: rgb(28 22 12 / 12%);
+  --kmt-public-hover: rgb(28 22 12 / 5%);
+  --kmt-public-scrim: 246 241 230;
+  --kmt-public-header-shadow: 0 12px 40px rgb(28 22 12 / 12%);
+  --kmt-public-dropdown-shadow: 0 32px 80px rgb(28 22 12 / 18%);
+  --kmt-public-panel-shadow: 0 24px 80px rgb(28 22 12 / 10%);
+  --kmt-public-text-shadow: 0 4px 22px rgb(246 241 230 / 85%);
+}
+
+.dark {
   --kmt-public-canvas: #060504;
   --kmt-public-surface: #07090b;
   --kmt-public-surface-muted: #0c1116;
@@ -73,6 +91,13 @@
   --kmt-public-text: #f8f3ea;
   --kmt-public-muted: #cbd5e1;
   --kmt-public-gold: #c79a52;
+  --kmt-public-line: rgb(255 255 255 / 10%);
+  --kmt-public-hover: rgb(255 255 255 / 5%);
+  --kmt-public-scrim: 7 9 11;
+  --kmt-public-header-shadow: 0 12px 40px rgb(0 0 0 / 34%);
+  --kmt-public-dropdown-shadow: 0 32px 80px rgb(0 0 0 / 50%);
+  --kmt-public-panel-shadow: 0 24px 80px rgb(0 0 0 / 28%);
+  --kmt-public-text-shadow: 0 4px 22px rgb(0 0 0 / 88%);
 }
 
 body {

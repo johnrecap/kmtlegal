@@ -125,8 +125,8 @@ describe("public website UI", () => {
     expect(html).toContain("opacity-95");
     expect(html).toContain("ltr:bg-gradient-to-r");
     expect(html).toContain("rtl:bg-gradient-to-l");
-    expect(html).toContain("drop-shadow-[0_4px_22px_rgba(0,0,0,0.88)]");
-    expect(html).toContain("bg-[#090d11]");
+    expect(html).toContain("drop-shadow-[var(--kmt-public-text-shadow)]");
+    expect(html).toContain("bg-[var(--kmt-public-surface-muted)]");
     expect(html).not.toContain("kmt-motion-thread");
     expect(html).toContain("kmt-motion-icon-halo");
   });
@@ -146,7 +146,7 @@ describe("public website UI", () => {
     expect(html).toContain("md:min-h-[420px]");
     expect(html).toContain("loading=\"lazy\"");
     expect(html).toContain("opacity-95");
-    expect(html).toContain("bg-[#020403]/42");
+    expect(html).toContain("bg-[rgb(var(--kmt-public-scrim)/0.42)]");
     expect(html).toContain("Find the Closest Service Path");
     expect(html).not.toContain("secondary-container");
   });
