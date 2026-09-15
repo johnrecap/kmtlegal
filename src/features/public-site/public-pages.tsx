@@ -21,6 +21,7 @@ import {
   publicMotionIconHalo
 } from "@/features/public-site/public-motion";
 import { HeroParallaxLayers } from "@/components/motion-ui/hero-parallax-layers";
+import { ReadingProgress } from "@/components/motion-ui/reading-progress";
 import { Reveal } from "@/components/motion-ui/reveal";
 import {
   DetailCta,
@@ -632,9 +633,31 @@ export async function ArticlesPageView({ locale }: { locale: PublicLocale }) {
 export async function ArticleDetailPageView({ locale, slug }: { locale: PublicLocale; slug: string }) {
   const content = getPublicContent(locale);
   const alternateLocale = locale === "ar" ? "en" : "ar";
-  const [article, alternateArticle] = await Promise.all([loadArticle(locale, slug), loadArticle(alternateLocale, slug)]);
+  const [article, alternateArticle, articleCards] = await Promise.all([
+    loadArticle(locale, slug),
+    loadArticle(alternateLocale, slug),
+    loadArticles(locale)
+  ]);
   if (!article) notFound();
   const copy = content.articleDetail;
+  const authorName = article.author ?? copy.defaultAuthor;
+  const related = articleCards
+    .filter((item) => item.slug !== article.slug && item.category === article.category)
+    .slice(0, 3);
+  const breadcrumbItems = [
+    { label: copy.breadcrumbArticles, href: localizedPublicHref("/articles", locale) },
+    { label: article.category },
+    { label: article.title }
+  ];
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: copy.breadcrumbArticles, item: localizedPublicHref("/articles", locale) },
+      { "@type": "ListItem", position: 2, name: article.category },
+      { "@type": "ListItem", position: 3, name: article.title }
+    ]
+  };
 
   return (
     <PublicShell
@@ -643,21 +666,61 @@ export async function ArticleDetailPageView({ locale, slug }: { locale: PublicLo
       locale={locale}
       navItems={navForPath("/articles", locale)}
     >
-      <PublicSection eyebrow={article.readTime} title={article.title} description={article.excerpt}>
-        <article className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          <div className={cn(publicPanel, "p-6")}>
-            <div className="mb-6 flex flex-wrap gap-2">
-              <Badge className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100">{article.category}</Badge>
-              <Badge className="border-white/15 bg-white/5 text-slate-200">{article.publishedAt}</Badge>
+      <ReadingProgress />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <PublicSection
+        breadcrumbs={<PublicBreadcrumbs ariaLabel={content.serviceDetail.breadcrumbAriaLabel} items={breadcrumbItems} />}
+        eyebrow={article.readTime}
+        headingLevel="h1"
+        title={article.title}
+        description={article.excerpt}
+      >
+        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+          <article className={cn(publicPanel, "p-6")}>
+            <div className="flex flex-wrap gap-2">
+              <Badge className={publicGoldChip}>{article.category}</Badge>
+              {article.publishedAt ? (
+                <Badge className={publicNeutralChip}>
+                  <time dateTime={article.publishedAt}>
+                    <bdi>{formatPublicPolicyDate(article.publishedAt, locale)}</bdi>
+                  </time>
+                </Badge>
+              ) : null}
             </div>
-            <p className="text-lg leading-9 text-white">{article.content}</p>
-            <div className="mt-8 rounded-lg border border-amber-300/35 bg-amber-950/35 p-4 text-sm leading-7 text-amber-100">{copy.disclaimer}</div>
-            <ButtonLink className={cn(publicMotionButton, publicMotionCta, "mt-6 !border-kmt-gold/35 !text-amber-100 hover:!bg-kmt-gold hover:!text-white")} href={localizedPublicHref("/articles", locale)} variant="secondary">
+            <p className={cn("mt-5 text-sm", publicMutedText)}>
+              {copy.bylineBy} <span className="font-semibold text-[var(--kmt-public-text)]">{authorName}</span>
+            </p>
+            <ArticleBody content={article.content} />
+            <div className="mt-8 rounded-lg border border-kmt-warning-border bg-kmt-warning-surface p-4 text-sm leading-7 text-kmt-warning-strong">{copy.disclaimer}</div>
+            <ButtonLink className={cn(publicMotionButton, publicMotionCta, "mt-6 !border-kmt-gold/35 !text-[var(--kmt-public-text)] hover:!bg-kmt-gold hover:!text-primary-foreground")} href={localizedPublicHref("/articles", locale)} variant="secondary">
               {copy.backToArticles}
             </ButtonLink>
-          </div>
+          </article>
           <DetailCta locale={locale} />
-        </article>
+        </div>
+        {related.length > 0 ? (
+          <section className="mt-10">
+            <h2 className="text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.relatedTitle}</h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              {related.map((item) => (
+                <Link
+                  key={item.slug}
+                  className={cn(publicPanel, publicPanelHover, "block p-5")}
+                  href={localizedPublicHref(`/articles/${item.slug}`, locale)}
+                >
+                  <p className={cn("text-sm font-semibold", publicGoldText)}>
+                    <bdi>{item.readTime}</bdi>
+                  </p>
+                  <h3 className="mt-2 text-xl font-semibold text-[var(--kmt-public-text)]">{item.title}</h3>
+                  <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{item.excerpt}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </PublicSection>
     </PublicShell>
   );
@@ -1065,6 +1128,53 @@ function CaseStudyBlock({ index, title, body }: { index: number; title: string; 
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * Minimal rich-text renderer for article bodies: blocks are separated by a
+ * blank line, `## ` lines become section headings, and blocks whose every
+ * line starts with `- ` become bullet lists. Everything else is a paragraph.
+ * Plain text only — no HTML is injected, so direction and escaping inherit
+ * from the document safely.
+ */
+function ArticleBody({ content }: { content: string }) {
+  const blocks = content
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+
+  return (
+    <div className="mt-6 grid max-w-[65ch] gap-6">
+      {blocks.map((block, index) => {
+        if (block.startsWith("## ")) {
+          return (
+            <h2 key={index} className="pt-2 text-xl font-semibold text-[var(--kmt-public-text)] md:text-2xl">
+              {block.slice(3).trim()}
+            </h2>
+          );
+        }
+
+        const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
+        if (lines.length > 0 && lines.every((line) => line.startsWith("- "))) {
+          return (
+            <ul key={index} className="grid gap-2 ps-5">
+              {lines.map((line, lineIndex) => (
+                <li key={lineIndex} className="list-disc marker:text-[var(--kmt-public-gold)] leading-8 text-[var(--kmt-public-text)]">
+                  {line.slice(2).trim()}
+                </li>
+              ))}
+            </ul>
+          );
+        }
+
+        return (
+          <p key={index} className="leading-8 text-[var(--kmt-public-text)]">
+            {block}
+          </p>
+        );
+      })}
+    </div>
   );
 }
 

@@ -360,15 +360,19 @@ export const publicContentEn = {
     metadataTitle: "Legal Articles | KMT Legal",
     metadataDescription: "Awareness articles that help you prepare questions and documents before lawyer review.",
     heroEyebrow: "Insights",
-    heroTitle: "Practical Legal Reading",
+    heroTitle: "Insights",
     heroDescription: "Awareness articles that help you prepare questions and documents before contacting the office.",
     sectionEyebrow: "Insights",
-    sectionTitle: "Practical Legal Reading",
+    sectionTitle: "Insights",
     sectionDescription: "The content is educational and does not provide final legal advice.",
     searchLabel: "Search articles",
     emptyTitle: "No matching articles"
   },
   articleDetail: {
+    breadcrumbArticles: "Insights",
+    bylineBy: "By",
+    defaultAuthor: "KMT Legal",
+    relatedTitle: "Related Reading",
     disclaimer: "This article is for general awareness and does not replace lawyer review based on the facts and documents.",
     backToArticles: "Back to Articles"
   },

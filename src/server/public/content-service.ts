@@ -25,6 +25,7 @@ function articleDto(article: {
   excerpt: string;
   content: string;
   publishedAt: Date | null;
+  author?: { name: string } | null;
 }, locale: PublicLocale) {
   return {
     title: article.title,
@@ -33,6 +34,7 @@ function articleDto(article: {
     category: article.category,
     excerpt: article.excerpt,
     content: article.content,
+    author: article.author?.name ?? null,
     publishedAt: article.publishedAt?.toISOString().slice(0, 10) ?? "",
     readTime: readTimeFor(article.content, locale)
   };
@@ -137,7 +139,8 @@ const listPublishedArticlesCached = unstable_cache(
         category: true,
         excerpt: true,
         content: true,
-        publishedAt: true
+        publishedAt: true,
+        author: { select: { name: true } }
       }
     });
 
@@ -159,7 +162,8 @@ const getPublishedArticleBySlugCached = unstable_cache(
         category: true,
         excerpt: true,
         content: true,
-        publishedAt: true
+        publishedAt: true,
+        author: { select: { name: true } }
       }
     });
 

@@ -333,15 +333,19 @@ export const publicContentAr = {
     metadataTitle: "مقالات قانونية | KMT Legal",
     metadataDescription: "مقالات توعوية تساعدك على تجهيز الأسئلة والمستندات قبل مراجعة المحامي.",
     heroEyebrow: "المقالات",
-    heroTitle: "قراءة قانونية عملية",
+    heroTitle: "المقالات",
     heroDescription: "مقالات توعوية تساعدك على تجهيز أسئلتك ومستنداتك قبل التواصل مع المكتب.",
     sectionEyebrow: "المقالات",
-    sectionTitle: "قراءة قانونية عملية",
+    sectionTitle: "المقالات",
     sectionDescription: "المحتوى توعوي ولا يمثل استشارة قانونية نهائية.",
     searchLabel: "ابحث في المقالات",
     emptyTitle: "لا توجد مقالات مطابقة"
   },
   articleDetail: {
+    breadcrumbArticles: "المقالات",
+    bylineBy: "بقلم",
+    defaultAuthor: "مكتب KMT Legal",
+    relatedTitle: "قراءات ذات صلة",
     disclaimer: "هذا المقال للتوعية العامة ولا يغني عن مراجعة محام بناء على الوقائع والمستندات.",
     backToArticles: "العودة للمقالات"
   },
