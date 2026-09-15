@@ -96,6 +96,8 @@ export function HeroParallaxLayers({
           ease: "none",
           scrollTrigger: { trigger: root, start: "top top", end: "bottom top", scrub: 1 },
         });
+      });
+      mm.add("(prefers-reduced-motion: no-preference) and (min-width: 1024px)", () => {
         gsap.to("[data-drift='docket']", {
           y: -64,
           ease: "none",

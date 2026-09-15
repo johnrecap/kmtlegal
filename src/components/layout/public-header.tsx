@@ -65,6 +65,9 @@ export function PublicHeader({
 
   const insightHrefs = ["/articles", "/case-studies", "/media"];
   const insightItems = navItems.filter((item) => insightHrefs.includes(item.href));
+  const articlesItem = insightItems.find((item) => item.href === "/articles");
+  const insightChildren = insightItems.filter((item) => item !== articlesItem);
+  const insightsHref = articlesItem?.href ?? "/articles";
   const servicesItem = navItems.find((item) => item.href === "/services");
   const practiceLinks = content.footerContent.practiceLinks.slice(0, 6);
   const insightsGroupLabel = content.home.insightsEyebrow;
@@ -134,6 +137,9 @@ export function PublicHeader({
                 className="flex items-stretch"
                 onMouseEnter={() => setMenuOpen(true)}
                 onMouseLeave={() => setMenuOpen(false)}
+                onBlur={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setMenuOpen(false);
+                }}
               >
                 <Link
                   aria-current={item.active ? "page" : undefined}
@@ -327,7 +333,23 @@ export function PublicHeader({
                     </li>
                   );
                 })}
-              {insightItems.length > 0 ? (
+              {articlesItem && insightChildren.length === 0 ? (
+                <li key={articlesItem.href}>
+                  <Link
+                    aria-current={articlesItem.active ? "page" : undefined}
+                    className={cn(
+                      "flex min-h-12 items-center rounded-lg px-3 text-[15px] font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-kmt-gold",
+                      articlesItem.active ? "bg-kmt-gold/15 text-white" : "text-stone-200 hover:bg-white/[0.04] hover:text-white"
+                    )}
+                    href={localizedPublicHref(articlesItem.href, locale)}
+                    onClick={closeMobile}
+                    tabIndex={mobileOpen ? undefined : -1}
+                  >
+                    {articlesItem.label}
+                  </Link>
+                </li>
+              ) : null}
+              {insightChildren.length > 0 ? (
                 <li>
                   <div
                     className={cn(
@@ -338,7 +360,7 @@ export function PublicHeader({
                     <Link
                       aria-current={insightItems.some((item) => item.active) ? "page" : undefined}
                       className="flex min-h-12 flex-1 items-center px-3 text-[15px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-kmt-gold"
-                      href={localizedPublicHref("/articles", locale)}
+                      href={localizedPublicHref(insightsHref, locale)}
                       onClick={closeMobile}
                       tabIndex={mobileOpen ? undefined : -1}
                     >
@@ -359,7 +381,7 @@ export function PublicHeader({
                     <ul className="overflow-hidden">
                       <li className="ms-3 border-s border-white/10 ps-2">
                         <ul className="space-y-1 py-1">
-                          {insightItems.map((item) => (
+                          {insightChildren.map((item) => (
                             <li key={item.href}>
                               <Link
                                 aria-current={item.active ? "page" : undefined}
