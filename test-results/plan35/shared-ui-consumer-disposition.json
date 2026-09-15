@@ -357,6 +357,14 @@
       "evidence": "tests/ui/product-components.test.tsx"
     },
     {
+      "path": "src/components/motion-ui/hero-parallax-layers.tsx",
+      "contracts": [
+        "buttonClasses"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
       "path": "src/components/motion-ui/shimmer-button.tsx",
       "contracts": [
         "button"

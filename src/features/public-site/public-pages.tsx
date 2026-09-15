@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
+import { Tilt, TiltContent } from "@/components/animate-ui";
 import { canonicalPublicServiceSlug, findPublicService, getPublicContent, navForPath } from "@/content/public-content";
 import { ConsultationBookingChatFromQuery, RequestedLawyerQueryNotice } from "@/features/public-site/booking-query-client";
 import { ContactForm } from "@/features/public-site/contact-form";
@@ -245,7 +246,11 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
               className={cn("h-full", index === 0 && "sm:col-span-2 lg:col-span-2 lg:row-span-2")}
               delay={index * 80}
             >
-              <PracticeAreaCard featured={index === 0} href={area.href} icon={area.icon} locale={locale} summary={area.summary} title={area.title} />
+              <Tilt className="h-full" maxTilt={5}>
+                <TiltContent className="h-full">
+                  <PracticeAreaCard featured={index === 0} href={area.href} icon={area.icon} locale={locale} summary={area.summary} title={area.title} />
+                </TiltContent>
+              </Tilt>
             </Reveal>
           ))}
         </div>
@@ -305,22 +310,26 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
         <div className="grid gap-4 md:grid-cols-3">
           {content.lawyers.map((lawyer, index) => (
             <Reveal key={lawyer.slug} delay={index * 100} className="h-full">
-            <Link className={cn(publicPanel, publicPanelHover, "group block h-full overflow-hidden")} href={localizedPublicHref(`/team/${lawyer.slug}`, locale)}>
-              <div className="relative h-56 w-full overflow-hidden">
-                <Image alt={lawyer.name} className="object-cover opacity-90 grayscale-[35%] transition-all duration-500 ease-kmt-out motion-reduce:transition-none group-hover:scale-[1.03] group-hover:grayscale-0 group-hover:opacity-100" fill sizes="(min-width: 768px) 33vw, 100vw" src={lawyer.image} />
-              </div>
-              <div className="p-5">
-                <h3 className="text-xl font-semibold text-[var(--kmt-public-text)]">{lawyer.name}</h3>
-                <p className={cn("mt-1 text-sm", publicMutedText)}>{lawyer.title}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {lawyer.specialties.slice(0, 2).map((specialty) => (
-                    <Badge key={specialty} className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100 dark:text-amber-100">
-                      {specialty}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </Link>
+            <Tilt className="h-full" maxTilt={5}>
+              <TiltContent className="h-full">
+                <Link className={cn(publicPanel, publicPanelHover, "group block h-full overflow-hidden")} href={localizedPublicHref(`/team/${lawyer.slug}`, locale)}>
+                  <div className="relative h-56 w-full overflow-hidden">
+                    <Image alt={lawyer.name} className="object-cover opacity-90 grayscale-[35%] transition-all duration-500 ease-kmt-out motion-reduce:transition-none group-hover:scale-[1.03] group-hover:grayscale-0 group-hover:opacity-100" fill sizes="(min-width: 768px) 33vw, 100vw" src={lawyer.image} />
+                  </div>
+                  <div className="p-5">
+                    <h3 className="text-xl font-semibold text-[var(--kmt-public-text)]">{lawyer.name}</h3>
+                    <p className={cn("mt-1 text-sm", publicMutedText)}>{lawyer.title}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {lawyer.specialties.slice(0, 2).map((specialty) => (
+                        <Badge key={specialty} className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100 dark:text-amber-100">
+                          {specialty}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </Link>
+              </TiltContent>
+            </Tilt>
             </Reveal>
           ))}
         </div>

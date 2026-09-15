@@ -42,3 +42,21 @@
 - [x] Reduced-motion emulation: all content visible, no parallax. *(8/8 hero words visible; only closed dropdowns/menus/hover-spots hidden — confirmed by-design)*
 - [x] No-JS render: full page content visible (Reveal fix). *(h1 + 8 sections + 19 service links visible with JS disabled)*
 - [x] `test:e2e:smoke` green (46/46); contrast pass. *(pixel-diff: services/contact 0.00%, home 0.89–3.75% = stats row + bento; 544 unit tests green; zero console errors EN/AR/reduced/no-JS)*
+
+## Addendum (2026-09-15) — animate-ui primitives adoption + glow removal
+
+User-requested follow-ups after the file was completed:
+
+### Glow removal (site-wide, commit `5e3a6ac`)
+All luminous effects removed: kmt-motion card sheen/border beam, CTA gold wash + shimmer sweep, icon text-shadow halos, nav underline glow, hero spotlight, form glow, cursor spotlight, and all gold-tinted glow shadows (hero docket, header CTA, directory cards + active chip, booking chat ×7, team chat, payment return, account setup, stepper, 404 washes, brand logo, footer band). `SpotlightCard` component deleted. Hover states = lift + color/border transitions only. Kept: neutral elevation shadows, focus rings, photo text-legibility shadows, underline (sans glow), marquee.
+
+### animate-ui primitives (https://animate-ui.com — MIT, Skyleen) — commit follows
+Vendored into `src/components/animate-ui/` (with `motion` ^13.3.0 dependency; asChild/Slot omitted; reduced-motion guards added):
+
+- [x] `SplittingText` → hero heading: word-level EN / **line-level AR** (Arabic-safe), mounted-gated so SSR/no-JS always render the plain title; `aria-label` preserved; GSAP word line removed from the entrance timeline.
+- [x] `CountingNumber` → hero stats (replaces in-house CountUp; mounted-gated: SSR/no-JS show final values; spring animation on mount).
+- [x] `RippleButton` + `RippleButtonRipples` → gallery demo; `RippleLink` (in-repo adapter) → hero docket CTA + header/footer `ConsultationLink` (ripple-on-tap; reduced-motion skips ripple).
+- [x] `Tilt`/`TiltContent` → practice-area bento cards + team cards (maxTilt 5°, spring-smoothed, perspective 800; reduced-motion disables rotation; no glow).
+- Deliberately NOT tilted (restraint): representative-matter cards, industry cards, insights cards — flat lift only.
+
+Verified: typecheck, lint, 549 unit tests (incl. new `tests/ui/animate-ui-primitives.test.tsx`), 46/46 smoke e2e, DOM probes (8 EN word spans / 1 AR line span, stats settle 4/3/24 + س suffix, ripple renders on click with preventDefault, tilt matrix3d active on 7 cards, no-JS final values, reduced-motion static), gallery "Animate UI" section, zero console errors. PLAN-31 package assertion updated: legacy `framer-motion` stays banned; `motion` allowed for the vendored primitives. Disposition artifact: hero-parallax-layers registered as `buttonClasses` consumer.

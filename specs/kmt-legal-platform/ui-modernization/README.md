@@ -25,7 +25,7 @@ Full-site modernization: modern components, GSAP/Lenis/React-Bits motion, consol
 
 ### Public site (Phase 2)
 - [x] `10-public-shell.md` — header, footer, PublicShell (all public pages) *(done 2026-09-15: theme-aware `--kmt-public-*` vars, retokenized header/footer, language-switch query preservation, mobile scroll lock + focus trap, FinalCtaBand deleted, latent scrim bug fixed)*
-- [x] `11-public-home.md` — home page EN + AR *(done 2026-09-15: word-level EN / line-level AR animated hero heading, RTL arrow + tracking fixes, SSR-safe Reveal, bento practice grid, count-up stats row, scroll-linked process storytelling, split focus checklist, insights empty state)*
+- [x] `11-public-home.md` — home page EN + AR *(done 2026-09-15: word-level EN / line-level AR animated hero heading, RTL arrow + tracking fixes, SSR-safe Reveal, bento practice grid, count-up stats row, scroll-linked process storytelling, split focus checklist, insights empty state; addendum: glow removed site-wide + animate-ui primitives adopted — SplittingText/CountingNumber/RippleLink/Tilt under `src/components/animate-ui/` with `motion`)*
 - [ ] `12-public-services.md` — services list + detail
 - [ ] `13-public-team.md` — team list + detail
 - [ ] `14-public-case-studies.md` — case studies list + detail

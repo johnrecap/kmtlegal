@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { KmtBrandLogo } from "@/components/brand";
+import { RippleLink } from "@/components/animate-ui/ripple-link";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { MaterialSymbol } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
@@ -15,7 +16,7 @@ const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), input:not([disabled
 
 export function ConsultationLink({ className, locale, label }: { className?: string; locale: PublicLocale; label: string }) {
   return (
-    <Link
+    <RippleLink
       className={cn(
         "inline-flex min-h-11 items-center justify-center gap-2 border border-primary bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors duration-kmt-fast ease-kmt-out hover:border-accent hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none",
         publicMotionButton,
@@ -26,7 +27,7 @@ export function ConsultationLink({ className, locale, label }: { className?: str
     >
       <span>{label}</span>
       <MaterialSymbol className={cn("text-lg", publicMotionIcon, publicMotionIconHalo)} name="event_available" />
-    </Link>
+    </RippleLink>
   );
 }
 

@@ -193,6 +193,11 @@ describe("public website UI", () => {
     expect(runtimeSources).toContain("kmt-motion-icon-halo");
     expect(runtimeSources).toContain("kmt-motion-arrow-trail");
     expect(runtimeSources).toContain("kmt-motion-panel-enter");
-    expect(packageSource).not.toContain("\"motion\"");
+    // PLAN-31 removed the legacy framer-motion dependency. "motion" (its
+    // successor) was deliberately re-added for the vendored animate-ui
+    // primitives under src/components/animate-ui — see spec
+    // specs/kmt-legal-platform/ui-modernization/11-public-home.md.
+    expect(packageSource).not.toContain("\"framer-motion\"");
+    expect(packageSource).not.toContain("\"framer\"");
   });
 });

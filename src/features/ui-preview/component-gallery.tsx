@@ -27,7 +27,7 @@ import {
   LinkTabs
 } from "@/components/ui";
 import { ThemeProvider, ThemeToggle } from "@/components/theme";
-import { CountUpDemo, DialogDemo, ShimmerDemo } from "./gallery-islands";
+import { AnimateUiDemo, CountUpDemo, DialogDemo, ShimmerDemo } from "./gallery-islands";
 
 type DemoRow = { id: string; matter: string; status: string; owner: string };
 
@@ -220,6 +220,10 @@ export function ComponentGallery() {
                 </span>
               ))}
             </div>
+          </GallerySection>
+
+          <GallerySection description="Vendored animate-ui primitives (MIT, animate-ui.com): ripple tap feedback, 3D tilt hover, splitting-text entrance. All reduced-motion safe." title="Animate UI">
+            <AnimateUiDemo />
           </GallerySection>
 
           <GallerySection description="Motion primitives: count-up numbers animate on scroll; hover states use lift and color only (no glow)." title="Motion">

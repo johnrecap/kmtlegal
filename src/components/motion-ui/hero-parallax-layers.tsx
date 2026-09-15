@@ -3,23 +3,17 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ButtonLink, MaterialSymbol } from "@/components/ui";
-import { CountUp } from "@/components/motion-ui/count-up";
+import { useReducedMotion } from "motion/react";
+import { CountingNumber, RippleLink, SplittingText } from "@/components/animate-ui";
+import { MaterialSymbol, buttonClasses } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
-
-function splitHeading(title: string, locale: PublicLocale) {
-  if (locale === "ar") {
-    return [title];
-  }
-  return title.split(" ");
-}
 
 export interface HeroMatter {
   title: string;
@@ -80,10 +74,21 @@ export function HeroParallaxLayers({
 }: HeroParallaxLayersProps) {
   const rootRef = useRef<HTMLElement>(null);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const reducedMotion = useReducedMotion();
   const selected = matters.find((matter) => matter.slug === selectedSlug) ?? null;
   const bookingHref = selected
     ? localizedPublicHref(`/book-consultation?service=${encodeURIComponent(selected.slug)}`, locale)
     : localizedPublicHref("/book-consultation", locale);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const animateEntrance = mounted && !reducedMotion;
+  const titleSplitProps: { type: "lines"; text: string[] } | { type: "words"; text: string } = locale === "ar"
+    ? { type: "lines", text: [title] }
+    : { type: "words", text: title };
 
   useGSAP(
     () => {
@@ -95,8 +100,7 @@ export function HeroParallaxLayers({
         gsap
           .timeline({ defaults: { ease: "power3.out" } })
           .from("[data-hero='eyebrow']", { y: 22, autoAlpha: 0, duration: 0.7 })
-          .from("[data-hero='title-word']", { y: 34, autoAlpha: 0, duration: 0.85, stagger: 0.09 }, "-=0.5")
-          .from("[data-hero='rule']", { scaleX: 0, autoAlpha: 0, duration: 0.6 }, "-=0.55")
+          .from("[data-hero='rule']", { scaleX: 0, autoAlpha: 0, duration: 0.6 }, "-=0.3")
           .from("[data-hero='description']", { y: 26, autoAlpha: 0, duration: 0.75 }, "-=0.5")
           .from("[data-hero='picker']", { y: 30, autoAlpha: 0, duration: 0.75 }, "-=0.5")
           .from("[data-hero='chip']", { y: 18, autoAlpha: 0, duration: 0.55, stagger: 0.08 }, "-=0.55")
@@ -170,12 +174,18 @@ export function HeroParallaxLayers({
             </p>
           </div>
           <h1 data-hero="title" className="mt-6 max-w-xl text-4xl font-semibold leading-tight drop-shadow-[var(--kmt-public-text-shadow)] md:text-5xl" aria-label={title}>
-            {splitHeading(title, locale).map((part, index, all) => (
-              <span key={`${part}-${index}`} aria-hidden="true" className="inline-block" data-hero="title-word">
-                {part}
-                {index < all.length - 1 ? "\u00A0" : null}
-              </span>
-            ))}
+            {animateEntrance ? (
+              <SplittingText
+                animate={{ y: 0, opacity: 1 }}
+                delay={200}
+                initial={{ y: 28, opacity: 0 }}
+                stagger={locale === "ar" ? 0.15 : 0.08}
+                transition={{ duration: 0.7, ease: "easeOut" }}
+                {...titleSplitProps}
+              />
+            ) : (
+              <span>{title}</span>
+            )}
           </h1>
           <span data-hero="rule" className="mt-6 block h-px w-24 origin-center bg-gradient-to-r from-[var(--kmt-public-gold)] to-transparent rtl:bg-gradient-to-l" aria-hidden="true" />
           <p data-hero="description" className="mt-6 max-w-xl text-base leading-9 text-[var(--kmt-public-muted)] md:text-lg">
@@ -186,7 +196,7 @@ export function HeroParallaxLayers({
               {stats.map((stat) => (
                 <div key={stat.label} className="rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] px-3 py-3">
                   <dd dir="ltr" className="text-2xl font-semibold tabular-nums text-[var(--kmt-public-gold)]">
-                    <CountUp value={stat.value} />
+                    {animateEntrance ? <CountingNumber number={stat.value} /> : <span>{stat.value}</span>}
                     {stat.suffix}
                   </dd>
                   <dt className="mt-1 text-xs leading-5 text-[var(--kmt-public-muted)]">{stat.label}</dt>
@@ -270,9 +280,15 @@ export function HeroParallaxLayers({
               <p className="mt-2 text-sm leading-7 text-[var(--kmt-public-muted)]">{nextStep}</p>
             </div>
 
-            <ButtonLink className="mt-6 w-full" href={bookingHref} size="lg" trailingIcon={<MaterialSymbol className="text-base rtl:rotate-180" name="arrow_forward" />}>
-              {bookLabel}
-            </ButtonLink>
+            <RippleLink
+              className={buttonClasses({ size: "lg", className: "mt-6 w-full" })}
+              href={bookingHref}
+            >
+              <span className="inline-flex items-center justify-center gap-2">
+                {bookLabel}
+                <MaterialSymbol className="text-base rtl:rotate-180" name="arrow_forward" />
+              </span>
+            </RippleLink>
           </div>
         </div>
       </div>
