@@ -18,7 +18,7 @@ export function ConsultationLink({ className, locale, label }: { className?: str
   return (
     <RippleLink
       className={cn(
-        "inline-flex min-h-11 items-center justify-center gap-2 border border-primary bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors duration-kmt-fast ease-kmt-out hover:border-accent hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none",
+        "kmt-cta-shimmer inline-flex min-h-11 items-center justify-center gap-2 border border-primary bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors duration-kmt-fast ease-kmt-out hover:border-accent hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none",
         publicMotionButton,
         publicMotionCta,
         className

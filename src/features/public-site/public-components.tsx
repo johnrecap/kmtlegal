@@ -30,6 +30,7 @@ export const publicGoldChip = "border-kmt-gold/35 bg-kmt-gold/10 text-[var(--kmt
 export const publicNeutralChip = "border-[var(--kmt-public-line)] bg-[var(--kmt-public-surface-muted)] text-[var(--kmt-public-muted)]";
 export const publicPhotoTreatment =
   "object-cover opacity-90 grayscale-[35%] transition-all duration-500 ease-kmt-out motion-reduce:transition-none group-hover:scale-[1.03] group-hover:grayscale-0 group-hover:opacity-100";
+export const publicHairline = "border-t border-[var(--kmt-public-line)]";
 
 export function PublicSection({
   eyebrow,
@@ -40,7 +41,8 @@ export function PublicSection({
   align = "start",
   surface = "default",
   headingLevel = "h2",
-  breadcrumbs
+  breadcrumbs,
+  density = "compact"
 }: {
   eyebrow?: string;
   title: string;
@@ -51,6 +53,8 @@ export function PublicSection({
   surface?: "default" | "muted" | "transparent";
   headingLevel?: "h1" | "h2";
   breadcrumbs?: ReactNode;
+  /** compact = ledger rhythm (py-12/lg:16); roomy = statement + feature moments (py-16/lg:24). */
+  density?: "compact" | "roomy";
 }) {
   const surfaceClass =
     surface === "transparent"
@@ -63,7 +67,7 @@ export function PublicSection({
 
   return (
     <section className={cn(surfaceClass, className)}>
-      <div className="mx-auto max-w-[1200px] px-4 py-12 sm:px-6 lg:px-10 lg:py-16">
+      <div className={cn("mx-auto max-w-[1200px] px-4 sm:px-6 lg:px-10", density === "roomy" ? "py-16 lg:py-24" : "py-12 lg:py-16")}>
         <div className={cn("max-w-3xl", isCentered ? "mx-auto text-center" : undefined)}>
           {breadcrumbs ? <div className="mb-5">{breadcrumbs}</div> : null}
           {eyebrow ? <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p> : null}
@@ -83,7 +87,8 @@ export function PageHero({
   image,
   imagePosition = "object-center",
   actions,
-  size = "full"
+  size = "full",
+  texture
 }: {
   eyebrow: string;
   title: string;
@@ -92,6 +97,8 @@ export function PageHero({
   imagePosition?: string;
   actions?: ReactNode;
   size?: "full" | "compact";
+  /** Optional faint dot texture over the scrim for sub-hero identity. */
+  texture?: "dots";
 }) {
   const isCompact = size === "compact";
   const imageOpacity = "opacity-95";
@@ -113,6 +120,9 @@ export function PageHero({
         src={image}
       />
       <div className={cn("absolute inset-0", ambientOverlay)} />
+      {texture === "dots" ? (
+        <div aria-hidden="true" className="kmt-dotgrid absolute inset-0 text-[var(--kmt-public-gold)] opacity-[0.08] [mask-image:radial-gradient(ellipse_70%_60%_at_30%_40%,black,transparent)]" />
+      ) : null}
       <div className="absolute inset-y-0 w-[92%] from-[rgb(var(--kmt-public-scrim)/0.95)] via-[rgb(var(--kmt-public-scrim)/0.76)] to-transparent ltr:left-0 ltr:bg-gradient-to-r rtl:right-0 rtl:bg-gradient-to-l sm:w-[82%] lg:w-[74%]" />
       <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-[var(--kmt-public-surface)]" />
       <div className={cn("relative mx-auto flex max-w-[1200px] items-center px-4 sm:px-6 lg:px-10", contentHeight)}>
@@ -281,8 +291,7 @@ export function RepresentativeMatterCard({
   );
 }
 
-export function LuxuryFeaturePanel({
-  image,
+export function LuxuryFeaturePanel({  image,
   eyebrow,
   title,
   description,
@@ -306,6 +315,256 @@ export function LuxuryFeaturePanel({
         <div className="mt-6">{children}</div>
       </div>
     </div>
+  );
+}
+
+export type CapabilityRowItem = {
+  icon: string;
+  title: string;
+  summary: string;
+  href: string;
+  chips?: readonly string[];
+  meta?: string;
+};
+
+/**
+ * Equal editorial rows for services. Services carry equal strategic weight,
+ * so rows share one treatment — rhythm comes from the horizontal composition
+ * (numeral + icon / body / meta rail), never from an enlarged lead item.
+ */
+export function CapabilityRows({ items, locale = "en" }: { items: ReadonlyArray<CapabilityRowItem>; locale?: PublicLocale }) {
+  return (
+    <ol className="overflow-hidden rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)]">
+      {items.map((item, index) => (
+        <li key={item.href} className={cn(index > 0 && "border-t border-[var(--kmt-public-line)]")}>
+          <Reveal variant={index % 2 === 0 ? "blur" : "fade"}>
+            <Link
+              className="group grid gap-4 p-5 transition-colors duration-kmt-fast ease-kmt-out hover:bg-[var(--kmt-public-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-kmt-gold motion-reduce:transition-none sm:p-6 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center lg:gap-8"
+              href={localizedPublicHref(item.href, locale)}
+            >
+              <div className="flex items-center gap-4 lg:w-40 lg:flex-col lg:items-start lg:gap-3">
+                <span aria-hidden="true" className="text-sm font-semibold tabular-nums tracking-widest text-[var(--kmt-public-gold)]">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <MaterialSymbol className={cn("text-4xl", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name={item.icon} />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-xl font-semibold text-[var(--kmt-public-text)]">{item.title}</h3>
+                <p className={cn("mt-2 text-sm leading-7", publicMutedText)}>{item.summary}</p>
+                {item.chips?.length ? (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {item.chips.slice(0, 5).map((chip) => (
+                      <span key={chip} className={cn("rounded-full border px-3 py-1 text-xs font-semibold", publicGoldChip)}>
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+              <div className="flex items-center justify-between gap-3 lg:w-44 lg:flex-col lg:items-end lg:justify-center lg:gap-2 lg:text-end">
+                {item.meta ? (
+                  <span className={cn("text-xs", publicMutedText)}>
+                    <bdi>{item.meta}</bdi>
+                  </span>
+                ) : null}
+                <span className={cn("inline-flex items-center gap-1 text-sm font-semibold", publicGoldText)}>
+                  <MaterialSymbol className={cn("text-xl", publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />
+                </span>
+              </div>
+            </Link>
+          </Reveal>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+export type MatterRowItem = {
+  label: string;
+  title: string;
+  region: string;
+  year: string;
+  summary: string;
+  href: string;
+  privacyNote: string;
+};
+
+/**
+ * Representative matters as editorial columns: numeral-led, top-ruled, no
+ * boxes. Desktop shows all three; mobile swipes (progressive disclosure).
+ */
+export function MatterRows({ matters, locale = "en" }: { matters: ReadonlyArray<MatterRowItem>; locale?: PublicLocale }) {
+  return (
+    <div className="grid auto-cols-[85%] grid-flow-col snap-x snap-mandatory gap-5 overflow-x-auto pb-2 scrollbar-hide sm:auto-cols-[60%] md:auto-cols-auto md:grid-flow-row md:grid-cols-3 md:gap-8 md:overflow-visible md:pb-0">
+      {matters.map((matter, index) => (
+        <Reveal key={matter.title} className="h-full snap-start" delay={index * 80} variant="fade">
+          <Link
+            className="group flex h-full flex-col border-t-2 border-[var(--kmt-public-gold)]/40 pt-5 transition-colors duration-kmt-fast ease-kmt-out hover:border-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kmt-gold motion-reduce:transition-none"
+            href={localizedPublicHref(matter.href, locale)}
+          >
+            <div className="flex items-baseline justify-between gap-3">
+              <span aria-hidden="true" className="text-3xl font-semibold tabular-nums text-[var(--kmt-public-gold)]/50 transition-colors group-hover:text-[var(--kmt-public-gold)]">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <p className={cn("text-xs font-semibold", publicGoldText)}>{matter.label}</p>
+            </div>
+            <h3 className="mt-3 text-xl font-semibold leading-8 text-[var(--kmt-public-text)]">{matter.title}</h3>
+            <p className={cn("mt-1 text-xs", publicMutedText)}>
+              {matter.region} · {matter.year}
+            </p>
+            <p className={cn("mt-4 text-sm leading-7", publicMutedText)}>{matter.summary}</p>
+            <p className={cn("mt-4 border-t border-[var(--kmt-public-line)] pt-3 text-xs leading-6", publicMutedText)}>{matter.privacyNote}</p>
+            <span className={cn("mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold", publicGoldText)}>
+              <MaterialSymbol className={cn("text-xl", publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />
+            </span>
+          </Link>
+        </Reveal>
+      ))}
+    </div>
+  );
+}
+
+/** Coverage list without boxes: hairline rows with a gold marker. */
+export function IndustryLedger({ industries }: { industries: ReadonlyArray<{ title: string; summary: string }> }) {
+  return (
+    <ul className="grid gap-x-10 md:grid-cols-2">
+      {industries.map((industry) => (
+        <li key={industry.title} className="flex gap-4 border-t border-[var(--kmt-public-line)] py-5">
+          <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 bg-[var(--kmt-public-gold)]" />
+          <div className="min-w-0">
+            <h3 className="text-lg font-semibold text-[var(--kmt-public-text)]">{industry.title}</h3>
+            <p className={cn("mt-2 text-sm leading-7", publicMutedText)}>{industry.summary}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export type InsightLedgerItem = {
+  kicker: string;
+  title: string;
+  excerpt: string;
+  href: string;
+};
+
+/** Editorial ledger: one lead story, the rest as dated compact rows. */
+export function InsightsLedger({ items, locale = "en" }: { items: ReadonlyArray<InsightLedgerItem>; locale?: PublicLocale }) {
+  const [lead, ...rest] = items;
+  if (!lead) return null;
+  return (
+    <div>
+      <Reveal variant="blur">
+        <Link className="group block max-w-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kmt-gold" href={localizedPublicHref(lead.href, locale)}>
+          <p className={cn("text-sm font-semibold", publicGoldText)}>{lead.kicker}</p>
+          <h3 className="mt-3 text-2xl font-semibold leading-snug text-[var(--kmt-public-text)] transition-colors group-hover:text-[var(--kmt-public-gold)] md:text-3xl">
+            {lead.title}
+          </h3>
+          <p className={cn("mt-4 leading-8", publicMutedText)}>{lead.excerpt}</p>
+          <span className={cn("mt-4 inline-flex items-center gap-1 text-sm font-semibold", publicGoldText)}>
+            <MaterialSymbol className={cn("text-xl", publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />
+          </span>
+        </Link>
+      </Reveal>
+      {rest.length > 0 ? (
+        <ul className="mt-8">
+          {rest.map((item) => (
+            <li key={item.href} className="border-t border-[var(--kmt-public-line)]">
+              <Link className="group flex items-baseline justify-between gap-4 py-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-kmt-gold" href={localizedPublicHref(item.href, locale)}>
+                <div className="min-w-0">
+                  <p className={cn("text-xs font-semibold", publicGoldText)}>{item.kicker}</p>
+                  <h4 className="mt-1 truncate text-lg font-semibold text-[var(--kmt-public-text)] transition-colors group-hover:text-[var(--kmt-public-gold)]">
+                    {item.title}
+                  </h4>
+                </div>
+                <MaterialSymbol className={cn("shrink-0 text-xl", publicGoldText, publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+}
+
+/** Intentional negative space: a rule, one reused trust sentence, nothing else. */
+export function StatementBreak({ text }: { text: string }) {
+  return (
+    <div className="mx-auto max-w-[1200px] px-4 py-16 sm:px-6 lg:px-10 lg:py-24">
+      <div className="mx-auto max-w-3xl text-center">
+        <span aria-hidden="true" className="mx-auto block h-px w-24 bg-gradient-to-r from-transparent via-[var(--kmt-public-gold)] to-transparent" />
+        <p className="mt-6 text-xl font-medium leading-9 text-[var(--kmt-public-text)] md:text-2xl md:leading-10">{text}</p>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Booking flow header: a calm tool header, not a photo hero. The step legend
+ * mirrors the live BookingProgress labels inside the chat (which owns state).
+ */
+export function BookingFlowHeader({
+  eyebrow,
+  title,
+  description,
+  steps
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  steps: ReadonlyArray<string>;
+}) {
+  return (
+    <section className="border-b border-[var(--kmt-public-line)] bg-[var(--kmt-public-surface)] text-[var(--kmt-public-text)]">
+      <div className="kmt-motion-reveal mx-auto max-w-[1200px] px-4 pb-10 pt-14 sm:px-6 md:pt-16 lg:px-10">
+        <div className="max-w-3xl">
+          <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p>
+          <h1 className="mt-4 max-w-3xl text-3xl font-semibold leading-tight md:text-5xl">{title}</h1>
+          <p className={cn("mt-5 max-w-2xl text-base leading-9 md:text-lg", publicMutedText)}>{description}</p>
+        </div>
+        <ol className="mt-8 flex flex-wrap items-center gap-2" aria-label={steps.join(" · ")}>
+          {steps.map((step, index) => (
+            <li key={step} className="flex items-center gap-2">
+              {index > 0 ? (
+                <span aria-hidden="true" className="h-px w-6 bg-[var(--kmt-public-line)] sm:w-10" />
+              ) : null}
+              <span
+                className={cn(
+                  "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold",
+                  index === 0
+                    ? "border-kmt-gold/70 bg-kmt-gold/15 text-[var(--kmt-public-text)]"
+                    : "border-[var(--kmt-public-line)] text-[var(--kmt-public-muted)]"
+                )}
+              >
+                <span aria-hidden="true" className="text-xs tabular-nums text-[var(--kmt-public-gold)]">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                {step}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+/** What-happens-after strip: plain numbered steps, existing copy only. */
+export function AfterSubmitStrip({ title, steps }: { title: string; steps: ReadonlyArray<string> }) {
+  return (
+    <section className={cn(publicPanel, "mt-6 p-6")}>
+      <h2 className="text-xl font-semibold text-[var(--kmt-public-text)]">{title}</h2>
+      <ol className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {steps.map((step, index) => (
+          <li key={step} className="flex gap-3">
+            <span aria-hidden="true" className="text-sm font-semibold tabular-nums text-[var(--kmt-public-gold)]">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <p className={cn("text-sm leading-7", publicMutedText)}>{step}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 

@@ -254,7 +254,7 @@ export function HeroParallaxLayers({
         </div>
 
         <div data-drift="docket" className="lg:mt-24">
-          <div data-hero="docket" className="relative overflow-hidden rounded-2xl border border-kmt-gold/25 bg-[var(--kmt-public-surface-muted)] p-6 md:p-8" aria-live="polite">
+          <div data-hero="docket" className="kmt-beam relative overflow-hidden rounded-2xl p-6 md:p-8" aria-live="polite">
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-[var(--kmt-public-gold)] to-transparent" aria-hidden="true" />
             <div className="flex items-center justify-between gap-3">
               <p className={cn("text-xs font-semibold text-[var(--kmt-public-muted)]", locale === "en" && "uppercase tracking-[0.2em]")}>{docket.title}</p>

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 import { KmtBrandLogo } from "@/components/brand";
 import { MaterialSymbol } from "@/components/ui";
@@ -56,12 +56,17 @@ export function PublicShell({
       <main className="bg-[var(--kmt-public-canvas)]">{children}</main>
       <footer className="border-t border-kmt-gold/25 bg-[var(--kmt-public-header)] text-[var(--kmt-public-muted)]">
         <section className="border-b border-[var(--kmt-public-line)]">
-          <div className="mx-auto grid max-w-[1200px] gap-5 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_auto] lg:items-center lg:px-10">
-            <div className="max-w-2xl">
-              <h2 className="text-2xl font-semibold leading-tight text-[var(--kmt-public-text)] md:text-3xl">{shell.footerCtaTitle}</h2>
-              <p className="mt-3 text-sm leading-7 text-[var(--kmt-public-muted)]">{shell.footerCtaDescription}</p>
+          <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-10">
+            <div
+              className="kmt-beam grid gap-5 rounded-2xl p-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-center"
+              style={{ "--kmt-beam-fill": "var(--kmt-public-header)" } as CSSProperties}
+            >
+              <div className="max-w-2xl">
+                <h2 className="text-2xl font-semibold leading-tight text-[var(--kmt-public-text)] md:text-3xl">{shell.footerCtaTitle}</h2>
+                <p className="mt-3 text-sm leading-7 text-[var(--kmt-public-muted)]">{shell.footerCtaDescription}</p>
+              </div>
+              <ConsultationLink className="w-full sm:w-auto" label={shell.consultationCta} locale={locale} />
             </div>
-            <ConsultationLink className="w-full sm:w-auto" label={shell.consultationCta} locale={locale} />
           </div>
         </section>
 

@@ -558,6 +558,98 @@ a {
     animation: kmt-motion-check-in 300ms var(--kmt-motion-ease) both;
   }
 
+  .kmt-container {
+    margin-inline: auto;
+    max-width: 1200px;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .kmt-container {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .kmt-container {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  .kmt-divider {
+    height: 1px;
+    background: var(--kmt-public-line);
+  }
+
+  .kmt-dotgrid {
+    background-image: radial-gradient(currentColor 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  /* Rare conversion shimmer: header + footer consultation CTAs only.
+     Form submits use the primary gold button; no continuous shimmer there. */
+  .kmt-cta-shimmer {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .kmt-cta-shimmer::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    pointer-events: none;
+    background: linear-gradient(110deg, transparent 30%, rgb(255 236 188 / 45%) 50%, transparent 70%);
+    transform: translateX(-150%);
+    animation: kmt-shimmer-sweep 3.5s ease-in-out infinite;
+  }
+
+  html[dir="rtl"] .kmt-cta-shimmer::after {
+    transform: translateX(150%);
+    animation-name: kmt-shimmer-sweep-rtl;
+  }
+
+  @keyframes kmt-shimmer-sweep {
+    0% {
+      transform: translateX(-150%);
+    }
+    55%, 100% {
+      transform: translateX(150%);
+    }
+  }
+
+  @keyframes kmt-shimmer-sweep-rtl {
+    0% {
+      transform: translateX(150%);
+    }
+    55%, 100% {
+      transform: translateX(-150%);
+    }
+  }
+
+  /* Perimeter beam: exactly two conversion panels (home docket, footer
+     CTA). Fill adapts via --kmt-beam-fill; no-JS shows a static gold ring. */
+  @property --kmt-beam-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  .kmt-beam {
+    position: relative;
+    border: 1px solid rgb(153 123 68 / 35%);
+    background:
+      linear-gradient(var(--kmt-beam-fill, var(--kmt-public-surface-muted)), var(--kmt-beam-fill, var(--kmt-public-surface-muted))) padding-box,
+      conic-gradient(from var(--kmt-beam-angle), rgb(153 123 68 / 25%) 0deg, rgb(244 207 136 / 90%) 40deg, rgb(153 123 68 / 25%) 80deg, rgb(153 123 68 / 25%) 360deg) border-box;
+    animation: kmt-beam-spin 6s linear infinite;
+  }
+
+  @keyframes kmt-beam-spin {
+    to {
+      --kmt-beam-angle: 360deg;
+    }
+  }
+
   @media (hover: hover) {
     .kmt-motion-card:hover,
     .kmt-motion-card:focus-visible,
@@ -621,6 +713,7 @@ a {
 
   .kmt-motion-reveal,
   .kmt-marquee-track,
+  .kmt-beam,
   .kmt-motion-hero-image,
   .kmt-motion-card,
   .kmt-motion-card-beam,
@@ -640,6 +733,10 @@ a {
   }
 
   .kmt-motion-arrow-trail::after {
+    display: none !important;
+  }
+
+  .kmt-cta-shimmer::after {
     display: none !important;
   }
 

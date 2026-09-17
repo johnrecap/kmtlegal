@@ -55,13 +55,16 @@ export function DirectoryFilter({
   searchLabel,
   emptyTitle,
   locale = "en",
-  copy
+  copy,
+  layout = "cards"
 }: {
   items: DirectoryItem[];
   searchLabel?: string;
   emptyTitle: string;
   locale?: PublicLocale;
   copy?: PublicContent["directoryFilter"];
+  /** rows = equal editorial ledger (services index); cards = default grid. */
+  layout?: "cards" | "rows";
 }) {
   const content = getPublicContent(locale);
   const dictionary = copy ?? content.directoryFilter;
@@ -147,6 +150,54 @@ export function DirectoryFilter({
       </div>
 
       {filteredItems.length ? (
+        layout === "rows" ? (
+          <ol className={cn("mt-6 overflow-hidden rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)]", publicMotionFilterResults)}>
+            {filteredItems.map((item, index) => (
+              <li key={item.href} className={cn(index > 0 && "border-t border-[var(--kmt-public-line)]")}>
+                <article
+                  data-testid="public-directory-card"
+                  className={cn(publicMotionCardBeam, "group grid gap-4 border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] p-5 transition-colors duration-kmt-fast ease-kmt-out hover:bg-[var(--kmt-public-hover)] motion-reduce:transition-none sm:p-6 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center lg:gap-8")}
+                >
+                  <div className="flex items-center gap-4 lg:w-40 lg:flex-col lg:items-start lg:gap-3">
+                    <span aria-hidden="true" className="text-sm font-semibold tabular-nums tracking-widest text-[var(--kmt-public-gold)]">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <Badge className={publicGoldChip}>{item.categoryLabel}</Badge>
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-xl font-semibold text-[var(--kmt-public-text)]">{item.title}</h3>
+                    <p className="mt-2 text-sm leading-7 text-[var(--kmt-public-muted)]">{item.description}</p>
+                    {item.chips?.length ? (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {item.chips.slice(0, 5).map((chip) => (
+                          <span key={chip} className={cn("rounded-full border border-kmt-gold/35 bg-kmt-gold/10 px-3 py-1 text-xs font-semibold text-[var(--kmt-public-muted)]")}>
+                            {chip}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="flex items-center justify-between gap-3 lg:w-44 lg:flex-col lg:items-end lg:justify-center lg:gap-2 lg:text-end">
+                    {item.meta ? (
+                      <span className="text-xs text-[var(--kmt-public-muted)]">
+                        <bdi>{item.meta}</bdi>
+                      </span>
+                    ) : null}
+                    <ButtonLink
+                      className={cn("!border-kmt-gold/35 !text-[var(--kmt-public-text)] hover:!bg-kmt-gold hover:!text-primary-foreground", publicMotionButton, publicMotionCta)}
+                      href={localizedPublicHref(item.href, locale)}
+                      size="sm"
+                      variant="secondary"
+                      trailingIcon={<MaterialSymbol className={cn("text-base", publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />}
+                    >
+                      {content.shared.viewDetails}
+                    </ButtonLink>
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ol>
+        ) : (
         <div className={cn("mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3", publicMotionFilterResults)}>
           {filteredItems.map((item) => (
             <article
@@ -198,6 +249,7 @@ export function DirectoryFilter({
             </article>
           ))}
         </div>
+        )
       ) : (
         <div className={cn("mt-6 rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] p-6 text-[var(--kmt-public-muted)]", publicMotionStatus)} role="status">
           <h3 className="text-lg font-semibold text-[var(--kmt-public-text)]">{emptyTitle}</h3>

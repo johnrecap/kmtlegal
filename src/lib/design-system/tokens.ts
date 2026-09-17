@@ -91,6 +91,21 @@ export const kmtRadiusRamp = {
   full: "9999px"
 } as const;
 
+/**
+ * Stage A foundation rules (design-system source of truth; see QA gate).
+ * Radius: controls 4px / panels rounded-lg (8px) / feature canvases
+ * rounded-2xl (picker, docket, chat console) / pills full. No other radii.
+ * Gold alpha: rest borders /25, chips + strong borders /35, emphasis /45,
+ * hover + active /70, fills /10 + /15. Section density: compact py-12/lg:16
+ * for ledger content, roomy py-16/lg:24 for statement + feature moments.
+ */
+export const kmtFoundation = {
+  radius: { control: "rounded", panel: "rounded-lg", feature: "rounded-2xl", pill: "rounded-full" },
+  goldAlpha: { rest: 25, chip: 35, emphasis: 45, hover: 70, fill: 10, fillStrong: 15 },
+  section: { compact: "py-12 lg:py-16", roomy: "py-16 lg:py-24", container: "max-w-[1200px]" },
+  motion: { entranceStaggerMs: 80, revealThreshold: 0.12 }
+} as const;
+
 export const kmtStateCssVariables = {
   "--kmt-state-info": kmtTokens.state.info.foreground,
   "--kmt-state-info-surface": kmtTokens.state.info.surface,

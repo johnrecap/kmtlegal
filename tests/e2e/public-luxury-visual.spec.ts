@@ -63,16 +63,17 @@ const publicHeroImagePages = [
   { path: "/case-studies", name: "case-studies", expectedObjectPosition: "50% 50%" },
   { path: "/media", name: "media", expectedObjectPosition: "50% 52%" },
   { path: "/contact", name: "contact", expectedObjectPosition: "50% 48%" },
-  { path: "/book-consultation", name: "book-consultation", expectedObjectPosition: "50% 62%" },
   { path: "/ar", name: "home-ar", expectedObjectPosition: "50% 55%" },
   { path: "/ar/services", name: "services-ar", expectedObjectPosition: "50% 62%" },
   { path: "/ar/team", name: "team-ar", expectedObjectPosition: "50% 38%" },
   { path: "/ar/articles", name: "articles-ar", expectedObjectPosition: "50% 50%" },
   { path: "/ar/case-studies", name: "case-studies-ar", expectedObjectPosition: "50% 50%" },
   { path: "/ar/media", name: "media-ar", expectedObjectPosition: "50% 52%" },
-  { path: "/ar/contact", name: "contact-ar", expectedObjectPosition: "50% 48%" },
-  { path: "/ar/book-consultation", name: "book-consultation-ar", expectedObjectPosition: "50% 62%" }
+  { path: "/ar/contact", name: "contact-ar", expectedObjectPosition: "50% 48%" }
 ];
+// NOTE (Stage B visual architecture): /book-consultation intentionally has no
+// photo hero — it opens with a calm flow header, so it is covered by the
+// overflow/motion smoke suites below instead of the hero-image suite.
 
 async function stubAnalytics(page: import("@playwright/test").Page) {
   await page.route("**/api/analytics/events", async (route) => {
