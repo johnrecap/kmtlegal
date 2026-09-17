@@ -9,6 +9,15 @@
         "mcp"
       ],
       "enabled": true
+    },
+    "magicuidesign-mcp": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@magicuidesign/mcp@latest"
+      ],
+      "enabled": true
     }
   }
 }
