@@ -1,3 +1,4 @@
+export * from "./components/radix/tabs";
 export * from "./counting-number";
 export * from "./get-strict-context";
 export * from "./ripple-button";

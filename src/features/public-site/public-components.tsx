@@ -553,27 +553,36 @@ export function StatementBreak({ text, highlight }: { text: string; highlight?: 
 }
 
 /**
- * Booking flow header: a calm tool header, not a photo hero. The step legend
- * mirrors the live BookingProgress labels inside the chat (which owns state).
+ * Booking flow header: a calm, compact tool header, not a photo hero. The
+ * step legend mirrors the live BookingProgress labels inside the chat (which
+ * owns state). The supporting sentence emphasizes the no-advice boundary
+ * with the shared phrase-underline primitive.
  */
 export function BookingFlowHeader({
   eyebrow,
   title,
   description,
-  steps
+  steps,
+  locale = "en"
 }: {
   eyebrow: string;
   title: string;
   description: string;
   steps: ReadonlyArray<string>;
+  locale?: PublicLocale;
 }) {
   return (
     <section className="border-b border-[var(--kmt-public-line)] bg-[var(--kmt-public-surface)] text-[var(--kmt-public-text)]">
-      <div className="kmt-motion-reveal mx-auto max-w-[1200px] px-4 pb-10 pt-14 sm:px-6 md:pt-16 lg:px-10">
+      <div className="kmt-motion-reveal mx-auto max-w-[1200px] px-4 pb-8 pt-10 sm:px-6 md:pt-12 lg:px-10">
         <div className="max-w-3xl">
           <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p>
-          <h1 className="mt-4 max-w-3xl text-3xl font-semibold leading-tight md:text-5xl">{title}</h1>
-          <p className={cn("mt-5 max-w-2xl text-base leading-9 md:text-lg", publicMutedText)}>{description}</p>
+          <h1 className="mt-4 max-w-3xl text-4xl font-semibold leading-tight md:text-5xl">{title}</h1>
+          <p className={cn("mt-5 max-w-2xl text-base leading-9 md:text-lg", publicMutedText)}>
+            <KmtUnderlinedText
+              text={description}
+              highlight={locale === "ar" ? "لا يقدم أي رأي قانوني" : "does not provide legal advice"}
+            />
+          </p>
         </div>
         <ol className="mt-8 flex flex-wrap items-center gap-2" aria-label={steps.join(" · ")}>
           {steps.map((step, index) => (
@@ -602,18 +611,21 @@ export function BookingFlowHeader({
   );
 }
 
-/** What-happens-after strip: plain numbered steps, existing copy only. */
+/** What-happens-after strip: a compact connected 4-step rail, not cards. */
 export function AfterSubmitStrip({ title, steps }: { title: string; steps: ReadonlyArray<string> }) {
   return (
-    <section className={cn(publicPanel, "p-6")}>
-      <h2 className="text-xl font-semibold text-[var(--kmt-public-text)]">{title}</h2>
-      <ol className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <section className={cn(publicPanel, "p-6 sm:p-8")}>
+      <div className="flex items-center gap-3">
+        <span aria-hidden="true" className="h-px w-10 bg-gradient-to-r from-[var(--kmt-public-gold)] to-transparent rtl:bg-gradient-to-l" />
+        <h2 className="text-xl font-semibold text-[var(--kmt-public-text)]">{title}</h2>
+      </div>
+      <ol className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
         {steps.map((step, index) => (
-          <li key={step} className="flex gap-3">
+          <li key={step} className="relative border-t border-[var(--kmt-public-line)] pt-4">
             <span aria-hidden="true" className="text-sm font-semibold tabular-nums text-[var(--kmt-public-gold)]">
               {String(index + 1).padStart(2, "0")}
             </span>
-            <p className={cn("text-sm leading-7", publicMutedText)}>{step}</p>
+            <p className={cn("mt-2 text-sm leading-7", publicMutedText)}>{step}</p>
           </li>
         ))}
       </ol>

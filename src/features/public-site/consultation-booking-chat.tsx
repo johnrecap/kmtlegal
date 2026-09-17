@@ -1,8 +1,14 @@
 "use client";
 
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import { MotionConfig } from "motion/react";
 import { KmtBrandLogo } from "@/components/brand";
-import { Button, MaterialSymbol, TextInput } from "@/components/ui";
+import { Button, MaterialSymbol } from "@/components/ui";
+import { Tabs, TabsContents, TabsContent, TabsList, TabsTrigger } from "@/components/animate-ui";
+import { AnimatedList } from "@/components/ui/animated-list";
+import { BorderBeam } from "@/components/ui/border-beam";
+import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
+import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
 import { findPublicService, getPublicContent, type PublicContent } from "@/content/public-content";
 import { trackClientAnalyticsEvent } from "@/lib/analytics-client";
 import { cn } from "@/lib/cn";
@@ -18,7 +24,6 @@ import {
 } from "@/features/public-site/booking-chat-formatters";
 import {
   publicMotionButton,
-  publicMotionControl,
   publicMotionCta,
   publicMotionForm
 } from "@/features/public-site/public-motion";
@@ -128,11 +133,6 @@ const darkSurfaceClasses = cn(
   "relative isolate overflow-hidden rounded-[1.75rem] border border-kmt-gold/45 bg-[linear-gradient(145deg,#17110a_0%,#090b0d_48%,#020202_100%)] before:absolute before:inset-x-8 before:top-0 before:h-px before:bg-gradient-to-l before:from-transparent before:via-kmt-gold/80 before:to-transparent after:pointer-events-none after:absolute after:inset-0 after:rounded-[1.75rem] after:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
 );
 
-const darkControlClasses = cn(
-  publicMotionControl,
-  "!border-kmt-gold/25 !bg-black/35 !text-white placeholder:!text-amber-100/45 focus:!border-kmt-gold focus:!ring-kmt-gold/25 disabled:!border-white/10 disabled:!bg-black/40 disabled:!text-slate-500"
-);
-
 const chipButtonClasses = cn(
   publicMotionButton,
   "min-h-11 rounded-full !border-kmt-gold/45 !bg-black/30 !px-4 !text-sm !text-amber-100 hover:!bg-kmt-gold hover:!text-[#120d07]"
@@ -182,6 +182,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   const [failureCount, setFailureCount] = useState(0);
   const [quickActionsDismissed, setQuickActionsDismissed] = useState(false);
   const [latestResult, setLatestResult] = useState<LatestBookingResult | null>(null);
+  const reduceMotionStage = usePrefersReducedMotion();
   const restoredSelection = useRef<BookingDraft | null>(null);
   const showTrustRail = !chatLocale;
   const showQuickActions = Boolean(chatLocale) && !quickActionsDismissed && !flow && !availableSlots.length && !readyToConfirm && !readyToCheckout;
@@ -687,17 +688,30 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       data-testid="booking-stepper"
       dir={activeLocale === "ar" ? "rtl" : "ltr"}
     >
+      {/*
+        Single restrained beam on the hero object: KMT gold only, slow,
+        1px feel. Reduced motion keeps a static gold hairline instead —
+        the travelling light never runs. The global footer CTA keeps its
+        own existing beam.
+      */}
+      {reduceMotionStage ? (
+        <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[inherit] border border-kmt-gold/25" />
+      ) : (
+        <BorderBeam size={90} duration={9} colorFrom="#eac987" colorTo="#a87830" borderWidth={1} />
+      )}
+      <MotionConfig reducedMotion="user">
       <div className="relative z-10 flex h-[min(78vh,46rem)] min-h-[36rem] min-w-0 flex-col max-sm:h-[min(82svh,44rem)] max-sm:min-h-[34rem]" data-testid="booking-chat-shell">
         <header className="shrink-0 px-5 pb-4 pt-5 sm:px-8 sm:pt-8">
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div className="flex min-w-0 items-center gap-4">
               <KmtBrandLogo label={copy.assistantName} shape="circle" size="lg" variant="mark" />
               <div className="min-w-0">
-                <p className="truncate text-[1.9rem] font-semibold leading-tight text-white max-sm:text-xl">{copy.assistantName}</p>
+                <p className="truncate text-[1.9rem] font-semibold leading-tight text-white max-sm:text-lg">{copy.assistantName}</p>
                 <p className="mt-2 flex items-center gap-2 text-sm font-medium text-[#7ad36a]">
                   <span className="h-2.5 w-2.5 rounded-full bg-[#7ad36a] shadow-[0_0_16px_rgba(122,211,106,0.85)]" aria-hidden="true" />
                   {copy.onlineNow}
                 </p>
+                <p className="mt-1.5 text-xs leading-5 text-amber-100/55">{copy.scope}</p>
               </div>
             </div>
           </div>
@@ -711,20 +725,35 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
               <TrustRailItem icon="bolt" label={copy.fastResponse} />
             </div>
           ) : null}
-          {chatLocale ? <BookingProgress copy={copy} draft={draft} readyToCheckout={readyToCheckout} selectedSlot={selectedSlot} /> : null}
+          {chatLocale ? <BookingStageTabs copy={copy} draft={draft} readyToCheckout={readyToCheckout} selectedSlot={selectedSlot} /> : null}
         </header>
 
         <div
           ref={logScrollRef}
           aria-busy={isBusy ? "true" : "false"}
-          className="kmt-chat-scrollbar min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8"
+          className="kmt-chat-scrollbar mx-5 mb-2 min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain rounded-2xl border border-white/[0.06] bg-black/30 px-4 py-5 sm:mx-8 sm:px-6"
           data-testid="booking-chat-log"
           role="log"
         >
-          {messages.map((message) => (
-            <ChatBubble key={message.id} message={message} />
-          ))}
-          {!chatLocale ? <LanguageChoicePanel copy={copy} onSelect={chooseLanguage} /> : null}
+          {/*
+            Guided intro (Animated List): the language prompt + choice stage
+            in sequentially, conversationally. Live turns below stay instant:
+            hiding real responses behind a reveal timer would feel fake and
+            slow, so only the staged intro uses the sequenced list.
+          */}
+          {!chatLocale && messages.length === 1 ? (
+            <AnimatedList className="items-stretch gap-5" delay={420}>
+              <ChatBubble key={messages[0].id} message={messages[0]} />
+              <LanguageChoicePanel key="language-choice-intro" copy={copy} onSelect={chooseLanguage} />
+            </AnimatedList>
+          ) : (
+            <>
+              {messages.map((message) => (
+                <ChatBubble key={message.id} message={message} />
+              ))}
+              {!chatLocale ? <LanguageChoicePanel copy={copy} onSelect={chooseLanguage} /> : null}
+            </>
+          )}
           {availableSlots.length ? <SlotChoicePanel locale={activeLocale} slotWindow={slotWindow ?? undefined} slots={availableSlots} onChoose={chooseSlot} /> : null}
           {readyToConfirm ? (
             <div className="flex flex-wrap justify-end gap-2">
@@ -773,35 +802,41 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
             </div>
           ) : null}
 
-          <form className="flex min-w-0 items-end gap-3" data-testid="booking-chat-composer" noValidate onSubmit={submitMessage}>
-            <div className="min-w-0 flex-1 [&_label]:sr-only">
-              <TextInput
-                autoComplete="off"
-                className={cn(darkControlClasses, "!min-h-16 !rounded-full !border-kmt-gold/55 !bg-black/42 !px-6 !text-base")}
-                disabled={!chatLocale || isBusy}
-                label={copy.messageLabel}
-                name="chatMessage"
-                placeholder={chatLocale ? copy.messagePlaceholder : copy.languagePendingPlaceholder}
-                value={freeMessage}
-                onChange={(event) => setFreeMessage(event.target.value)}
-              />
-            </div>
-            <Button
-              aria-label={copy.send}
-              className={cn(publicMotionButton, publicMotionCta, "mb-0 h-16 w-16 shrink-0 rounded-full !px-0")}
-              disabled={!chatLocale || isBusy || !freeMessage.trim()}
-              type="submit"
-            >
-              <MaterialSymbol className="text-xl" name="send" />
-              <span className="sr-only">{copy.send}</span>
-            </Button>
-          </form>
+          <PlaceholdersAndVanishInput
+            formTestId="booking-chat-composer"
+            formClassName="flex min-w-0 items-center gap-2 rounded-full border border-kmt-gold/55 bg-black/42 py-2 pe-2 ps-6 transition-colors focus-within:border-kmt-gold"
+            placeholders={
+              chatLocale
+                ? [copy.messagePlaceholder, copy.inquiryPrompt, copy.detailsPrompt, copy.preferredSlotHint]
+                : [copy.languagePendingPlaceholder]
+            }
+            value={freeMessage}
+            onValueChange={setFreeMessage}
+            onSubmit={submitMessage}
+            disabled={!chatLocale || isBusy}
+            inputName="chatMessage"
+            ariaLabel={copy.messageLabel}
+            inputClassName="kmt-vanish-input min-h-12 w-full min-w-0 flex-1 border-0 bg-transparent text-base text-white outline-none disabled:text-slate-500 focus-visible:!outline-none focus:!ring-0"
+            placeholderClassName="w-full truncate pe-24 text-base text-amber-100/45"
+            trailing={
+              <Button
+                aria-label={copy.send}
+                className={cn(publicMotionButton, publicMotionCta, "h-14 w-14 shrink-0 rounded-full !px-0")}
+                disabled={!chatLocale || isBusy || !freeMessage.trim()}
+                type="submit"
+              >
+                <MaterialSymbol className="text-xl" name="send" />
+                <span className="sr-only">{copy.send}</span>
+              </Button>
+            }
+          />
           <p className="mt-4 flex items-center justify-center gap-2 text-center text-sm text-amber-100/65">
             <MaterialSymbol className="text-lg" name="lock" />
             {copy.privacyNote}
           </p>
         </div>
       </div>
+      </MotionConfig>
     </section>
   );
 }
@@ -815,7 +850,18 @@ function TrustRailItem({ icon, label }: { icon: string; label: string }) {
   );
 }
 
-function BookingProgress({
+/**
+ * Live booking-stage navigator (Animate UI Tabs).
+ *
+ * The active stage follows the real draft state with the exact completion
+ * semantics the static row used before (contact → details → slot →
+ * payment). Triggers are intentionally disabled: stages are status, not
+ * navigation — jumping ahead would fake progress the business logic does
+ * not support. The animated gold indicator + per-stage guidance line are
+ * the upgrade: the navigator always shows where the request stands and
+ * what the stage needs.
+ */
+function BookingStageTabs({
   copy,
   draft,
   readyToCheckout,
@@ -826,29 +872,44 @@ function BookingProgress({
   readyToCheckout: boolean;
   selectedSlot: string;
 }) {
-  const steps = [
-    { label: copy.progressContact, done: Boolean(draft.fullName.trim() && draft.phone.trim()) },
-    { label: copy.progressDetails, done: Boolean(draft.serviceCategory.trim() && draft.summary.trim().length >= 20) },
-    { label: copy.progressSlot, done: Boolean(selectedSlot || draft.startsAt) },
-    { label: copy.progressPayment, done: readyToCheckout }
+  const detailsDone = Boolean(draft.serviceCategory.trim() && draft.summary.trim().length >= 20);
+  const slotDone = Boolean(selectedSlot || draft.startsAt);
+  const contactDone = Boolean(draft.fullName.trim() && draft.phone.trim());
+  const stage = readyToCheckout ? "payment" : slotDone ? "slot" : detailsDone ? "details" : "contact";
+  const stages = [
+    { value: "contact", label: copy.progressContact, done: contactDone, hint: copy.contactPrompt },
+    { value: "details", label: copy.progressDetails, done: detailsDone, hint: copy.detailsPrompt },
+    { value: "slot", label: copy.progressSlot, done: slotDone, hint: copy.preferredSlotHint },
+    { value: "payment", label: copy.progressPayment, done: readyToCheckout, hint: copy.cancellationPolicy }
   ];
 
   return (
-    <div className="mt-5 grid grid-cols-4 gap-2" aria-label={copy.paymentStatus}>
-      {steps.map((step, index) => (
-        <div
-          key={step.label}
-          className={cn(
-            "flex min-h-9 items-center justify-center gap-1 rounded-full border px-2 text-center text-[0.68rem] font-semibold leading-4 transition-colors",
-            step.done ? "border-kmt-gold bg-kmt-gold text-[#120d07]" : "border-white/12 bg-white/[0.04] text-amber-50/68"
-          )}
-        >
-          <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-current text-[0.6rem]" aria-hidden="true">
-            {step.done ? <MaterialSymbol className="text-[0.8rem]" name="check_circle" /> : index + 1}
-          </span>
-          <span className="min-w-0 truncate">{step.label}</span>
-        </div>
-      ))}
+    <div className="mt-5" data-testid="booking-stage-tabs">
+      <Tabs value={stage} aria-label={copy.paymentStatus} onValueChange={() => undefined}>
+        <TabsList className="scrollbar-hide overflow-x-auto">
+          {stages.map((item, index) => (
+            <TabsTrigger key={item.value} value={item.value} disabled aria-label={`${index + 1} · ${item.label}`} className="max-sm:flex-none max-sm:px-4">
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-current text-[0.6rem]",
+                  item.done ? "border-transparent" : undefined
+                )}
+              >
+                {item.done ? <MaterialSymbol className="text-[0.8rem]" name="check_circle" /> : index + 1}
+              </span>
+              <span className="min-w-0 truncate">{item.label}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        <TabsContents className="mt-3">
+          {stages.map((item) => (
+            <TabsContent key={item.value} value={item.value}>
+              <p className="text-center text-xs leading-5 text-amber-100/60">{item.hint}</p>
+            </TabsContent>
+          ))}
+        </TabsContents>
+      </Tabs>
     </div>
   );
 }
@@ -873,7 +934,7 @@ function ChatBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
 
   return (
-    <div className={cn("flex items-end gap-4", isUser ? "justify-end" : "justify-start")}>
+    <div className={cn("kmt-chat-enter flex items-end gap-4", isUser ? "justify-end" : "justify-start")}>
       {!isUser ? (
         message.tone === "error" || message.tone === "success" ? (
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-kmt-gold/40 bg-[linear-gradient(145deg,rgba(183,134,64,0.18),rgba(0,0,0,0.35))] text-kmt-gold max-sm:h-9 max-sm:w-9">
@@ -887,10 +948,10 @@ function ChatBubble({ message }: { message: ChatMessage }) {
         className={cn(
           "max-w-[78%] break-words rounded-[1.45rem] px-6 py-4 text-base leading-8 shadow-[0_22px_60px_-42px_rgba(0,0,0,0.95)] max-sm:max-w-[86%] max-sm:px-4 max-sm:py-3 max-sm:text-sm",
           isUser
-            ? "rounded-ee-md border border-kmt-gold/45 bg-[linear-gradient(135deg,#c79a4b,#a87429)] text-white"
-            : "rounded-es-md border border-white/12 bg-white/[0.075] text-slate-100",
+            ? "rounded-ee-md border border-kmt-gold/55 bg-[linear-gradient(135deg,#bd8f3e,#8f6420)] text-white"
+            : "rounded-es-md border border-kmt-gold/20 bg-[#0e0b07] text-amber-50",
           message.tone === "error" ? "border-red-300/35 bg-red-950/55 text-red-100" : undefined,
-          message.tone === "success" ? "border-emerald-300/35 bg-emerald-950/40 text-emerald-50" : undefined
+          message.tone === "success" ? "border-kmt-gold/45 bg-kmt-gold/[0.12] text-amber-50" : undefined
         )}
         role={message.tone === "error" ? "alert" : undefined}
       >

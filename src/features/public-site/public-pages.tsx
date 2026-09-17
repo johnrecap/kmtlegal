@@ -9,7 +9,8 @@ import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { FocusCards } from "@/components/ui/focus-cards";
 import { canonicalPublicServiceSlug, findPublicService, getPublicContent, navForPath } from "@/content/public-content";
-import { ConsultationBookingChatFromQuery, RequestedLawyerQueryNotice } from "@/features/public-site/booking-query-client";
+import { ConsultationBookingChatFromQuery } from "@/features/public-site/booking-query-client";
+import { BookingSupportPanel } from "@/features/public-site/booking-support-panel";
 import { ContactForm } from "@/features/public-site/contact-form";
 import { DirectoryFilter } from "@/features/public-site/directory-filter";
 import { PolicyToc } from "@/features/public-site/policy-toc";
@@ -965,6 +966,7 @@ export async function BookConsultationPageView({ locale }: { locale: PublicLocal
         title={chatCopy.heroTitle}
         description={chatCopy.heroDescription}
         steps={[chatCopy.progressContact, chatCopy.progressDetails, chatCopy.progressSlot, chatCopy.progressPayment]}
+        locale={locale}
       />
       <PublicSection
         eyebrow={copy.sectionEyebrow}
@@ -975,26 +977,7 @@ export async function BookConsultationPageView({ locale }: { locale: PublicLocal
           <Suspense fallback={<div aria-hidden="true" className={cn(publicPanel, "min-h-[36rem] rounded-[1.75rem] border-kmt-gold/35 bg-black/30")} />}>
             <ConsultationBookingChatFromQuery locale={locale} />
           </Suspense>
-          <aside className="space-y-4 lg:pt-2">
-            <section className={cn(publicPanel, publicMotionCardBeam, "p-5")}>
-              <h2 className="text-lg font-semibold text-white">{chatCopy.trustTitle}</h2>              <div className="mt-4 space-y-4">
-                {chatCopy.trustItems.map((item) => (
-                  <div key={item.label} className="flex gap-3">
-                    <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-kmt-gold">
-                      <MaterialSymbol className={cn("text-lg", publicMotionIcon, publicMotionIconHalo)} name={item.icon} />
-                    </span>
-                    <div>
-                      <p className="text-sm font-semibold text-white">{item.label}</p>
-                      <p className={cn("mt-1 text-sm leading-6", publicMutedText)}>{item.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <Suspense fallback={null}>
-                <RequestedLawyerQueryNotice label={copy.requestedLawyer} />
-              </Suspense>
-            </section>
-          </aside>
+          <BookingSupportPanel copy={chatCopy} locale={locale} />
         </div>
         <BlurFade className="kmt-blur-fade mt-6" direction="up">
           <AfterSubmitStrip title={copy.afterSubmitTitle} steps={[...copy.afterSubmitSteps]} />

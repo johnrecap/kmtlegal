@@ -64,7 +64,7 @@
   --kmt-navy: #0f172a;
   --kmt-gold: #997b44;
   --kmt-border: #e2e8f0;
-  --kmt-focus: 0 0 0 3px rgb(153 123 68 / 18%);
+  --kmt-focus: 0 0 0 3px rgb(168 120 48 / 20%);
   --kmt-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --kmt-public-canvas: #f6f3ec;
   --kmt-public-surface: #fdfbf6;
@@ -81,23 +81,39 @@
   --kmt-public-dropdown-shadow: 0 32px 80px rgb(28 22 12 / 18%);
   --kmt-public-panel-shadow: 0 24px 80px rgb(28 22 12 / 10%);
   --kmt-public-text-shadow: 0 4px 22px rgb(246 241 230 / 85%);
+  /* KMT deep-black surface family (public dark identity reads deep black;
+     light theme keeps its paper scale above). */
+  --kmt-black-0: #050505;
+  --kmt-black-1: #080808;
+  --kmt-black-2: #0b0b0b;
+  --kmt-black-3: #101010;
+  --kmt-black-hover: #141414;
+  /* KMT logo gold family. Source of truth: public/brand/kmt-logo-source.jpg
+     + kmt-logo-full.webp + kmt-logo-icon.png (bucket analysis avg #765a2c…
+     #7d602e, highlights #b6893e/#cca556). Core #a87830, bright #d0a048. */
+  --kmt-gold-primary: #a87830;
+  --kmt-gold-bright: #d0a048;
+  --kmt-gold-muted: #8a6a35;
+  --kmt-gold-border: rgb(208 160 72 / 35%);
+  --kmt-gold-glow: rgb(208 160 72 / 14%);
+  --kmt-gold-text: #eac987;
 }
 
 .dark {
-  --kmt-public-canvas: #060504;
-  --kmt-public-surface: #07090b;
-  --kmt-public-surface-muted: #0c1116;
-  --kmt-public-header: #070604;
-  --kmt-public-panel: rgb(255 255 255 / 3.5%);
-  --kmt-public-text: #f8f3ea;
-  --kmt-public-muted: #cbd5e1;
-  --kmt-public-gold: #c79a52;
-  --kmt-public-line: rgb(255 255 255 / 10%);
-  --kmt-public-hover: rgb(255 255 255 / 5%);
-  --kmt-public-scrim: 7 9 11;
-  --kmt-public-header-shadow: 0 12px 40px rgb(0 0 0 / 34%);
-  --kmt-public-dropdown-shadow: 0 32px 80px rgb(0 0 0 / 50%);
-  --kmt-public-panel-shadow: 0 24px 80px rgb(0 0 0 / 28%);
+  --kmt-public-canvas: #050505;
+  --kmt-public-surface: #0a0908;
+  --kmt-public-surface-muted: #100e0c;
+  --kmt-public-header: rgb(8 6 5 / 92%);
+  --kmt-public-panel: rgb(236 220 190 / 5%);
+  --kmt-public-text: #f5efe3;
+  --kmt-public-muted: #a8a094;
+  --kmt-public-gold: #d0a048;
+  --kmt-public-line: rgb(208 160 72 / 16%);
+  --kmt-public-hover: rgb(208 160 72 / 7%);
+  --kmt-public-scrim: 6 5 4;
+  --kmt-public-header-shadow: 0 12px 40px rgb(0 0 0 / 60%);
+  --kmt-public-dropdown-shadow: 0 32px 80px rgb(0 0 0 / 65%);
+  --kmt-public-panel-shadow: 0 24px 80px rgb(0 0 0 / 45%);
   --kmt-public-text-shadow: 0 4px 22px rgb(0 0 0 / 88%);
 }
 
@@ -297,6 +313,30 @@ a {
     background: transparent;
   }
 
+  /* Live booking-chat turns: one subtle settle on mount (the staged intro
+     is owned by Animated List instead). The global reduced-motion reset
+     collapses this to its final state automatically. */  @keyframes kmt-chat-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .kmt-chat-enter {
+    animation: kmt-chat-enter 280ms var(--kmt-motion-ease) both;
+  }
+
+  /* Vanish-input focus lives on the pill container
+     (`focus-within:border-kmt-gold`), so the input itself suppresses the
+     @tailwindcss/forms blue focus ring deterministically (!important —
+     the plugin's unlayered rule otherwise wins over utilities). */
+  .kmt-vanish-input:focus {
+    box-shadow: none !important;
+  }
   @keyframes kmt-motion-reveal {
     from {
       opacity: 0;
@@ -352,6 +392,90 @@ a {
       opacity: 1;
       transform: scale(1);
     }
+  }
+
+  /* Hero entrance: pure CSS so SSR first paint already shows the final
+     composition (no mounted-state swaps). Stagger via inline
+     animation-delay; `both` fill holds the staged start pre-play. */
+  @keyframes kmt-hero-enter {
+    from {
+      opacity: 0;
+      transform: translateY(22px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes kmt-hero-enter-blur {
+    from {
+      opacity: 0;
+      transform: translateY(26px);
+      filter: blur(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+
+  .kmt-hero-enter {
+    animation: kmt-hero-enter 700ms var(--kmt-motion-ease) both;
+  }
+
+  .kmt-hero-enter-blur {
+    animation: kmt-hero-enter-blur 800ms var(--kmt-motion-ease) both;
+  }
+
+  /* Active nav indicator: SSR-safe grow-in (no layout-measurement JS, so
+     first paint already shows it; transform-origin mirrors for RTL). */
+  @keyframes kmt-nav-indicator-in {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .kmt-nav-indicator {
+    transform-origin: left center;
+    animation: kmt-nav-indicator-in 350ms var(--kmt-motion-ease) both;
+  }
+
+  html[dir="rtl"] .kmt-nav-indicator {
+    transform-origin: right center;
+  }
+
+  /* KMT gold-underline primitive: every gold line grows 0 → target width
+     via scaleX (never width — no layout shift) in --kmt-public-gold,
+     inline-start → inline-end (mirrored for RTL). Mount mode
+     (`animateOnView={false}`) runs once via this animation (`both` fill, so
+     SSR first paint starts hidden with no flash); in-view mode is driven by
+     inline transform + transition from the component. Reduced motion is
+     covered by the global reset (0.01ms duration → line appears
+     immediately) and by the component never hiding the line. */
+  @keyframes kmt-gold-underline-in {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  .kmt-gold-underline {
+    transform-origin: left center;
+  }
+
+  html[dir="rtl"] .kmt-gold-underline {
+    transform-origin: right center;
+  }
+
+  .kmt-gold-underline-mount {
+    animation: kmt-gold-underline-in var(--kmt-gold-underline-duration, 500ms) var(--kmt-motion-ease) both;
   }
 
   @keyframes kmt-motion-spotlight-rise {
@@ -505,23 +629,6 @@ a {
     animation: kmt-motion-panel-enter 360ms var(--kmt-motion-ease) both;
   }
 
-  @keyframes kmt-marquee-x {
-    from {
-      transform: translateX(0);
-    }
-    to {
-      transform: translateX(-50%);
-    }
-  }
-
-  .kmt-marquee-track {
-    animation: kmt-marquee-x 32s linear infinite;
-  }
-
-  .kmt-marquee:hover .kmt-marquee-track {
-    animation-play-state: paused;
-  }
-
   .kmt-motion-form {
     transition: border-color 190ms var(--kmt-motion-ease), box-shadow 190ms var(--kmt-motion-ease), transform 190ms var(--kmt-motion-ease);
   }
@@ -586,70 +693,6 @@ a {
     background-size: 22px 22px;
   }
 
-  /* Rare conversion shimmer: header + footer consultation CTAs only.
-     Form submits use the primary gold button; no continuous shimmer there. */
-  .kmt-cta-shimmer {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-  }
-
-  .kmt-cta-shimmer::after {
-    position: absolute;
-    inset: 0;
-    content: "";
-    pointer-events: none;
-    background: linear-gradient(110deg, transparent 30%, rgb(255 236 188 / 45%) 50%, transparent 70%);
-    transform: translateX(-150%);
-    animation: kmt-shimmer-sweep 3.5s ease-in-out infinite;
-  }
-
-  html[dir="rtl"] .kmt-cta-shimmer::after {
-    transform: translateX(150%);
-    animation-name: kmt-shimmer-sweep-rtl;
-  }
-
-  @keyframes kmt-shimmer-sweep {
-    0% {
-      transform: translateX(-150%);
-    }
-    55%, 100% {
-      transform: translateX(150%);
-    }
-  }
-
-  @keyframes kmt-shimmer-sweep-rtl {
-    0% {
-      transform: translateX(150%);
-    }
-    55%, 100% {
-      transform: translateX(-150%);
-    }
-  }
-
-  /* Perimeter beam: exactly two conversion panels (home docket, footer
-     CTA). Fill adapts via --kmt-beam-fill; no-JS shows a static gold ring. */
-  @property --kmt-beam-angle {
-    syntax: "<angle>";
-    initial-value: 0deg;
-    inherits: false;
-  }
-
-  .kmt-beam {
-    position: relative;
-    border: 1px solid rgb(153 123 68 / 35%);
-    background:
-      linear-gradient(var(--kmt-beam-fill, var(--kmt-public-surface-muted)), var(--kmt-beam-fill, var(--kmt-public-surface-muted))) padding-box,
-      conic-gradient(from var(--kmt-beam-angle), rgb(153 123 68 / 25%) 0deg, rgb(244 207 136 / 90%) 40deg, rgb(153 123 68 / 25%) 80deg, rgb(153 123 68 / 25%) 360deg) border-box;
-    animation: kmt-beam-spin 6s linear infinite;
-  }
-
-  @keyframes kmt-beam-spin {
-    to {
-      --kmt-beam-angle: 360deg;
-    }
-  }
-
   @media (hover: hover) {
     .kmt-motion-card:hover,
     .kmt-motion-card:focus-visible,
@@ -712,8 +755,6 @@ a {
   }
 
   .kmt-motion-reveal,
-  .kmt-marquee-track,
-  .kmt-beam,
   .kmt-motion-hero-image,
   .kmt-motion-card,
   .kmt-motion-card-beam,
@@ -736,8 +777,21 @@ a {
     display: none !important;
   }
 
-  .kmt-cta-shimmer::after {
-    display: none !important;
+  /* Magic BlurFade animates via JS regardless of user preference; force its
+     settled state when reduced motion is requested. */
+  .kmt-blur-fade {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  /* Magic TextAnimate (hero H1) likewise animates via JS variants; force the
+     settled word state under reduced motion so text renders immediately. */
+  .kmt-text-animate,
+  .kmt-text-animate * {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
   }
 
   .kmt-motion-arrow {
@@ -749,7 +803,6 @@ a {
 .rtl {
   direction: rtl;
 }
-
 .ltr {
   direction: ltr;
 }
@@ -761,4 +814,97 @@ a {
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/* Magic UI registry keyframes, ported to Tailwind v3 (the CLI emits v4
+   @theme blocks, which v3 ignores). Utilities pair with the --duration /
+   --gap / --speed custom properties set by the installed components. */
+@keyframes kmt-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--gap, 1rem)));
+  }
+}
+
+/* RTL mirror of the marquee loop. Right-anchored RTL lanes must travel 0 →
+   +100%+gap to stay seamless; reusing `animation-direction: reverse` on the
+   LTR keyframes instead traverses the same broken path backwards (strip
+   starts empty, fills only at cycle end). Scoped to the trust strip so the
+   shared Marquee component and LTR behavior are untouched. */
+@keyframes kmt-marquee-rtl {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(100% + var(--gap, 1rem)));
+  }
+}
+
+html[dir="rtl"] .kmt-trust-marquee .animate-marquee {
+  animation-name: kmt-marquee-rtl;
+}
+
+@keyframes kmt-marquee-vertical {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(-100% - var(--gap, 1rem)));
+  }
+}
+
+@keyframes kmt-shimmer-slide {
+  to {
+    transform: translate(calc(100cqw - 100%), 0);
+  }
+}
+
+@keyframes kmt-spin-around {
+  0% {
+    transform: translateZ(0) rotate(0);
+  }
+  15%, 35% {
+    transform: translateZ(0) rotate(90deg);
+  }
+  65%, 85% {
+    transform: translateZ(0) rotate(270deg);
+  }
+  100% {
+    transform: translateZ(0) rotate(360deg);
+  }
+}
+
+@layer utilities {
+  .animate-marquee {
+    animation: kmt-marquee var(--duration, 40s) infinite linear;
+  }
+
+  .animate-marquee-vertical {
+    animation: kmt-marquee-vertical var(--duration, 40s) linear infinite;
+  }
+
+  .animate-shimmer-slide {
+    animation: kmt-shimmer-slide var(--speed, 3s) ease-in-out infinite alternate;
+  }
+
+  .animate-spin-around {
+    animation: kmt-spin-around calc(var(--speed, 3s) * 2) infinite linear;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee,
+  .animate-marquee-vertical,
+  .animate-shimmer-slide,
+  .animate-spin-around {
+    animation: none !important;
+  }
+}
+
+/* Trust strip: pause the single public marquee on keyboard focus as well as
+   hover (the Magic Marquee primitive only pauses on hover by itself). */
+.kmt-trust-marquee:focus-within .animate-marquee {
+  animation-play-state: paused;
 }

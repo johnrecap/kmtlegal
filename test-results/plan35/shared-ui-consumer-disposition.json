@@ -357,14 +357,6 @@
       "evidence": "tests/ui/product-components.test.tsx"
     },
     {
-      "path": "src/components/motion-ui/hero-parallax-layers.tsx",
-      "contracts": [
-        "buttonClasses"
-      ],
-      "disposition": "backward-compatible",
-      "evidence": "tests/ui/product-components.test.tsx"
-    },
-    {
       "path": "src/components/motion-ui/shimmer-button.tsx",
       "contracts": [
         "button"
@@ -645,14 +637,6 @@
         "Select",
         "TextInput",
         "Textarea"
-      ],
-      "disposition": "backward-compatible",
-      "evidence": "tests/ui/public-pages.test.tsx"
-    },
-    {
-      "path": "src/features/public-site/consultation-booking-chat.tsx",
-      "contracts": [
-        "TextInput"
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/public-pages.test.tsx"
