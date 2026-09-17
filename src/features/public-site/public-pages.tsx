@@ -6,7 +6,8 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
-import { Tilt, TiltContent } from "@/components/animate-ui";
+import { BlurFade } from "@/components/ui/blur-fade";
+import { FocusCards } from "@/components/ui/focus-cards";
 import { canonicalPublicServiceSlug, findPublicService, getPublicContent, navForPath } from "@/content/public-content";
 import { ConsultationBookingChatFromQuery, RequestedLawyerQueryNotice } from "@/features/public-site/booking-query-client";
 import { ContactForm } from "@/features/public-site/contact-form";
@@ -24,6 +25,7 @@ import {
 import { HeroParallaxLayers } from "@/components/motion-ui/hero-parallax-layers";
 import { ReadingProgress } from "@/components/motion-ui/reading-progress";
 import { Reveal } from "@/components/motion-ui/reveal";
+import { StickyScroll } from "@/components/ui/sticky-scroll-reveal";
 import {
   AfterSubmitStrip,
   BookingFlowHeader,
@@ -230,6 +232,7 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
         eyebrow={copy.heroEyebrow}
         title={copy.heroTitle}
         description={copy.heroDescription}
+        descriptionHighlight={locale === "ar" ? "الوقائع والمستندات" : "reviews the facts and documents"}
         image="/stitch-assets/b392b48a7cb6b561.png"
         imagePosition="object-[center_55%]"
         pickerLabel={copy.heroPickerLabel}
@@ -248,7 +251,7 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
       />
       <TrustStrip items={copy.trustItems} />
 
-      <PublicSection align="center" eyebrow={copy.practiceEyebrow} title={copy.practiceTitle} description={copy.practiceDescription}>
+      <PublicSection align="center" accent="section" eyebrow={copy.practiceEyebrow} title={copy.practiceTitle} description={copy.practiceDescription} descriptionHighlight={locale === "ar" ? "طلب استشارة منظمًا" : "structured consultation request"} descriptionEmphasis="subtle">
         <CapabilityRows
           items={content.practiceAreaMatrix.map((area) => ({
             icon: area.icon,
@@ -260,47 +263,53 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
         />
       </PublicSection>
 
-      <StatementBreak text={content.shared.noLegalAdvice} />
+      <StatementBreak
+        text={content.shared.noLegalAdvice}
+        highlight={locale === "ar" ? "لا يغني عن مراجعة محام" : "does not replace lawyer review"}
+      />
 
-      <PublicSection surface="muted" density="roomy" eyebrow={copy.focusEyebrow} title={focusService.title} description={focusService.description}>
-        <LuxuryFeaturePanel
-          image="/stitch-assets/2484f68d86633ca8.png"
-          eyebrow={content.serviceCategories[focusService.category as keyof typeof content.serviceCategories] ?? focusService.category}
-          title={focusService.title}
-          description={focusService.content}
-        >
-          <div className="grid gap-6 md:grid-cols-2">
-            <div>
-              <p className={cn("text-sm font-semibold", publicGoldText)}>{content.serviceDetail.outcomesTitle}</p>
-              <div className="mt-3 space-y-2.5">
-                {focusService.outcomes.slice(0, 4).map((item) => (
-                  <div key={item} className="flex gap-2 text-sm leading-7 text-[var(--kmt-public-muted)]">
-                    <MaterialSymbol className={cn("mt-1 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="check_circle" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p className={cn("text-sm font-semibold", publicGoldText)}>{content.serviceDetail.documentsTitle}</p>
-              <div className="mt-3 space-y-2.5">
-                {focusService.requiredDocuments.slice(0, 4).map((item) => (
-                  <div key={item} className="flex gap-2 text-sm leading-7 text-[var(--kmt-public-muted)]">
-                    <MaterialSymbol className={cn("mt-1 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="description" />
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </LuxuryFeaturePanel>
+      <PublicSection surface="muted" density="roomy" accent="section" eyebrow={copy.focusEyebrow} title={focusService.title} description={focusService.description}>
+        <StickyScroll
+          content={[
+            {
+              title: content.serviceDetail.includedTitle,
+              description: focusService.subServices.join(" · "),
+              content: (
+                <div className="relative h-full min-h-[320px] w-full">
+                  <Image alt="" className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src="/stitch-assets/2484f68d86633ca8.png" unoptimized />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[rgb(var(--kmt-public-scrim)/0.55)] via-transparent to-transparent" aria-hidden="true" />
+                </div>
+              )
+            },
+            {
+              title: content.serviceDetail.documentsTitle,
+              description: focusService.requiredDocuments.join(" · "),
+              content: (
+                <div className="relative h-full min-h-[320px] w-full">
+                  <Image alt="" className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src="/stitch-assets/2484f68d86633ca8.png" unoptimized />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[rgb(var(--kmt-public-scrim)/0.55)] via-transparent to-transparent" aria-hidden="true" />
+                </div>
+              )
+            },
+            {
+              title: content.serviceDetail.outcomesTitle,
+              description: focusService.outcomes.join(" · "),
+              content: (
+                <div className="relative h-full min-h-[320px] w-full">
+                  <Image alt="" className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src="/stitch-assets/2484f68d86633ca8.png" unoptimized />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[rgb(var(--kmt-public-scrim)/0.55)] via-transparent to-transparent" aria-hidden="true" />
+                </div>
+              )
+            }
+          ]}
+        />
       </PublicSection>
 
-      <PublicSection align="center" eyebrow={copy.approachEyebrow} title={copy.approachTitle} description={copy.approachDescription}>
+      <PublicSection align="center" accent="section" eyebrow={copy.approachEyebrow} title={copy.approachTitle} description={copy.approachDescription} descriptionHighlight={locale === "ar" ? "بعد مراجعة المكتب" : "only after office review"}>
         <ProcessSteps steps={copy.approachSteps} />
       </PublicSection>
 
-      <PublicSection surface="muted" density="roomy" align="center" eyebrow={copy.representativeEyebrow} title={copy.representativeTitle} description={copy.representativeDescription}>
+      <PublicSection surface="muted" density="roomy" align="center" accent="section" eyebrow={copy.representativeEyebrow} title={copy.representativeTitle} description={copy.representativeDescription} descriptionHighlight={locale === "ar" ? "دون كشف بيانات عملاء" : "without revealing client data"} descriptionEmphasis="subtle">
         <MatterRows matters={[...content.representativeMatters]} locale={locale} />
       </PublicSection>
 
@@ -308,36 +317,19 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
         <IndustryLedger industries={content.publicIndustries} />
       </PublicSection>
 
-      <PublicSection surface="muted" eyebrow={copy.teamEyebrow} title={copy.teamTitle} description={copy.teamDescription}>
-        <div className="grid gap-4 md:grid-cols-3">
-          {content.lawyers.map((lawyer, index) => (
-            <Reveal key={lawyer.slug} delay={index * 100} variant="fade" className="h-full">
-            <Tilt className="h-full" maxTilt={5}>
-              <TiltContent className="h-full">
-                <Link className={cn(publicPanel, publicPanelHover, "group block h-full overflow-hidden")} href={localizedPublicHref(`/team/${lawyer.slug}`, locale)}>
-                  <div className="relative h-56 w-full overflow-hidden">
-                    <Image alt={lawyer.name} className={publicPhotoTreatment} fill sizes="(min-width: 768px) 33vw, 100vw" src={lawyer.image} />
-                  </div>
-                  <div className="p-5">
-                    <h3 className="text-xl font-semibold text-[var(--kmt-public-text)]">{lawyer.name}</h3>
-                    <p className={cn("mt-1 text-sm", publicMutedText)}>{lawyer.title}</p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {lawyer.specialties.slice(0, 2).map((specialty) => (
-                        <Badge key={specialty} className={publicGoldChip}>
-                          {specialty}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </Link>
-              </TiltContent>
-            </Tilt>
-            </Reveal>
-          ))}
-        </div>
+      <PublicSection surface="muted" accent="section" eyebrow={copy.teamEyebrow} title={copy.teamTitle} description={copy.teamDescription} descriptionHighlight={locale === "ar" ? "مسارات الخبرة" : "expertise paths"} descriptionEmphasis="subtle">
+        <FocusCards
+          cards={content.lawyers.map((lawyer) => ({
+            title: lawyer.name,
+            subtitle: lawyer.title,
+            meta: lawyer.specialties.slice(0, 2).join(" · "),
+            src: lawyer.image,
+            href: localizedPublicHref(`/team/${lawyer.slug}`, locale)
+          }))}
+        />
       </PublicSection>
 
-      <PublicSection eyebrow={copy.insightsEyebrow} title={copy.insightsTitle} description={copy.insightsDescription}>
+      <PublicSection accent="section" eyebrow={copy.insightsEyebrow} title={copy.insightsTitle} description={copy.insightsDescription}>
         {hasFeaturedContent ? (
           <InsightsLedger
             items={[
@@ -1004,8 +996,9 @@ export async function BookConsultationPageView({ locale }: { locale: PublicLocal
             </section>
           </aside>
         </div>
-        <AfterSubmitStrip title={copy.afterSubmitTitle} steps={[...copy.afterSubmitSteps]} />
-      </PublicSection>
+        <BlurFade className="kmt-blur-fade mt-6" direction="up">
+          <AfterSubmitStrip title={copy.afterSubmitTitle} steps={[...copy.afterSubmitSteps]} />
+        </BlurFade>      </PublicSection>
     </PublicShell>
   );
 }

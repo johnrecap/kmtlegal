@@ -16,6 +16,10 @@ describe("public website UI", () => {
         <div>content</div>
       </PublicShell>
     );
+    // The header glass surface is state-driven (transparent at top, glass on
+    // scroll/menu/sheet), so the token lives in the header source while the
+    // static markup carries the top-state branch.
+    const headerSource = readFileSync(join(process.cwd(), "src/components/layout/public-header.tsx"), "utf8");
 
     expect(html).toContain("Main navigation");
     expect(html).toContain("data-testid=\"public-shell\"");
@@ -29,12 +33,15 @@ describe("public website UI", () => {
     expect(html).toContain("Client Login");
     expect(html).toContain("href=\"/login?next=/client&amp;locale=en\"");
     expect(html).toContain("العربية");
-    expect(html).toContain("bg-[color:var(--kmt-public-header)]");
+    expect(headerSource).toContain("bg-[color:var(--kmt-public-header)]");
     expect(html).toContain("event_available");
     expect(html).toContain("account_circle");
     expect(html).toContain("/brand/kmt-logo-mark.webp");
     expect(html).toContain("/brand/kmt-logo-full.webp");
-    expect(html).toContain("bg-kmt-gold/15");
+    // Active desktop nav uses gold text + the sliding layout indicator
+    // (mobile active pills live inside the closed sheet portal).
+    expect(html).toContain("text-[var(--kmt-public-gold)]");
+    expect(html).toContain("kmt-nav-indicator");
     expect(html).not.toContain(">balance</span>");
     expect(html).not.toContain("secondary-container");
   });
@@ -141,7 +148,11 @@ describe("public website UI", () => {
     expect(content.home.industriesEyebrow).toBe("القطاعات");
     expect(content.home.teamEyebrow).toBe("الفريق");
     expect(content.home.insightsEyebrow).toBe("رؤى قانونية");
-    expect(html).toContain("هل تريد مناقشة مسألة قانونية؟");
+    // The final-CTA title keeps its copy but emphasizes one phrase with the
+    // real Magic UI underline, so the sentence spans markup nodes.
+    expect(html).toContain("هل تريد مناقشة");
+    expect(html).toContain("مسألة قانونية");
+    expect(html).toContain('data-kmt-text-underline="normal"');
     expect(html).not.toContain("هل تحتاج إلى دعم قانوني لعملك؟");
     expect(publicPageSource).not.toContain("<FinalCtaBand");
   });

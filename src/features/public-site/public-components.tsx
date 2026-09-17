@@ -1,6 +1,12 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { BlurFade } from "@/components/ui/blur-fade";
+import { CapabilityGlowGate } from "@/features/public-site/capability-glow-gate";
+import { HoverEffect } from "@/components/ui/card-hover-effect";
+import { KmtGoldUnderline, type KmtGoldUnderlineVariant } from "@/components/ui/kmt-gold-underline";
+import { KmtTextUnderline, KmtUnderlinedText, type KmtTextUnderlineEmphasis } from "@/components/ui/kmt-text-underline";
+import { Marquee } from "@/components/ui/marquee";
 import { Reveal } from "@/components/motion-ui/reveal";
 import { ButtonLink, MaterialSymbol } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
@@ -42,7 +48,10 @@ export function PublicSection({
   surface = "default",
   headingLevel = "h2",
   breadcrumbs,
-  density = "compact"
+  density = "compact",
+  accent,
+  descriptionHighlight,
+  descriptionEmphasis
 }: {
   eyebrow?: string;
   title: string;
@@ -55,6 +64,20 @@ export function PublicSection({
   breadcrumbs?: ReactNode;
   /** compact = ledger rhythm (py-12/lg:16); roomy = statement + feature moments (py-16/lg:24). */
   density?: "compact" | "roomy";
+  /**
+   * Optional KMT gold-underline accent rendered under the header block.
+   * Undefined (default) renders nothing — all existing sections stay
+   * byte-identical.
+   */
+  accent?: KmtGoldUnderlineVariant;
+  /**
+   * Optional single meaningful phrase inside `description` to emphasize with
+   * the real Magic UI underline (`KmtTextUnderline`). Copy stays a plain
+   * string; when the phrase is absent the sentence renders unchanged.
+   */
+  descriptionHighlight?: string;
+  /** Editorial weight for `descriptionHighlight`. Defaults to "normal". */
+  descriptionEmphasis?: KmtTextUnderlineEmphasis;
 }) {
   const surfaceClass =
     surface === "transparent"
@@ -72,7 +95,16 @@ export function PublicSection({
           {breadcrumbs ? <div className="mb-5">{breadcrumbs}</div> : null}
           {eyebrow ? <p className={cn("text-sm font-semibold", publicGoldText)}>{eyebrow}</p> : null}
           <Heading className="mt-2 text-3xl font-semibold leading-tight text-[var(--kmt-public-text)] md:text-4xl">{title}</Heading>
-          {description ? <p className={cn("mt-4 text-base leading-8", publicMutedText)}>{description}</p> : null}
+          {description ? (
+            <p className={cn("mt-4 text-base leading-8", publicMutedText)}>
+              {descriptionHighlight ? (
+                <KmtUnderlinedText text={description} highlight={descriptionHighlight} emphasis={descriptionEmphasis} />
+              ) : (
+                description
+              )}
+            </p>
+          ) : null}
+          {accent ? <KmtGoldUnderline variant={accent} align={isCentered ? "center" : "start"} className="mt-6" /> : null}
         </div>
         <div className="mt-8">{children}</div>
       </div>
@@ -141,15 +173,26 @@ export function TrustStrip({ items }: { items: ReadonlyArray<{ icon: string; lab
   const loop = [...items, ...items];
 
   return (
-    <div className="kmt-marquee overflow-hidden border-y border-[var(--kmt-public-line)] bg-[var(--kmt-public-surface-muted)]">
-      <div className={cn("kmt-marquee-track flex w-max items-center py-5 text-sm [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]", publicMutedText)}>
+    <div className="overflow-hidden border-y border-[var(--kmt-public-line)] bg-[var(--kmt-public-surface-muted)]">
+      <span className="sr-only">{items.map((item) => item.label).join(" · ")}</span>
+      {/* Travel direction is locale-driven in CSS: LTR lanes use kmt-marquee,
+          RTL lanes use the mirrored kmt-marquee-rtl (see globals.css). Do NOT
+          re-add Marquee's `reverse` prop — direction:reverse on the LTR
+          keyframes breaks the RTL loop (strip renders empty most of the
+          cycle). */}
+      <Marquee
+        aria-hidden="true"
+        pauseOnHover
+        repeat={2}
+        className={cn("kmt-trust-marquee py-5 text-sm [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)] [--duration:36s]", publicMutedText)}
+      >
         {loop.map((item, index) => (
-          <div key={`${item.label}-${index}`} aria-hidden={index >= items.length} className="flex shrink-0 items-center gap-2 pe-12">
+          <div key={`${item.label}-${index}`} className="flex shrink-0 items-center gap-2 pe-12">
             <MaterialSymbol className={cn(publicMotionIcon, publicMotionIconHalo, publicGoldText)} name={item.icon} />
             {item.label}
           </div>
         ))}
-      </div>
+      </Marquee>
     </div>
   );
 }
@@ -328,31 +371,37 @@ export type CapabilityRowItem = {
 };
 
 /**
- * Equal editorial rows for services. Services carry equal strategic weight,
- * so rows share one treatment — rhythm comes from the horizontal composition
- * (numeral + icon / body / meta rail), never from an enlarged lead item.
+ * Premium legal capabilities matrix (2×2 editorial grid). The Aceternity
+ * Glowing Effect is used ONLY as the interactive border layer (KMT-gold
+ * variant, low opacity, narrow spread); the service panel composition itself
+ * is custom-designed for KMT: numeral + icon / title + description / explore
+ * link. All services share one treatment — no artificial hierarchy.
+ * Hover: border glow follows the pointer, background lifts one black step,
+ * title shifts 2–4px, arrow trails, icon halo. No scale/tilt/3D.
  */
 export function CapabilityRows({ items, locale = "en" }: { items: ReadonlyArray<CapabilityRowItem>; locale?: PublicLocale }) {
+  const content = getPublicContent(locale);
   return (
-    <ol className="overflow-hidden rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)]">
+    <ol className="grid gap-4 md:grid-cols-2">
       {items.map((item, index) => (
-        <li key={item.href} className={cn(index > 0 && "border-t border-[var(--kmt-public-line)]")}>
-          <Reveal variant={index % 2 === 0 ? "blur" : "fade"}>
-            <Link
-              className="group grid gap-4 p-5 transition-colors duration-kmt-fast ease-kmt-out hover:bg-[var(--kmt-public-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-kmt-gold motion-reduce:transition-none sm:p-6 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center lg:gap-8"
-              href={localizedPublicHref(item.href, locale)}
-            >
-              <div className="flex items-center gap-4 lg:w-40 lg:flex-col lg:items-start lg:gap-3">
-                <span aria-hidden="true" className="text-sm font-semibold tabular-nums tracking-widest text-[var(--kmt-public-gold)]">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <MaterialSymbol className={cn("text-4xl", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name={item.icon} />
-              </div>
-              <div className="min-w-0">
-                <h3 className="text-xl font-semibold text-[var(--kmt-public-text)]">{item.title}</h3>
-                <p className={cn("mt-2 text-sm leading-7", publicMutedText)}>{item.summary}</p>
+        <li key={item.href} className="h-full">
+          <BlurFade className="kmt-blur-fade h-full" delay={index * 0.08} direction="up">
+            <div className="group relative h-full overflow-hidden rounded-lg border border-kmt-gold/25 bg-[var(--kmt-public-panel)] transition-colors duration-kmt-fast ease-kmt-out hover:border-kmt-gold/70 hover:bg-[var(--kmt-public-hover)] motion-reduce:transition-none dark:bg-[var(--kmt-black-1)] dark:hover:bg-[var(--kmt-black-2)]">
+              <CapabilityGlowGate />
+              <Link
+                className="relative z-10 flex h-full flex-col p-6 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-kmt-gold"
+                href={localizedPublicHref(item.href, locale)}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <span aria-hidden="true" className="text-3xl font-semibold tabular-nums tracking-widest text-[var(--kmt-public-gold)]/50 transition-colors duration-kmt-fast group-hover:text-[var(--kmt-public-gold)] motion-reduce:transition-none">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <MaterialSymbol className={cn("text-2xl", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name={item.icon} />
+                </div>
+                <h3 className="mt-5 text-xl font-semibold text-[var(--kmt-public-text)] transition-transform duration-kmt-fast ease-kmt-out group-hover:translate-x-1 motion-reduce:transform-none rtl:group-hover:-translate-x-1">{item.title}</h3>
+                <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{item.summary}</p>
                 {item.chips?.length ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-4 flex flex-wrap gap-2">
                     {item.chips.slice(0, 5).map((chip) => (
                       <span key={chip} className={cn("rounded-full border px-3 py-1 text-xs font-semibold", publicGoldChip)}>
                         {chip}
@@ -360,19 +409,13 @@ export function CapabilityRows({ items, locale = "en" }: { items: ReadonlyArray<
                     ))}
                   </div>
                 ) : null}
-              </div>
-              <div className="flex items-center justify-between gap-3 lg:w-44 lg:flex-col lg:items-end lg:justify-center lg:gap-2 lg:text-end">
-                {item.meta ? (
-                  <span className={cn("text-xs", publicMutedText)}>
-                    <bdi>{item.meta}</bdi>
-                  </span>
-                ) : null}
-                <span className={cn("inline-flex items-center gap-1 text-sm font-semibold", publicGoldText)}>
+                <span className={cn("mt-auto inline-flex items-center gap-1.5 pt-5 text-sm font-semibold", publicGoldText)}>
+                  {content.shared.viewDetails}
                   <MaterialSymbol className={cn("text-xl", publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />
                 </span>
-              </div>
-            </Link>
-          </Reveal>
+              </Link>
+            </div>
+          </BlurFade>
         </li>
       ))}
     </ol>
@@ -390,37 +433,25 @@ export type MatterRowItem = {
 };
 
 /**
- * Representative matters as editorial columns: numeral-led, top-ruled, no
- * boxes. Desktop shows all three; mobile swipes (progressive disclosure).
+ * Representative matters as an Aceternity Hover Effect grid: all three
+ * matters stay discoverable at once (no carousel). Hovering one matter moves
+ * a restrained deep-black/gold background behind it. Numerals 01/02/03 stay
+ * visible, each card keeps its region/year framing and its anonymization
+ * footnote. No scale jump, tilt, or dramatic glow. Fully readable on touch
+ * (no hover dependency).
  */
 export function MatterRows({ matters, locale = "en" }: { matters: ReadonlyArray<MatterRowItem>; locale?: PublicLocale }) {
   return (
-    <div className="grid auto-cols-[85%] grid-flow-col snap-x snap-mandatory gap-5 overflow-x-auto pb-2 scrollbar-hide sm:auto-cols-[60%] md:auto-cols-auto md:grid-flow-row md:grid-cols-3 md:gap-8 md:overflow-visible md:pb-0">
-      {matters.map((matter, index) => (
-        <Reveal key={matter.title} className="h-full snap-start" delay={index * 80} variant="fade">
-          <Link
-            className="group flex h-full flex-col border-t-2 border-[var(--kmt-public-gold)]/40 pt-5 transition-colors duration-kmt-fast ease-kmt-out hover:border-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kmt-gold motion-reduce:transition-none"
-            href={localizedPublicHref(matter.href, locale)}
-          >
-            <div className="flex items-baseline justify-between gap-3">
-              <span aria-hidden="true" className="text-3xl font-semibold tabular-nums text-[var(--kmt-public-gold)]/50 transition-colors group-hover:text-[var(--kmt-public-gold)]">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <p className={cn("text-xs font-semibold", publicGoldText)}>{matter.label}</p>
-            </div>
-            <h3 className="mt-3 text-xl font-semibold leading-8 text-[var(--kmt-public-text)]">{matter.title}</h3>
-            <p className={cn("mt-1 text-xs", publicMutedText)}>
-              {matter.region} · {matter.year}
-            </p>
-            <p className={cn("mt-4 text-sm leading-7", publicMutedText)}>{matter.summary}</p>
-            <p className={cn("mt-4 border-t border-[var(--kmt-public-line)] pt-3 text-xs leading-6", publicMutedText)}>{matter.privacyNote}</p>
-            <span className={cn("mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold", publicGoldText)}>
-              <MaterialSymbol className={cn("text-xl", publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />
-            </span>
-          </Link>
-        </Reveal>
-      ))}
-    </div>
+    <HoverEffect
+      className="gap-4 py-0 md:gap-5"
+      items={matters.map((matter, index) => ({
+        title: matter.title,
+        description: `${matter.label} · ${matter.region} · ${matter.year} — ${matter.summary}`,
+        link: localizedPublicHref(matter.href, locale),
+        numeral: String(index + 1).padStart(2, "0"),
+        footnote: matter.privacyNote
+      }))}
+    />
   );
 }
 
@@ -428,13 +459,17 @@ export function MatterRows({ matters, locale = "en" }: { matters: ReadonlyArray<
 export function IndustryLedger({ industries }: { industries: ReadonlyArray<{ title: string; summary: string }> }) {
   return (
     <ul className="grid gap-x-10 md:grid-cols-2">
-      {industries.map((industry) => (
-        <li key={industry.title} className="flex gap-4 border-t border-[var(--kmt-public-line)] py-5">
-          <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 bg-[var(--kmt-public-gold)]" />
-          <div className="min-w-0">
-            <h3 className="text-lg font-semibold text-[var(--kmt-public-text)]">{industry.title}</h3>
-            <p className={cn("mt-2 text-sm leading-7", publicMutedText)}>{industry.summary}</p>
-          </div>
+      {industries.map((industry, index) => (
+        <li key={industry.title} className="group border-t border-[var(--kmt-public-line)] py-5">
+          <BlurFade className="kmt-blur-fade" delay={index * 0.06} direction="up">
+            <div className="flex gap-4">
+              <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 bg-[var(--kmt-public-gold)] transition-transform duration-kmt-fast ease-kmt-out group-hover:scale-150 motion-reduce:transform-none" />
+              <div className="min-w-0">
+                <h3 className="text-lg font-semibold text-[var(--kmt-public-text)] transition-colors duration-kmt-fast ease-kmt-out group-hover:text-[var(--kmt-public-gold)] motion-reduce:transition-none">{industry.title}</h3>
+                <p className={cn("mt-2 text-sm leading-7", publicMutedText)}>{industry.summary}</p>
+              </div>
+            </div>
+          </BlurFade>
         </li>
       ))}
     </ul>
@@ -454,7 +489,7 @@ export function InsightsLedger({ items, locale = "en" }: { items: ReadonlyArray<
   if (!lead) return null;
   return (
     <div>
-      <Reveal variant="blur">
+      <BlurFade className="kmt-blur-fade" direction="up">
         <Link className="group block max-w-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-kmt-gold" href={localizedPublicHref(lead.href, locale)}>
           <p className={cn("text-sm font-semibold", publicGoldText)}>{lead.kicker}</p>
           <h3 className="mt-3 text-2xl font-semibold leading-snug text-[var(--kmt-public-text)] transition-colors group-hover:text-[var(--kmt-public-gold)] md:text-3xl">
@@ -465,7 +500,7 @@ export function InsightsLedger({ items, locale = "en" }: { items: ReadonlyArray<
             <MaterialSymbol className={cn("text-xl", publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />
           </span>
         </Link>
-      </Reveal>
+      </BlurFade>
       {rest.length > 0 ? (
         <ul className="mt-8">
           {rest.map((item) => (
@@ -487,13 +522,31 @@ export function InsightsLedger({ items, locale = "en" }: { items: ReadonlyArray<
   );
 }
 
-/** Intentional negative space: a rule, one reused trust sentence, nothing else. */
-export function StatementBreak({ text }: { text: string }) {
+/**
+ * Intentional negative space: a rule, one quiet awareness sentence, nothing
+ * else. The divider stays the shared KMT section-rule primitive; the single
+ * emphasized phrase uses the REAL Magic UI Highlighter (`KmtTextUnderline`,
+ * `action="underline"` in logo gold) — the reference implementation for the
+ * phrase-underline family. No card.
+ */
+export function StatementBreak({ text, highlight }: { text: string; highlight?: string }) {
+  const marker = highlight && text.includes(highlight) ? highlight : null;
+  const [before, after] = marker ? text.split(marker) : [text, ""];
   return (
     <div className="mx-auto max-w-[1200px] px-4 py-16 sm:px-6 lg:px-10 lg:py-24">
       <div className="mx-auto max-w-3xl text-center">
-        <span aria-hidden="true" className="mx-auto block h-px w-24 bg-gradient-to-r from-transparent via-[var(--kmt-public-gold)] to-transparent" />
-        <p className="mt-6 text-xl font-medium leading-9 text-[var(--kmt-public-text)] md:text-2xl md:leading-10">{text}</p>
+        <KmtGoldUnderline variant="short" align="center" />
+        <p className="mt-6 text-xl font-medium leading-9 text-[var(--kmt-public-text)] md:text-2xl md:leading-10">
+          {marker ? (
+            <>
+              {before}
+              <KmtTextUnderline emphasis="strong">{marker}</KmtTextUnderline>
+              {after}
+            </>
+          ) : (
+            text
+          )}
+        </p>
       </div>
     </div>
   );
@@ -552,7 +605,7 @@ export function BookingFlowHeader({
 /** What-happens-after strip: plain numbered steps, existing copy only. */
 export function AfterSubmitStrip({ title, steps }: { title: string; steps: ReadonlyArray<string> }) {
   return (
-    <section className={cn(publicPanel, "mt-6 p-6")}>
+    <section className={cn(publicPanel, "p-6")}>
       <h2 className="text-xl font-semibold text-[var(--kmt-public-text)]">{title}</h2>
       <ol className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {steps.map((step, index) => (
