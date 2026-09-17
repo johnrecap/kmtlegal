@@ -1,95 +1,118 @@
-# خطة تحديث صفحة الـ Home بمكونات animate-ui
+# خطة الاستبدال الشامل لصفحة الـ Home بمكونات animate-ui (نسخة 2)
 
-> الحالة: المرحلة 0 + 1 منفذة محليًا (بدون push) — باقي المراحل لم تبدأ.
+> الحالة: المرحلة 0 + 1 (نسخة خفيفة) منفذة محليًا (بدون push) — هذه النسخة تعيد التوجيه إلى **استبدال شامل وواضح** لكل مكونات الـ home.
 > النطاق: صفحة الـ home فقط (`HomePageView` في `src/features/public-site/public-pages.tsx` — عربي `/ar` وإنجليزي `/`).
-> خارج النطاق: النصوص، منطق الحجز، الـ SEO/metadata، الهيدر/الفوتر، نظام ألوان KMT.
+> المحفوظ دائمًا: النصوص (AR/EN)، الروابط ومنطق الحجز، الـ SEO/metadata، دعم RTL، احترام `prefers-reduced-motion`.
+> خارج النطاق: الهيدر/الفوتر (مشتركان مع كل الصفحات — أي تغيير فيهما يؤثر على الموقع كله ويحتاج قرارًا منفصلًا).
 
-## القواعد الذهبية (تسري على كل المراحل)
+## مبدأ الاستبدال الشامل
 
-1. **معاينة أولًا**: كل تثبيت يبدأ بـ `shadcn view` ثم `--dry-run` قبل الكتابة على القرص.
-2. **ممنوع `--overwrite`** على أي ملف قائم في `src/components/ui/*` أو ملفات الثيم — ملفات KMT لها الأولوية دائمًا.
-3. **الأسماء الدقيقة للمكونات** تُعتمد لحظة التنفيذ عبر `npx shadcn@latest search @animate-ui` (لا تخمين).
-4. **الثيم**: كل مكون جديد يُربط بتوكن KMT (ذهبي/كحلي) لا ألوان shadcn الافتراضية.
-5. **الفحص الإلزامي لكل مرحلة**: عربي (RTL) + إنجليزي + دارك + موبايل + `prefers-reduced-motion`.
-6. **المعاينة قبل التركيب**: كل مكون يُعرض أولًا في `/preview/components` ثم يُركّب في الـ home.
-7. **commit مستقل لكل مرحلة** لتسهيل التراجع (`git revert`).
+- كل قسم في الـ home يُعاد بناؤه بمكوّن animate-ui **يغيّر الشكل والتفاعل جذريًا**، لا تحسينات خفيفة.
+- البيانات (نفس الحقول الحالية) والروابط تبقى كما هي — التغيير بصري وتفاعلي فقط.
+- المكوّنات KMT القديمة التي تُستبدل (`PracticeAreaCard`، `RepresentativeMatterCard`، `IndustryGrid`، `TrustStrip`، `ProcessSteps`، `LuxuryFeaturePanel`) تُحذف صادراتها في مرحلة التنظيف **بعد** التأكد أنها غير مستخدمة في صفحات أخرى.
 
-## الخلفية: الموجود حاليًا في الـ home
+## القائمة النهائية: المكونات التي ستُحط بالكامل
 
-| القسم | المكوّن الحالي | مستخدم من animate-ui بالفعل؟ |
-|---|---|---|
-| Hero (عنوان/إحصائيات/أزرار) | `HeroParallaxLayers` | نعم: SplittingText + CountingNumber + RippleLink |
-| شريط الثقة | `TrustStrip` | لا |
-| مجالات الممارسة | `PracticeAreaCard` + Tilt + Reveal | نعم: Tilt |
-| الخدمة المميزة | `LuxuryFeaturePanel` | لا |
-| خطوات العمل | `ProcessSteps` | لا |
-| القضايا النموذجية | `RepresentativeMatterCard` (شبكة ×3) | لا |
-| الصناعات | `IndustryGrid` | لا |
-| الفريق | كروت المحامين + Tilt + Reveal | نعم: Tilt |
-| المقالات/دراسات الحالة | كروت روابط ثابتة | لا |
-| FAQ | غير موجود (قسم جديد) | — |
+### خلفيات (Backgrounds)
+1. [Gradient Background](https://animate-ui.com/docs/components/backgrounds/gradient) — خلفية الـ hero بقوة واضحة (تدرج KMT ذهبي/كحلي، سرعة أعلى من النسخة الخفيفة).
+2. [Stars Background](https://animate-ui.com/docs/components/backgrounds/stars) — بديل معتمد للـ hero يُحسم لحظة التنفيذ.
 
-## المرحلة 0 — التأسيس (مرة واحدة) — ✅ تمت
+### نصوص (Texts)
+3. [Gradient Text](https://animate-ui.com/docs/primitives/texts/gradient) — عنوان الـ hero (مُركّب — يُقوّى: لمعان أسرع وأوسع).
+4. [Sliding Number](https://animate-ui.com/docs/primitives/texts/sliding-number) — **يستبدل** `CountingNumber` في إحصائيات الـ hero (أرقام تنزلق خانةً بخانة).
+5. [Highlight Text](https://animate-ui.com/docs/primitives/texts/highlight) — تمييز العبارات المفتاحية في لوحة الخدمة المميزة.
 
-- [x] `npx shadcn@latest search @animate-ui` لاعتماد أسماء العناصر الدقيقة.
-- [x] تجربة `--dry-run` على أول مكون للتأكد أن الملفات تنزل في `src/components/animate-ui/*` ولا تلمس `ui/*` أو `globals.css`.
-- [x] تثبيت الاعتماديات الناقصة مع أول مكون يحتاجها (مثال: `embla-carousel-react` للكاروسيل).
-- [x] التحقق من عمل MCP (`opencode mcp list` → `✓ shadcn connected`).
-- [x] سُجل `@animate-ui` تلقائيًا في `components.json` عند أول `add`.
+### أزرار (Buttons)
+6. [Liquid Button](https://animate-ui.com/docs/components/buttons/liquid) — كل أزرار الحجز الرئيسية (مُركّب في الـ hero — يُعمم على CTA قسم Insights الفارغ ولوحة الخدمة).
+7. [Flip Button](https://animate-ui.com/docs/components/buttons/flip) — **يستبدل** روابط "تصفح الخدمات/المجالات" النصية.
 
-## المرحلة 1 — الـ Hero (أعلى تأثير، يُنفذ أولًا) — ✅ تمت محليًا
+### مجتمع (Community)
+8. [Flip Card](https://animate-ui.com/docs/components/community/flip-card) — **يستبدل** `PracticeAreaCard` (الوجه: الأيقونة والعنوان — الظهر: الملخص ورابط التفاصيل) **ويستبدل** كروت المحامين (الوجه: الصورة والاسم — الظهر: التخصصات وزر الملف).
+9. [Motion Carousel](https://animate-ui.com/docs/components/community/motion-carousel) — **يستبدل** شبكة `RepresentativeMatterCard` (+ اعتماد Embla، مع دعم RTL).
+10. [Share Button](https://animate-ui.com/docs/components/community/share-button) — يُضاف لكروت المقالات/دراسات الحالة.
+11. [User Presence Avatar](https://animate-ui.com/docs/components/community/user-presence-avatar) — مؤشر حالة الحجز على صور المحامين (مربوط بحقل `bookingEnabled`).
 
-- [x] تثبيت [Gradient Background](https://animate-ui.com/docs/components/backgrounds/gradient) (بديل: [Stars](https://animate-ui.com/docs/components/backgrounds/stars)) خلف `HeroParallaxLayers` — الصورة والنصوص كما هي.
-- [x] تثبيت [Gradient Text](https://animate-ui.com/docs/primitives/texts/gradient) للعنوان بألوان KMT الذهبية.
-- [x] تثبيت [Liquid Button](https://animate-ui.com/docs/components/buttons/liquid) (بديل: [Flip](https://animate-ui.com/docs/components/buttons/flip)) لزرار "احجز استشارة" مع بقاء نفس الـ href.
-- [x] تحقق: typecheck + eslint + e2e بصرية (EN/AR × فاتح/دارك) + CTA رابط حقيقي + commit محلي (بدون push).
+### متحركة جاهزة (Animate)
+12. [Avatar Group](https://animate-ui.com/docs/components/animate/avatar-group) — شريط "قابل الفريق" + تجديد `TrustStrip` (وجوه/أحرف أولى + عناصر الثقة).
 
-ملاحظات التنفيذ (المرحلة 1):
-- أُصلح ملفا الريجستري لتوافق React 18: `slot.tsx` (MutableRefObject cast) و`liquid.tsx` (إسقاط `ref` من النوع) + إزالة `eslint-disable` لقاعدة غير مثبتة.
-- احترام `prefers-reduced-motion`: طبقة الخلفية والعنوان يتحولان لنسخة ثابتة، ومقياس hover/tap = ‏1 عند تقليل الحركة (انتقالات CSS مغطاة أصلًا في `globals.css`).
+### بريميتفز متحركة (Radix)
+13. [Tabs](https://animate-ui.com/docs/components/radix/tabs) — **تستبدل** `ProcessSteps` (كل خطوة تبويب بمحتواها: الرقم + الأيقونة + العنوان + الملخص).
+14. [Accordion](https://animate-ui.com/docs/components/radix/accordion) — قسم FAQ **جديد** (يتطلب محتوى عربي + إنجليزي في ملفات المحتوى).
+15. [Preview Link Card](https://animate-ui.com/docs/components/radix/preview-link-card) — **يستبدل** كروت المقالات/دراسات الحالة (معاينة منبثقة عند hover).
+16. [Tooltip](https://animate-ui.com/docs/components/radix/tooltip) — تلميحات أيقونات الـ docket وشارات الحالة.
 
-## المرحلة 2 — مجالات الممارسة
+### تأثيرات (Effects)
+17. [Image Zoom](https://animate-ui.com/docs/primitives/effects/image-zoom) — صورة لوحة الخدمة + صور المحامين.
+18. [Magnetic](https://animate-ui.com/docs/primitives/effects/magnetic) — أزرار CTA وكروت الصناعات (بدل Tilt الحالي حيث يُستبدل).
+19. [Shine](https://animate-ui.com/docs/primitives/effects/shine) — لمعة تمر على بطاقة الـ docket وشريط الثقة.
 
-- [ ] تثبيت [Flip Card](https://animate-ui.com/docs/components/community/flip-card): الواجهة الأمامية = الكارت الحالي، الخلفية = الملخص + رابط التفاصيل.
-- [ ] (اختياري) [Tabs](https://animate-ui.com/docs/components/radix/tabs) لفلترة المجالات، أو [Magnetic](https://animate-ui.com/docs/primitives/effects/magnetic) بدل Tilt.
-- [ ] تحقق + commit.
+### مستبعد عمدًا
+- [Cursor](https://animate-ui.com/docs/components/animate/cursor) — مرح ولايناسب مكتب محاماة.
+- Scroll Progress — موجود مخصص (`ReadingProgress`).
 
-## المرحلة 3 — الخدمة المميزة
+## المراحل المحدثة
 
-- [ ] [Image Zoom](https://animate-ui.com/docs/primitives/effects/image-zoom) على صورة `LuxuryFeaturePanel`.
-- [ ] [Highlight Text](https://animate-ui.com/docs/primitives/texts/highlight) للعبارات المفتاحية.
-- [ ] تحقق + commit.
+### المرحلة 0 — التأسيس — ✅ تمت
+- [x] اعتماد الأسماء عبر `search` + معاينة `view` + تثبيت بـ `--dry-run` أولًا.
+- [x] `@animate-ui` مسجل في `components.json`. الـ MCP متصل.
 
-## المرحلة 4 — القضايا النموذجية
+### المرحلة 1 — تقوية الـ Hero (على ما تم) — ⏳ التالية
+- [ ] رفع وضوح `GradientBackground` (شفافية أعلى وسرعة أسرع) أو التبديل لـ `Stars`.
+- [ ] تسريع لمعان `GradientText` وتوسيع مداه.
+- [ ] `CountingNumber` ← `SlidingNumber` في الإحصائيات الثلاث.
+- [ ] روابط "تصفح المجالات" ← `FlipButton`.
+- [ ] `Magnetic` على زرار الحجز + `Shine` على بطاقة الـ docket + `Tooltip` على أيقونة الحالة.
+- [ ] تحقق: typecheck + eslint + e2e بصرية (EN/AR × فاتح/دارك) + commit محلي.
 
-- [ ] تثبيت [Motion Carousel](https://animate-ui.com/docs/components/community/motion-carousel) (+ Embla) وتحويل الشبكة لسلايدر مع دعم RTL.
-- [ ] تحقق + commit.
+### المرحلة 2 — مجالات الممارسة (استبدال كامل)
+- [ ] تثبيت `FlipCard` وبناء وجه/ظهر `PracticeAreaCard` بنفس الحقول (`icon/title/summary/href`) مع إبقاء تمييز البطاقة الأولى الممتدة.
+- [ ] حذف استخدام `Tilt` هنا (يبقى متاحًا لأقسام أخرى إن لزم).
+- [ ] تحقق + commit محلي.
 
-## المرحلة 5 — الفريق
+### المرحلة 3 — الخدمة المميزة (استبدال كامل)
+- [ ] صورة اللوحة ← `Image Zoom`، الوصف ← `Highlight Text`، زر التفاصيل ← `LiquidButton` asChild لنفس رابط الخدمة.
+- [ ] تحقق + commit محلي.
 
-- [ ] [Avatar Group](https://animate-ui.com/docs/components/animate/avatar-group) كشريط "قابل الفريق".
-- [ ] [User Presence Avatar](https://animate-ui.com/docs/components/community/user-presence-avatar) مربوط بحقل `bookingEnabled` (متاح للحجز / قيد المراجعة).
-- [ ] [Image Zoom](https://animate-ui.com/docs/primitives/effects/image-zoom) على صور المحامين.
-- [ ] تحقق + commit.
+### المرحلة 4 — خطوات العمل (استبدال كامل)
+- [ ] `ProcessSteps` (شبكة + GSAP) ← `Tabs` متحركة (4 تبويبات بنفس الحقول `number/icon/title/summary`)، أول تبويب مفتوح افتراضيًا.
+- [ ] تحقق + commit محلي.
 
-## المرحلة 6 — المقالات والثقة
+### المرحلة 5 — القضايا النموذجية (استبدال كامل)
+- [ ] شبكة `RepresentativeMatterCard` ← `MotionCarousel` (+ Embla) يعرض نفس البطاقات، مع دعم RTL.
+- [ ] تحقق + commit محلي.
 
-- [ ] [Preview Link Card](https://animate-ui.com/docs/components/radix/preview-link-card) لمعاينة المقالات + [Share Button](https://animate-ui.com/docs/components/community/share-button).
-- [ ] [Avatar Group](https://animate-ui.com/docs/components/animate/avatar-group) في `TrustStrip`.
-- [ ] تحقق + commit.
+### المرحلة 6 — الصناعات (استبدال كامل)
+- [ ] `IndustryGrid` ← كروت تفاعلية جديدة (`Magnetic` + توهج hover + ترقيم كبير) بنفس الحقول (`title/summary` — لا روابط في البيانات).
+- [ ] تحقق + commit محلي.
 
-## المرحلة 7 — قسم FAQ جديد
+### المرحلة 7 — الفريق (استبدال كامل)
+- [ ] شريط `Avatar Group` فوق الكروت + كروت المحامين ← `FlipCard` (وجه: صورة `Image Zoom` + اسم — ظهر: تخصصات + زر الملف) + `User Presence Avatar` لحالة الحجز.
+- [ ] تحقق + commit محلي.
 
-- [ ] إضافة محتوى أسئلة شائعة (عربي + إنجليزي) في ملفات المحتوى.
-- [ ] تثبيت [Accordion](https://animate-ui.com/docs/components/radix/accordion) وتركيب القسم بعد Insights.
-- [ ] تحقق + commit.
+### المرحلة 8 — المقالات والثقة (استبدال كامل)
+- [ ] كروت Insights ← `Preview Link Card` + `Share Button`.
+- [ ] `TrustStrip` ← شريط متحرك (`Avatar Group` + `Shine` + نفس عناصر `icon/label`).
+- [ ] CTA الفارغ ← `LiquidButton`.
+- [ ] تحقق + commit محلي.
 
-## المرحلة 8 — الاعتماد النهائي
+### المرحلة 9 — FAQ جديد + التنظيف
+- [ ] محتوى FAQ (AR + EN) + قسم `Accordion` بعد Insights.
+- [ ] حذف صادرات KMT المستبدلة غير المستخدمة في أي صفحة أخرى + فحص `grep` شامل.
+- [ ] تحقق + commit محلي.
 
-- [ ] `npm run typecheck` + `npm run lint` + `npm run build`.
-- [ ] مراجعة بصرية `/` و`/ar` (فاتح/دارك/موبايل/تقليل الحركة).
-- [ ] push على `origin/main` ثم:
+### المرحلة 10 — الاعتماد النهائي
+- [ ] `npm run typecheck` + `npm run lint` + `npm run build` + مراجعة بصرية `/` و`/ar` (فاتح/دارك/موبايل/تقليل الحركة).
+- [ ] push على `origin/main` **فقط بعد إذن صريح** (التعليق الحالي: بدون رفع) ثم:
   ```bash
   cd /www/wwwroot/kmtlegal
   bash deploy/install/aapanel-pm2-update.sh
   ```
+
+## القواعد الذهبية (تسري على كل المراحل)
+
+1. **معاينة أولًا**: `shadcn view` ثم `--dry-run` قبل أي كتابة.
+2. **ممنوع `--overwrite`** على ملفات KMT القائمة.
+3. **الثيم**: توكن KMT فقط، لا ألوان shadcn الافتراضية.
+4. **الفحص الإلزامي**: AR(RTL) + EN + دارك + موبايل + `prefers-reduced-motion` (نسخة ثابتة عند تقليل الحركة).
+5. **المعاينة قبل التركيب** في `/preview/components`.
+6. **commit محلي مستقل لكل مرحلة** — ولا push إلا بإذن صريح.
