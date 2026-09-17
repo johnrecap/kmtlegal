@@ -8,8 +8,11 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useReducedMotion } from "motion/react";
-import { CountingNumber, RippleLink, SplittingText } from "@/components/animate-ui";
-import { MaterialSymbol, buttonClasses } from "@/components/ui";
+import { CountingNumber } from "@/components/animate-ui";
+import { GradientBackground } from "@/components/animate-ui/components/backgrounds/gradient";
+import { LiquidButton } from "@/components/animate-ui/components/buttons/liquid";
+import { GradientText } from "@/components/animate-ui/primitives/texts/gradient";
+import { MaterialSymbol } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 
@@ -86,9 +89,6 @@ export function HeroParallaxLayers({
   }, []);
 
   const animateEntrance = mounted && !reducedMotion;
-  const titleSplitProps: { type: "lines"; text: string[] } | { type: "words"; text: string } = locale === "ar"
-    ? { type: "lines", text: [title] }
-    : { type: "words", text: title };
 
   useGSAP(
     () => {
@@ -144,6 +144,15 @@ export function HeroParallaxLayers({
         />
         <div className="absolute inset-0 bg-[rgb(var(--kmt-public-scrim)/0.7)]" aria-hidden="true" />
       </div>
+      {animateEntrance ? (
+        <GradientBackground
+          aria-hidden="true"
+          className="absolute inset-0 from-kmt-gold/20 via-transparent to-kmt-navy/25 opacity-60 rtl:bg-gradient-to-bl"
+          transition={{ duration: 18, ease: "easeInOut", repeat: Infinity }}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-kmt-gold/20 via-transparent to-kmt-navy/25 opacity-60 rtl:bg-gradient-to-bl" aria-hidden="true" />
+      )}
       <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[rgb(var(--kmt-public-scrim)/0.7)] to-transparent" aria-hidden="true" />
       <div className="absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-b from-transparent via-[rgb(var(--kmt-public-scrim)/0.55)] to-[var(--kmt-public-surface)]" aria-hidden="true" />
       <div className="absolute inset-0 text-[var(--kmt-public-gold)] opacity-[0.07] [mask-image:radial-gradient(ellipse_80%_70%_at_70%_20%,black,transparent)]" aria-hidden="true" data-drift="motif">
@@ -175,13 +184,10 @@ export function HeroParallaxLayers({
           </div>
           <h1 data-hero="title" className="mt-6 max-w-xl text-4xl font-semibold leading-tight drop-shadow-[var(--kmt-public-text-shadow)] md:text-5xl" aria-label={title}>
             {animateEntrance ? (
-              <SplittingText
-                animate={{ y: 0, opacity: 1 }}
-                delay={200}
-                initial={{ y: 28, opacity: 0 }}
-                stagger={locale === "ar" ? 0.15 : 0.08}
-                transition={{ duration: 0.7, ease: "easeOut" }}
-                {...titleSplitProps}
+              <GradientText
+                text={title}
+                gradient="linear-gradient(90deg, #755a26 0%, #997b44 20%, #f4cf88 50%, #997b44 80%, #755a26 100%)"
+                transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
               />
             ) : (
               <span>{title}</span>
@@ -280,15 +286,20 @@ export function HeroParallaxLayers({
               <p className="mt-2 text-sm leading-7 text-[var(--kmt-public-muted)]">{nextStep}</p>
             </div>
 
-            <RippleLink
-              className={buttonClasses({ size: "lg", className: "mt-6 w-full" })}
-              href={bookingHref}
+            <LiquidButton
+              asChild
+              size="lg"
+              hoverScale={animateEntrance ? 1.05 : 1}
+              tapScale={animateEntrance ? 0.95 : 1}
+              className="mt-6 w-full min-h-12 rounded text-base [--liquid-button-background-color:var(--primary)] [--liquid-button-color:var(--primary-foreground)] text-primary-foreground hover:text-primary"
             >
-              <span className="inline-flex items-center justify-center gap-2">
-                {bookLabel}
-                <MaterialSymbol className="text-base rtl:rotate-180" name="arrow_forward" />
-              </span>
-            </RippleLink>
+              <Link href={bookingHref}>
+                <span className="inline-flex items-center justify-center gap-2">
+                  {bookLabel}
+                  <MaterialSymbol className="text-base rtl:rotate-180" name="arrow_forward" />
+                </span>
+              </Link>
+            </LiquidButton>
           </div>
         </div>
       </div>

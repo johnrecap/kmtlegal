@@ -1,6 +1,6 @@
 # خطة تحديث صفحة الـ Home بمكونات animate-ui
 
-> الحالة: خطة معتمدة — لم يبدأ التنفيذ.
+> الحالة: المرحلة 0 + 1 منفذة محليًا (بدون push) — باقي المراحل لم تبدأ.
 > النطاق: صفحة الـ home فقط (`HomePageView` في `src/features/public-site/public-pages.tsx` — عربي `/ar` وإنجليزي `/`).
 > خارج النطاق: النصوص، منطق الحجز، الـ SEO/metadata، الهيدر/الفوتر، نظام ألوان KMT.
 
@@ -29,19 +29,24 @@
 | المقالات/دراسات الحالة | كروت روابط ثابتة | لا |
 | FAQ | غير موجود (قسم جديد) | — |
 
-## المرحلة 0 — التأسيس (مرة واحدة)
+## المرحلة 0 — التأسيس (مرة واحدة) — ✅ تمت
 
-- [ ] `npx shadcn@latest search @animate-ui` لاعتماد أسماء العناصر الدقيقة.
-- [ ] تجربة `--dry-run` على أول مكون للتأكد أن الملفات تنزل في `src/components/animate-ui/*` ولا تلمس `ui/*` أو `globals.css`.
-- [ ] تثبيت الاعتماديات الناقصة مع أول مكون يحتاجها (مثال: `embla-carousel-react` للكاروسيل).
-- [ ] التحقق من عمل MCP (`opencode mcp list` → `✓ shadcn connected`).
+- [x] `npx shadcn@latest search @animate-ui` لاعتماد أسماء العناصر الدقيقة.
+- [x] تجربة `--dry-run` على أول مكون للتأكد أن الملفات تنزل في `src/components/animate-ui/*` ولا تلمس `ui/*` أو `globals.css`.
+- [x] تثبيت الاعتماديات الناقصة مع أول مكون يحتاجها (مثال: `embla-carousel-react` للكاروسيل).
+- [x] التحقق من عمل MCP (`opencode mcp list` → `✓ shadcn connected`).
+- [x] سُجل `@animate-ui` تلقائيًا في `components.json` عند أول `add`.
 
-## المرحلة 1 — الـ Hero (أعلى تأثير، يُنفذ أولًا)
+## المرحلة 1 — الـ Hero (أعلى تأثير، يُنفذ أولًا) — ✅ تمت محليًا
 
-- [ ] تثبيت [Gradient Background](https://animate-ui.com/docs/components/backgrounds/gradient) (بديل: [Stars](https://animate-ui.com/docs/components/backgrounds/stars)) خلف `HeroParallaxLayers` — الصورة والنصوص كما هي.
-- [ ] تثبيت [Gradient Text](https://animate-ui.com/docs/primitives/texts/gradient) للعنوان بألوان KMT الذهبية.
-- [ ] تثبيت [Liquid Button](https://animate-ui.com/docs/components/buttons/liquid) (بديل: [Flip](https://animate-ui.com/docs/components/buttons/flip)) لزرار "احجز استشارة" مع بقاء نفس الـ href.
-- [ ] تحقق: typecheck + معاينة AR/EN + commit.
+- [x] تثبيت [Gradient Background](https://animate-ui.com/docs/components/backgrounds/gradient) (بديل: [Stars](https://animate-ui.com/docs/components/backgrounds/stars)) خلف `HeroParallaxLayers` — الصورة والنصوص كما هي.
+- [x] تثبيت [Gradient Text](https://animate-ui.com/docs/primitives/texts/gradient) للعنوان بألوان KMT الذهبية.
+- [x] تثبيت [Liquid Button](https://animate-ui.com/docs/components/buttons/liquid) (بديل: [Flip](https://animate-ui.com/docs/components/buttons/flip)) لزرار "احجز استشارة" مع بقاء نفس الـ href.
+- [x] تحقق: typecheck + eslint + e2e بصرية (EN/AR × فاتح/دارك) + CTA رابط حقيقي + commit محلي (بدون push).
+
+ملاحظات التنفيذ (المرحلة 1):
+- أُصلح ملفا الريجستري لتوافق React 18: `slot.tsx` (MutableRefObject cast) و`liquid.tsx` (إسقاط `ref` من النوع) + إزالة `eslint-disable` لقاعدة غير مثبتة.
+- احترام `prefers-reduced-motion`: طبقة الخلفية والعنوان يتحولان لنسخة ثابتة، ومقياس hover/tap = ‏1 عند تقليل الحركة (انتقالات CSS مغطاة أصلًا في `globals.css`).
 
 ## المرحلة 2 — مجالات الممارسة
 
