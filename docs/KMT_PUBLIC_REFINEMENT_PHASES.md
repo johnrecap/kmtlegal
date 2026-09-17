@@ -1188,6 +1188,30 @@ Status: COMPLETE
 PASS. The imitation is gone from public paths; every phrase underline is the
 real Magic UI Highlighter in KMT gold.
 
+### Post-push runtime incident (dev-server infra, NOT a code defect)
+
+- Symptom seen after the push: `Cannot read properties of undefined (reading
+  'call')` at the `KmtUnderlinedText` JSX in `PublicSection` (EN), then
+  `Cannot find module './vendor-chunks/motion-dom.js'` 500s on `/ar` after a
+  `.next` wipe + reboot.
+- Root cause (traced, both symptoms one chain): the correction session ran
+  `npm run build` while the pre-existing dev server was still running
+  (poisoned `.next` → the `reading 'call'` error on the new client-component
+  node), then recovery accidentally ran TWO dev servers at once (Next
+  auto-moved the second to :3001) sharing one `.next` → trampled vendor
+  chunks (the `motion-dom.js` 500 via the background static-paths worker).
+  Same incident class as Phase 3/4: never build under a running dev server,
+  never run two dev servers on one tree.
+- Proof it is not code: production `next build` green with these exact
+  files; 594 unit tests pass incl. SSR render of `HomePageView` (AR) through
+  line 101; cold single-server verification: `/` + `/ar` 200, 7/7
+  `data-kmt-text-underline` marks each, statement SVG in `#a87830`, zero
+  console/page errors EN+AR.
+- Recovery applied: killed ALL node servers, verified zero remained, deleted
+  `.next`, booted EXACTLY ONE dev server (genealogy-checked single
+  npm→next→start-server chain; it serves on :3001), re-verified both
+  locales. No source change was required.
+
 ---
 
 ## Trust Strip Component Correction
