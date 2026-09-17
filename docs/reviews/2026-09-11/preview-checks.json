@@ -1,0 +1,59 @@
+{
+  "checks": [
+    {
+      "view": "home",
+      "theme": "dark",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "view": "booking",
+      "theme": "dark",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "view": "office",
+      "theme": "light",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "view": "office",
+      "theme": "dark",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "view": "home",
+      "theme": "dark",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "view": "booking",
+      "theme": "dark",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "view": "office",
+      "theme": "light",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "view": "office",
+      "theme": "dark",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "themePersists": true
+    },
+    {
+      "confirmFeedback": "تمت مراجعة اختيارات المعاينة. لم يُنشأ حجز حقيقي."
+    }
+  ],
+  "errors": []
+}

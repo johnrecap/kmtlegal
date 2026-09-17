@@ -1,0 +1,4673 @@
+{
+  "date": "2026-09-11",
+  "note": "Source inventory only. Access markers are discovery hints, not proof of authorization or manual review. Arabic catch-all routes require expansion from public-pages.tsx.",
+  "pageFiles": 58,
+  "apiRouteFiles": 100,
+  "sourceFiles": 364,
+  "files": [
+    {
+      "path": "src/app/(app-ar)/admin/admin-navigation.ts",
+      "lines": 58,
+      "imports": [
+        "@/components/layout",
+        "@/lib/admin-route-policy",
+        "@/lib/ui-copy",
+        "@/server/auth/policy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/audit-log/page.tsx",
+      "lines": 288,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/governance-service",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/calendar/page.tsx",
+      "lines": 267,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/features/admin/cases/case-action-forms",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/case-operations-service",
+        "@/server/auth/page-guards",
+        "@/server/http/errors",
+        "@/server/admin/calendar-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/cases/new/page.tsx",
+      "lines": 63,
+      "imports": [
+        "@/components/layout",
+        "@/components/ui",
+        "@/features/admin/cases/manual-case-form",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/lib/ui-copy",
+        "@/server/admin/manual-case-service",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/cases/page.tsx",
+      "lines": 306,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/case-operations-service",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/cases/[caseId]/page.tsx",
+      "lines": 595,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/lib/cn",
+        "@/lib/ui-copy",
+        "@/lib/legal-format",
+        "@/features/admin/cases/case-action-forms",
+        "@/features/admin/cases/manual-case-form",
+        "@/features/admin/task-documents/task-document-forms",
+        "@/server/admin/case-operations-service",
+        "@/server/admin/task-document-service",
+        "@/server/auth/page-guards",
+        "@/server/auth/policy",
+        "@/server/http/errors"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/clients/page.tsx",
+      "lines": 279,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/features/admin/clients/client-crm-forms",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/client-crm-service",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/clients/[clientId]/page.tsx",
+      "lines": 234,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/features/admin/clients/client-crm-forms",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/client-crm-service",
+        "@/server/admin/manual-case-service",
+        "@/server/auth/page-guards",
+        "@/server/http/errors"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/consultation-availability/page.tsx",
+      "lines": 45,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/features/admin/consultations/consultation-availability-form",
+        "@/server/auth/page-guards",
+        "@/server/consultations/consultation-availability-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/consultations/page.tsx",
+      "lines": 384,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/auth/page-guards",
+        "@/server/admin/consultation-review-service",
+        "@/server/admin/consultation-outcome-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/consultations/[consultationId]/page.tsx",
+      "lines": 394,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/features/admin/consultations/consultation-action-panel",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/consultation-review-service",
+        "@/server/auth/page-guards",
+        "@/server/consultations/consultation-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/contact-messages/page.tsx",
+      "lines": 61,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/contact-messages/contact-message-inbox",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/lib/ui-copy",
+        "@/server/admin/contact-message-service",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/content/articles/page.tsx",
+      "lines": 11,
+      "imports": [
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/content/case-studies/page.tsx",
+      "lines": 11,
+      "imports": [
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/content/page.tsx",
+      "lines": 482,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/features/admin/content/content-forms",
+        "@/lib/legal-content",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/content-social-service",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/content/social/page.tsx",
+      "lines": 11,
+      "imports": [
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/documents/page.tsx",
+      "lines": 379,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/features/admin/task-documents/task-document-forms",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/task-document-service",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/error.tsx",
+      "lines": 16,
+      "imports": [
+        "@/components/layout/admin-shell-state",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/finance/page.tsx",
+      "lines": 812,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/features/admin/finance/finance-forms",
+        "@/features/admin/finance/finance-page-helpers",
+        "@/lib/legal-finance",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/finance-report-service",
+        "@/server/auth/page-guards",
+        "@/server/payments/payment-service",
+        "@/server/payments/pricing-service",
+        "@/server/payments/payment-settings-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/layout.tsx",
+      "lines": 19,
+      "imports": [
+        "@/features/admin/shell/admin-access-context",
+        "@/lib/ui-copy",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/loading.tsx",
+      "lines": 13,
+      "imports": [
+        "@/components/layout/admin-shell-state",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/messages/page.tsx",
+      "lines": 208,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/auth/page-guards",
+        "@/server/conversations/conversation-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/messages/[threadId]/page.tsx",
+      "lines": 68,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui/button",
+        "@/features/admin/messages/admin-message-thread-panel",
+        "@/server/auth/page-guards",
+        "@/server/conversations/conversation-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/not-found.tsx",
+      "lines": 14,
+      "imports": [
+        "@/components/layout/admin-shell-state",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/notifications/page.tsx",
+      "lines": 43,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/features/admin/notifications/admin-notification-popover",
+        "@/lib/ui-copy",
+        "@/server/admin/notification-service",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/page.tsx",
+      "lines": 42,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/dashboard/admin-command-center",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/lib/ui-copy",
+        "@/server/admin/dashboard-service",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/reports/page.tsx",
+      "lines": 312,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/lib/legal-finance",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/finance-report-service",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/roles/page.tsx",
+      "lines": 39,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/features/admin/governance/role-permission-form",
+        "@/lib/ui-copy",
+        "@/server/admin/role-permission-service",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/settings/page.tsx",
+      "lines": 87,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/features/admin/governance/governance-forms",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/governance-service",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/tasks/page.tsx",
+      "lines": 269,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/features/admin/task-documents/task-document-forms",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/task-document-service",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/users/page.tsx",
+      "lines": 211,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/features/admin/governance/governance-forms",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/governance-service",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/users/[userId]/page.tsx",
+      "lines": 224,
+      "imports": [
+        "@/components/layout",
+        "@/features/admin/notifications/admin-notification-bell",
+        "@/components/ui",
+        "@/features/admin/governance/governance-forms",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/client-crm-service",
+        "@/server/admin/governance-service",
+        "@/server/audit/audit-event-catalog",
+        "@/server/auth/page-guards"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/error.tsx",
+      "lines": 24,
+      "imports": [
+        "@/components/ui",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/layout.tsx",
+      "lines": 53,
+      "imports": [
+        "@/server/health/runtime-readiness"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/loading.tsx",
+      "lines": 13,
+      "imports": [
+        "@/components/ui",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/login/2fa/page.tsx",
+      "lines": 12,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(app-ar)/not-found.tsx",
+      "lines": 16,
+      "imports": [
+        "@/components/ui",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(client)/client/assistant/page.tsx",
+      "lines": 28,
+      "imports": [
+        "@/components/layout",
+        "@/features/client/client-assistant-panel",
+        "@/server/auth/page-guards",
+        "@/content/client-content",
+        "@/server/auth/client-page-metadata"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(client)/client/cases/page.tsx",
+      "lines": 97,
+      "imports": [
+        "@/components/layout",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/lib/legal-format",
+        "@/server/auth/page-guards",
+        "@/server/portal/client-portal-service",
+        "@/content/client-content",
+        "@/server/auth/client-page-metadata"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(client)/client/cases/[caseId]/page.tsx",
+      "lines": 158,
+      "imports": [
+        "@/components/layout",
+        "@/components/ui",
+        "@/lib/legal-format",
+        "@/server/auth/page-guards",
+        "@/server/portal/client-portal-service",
+        "@/content/client-content",
+        "@/server/auth/client-page-metadata"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(client)/client/client-navigation.ts",
+      "lines": 20,
+      "imports": [
+        "@/components/layout",
+        "@/content/client-content"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(client)/client/court-dates/page.tsx",
+      "lines": 124,
+      "imports": [
+        "@/components/layout",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/lib/legal-format",
+        "@/server/auth/page-guards",
+        "@/server/portal/client-portal-service",
+        "@/content/client-content",
+        "@/server/auth/client-page-metadata"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(client)/client/files/page.tsx",
+      "lines": 98,
+      "imports": [
+        "@/components/layout",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/features/portal/document-upload-form",
+        "@/lib/legal-format",
+        "@/server/auth/page-guards",
+        "@/server/portal/client-portal-service",
+        "@/content/client-content",
+        "@/server/auth/client-page-metadata"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(client)/client/page.tsx",
+      "lines": 236,
+      "imports": [
+        "@/components/layout",
+        "@/components/ui",
+        "@/lib/legal-format",
+        "@/server/auth/page-guards",
+        "@/server/portal/client-portal-service",
+        "@/content/client-content",
+        "@/server/auth/client-page-metadata"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(client)/client/payments/page.tsx",
+      "lines": 214,
+      "imports": [
+        "@/components/layout",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/lib/legal-format",
+        "@/server/auth/page-guards",
+        "@/server/payments/payment-receipt-service",
+        "@/server/portal/client-portal-service",
+        "@/content/client-content",
+        "@/server/auth/client-page-metadata"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(client)/client/profile/page.tsx",
+      "lines": 49,
+      "imports": [
+        "@/components/layout",
+        "@/features/portal/profile-form",
+        "@/lib/legal-format",
+        "@/server/auth/page-guards",
+        "@/server/portal/client-portal-service",
+        "@/content/client-content",
+        "@/server/auth/client-page-metadata"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(client)/layout.tsx",
+      "lines": 65,
+      "imports": [
+        "@/content/client-content",
+        "@/server/auth/page-guards",
+        "@/server/health/runtime-readiness"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(install-ar)/install/page.tsx",
+      "lines": 36,
+      "imports": [
+        "@/features/install/install-wizard",
+        "@/server/install/installer-env"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(install-ar)/layout.tsx",
+      "lines": 17,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(login)/layout.tsx",
+      "lines": 22,
+      "imports": [
+        "@/content/client-content"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(login)/login/page.tsx",
+      "lines": 139,
+      "imports": [
+        "@/components/brand",
+        "@/content/auth-content",
+        "@/content/client-content",
+        "@/features/auth/login-form",
+        "@/server/health/runtime-readiness"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-ar)/ar/book-consultation/page.tsx",
+      "lines": 9,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-ar)/ar/client-account/setup/page.tsx",
+      "lines": 16,
+      "imports": [
+        "@/content/public-content",
+        "@/features/public-site/client-account-setup-page"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-ar)/ar/[[...path]]/page.tsx",
+      "lines": 39,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-ar)/layout.tsx",
+      "lines": 17,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-ar)/payment/consultation/receipt/page.tsx",
+      "lines": 38,
+      "imports": [
+        "@/features/payments/consultation-payment-receipt-document",
+        "@/server/payments/payment-receipt-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-ar)/payment/consultation/return/page.tsx",
+      "lines": 239,
+      "imports": [
+        "@/components/layout/public-shell",
+        "@/components/ui",
+        "@/content/public-content",
+        "@/lib/cn",
+        "@/lib/legal-format",
+        "@/features/public-site/payment-status-poller",
+        "@/server/payments/payment-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/articles/page.tsx",
+      "lines": 9,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/articles/[slug]/page.tsx",
+      "lines": 17,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/book-consultation/page.tsx",
+      "lines": 9,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/case-studies/page.tsx",
+      "lines": 9,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/case-studies/[slug]/page.tsx",
+      "lines": 17,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/client-account/setup/page.tsx",
+      "lines": 16,
+      "imports": [
+        "@/content/public-content",
+        "@/features/public-site/client-account-setup-page"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/contact/page.tsx",
+      "lines": 8,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/layout.tsx",
+      "lines": 17,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/media/page.tsx",
+      "lines": 8,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/page.tsx",
+      "lines": 9,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/privacy/page.tsx",
+      "lines": 8,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/services/page.tsx",
+      "lines": 8,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/services/[slug]/page.tsx",
+      "lines": 23,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/team/page.tsx",
+      "lines": 8,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/team/[slug]/page.tsx",
+      "lines": 19,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/(public-en)/terms/page.tsx",
+      "lines": 8,
+      "imports": [
+        "@/features/public-site/public-pages"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/audit-log/route.ts",
+      "lines": 28,
+      "imports": [
+        "@/server/admin/governance-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/calendar/route.ts",
+      "lines": 55,
+      "imports": [
+        "@/server/admin/case-operations-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/calendar/[appointmentId]/reschedule/route.ts",
+      "lines": 38,
+      "imports": [
+        "@/server/admin/case-operations-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/cases/route.ts",
+      "lines": 53,
+      "imports": [
+        "@/server/admin/case-operations-service",
+        "@/server/admin/manual-case-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/cases/[caseId]/route.ts",
+      "lines": 61,
+      "imports": [
+        "@/server/admin/case-operations-service",
+        "@/server/admin/manual-case-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/cases/[caseId]/sessions/route.ts",
+      "lines": 38,
+      "imports": [
+        "@/server/admin/case-operations-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/cases/[caseId]/status/route.ts",
+      "lines": 39,
+      "imports": [
+        "@/server/admin/case-operations-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/clients/route.ts",
+      "lines": 47,
+      "imports": [
+        "@/server/admin/client-crm-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/clients/[clientId]/account/password/route.ts",
+      "lines": 38,
+      "imports": [
+        "@/server/admin/client-crm-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/clients/[clientId]/account/route.ts",
+      "lines": 38,
+      "imports": [
+        "@/server/admin/client-crm-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/clients/[clientId]/archive/route.ts",
+      "lines": 38,
+      "imports": [
+        "@/server/admin/client-crm-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/clients/[clientId]/assign/route.ts",
+      "lines": 38,
+      "imports": [
+        "@/server/admin/client-crm-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/clients/[clientId]/route.ts",
+      "lines": 59,
+      "imports": [
+        "@/server/admin/client-crm-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/consultation-availability/route.ts",
+      "lines": 48,
+      "imports": [
+        "@/server/auth/session-store",
+        "@/server/consultations/consultation-availability-service",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/consultations/route.ts",
+      "lines": 28,
+      "imports": [
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/admin/consultation-review-service"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/consultations/[consultationId]/assign/route.ts",
+      "lines": 39,
+      "imports": [
+        "@/server/auth/session-store",
+        "@/server/admin/consultation-review-service",
+        "@/server/http/errors",
+        "@/server/validation/schemas",
+        "@/server/admin/consultation-review-service"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/consultations/[consultationId]/convert/route.ts",
+      "lines": 39,
+      "imports": [
+        "@/server/auth/session-store",
+        "@/server/admin/consultation-review-service",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/consultations/[consultationId]/outcome/route.ts",
+      "lines": 46,
+      "imports": [
+        "@/server/admin/consultation-outcome-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/consultations/[consultationId]/reject/route.ts",
+      "lines": 38,
+      "imports": [
+        "@/server/auth/session-store",
+        "@/server/admin/consultation-review-service",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/consultations/[consultationId]/reopen/route.ts",
+      "lines": 46,
+      "imports": [
+        "@/server/admin/consultation-outcome-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/consultations/[consultationId]/review/route.ts",
+      "lines": 39,
+      "imports": [
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas",
+        "@/server/admin/consultation-review-service"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/consultations/[consultationId]/route.ts",
+      "lines": 34,
+      "imports": [
+        "@/server/auth/session-store",
+        "@/server/admin/consultation-review-service",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/consultations/[consultationId]/schedule/route.ts",
+      "lines": 44,
+      "imports": [
+        "@/server/admin/consultation-outcome-service",
+        "@/server/admin/consultation-review-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/contact-messages/route.ts",
+      "lines": 28,
+      "imports": [
+        "@/server/admin/contact-message-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/contact-messages/[messageId]/route.ts",
+      "lines": 33,
+      "imports": [
+        "@/server/admin/contact-message-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/content/articles/route.ts",
+      "lines": 26,
+      "imports": [
+        "@/server/admin/content-social-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/content/articles/[articleId]/route.ts",
+      "lines": 51,
+      "imports": [
+        "@/server/admin/content-social-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/content/case-studies/route.ts",
+      "lines": 26,
+      "imports": [
+        "@/server/admin/content-social-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/content/case-studies/[caseStudyId]/route.ts",
+      "lines": 51,
+      "imports": [
+        "@/server/admin/content-social-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/content/route.ts",
+      "lines": 28,
+      "imports": [
+        "@/server/admin/content-social-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/content/social-drafts/ai/route.ts",
+      "lines": 26,
+      "imports": [
+        "@/server/admin/content-social-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/content/social-drafts/route.ts",
+      "lines": 26,
+      "imports": [
+        "@/server/admin/content-social-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/content/social-drafts/[draftId]/route.ts",
+      "lines": 51,
+      "imports": [
+        "@/server/admin/content-social-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/dashboard/route.ts",
+      "lines": 27,
+      "imports": [
+        "@/server/admin/dashboard-service",
+        "@/server/auth/session-store",
+        "@/server/auth/policy",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/documents/route.ts",
+      "lines": 28,
+      "imports": [
+        "@/server/admin/task-document-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/documents/[documentId]/delete/route.ts",
+      "lines": 38,
+      "imports": [
+        "@/server/admin/task-document-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/documents/[documentId]/route.ts",
+      "lines": 38,
+      "imports": [
+        "@/server/admin/task-document-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/finance/export/route.ts",
+      "lines": 34,
+      "imports": [
+        "@/server/admin/finance-report-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/finance/route.ts",
+      "lines": 51,
+      "imports": [
+        "@/server/admin/finance-report-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/finance/[paymentId]/route.ts",
+      "lines": 59,
+      "imports": [
+        "@/server/admin/finance-report-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/messages/route.ts",
+      "lines": 28,
+      "imports": [
+        "@/server/conversations/conversation-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/messages/[threadId]/messages/route.ts",
+      "lines": 39,
+      "imports": [
+        "@/server/conversations/conversation-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/messages/[threadId]/route.ts",
+      "lines": 64,
+      "imports": [
+        "@/server/conversations/conversation-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/notifications/route.ts",
+      "lines": 28,
+      "imports": [
+        "@/server/admin/notification-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/notifications/[notificationId]/read/route.ts",
+      "lines": 34,
+      "imports": [
+        "@/server/admin/notification-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/payments/attempts/route.ts",
+      "lines": 28,
+      "imports": [
+        "@/server/payments/payment-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/payments/pricing/route.ts",
+      "lines": 56,
+      "imports": [
+        "@/server/payments/pricing-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/payments/pricing/[ruleId]/route.ts",
+      "lines": 39,
+      "imports": [
+        "@/server/payments/pricing-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/payments/settings/route.ts",
+      "lines": 51,
+      "imports": [
+        "@/server/payments/payment-settings-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/payments/webhooks/route.ts",
+      "lines": 28,
+      "imports": [
+        "@/server/payments/payment-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/payments/webhooks/[eventId]/replay/route.ts",
+      "lines": 36,
+      "imports": [
+        "@/server/payments/payment-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/reports/route.ts",
+      "lines": 28,
+      "imports": [
+        "@/server/admin/finance-report-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/roles/route.ts",
+      "lines": 21,
+      "imports": [
+        "@/server/admin/role-permission-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/roles/[roleId]/permissions/route.ts",
+      "lines": 27,
+      "imports": [
+        "@/server/admin/role-permission-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/settings/route.ts",
+      "lines": 23,
+      "imports": [
+        "@/server/admin/governance-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/settings/[key]/route.ts",
+      "lines": 36,
+      "imports": [
+        "@/lib/ui-copy",
+        "@/server/admin/governance-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/tasks/route.ts",
+      "lines": 51,
+      "imports": [
+        "@/server/admin/task-document-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/tasks/[taskId]/route.ts",
+      "lines": 38,
+      "imports": [
+        "@/server/admin/task-document-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/users/route.ts",
+      "lines": 46,
+      "imports": [
+        "@/server/admin/governance-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/users/[userId]/2fa/reset/route.ts",
+      "lines": 8,
+      "imports": [
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/users/[userId]/client-profile/route.ts",
+      "lines": 35,
+      "imports": [
+        "@/server/admin/client-crm-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/users/[userId]/password/route.ts",
+      "lines": 33,
+      "imports": [
+        "@/server/admin/governance-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/admin/users/[userId]/route.ts",
+      "lines": 49,
+      "imports": [
+        "@/server/admin/governance-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/analytics/events/route.ts",
+      "lines": 32,
+      "imports": [
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/observability/analytics-service",
+        "@/server/rate-limit/memory-rate-limit"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/auth/2fa/email/send/route.ts",
+      "lines": 11,
+      "imports": [
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/auth/2fa/email/verify/route.ts",
+      "lines": 11,
+      "imports": [
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/auth/2fa/totp/verify/route.ts",
+      "lines": 8,
+      "imports": [
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/auth/login/route.ts",
+      "lines": 52,
+      "imports": [
+        "@/server/auth/auth-service",
+        "@/server/auth/session",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/rate-limit/memory-rate-limit",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/auth/logout/route.ts",
+      "lines": 29,
+      "imports": [
+        "@/server/auth/auth-service",
+        "@/server/auth/session"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/auth/me/route.ts",
+      "lines": 25,
+      "imports": [
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/client/assistant/route.ts",
+      "lines": 30,
+      "imports": [
+        "@/server/auth/session-store",
+        "@/server/consultations/consultation-assistant-service",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/client/messages/route.ts",
+      "lines": 51,
+      "imports": [
+        "@/server/conversations/conversation-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/client/messages/[threadId]/messages/route.ts",
+      "lines": 39,
+      "imports": [
+        "@/server/conversations/conversation-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/client/messages/[threadId]/route.ts",
+      "lines": 34,
+      "imports": [
+        "@/server/conversations/conversation-service",
+        "@/server/auth/session-store",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/client/preferences/route.ts",
+      "lines": 37,
+      "imports": [
+        "@/server/auth/session-store",
+        "@/server/portal/client-portal-service",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/client/profile/route.ts",
+      "lines": 41,
+      "imports": [
+        "@/server/auth/session-store",
+        "@/server/portal/client-portal-service",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/files/upload/route.ts",
+      "lines": 126,
+      "imports": [
+        "@/server/auth/session-store",
+        "@/server/auth/policy",
+        "@/server/http/errors",
+        "@/server/observability/analytics-service",
+        "@/server/rate-limit/memory-rate-limit",
+        "@/server/storage/document-service",
+        "@/server/storage/upload-policy"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/files/[documentId]/download/route.ts",
+      "lines": 41,
+      "imports": [
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/storage/document-service"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/health/route.ts",
+      "lines": 35,
+      "imports": [
+        "@/server/health/runtime-readiness",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/install/bootstrap-super-admin/route.ts",
+      "lines": 24,
+      "imports": [
+        "@/server/install/installer-service",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/install/finish/route.ts",
+      "lines": 21,
+      "imports": [
+        "@/server/install/installer-service",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/install/preflight/route.ts",
+      "lines": 21,
+      "imports": [
+        "@/server/install/installer-service",
+        "@/server/install/panel-preflight",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/install/status/route.ts",
+      "lines": 17,
+      "imports": [
+        "@/server/install/installer-service",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/articles/route.ts",
+      "lines": 12,
+      "imports": [
+        "@/lib/public-locale",
+        "@/server/public/content-service"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/articles/[slug]/route.ts",
+      "lines": 17,
+      "imports": [
+        "@/lib/public-locale",
+        "@/server/http/errors",
+        "@/server/public/content-service"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/case-studies/route.ts",
+      "lines": 12,
+      "imports": [
+        "@/lib/public-locale",
+        "@/server/public/content-service"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/case-studies/[slug]/route.ts",
+      "lines": 17,
+      "imports": [
+        "@/lib/public-locale",
+        "@/server/http/errors",
+        "@/server/public/content-service"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/client-account/setup/route.ts",
+      "lines": 45,
+      "imports": [
+        "@/server/portal/client-account-setup-service",
+        "@/server/auth/session",
+        "@/server/auth/session-store",
+        "@/server/http/errors",
+        "@/server/rate-limit/memory-rate-limit",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/consultations/assistant/route.ts",
+      "lines": 23,
+      "imports": [
+        "@/server/consultations/consultation-assistant-service",
+        "@/server/consultations/consultation-booking-settings",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/consultations/checkout/route.ts",
+      "lines": 26,
+      "imports": [
+        "@/server/consultations/consultation-assistant-service",
+        "@/server/consultations/consultation-booking-settings",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/consultations/route.ts",
+      "lines": 54,
+      "imports": [
+        "@/lib/public-locale",
+        "@/server/auth/session-store",
+        "@/server/consultations/consultation-booking-settings",
+        "@/server/consultations/consultation-service",
+        "@/server/http/errors",
+        "@/server/phone/phone-normalization",
+        "@/server/rate-limit/memory-rate-limit",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/consultations/slots/route.ts",
+      "lines": 34,
+      "imports": [
+        "@/server/consultations/consultation-availability-service",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/contact/route.ts",
+      "lines": 44,
+      "imports": [
+        "@/lib/public-locale",
+        "@/server/auth/session-store",
+        "@/server/contact/contact-message-service",
+        "@/server/http/errors",
+        "@/server/phone/phone-normalization",
+        "@/server/rate-limit/memory-rate-limit",
+        "@/server/validation/schemas"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/lawyers/route.ts",
+      "lines": 9,
+      "imports": [
+        "@/content/public-content",
+        "@/lib/public-locale"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/lawyers/[slug]/route.ts",
+      "lines": 15,
+      "imports": [
+        "@/content/public-content",
+        "@/lib/public-locale",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/payments/status/route.ts",
+      "lines": 20,
+      "imports": [
+        "@/server/payments/payment-service",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/services/route.ts",
+      "lines": 13,
+      "imports": [
+        "@/content/public-content",
+        "@/lib/public-locale"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/public/services/[slug]/route.ts",
+      "lines": 15,
+      "imports": [
+        "@/content/public-content",
+        "@/lib/public-locale",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/webhooks/paymob/route.ts",
+      "lines": 28,
+      "imports": [
+        "@/server/payments/payment-service",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/api/webhooks/paytabs/route.ts",
+      "lines": 28,
+      "imports": [
+        "@/server/payments/payment-service",
+        "@/server/http/errors"
+      ],
+      "methods": [
+        "POST"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/favicon.ico/route.ts",
+      "lines": 14,
+      "imports": [],
+      "methods": [
+        "GET"
+      ],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/global-error.tsx",
+      "lines": 28,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/global-not-found.tsx",
+      "lines": 98,
+      "imports": [
+        "@/content/not-found-content"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/globals.css",
+      "lines": 807,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/root-metadata.ts",
+      "lines": 14,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/app/sitemap.ts",
+      "lines": 84,
+      "imports": [
+        "@/content/public-content",
+        "@/lib/public-locale"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/brand/index.ts",
+      "lines": 2,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/brand/kmt-brand-logo.tsx",
+      "lines": 125,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/domain/index.ts",
+      "lines": 2,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/domain/legal-cards.tsx",
+      "lines": 135,
+      "imports": [
+        "@/components/ui",
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/layout/admin-shell-state.tsx",
+      "lines": 48,
+      "imports": [
+        "@/components/ui",
+        "@/features/admin/shell/admin-access-context",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/layout/client-portal-components.tsx",
+      "lines": 127,
+      "imports": [
+        "@/components/ui",
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/layout/client-portal-select.tsx",
+      "lines": 249,
+      "imports": [
+        "@/components/ui",
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/layout/client-site-shell.tsx",
+      "lines": 154,
+      "imports": [
+        "@/components/brand",
+        "@/components/ui",
+        "@/lib/cn",
+        "@/content/client-content",
+        "@/features/client/client-language-switch"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/layout/dashboard-mobile-nav.tsx",
+      "lines": 148,
+      "imports": [
+        "@/components/brand",
+        "@/components/ui",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/layout/dashboard-navigation.tsx",
+      "lines": 67,
+      "imports": [
+        "@/components/ui",
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/layout/dashboard-shell-view.tsx",
+      "lines": 78,
+      "imports": [
+        "@/components/brand",
+        "@/components/ui",
+        "@/lib/cn",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/layout/dashboard-shell.tsx",
+      "lines": 36,
+      "imports": [
+        "@/lib/admin-route-policy",
+        "@/lib/admin-route-policy",
+        "@/server/auth/policy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/layout/index.ts",
+      "lines": 7,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/layout/product-theme-provider.tsx",
+      "lines": 19,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/layout/public-shell.tsx",
+      "lines": 242,
+      "imports": [
+        "@/components/brand",
+        "@/components/ui",
+        "@/content/public-content",
+        "@/features/public-site/public-motion",
+        "@/lib/cn",
+        "@/lib/public-locale"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/badge.tsx",
+      "lines": 30,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/button.tsx",
+      "lines": 98,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/card.tsx",
+      "lines": 47,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/data-record-card.tsx",
+      "lines": 60,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/data-table.tsx",
+      "lines": 82,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/dialog.tsx",
+      "lines": 32,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/field.tsx",
+      "lines": 135,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/filter-bar.tsx",
+      "lines": 30,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/index.ts",
+      "lines": 16,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/inline-feedback.tsx",
+      "lines": 49,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/material-symbol.tsx",
+      "lines": 384,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/search-input.tsx",
+      "lines": 23,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/skeleton.tsx",
+      "lines": 18,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/state.tsx",
+      "lines": 37,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/tabs.tsx",
+      "lines": 43,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/components/ui/toast.tsx",
+      "lines": 45,
+      "imports": [
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/content/auth-content.ts",
+      "lines": 107,
+      "imports": [
+        "@/content/client-content"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/content/client-content.ts",
+      "lines": 674,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/content/not-found-content.ts",
+      "lines": 21,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/content/public-content.ar.ts",
+      "lines": 787,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/content/public-content.en.ts",
+      "lines": 814,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/content/public-content.ts",
+      "lines": 61,
+      "imports": [
+        "@/lib/public-locale"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/content/public-services.ts",
+      "lines": 163,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/cases/case-action-forms.tsx",
+      "lines": 363,
+      "imports": [
+        "@/components/ui",
+        "@/lib/legal-format"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/cases/manual-case-form.tsx",
+      "lines": 461,
+      "imports": [
+        "@/components/ui",
+        "@/lib/legal-format",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/clients/client-crm-forms.tsx",
+      "lines": 390,
+      "imports": [
+        "@/components/ui",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/consultations/consultation-action-panel.tsx",
+      "lines": 326,
+      "imports": [
+        "@/components/ui",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/consultations/consultation-availability-form.tsx",
+      "lines": 210,
+      "imports": [
+        "@/components/ui",
+        "@/lib/cn",
+        "@/lib/ui-copy",
+        "@/server/consultations/consultation-availability-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/consultations/consultation-outcome-form.tsx",
+      "lines": 148,
+      "imports": [
+        "@/components/ui",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/consultations/consultation-reopen-form.tsx",
+      "lines": 140,
+      "imports": [
+        "@/components/ui",
+        "@/lib/legal-format",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/consultations/consultation-schedule-form.tsx",
+      "lines": 162,
+      "imports": [
+        "@/components/ui",
+        "@/lib/legal-format",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/contact-messages/contact-message-inbox.tsx",
+      "lines": 282,
+      "imports": [
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/lib/legal-format",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/content/content-forms.tsx",
+      "lines": 438,
+      "imports": [
+        "@/components/ui",
+        "@/lib/legal-content",
+        "@/lib/legal-format",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/dashboard/admin-command-center.tsx",
+      "lines": 205,
+      "imports": [
+        "@/components/ui",
+        "@/lib/admin-route-policy",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/dashboard-service",
+        "@/server/auth/policy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/dashboard/dashboard-metric-link.tsx",
+      "lines": 47,
+      "imports": [
+        "@/lib/ui-copy",
+        "@/server/admin/dashboard-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/dashboard/dashboard-priority-list.tsx",
+      "lines": 169,
+      "imports": [
+        "@/components/ui",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/dashboard-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/finance/finance-forms.tsx",
+      "lines": 594,
+      "imports": [
+        "@/components/ui",
+        "@/lib/legal-finance",
+        "@/lib/legal-format",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/finance/finance-page-helpers.ts",
+      "lines": 132,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/governance/governance-forms.tsx",
+      "lines": 637,
+      "imports": [
+        "@/components/ui",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/storage/runtime-diagnostic"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/governance/role-permission-form.tsx",
+      "lines": 281,
+      "imports": [
+        "@/components/ui",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/messages/admin-message-thread-panel.tsx",
+      "lines": 276,
+      "imports": [
+        "@/components/ui",
+        "@/lib/cn",
+        "@/lib/legal-format"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/notifications/admin-notification-bell.tsx",
+      "lines": 26,
+      "imports": [
+        "@/features/admin/notifications/admin-notification-popover",
+        "@/server/admin/notification-service",
+        "@/server/auth/policy"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/notifications/admin-notification-popover.tsx",
+      "lines": 322,
+      "imports": [
+        "@/components/ui",
+        "@/lib/legal-format",
+        "@/lib/ui-copy",
+        "@/server/admin/notification-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/shell/admin-access-context.tsx",
+      "lines": 45,
+      "imports": [
+        "@/components/layout",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/admin/task-documents/task-document-forms.tsx",
+      "lines": 526,
+      "imports": [
+        "@/components/ui",
+        "@/lib/legal-format"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/auth/login-form.tsx",
+      "lines": 198,
+      "imports": [
+        "@/components/ui",
+        "@/content/auth-content",
+        "@/content/client-content",
+        "@/lib/auth-routing"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/client/client-assistant-panel.tsx",
+      "lines": 394,
+      "imports": [
+        "@/components/brand",
+        "@/components/layout",
+        "@/components/ui",
+        "@/lib/legal-format",
+        "@/lib/cn",
+        "@/content/client-content"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/client/client-language-switch.tsx",
+      "lines": 64,
+      "imports": [
+        "@/content/client-content"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/client/client-team-chat-panel.tsx",
+      "lines": 272,
+      "imports": [
+        "@/components/brand",
+        "@/components/layout",
+        "@/components/ui",
+        "@/lib/cn",
+        "@/lib/legal-format",
+        "@/content/client-content"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/install/install-wizard.tsx",
+      "lines": 382,
+      "imports": [
+        "@/components/ui",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/payments/consultation-payment-receipt-document.tsx",
+      "lines": 128,
+      "imports": [
+        "@/components/brand",
+        "@/components/ui",
+        "@/components/ui/button",
+        "@/lib/legal-format",
+        "@/server/payments/payment-receipt-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/payments/receipt-print-button.tsx",
+      "lines": 14,
+      "imports": [
+        "@/components/ui",
+        "@/components/ui/button"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/portal/document-upload-form.tsx",
+      "lines": 106,
+      "imports": [
+        "@/components/layout",
+        "@/components/layout/client-portal-select",
+        "@/components/ui",
+        "@/content/client-content"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/portal/profile-form.tsx",
+      "lines": 85,
+      "imports": [
+        "@/components/layout",
+        "@/components/ui",
+        "@/content/client-content"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/public-site/booking-chat-formatters.ts",
+      "lines": 88,
+      "imports": [
+        "@/content/public-content",
+        "@/lib/public-locale"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/public-site/booking-query-client.tsx",
+      "lines": 43,
+      "imports": [
+        "@/features/public-site/booking-stepper",
+        "@/features/public-site/consultation-booking-chat",
+        "@/lib/cn",
+        "@/lib/public-locale"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/public-site/booking-stepper.tsx",
+      "lines": 413,
+      "imports": [
+        "@/server/ai/copy",
+        "@/components/ui",
+        "@/lib/analytics-client",
+        "@/content/public-content",
+        "@/features/public-site/public-motion",
+        "@/lib/cn",
+        "@/lib/public-locale"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/public-site/client-account-setup-form.tsx",
+      "lines": 231,
+      "imports": [
+        "@/content/public-content",
+        "@/lib/cn",
+        "@/components/ui"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/public-site/client-account-setup-page.tsx",
+      "lines": 173,
+      "imports": [
+        "@/components/layout/public-shell",
+        "@/components/ui",
+        "@/content/public-content",
+        "@/features/public-site/client-account-setup-form",
+        "@/lib/cn",
+        "@/lib/legal-format",
+        "@/lib/public-locale",
+        "@/server/portal/client-account-setup-service"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/public-site/consultation-assistant-panel.tsx",
+      "lines": 176,
+      "imports": [
+        "@/components/ui",
+        "@/lib/legal-format",
+        "@/lib/public-locale",
+        "@/lib/cn"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/public-site/consultation-booking-chat.tsx",
+      "lines": 976,
+      "imports": [
+        "@/components/brand",
+        "@/components/ui",
+        "@/content/public-content",
+        "@/lib/analytics-client",
+        "@/lib/cn",
+        "@/lib/public-locale",
+        "@/features/public-site/booking-chat-formatters",
+        "@/features/public-site/public-motion"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/public-site/contact-form.tsx",
+      "lines": 157,
+      "imports": [
+        "@/components/ui",
+        "@/content/public-content",
+        "@/features/public-site/public-motion",
+        "@/lib/cn",
+        "@/lib/public-locale"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/public-site/directory-filter.tsx",
+      "lines": 188,
+      "imports": [
+        "@/components/ui",
+        "@/content/public-content",
+        "@/lib/cn",
+        "@/lib/public-locale",
+        "@/features/public-site/public-motion"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/public-site/payment-status-poller.tsx",
+      "lines": 93,
+      "imports": [
+        "@/components/ui"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/public-site/public-components.tsx",
+      "lines": 295,
+      "imports": [
+        "@/components/ui",
+        "@/content/public-content",
+        "@/lib/cn",
+        "@/lib/public-locale",
+        "@/features/public-site/public-motion"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/public-site/public-motion.ts",
+      "lines": 20,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/features/public-site/public-pages.tsx",
+      "lines": 919,
+      "imports": [
+        "@/components/layout",
+        "@/components/ui",
+        "@/content/public-content",
+        "@/features/public-site/booking-query-client",
+        "@/features/public-site/contact-form",
+        "@/features/public-site/directory-filter",
+        "@/features/public-site/public-motion",
+        "@/features/public-site/public-components",
+        "@/lib/cn",
+        "@/lib/public-locale",
+        "@/server/public/content-service",
+        "@/server/consultations/consultation-booking-settings"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/instrumentation-client.ts",
+      "lines": 17,
+      "imports": [
+        "@/lib/sentry-privacy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/instrumentation.ts",
+      "lines": 14,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/lib/admin-route-policy.ts",
+      "lines": 135,
+      "imports": [
+        "@/lib/ui-copy",
+        "@/server/auth/policy"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/lib/analytics-client.ts",
+      "lines": 24,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/lib/analytics-events.ts",
+      "lines": 27,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/lib/auth-routing.ts",
+      "lines": 76,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/lib/cn.ts",
+      "lines": 4,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/lib/design-system/tokens.ts",
+      "lines": 53,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/lib/legal-content.ts",
+      "lines": 40,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/lib/legal-finance.ts",
+      "lines": 3,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/lib/legal-format.ts",
+      "lines": 309,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/lib/public-locale.ts",
+      "lines": 95,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/lib/readiness-routing.ts",
+      "lines": 23,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/lib/sentry-privacy.ts",
+      "lines": 50,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/lib/ui-copy.ts",
+      "lines": 1046,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/middleware.ts",
+      "lines": 77,
+      "imports": [
+        "@/lib/auth-routing",
+        "@/server/auth/constants",
+        "@/server/security/origin-guard"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/sentry.edge.config.ts",
+      "lines": 15,
+      "imports": [
+        "@/lib/sentry-privacy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/sentry.server.config.ts",
+      "lines": 15,
+      "imports": [
+        "@/lib/sentry-privacy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/calendar-service.ts",
+      "lines": 33,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/case-operations-service.ts",
+      "lines": 748,
+      "imports": [
+        "@/lib/legal-format",
+        "@/server/appointments/appointment-conflict-service",
+        "@/server/audit/audit-service",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/http/pagination",
+        "@/server/observability/analytics-service",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/client-crm-service.ts",
+      "lines": 731,
+      "imports": [
+        "@/server/audit/audit-service",
+        "@/server/auth/password",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/http/pagination",
+        "@/server/phone/phone-normalization",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/consultation-outcome-policy.ts",
+      "lines": 253,
+      "imports": [
+        "@/server/auth/policy",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/consultation-outcome-service.ts",
+      "lines": 612,
+      "imports": [
+        "@/lib/ui-copy",
+        "@/server/appointments/appointment-conflict-service",
+        "@/server/audit/audit-service",
+        "@/server/audit/audit-event-catalog",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/consultation-review-service.ts",
+      "lines": 1095,
+      "imports": [
+        "@/lib/ui-copy",
+        "@/server/appointments/appointment-conflict-service",
+        "@/server/audit/audit-service",
+        "@/server/audit/audit-event-catalog",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/observability/analytics-service",
+        "@/server/http/pagination",
+        "@/server/phone/phone-normalization",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/contact-message-service.ts",
+      "lines": 228,
+      "imports": [
+        "@/server/audit/audit-service",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/http/pagination",
+        "@/server/contact/contact-message-service",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/content-social-service.ts",
+      "lines": 862,
+      "imports": [
+        "@/lib/legal-content",
+        "@/server/ai/copy",
+        "@/server/ai/gateway",
+        "@/server/ai/schemas",
+        "@/server/audit/audit-service",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/http/pagination",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/dashboard-service.ts",
+      "lines": 731,
+      "imports": [
+        "@/lib/admin-route-policy",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/finance-report-service.ts",
+      "lines": 764,
+      "imports": [
+        "@/server/audit/audit-service",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/http/pagination",
+        "@/server/phone/phone-normalization",
+        "@/server/validation/schemas",
+        "@/lib/legal-finance"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/governance-service.ts",
+      "lines": 972,
+      "imports": [
+        "@/lib/ui-copy",
+        "@/server/audit/audit-service",
+        "@/server/audit/audit-event-catalog",
+        "@/server/audit/redaction",
+        "@/server/auth/password",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/http/pagination",
+        "@/server/storage/runtime-diagnostic",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/legal-case-reference.ts",
+      "lines": 4,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/manual-case-service.ts",
+      "lines": 494,
+      "imports": [
+        "@/lib/ui-copy",
+        "@/server/audit/audit-service",
+        "@/server/audit/audit-event-catalog",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/notification-service.ts",
+      "lines": 595,
+      "imports": [
+        "@/lib/admin-route-policy",
+        "@/lib/ui-copy",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/role-permission-service.ts",
+      "lines": 252,
+      "imports": [
+        "@/lib/ui-copy",
+        "@/server/audit/audit-service",
+        "@/server/audit/audit-event-catalog",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/admin/task-document-service.ts",
+      "lines": 660,
+      "imports": [
+        "@/server/audit/audit-service",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/http/pagination",
+        "@/server/storage/document-service",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission",
+        "canReadDocument"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/ai/config.ts",
+      "lines": 57,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/ai/copy.ts",
+      "lines": 5,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/ai/gateway.ts",
+      "lines": 150,
+      "imports": [
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/ai/index.ts",
+      "lines": 5,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/ai/provider-registry.ts",
+      "lines": 13,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/ai/providers/mock.ts",
+      "lines": 104,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/ai/providers/openai-compatible.ts",
+      "lines": 121,
+      "imports": [
+        "@/server/http/errors"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/ai/safety.ts",
+      "lines": 31,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/ai/schemas.ts",
+      "lines": 114,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/ai/types.ts",
+      "lines": 66,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/appointments/appointment-conflict-service.ts",
+      "lines": 140,
+      "imports": [
+        "@/lib/ui-copy",
+        "@/server/db/prisma",
+        "@/server/http/errors"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/audit/audit-event-catalog.ts",
+      "lines": 572,
+      "imports": [
+        "@/lib/legal-format",
+        "@/lib/legal-content",
+        "@/lib/ui-copy"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/audit/audit-service.ts",
+      "lines": 62,
+      "imports": [
+        "@/server/db/prisma",
+        "@/server/auth/session-store",
+        "@/server/observability/safe-log"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/audit/redaction.ts",
+      "lines": 65,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/auth/auth-service.ts",
+      "lines": 395,
+      "imports": [
+        "@/server/db/prisma",
+        "@/server/email/email-service",
+        "@/server/audit/audit-service"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/auth/client-page-metadata.ts",
+      "lines": 16,
+      "imports": [
+        "@/content/client-content"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/auth/client-portal-guard.ts",
+      "lines": 35,
+      "imports": [
+        "@/content/client-content"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/auth/constants.ts",
+      "lines": 3,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/auth/index.ts",
+      "lines": 7,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/auth/page-guards.tsx",
+      "lines": 125,
+      "imports": [
+        "@/components/layout/admin-shell-state",
+        "@/components/ui",
+        "@/lib/auth-routing",
+        "@/lib/admin-route-policy",
+        "@/lib/ui-copy",
+        "@/content/client-content"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/auth/password.ts",
+      "lines": 47,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/auth/policy.ts",
+      "lines": 72,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/auth/secret.ts",
+      "lines": 32,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/auth/session-store.ts",
+      "lines": 199,
+      "imports": [
+        "@/server/db/prisma"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "requireAuthContext"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/auth/session.ts",
+      "lines": 48,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/auth/totp.ts",
+      "lines": 66,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/auth/two-factor.ts",
+      "lines": 93,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/config/production-readiness.ts",
+      "lines": 306,
+      "imports": [
+        "@/server/payments/payment-config"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/consultations/consultation-assistant-service.ts",
+      "lines": 2533,
+      "imports": [
+        "@/server/ai",
+        "@/server/admin/notification-service",
+        "@/server/appointments/appointment-conflict-service",
+        "@/server/audit/audit-service",
+        "@/server/auth/session-store",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/observability/safe-log",
+        "@/server/phone/phone-normalization",
+        "@/server/payments/payment-service",
+        "@/server/payments/pricing-service",
+        "@/server/portal/client-portal-service",
+        "@/server/portal/client-account-setup-service",
+        "@/server/rate-limit/memory-rate-limit",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "assertClientPortalAccess",
+        "ownCaseWhere"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/consultations/consultation-availability-service.ts",
+      "lines": 337,
+      "imports": [
+        "@/server/audit/audit-service",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/payments/payment-service",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/consultations/consultation-booking-settings.ts",
+      "lines": 99,
+      "imports": [
+        "@/server/db/prisma",
+        "@/server/http/errors"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/consultations/consultation-date-utils.ts",
+      "lines": 28,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/consultations/consultation-service.ts",
+      "lines": 262,
+      "imports": [
+        "@/server/ai",
+        "@/server/audit/audit-service",
+        "@/server/auth/session-store",
+        "@/server/db/prisma",
+        "@/server/email",
+        "@/server/http/errors",
+        "@/server/observability/analytics-service",
+        "@/server/phone/phone-normalization",
+        "@/server/rate-limit/memory-rate-limit",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/contact/contact-message-service.ts",
+      "lines": 100,
+      "imports": [
+        "@/server/audit/audit-service",
+        "@/server/db/prisma",
+        "@/server/validation/schemas",
+        "@/server/phone/phone-normalization",
+        "@/server/admin/notification-service",
+        "@/server/observability/safe-log"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/conversations/conversation-service.ts",
+      "lines": 520,
+      "imports": [
+        "@/server/audit/audit-service",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/http/pagination",
+        "@/server/portal/client-portal-service",
+        "@/server/rate-limit/memory-rate-limit",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission",
+        "assertClientPortalAccess"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/db/prisma.ts",
+      "lines": 58,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/email/config.ts",
+      "lines": 50,
+      "imports": [
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/email/email-service.ts",
+      "lines": 76,
+      "imports": [
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/email/index.ts",
+      "lines": 4,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/email/templates.ts",
+      "lines": 78,
+      "imports": [
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/health/runtime-readiness.ts",
+      "lines": 276,
+      "imports": [
+        "@/server/auth/policy",
+        "@/server/config/production-readiness",
+        "@/server/consultations/consultation-booking-settings",
+        "@/server/install/installer-env",
+        "@/server/payments/payment-config",
+        "@/server/storage/malware-scan"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/http/errors.ts",
+      "lines": 157,
+      "imports": [
+        "@/lib/ui-copy",
+        "@/lib/public-locale",
+        "@/server/observability/safe-log"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/http/pagination.ts",
+      "lines": 28,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/install/installer-env.ts",
+      "lines": 45,
+      "imports": [
+        "@/server/http/errors"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/install/installer-service.ts",
+      "lines": 313,
+      "imports": [
+        "@/server/auth/password",
+        "@/server/auth/policy",
+        "@/server/http/errors",
+        "@/server/health/runtime-readiness",
+        "@/server/install/installer-env",
+        "@/server/install/panel-preflight",
+        "@/server/validation/schemas",
+        "@/server/install/installer-env"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/install/panel-preflight.ts",
+      "lines": 130,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/observability/analytics-service.ts",
+      "lines": 296,
+      "imports": [
+        "@/lib/analytics-events",
+        "@/server/audit/redaction",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/observability/safe-log.ts",
+      "lines": 24,
+      "imports": [
+        "@/server/audit/redaction"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/payments/payment-config.ts",
+      "lines": 198,
+      "imports": [
+        "@/server/http/errors"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/payments/payment-provider.ts",
+      "lines": 510,
+      "imports": [
+        "@/server/http/errors"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/payments/payment-receipt-service.ts",
+      "lines": 275,
+      "imports": [
+        "@/server/db/prisma",
+        "@/server/http/errors"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/payments/payment-service.ts",
+      "lines": 1228,
+      "imports": [
+        "@/server/audit/audit-service",
+        "@/server/audit/redaction",
+        "@/server/admin/notification-service",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/http/pagination",
+        "@/server/observability/analytics-service",
+        "@/server/phone/phone-normalization",
+        "@/server/portal/client-account-setup-service",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/payments/payment-settings-service.ts",
+      "lines": 224,
+      "imports": [
+        "@/server/audit/audit-service",
+        "@/server/auth/policy",
+        "@/server/consultations/consultation-booking-settings",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/payments/payment-webhook-safety.ts",
+      "lines": 33,
+      "imports": [
+        "@/server/audit/redaction",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/payments/pricing-service.ts",
+      "lines": 278,
+      "imports": [
+        "@/server/audit/audit-service",
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/validation/schemas",
+        "@/lib/legal-finance"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/phone/phone-normalization.ts",
+      "lines": 40,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/portal/client-account-setup-service.ts",
+      "lines": 419,
+      "imports": [
+        "@/server/audit/audit-service",
+        "@/server/auth/password",
+        "@/server/auth/policy",
+        "@/server/auth/session-store",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/consultations/consultation-service",
+        "@/server/validation/schemas"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/portal/client-portal-service.ts",
+      "lines": 302,
+      "imports": [
+        "@/server/auth/policy",
+        "@/server/db/prisma",
+        "@/server/http/errors",
+        "@/server/phone/phone-normalization",
+        "@/server/validation/schemas",
+        "@/server/audit/audit-service"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission",
+        "assertClientPortalAccess",
+        "ownCaseWhere"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/public/content-service.ts",
+      "lines": 266,
+      "imports": [
+        "@/lib/public-locale"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/rate-limit/memory-rate-limit.ts",
+      "lines": 143,
+      "imports": [
+        "@/server/db/prisma",
+        "@/server/http/errors"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/security/origin-guard.ts",
+      "lines": 103,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/storage/document-service.ts",
+      "lines": 261,
+      "imports": [
+        "@/server/db/prisma",
+        "@/server/auth/policy",
+        "@/server/http/errors",
+        "@/server/audit/audit-service",
+        "@/server/validation/schemas",
+        "@/server/observability/analytics-service"
+      ],
+      "methods": [],
+      "accessChecks": [
+        "hasPermission",
+        "canReadDocument"
+      ],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/storage/download-headers.ts",
+      "lines": 15,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/storage/file-keys.ts",
+      "lines": 16,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/storage/malware-scan.ts",
+      "lines": 127,
+      "imports": [
+        "@/server/http/errors"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/storage/runtime-diagnostic.ts",
+      "lines": 114,
+      "imports": [],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/storage/upload-policy.ts",
+      "lines": 124,
+      "imports": [
+        "@/server/http/errors"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/storage/vps-storage.ts",
+      "lines": 80,
+      "imports": [
+        "@/server/http/errors",
+        "@/server/observability/safe-log"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    },
+    {
+      "path": "src/server/validation/schemas.ts",
+      "lines": 54,
+      "imports": [
+        "@/server/http/errors"
+      ],
+      "methods": [],
+      "accessChecks": [],
+      "status": "inventoried-not-runtime-verified"
+    }
+  ]
+}

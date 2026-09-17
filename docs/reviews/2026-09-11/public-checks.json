@@ -1,0 +1,605 @@
+{
+  "environment": "local dev; no configured database; public routes only",
+  "checks": [
+    {
+      "route": "/",
+      "width": 390,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "KMT Legal | Structured Legal Support for Business and Private Matters",
+      "pageErrors": []
+    },
+    {
+      "route": "/services",
+      "width": 390,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Legal Services | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/team",
+      "width": 390,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "KMT Legal Team",
+      "pageErrors": []
+    },
+    {
+      "route": "/articles",
+      "width": 390,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Legal Articles | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/case-studies",
+      "width": 390,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Anonymous Case Studies | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/media",
+      "width": 390,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Media and Content | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/contact",
+      "width": 390,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Contact KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/book-consultation",
+      "width": 390,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Request an Initial Consultation | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/privacy",
+      "width": 390,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Privacy Policy | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/terms",
+      "width": 390,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 0,
+      "title": "Terms and Notices | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar",
+      "width": 390,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "KMT Legal | دعم قانوني منظم للشركات والأفراد",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/services",
+      "width": 390,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "الخدمات القانونية | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/team",
+      "width": 390,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "فريق KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/articles",
+      "width": 390,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "مقالات قانونية | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/case-studies",
+      "width": 390,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "دراسات حالة مجهولة | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/media",
+      "width": 390,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "الإعلام والمحتوى | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/contact",
+      "width": 390,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "تواصل مع KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/book-consultation",
+      "width": 390,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "طلب استشارة أولية | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/privacy",
+      "width": 390,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "سياسة الخصوصية | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/terms",
+      "width": 390,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 0,
+      "title": "الشروط والتنبيهات | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/",
+      "width": 768,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "KMT Legal | Structured Legal Support for Business and Private Matters",
+      "pageErrors": []
+    },
+    {
+      "route": "/services",
+      "width": 768,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Legal Services | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/team",
+      "width": 768,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "KMT Legal Team",
+      "pageErrors": []
+    },
+    {
+      "route": "/articles",
+      "width": 768,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Legal Articles | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/case-studies",
+      "width": 768,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Anonymous Case Studies | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/media",
+      "width": 768,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Media and Content | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/contact",
+      "width": 768,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Contact KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/book-consultation",
+      "width": 768,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Request an Initial Consultation | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/privacy",
+      "width": 768,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Privacy Policy | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/terms",
+      "width": 768,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 0,
+      "title": "Terms and Notices | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar",
+      "width": 768,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "KMT Legal | دعم قانوني منظم للشركات والأفراد",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/services",
+      "width": 768,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "الخدمات القانونية | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/team",
+      "width": 768,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "فريق KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/articles",
+      "width": 768,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "مقالات قانونية | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/case-studies",
+      "width": 768,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "دراسات حالة مجهولة | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/media",
+      "width": 768,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "الإعلام والمحتوى | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/contact",
+      "width": 768,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "تواصل مع KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/book-consultation",
+      "width": 768,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "طلب استشارة أولية | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/privacy",
+      "width": 768,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "سياسة الخصوصية | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/terms",
+      "width": 768,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 0,
+      "title": "الشروط والتنبيهات | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/",
+      "width": 1440,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "KMT Legal | Structured Legal Support for Business and Private Matters",
+      "pageErrors": []
+    },
+    {
+      "route": "/services",
+      "width": 1440,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Legal Services | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/team",
+      "width": 1440,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "KMT Legal Team",
+      "pageErrors": []
+    },
+    {
+      "route": "/articles",
+      "width": 1440,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Legal Articles | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/case-studies",
+      "width": 1440,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Anonymous Case Studies | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/media",
+      "width": 1440,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Media and Content | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/contact",
+      "width": 1440,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Contact KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/book-consultation",
+      "width": 1440,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Request an Initial Consultation | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/privacy",
+      "width": 1440,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 1,
+      "title": "Privacy Policy | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/terms",
+      "width": 1440,
+      "status": 200,
+      "dir": "ltr",
+      "overflow": false,
+      "h1": 0,
+      "title": "Terms and Notices | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar",
+      "width": 1440,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "KMT Legal | دعم قانوني منظم للشركات والأفراد",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/services",
+      "width": 1440,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "الخدمات القانونية | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/team",
+      "width": 1440,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "فريق KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/articles",
+      "width": 1440,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "مقالات قانونية | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/case-studies",
+      "width": 1440,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "دراسات حالة مجهولة | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/media",
+      "width": 1440,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "الإعلام والمحتوى | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/contact",
+      "width": 1440,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "تواصل مع KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/book-consultation",
+      "width": 1440,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "طلب استشارة أولية | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/privacy",
+      "width": 1440,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 1,
+      "title": "سياسة الخصوصية | KMT Legal",
+      "pageErrors": []
+    },
+    {
+      "route": "/ar/terms",
+      "width": 1440,
+      "status": 200,
+      "dir": "rtl",
+      "overflow": false,
+      "h1": 0,
+      "title": "الشروط والتنبيهات | KMT Legal",
+      "pageErrors": []
+    }
+  ]
+}
