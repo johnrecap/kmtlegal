@@ -5,7 +5,10 @@
 Stabilize and theme the homepage (`/`, `/ar`) on its locked component set:
 remove motion duplication, stabilize first render, reduce scroll conflicts,
 land light + dark + mobile + RTL + spacing + typography + accessibility.
-Handle the Insights section strictly per the Phase 01 owner ruling. No new
+Handle the Insights section per the FINAL Phase 01 owner ruling: REMOVE the
+public Homepage InsightsLedger section unconditionally — no replacement
+section; preserve visual spacing/rhythm between the surrounding homepage
+sections; KEEP Homepage Representative Matters unchanged. No new
 components.
 
 ## Current State
@@ -21,11 +24,13 @@ GSAP parallax + `useScroll` StickyScroll + Timeline rail + reveal IO).
 
 ## Target State
 
-Same section order and locked components; one motion owner per property;
-stable SSR first paint; full light theme; clean mobile stacking; correct RTL;
-accessible picker/radiogroup and link lists. Insights section present or
-removed exactly per the Phase 01 ruling (backend/admin article pipeline
-untouched either way).
+Same section order (minus the removed Insights section) and locked
+components; one motion owner per property; stable SSR first paint; full
+light theme; clean mobile stacking; correct RTL; accessible picker/
+radiogroup and link lists. The InsightsLedger section is REMOVED
+unconditionally per the final Phase 01 ruling (Homepage Insights REMOVE, no
+replacement); surrounding section rhythm/spacing preserved so no visual gap
+remains; MatterRows kept unchanged; backend/admin article pipeline untouched.
 
 ## Component Decisions
 
@@ -40,16 +45,18 @@ untouched either way).
 | Representative matters | Card Hover Effect | KEEP CURRENT | Card Hover Effect | Aceternity UI | https://ui.aceternity.com/components/card-hover-effect |
 | Industries entrances | Custom ledger + Blur Fade entrances | KEEP CURRENT | Blur Fade | Magic UI | https://magicui.design/docs/components/blur-fade |
 | Team showcase | Focus Cards | KEEP CURRENT | Focus Cards | Aceternity UI | https://ui.aceternity.com/components/focus-cards |
-| Insights section | InsightsLedger | REMOVE (only if Phase 01 ruling = HIDE PUBLIC for Articles; else KEEP CURRENT) | None | — | — |
+| Insights section | InsightsLedger | REMOVE — FINAL per Phase 01 owner ruling (no replacement; rhythm preserved) | None | — | — |
 | Section entrances (general) | Mixed | KEEP CURRENT (add Blur Fade only where entrance adds value) | Blur Fade | Magic UI | https://magicui.design/docs/components/blur-fade |
 
 ## Tasks
 
-- [ ] TASK-03-01 Confirm Phase 01 ruling on record; if HIDE PUBLIC for
-  Articles, remove the home `InsightsLedger` block + its public links only
-  (keep `InsightsLedger` code path for non-public use only if referenced
-  elsewhere, else leave the component file untouched for Phase 12 audit).
-  If KEEP PUBLIC, leave Insights intact and themed.
+- [ ] TASK-03-01 Remove the home `InsightsLedger` block + its public links
+  unconditionally (final Phase 01 ruling: Homepage Insights REMOVE). Do NOT
+  add a replacement section; preserve visual spacing/rhythm between the
+  surrounding homepage sections so no gap remains. KEEP `MatterRows`
+  (Representative Matters) fully unchanged. Leave the `InsightsLedger`
+  component code path untouched for the Phase 12 dead-code audit (do not
+  delete shared component files in this phase).
 - [ ] TASK-03-02 Hero first-render stabilization: SSR/hydration contract
   (single visual tree, `initiallyStable` stats, CSS/variant entrances only),
   `ScrollTrigger.refresh()` timing, spotlight off-screen unmount behavior.
@@ -105,7 +112,8 @@ untouched either way).
 
 ## Acceptance Criteria
 
-- [ ] Insights handled exactly per Phase 01 ruling; link grep clean.
+- [ ] InsightsLedger section removed with no replacement; surrounding rhythm/
+  spacing verified (no visual gap); MatterRows intact; link grep clean.
 - [ ] No layout shift on first paint; console clean; reduced-motion verified.
 - [ ] EN+AR × light+dark × 390/768/1024/1440 pass.
 - [ ] Picker + CTAs fully keyboard operable.

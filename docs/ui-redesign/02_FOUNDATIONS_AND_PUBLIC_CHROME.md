@@ -5,7 +5,9 @@
 Land the shared public foundation every later public phase builds on:
 semantic theme tokens (dark deep-black + light legal-paper, logo-derived
 gold), single-owner motion table with Lenis scoping, stabilized locked
-header family, kept Aceternity dock, and themed custom footer. Verify the
+header family, kept Aceternity dock, and themed custom footer. Execute the
+chrome-scope half of the final Phase 01 rulings (remove deferred entries
+from public navigation/discovery; routes untouched). Verify the
 Magic Animated Theme Toggler against the real `next-themes` setup; on
 failure mark BLOCKED and keep the current toggle.
 
@@ -52,6 +54,11 @@ failure mark BLOCKED and keep the current toggle.
   redesign Client/Admin theme surfaces (Client theming is Phase 07; Admin
   surfaces are Phase 09). If changing the shared `ThemeToggle` alone is
   sufficient, client/admin shell files stay untouched.
+- Deferred-content visibility (final Phase 01 rulings): Articles/Insights,
+  Case Studies, and Media entries are REMOVED from public navigation/
+  discovery (EN + AR); no replacement nav item is invented; Services/Team
+  navigation and the Consultation CTA stay intact. Actual article/case-study/
+  media ROUTES are NOT changed in Phase 02 (route/SEO execution is Phase 06).
 
 ## Component Decisions
 
@@ -65,6 +72,7 @@ failure mark BLOCKED and keep the current toggle.
 | Theme toggle control | `ThemeToggle` | REPLACE WITH: Magic UI Animated Theme Toggler (conditional, see tasks) | Animated Theme Toggler | Magic UI | https://magicui.design/docs/components/animated-theme-toggler |
 | Footer chrome + CTA | Custom footer + Border Beam + Highlighter wrapper | KEEP CURRENT | Border Beam, Highlighter | Magic UI | https://magicui.design/docs/components/border-beam, https://magicui.design/docs/components/highlighter |
 | Smooth scroll | Global Lenis provider | KEEP CURRENT (scope narrowed per motion table) | None (no new component) | — | — |
+| Deferred nav entries (Articles/Case Studies/Media) | `navItems` entries in `public-content.en/ar` + header insights group | REMOVE (EN + AR; no replacement item invented) | None | — | — |
 
 ## Tasks
 
@@ -106,10 +114,20 @@ failure mark BLOCKED and keep the current toggle.
   (record justification). On ANY incompatibility: mark
   BLOCKED — OWNER DECISION REQUIRED with evidence and STOP this task,
   keeping the current `ThemeToggle`.
-- [ ] TASK-02-11 Regression sweep: home + one directory + booking + contact in
+- [ ] TASK-02-11 Public chrome deferred-content visibility (final Phase 01
+  rulings — Articles HIDE, Case Studies HIDE, Media DELETE): REMOVE the
+  Articles/Insights, Case Studies, and Media entries from public navigation/
+  discovery for EN and AR (nav-item sources + header insights group, desktop
+  + mobile drawer). Verify the footer contains no links to these areas (Phase
+  01 proved none — re-grep to confirm). Invent NO replacement nav item. Keep
+  Services/Team navigation and the Consultation CTA intact. This task changes
+  ONLY shared public chrome/navigation — do NOT change the actual
+  article/case-study/media routes, route files, sitemap, or metadata (owned
+  by Phase 06).
+- [ ] TASK-02-12 Regression sweep: home + one directory + booking + contact in
   EN + AR, light + dark, mobile + desktop; console clean; no hydration
   warnings.
-- [ ] TASK-02-12 Phase commit (foundation scope only) per 00_MASTER_PLAN, then STOP.
+- [ ] TASK-02-13 Phase commit (foundation scope only) per 00_MASTER_PLAN, then STOP.
 
 ## Files Expected To Change
 
@@ -121,14 +139,16 @@ failure mark BLOCKED and keep the current toggle.
   `src/components/layout/public-shell.tsx`,
   `src/components/layout/public-floating-dock.tsx`,
   `src/components/theme/theme-toggle.tsx` (only if TASK-02-10 verifies),
-  new vendor file for the toggler (only if TASK-02-10 verifies).
+  new vendor file for the toggler (only if TASK-02-10 verifies),
+  `src/content/public-content.en.ts` + `public-content.ar.ts` (nav-item
+  removal for TASK-02-11 only).
 
 ## Files That Must NOT Change
 
 - Page views and booking/chat logic (`public-pages.tsx`,
   `consultation-booking-chat.tsx`, forms), backend/API/database/auth,
-  client portal files, admin files, routes/sitemap,
-  `docs/KMT_COMPLETE_UI_INVENTORY.md`.
+  client portal files, admin files, article/case-study/media route files,
+  sitemap, metadata, `docs/KMT_COMPLETE_UI_INVENTORY.md`.
 
 ## Dependencies
 
@@ -150,11 +170,16 @@ failure mark BLOCKED and keep the current toggle.
 - [ ] Motion-ownership table complete; no property has two drivers.
 - [ ] Header/dock/footer pass EN+AR × light+dark × 390/1440 with clean console.
 - [ ] Toggler either integrated + verified or marked BLOCKED with evidence.
+- [ ] No public-header navigation entry exposes Articles, Case Studies, or
+  Media (EN + AR verified, desktop + mobile drawer); no replacement nav item
+  invented; Services/Team navigation and Consultation CTA unaffected.
 - [ ] One phase commit; STOP.
 
 ## Visual QA
 
 - [ ] Header pill/flyout/drawer captures EN+AR, light+dark, top+scrolled.
+- [ ] Nav captures proving no Articles/Case Studies/Media entry (EN+AR,
+  desktop + drawer).
 - [ ] Footer CTA + grid + legal bar captures, both themes.
 - [ ] Dock visible on home, hidden on `/book-consultation` (+ AR).
 

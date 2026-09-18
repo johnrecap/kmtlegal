@@ -92,6 +92,10 @@ linked from production navigation.
 
 - Phases 03–11 COMPLETE and stable. Nothing consumes the lab; lab mirrors
   production.
+- Ownership boundary (final Phase 01 rulings): active Media feature + route/
+  render/SEO removal is owned by Phase 06 and must already be done — it is
+  NOT postponed to Phase 12. Phase 12 removes ONLY remaining proven-dead
+  orphan files/imports/styles after repository-wide deletion proof.
 
 ## Risks
 

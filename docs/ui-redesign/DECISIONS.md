@@ -37,6 +37,10 @@
   replace it with a new component. Preserve surrounding homepage section rhythm
   and spacing so no visual gap remains.
 - Admin + backend content systems (ArticleForm, CaseStudyForm, content API, database): PRESERVE regardless of public visibility ruling.
+- Execution ownership (decisions above unchanged): public navigation/discovery
+  removal → Phase 02; Homepage Insights removal → Phase 03; public route/SEO
+  hiding (articles, case studies) + active Media feature removal → Phase 06;
+  remaining proven-dead orphans only → Phase 12.
 
 ## # CONSULTATION ASSISTANT
 

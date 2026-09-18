@@ -68,11 +68,11 @@ Every component-selection instruction uses exactly one of:
 | Phase | Name | File | Depends On | Exit Gate |
 |---|---|---|---|---|
 | 01 | Scope + deferred public content | `01_SCOPE_AND_DEFERRED_CONTENT.md` | Inventory | `DECISION REQUIRED` block answered by owner (KEEP PUBLIC / HIDE PUBLIC / DELETE × Articles, Case Studies, Media) |
-| 02 | Foundations + public chrome | `02_FOUNDATIONS_AND_PUBLIC_CHROME.md` | 01 | Tokens + motion-ownership table landed; header/dock/footer stable EN+AR, light+dark |
-| 03 | Homepage | `03_HOME_PAGE.md` | 01, 02 | All home sections pass QA; Insights handled per Phase 01 ruling |
+| 02 | Foundations + public chrome | `02_FOUNDATIONS_AND_PUBLIC_CHROME.md` | 01 | Tokens + motion-ownership table landed; header/dock/footer stable EN+AR, light+dark; public navigation reflects final Phase 01 rulings (no Articles/Case Studies/Media entries, EN+AR) |
+| 03 | Homepage | `03_HOME_PAGE.md` | 01, 02 | Homepage InsightsLedger removed with section rhythm preserved; Representative Matters kept; all home sections pass QA |
 | 04 | Consultation Assistant | `04_CONSULTATION_ASSISTANT.md` | 02 | Conversation-only booking flow passes QA; no stepper UI visible |
 | 05 | Services + Team | `05_SERVICES_AND_TEAM.md` | 01, 02 | Glowing-Effect services, Focus-Cards team, dossier/detail + mobile Accordions pass QA |
-| 06 | Remaining public core | `06_REMAINING_PUBLIC_CORE.md` | 02 (01 for exclusions) | Contact/Policy/Setup/Return/Receipt/Login/Install pass QA |
+| 06 | Remaining public core | `06_REMAINING_PUBLIC_CORE.md` | 02, 03, 05 (01 final rulings) | Contact/Policy/Setup/Return/Receipt/Login/Install pass QA; Articles + Case Studies hidden from public routing/SEO (backend/admin preserved); Media public feature removed |
 | 07 | Client foundations | `07_CLIENT_FOUNDATIONS.md` | 02 | Client shell/nav/tokens/panels/pagination stable; no page redesigns yet |
 | 08 | Client pages | `08_CLIENT_PAGES.md` | 07 | All 8 client pages pass QA on locked components |
 | 09 | Admin foundations | `09_ADMIN_FOUNDATIONS.md` | 02 | Shared admin primitives built once, shown in Design Lab; shared DashboardShell chrome wiring included; no admin content-page wiring |

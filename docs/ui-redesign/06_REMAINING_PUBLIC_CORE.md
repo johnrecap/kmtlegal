@@ -4,8 +4,10 @@
 
 Bring Contact, Privacy, Terms, Client Account Setup, Payment Return, Payment
 Receipt, Login, and Install onto the locked components (Stateful Button,
-Accordion, Scroll Progress) with full theming. Exclude Articles, Case
-Studies, and Media unless the Phase 01 ruling is reversed by the owner.
+Accordion, Scroll Progress) with full theming. Phase 06 additionally owns
+the public-surface execution of the FINAL Phase 01 rulings: Articles HIDE
+PUBLIC, Case Studies HIDE PUBLIC, Media DELETE (backend/admin article and
+case-study systems preserved; social-draft/admin functionality preserved).
 
 ## Current State
 
@@ -26,6 +28,16 @@ Studies, and Media unless the Phase 01 ruling is reversed by the owner.
   form + loading `Button`.
 - Install (`install-wizard.tsx`): 4 numbered `Card`s + status aside; plain
   buttons.
+- Deferred areas (final Phase 01 rulings; evidence in
+  `01_SCOPE_AND_DEFERRED_CONTENT.md`): Articles (`ArticlesPageView`
+  `public-pages.tsx:633` + `ArticleDetailPageView` `:660`, routes
+  `/articles`, `/articles/[slug]` + AR catch-all arms); Case Studies
+  (`CaseStudiesPageView` `:756` + `CaseStudyDetailPageView` `:783`, routes
+  `/case-studies`, `/case-studies/[slug]` + AR arms); Media (`MediaPageView`
+  `:855`, static `mediaItems` in `public-content.en.ts:147-166`, routes
+  `/media` + AR arm). Public renderers are DB-backed for articles/case
+  studies (PUBLISHED + `publishedAt`, + `isAnonymized` for studies) and fully
+  static for media (no model, no API, no admin writer).
 
 ## Target State
 
@@ -36,7 +48,18 @@ groups). Scroll Progress drives policy reading progress. Receipt keeps its
 current print-first document. The Contact WhatsApp card is REMOVED; WhatsApp
 remains available through the global Floating Dock. Contact retains the
 contact form, office/branch information, and phone/email links.
-Deferred content untouched.
+DEFERRED PUBLIC CONTENT EXECUTION (final Phase 01 rulings): Articles and
+Case Studies are hidden from public routing/SEO (not discoverable, absent
+from sitemap, no public metadata emission, no public internal links, no
+public rendering path) while their database models, APIs, forms, admin
+management, publishing workflows, and stored data stay fully intact;
+Homepage Representative Matters / `MatterRows` is NOT modified. Media is
+removed as a public feature (route, render branch, navigation references,
+metadata, sitemap entry, and Media-only static data that becomes unused);
+`SocialDraftForm`, `AiSocialDraftForm`, admin social functionality, the
+social-draft counter/data, and shared UI components are NOT removed — only
+code proven Media-specific is removed. Active Media removal happens HERE,
+not in Phase 12 (Phase 12 handles only proven-dead orphans afterwards).
 
 ## Component Decisions
 
@@ -54,6 +77,9 @@ Deferred content untouched.
 | Login submit | Loading Button | REPLACE WITH: Aceternity UI Stateful Button | Stateful Button | Aceternity UI | https://ui.aceternity.com/components/stateful-button |
 | Install groups | Numbered Cards | REPLACE WITH: Animate UI Accordion (groups only; card content kept) | Accordion | Animate UI | https://animate-ui.com/docs/components/radix/accordion |
 | Install async actions | Plain buttons | REPLACE WITH: Aceternity UI Stateful Button | Stateful Button | Aceternity UI | https://ui.aceternity.com/components/stateful-button |
+| Articles public surface (HIDE PUBLIC) | Public routes `/articles`, `/articles/[slug]` + AR arms, sitemap slugs, metadata, internal links | REMOVE public availability (routes per Next.js routing architecture; sitemap entries; metadata emission; internal links; rendering path). PRESERVE models, APIs, ArticleForm, admin management, workflow, data | None (removal, no component) | — | — |
+| Case Studies public surface (HIDE PUBLIC) | Public routes `/case-studies`, `/case-studies/[slug]` + AR arms, sitemap slugs, metadata, internal links | REMOVE public availability (same five removals). PRESERVE models, APIs, CaseStudyForm, admin management, workflow, data. KEEP MatterRows untouched | None (removal, no component) | — | — |
+| Media public feature (DELETE) | `/media` + AR arm, `MediaPageView` branch, nav refs, metadata, sitemap entry, `mediaItems` static data | REMOVE public feature (route, render branch, nav refs, metadata, sitemap, Media-only dead data). KEEP SocialDraftForm, AiSocialDraftForm, admin social functionality, counter/data, shared UI | None (removal, no component) | — | — |
 
 ## Tasks
 
@@ -85,27 +111,79 @@ Deferred content untouched.
   internal-only route; full AR RTL verification included.
 - [ ] TASK-06-10 AR sweep: every page above in Arabic RTL; translated strings
   complete for new/changed copy; `dir` islands intact.
-- [ ] TASK-06-11 Full sweep EN+AR × light+dark × 390/1440 + submit-state
+- [ ] TASK-06-11 ARTICLES HIDE PUBLIC: remove `/articles` + `/articles/[slug]`
+  EN route entries and the AR catch-all articles arms (render + metadata
+  mapping) per the Next.js routing architecture; remove article sitemap
+  entries (static + DB-backed slugs); remove article public metadata
+  emission; remove public internal article links (nav already done in Phase
+  02; home ledger done in Phase 03; detail related/back/breadcrumb links die
+  with the routes). Expected public result: not discoverable, absent from
+  sitemap, no public metadata, no public internal links, no public rendering
+  path. PRESERVE: `Article` model/table, article APIs, `ArticleForm`, admin
+  Content article management, publishing workflow, stored data — do NOT
+  delete backend/admin article code.
+- [ ] TASK-06-12 CASE STUDIES HIDE PUBLIC: same five removals for
+  `/case-studies` + `/case-studies/[slug]` + AR equivalents (render, sitemap
+  static + DB slugs, metadata, internal links/discovery). PRESERVE: case-study
+  models/data, APIs, `CaseStudyForm`, admin management, publishing workflow.
+  KEEP Homepage Representative Matters — do NOT modify/remove `MatterRows`
+  (Phase 01 proved it independent).
+- [ ] TASK-06-13 MEDIA DELETE PUBLIC FEATURE: remove `/media` EN route entry
+  + AR Media route arm + `MediaPageView` render branch + media navigation
+  references + `mediaMetadata` emission + sitemap `/media` entry + static
+  Media-only data that becomes unused (`mediaItems` only if proven dead by
+  repo-wide grep). Do NOT remove `SocialDraftForm`, `AiSocialDraftForm`,
+  admin social content functionality, the unrelated social-draft
+  counter/data, or shared UI components — only code proven Media-specific.
+  Active removal happens in THIS phase; Phase 12 handles only remaining
+  proven-dead orphans afterwards.
+- [ ] TASK-06-14 Deferred link/SEO sweep: repo-wide re-grep for
+  `/articles|/case-studies|/media` across `src/`; every remaining match must
+  be backend/admin-legitimate (API routes, admin hub/forms, services) or be
+  removed; sitemap output verified without deferred URLs; no public metadata
+  emitted for deferred paths.
+- [ ] TASK-06-15 Deferred QA verification: ARTICLES — public EN route
+  unavailable, detail route unavailable, AR equivalents unavailable, absent
+  from sitemap, admin article management still works. CASE STUDIES — public
+  EN route unavailable, detail route unavailable, AR equivalents unavailable,
+  absent from sitemap, admin case-study management still works,
+  Representative Matters still works. MEDIA — route removed/unavailable, AR
+  equivalent removed/unavailable, sitemap/metadata references removed, no
+  Media-specific dead imports, admin social-draft functionality still works.
+- [ ] TASK-06-16 Full sweep EN+AR × light+dark × 390/1440 + submit-state
   captures; phase commit; STOP.
 
 ## Files Expected To Change
 
-- `contact-form.tsx`, `public-pages.tsx` (contact/policy views),
-  `policy-toc.tsx`, `client-account-setup-form.tsx` +
+- `contact-form.tsx`, `public-pages.tsx` (contact/policy views + deferred
+  rendering-branch removals), `policy-toc.tsx`, `client-account-setup-form.tsx` +
   `-page.tsx`, payment return page, receipt styles (print only),
   `login-form.tsx` + login page, `install-wizard.tsx`, vendor files for
   Stateful Button + Scroll Progress.
+- Deferred execution (only as required by the final Phase 01 rulings):
+  public route entry files for Articles / Case Studies / Media
+  (`(public-en)/articles/`, `(public-en)/case-studies/`,
+  `(public-en)/media/`), the Arabic catch-all public route mapping
+  (`ar/[[...path]]/page.tsx` + `renderPublicPath`/`metadataForPublicPath`
+  arms in `public-pages.tsx`), `src/app/sitemap.ts`, public
+  pages/components only where deferred rendering branches are removed,
+  Media-only static content source if proven dead by grep.
 
 ## Files That Must NOT Change
 
 - Contact/booking/payment/auth APIs, validation rules, poller timing logic,
-  home/services/team/booking views, admin, client, deferred public content,
-  routes, inventory doc.
+  home/services/team/booking views, admin, client, inventory doc.
+- Backend/Admin implementations for Articles and Case Studies must not change.
+  Public deferred-content route/render/SEO code may change only as required
+  by the final Phase 01 owner rulings.
 
 ## Dependencies
 
-- Phase 02 (tokens, toggler outcome), Phase 05 (Accordion vendor pattern).
-  Blocked on nothing else; excludes Phase 01-deferred pages.
+- Phase 02 (tokens, toggler outcome, deferred nav entries removed), Phase 03
+  (Homepage Insights removed), Phase 05 (Accordion vendor pattern). Final
+  Phase 01 owner rulings (Articles HIDE, Case Studies HIDE, Media DELETE).
+  Phase 02 + Phase 03 should be COMPLETE before the TASK-06-14 deferred
+  link sweep so the sweep verifies final state.
 
 ## Risks
 
@@ -114,6 +192,11 @@ Deferred content untouched.
   submit handlers; keep native `type="submit"` support.
 - Scroll Progress offset vs sticky header height → verify per breakpoint.
 - Install is rarely exercised → run its full wizard path in QA explicitly.
+- Deferred hiding breaking admin/backend or shared components → mitigate by
+  touching ONLY the enumerated public route/render/SEO surfaces; re-run
+  admin content hub + public services/team/home smoke after TASK-06-11–13.
+- Media deletion overreach (social/admin collateral) → mitigate by the
+  Media-only proof rule in TASK-06-13; any doubt → keep the code, record why.
 
 ## Acceptance Criteria
 
@@ -123,6 +206,14 @@ Deferred content untouched.
   information, and phone/email links intact; no new WhatsApp CTA card added.
 - [ ] Policy progress bar present without layout shift.
 - [ ] Receipt unchanged in behavior; print output verified.
+- [ ] ARTICLES: public EN route + detail route + AR equivalents unavailable;
+  absent from sitemap; admin article management still works.
+- [ ] CASE STUDIES: public EN route + detail route + AR equivalents
+  unavailable; absent from sitemap; admin case-study management still works;
+  Representative Matters still works.
+- [ ] MEDIA: route + AR equivalent removed/unavailable; sitemap/metadata
+  references removed; no Media-specific dead imports; admin social-draft
+  functionality still works.
 - [ ] EN+AR × light+dark × 390/1440 pass; one phase commit; STOP.
 
 ## Visual QA
@@ -134,6 +225,9 @@ Deferred content untouched.
 
 - [ ] `npm run typecheck`, `npm run lint`, production build green.
 - [ ] Form-submit + payment-poller + login + install E2E pass.
+- [ ] Deferred E2E: deferred public URLs unavailable (EN + AR, list + detail);
+  sitemap contains no deferred URLs; admin content hub (articles, case
+  studies, social) + public home/services/team smoke green.
 
 ## Status
 
