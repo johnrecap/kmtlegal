@@ -34,7 +34,9 @@ preview variants), Menu (row actions), Popover (advanced filters +
 notification), Tooltip, Stateful Button, File Upload, Pagination, plus
 documented filter conventions and row-action conventions. Every primitive
 shown in the Design Lab (Phase 12 wires the gallery; primitives ship with
-gallery-ready examples here). No admin page imports a one-off overlay again.
+gallery-ready examples here). No NEW one-off overlay is introduced. Shared
+shell overlays use the Phase 09 kit. Existing content-page disclosures
+remain until their locked Phase 10/11 migration.
 
 ## Component Decisions
 
@@ -101,8 +103,9 @@ gallery-ready examples here). No admin page imports a one-off overlay again.
 
 ## Dependencies
 
-- Phase 02 (tokens, motion ownership). Blocks Phases 10–11. Accordion vendor
-  pattern from Phase 05; Stateful/File Upload patterns from Phase 06.
+- Phase 02 (tokens, motion ownership). Blocks Phases 10–11. Accordion →
+  reuse Phase 05; Stateful Button → reuse Phase 06; File Upload → reuse
+  Phase 08; Pagination → reuse Phase 07 where applicable.
 
 ## Risks
 

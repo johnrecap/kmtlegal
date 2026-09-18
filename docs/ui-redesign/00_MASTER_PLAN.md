@@ -75,7 +75,7 @@ Every component-selection instruction uses exactly one of:
 | 06 | Remaining public core | `06_REMAINING_PUBLIC_CORE.md` | 02 (01 for exclusions) | Contact/Policy/Setup/Return/Receipt/Login/Install pass QA |
 | 07 | Client foundations | `07_CLIENT_FOUNDATIONS.md` | 02 | Client shell/nav/tokens/panels/pagination stable; no page redesigns yet |
 | 08 | Client pages | `08_CLIENT_PAGES.md` | 07 | All 8 client pages pass QA on locked components |
-| 09 | Admin foundations | `09_ADMIN_FOUNDATIONS.md` | 02 | Shared admin primitives built once, shown in Design Lab; no page wiring |
+| 09 | Admin foundations | `09_ADMIN_FOUNDATIONS.md` | 02 | Shared admin primitives built once, shown in Design Lab; shared DashboardShell chrome wiring included; no admin content-page wiring |
 | 10 | Admin list pages | `10_ADMIN_LIST_PAGES.md` | 09 | All admin lists on standard list architecture pass QA |
 | 11 | Admin detail/forms | `11_ADMIN_DETAIL_AND_FORM_PAGES.md` | 09, 10 | All admin detail/form groups pass QA on locked shared components |
 | 12 | Cleanup + Design Lab | `12_CLEANUP_AND_DESIGN_LAB.md` | 03–11 | Legacy dead code removed per deletion protocol; Design Lab complete |

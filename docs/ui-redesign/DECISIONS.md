@@ -102,7 +102,7 @@
 - AI assistant: Magic Animated List + Aceternity Placeholders And Vanish Input — APPROVED
 - Human team chat: KEEP normal textarea composer; Vanish Input: REJECTED; AI-chat styling: REJECTED; the two chats stay deliberately distinct — APPROVED
 - Files upload: Aceternity File Upload — APPROVED
-- Payments async action: Aceternity Stateful Button; mobile payment details: Animate UI Accordion — APPROVED
+- Payments navigation: `continuePayment` checkout link, `followStatus` return link, case links, receipt view links — KEEP CURRENT as semantic links; Stateful Button for them: REJECTED. Stateful Button applies ONLY to a genuine async mutation — none verified on `/client/payments`, none introduced; mobile payment details: Animate UI Accordion — APPROVED
 - Profile save: Aceternity Stateful Button; mobile account information: Animate UI Accordion — APPROVED
 
 ## # ADMIN

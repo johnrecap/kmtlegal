@@ -6,7 +6,8 @@ Redesign the 8 client pages on the Phase 07 foundation using only the locked
 client components: Sidebar/Sheet/Tooltip shell, kept DataTable +
 DataRecordCard, shadcn Pagination, Accordion for mobile detail groups,
 Animated List + Vanish Input for the AI assistant (only), native textarea
-for team chat, File Upload for files, Stateful Button for async actions.
+for team chat, File Upload for files, Stateful Button for genuine async
+mutations only (profile save; never for semantic navigation links).
 
 ## Current State
 
@@ -27,8 +28,10 @@ for team chat, File Upload for files, Stateful Button for async actions.
 Every page keeps its data, actions, and business behavior; presentation uses
 the locked set. AI assistant and human team chat look deliberately different.
 Mobile detail groups collapse via Accordion while desktop panels stay fully
-visible. Uploads go through File Upload; async saves/payments through
-Stateful Button; lists paginate through shadcn Pagination.
+visible. Uploads go through File Upload; the profile save (a genuine async
+mutation) uses Stateful Button; payment continue/follow/status/receipt
+actions stay semantic navigation links (never buttons); lists paginate
+through shadcn Pagination.
 
 ## Component Decisions
 
@@ -41,7 +44,7 @@ Stateful Button; lists paginate through shadcn Pagination.
 | AI assistant composer | Plain Textarea + send | REPLACE WITH: Aceternity Placeholders And Vanish Input | Placeholders And Vanish Input | Aceternity UI | https://ui.aceternity.com/components/placeholders-and-vanish-input |
 | Team chat composer + styling | Textarea composer, distinct surface | KEEP CURRENT (no Vanish Input, no AI-chat styling) | None | — | — |
 | Files upload | Native file input | REPLACE WITH: Aceternity UI File Upload | File Upload | Aceternity UI | https://ui.aceternity.com/components/file-upload |
-| Payments async actions | Plain buttons/links | REPLACE WITH: Aceternity UI Stateful Button | Stateful Button | Aceternity UI | https://ui.aceternity.com/components/stateful-button |
+| Payments navigation actions | Semantic links (`continuePayment` checkout link, `followStatus` return link, case links, receipt view links) | KEEP CURRENT as semantic links — NEVER replace with Stateful Button | None | — | — |
 | Payments mobile details | Static stacked cards | REPLACE WITH: Animate UI Accordion | Accordion | Animate UI | https://animate-ui.com/docs/components/radix/accordion |
 | Profile save | Plain save button | REPLACE WITH: Aceternity UI Stateful Button | Stateful Button | Aceternity UI | https://ui.aceternity.com/components/stateful-button |
 | Profile mobile account info | Static panel | REPLACE WITH: Animate UI Accordion | Accordion | Animate UI | https://animate-ui.com/docs/components/radix/accordion |
@@ -67,13 +70,17 @@ Stateful Button; lists paginate through shadcn Pagination.
   upload constraint exactly. Do NOT introduce visibility, owner,
   access-level, or any new field unless it is proven to exist in the actual
   current client form source. List table + mobile cards kept.
-- [ ] TASK-08-07 Payments: continue/follow actions → Stateful Buttons;
-  mobile payment details → Accordion; amounts/invoices/receipt links intact.
+- [ ] TASK-08-07 Payments: KEEP `continuePayment` checkout link,
+  `followStatus` return link, case links, and receipt view links as semantic
+  navigation links — do NOT convert them to Stateful Buttons. Stateful Button
+  applies ONLY to a genuine asynchronous mutation/action that waits for an
+  async operation; no such action is verified on `/client/payments`, so none
+  is introduced. Mobile payment details → Accordion; amounts/invoices intact.
 - [ ] TASK-08-08 Profile: save → Stateful Button (validation + status +
   refresh preserved); mobile account information → Accordion.
 - [ ] TASK-08-09 Full portal sweep: 8 pages EN+AR × light+dark × 390/1024/1440;
-  chat distinction captures; upload + payment + profile submit-state
-  captures; phase commit; STOP.
+  chat distinction captures; upload + profile submit-state captures (payment
+  navigation links verified as links); phase commit; STOP.
 
 ## Files Expected To Change
 
@@ -88,8 +95,9 @@ Stateful Button; lists paginate through shadcn Pagination.
 
 ## Dependencies
 
-- Phase 07 (foundation must be COMPLETE). Accordion/Stateful/File Upload
-  vendor patterns from Phases 05/06/09 as applicable.
+- Phase 07 (foundation must be COMPLETE). Accordion source/pattern →
+  Phase 05; Stateful Button → Phase 06; File Upload → Phase 08 installs it
+  if not already installed. Phase 08 does NOT depend on Phase 09.
 
 ## Risks
 
@@ -104,7 +112,9 @@ Stateful Button; lists paginate through shadcn Pagination.
 
 - [ ] AI vs team chat distinction visible and documented in captures.
 - [ ] No native file input remains on files page (grep proof); handler intact.
-- [ ] All async saves/payments use Stateful Button with correct states.
+- [ ] Profile save (genuine async mutation) uses Stateful Button with correct
+  states; payment navigation links remain semantic links (no button
+  treatment anywhere on `/client/payments`).
 - [ ] EN+AR × light+dark × viewports pass; one phase commit; STOP.
 
 ## Visual QA

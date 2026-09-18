@@ -24,10 +24,12 @@ Gateway, Pricing, Attempts, Webhooks).
 
 Uniform lists: same header/filter/count/table/mobile/pagination/row-action
 rhythm on every page; advanced filters live in Popover on desktop and Sheet
-on mobile; destructive/row dangers open Dialog (wired fully in Phase 11
-where the action lives; list side exposes the Menu items); finance sections
-navigate via Tabs with the five locked tabs; consultations outcome views via
-Tabs; content types via Tabs. Data, endpoints, and permissions unchanged.
+on mobile; delete/destructive actions remain operational in their current
+presentation — Phase 10 does NOT migrate destructive actions into Dialog
+(destructive Menu + Dialog migration occurs in Phase 11 where the action
+lives); finance sections navigate via Tabs with the five locked tabs;
+consultations outcome views via Tabs; content types via Tabs. Data,
+endpoints, and permissions unchanged.
 
 ## Component Decisions
 
@@ -61,8 +63,9 @@ Tabs; content types via Tabs. Data, endpoints, and permissions unchanged.
   pagination scaffold; edit/details entry points preserved (Accordion wiring
   in Phase 11).
 - [ ] TASK-10-05 Documents list: table + stacked cards kept; upload entry
-  preserved (File Upload wiring in Phase 11); delete confirmations open
-  Dialog (wired in Phase 11).
+  preserved (File Upload wiring in Phase 11). Delete/destructive actions
+  remain operational in their current presentation; Menu + Dialog migration
+  occurs in Phase 11.
 - [ ] TASK-10-06 Finance: section Tabs (Invoices, Gateway, Pricing, Attempts,
   Webhooks) with existing query state preserved; invoice table + attempt +
   webhook cards paginated via shared Pagination; webhook replay → Stateful
@@ -114,7 +117,9 @@ Tabs; content types via Tabs. Data, endpoints, and permissions unchanged.
   finance params) → preserve exact param names/values; test shared links.
 - Row-action Menu hiding a previously one-click action behind two clicks →
   keep primary open/edit actions as visible buttons where they are today;
-  Menu holds secondary/destructive items (record per-page map).
+  Menu holds fully functional non-destructive secondary items only in
+  Phase 10 (destructive items stay in their current presentation; record
+  the per-page map; Menu + Dialog migration in Phase 11).
 - Finance long-page anchors breaking under Tabs → preserve anchor targets
   per tab panel.
 
