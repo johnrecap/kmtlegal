@@ -171,6 +171,23 @@ describe("booking chat stage composition (source contract)", () => {
     expect(chatSource).toContain('<SlotChoicePanel key="slot-choice"');
   });
 
+  it("holds the compact density targets", () => {
+    // Shell + viewport.
+    expect(chatSource).toContain("h-[min(72vh,38rem)]");
+    expect(chatSource).toContain("min-h-[30rem]");
+    // Composer pill + send.
+    expect(chatSource).toContain("min-h-10 w-full");
+    expect(chatSource).toContain("h-11 w-11 shrink-0");
+    // Bubbles: 65–75% width, 15–16px text, tight padding.
+    expect(chatSource).toContain("max-w-[72%]");
+    expect(chatSource).toContain("text-[0.95rem]");
+    expect(chatSource).toContain("px-4 py-3");
+    // Small avatars, compact stage triggers.
+    expect(chatSource).toContain('shape="circle" size="sm"');
+    expect(chatSource).toContain("min-h-8");
+    expect(chatSource).toContain("text-[0.72rem]");
+  });
+
   it("guides the journey inside one console: intent, matter, info cards, new request", () => {
     expect(chatSource).toContain("intentPrompt");
     expect(chatSource).toContain("copy.matterPrompt");
@@ -288,7 +305,7 @@ describe("booking page zones (source contract)", () => {
   it("composes one centered assistant console with no external flow UI", () => {
     expect(pagesSource).toContain("ConsultationBookingChatFromQuery");
     expect(pagesSource).toContain("BookingFlowHeader");
-    expect(pagesSource).toContain("max-w-[64rem]");
+    expect(pagesSource).toContain("max-w-[56rem]");
     expect(pagesSource).not.toContain("BookingSupportPanel");
     expect(pagesSource).not.toContain("AfterSubmitStrip");
     expect(componentsSource).not.toContain("AfterSubmitStrip");

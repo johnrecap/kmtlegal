@@ -11,6 +11,7 @@ import { publicMotionIcon, publicMotionIconHalo, publicMotionTextLink } from "@/
 import { cn } from "@/lib/cn";
 import { localizedPublicHref, publicLocaleDirection, publicLocalePrefix, stripPublicLocalePrefix, type PublicLocale } from "@/lib/public-locale";
 import { PublicHeader } from "./public-header";
+import { PublicFloatingDock } from "./public-floating-dock";
 
 export type PublicNavItem = {
   label: string;
@@ -48,6 +49,11 @@ export function PublicShell({
     ? `${stripPublicLocalePrefix(currentPath)}${searchSuffix}`
     : `${publicLocalePrefix("ar")}${stripPublicLocalePrefix(currentPath) === "/" ? "" : stripPublicLocalePrefix(currentPath)}${searchSuffix}`;
   const languageHref = languageHrefOverride === undefined ? defaultLanguageHref : languageHrefOverride;
+  // The dock steps aside on the consultation route itself: its primary
+  // action IS that page, and a fixed overlay must never cover the
+  // assistant composer (a persistent focused input). Every other public
+  // route keeps the dock. Functional no-overlap wins over ubiquity here.
+  const hideDock = stripPublicLocalePrefix(currentPath) === "/book-consultation";
 
   return (
     <div
@@ -179,6 +185,10 @@ export function PublicShell({
           </div>
         </div>
       </footer>
+      {/* Public floating dock (consultation + WhatsApp): fixed overlay with
+          click-through surroundings, so it never blocks page content.
+          Hidden on the consultation route (see above). */}
+      {hideDock ? null : <PublicFloatingDock locale={locale} />}
     </div>
   );
 }

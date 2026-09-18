@@ -144,7 +144,7 @@ const assistantShellClasses = cn(
 
 const chipButtonClasses = cn(
   publicMotionButton,
-  "min-h-11 rounded-full border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-chip)] px-4 text-sm text-[var(--kmt-assistant-text)] hover:border-kmt-gold/60 hover:bg-kmt-gold hover:text-[#120d07]"
+  "min-h-10 rounded-full border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-chip)] px-4 text-sm text-[var(--kmt-assistant-text)] hover:border-kmt-gold/60 hover:bg-kmt-gold hover:text-[#120d07]"
 );
 
 const initialDraft: BookingDraft = {
@@ -808,17 +808,17 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         window (no layout jumping, input never pushed out of view). Growth
         is absorbed by the internal log scroll, not the page.
       */}
-      <div className="relative z-10 flex h-[min(76vh,44rem)] min-h-[34rem] min-w-0 flex-col max-sm:h-[min(82svh,42rem)] max-sm:min-h-[32rem]" data-testid="booking-chat-shell">
+      <div className="relative z-10 flex h-[min(72vh,38rem)] min-h-[30rem] min-w-0 flex-col max-sm:h-[min(84svh,38rem)] max-sm:min-h-[28rem]" data-testid="booking-chat-shell">
         {/*
           Simplified header: mark + name + live status + one-line scope,
           then the internal stage progress. Trust content moved into the
           conversation as the what-next info card (Phase 9).
         */}
-        <header className="shrink-0 px-5 pb-3 pt-5 sm:px-8 sm:pt-6">
-          <div className="flex min-w-0 items-center gap-4">
-            <KmtBrandLogo label={copy.assistantName} shape="circle" size="lg" variant="mark" />
+        <header className="shrink-0 px-4 pb-2 pt-4 sm:px-6 sm:pt-5">
+          <div className="flex min-w-0 items-center gap-3">
+            <KmtBrandLogo label={copy.assistantName} shape="circle" size="md" variant="mark" />
             <div className="min-w-0">
-              <p className="truncate text-xl font-semibold leading-tight sm:text-2xl">{copy.assistantName}</p>
+              <p className="truncate text-lg font-semibold leading-tight sm:text-xl">{copy.assistantName}</p>
               <p className="mt-1.5 flex items-center gap-2 text-sm font-medium text-[#2f7a3d] dark:text-[#7ad36a]">
                 <span className="h-2 w-2 shrink-0 rounded-full bg-current" aria-hidden="true" />
                 {copy.onlineNow}
@@ -833,7 +833,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         <div
           ref={logScrollRef}
           aria-busy={isBusy ? "true" : "false"}
-          className="kmt-chat-scrollbar mx-5 mb-2 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl bg-[var(--kmt-assistant-log)] px-4 py-5 sm:mx-8 sm:px-6"
+          className="kmt-chat-scrollbar mx-4 mb-2 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl bg-[var(--kmt-assistant-log)] px-3 py-4 sm:mx-6 sm:px-4"
           data-testid="booking-chat-log"
           role="log"
         >
@@ -879,9 +879,9 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
           {isBusy ? <TypingIndicator label={copy.typing} /> : null}
         </div>
 
-        <div className="shrink-0 px-5 pb-5 sm:px-8 sm:pb-6">
+        <div className="shrink-0 px-4 pb-4 sm:px-6 sm:pb-5">
           {showQuickActions ? (
-            <div className="mb-4 flex flex-wrap gap-2" data-testid="booking-quick-actions">
+            <div className="mb-3 flex flex-wrap gap-2" data-testid="booking-quick-actions">
               {showIntentActions ? (
                 <>
                   <Button className={chipButtonClasses} data-testid="booking-quick-book" disabled={isBusy} size="sm" type="button" variant="secondary" onClick={startBooking}>
@@ -915,7 +915,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
           <PlaceholdersAndVanishInput
             formTestId="booking-chat-composer"
-            formClassName="flex min-w-0 items-center gap-2 rounded-full border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-input)] py-2 pe-2 ps-6 transition-colors focus-within:border-kmt-gold"
+            formClassName="flex min-w-0 items-center gap-2 rounded-full border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-input)] py-1 pe-1.5 ps-5 transition-colors focus-within:border-kmt-gold"
             placeholders={composerPlaceholders}
             value={freeMessage}
             onValueChange={setFreeMessage}
@@ -923,22 +923,22 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
             disabled={!chatLocale || isBusy}
             inputName="chatMessage"
             ariaLabel={copy.messageLabel}
-            inputClassName="kmt-vanish-input min-h-12 w-full min-w-0 flex-1 border-0 bg-transparent text-base text-[var(--kmt-assistant-text)] outline-none disabled:text-[var(--kmt-assistant-muted)] focus-visible:!outline-none focus:!ring-0"
-            placeholderClassName="w-full truncate pe-24 text-base text-[var(--kmt-assistant-muted)]"
+            inputClassName="kmt-vanish-input min-h-10 w-full min-w-0 flex-1 border-0 bg-transparent text-[0.95rem] text-[var(--kmt-assistant-text)] outline-none disabled:text-[var(--kmt-assistant-muted)] focus-visible:!outline-none focus:!ring-0"
+            placeholderClassName="w-full truncate pe-20 text-[0.95rem] text-[var(--kmt-assistant-muted)]"
             trailing={
               <Button
                 aria-label={copy.send}
-                className={cn(publicMotionButton, publicMotionCta, "h-14 w-14 shrink-0 rounded-full !px-0")}
+                className={cn(publicMotionButton, publicMotionCta, "h-11 w-11 shrink-0 rounded-full !px-0")}
                 disabled={!chatLocale || isBusy || !freeMessage.trim()}
                 type="submit"
               >
                 {/* Forward = reading direction: mirrored in RTL. */}
-                <MaterialSymbol className="text-xl rtl:-scale-x-100" name="send" />
+                <MaterialSymbol className="text-lg rtl:-scale-x-100" name="send" />
                 <span className="sr-only">{copy.send}</span>
               </Button>
             }
           />
-          <p className="mt-3 flex items-center justify-center gap-2 text-center text-sm text-[var(--kmt-assistant-muted)]">
+          <p className="mt-2.5 flex items-center justify-center gap-2 text-center text-xs text-[var(--kmt-assistant-muted)]">
             <MaterialSymbol className="text-lg" name="lock" />
             {copy.privacyNote}
           </p>
@@ -998,25 +998,25 @@ function BookingStageTabs({
   ];
 
   return (
-    <div className="mt-4" data-testid="booking-stage-tabs">
+    <div className="mt-3" data-testid="booking-stage-tabs">
       <Tabs value={stage} aria-label={copy.paymentStatus} onValueChange={() => undefined}>
-        <TabsList className="scrollbar-hide overflow-x-auto border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-chip)]">
+        <TabsList className="scrollbar-hide overflow-x-auto border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-chip)] p-1">
           {stages.map((item, index) => (
             <TabsTrigger
               key={item.value}
               value={item.value}
               disabled
               aria-label={`${index + 1} · ${item.label}`}
-              className="text-[var(--kmt-assistant-muted)] hover:text-[var(--kmt-assistant-text)] data-[disabled]:hover:text-[var(--kmt-assistant-muted)] max-sm:flex-none max-sm:px-4"
+              className="min-h-8 px-2.5 py-1.5 text-[0.72rem] text-[var(--kmt-assistant-muted)] hover:text-[var(--kmt-assistant-text)] data-[disabled]:hover:text-[var(--kmt-assistant-muted)] max-sm:flex-none max-sm:px-3"
             >
               <span
                 aria-hidden="true"
                 className={cn(
-                  "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-current text-[0.6rem]",
+                  "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-current text-[0.55rem]",
                   item.done ? "border-transparent" : undefined
                 )}
               >
-                {item.done ? <MaterialSymbol className="text-[0.8rem]" name="check_circle" /> : index + 1}
+                {item.done ? <MaterialSymbol className="text-[0.7rem]" name="check_circle" /> : index + 1}
               </span>
               <span className="min-w-0 truncate">{item.label}</span>
             </TabsTrigger>
@@ -1037,7 +1037,7 @@ function BookingStageTabs({
 function LanguageChoicePanel({ copy, onSelect }: { copy: BookingChatCopy; onSelect: (locale: PublicLocale) => void }) {
   const hydrated = useHydrated();
   return (
-    <div className="flex flex-wrap justify-start gap-3 ps-16 max-sm:ps-0" data-testid="booking-language-choice">
+    <div className="flex flex-wrap justify-start gap-2 ps-12 max-sm:ps-0" data-testid="booking-language-choice">
       <Button className={chipButtonClasses} data-testid="booking-language-ar" disabled={!hydrated} type="button" variant="secondary" onClick={() => onSelect("ar")}>
         <MaterialSymbol className="text-xl" name="translate" />
         {copy.languageArabic}
@@ -1062,8 +1062,8 @@ function ChatBubble({ message }: { message: ChatMessage }) {
     const info = message.info;
     return (
       <div className="kmt-chat-enter flex items-end gap-3">
-        <KmtBrandLogo className="shrink-0 max-sm:[&_span]:h-9 max-sm:[&_span]:w-9" label="" shape="circle" size="md" variant="mark" />
-        <div className="max-w-[80%] rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] px-5 py-4 max-sm:max-w-[88%] max-sm:px-4">
+        <KmtBrandLogo className="shrink-0" label="" shape="circle" size="sm" variant="mark" />
+        <div className="max-w-[76%] rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] px-4 py-3 max-sm:max-w-[88%] max-sm:px-3.5">
           <p className="flex items-center gap-2 text-sm font-semibold text-[var(--kmt-assistant-text)]">
             <MaterialSymbol className="text-lg text-[var(--kmt-public-gold)]" name="info" />
             {info.title}
@@ -1094,18 +1094,18 @@ function ChatBubble({ message }: { message: ChatMessage }) {
     <div className={cn("kmt-chat-enter flex items-end gap-3", isUser ? "justify-end" : "justify-start")}>
       {!isUser ? (
         message.tone === "error" || message.tone === "success" ? (
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] text-[var(--kmt-public-gold)] max-sm:h-9 max-sm:w-9">
-            <MaterialSymbol className="text-xl max-sm:text-lg" name={message.tone === "error" ? "error" : "check_circle"} />
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] text-[var(--kmt-public-gold)]">
+            <MaterialSymbol className="text-lg" name={message.tone === "error" ? "error" : "check_circle"} />
           </span>
         ) : (
-          <KmtBrandLogo className="shrink-0 max-sm:[&_span]:h-9 max-sm:[&_span]:w-9" label="" shape="circle" size="md" variant="mark" />
+          <KmtBrandLogo className="shrink-0" label="" shape="circle" size="sm" variant="mark" />
         )
       ) : null}
       <div
         className={cn(
-          "max-w-[78%] break-words rounded-[1.45rem] px-5 py-3.5 text-base leading-8 max-sm:max-w-[86%] max-sm:px-4 max-sm:py-3 max-sm:text-sm",
+          "max-w-[72%] break-words rounded-[1.25rem] px-4 py-3 text-[0.95rem] leading-7 max-sm:max-w-[85%] max-sm:px-3.5 max-sm:py-2.5 max-sm:text-sm",
           isUser
-            ? "rounded-ee-md border border-kmt-gold/40 bg-[var(--kmt-assistant-user)] text-[var(--kmt-assistant-text)]"
+            ? "rounded-ee-md border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-user)] text-[var(--kmt-assistant-text)]"
             : "rounded-es-md border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] text-[var(--kmt-assistant-text)]",
           message.tone === "error" ? "border-red-500/40 bg-red-500/10" : undefined,
           message.tone === "success" ? "border-kmt-gold/40 bg-kmt-gold/10" : undefined
@@ -1142,12 +1142,12 @@ function SlotChoicePanel({
   return (
     <div className="space-y-3" data-testid="booking-slot-choice-panel">
       {slotWindow?.alternatives ? (
-        <p className="max-w-[42rem] rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] px-4 py-3 text-sm leading-6 text-[var(--kmt-assistant-muted)]">
+        <p className="max-w-[36rem] rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] px-4 py-3 text-sm leading-6 text-[var(--kmt-assistant-muted)]">
           {locale === "ar" ? "أقرب بدائل متاحة الآن" : "Nearest visible alternatives"}
         </p>
       ) : null}
       {groups.map((group) => (
-        <div key={group.key} className="max-w-[42rem] rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] p-3">
+        <div key={group.key} className="max-w-[36rem] rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] p-3">
           <div className="mb-3 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--kmt-assistant-muted)]">
             <MaterialSymbol className="text-base text-[var(--kmt-public-gold)]" name="event" />
             <span>{group.label}</span>
@@ -1192,13 +1192,13 @@ function PaymentReviewPanel({
   const emailText = draft.email?.trim() || bookingFormCopy.unknown;
 
   return (
-    <div className="ms-auto max-w-[42rem] rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] p-4" data-testid="booking-payment-review">
-      <div className="mb-4 flex items-center gap-2 text-[var(--kmt-assistant-text)]">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--kmt-assistant-line)] bg-kmt-gold/15 text-[var(--kmt-public-gold)]">
+    <div className="ms-auto max-w-[36rem] rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] p-4" data-testid="booking-payment-review">
+      <div className="mb-3 flex items-center gap-2 text-[var(--kmt-assistant-text)]">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--kmt-assistant-line)] bg-kmt-gold/15 text-[var(--kmt-public-gold)]">
           <MaterialSymbol name="payments" />
         </span>
         <div>
-          <p className="text-xl font-semibold leading-tight">{copy.paymentReviewTitle}</p>
+          <p className="text-lg font-semibold leading-tight">{copy.paymentReviewTitle}</p>
           <p className="mt-1 text-sm text-[var(--kmt-assistant-muted)]">{copy.cancellationPolicy}</p>
         </div>
       </div>

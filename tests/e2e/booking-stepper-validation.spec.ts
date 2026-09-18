@@ -36,6 +36,9 @@ test.describe("consultation booking chat", () => {
     await expect(page.getByTestId("booking-quick-actions")).toBeVisible();
 
     await chat.locator('input[name="chatMessage"]').fill("will i win");
+    // Stabilize viewport first: the contract is no page jump ON SUBMIT,
+    // not where the 720px test viewport happens to rest after filling.
+    await page.getByTestId("booking-chat-composer").scrollIntoViewIfNeeded();
     const pageScrollBeforeSubmit = await page.evaluate(() => window.scrollY);
     await chat.locator('button[type="submit"]').last().click();
     await expect(page.getByTestId("booking-quick-actions")).toBeVisible();
@@ -87,6 +90,23 @@ test.describe("consultation booking chat", () => {
     await matter.nth(1).click();
     await expect(matter).toHaveCount(0);
     await expect(log).toContainText("الشركات والعقود التجارية");
+  });
+
+  test("shows the public floating dock with consultation + WhatsApp only", async ({ page }) => {
+    // The dock steps aside on the consultation route itself (it would
+    // cover the composer), so verify it on a neighboring public route.
+    await page.goto("/ar/", { waitUntil: "domcontentloaded" });
+    const dock = page.getByTestId("public-floating-dock");
+    await expect(dock).toBeVisible();
+    const links = dock.locator("a:visible");
+    await expect(links).toHaveCount(2);
+    await expect(links.nth(0)).toHaveAttribute("href", "/ar/book-consultation");
+    await expect(links.nth(1)).toHaveAttribute("target", "_blank");
+    await expect(links.nth(1)).toHaveAttribute("rel", /noopener/);
+
+    await page.goto("/ar/book-consultation", { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("booking-stepper")).toBeVisible();
+    await expect(page.getByTestId("public-floating-dock")).toHaveCount(0);
   });
 
   test("hides quick actions after the second free-text message", async ({ page }) => {

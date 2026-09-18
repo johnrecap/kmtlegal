@@ -228,7 +228,8 @@ export const publicContentAr = {
     privacy: "سياسة الخصوصية",
     terms: "الشروط",
     languageSwitchLabel: "English",
-    themeToggleLabel: "تبديل بين الوضع الليلي والنهاري"
+    themeToggleLabel: "تبديل بين الوضع الليلي والنهاري",
+    dockMenuLabel: "إجراءات سريعة"
   },
   shared: {
     bookConsultation: "طلب استشارة",

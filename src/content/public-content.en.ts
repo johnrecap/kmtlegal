@@ -254,7 +254,8 @@ export const publicContentEn = {
     privacy: "Privacy Policy",
     terms: "Terms",
     languageSwitchLabel: "العربية",
-    themeToggleLabel: "Toggle dark and light theme"
+    themeToggleLabel: "Toggle dark and light theme",
+    dockMenuLabel: "Quick actions"
   },
   shared: {
     bookConsultation: "Request a Consultation",

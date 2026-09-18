@@ -970,7 +970,7 @@ export async function BookConsultationPageView({ locale }: { locale: PublicLocal
         panels, no external progress, no after-submit rail — everything
         operational lives inside the assistant.
       */}
-      <div className="mx-auto w-full max-w-[64rem] px-4 py-10 sm:px-6 md:py-14 lg:px-10">
+      <div className="mx-auto w-full max-w-[56rem] px-4 py-8 sm:px-6 md:py-10 lg:px-8">
         <Suspense fallback={<div aria-hidden="true" className={cn(publicPanel, "min-h-[32rem] rounded-[1.75rem] border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-shell)]")} />}>
           <ConsultationBookingChatFromQuery locale={locale} />
         </Suspense>
