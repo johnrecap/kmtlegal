@@ -30,7 +30,6 @@ import {
   CapabilityRows,
   DetailCta,
   IndustryLedger,
-  InsightsLedger,
   LuxuryFeaturePanel,
   MatterRows,
   PageHero,
@@ -56,9 +55,6 @@ import {
   getPublishedCaseStudyBySlug
 } from "@/server/public/content-service";
 import { getPublicConsultationBookingMode } from "@/server/consultations/consultation-booking-settings";
-
-type FeaturedArticle = Awaited<ReturnType<typeof listPublishedArticleCards>>[number];
-type FeaturedCaseStudy = Awaited<ReturnType<typeof listPublishedCaseStudyCards>>[number];
 
 export function publicPageMetadata(
   locale: PublicLocale,
@@ -216,11 +212,9 @@ export async function renderPublicPath(locale: PublicLocale, path: string[] = []
   notFound();
 }
 
-export async function HomePageView({ locale }: { locale: PublicLocale }) {
+export function HomePageView({ locale }: { locale: PublicLocale }) {
   const content = getPublicContent(locale);
   const copy = content.home;
-  const featuredContent = await loadFeaturedContent(locale);
-  const hasFeaturedContent = featuredContent.articles.length > 0 || featuredContent.caseStudies.length > 0;
   const focusService = content.legalServices.find((service) => service.slug === "corporate-business-services") ?? content.legalServices[0];
   const currentPath = localizedPublicHref("/", locale);
 
@@ -325,38 +319,6 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
             href: localizedPublicHref(`/team/${lawyer.slug}`, locale)
           }))}
         />
-      </PublicSection>
-
-      <PublicSection accent="section" eyebrow={copy.insightsEyebrow} title={copy.insightsTitle} description={copy.insightsDescription}>
-        {hasFeaturedContent ? (
-          <InsightsLedger
-            items={[
-              ...featuredContent.articles.map((article) => ({
-                kicker: article.readTime,
-                title: article.title,
-                excerpt: article.excerpt,
-                href: `/articles/${article.slug}`
-              })),
-              ...featuredContent.caseStudies.map((study) => ({
-                kicker: copy.caseStudyAnonymous,
-                title: study.title,
-                excerpt: study.summary,
-                href: `/case-studies/${study.slug}`
-              }))
-            ]}
-            locale={locale}
-          />
-        ) : (
-          <div className={cn(publicPanel, "flex flex-wrap items-center justify-between gap-4 p-6")}>
-            <div className="min-w-0">
-              <p className="text-lg font-semibold text-[var(--kmt-public-text)]">{content.shared.insightsEmptyTitle}</p>
-              <p className={cn("mt-2 max-w-2xl text-sm leading-7", publicMutedText)}>{content.shared.insightsEmptyDescription}</p>
-            </div>
-            <ButtonLink href={localizedPublicHref("/articles", locale)} variant="secondary">
-              {content.shared.insightsEmptyCta}
-            </ButtonLink>
-          </div>
-        )}
       </PublicSection>
 
     </PublicShell>
@@ -1095,25 +1057,6 @@ export function TermsPageView({ locale }: { locale: PublicLocale }) {
       </PublicSection>
     </PublicShell>
   );
-}
-
-async function loadFeaturedContent(locale: PublicLocale): Promise<{
-  articles: FeaturedArticle[];
-  caseStudies: FeaturedCaseStudy[];
-}> {
-  if (!shouldLoadDatabaseContent()) {
-    return { articles: [], caseStudies: [] };
-  }
-
-  try {
-    const [articles, caseStudies] = await Promise.all([listPublishedArticleCards(locale), listPublishedCaseStudyCards(locale)]);
-    return {
-      articles: articles.slice(0, 2),
-      caseStudies: caseStudies.slice(0, 1)
-    };
-  } catch {
-    return { articles: [], caseStudies: [] };
-  }
 }
 
 async function loadArticles(locale: PublicLocale) {

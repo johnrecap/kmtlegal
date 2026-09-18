@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -111,6 +111,37 @@ export function HeroParallaxLayers({
   const rootRef = useRef<HTMLElement>(null);
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const selected = matters.find((matter) => matter.slug === selectedSlug) ?? null;
+  // APG radiogroup arrow-key behavior (Phase 03): arrows move selection and
+  // focus together. Horizontal direction mirrors in RTL; vertical arrows are
+  // direction-agnostic. Home/End jump to first/last. Tab + Enter/Space keep
+  // working through the native buttons.
+  const onPickerKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const rtl = locale === "ar";
+    let step: 1 | -1 | "first" | "last" | null = null;
+    switch (event.key) {
+      case "ArrowRight": step = rtl ? -1 : 1; break;
+      case "ArrowLeft": step = rtl ? 1 : -1; break;
+      case "ArrowDown": step = 1; break;
+      case "ArrowUp": step = -1; break;
+      case "Home": step = "first"; break;
+      case "End": step = "last"; break;
+      default: return;
+    }
+    event.preventDefault();
+    if (matters.length === 0) return;
+    let next: string;
+    if (step === "first") next = matters[0].slug;
+    else if (step === "last") next = matters[matters.length - 1].slug;
+    else {
+      const current = matters.findIndex((matter) => matter.slug === selectedSlug);
+      const from = current === -1 ? (step === 1 ? -1 : 0) : current;
+      next = matters[(from + step + matters.length) % matters.length].slug;
+    }
+    setSelectedSlug(next);
+    rootRef.current
+      ?.querySelector<HTMLButtonElement>(`[data-picker-option="${next}"]`)
+      ?.focus();
+  };
   const bookingHref = selected
     ? localizedPublicHref(`/book-consultation?service=${encodeURIComponent(selected.slug)}`, locale)
     : localizedPublicHref("/book-consultation", locale);
@@ -233,7 +264,7 @@ export function HeroParallaxLayers({
               <p id="hero-matter-label" className="text-sm font-semibold text-[var(--kmt-public-text)]">
                 {pickerLabel}
               </p>
-              <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2" role="radiogroup" aria-labelledby="hero-matter-label">
+              <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2" role="radiogroup" aria-labelledby="hero-matter-label" onKeyDown={onPickerKeyDown}>
                 {matters.map((matter) => {
                   const active = matter.slug === selectedSlug;
                   return (
@@ -242,6 +273,7 @@ export function HeroParallaxLayers({
                       type="button"
                       role="radio"
                       aria-checked={active}
+                      data-picker-option={matter.slug}
                       onClick={() => setSelectedSlug(active ? null : matter.slug)}
                       className={cn(
                         "flex min-h-14 items-center gap-3 rounded-xl border px-4 py-3 text-start transition-all duration-kmt-fast ease-kmt-out",
