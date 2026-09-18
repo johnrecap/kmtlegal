@@ -20,7 +20,7 @@ test.describe("consultation booking chat", () => {
 
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
 
-    const chat = page.getByTestId("booking-stepper");
+    const chat = page.getByTestId("consultation-assistant");
     await expect(chat).toBeVisible();
     await expect(chat).toHaveAttribute("data-hydrated", "true");
     await expect(page.getByTestId("booking-chat-shell")).toBeVisible();
@@ -74,7 +74,7 @@ test.describe("consultation booking chat", () => {
     });
 
     await page.goto("/ar/book-consultation", { waitUntil: "domcontentloaded" });
-    await expect(page.getByTestId("booking-stepper")).toHaveAttribute("data-hydrated", "true");
+    await expect(page.getByTestId("consultation-assistant")).toHaveAttribute("data-hydrated", "true");
     await page.getByTestId("booking-language-ar").click();
 
     // Intent question + what-next info live inside the same console.
@@ -105,7 +105,7 @@ test.describe("consultation booking chat", () => {
     await expect(links.nth(1)).toHaveAttribute("rel", /noopener/);
 
     await page.goto("/ar/book-consultation", { waitUntil: "domcontentloaded" });
-    await expect(page.getByTestId("booking-stepper")).toBeVisible();
+    await expect(page.getByTestId("consultation-assistant")).toBeVisible();
     await expect(page.getByTestId("public-floating-dock")).toHaveCount(0);
   });
 
@@ -176,7 +176,7 @@ test.describe("consultation booking chat", () => {
       };
 
       await page.goto(journey.path, { waitUntil: "domcontentloaded" });
-      await expect(page.getByTestId("booking-stepper")).toHaveAttribute("data-hydrated", "true");
+      await expect(page.getByTestId("consultation-assistant")).toHaveAttribute("data-hydrated", "true");
       // STATE 1: initial load.
       await assertNoStepper();
 
@@ -224,7 +224,7 @@ test.describe("consultation booking chat", () => {
   test("hides quick actions after the second free-text message", async ({ page }) => {
     await page.goto("/ar/book-consultation", { waitUntil: "domcontentloaded" });
 
-    const chat = page.getByTestId("booking-stepper");
+    const chat = page.getByTestId("consultation-assistant");
     await expect(chat).toHaveAttribute("data-hydrated", "true");
     await page.getByTestId("booking-language-ar").click();
     await expect(page.getByTestId("booking-quick-actions")).toBeVisible();
@@ -267,7 +267,7 @@ test.describe("consultation booking chat", () => {
     });
 
     await page.goto("/ar/book-consultation", { waitUntil: "domcontentloaded" });
-    const chat = page.getByTestId("booking-stepper");
+    const chat = page.getByTestId("consultation-assistant");
     await expect(chat).toHaveAttribute("data-hydrated", "true");
     await page.getByTestId("booking-language-ar").click();
     await chat.locator('input[name="chatMessage"]').fill("book collections consultation");
@@ -300,7 +300,7 @@ test.describe("consultation booking chat", () => {
     });
 
     await page.goto("/ar/book-consultation", { waitUntil: "domcontentloaded" });
-    const chat = page.getByTestId("booking-stepper");
+    const chat = page.getByTestId("consultation-assistant");
     await expect(chat).toHaveAttribute("data-hydrated", "true");
     await page.getByTestId("booking-language-ar").click();
     await chat.locator('input[name="chatMessage"]').fill("عايز contract check");

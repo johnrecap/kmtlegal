@@ -22,10 +22,10 @@ const arabicResponsivePages = ["/ar", "/ar/services", "/ar/contact", "/ar/book-c
 const publicLuxurySurfacePages = [
   { path: "/services", expectedDir: "ltr", testIds: ["public-directory-filter", "public-directory-card"] },
   { path: "/contact", expectedDir: "ltr", testIds: ["contact-form"] },
-  { path: "/book-consultation", expectedDir: "ltr", testIds: ["booking-stepper"] },
+  { path: "/book-consultation", expectedDir: "ltr", testIds: ["consultation-assistant"] },
   { path: "/ar/services", expectedDir: "rtl", testIds: ["public-directory-filter", "public-directory-card"] },
   { path: "/ar/contact", expectedDir: "rtl", testIds: ["contact-form"] },
-  { path: "/ar/book-consultation", expectedDir: "rtl", testIds: ["booking-stepper"] }
+  { path: "/ar/book-consultation", expectedDir: "rtl", testIds: ["consultation-assistant"] }
 ];
 
 async function expectNoHorizontalScroll(page: Page, path: string) {
@@ -36,8 +36,17 @@ async function expectNoHorizontalScroll(page: Page, path: string) {
   expect(scrollWidth, `${path} should not create page-level horizontal scroll`).toBeLessThanOrEqual(clientWidth + 1);
 }
 
-async function expectDarkLuxurySurface(locator: Locator, label: string, style: "legacy-gradient" | "public-tokens" = "legacy-gradient") {
-  const className = (await locator.getAttribute("class")) ?? "";
+async function expectDarkLuxurySurface(locator: Locator, label: string, style: "legacy-gradient" | "public-tokens" | "assistant-tokens" | "magic-rows" = "legacy-gradient") {  const className = (await locator.getAttribute("class")) ?? "";
+
+  if (style === "magic-rows") {
+    // Services index renders MagicCard spotlight rows: the motion spotlight
+    // ring + panel fill resolve to the public tokens at computed-style time,
+    // so the structural contract is the spotlight group + a service link.
+    expect(className, `${label} should use the MagicCard spotlight group`).toContain("group");
+    const cardLink = locator.locator("a[href*='/services/']").first();
+    await expect(cardLink, `${label} should link to a service detail`).toBeVisible();
+    return;
+  }
 
   if (style === "public-tokens") {
     // Files 12 (services) and 17 (contact) migrated the directory and contact
@@ -45,6 +54,13 @@ async function expectDarkLuxurySurface(locator: Locator, label: string, style: "
     // --kmt-public-* tokens.
     expect(className, `${label} should use the theme-aware public surface tokens`).toContain("bg-[var(--kmt-public-");
     expect(className, `${label} should keep a token border`).toContain("border-[var(--kmt-public-line)]");
+    return;
+  }
+  if (style === "assistant-tokens") {
+    // The Consultation Assistant shell uses the theme-aware
+    // --kmt-assistant-* tokens (Phase 04), not a hardcoded gradient.
+    expect(className, `${label} should use the theme-aware assistant surface tokens`).toContain("bg-[var(--kmt-assistant-");
+    expect(className, `${label} should keep an assistant token border`).toContain("border-[var(--kmt-assistant-line)]");
     return;
   }
   expect(className, `${label} should use the PLAN-28 layered dark surface`).toContain("bg-[linear-gradient");
@@ -184,7 +200,9 @@ test.describe("MVP smoke without database", () => {
   test("public mobile header keeps the language switch visible", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    const languageSwitch = page.getByTestId("public-language-switch");
+    // Two switches exist by design (desktop pill + mobile bar, one hidden
+    // per breakpoint) — assert on the visible one.
+    const languageSwitch = page.getByTestId("public-language-switch").filter({ visible: true });
     await expect(languageSwitch).toBeVisible();
     await expect(languageSwitch).toHaveAttribute("href", "/ar");
     await languageSwitch.click();
@@ -241,10 +259,11 @@ test.describe("MVP smoke without database", () => {
           for (const testId of testIds) {
             const surface = page.getByTestId(testId).first();
             await expect(surface, `${path} ${testId} should be visible`).toBeVisible();
+            const isServicesRows = testId === "public-directory-card" && (path === "/services" || path === "/ar/services");
             await expectDarkLuxurySurface(
               surface,
               `${path} ${testId}`,
-              testId === "public-directory-filter" || testId === "public-directory-card" || testId === "contact-form" ? "public-tokens" : "legacy-gradient"
+              isServicesRows ? "magic-rows" : testId === "consultation-assistant" ? "assistant-tokens" : testId === "public-directory-filter" || testId === "public-directory-card" || testId === "contact-form" ? "public-tokens" : "legacy-gradient"
             );
           }
         }
@@ -297,9 +316,9 @@ test.describe("MVP smoke without database", () => {
       });
     });
 
-    await gotoUntilSurfaceVisible(page, "/book-consultation", "booking-stepper");
+    await gotoUntilSurfaceVisible(page, "/book-consultation", "consultation-assistant");
 
-    const form = page.getByTestId("booking-stepper");
+    const form = page.getByTestId("consultation-assistant");
     await expect(form).toHaveAttribute("data-hydrated", "true");
     await expect(page.getByTestId("booking-chat-shell")).toBeVisible();
     await expect(page.getByTestId("booking-chat-composer")).toBeVisible();

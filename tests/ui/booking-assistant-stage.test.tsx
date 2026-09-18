@@ -190,9 +190,11 @@ describe("booking chat stage composition (source contract)", () => {
   });
 
   it("holds the compact density targets", () => {
-    // Shell + viewport.
-    expect(chatSource).toContain("h-[min(72vh,38rem)]");
-    expect(chatSource).toContain("min-h-[30rem]");
+    // Shell + viewport: content-driven height (compact on first load),
+    // capped so long conversations scroll internally, never the page.
+    expect(chatSource).toContain("max-h-[min(72vh,38rem)]");
+    expect(chatSource).toContain("max-sm:max-h-[min(84svh,38rem)]");
+    expect(chatSource).not.toContain("min-h-[30rem]");
     // Composer pill 48–52px: 40px input/send + 8px vertical + border.
     expect(chatSource).toContain("min-h-10 w-full");
     expect(chatSource).toContain("h-10 w-10 shrink-0");
@@ -232,7 +234,7 @@ describe("booking chat stage composition (source contract)", () => {
 
   it("preserves every booking flow test hook and rule", () => {
     for (const hook of [
-      'data-testid="booking-stepper"',
+      'data-testid="consultation-assistant"',
       'data-testid="booking-chat-shell"',
       'data-testid="booking-chat-log"',
       'formTestId="booking-chat-composer"',

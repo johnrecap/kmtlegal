@@ -787,7 +787,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       aria-label={copy.title}
       className={assistantShellClasses}
       data-hydrated={isHydrated ? "true" : "false"}
-      data-testid="booking-stepper"
+      data-testid="consultation-assistant"
       dir={activeLocale === "ar" ? "rtl" : "ltr"}
     >
       {/*
@@ -803,11 +803,13 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       )}
       <MotionConfig reducedMotion="user">
       {/*
-        Fixed shell height: new turns must never move the composer or the
-        window (no layout jumping, input never pushed out of view). Growth
-        is absorbed by the internal log scroll, not the page.
+        Content-driven shell height: the console opens compact and grows
+        with the conversation up to the viewport cap; only then does the
+        internal log scroll (flex-1 + min-h-0 + overflow-y-auto). New turns
+        must never move the page itself — growth below the fold is absorbed
+        by the log scroll, never by page scroll.
       */}
-      <div className="relative z-10 flex h-[min(72vh,38rem)] min-h-[30rem] min-w-0 flex-col max-sm:h-[min(84svh,38rem)] max-sm:min-h-[28rem]" data-testid="booking-chat-shell">
+      <div className="relative z-10 flex max-h-[min(72vh,38rem)] min-w-0 flex-col max-sm:max-h-[min(84svh,38rem)]" data-testid="booking-chat-shell">
         {/*
           Simplified header: mark + name + live status + one-line scope.
           Trust content moved into the conversation as the what-next info

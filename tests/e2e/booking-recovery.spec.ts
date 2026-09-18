@@ -85,7 +85,7 @@ test("clears an invalidated appointment instead of resending it", async ({ page 
     } : { message: "Choose another appointment", draft: { startsAt: "" }, missingFields: ["startsAt"] } } });
   });
   await page.goto(bookingPath);
-  await expect(page.getByTestId("booking-stepper")).toHaveAttribute("data-hydrated", "true");
+  await expect(page.getByTestId("consultation-assistant")).toHaveAttribute("data-hydrated", "true");
   await page.getByTestId(`booking-language-${locale}`).click();
   const input = page.locator('input[name="chatMessage"]');
   const submit = page.getByTestId("booking-chat-composer").locator('button[type="submit"]');
@@ -104,7 +104,7 @@ test("reports a failed payment-resume request without an unhandled error", async
   page.on("pageerror", error => errors.push(error.message));
   await page.route("**/api/public/payments/status?**", route => route.abort("failed"));
   await page.goto(`${bookingPath}?resumeAttemptId=test-resume&token=test-token`);
-  await expect(page.getByTestId("booking-stepper")).toHaveAttribute("data-hydrated", "true");
+  await expect(page.getByTestId("consultation-assistant")).toHaveAttribute("data-hydrated", "true");
   await expect(page.getByTestId("booking-chat-log")).toContainText(copy.fallbackError);
   expect(errors).toEqual([]);
 });
@@ -116,7 +116,7 @@ test("does not report a payment page ready when checkout returns no payment atte
   } } }));
   await page.route("**/api/public/consultations/checkout", route => route.fulfill({ json: { data: {} } }));
   await page.goto(bookingPath);
-  await expect(page.getByTestId("booking-stepper")).toHaveAttribute("data-hydrated", "true");
+  await expect(page.getByTestId("consultation-assistant")).toHaveAttribute("data-hydrated", "true");
   await page.getByTestId(`booking-language-${locale}`).click();
   await page.getByTestId("booking-quick-book").click();
   await page.getByTestId("booking-pay-booking").click();
