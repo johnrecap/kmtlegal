@@ -221,7 +221,7 @@ No component is replaced, removed, or introduced in Phase 01.
 - [x] TASK-01-08 and TASK-01-09 verdicts each cite data-source evidence.
 - [x] `DECISION REQUIRED` block lists all three areas with the three rulings.
 - [x] Zero `src/` diffs at phase end (`git status` clean apart from this file).
-- [ ] Owner ruling recorded before any later phase hides public links.
+- [x] Owner ruling recorded before any later phase hides public links.
 
 ## Visual QA
 
@@ -234,7 +234,7 @@ No component is replaced, removed, or introduced in Phase 01.
 
 ## Status
 
-BLOCKED — OWNER DECISION REQUIRED
+COMPLETE (owner rulings recorded 2026-09-18; see DECISION REQUIRED + QA Results)
 
 ## Phase 01 Decision Matrix
 
@@ -246,19 +246,37 @@ BLOCKED — OWNER DECISION REQUIRED
 
 ## DECISION REQUIRED
 
-Articles:
-[ KEEP PUBLIC / HIDE PUBLIC / DELETE ]
+Articles: HIDE PUBLIC — RECORDED 2026-09-18.
+Preserve: database/content models, APIs, ArticleForm, admin content
+management, publishing pipeline, stored article data. Later public
+implementation removes/hides: articles public navigation/discovery,
+`/articles`, `/articles/[slug]`, Arabic public equivalents, article
+sitemap/public SEO exposure, homepage InsightsLedger dependency. Backend/admin
+article functionality is NOT deleted.
 
-Case Studies:
-[ KEEP PUBLIC / HIDE PUBLIC / DELETE ]
+Case Studies: HIDE PUBLIC — RECORDED 2026-09-18.
+Preserve: database/content models, APIs, CaseStudyForm, admin content
+management, publishing pipeline, stored case-study data. Later public
+implementation removes/hides: case-studies public navigation/discovery,
+`/case-studies`, `/case-studies/[slug]`, Arabic public equivalents,
+case-study sitemap/public SEO exposure. Backend/admin case-study
+functionality is NOT deleted. Homepage Representative Matters: KEEP
+(Phase 01 proved MatterRows independent).
 
-Media:
-[ KEEP PUBLIC / HIDE PUBLIC / DELETE ]
+Media: DELETE — RECORDED 2026-09-18.
+Phase 01 proved: no database model, no API, no admin writer, no required
+backend dependency. Removal of the public Media route/view/navigation/
+metadata/sitemap references is scheduled in the appropriate implementation
+phase. Unrelated social-draft/admin functionality is NOT removed.
 
-Owner direction on record: NONE YET — no ruling has been issued in this
-session. The auditor makes no recommendation and takes no owner action.
-This block is answered explicitly by the owner before Phase 03/05/06 act
-on it. STOP.
+Homepage Insights: REMOVE from the public homepage — RECORDED 2026-09-18.
+Phase 01 proved InsightsLedger depends on the live Articles + Case Studies
+pipelines. No replacement component. Surrounding homepage section rhythm and
+spacing must be preserved so no visual gap remains.
+
+Owner direction on record: FINAL RULINGS ABOVE, issued 2026-09-18. Mirrored in
+`docs/ui-redesign/DECISIONS.md` (# PUBLIC CONTENT (DEFERRED)). Phases
+03/05/06 may now act on these rulings. STOP (no Phase 02 auto-start).
 
 ## Implementation Notes
 
@@ -322,6 +340,13 @@ NOT this phase.
   text only).
 - Phase status set to BLOCKED — OWNER DECISION REQUIRED. Phase NOT marked
   COMPLETE. No hiding, deletion, redirect, or ruling performed.
+- RULING UPDATE 2026-09-18: owner issued final rulings (Articles HIDE PUBLIC /
+  preserve backend+admin; Case Studies HIDE PUBLIC / preserve backend+admin,
+  KEEP Representative Matters; Media DELETE; Homepage Insights REMOVE, no
+  replacement, keep section rhythm). Recorded in DECISION REQUIRED above +
+  mirrored in `docs/ui-redesign/DECISIONS.md`. Owner-decision acceptance
+  criterion marked complete. Status advanced BLOCKED → COMPLETE. No
+  application source modified during this update; Phase 02 NOT started.
 
 ## Blockers
 

@@ -11,12 +11,31 @@
 - FREE COMPONENTS ONLY: YES
 - ALLOWED SOURCES: Aceternity UI, Magic UI, Animate UI, shadcn/ui
 
-## # PUBLIC CONTENT (DEFERRED)
+## # PUBLIC CONTENT (DEFERRED) — OWNER RULING RECORDED 2026-09-18 (PHASE 01 COMPLETE)
 
-- Insights / Articles: PENDING PHASE 01 AUDIT — OWNER DIRECTION: HIDE PUBLIC / PRESERVE BACKEND
-- Case Studies: PENDING PHASE 01 AUDIT — OWNER DIRECTION: HIDE PUBLIC / PRESERVE BACKEND
-- Media: PENDING PHASE 01 AUDIT — OWNER DIRECTION: HIDE PUBLIC; deletion safety: VERIFY LATER IN PHASE 12
-- Homepage Representative Matters: NOT automatically Case Studies. REMOVE only with proof of direct dependence on public case-study content (Phase 01 task).
+- Insights / Articles: HIDE PUBLIC — FINAL. Preserve database/content models,
+  APIs, ArticleForm, admin content management, publishing pipeline, stored
+  article data. Later public implementation removes/hides: articles public
+  navigation/discovery, `/articles`, `/articles/[slug]`, Arabic public
+  equivalents, article sitemap/public SEO exposure, homepage InsightsLedger
+  dependency. Backend/admin article functionality is NOT deleted.
+- Case Studies: HIDE PUBLIC — FINAL. Preserve database/content models, APIs,
+  CaseStudyForm, admin content management, publishing pipeline, stored
+  case-study data. Later public implementation removes/hides: case-studies
+  public navigation/discovery, `/case-studies`, `/case-studies/[slug]`, Arabic
+  public equivalents, case-study sitemap/public SEO exposure. Backend/admin
+  case-study functionality is NOT deleted.
+- Media: DELETE — FINAL (Phase 01 proved: no database model, no API, no admin
+  writer, no required backend dependency). Schedule removal of the public Media
+  route/view/navigation/metadata/sitemap references in the appropriate
+  implementation phase. Do NOT remove unrelated social-draft/admin functionality
+  merely because Media is deleted.
+- Homepage Representative Matters: KEEP — FINAL (Phase 01 proved MatterRows is
+  independent from the Case Studies pipeline).
+- Homepage Insights: REMOVE from the public homepage — FINAL (Phase 01 proved
+  InsightsLedger depends on the live Articles + Case Studies pipelines). Do NOT
+  replace it with a new component. Preserve surrounding homepage section rhythm
+  and spacing so no visual gap remains.
 - Admin + backend content systems (ArticleForm, CaseStudyForm, content API, database): PRESERVE regardless of public visibility ruling.
 
 ## # CONSULTATION ASSISTANT
