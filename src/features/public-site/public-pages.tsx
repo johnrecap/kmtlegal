@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/animate-ui/components/radix/accordion";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
 import { FocusCards } from "@/components/ui/focus-cards";
@@ -404,7 +405,12 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
           <article className={cn(publicPanel, "p-6")}>
             <MaterialSymbol className={cn("text-4xl", publicGoldText)} name={service.icon} />
             <p className={cn("mt-5 leading-8", publicMutedText)}>{service.content}</p>
-            <div className="mt-8 border-t border-[var(--kmt-public-line)] pt-6">
+            {/*
+              Desktop dossier: static secondary sections (unchanged).
+              Mobile: the same sections collapse into the Accordion below —
+              CTA and breadcrumbs stay outside and always visible.
+            */}
+            <div className="mt-8 hidden border-t border-[var(--kmt-public-line)] pt-6 lg:block">
               <h2 className="text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.includedTitle}</h2>
               <div className="mt-4 flex flex-wrap gap-2">
                 {service.subServices.map((subService) => (
@@ -414,7 +420,7 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
                 ))}
               </div>
             </div>
-            <div className="mt-8 border-t border-[var(--kmt-public-line)] pt-6">
+            <div className="mt-8 hidden border-t border-[var(--kmt-public-line)] pt-6 lg:block">
               <h2 className="text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.documentsTitle}</h2>
               <div className="mt-4 flex flex-wrap gap-2">
                 {service.requiredDocuments.map((document) => (
@@ -424,7 +430,7 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
                 ))}
               </div>
             </div>
-            <div className="mt-8 border-t border-[var(--kmt-public-line)] pt-6">
+            <div className="mt-8 hidden border-t border-[var(--kmt-public-line)] pt-6 lg:block">
               <h2 className="text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.outcomesTitle}</h2>
               <ul className={cn("mt-4 space-y-3", publicMutedText)}>
                 {service.outcomes.map((outcome) => (
@@ -435,13 +441,63 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
                 ))}
               </ul>
             </div>
+            <Accordion
+              className={cn(publicPanel, "mt-8 px-5 py-1 lg:hidden")}
+              data-testid="service-detail-accordion"
+              type="single"
+              collapsible
+            >
+              <AccordionItem value="included">
+                <AccordionTrigger className="text-start text-base font-semibold text-[var(--kmt-public-text)] hover:no-underline">
+                  {copy.includedTitle}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-wrap gap-2">
+                    {service.subServices.map((subService) => (
+                      <Badge key={subService} className={publicGoldChip}>
+                        {subService}
+                      </Badge>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="documents">
+                <AccordionTrigger className="text-start text-base font-semibold text-[var(--kmt-public-text)] hover:no-underline">
+                  {copy.documentsTitle}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-wrap gap-2">
+                    {service.requiredDocuments.map((document) => (
+                      <Badge key={document} className={publicGoldChip}>
+                        {document}
+                      </Badge>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="outcomes">
+                <AccordionTrigger className="text-start text-base font-semibold text-[var(--kmt-public-text)] hover:no-underline">
+                  {copy.outcomesTitle}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className={cn("space-y-3", publicMutedText)}>
+                    {service.outcomes.map((outcome) => (
+                      <li key={outcome} className="flex gap-2">
+                        <MaterialSymbol className={cn("mt-1 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="check_circle" />
+                        <span>{outcome}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
             <ButtonLink className={cn(publicMotionButton, publicMotionCta, "mt-8 !border-kmt-gold/35 !text-[var(--kmt-public-text)] hover:!bg-kmt-gold hover:!text-primary-foreground")} href={localizedPublicHref("/services", locale)} variant="secondary">
               {copy.backToServices}
             </ButtonLink>
           </article>
           <DetailCta locale={locale} serviceTitle={service.title} />
         </div>
-        <nav aria-label={copy.breadcrumbServices} className="mt-10">
+        <nav aria-label={copy.breadcrumbServices} className="mt-10 hidden lg:block">
           <h2 className="text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.breadcrumbServices}</h2>
           <ul className="mt-5 overflow-hidden rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)]">
             {content.legalServices
@@ -462,6 +518,38 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
               ))}
           </ul>
         </nav>
+        <Accordion
+          className={cn(publicPanel, "mt-10 px-5 py-1 lg:hidden")}
+          data-testid="service-related-accordion"
+          type="single"
+          collapsible
+        >
+          <AccordionItem value="related">
+            <AccordionTrigger className="text-start text-base font-semibold text-[var(--kmt-public-text)] hover:no-underline">
+              {copy.breadcrumbServices}
+            </AccordionTrigger>
+            <AccordionContent>
+              <ul className="space-y-1">
+                {content.legalServices
+                  .filter((related) => related.slug !== service.slug)
+                  .map((related) => (
+                    <li key={related.slug}>
+                      <Link
+                        className="group flex items-center justify-between gap-4 rounded-lg p-3 transition-colors duration-kmt-fast ease-kmt-out hover:bg-[var(--kmt-public-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold motion-reduce:transition-none"
+                        href={localizedPublicHref(`/services/${related.slug}`, locale)}
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate text-base font-semibold text-[var(--kmt-public-text)]">{related.title}</span>
+                          <span className={cn("mt-1 block truncate text-sm", publicMutedText)}>{related.description}</span>
+                        </span>
+                        <MaterialSymbol className={cn("shrink-0 text-xl", publicGoldText, publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />
+                      </Link>
+                    </li>
+                  ))}
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </PublicSection>
     </PublicShell>
   );
@@ -476,10 +564,12 @@ export function TeamPageView({ locale }: { locale: PublicLocale }) {
       <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/bd64f8e89da8f4f6.png" imagePosition="object-[center_38%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <DirectoryFilter
+          cardVariant="focus"
           emptyTitle={copy.emptyTitle}
           locale={locale}
           items={content.lawyers.map((lawyer) => ({
             title: lawyer.name,
+            subtitle: lawyer.title,
             description: `${lawyer.title}. ${lawyer.bio}`,
             href: `/team/${lawyer.slug}`,
             category: lawyer.specialties[0] ?? "team",
@@ -540,42 +630,108 @@ export function TeamDetailPageView({ locale, slug }: { locale: PublicLocale; slu
                 </Badge>
               ))}
             </div>
-            <h2 className="mt-8 text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.languagesTitle}</h2>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {lawyer.languages.map((language) => (
-                <Badge key={language} className={publicNeutralChip}>
-                  {language}
-                </Badge>
-              ))}
-            </div>
-            <h2 className="mt-8 text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.credentialsTitle}</h2>
-            <div className="mt-4 space-y-6">
-              <div>
-                <p className={cn("text-sm font-semibold", publicGoldText)}>{copy.experienceTitle}</p>
-                <p className={cn("mt-1.5 text-sm leading-7", publicMutedText)}>{lawyer.experience}</p>
+            {/*
+              Desktop profile: static secondary information (unchanged).
+              Mobile: the same information collapses into the Accordion
+              below — photo, specialties, notices, and primary CTA stay
+              outside and always visible.
+            */}
+            <div className="hidden lg:block">
+              <h2 className="mt-8 text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.languagesTitle}</h2>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {lawyer.languages.map((language) => (
+                  <Badge key={language} className={publicNeutralChip}>
+                    {language}
+                  </Badge>
+                ))}
               </div>
-              <div>
-                <p className={cn("text-sm font-semibold", publicGoldText)}>{copy.educationTitle}</p>
-                <ul className="mt-2 space-y-2">
-                  {lawyer.education.map((entry) => (
-                    <li key={entry} className={cn("flex gap-2 text-sm leading-7", publicMutedText)}>
-                      <MaterialSymbol className={cn("mt-1 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="history_edu" />
-                      <span>{entry}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <p className={cn("text-sm font-semibold", publicGoldText)}>{copy.admissionsTitle}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {lawyer.admissions.map((admission) => (
-                    <Badge key={admission} className={publicGoldChip}>
-                      {admission}
-                    </Badge>
-                  ))}
+              <h2 className="mt-8 text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.credentialsTitle}</h2>
+              <div className="mt-4 space-y-6">
+                <div>
+                  <p className={cn("text-sm font-semibold", publicGoldText)}>{copy.experienceTitle}</p>
+                  <p className={cn("mt-1.5 text-sm leading-7", publicMutedText)}>{lawyer.experience}</p>
+                </div>
+                <div>
+                  <p className={cn("text-sm font-semibold", publicGoldText)}>{copy.educationTitle}</p>
+                  <ul className="mt-2 space-y-2">
+                    {lawyer.education.map((entry) => (
+                      <li key={entry} className={cn("flex gap-2 text-sm leading-7", publicMutedText)}>
+                        <MaterialSymbol className={cn("mt-1 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="history_edu" />
+                        <span>{entry}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <p className={cn("text-sm font-semibold", publicGoldText)}>{copy.admissionsTitle}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {lawyer.admissions.map((admission) => (
+                      <Badge key={admission} className={publicGoldChip}>
+                        {admission}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
+            <Accordion
+              className="mt-8 border-t border-[var(--kmt-public-line)] pt-2 lg:hidden"
+              data-testid="team-detail-accordion"
+              type="single"
+              collapsible
+            >
+              <AccordionItem value="languages">
+                <AccordionTrigger className="text-start text-base font-semibold text-[var(--kmt-public-text)] hover:no-underline">
+                  {copy.languagesTitle}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-wrap gap-2">
+                    {lawyer.languages.map((language) => (
+                      <Badge key={language} className={publicNeutralChip}>
+                        {language}
+                      </Badge>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="experience">
+                <AccordionTrigger className="text-start text-base font-semibold text-[var(--kmt-public-text)] hover:no-underline">
+                  {copy.experienceTitle}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <p className={cn("text-sm leading-7", publicMutedText)}>{lawyer.experience}</p>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="education">
+                <AccordionTrigger className="text-start text-base font-semibold text-[var(--kmt-public-text)] hover:no-underline">
+                  {copy.educationTitle}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="space-y-2">
+                    {lawyer.education.map((entry) => (
+                      <li key={entry} className={cn("flex gap-2 text-sm leading-7", publicMutedText)}>
+                        <MaterialSymbol className={cn("mt-1 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="history_edu" />
+                        <span>{entry}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="admissions">
+                <AccordionTrigger className="text-start text-base font-semibold text-[var(--kmt-public-text)] hover:no-underline">
+                  {copy.admissionsTitle}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-wrap gap-2">
+                    {lawyer.admissions.map((admission) => (
+                      <Badge key={admission} className={publicGoldChip}>
+                        {admission}
+                      </Badge>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
             <div className="mt-8 rounded-lg border border-kmt-warning-border bg-kmt-warning-surface p-4 text-sm leading-7 text-kmt-warning-strong">{copy.bookingNotice}</div>
             <p className={cn("mt-5 text-sm leading-7", publicMutedText)}>{copy.relationshipNotice}</p>
             <ButtonLink

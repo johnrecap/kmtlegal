@@ -2,7 +2,11 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Badge, ButtonLink, MaterialSymbol, TextInput } from "@/components/ui";
+import { BlurFade } from "@/components/ui/blur-fade";
+import { Card as FocusCard } from "@/components/ui/focus-cards";
+import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { getPublicContent, type PublicContent } from "@/content/public-content";
 import { normalizeText } from "@/lib/normalize-text";
 import { cn } from "@/lib/cn";
@@ -29,6 +33,8 @@ export type DirectoryItem = {
   meta?: string;
   chips?: readonly string[];
   searchText?: string;
+  /** Role line for people cards (team focus renderer only). */
+  subtitle?: string;
   image?: string;
   imageAlt?: string;
   imageSizes?: string;
@@ -56,7 +62,8 @@ export function DirectoryFilter({
   emptyTitle,
   locale = "en",
   copy,
-  layout = "cards"
+  layout = "cards",
+  cardVariant = "cards"
 }: {
   items: DirectoryItem[];
   searchLabel?: string;
@@ -65,6 +72,12 @@ export function DirectoryFilter({
   copy?: PublicContent["directoryFilter"];
   /** rows = equal editorial ledger (services index); cards = default grid. */
   layout?: "cards" | "rows";
+  /**
+   * cards = generic editorial cards (articles/case-studies default);
+   * focus = Aceternity Focus Cards people grid (team index only).
+   * Renderer-scoped: Articles/Case Studies never pass "focus".
+   */
+  cardVariant?: "cards" | "focus";
 }) {
   const content = getPublicContent(locale);
   const dictionary = copy ?? content.directoryFilter;
@@ -151,52 +164,85 @@ export function DirectoryFilter({
 
       {filteredItems.length ? (
         layout === "rows" ? (
-          <ol className={cn("mt-6 overflow-hidden rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)]", publicMotionFilterResults)}>
+          <ol className={cn("mt-6 overflow-hidden rounded-lg", publicMotionFilterResults)}>
             {filteredItems.map((item, index) => (
-              <li key={item.href} className={cn(index > 0 && "border-t border-[var(--kmt-public-line)]")}>
-                <article
-                  data-testid="public-directory-card"
-                  className={cn(publicMotionCardBeam, "group grid gap-4 border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)] p-5 transition-colors duration-kmt-fast ease-kmt-out hover:bg-[var(--kmt-public-hover)] motion-reduce:transition-none sm:p-6 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center lg:gap-8")}
-                >
-                  <div className="flex items-center gap-4 lg:w-40 lg:flex-col lg:items-start lg:gap-3">
-                    <span aria-hidden="true" className="text-sm font-semibold tabular-nums tracking-widest text-[var(--kmt-public-gold)]">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <Badge className={publicGoldChip}>{item.categoryLabel}</Badge>
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="text-xl font-semibold text-[var(--kmt-public-text)]">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-7 text-[var(--kmt-public-muted)]">{item.description}</p>
-                    {item.chips?.length ? (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {item.chips.slice(0, 5).map((chip) => (
-                          <span key={chip} className={cn("rounded-full border border-kmt-gold/35 bg-kmt-gold/10 px-3 py-1 text-xs font-semibold text-[var(--kmt-public-muted)]")}>
-                            {chip}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                  <div className="flex items-center justify-between gap-3 lg:w-44 lg:flex-col lg:items-end lg:justify-center lg:gap-2 lg:text-end">
-                    {item.meta ? (
-                      <span className="text-xs text-[var(--kmt-public-muted)]">
-                        <bdi>{item.meta}</bdi>
-                      </span>
-                    ) : null}
-                    <ButtonLink
-                      className={cn("!border-kmt-gold/35 !text-[var(--kmt-public-text)] hover:!bg-kmt-gold hover:!text-primary-foreground", publicMotionButton, publicMotionCta)}
-                      href={localizedPublicHref(item.href, locale)}
-                      size="sm"
-                      variant="secondary"
-                      trailingIcon={<MaterialSymbol className={cn("text-base", publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />}
+              <li key={item.href} className={cn(index > 0 && "-mt-px")}>
+                <BlurFade className="kmt-blur-fade" delay={Math.min(index, 5) * 0.06} direction="up">
+                  {/*
+                    Services rows: Aceternity Glowing Effect is the border
+                    interaction layer (pointer-following gold border light).
+                    Editorial content (numeral, category, linked title,
+                    description, chips, meta, details CTA) is unchanged.
+                  */}
+                  <div
+                    className={cn(
+                      "relative overflow-hidden border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)]",
+                      index === 0 && "rounded-t-lg",
+                      index === filteredItems.length - 1 && "rounded-b-lg"
+                    )}
+                  >
+                    <GlowingEffect
+                      spread={28}
+                      borderWidth={1}
+                      variant="kmt-gold"
+                      disabled={false}
+                      proximity={120}
+                      inactiveZone={0.5}
+                    />
+                    <article
+                      data-testid="public-directory-card"
+                      className="group relative grid gap-4 p-5 transition-colors duration-kmt-fast ease-kmt-out motion-reduce:transition-none sm:p-6 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:items-center lg:gap-8"
                     >
-                      {content.shared.viewDetails}
-                    </ButtonLink>
+                      <div className="flex items-center gap-4 lg:w-40 lg:flex-col lg:items-start lg:gap-3">
+                        <span aria-hidden="true" className="text-sm font-semibold tabular-nums tracking-widest text-[var(--kmt-public-gold)]">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <Badge className={publicGoldChip}>{item.categoryLabel}</Badge>
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="text-xl font-semibold text-[var(--kmt-public-text)]">
+                          <Link
+                            className="rounded transition-colors group-hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
+                            href={localizedPublicHref(item.href, locale)}
+                          >
+                            {item.title}
+                          </Link>
+                        </h3>
+                        <p className="mt-2 text-sm leading-7 text-[var(--kmt-public-muted)]">{item.description}</p>
+                        {item.chips?.length ? (
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {item.chips.slice(0, 5).map((chip) => (
+                              <span key={chip} className={cn("rounded-full border border-kmt-gold/35 bg-kmt-gold/10 px-3 py-1 text-xs font-semibold text-[var(--kmt-public-muted)]")}>
+                                {chip}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center justify-between gap-3 lg:w-44 lg:flex-col lg:items-end lg:justify-center lg:gap-2 lg:text-end">
+                        {item.meta ? (
+                          <span className="text-xs text-[var(--kmt-public-muted)]">
+                            <bdi>{item.meta}</bdi>
+                          </span>
+                        ) : null}
+                        <ButtonLink
+                          className={cn("!border-kmt-gold/35 !text-[var(--kmt-public-text)] hover:!bg-kmt-gold hover:!text-primary-foreground", publicMotionButton, publicMotionCta)}
+                          href={localizedPublicHref(item.href, locale)}
+                          size="sm"
+                          variant="secondary"
+                          trailingIcon={<MaterialSymbol className={cn("text-base", publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />}
+                        >
+                          {content.shared.viewDetails}
+                        </ButtonLink>
+                      </div>
+                    </article>
                   </div>
-                </article>
+                </BlurFade>
               </li>
             ))}
           </ol>
+        ) : cardVariant === "focus" ? (
+        <FocusCardsGrid items={filteredItems} locale={locale} />
         ) : (
         <div className={cn("mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3", publicMotionFilterResults)}>
           {filteredItems.map((item) => (
@@ -264,6 +310,39 @@ export function DirectoryFilter({
             </button>
           ) : null}
         </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Team index people grid: Aceternity Focus Cards wired to real lawyer data
+ * (photo pipeline, name, role, specialties, profile link). Renderer-scoped —
+ * only used when `cardVariant="focus"` (team index). Touch/mobile: every
+ * card is a real link with always-visible name + role; hover emphasis is a
+ * desktop/pointer enhancement inside the vendored Card only.
+ */
+function FocusCardsGrid({ items, locale }: { items: DirectoryItem[]; locale: PublicLocale }) {
+  const [hovered, setHovered] = useState<number | null>(null);
+
+  return (
+    <div className={cn("mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3", publicMotionFilterResults)}>
+      {items.map((item, index) =>
+        item.image ? (
+          <FocusCard
+            key={item.href}
+            index={index}
+            hovered={hovered}
+            setHovered={setHovered}
+            card={{
+              title: item.title,
+              subtitle: item.subtitle ?? item.categoryLabel,
+              meta: [...(item.chips ?? []).slice(0, 3), item.meta].filter(Boolean).join(" · "),
+              src: item.image,
+              href: localizedPublicHref(item.href, locale)
+            }}
+          />
+        ) : null
       )}
     </div>
   );
