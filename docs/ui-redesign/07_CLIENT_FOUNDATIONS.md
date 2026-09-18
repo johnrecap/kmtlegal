@@ -66,8 +66,9 @@ All 8 pages render identically in content, renewed in chrome.
 - [ ] TASK-07-08 Pagination: install the official shadcn Pagination; build one
   shared client pagination helper mapping existing page state to it; swap all
   hand-rolled client pagination links (cases, court-dates, files, payments).
-- [ ] TASK-07-09 DataTable/DataRecordCard: keep byte-identical rendering;
-  re-verify themed borders/text/badges under both themes only.
+- [ ] TASK-07-09 DataTable/DataRecordCard: keep rendering output identical
+  apart from theming (same columns, rows, mobile cards, links); re-verify
+  themed borders/text/badges under both themes only.
 - [ ] TASK-07-10 Foundation sweep: all 8 pages smoke-rendered (content
   unchanged) EN+AR × light+dark × 390/1024/1440; shell captures; phase
   commit; STOP.

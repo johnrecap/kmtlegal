@@ -15,7 +15,8 @@ payment, review, confirmation, and next steps.
 `BookConsultationPageView` (`public-pages.tsx:952`) →
 `ConsultationBookingChatFromQuery` (`booking-query-client.tsx:9`) →
 `ConsultationBookingChat` (`consultation-booking-chat.tsx:168`): shell
-`section[data-testid=booking-stepper]` with `BorderBeam`, brand header,
+`section[data-testid=booking-stepper]` (RENAMED to `consultation-assistant`
+in TASK-04-02) with `BorderBeam`, brand header,
 `AnimatedList` log (`ChatBubble`, `LanguageChoicePanel`, `SlotChoicePanel`,
 confirm row, `PaymentReviewPanel`), quick-action chips, `PlaceholdersAndVanishInput`
 composer (`input[name=chatMessage]`), privacy note. Legacy `BookingStepper`
@@ -49,31 +50,36 @@ mobile, reduced motion. Business endpoints and validation behavior preserved.
 - [ ] TASK-04-01 Sweep for surviving stepper rendering: grep `booking-stepper`
   testid, `BookingStepper`, `ConsultationAssistantPanel` imports/usages across
   `src/`; remove every rendered trace (files themselves deleted in Phase 12).
-  Re-run grep to prove zero.
-- [ ] TASK-04-02 Language-in-chat: entry picks locale inside the conversation
+- [ ] TASK-04-02 RENAME the rendered assistant shell test id from
+  `data-testid="booking-stepper"` to `data-testid="consultation-assistant"`;
+  update every E2E/test selector that references the old rendered test id
+  (enumerate them by grep; record exact files in Implementation Notes).
+  Do NOT rename internal booking state names solely for cosmetics. Re-run
+  grep to prove no rendered `booking-stepper` trace remains.
+- [ ] TASK-04-03 Language-in-chat: entry picks locale inside the conversation
   (`LanguageChoicePanel` decisions preserved); `?locale`/`?service`/`?lawyer`/
   resume params still honored; back-navigation never strands state.
-- [ ] TASK-04-03 Request-type + details stages in chat: contextual quick
+- [ ] TASK-04-04 Request-type + details stages in chat: contextual quick
   choices render; chosen options collapse to compact summaries; free-text
   details stage keeps validation behavior identical.
-- [ ] TASK-04-04 Slots in chat: day-grouped chips, selection + change path,
+- [ ] TASK-04-05 Slots in chat: day-grouped chips, selection + change path,
   office-review/pending states messaging preserved.
-- [ ] TASK-04-05 Payment in chat: `PaymentReviewPanel` figures, pay action
+- [ ] TASK-04-06 Payment in chat: `PaymentReviewPanel` figures, pay action
   (async states), back path, receipt/setup follow-ups, return-URL flow intact.
-- [ ] TASK-04-06 Review + confirmation + next steps in chat: summary figures,
+- [ ] TASK-04-07 Review + confirmation + next steps in chat: summary figures,
   confirmation record, after-submit information panel; single privacy note
   (dedupe if two render).
-- [ ] TASK-04-07 Shell geometry: content-driven height, native internal scroll
+- [ ] TASK-04-08 Shell geometry: content-driven height, native internal scroll
   of `role=log`, correct composer height, exact placeholder/input text-origin
   alignment (reference prior geometry fixes; re-verify at 390px).
-- [ ] TASK-04-08 Bubble system: compact bubbles, theme-aware user/assistant/
+- [ ] TASK-04-09 Bubble system: compact bubbles, theme-aware user/assistant/
   info/error tones light + dark, collapsed-option styling, typing indicator.
-- [ ] TASK-04-09 RTL + locales: AR RTL mirroring, EN LTR, `dir=ltr` islands
+- [ ] TASK-04-10 RTL + locales: AR RTL mirroring, EN LTR, `dir=ltr` islands
   (ids/amounts) intact, translated strings complete for new/changed copy.
-- [ ] TASK-04-10 Reduced motion + performance: `AnimatedList` sequencing and
+- [ ] TASK-04-11 Reduced motion + performance: `AnimatedList` sequencing and
   vanish particles respect reduced-motion; auto-scroll pins preserved;
   no console errors across full booking + payment-review paths (mock-safe).
-- [ ] TASK-04-11 Full assistant QA sweep (Visual + Technical), both locales,
+- [ ] TASK-04-12 Full assistant QA sweep (Visual + Technical), both locales,
   both themes, 390 + 1440; phase commit; STOP.
 
 ## Files Expected To Change
@@ -84,6 +90,9 @@ mobile, reduced motion. Business endpoints and validation behavior preserved.
   `src/features/public-site/public-components.tsx` (`BookingFlowHeader` only),
   `src/components/ui/placeholders-and-vanish-input.tsx` (theming/alignment only),
   booking-scoped styles.
+- E2E/test files that reference the old `booking-stepper` test id (selector
+  updates to `consultation-assistant` only; enumerated by grep in TASK-04-02;
+  exact paths recorded in Implementation Notes).
 
 ## Files That Must NOT Change
 
@@ -108,9 +117,13 @@ mobile, reduced motion. Business endpoints and validation behavior preserved.
 ## Acceptance Criteria
 
 - [ ] Zero stepper/progress/tabs/timeline UI visible on any booking path.
+- [ ] No rendered `booking-stepper` test-id trace remains (grep proof);
+  the shell exposes `data-testid="consultation-assistant"`.
 - [ ] All eight conversation stages completable EN + AR, light + dark.
 - [ ] Shell height content-driven; internal scroll native; alignment exact.
-- [ ] Business behavior (endpoints, validation, payment flow) byte-identical.
+- [ ] API endpoints, request payload semantics, validation rules, payment
+  state transitions, and observable business outcomes remain behaviorally
+  identical.
 - [ ] One phase commit; STOP.
 
 ## Visual QA

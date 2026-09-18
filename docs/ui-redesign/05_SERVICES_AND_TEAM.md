@@ -67,7 +67,11 @@ accessible.
   always visible; deep-link anchors preserved.
 - [ ] TASK-05-06 Team index: people-first hero variant + Focus Cards index
   wired to real lawyer data (photo, name, role, badges, detail link);
-  filters preserved; `md:2 lg:3` responsive behavior.
+  filters preserved; `md:2 lg:3` responsive behavior. On touch/mobile:
+  no sibling-blur dependency, all lawyer images stay clearly visible, names
+  and roles stay visible, no essential information requires hover, tapping
+  a lawyer card opens the profile; Focus Cards hover emphasis is
+  desktop/pointer enhancement only.
 - [ ] TASK-05-07 Team detail: profile theming pass (badges, notices, history
   block); booking `?lawyer=` CTA intact.
 - [ ] TASK-05-08 Team detail mobile: secondary information (experience /
@@ -109,6 +113,8 @@ accessible.
 - [ ] No Magic Card treatment remains in services renderer (grep proof).
 - [ ] Filters behave identically (before/after state captures).
 - [ ] Mobile secondary sections use Accordion on both detail pages.
+- [ ] Team touch rule verified: no hover-required information, all images +
+  names + roles visible, tap opens profile (touch-device captures).
 - [ ] EN+AR × light+dark × 4 viewports pass; console clean.
 - [ ] One phase commit; STOP.
 

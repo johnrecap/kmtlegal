@@ -4,8 +4,10 @@
 
 Build the shared admin primitives ONCE — Sidebar, Sheet, Tabs, Accordion,
 Dialog, Menu, Popover, Tooltip, Stateful Button, File Upload, Pagination —
-plus filter conventions and row-action conventions. No per-page duplication,
-no page wiring yet (wiring lands in Phases 10–11). Productivity-first: no
+plus filter conventions and row-action conventions. No per-page duplication.
+No admin content-page wiring occurs in Phase 09. Shared DashboardShell chrome
+wiring IS included: Sidebar, mobile Sheet, notification Popover (TASK-09-11).
+Individual page content wiring remains Phases 10–11. Productivity-first: no
 marketing effects.
 
 ## Current State
@@ -115,7 +117,10 @@ gallery-ready examples here). No admin page imports a one-off overlay again.
 
 - [ ] All 11 primitives exist once, documented, with gallery-ready examples.
 - [ ] Shell chrome swapped with zero page-content diffs (before/after captures).
-- [ ] No page imports a non-kit overlay (grep proof).
+- [ ] No NEW one-off overlay implementation is introduced. Shared shell
+  overlays use the Phase 09 kit. Existing content-page disclosures remain
+  until their locked Phase 10/11 migration (grep inventory recorded, not
+  eliminated, in this phase).
 - [ ] One phase commit; STOP.
 
 ## Visual QA

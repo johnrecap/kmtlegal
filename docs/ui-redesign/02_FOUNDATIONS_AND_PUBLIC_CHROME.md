@@ -45,8 +45,13 @@ failure mark BLOCKED and keep the current toggle.
   logo/active-state behavior; dock unchanged (2 actions, booking-hide kept);
   footer layout kept with improved theme/brand-plaque/spacing/typography/CTA/
   hover states.
-- Theme toggler: Magic Animated Theme Toggler integrated ONLY on verified
-  `next-themes` compatibility; otherwise BLOCKED, current toggle kept.
+- Theme toggler: Magic Animated Theme Toggler replaces the internals of the
+  SHARED `ThemeToggle` component ONLY on verified `next-themes`
+  compatibility; otherwise BLOCKED, current toggle kept. Phase 02 VERIFIES
+  the shared component renders in Public, Client, and Admin, but does NOT
+  redesign Client/Admin theme surfaces (Client theming is Phase 07; Admin
+  surfaces are Phase 09). If changing the shared `ThemeToggle` alone is
+  sufficient, client/admin shell files stay untouched.
 
 ## Component Decisions
 
@@ -91,10 +96,14 @@ failure mark BLOCKED and keep the current toggle.
 - [ ] TASK-02-09 Footer pass (layout kept): theme vars, brand-plaque treatment,
   spacing rhythm, typography scale, CTA hover, link focus states, legal bar.
 - [ ] TASK-02-10 Theme-toggler verification: install the official Magic
-  Animated Theme Toggler in isolation; wire controlled `theme` +
-  `onThemeChange` to the existing `next-themes` setup in all three shells
-  (public header, client shell, admin shell); verify persistence keys,
-  SSR first paint, and reduced-motion. On ANY incompatibility: mark
+  Animated Theme Toggler in isolation; replace the internals of the SHARED
+  `ThemeToggle` component with it under controlled `theme` + `onThemeChange`
+  wiring to the existing `next-themes` setup; VERIFY the shared component
+  renders correctly in Public, Client, and Admin shells without redesigning
+  any Client/Admin theme surface (those belong to Phases 07/09). Verify
+  persistence keys, SSR first paint, and reduced-motion. Client/admin shell
+  files stay untouched unless the shared change strictly requires it
+  (record justification). On ANY incompatibility: mark
   BLOCKED — OWNER DECISION REQUIRED with evidence and STOP this task,
   keeping the current `ThemeToggle`.
 - [ ] TASK-02-11 Regression sweep: home + one directory + booking + contact in

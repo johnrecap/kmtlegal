@@ -57,13 +57,16 @@ Stateful Button; lists paginate through shadcn Pagination.
   links + invoice figures untouched.
 - [ ] TASK-08-04 AI assistant: log → Animated List; composer → Vanish Input;
   quick chips + `AssistantData` cards + disclaimer + typing indicator kept;
-  endpoint + polling behavior unchanged.
+  existing AI request/API behavior preserved exactly; no polling is added to
+  the AI chat.
 - [ ] TASK-08-05 Team chat: keep native textarea composer + current surface;
   prove visual distinction from the AI assistant (side-by-side captures);
-  5s poll + privacy note intact.
+  existing 5-second polling behavior of the team chat preserved exactly.
 - [ ] TASK-08-06 Files: upload → File Upload wired to the existing upload
-  handler (case/category selects, accept list, visibility flag, errors);
-  list table + mobile cards kept.
+  handler. Preserve every currently verified `DocumentUploadForm` field and
+  upload constraint exactly. Do NOT introduce visibility, owner,
+  access-level, or any new field unless it is proven to exist in the actual
+  current client form source. List table + mobile cards kept.
 - [ ] TASK-08-07 Payments: continue/follow actions → Stateful Buttons;
   mobile payment details → Accordion; amounts/invoices/receipt links intact.
 - [ ] TASK-08-08 Profile: save → Stateful Button (validation + status +

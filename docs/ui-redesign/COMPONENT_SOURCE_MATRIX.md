@@ -29,7 +29,7 @@
 | 20 | DataTable + DataRecordCard | Local (KEEP CURRENT) | — (local primitives) | CURRENT | `src/components/ui/data-table.tsx`, `src/components/ui/data-record-card.tsx` | Client lists; admin lists | 07, 08, 09, 10 |
 | 21 | RippleLink | Animate UI | (vendored ripple pattern) | CURRENT | `src/components/animate-ui/ripple-link.tsx` | Locked header flyout CTA composition | 02 |
 | 22 | Animated Theme Toggler | Magic UI | https://magicui.design/docs/components/animated-theme-toggler | PENDING TECHNICAL VERIFICATION | Not installed | Public + client + admin theme toggles (replaces `ThemeToggle` internals only if `next-themes` controlled mode integrates) | 02 |
-| 23 | Scroll Progress | Magic UI | https://magicui.design/docs/components/scroll-progress | LOCKED REPLACEMENT | Not installed | Privacy + terms reading progress (replaces local `ReadingProgress` render) | 06 |
+| 23 | Scroll Progress | Magic UI | https://magicui.design/docs/components/scroll-progress | LOCKED REPLACEMENT | Not installed (Privacy + Terms do not render the local `ReadingProgress` today) | ADD to Privacy + Terms reading views | 06 |
 | 24 | Accordion | Animate UI | https://animate-ui.com/docs/components/radix/accordion | LOCKED REPLACEMENT | Not installed | Service/team detail mobile sections; contact branches; policy mobile TOC; setup summary; install groups; client case detail/payments/profile mobile; admin collapsible sections + audit technical details + weekday groups + settings groups + roles groups + AI draft area | 05, 06, 08, 09, 11 |
 | 25 | Stateful Button | Aceternity UI | https://ui.aceternity.com/components/stateful-button | LOCKED REPLACEMENT | Not installed | Contact submit; setup submit; payment-return async action; login submit; install async actions; client payments async + profile save; admin async buttons + webhook replay | 06, 08, 09, 11 |
 | 26 | Sidebar | Aceternity UI | https://ui.aceternity.com/components/sidebar | LOCKED REPLACEMENT | Not installed | Client desktop navigation; admin desktop sidebar | 07, 09 |
@@ -56,6 +56,9 @@
 - Row 27: local Animate-UI Tabs primitive files exist but render nowhere;
   Phase 09 verifies reuse of the vendored files vs fresh vendor install,
   then wires one shared Tabs primitive for all admin pages.
+- Row 23 is an ADD to Privacy + Terms. The Article Detail local
+  `ReadingProgress` belongs to the deferred Articles area and follows the
+  Phase 01 ruling; it is not replaced by this row.
 - Animate UI base Menu/Popover build on Base UI; repo has
   `@base-ui/react ^1.8.0`. Animate radix builds on `radix-ui` + `motion`;
   repo has `radix-ui ^1.6.7` and `motion ^13.3.0`. Aceternity builds need

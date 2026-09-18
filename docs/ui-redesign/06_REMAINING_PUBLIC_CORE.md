@@ -33,8 +33,10 @@ Stateful Button drives every async submit (contact, setup, return retry/pay,
 login, install bootstrap/preflight/finish). Accordion drives mobile-only
 collapsible groups (contact branches, policy TOC, setup summary, install
 groups). Scroll Progress drives policy reading progress. Receipt keeps its
-current print-first document. No second WhatsApp card where the dock already
-exposes WhatsApp. Deferred content untouched.
+current print-first document. The Contact WhatsApp card is REMOVED; WhatsApp
+remains available through the global Floating Dock. Contact retains the
+contact form, office/branch information, and phone/email links.
+Deferred content untouched.
 
 ## Component Decisions
 
@@ -42,7 +44,7 @@ exposes WhatsApp. Deferred content untouched.
 |---|---|---|---|---|---|
 | Contact submit | ShimmerButton submit | REPLACE WITH: Aceternity UI Stateful Button | Stateful Button | Aceternity UI | https://ui.aceternity.com/components/stateful-button |
 | Contact branch details (mobile) | Static stacked panels | REPLACE WITH: Animate UI Accordion | Accordion | Animate UI | https://animate-ui.com/docs/components/radix/accordion |
-| Contact WhatsApp panel | ButtonLink external card | KEEP CURRENT (no second major card where dock exposes WhatsApp) | None | — | — |
+| Contact WhatsApp card | ButtonLink external WhatsApp card | REMOVE | None | — | — |
 | Policy reading progress | None on policy pages | REPLACE WITH: Magic UI Scroll Progress | Scroll Progress | Magic UI | https://magicui.design/docs/components/scroll-progress |
 | Policy mobile TOC | Stacked TOC | REPLACE WITH: Animate UI Accordion | Accordion | Animate UI | https://animate-ui.com/docs/components/radix/accordion |
 | Setup submit | Plain button + spinner | REPLACE WITH: Aceternity UI Stateful Button | Stateful Button | Aceternity UI | https://ui.aceternity.com/components/stateful-button |
@@ -60,10 +62,12 @@ exposes WhatsApp. Deferred content untouched.
   Phase 05 Accordion; verify themes + RTL + reduced-motion for all three.
 - [ ] TASK-06-02 Contact: submit → Stateful Button wired to the existing
   `ContactForm` states (idle → loading → success/error + newMessage reset);
-  fields/validation/error/success presentation byte-identical in behavior.
-- [ ] TASK-06-03 Contact mobile: branch/office details → Accordion; keep
-  `tel:`/`mailto:` links tappable; WhatsApp exposure stays single (dock +
-  existing panel; no new card).
+  fields, validation rules, error/success presentation, and observable submit
+  outcomes remain behaviorally identical.
+- [ ] TASK-06-03 Contact mobile: branch/office details → Accordion; REMOVE
+  the WhatsApp card; keep office/branch information and `tel:`/`mailto:`
+  links tappable; WhatsApp remains available through the global Floating
+  Dock only. No new WhatsApp CTA card is added.
 - [ ] TASK-06-04 Policy: Scroll Progress bar mounted (offset below sticky
   header, `scaleX` without layout shift); desktop sticky TOC kept; mobile
   TOC → Accordion with anchor navigation + `scroll-mt` preserved.
@@ -115,6 +119,8 @@ exposes WhatsApp. Deferred content untouched.
 
 - [ ] Every listed submit is a Stateful Button with correct async states.
 - [ ] Every listed mobile group uses Accordion; desktop layouts kept.
+- [ ] Contact WhatsApp card removed (grep proof); contact form, office/branch
+  information, and phone/email links intact; no new WhatsApp CTA card added.
 - [ ] Policy progress bar present without layout shift.
 - [ ] Receipt unchanged in behavior; print output verified.
 - [ ] EN+AR × light+dark × 390/1440 pass; one phase commit; STOP.

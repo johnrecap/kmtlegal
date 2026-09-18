@@ -77,7 +77,9 @@
 
 - Contact submit: Aceternity Stateful Button — APPROVED
 - Contact mobile branch details: Animate UI Accordion — APPROVED
-- Second major WhatsApp card where the global dock already exposes WhatsApp: REJECTED
+- Contact WhatsApp panel/card: REMOVE — contact retains form, office/branch
+  information, phone/email links; WhatsApp remains available through the
+  global Floating Dock; no new WhatsApp CTA card is added.
 - Policy reading progress: Magic Scroll Progress — APPROVED
 - Policy mobile TOC: Animate UI Accordion — APPROVED
 - Policy marketing-style animation: REJECTED

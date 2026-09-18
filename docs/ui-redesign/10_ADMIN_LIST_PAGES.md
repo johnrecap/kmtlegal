@@ -41,7 +41,7 @@ Tabs; content types via Tabs. Data, endpoints, and permissions unchanged.
 | Content type nav | Hand-rolled tab nav | REPLACE WITH: Animate UI Tabs | Tabs | Animate UI | https://animate-ui.com/docs/components/radix/tabs |
 | Finance sections | Long mixed page | REPLACE WITH: Animate UI Tabs (Invoices, Gateway, Pricing, Attempts, Webhooks) | Tabs | Animate UI | https://animate-ui.com/docs/components/radix/tabs |
 | Tables + mobile cards | DataTable + DataRecordCard | KEEP CURRENT | None (local, kept) | — | — |
-| Reports metrics + bars | MetricCard + StatusBars | KEEP CURRENT (+ CountingNumber/Tooltip where valuable) | None | — | — |
+| Reports metrics + bars | MetricCard + StatusBars | KEEP CURRENT (USE CountingNumber on primary numeric MetricCard values; USE Tooltip only where an existing help/info control and existing explanatory copy already exist) | None | — | — |
 | Dashboard structure | AdminCommandCenter | KEEP CURRENT (no MagicCard, no decor) | None | — | — |
 
 ## Tasks
@@ -70,13 +70,19 @@ Tabs; content types via Tabs. Data, endpoints, and permissions unchanged.
 - [ ] TASK-10-07 Content hub: type Tabs (articles/case-studies/social/pending)
   with counts; filter + table + mobile card scaffold; editor/preview entry
   points preserved (Sheet/Dialog wiring in Phase 11).
-- [ ] TASK-10-08 Reports: metrics + StatusBars kept; CountingNumber on metric
-  values + Tooltip explanations where valuable; no chart library; recent
-  table scaffolded.
-- [ ] TASK-10-09 Row-action Menus: view/edit/delete/open items per page with
-  existing hrefs; destructive items route to Dialog confirmations (Phase 11
-  completes the destructive handlers; menus render with disabled-safe states
-  until then — record coverage per page).
+- [ ] TASK-10-08 Reports: metrics + StatusBars kept; USE CountingNumber on
+  primary numeric MetricCard values; USE Tooltip only where an existing
+  help/info control and existing explanatory copy already exist. Do NOT
+  invent help icons, explanations, tooltips, or metric descriptions for
+  decorative purposes. No chart library; recent table scaffolded.
+- [ ] TASK-10-09 Row-action Menus: migrate fully functional non-destructive
+  secondary row actions to Animate UI Menu where behavior is complete, keeping
+  existing hrefs and handlers. Keep existing destructive actions operational
+  in their current presentation during Phase 10 — never move a working
+  destructive action into a disabled Menu item. Phase 11 adds the locked
+  Animate UI Dialog confirmation and then migrates destructive actions into
+  the Menu + Dialog flow. Record the per-page action map (Menu vs kept
+  presentation) in Implementation Notes.
 - [ ] TASK-10-10 Dashboard + notifications bell list: structure kept; search
   intact; no decorative components added (grep gate for MagicCard/decor in
   admin before commit).
