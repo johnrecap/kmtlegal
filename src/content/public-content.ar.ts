@@ -192,9 +192,9 @@ export const publicContentAr = {
     { label: "الرئيسية", href: "/" },
     { label: "الخدمات", href: "/services" },
     { label: "الفريق", href: "/team" },
-    { label: "المقالات", href: "/articles" },
-    { label: "دراسات الحالة", href: "/case-studies" },
-    { label: "الإعلام", href: "/media" },
+    // Phase 02 (final Phase 01 rulings: Articles HIDE, Case Studies HIDE,
+    // Media DELETE) — deferred entries removed from public discovery.
+    // Routes stay live until Phase 06; backend/admin untouched.
     { label: "تواصل", href: "/contact" }
   ],
   serviceCategories,

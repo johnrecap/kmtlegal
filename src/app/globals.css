@@ -3,6 +3,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Magic UI Animated Theme Toggler (Phase 02): required View Transition
+   base styles from the official registry item
+   (https://magicui.design/docs/components/animated-theme-toggler). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
 @font-face {
   font-family: "IBM Plex Sans Arabic";
   font-style: normal;

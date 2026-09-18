@@ -218,9 +218,9 @@ export const publicContentEn = {
     { label: "Home", href: "/" },
     { label: "Services", href: "/services" },
     { label: "Team", href: "/team" },
-    { label: "Insights", href: "/articles" },
-    { label: "Case Studies", href: "/case-studies" },
-    { label: "Media", href: "/media" },
+    // Phase 02 (final Phase 01 rulings: Articles HIDE, Case Studies HIDE,
+    // Media DELETE) — deferred entries removed from public discovery.
+    // Routes stay live until Phase 06; backend/admin untouched.
     { label: "Contact", href: "/contact" }
   ],
   serviceCategories,

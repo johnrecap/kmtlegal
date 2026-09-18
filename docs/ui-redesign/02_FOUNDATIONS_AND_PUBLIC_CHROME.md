@@ -76,34 +76,90 @@ failure mark BLOCKED and keep the current toggle.
 
 ## Tasks
 
-- [ ] TASK-02-01 Token audit: list every arbitrary hex / literal color in
+- [x] TASK-02-01 Token audit: list every arbitrary hex / literal color in
   public-shell/header/hero/footer/public-components files; map each to an
   existing or new semantic token. Record the map in Implementation Notes.
-- [ ] TASK-02-02 Land tokens: extend `--kmt-public-*` vars (light + dark),
+  DONE — map recorded below. Phase 02 chrome/shared files are token-clean:
+  `globals.css` carries the full `--kmt-public-*` light (warm ivory) + dark
+  (deep-black `#050505`, gold `#d0a048`) systems plus the logo-gold family
+  vars; the only hex left in clean chrome files is the two BorderBeam color
+  props in `public-shell.tsx:74` (`#eac987`/`#a87830` = `--kmt-gold-text`/
+  `--kmt-gold-primary` values in a literal-color prop API — kept, documented).
+  Remaining old-gold literals (`#755a26`/`#997b44`/`#c7a363`) live ONLY in
+  later-phase files (return page, setup form/page, booking chat, client
+  portal, global-error) — out of scope, flagged for their phases. Light
+  `--kmt-public-gold: #755a26` deliberately KEPT (contrast bronze on ivory;
+  near-identical to new `#7c5a24`; brightening to `#a87830` would harm light
+  readability — recorded decision, not an omission).
+- [x] TASK-02-02 Land tokens: extend `--kmt-public-*` vars (light + dark),
   gold ramp derived from the KMT logo source, and Tailwind mappings; keep
   `duration-kmt-*`/`ease-kmt-*` as the only motion-speed source.
-- [ ] TASK-02-03 Repoint public chrome + shared public components to tokens;
+  DONE (verified landed): logo gold core `#a87830` / bright `#d0a048` + ramp
+  + `kmtBlackScale` in `tokens.ts` (pre-existing working-tree work, preserved
+  untouched); `--kmt-gold-*` family + `--kmt-black-*` vars committed in
+  `globals.css:84-99`; motion-speed tokens sole source (no competing
+  duration systems found). No Phase 02 edit required — audit + verification
+  recorded.
+- [x] TASK-02-03 Repoint public chrome + shared public components to tokens;
   keep the deliberate `bg-black` brand plaque only with an in-code comment.
   Verify EN + AR, light + dark, at 390/768/1024/1440.
-- [ ] TASK-02-04 Build the Motion Ownership table (Area × Animation × Current
+  DONE (verify-only): shell/dock/motion/toggle read exclusively from
+  `--kmt-public-*` + motion tokens (grep proof in Notes); brand plaque keeps
+  its documented `bg-black` comment (`public-shell.tsx:104-108`). No repoint
+  edits needed outside pre-modified files (untouched per preservation rule).
+- [x] TASK-02-04 Build the Motion Ownership table (Area × Animation × Current
   Owner × Final Owner × Remove Conflict?) covering Lenis, GSAP,
   ScrollTrigger, Motion, CSS keyframes, IntersectionObserver, raw scroll
   listeners. One interaction/property = one owner.
-- [ ] TASK-02-05 Scope Lenis: restrict `SmoothScrollProvider` to pages with
+  DONE — table recorded in Implementation Notes BEFORE any scroll change.
+- [x] TASK-02-05 Scope Lenis: restrict `SmoothScrollProvider` to pages with
   genuine smooth-scroll effects per the ownership table; keep reduced-motion
   disablement; verify anchor links + `ScrollTrigger.update()` still work on
   every public route.
-- [ ] TASK-02-06 Remove duplicate drivers found in TASK-02-04 (same property
+  DONE: provider (`smooth-scroll-provider.tsx`, clean file) now gates on
+  pathname — Lenis active ONLY on `/`, `/privacy`, `/terms` (+ `/ar`
+  equivalents): home owns the sole GSAP ScrollTrigger scrub, policy owns the
+  sole same-page anchor nav (`PolicyToc` plain anchors + `anchors: true`
+  kept). Booking chat (native element `scrollTop`), forms, directories,
+  detail pages use native scroll. Reduced-motion early-return preserved.
+  Verified: `lenis` class present on `/` + `/privacy`, absent on
+  `/book-consultation`, `/contact`, `/services` (browser proof); policy
+  anchor behavior covered by existing privacy E2E (smoke #19 green).
+- [x] TASK-02-06 Remove duplicate drivers found in TASK-02-04 (same property
   animated by two owners), keeping the Final Owner column as built.
-- [ ] TASK-02-07 Header hardening (family unchanged): scroll-conceal vs drawer
+  DONE — verdict: NO duplicate drivers exist (table proof). Lenis↔GSAP is the
+  canonical ticker-synced integration, not a conflict; glow/header/progress/
+  chat listeners each own distinct properties. Zero removals; nothing
+  blindly deleted.
+- [x] TASK-02-07 Header hardening (family unchanged): scroll-conceal vs drawer
   interplay, `glassed` pill readability with flyout open, logo scale constant
   across scroll states, active-link indicator, RTL drawer side, keyboard +
   focus handling, reduced-motion. Test EN + AR.
-- [ ] TASK-02-08 Dock check: 2 actions only, booking-route hiding intact,
+  DONE (verify-only; file carries pre-existing uncommitted work — preserved
+  untouched): rAF-throttled passive scroll listener with cleanup
+  (`:112-130`); conceal suppressed while flyout/drawer open (`:172`);
+  constant logo size comment (`:175-177`); `aria-current`/`aria-expanded`/
+  labels throughout; `MotionConfig reducedMotion="user"` (`:171`); RTL sheet
+  side (`:135`); header `z-50` above dock `z-40`; focus-visible rings on all
+  controls. Browser proof: conceal engages on scroll down / releases on
+  scroll up (EN+AR), Services flyout opens with practice links (1024),
+  drawer opens with Services group (390/768), zero console errors.
+- [x] TASK-02-08 Dock check: 2 actions only, booking-route hiding intact,
   safe-area + composer overlap re-verified, light + dark, RTL.
-- [ ] TASK-02-09 Footer pass (layout kept): theme vars, brand-plaque treatment,
+  DONE (verify-only): `public-floating-dock.tsx` renders exactly 2 items
+  (Consultation localized route + WhatsApp configured-or-contact-fallback);
+  shell hides it on `/book-consultation` (`public-shell.tsx:56,191`);
+  `pb-[env(safe-area-inset-bottom)]`, `z-40`, `MotionConfig reducedMotion`.
+  Browser proof: dock visible with exactly 2 actions on home EN+AR ×
+  390/768/1024/1440 in both themes.
+- [x] TASK-02-09 Footer pass (layout kept): theme vars, brand-plaque treatment,
   spacing rhythm, typography scale, CTA hover, link focus states, legal bar.
-- [ ] TASK-02-10 Theme-toggler verification: install the official Magic
+  DONE (verify-only): footer rides `bg-[var(--kmt-public-canvas)]` (no
+  forced-dark surfaces, documented `:67-70`), CTA card keeps BorderBeam +
+  underline + ShimmerCtaLink, practice/offices/contact/legal-bar columns
+  tokenized with focus-visible rings. Unit proof:
+  `tests/ui/public-footer-theme.test.tsx` 3/3 green. No footer edits needed.
+- [x] TASK-02-10 Theme-toggler verification: install the official Magic
   Animated Theme Toggler in isolation; replace the internals of the SHARED
   `ThemeToggle` component with it under controlled `theme` + `onThemeChange`
   wiring to the existing `next-themes` setup; VERIFY the shared component
@@ -114,7 +170,26 @@ failure mark BLOCKED and keep the current toggle.
   (record justification). On ANY incompatibility: mark
   BLOCKED — OWNER DECISION REQUIRED with evidence and STOP this task,
   keeping the current `ThemeToggle`.
-- [ ] TASK-02-11 Public chrome deferred-content visibility (final Phase 01
+  DONE — VERIFIED, no BLOCKED: vendored official source verbatim to
+  `src/components/ui/animated-theme-toggler.tsx` (registry
+  `https://magicui.design/docs/components/animated-theme-toggler`,
+  `r/animated-theme-toggler.json`, fetched 2026-09-18; sole adaptation: `cn`
+  from `@/lib/cn`; two transcription slips caught and corrected against the
+  source before testing); registry VT base CSS added to `globals.css`;
+  `ThemeToggle` internals replaced (same `{label, className}` API, same
+  `h-11 w-11` footprint, controlled `theme={resolvedTheme…}` +
+  `onThemeChange={setTheme}` per the official Next.js demo; `duration={0}`
+  under `prefers-reduced-motion`; pre-mount invisible placeholder preserves
+  the old SSR first paint and prevents hydration mismatch — one mismatch
+  found during QA, fixed, re-verified zero hydration warnings). next-themes
+  keeps persistence (`kmt-theme`/`kmt-theme-admin`), SSR, and defaults;
+  Client/Admin shell files untouched (same shared component, same props).
+  Browser proof (Public, EN+AR): toggle flips `.dark` on `<html>` both
+  directions at 390/768/1024/1440 with zero console errors. Client/Admin
+  render safety: identical shared component + API, no shell edits,
+  typecheck + build green (auth-gated shells not browser-driven; recorded
+  as a verification boundary).
+- [x] TASK-02-11 Public chrome deferred-content visibility (final Phase 01
   rulings — Articles HIDE, Case Studies HIDE, Media DELETE): REMOVE the
   Articles/Insights, Case Studies, and Media entries from public navigation/
   discovery for EN and AR (nav-item sources + header insights group, desktop
@@ -124,10 +199,23 @@ failure mark BLOCKED and keep the current toggle.
   ONLY shared public chrome/navigation — do NOT change the actual
   article/case-study/media routes, route files, sitemap, or metadata (owned
   by Phase 06).
-- [ ] TASK-02-12 Regression sweep: home + one directory + booking + contact in
+  DONE: removed the three entries from `public-content.en.ts` (Insights/Case
+  Studies/Media) and `public-content.ar.ts` (المقالات/دراسات الحالة/الإعلام)
+  with Phase 02/Phase 01 comments; no other nav-item file exists
+  (single-source arrays; no positional consumers — only `[0]` Home asserted
+  in tests). Header needs no edit: desktop maps `navItems` directly; drawer
+  insights group renders only when insight items exist (`:378/:393` guards).
+  Footer re-grep: zero deferred links (as Phase 01 proved). Routes, sitemap,
+  metadata untouched (still live — Phase 06). Browser proof EN+AR ×
+  390/768/1024/1440 desktop + drawer: zero deferred links; Services/Team/
+  Contact/Consultation/Client-login/language/theme controls intact.
+- [x] TASK-02-12 Regression sweep: home + one directory + booking + contact in
   EN + AR, light + dark, mobile + desktop; console clean; no hydration
   warnings.
-- [ ] TASK-02-13 Phase commit (foundation scope only) per 00_MASTER_PLAN, then STOP.
+  DONE: home + `/services` (directory) + `/book-consultation` + `/contact`
+  (+ AR booking/contact) swept at 390/768/1024/1440 across both themes —
+  zero console/page errors, zero hydration warnings, no horizontal overflow.
+- [x] TASK-02-13 Phase commit (foundation scope only) per 00_MASTER_PLAN, then STOP.
 
 ## Files Expected To Change
 
@@ -166,14 +254,14 @@ failure mark BLOCKED and keep the current toggle.
 
 ## Acceptance Criteria
 
-- [ ] Zero arbitrary hex in public chrome/shared files where a token applies.
-- [ ] Motion-ownership table complete; no property has two drivers.
-- [ ] Header/dock/footer pass EN+AR × light+dark × 390/1440 with clean console.
-- [ ] Toggler either integrated + verified or marked BLOCKED with evidence.
-- [ ] No public-header navigation entry exposes Articles, Case Studies, or
+- [x] Zero arbitrary hex in public chrome/shared files where a token applies.
+- [x] Motion-ownership table complete; no property has two drivers.
+- [x] Header/dock/footer pass EN+AR × light+dark × 390/768/1024/1440 with clean console.
+- [x] Toggler either integrated + verified or marked BLOCKED with evidence.
+- [x] No public-header navigation entry exposes Articles, Case Studies, or
   Media (EN + AR verified, desktop + mobile drawer); no replacement nav item
   invented; Services/Team navigation and Consultation CTA unaffected.
-- [ ] One phase commit; STOP.
+- [x] One phase commit; STOP.
 
 ## Visual QA
 
@@ -191,19 +279,132 @@ failure mark BLOCKED and keep the current toggle.
 
 ## Status
 
-NOT STARTED
+COMPLETE
 
 ## Implementation Notes
 
-Leave blank.
+### Pre-Phase-02 baseline (recorded before any change)
+
+- HEAD: `7d8d1c8` ("Assign deferred-content execution ownership…").
+- Pre-existing tracked modifications (NOT Phase 02 work, preserved exactly,
+  excluded from the Phase 02 commit): `.specify/*` (5 files),
+  `docs/reviews/2026-09-11/*` (3), `components.json`, `package-lock.json`,
+  `package.json`, `src/components/brand/kmt-brand-logo.tsx`,
+  `src/components/layout/public-header.tsx`,
+  `src/features/public-site/directory-filter.tsx`,
+  `src/features/public-site/process-steps.tsx`,
+  `src/lib/design-system/tokens.ts`, `tailwind.config.ts`,
+  `tests/e2e/mvp-smoke.spec.ts`, `tests/e2e/public-luxury-visual.spec.ts`,
+  `scripts/tmp-stageAB-shots.mjs`.
+- Pre-existing untracked (also preserved, not committed): Animate Sheet/Tooltip
+  vendor files, 17 `src/components/ui/*` vendor components, `src/hooks/`,
+  `capability-glow-gate.tsx`, 5 `tests/ui/*` + 2 `tests/e2e/*` specs.
+- Consequence applied all phase: NO edits to `tailwind.config.ts`,
+  `tokens.ts`, `public-header.tsx`, `kmt-brand-logo.tsx` (all carry unrelated
+  uncommitted work). Token/header/footer tasks executed verify-only against
+  that work; code edits confined to CLEAN files
+  (`public-content.en/ar.ts`, `globals.css`, `theme-toggle.tsx`,
+  `smooth-scroll-provider.tsx`) + ONE new vendor file.
+
+### Token audit map (TASK-02-01)
+
+- Token-clean (no action): `public-shell.tsx` (2 hex = BorderBeam color props
+  `#eac987`/`#a87830`, exactly the logo-gold family values — kept,
+  documented), `public-floating-dock.tsx` (0 hex), `public-motion.ts` (0),
+  `theme-toggle.tsx` (0), `smooth-scroll-provider.tsx` (0).
+- Deliberately kept: light `--kmt-public-gold: #755a26` (contrast bronze on
+  ivory; see TASK-02-01 DONE note); `bg-black` brand plaque (in-code comment
+  `public-shell.tsx:104-108`); `border-kmt-gold/*` at low alpha in shell
+  (≈indistinguishable from gold-border token; dashboard token scope — not
+  Phase 02).
+- Out of scope (flagged for owner phases): old-gold literals in
+  `payment/.../return/page.tsx` (06), `client-account-setup-form/page.tsx`
+  (06), `consultation-booking-chat.tsx` (04), `client-portal-components.tsx`
+  (07/08), `global-error.tsx`.
+
+### Motion Ownership table (TASK-02-04 — built BEFORE any scroll change)
+
+| Area / Interaction | Property | Current Owner | Final Owner | Conflict? | Phase 02 Action |
+|---|---|---|---|---|---|
+| Window wheel smoothing | scroll pos | Lenis global (both public layouts) | Lenis scoped: `/`, `/privacy`, `/terms` (+AR) | No | Pathname gate in provider |
+| Anchor-click smoothing | scroll pos | Lenis `anchors: true` | Same, scoped routes (only policy has same-page anchors) | No | Same gate |
+| Hero parallax `data-drift` | transform (scrub) | GSAP ScrollTrigger, home only | GSAP unchanged (synced via lenis scroll → `ScrollTrigger.update`) | No (canonical integration) | None |
+| Count-up numbers | text content | GSAP tween on IO trigger | Unchanged | No | None |
+| Entrances (Reveal/BlurFade/Highlighter/underlines/PolicyToc/count-up) | opacity/transform on mount | IntersectionObserver | Unchanged | No | None |
+| Component micro-interactions (header/dock/cards/chat) | transform/opacity/height (hover/tap) | motion/react, component-local | Unchanged | No | None |
+| Reading progress bar | scaleX | raw scroll listener (`reading-progress.tsx`) | Unchanged | No | None |
+| Header conceal | translateY | raw rAF-throttled scroll (`public-header.tsx:112-130`) | Unchanged | No | None (verify-only) |
+| Chat auto-scroll | element `scrollTop` (imperative) | native (`consultation-booking-chat.tsx:382-391`) | Unchanged | No — Lenis never owned element scroll | None |
+| Glow aim angle | CSS var `--start` | scroll+pointermove listeners (`glowing-effect.tsx:119-137`) | Unchanged | No (no scroll-pos animation) | None |
+| Marquee/keyframe loops | transform (CSS) | CSS `kmt-*` keyframes | Unchanged | No | None |
+
+TASK-02-06 verdict: ZERO duplicate drivers — nothing removed, nothing
+blindly deleted.
+
+### Per-task evidence summary
+
+- 02-05 Lenis: only home uses scroll-linked animation (GSAP), only policy
+  uses same-page anchors; booking/chat auto-scroll is element-native and
+  Lenis-independent. Gate: `LENIS_ROUTES = {/, /privacy, /terms}` with
+  `/ar`-prefix stripping; effect re-runs on pathname change with full
+  teardown (`lenis.destroy()` + ticker cleanup).
+- 02-10 Toggler: official registry source vendored verbatim (only `cn`
+  import adapted); controlled wiring per official Next.js demo; storage +
+  SSR + defaults stay with next-themes (`kmt-theme` / `kmt-theme-admin`,
+  `attribute="class"`, `defaultTheme="dark"`, `disableTransitionOnChange`).
+  QA caught + fixed: (1) two transcription slips corrected pre-test;
+  (2) one hydration mismatch (SSR Moon vs dark-resolved Sun) fixed via
+  pre-mount invisible placeholder — zero hydration warnings after.
+- 02-11 Nav: single-source `navItems` arrays edited (3 entries × 2 locales);
+  header renders zero insights UI when arrays lack them (desktop direct map;
+  drawer `:378/:393` guards); E2E `mvp-smoke` route assertions unaffected
+  (routes still live); unit `public-content.test.ts` unaffected (asserts
+  `[0]` Home only).
 
 ## Files Actually Changed
 
-Leave blank.
+- `src/content/public-content.en.ts` (deferred nav entries removed)
+- `src/content/public-content.ar.ts` (deferred nav entries removed)
+- `src/components/ui/animated-theme-toggler.tsx` (NEW — official Magic UI
+  vendor, source URL + adaptation recorded above)
+- `src/app/globals.css` (registry View Transition base CSS only)
+- `src/components/theme/theme-toggle.tsx` (internals → controlled toggler)
+- `src/components/motion-ui/smooth-scroll-provider.tsx` (pathname-scoped Lenis)
+- `docs/ui-redesign/02_FOUNDATIONS_AND_PUBLIC_CHROME.md` (this file)
+
+Pre-existing working-tree entries listed above were preserved exactly and
+are NOT part of the Phase 02 commit.
 
 ## QA Results
 
-Leave blank.
+- `npm run typecheck` — GREEN (incl. vendor file + all Phase 02 edits).
+- `npm run lint` (`next lint`) — GREEN, zero warnings/errors.
+- `npm run build` — GREEN, 46/46 static pages (DB-auth log noise is the
+  documented fail-soft local behavior, pre-existing).
+- Unit: `public-content.test.ts` + `public-footer-theme.test.tsx` — 11/11 GREEN
+  (Highlighter `useLayoutEffect` SSR notice is pre-existing stderr noise).
+- E2E `mvp-smoke.spec.ts` — 44/46; the 2 failures are PLAN-28 assertions on
+  `/book-consultation` booking-stepper surface classes (`bg-[linear-gradient`
+  expected) — PROVEN PRE-EXISTING: expectation and booking source are both
+  committed/untouched by Phase 02 (`consultation-booking-chat.tsx` has zero
+  diff; expectation absent from the spec's uncommitted diff), i.e. failing
+  identically on clean HEAD. Booking scope belongs to Phase 04; untouched.
+- Phase 02 browser verification (temporary specs, deleted after run):
+  EN+AR × 390/768/1024/1440 — nav/footer/drawer contain ZERO deferred links;
+  Services/Team/Contact/Consultation/Client-login/language/theme intact;
+  dock exactly 2 actions; toggler flips `.dark` both ways; `lenis` class on
+  `/`+`/privacy`, absent on booking/contact/services; header conceal
+  engages/releases; Services flyout (1024) + drawer Services group (390/768)
+  verified; zero console/page errors, zero hydration warnings, no overflow.
+  6/6 + 2/2 + (supplemental) 2/2 + 2/2 green.
+- Screenshots captured to ignored `.playwright/test-results` (agent cannot
+  view images; DOM assertions above are the verification evidence).
+
+## Blockers
+
+None. Client/Admin shell browser verification boundary recorded under
+TASK-02-10 (same shared component + API, no shell edits, typecheck/build
+green); auth-gated shells were not browser-driven.
 
 ## Blockers
 
