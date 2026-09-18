@@ -108,7 +108,9 @@ export interface KmtUnderlinedTextProps extends Omit<KmtTextUnderlineProps, "chi
  */
 export function KmtUnderlinedText({ text, highlight, ...underlineProps }: KmtUnderlinedTextProps) {
   if (!highlight || !text.includes(highlight)) return <>{text}</>;
-  const [before, after] = text.split(highlight);
+  const index = text.indexOf(highlight);
+  const before = text.slice(0, index);
+  const after = text.slice(index + highlight.length);
   return (
     <>
       {before}
