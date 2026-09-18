@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { MotionConfig } from "motion/react";
 import { KmtBrandLogo } from "@/components/brand";
 import { Button, MaterialSymbol } from "@/components/ui";
-import { Tabs, TabsContents, TabsContent, TabsList, TabsTrigger } from "@/components/animate-ui";
 import { AnimatedList } from "@/components/ui/animated-list";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
@@ -810,9 +809,10 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       */}
       <div className="relative z-10 flex h-[min(72vh,38rem)] min-h-[30rem] min-w-0 flex-col max-sm:h-[min(84svh,38rem)] max-sm:min-h-[28rem]" data-testid="booking-chat-shell">
         {/*
-          Simplified header: mark + name + live status + one-line scope,
-          then the internal stage progress. Trust content moved into the
-          conversation as the what-next info card (Phase 9).
+          Simplified header: mark + name + live status + one-line scope.
+          Trust content moved into the conversation as the what-next info
+          card (Phase 9). No visual progress: the conversation itself
+          communicates booking progress; stage state stays internal.
         */}
         <header className="shrink-0 px-4 pb-2 pt-4 sm:px-6 sm:pt-5">
           <div className="flex min-w-0 items-center gap-3">
@@ -827,7 +827,6 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
             </div>
           </div>
 
-          {chatLocale ? <BookingStageTabs copy={copy} draft={draft} readyToCheckout={readyToCheckout} selectedSlot={selectedSlot} /> : null}
         </header>
 
         <div
@@ -923,7 +922,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
             disabled={!chatLocale || isBusy}
             inputName="chatMessage"
             ariaLabel={copy.messageLabel}
-            inputClassName="kmt-vanish-input min-h-10 w-full min-w-0 flex-1 border-0 bg-transparent text-[0.95rem] leading-6 text-[var(--kmt-assistant-text)] outline-none disabled:text-[var(--kmt-assistant-muted)] focus-visible:!outline-none focus:!ring-0"
+            inputClassName="kmt-vanish-input min-h-10 w-full min-w-0 flex-1 border-0 !p-0 bg-transparent text-[0.95rem] leading-6 text-[var(--kmt-assistant-text)] outline-none disabled:text-[var(--kmt-assistant-muted)] focus-visible:!outline-none focus:!ring-0"
             placeholderClassName="w-full truncate pe-20 ps-4 text-[0.95rem] leading-6 text-[var(--kmt-assistant-muted)]"
             trailing={
               <Button
@@ -960,76 +959,6 @@ function LawyerNoticeRow({ label, value }: { label: string; value: string }) {
       <span>
         {label}: <bdi className="font-semibold text-[var(--kmt-assistant-text)]">{value}</bdi>
       </span>
-    </div>
-  );
-}
-
-/**
- * Live booking-stage navigator (Animate UI Tabs).
- *
- * The active stage follows the real draft state with the exact completion
- * semantics the static row used before (contact → details → slot →
- * payment). Triggers are intentionally disabled: stages are status, not
- * navigation — jumping ahead would fake progress the business logic does
- * not support. The animated gold indicator + per-stage guidance line are
- * the upgrade: the navigator always shows where the request stands and
- * what the stage needs.
- */
-function BookingStageTabs({
-  copy,
-  draft,
-  readyToCheckout,
-  selectedSlot
-}: {
-  copy: BookingChatCopy;
-  draft: BookingDraft;
-  readyToCheckout: boolean;
-  selectedSlot: string;
-}) {
-  const detailsDone = Boolean(draft.serviceCategory.trim() && draft.summary.trim().length >= 20);
-  const slotDone = Boolean(selectedSlot || draft.startsAt);
-  const contactDone = Boolean(draft.fullName.trim() && draft.phone.trim());
-  const stage = readyToCheckout ? "payment" : slotDone ? "slot" : detailsDone ? "details" : "contact";
-  const stages = [
-    { value: "contact", label: copy.progressContact, done: contactDone, hint: copy.contactPrompt },
-    { value: "details", label: copy.progressDetails, done: detailsDone, hint: copy.detailsPrompt },
-    { value: "slot", label: copy.progressSlot, done: slotDone, hint: copy.preferredSlotHint },
-    { value: "payment", label: copy.progressPayment, done: readyToCheckout, hint: copy.cancellationPolicy }
-  ];
-
-  return (
-    <div className="mt-3" data-testid="booking-stage-tabs">
-      <Tabs value={stage} aria-label={copy.paymentStatus} onValueChange={() => undefined}>
-        <TabsList className="scrollbar-hide overflow-x-auto border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-chip)] p-1">
-          {stages.map((item, index) => (
-            <TabsTrigger
-              key={item.value}
-              value={item.value}
-              disabled
-              aria-label={`${index + 1} · ${item.label}`}
-              className="min-h-8 px-2.5 py-1.5 text-[0.72rem] text-[var(--kmt-assistant-muted)] hover:text-[var(--kmt-assistant-text)] data-[disabled]:hover:text-[var(--kmt-assistant-muted)] max-sm:flex-none max-sm:px-3"
-            >
-              <span
-                aria-hidden="true"
-                className={cn(
-                  "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-current text-[0.55rem]",
-                  item.done ? "border-transparent" : undefined
-                )}
-              >
-                {item.done ? <MaterialSymbol className="text-[0.7rem]" name="check_circle" /> : index + 1}
-              </span>
-              <span className="min-w-0 truncate">{item.label}</span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        <TabsContents className="mt-2.5">
-          {stages.map((item) => (
-            <TabsContent key={item.value} value={item.value}>
-              <p className="text-center text-xs leading-5 text-[var(--kmt-assistant-muted)]">{item.hint}</p>
-            </TabsContent>
-          ))}
-        </TabsContents>
-      </Tabs>
     </div>
   );
 }

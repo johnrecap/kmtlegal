@@ -170,9 +170,18 @@ adds the dock.
   default `min-h-11` beat `h-10` (different TW groups), holding the pill
   at 54px (fixed with `!min-h-0` → send 40px, pill 50px). Original
   Aceternity alignment (`inset-0` + `items-center`) preserved — no top /
-  translate hacks. Final measured: pill 50px, send 40×40, breathing 4px,
+  translate hacks.   Final measured: pill 50px, send 40×40, breathing 4px,
   glyph inset 17px LTR+RTL symmetric, shared 24px line box, submit +
   vanish intact. Close-ups: `test-results/composer-fix/`.
+- **Text-origin correction (follow-up):** placeholder glyphs sat at 17px
+  while typed text started at ~29px — a 12px (≈1.5-char) jump. Root
+  cause: `@tailwindcss/forms` injects unlayered 12px/8px input padding
+  (measured live; same plugin family as the earlier focus-ring fight),
+  so the fix is `!p-0` on the input (important is required — unlayered
+  beats layered utilities). Shared origin is now the form's logical
+  `ps-4` (16px + 1px border = 17px) for input text, animated/static/
+  returned placeholder alike. Proof: `test-results/placeholder-origin/`
+  (5 states × EN/AR, glyph ranges + close-ups).
 
 ## Phase 6 — Booking stages inside chat
 

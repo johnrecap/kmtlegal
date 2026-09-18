@@ -153,13 +153,31 @@ describe("booking chat stage composition (source contract)", () => {
     expect(chatSource).toContain('from "@/components/ui/animated-list"');
     expect(chatSource).toContain('from "@/components/ui/border-beam"');
     expect(chatSource).toContain('from "@/components/ui/placeholders-and-vanish-input"');
-    expect(chatSource).toContain('from "@/components/animate-ui"');
-    expect(chatSource).toContain("BookingStageTabs");
     // Restrained single gold beam on the assistant panel.
     expect(chatSource).toContain('colorFrom="#eac987"');
     expect(chatSource).toContain('colorTo="#a87830"');
     expect(chatSource).not.toContain("#9c40ff");
     expect(chatSource).not.toContain("#ffaa40");
+  });
+
+  it("never renders a booking stepper at any lifecycle point", () => {
+    // No render path, no wrapper, no imports — the conversation itself
+    // communicates progress; stage state stays internal.
+    for (const banned of [
+      "BookingStageTabs",
+      "booking-stage-tabs",
+      "TabsList",
+      "TabsTrigger",
+      "TabsContent",
+      "animate-ui",
+      "progressContact",
+      "progressDetails",
+      "progressSlot",
+      "progressPayment",
+      'role="tablist"',
+    ]) {
+      expect(chatSource).not.toContain(banned);
+    }
   });
 
   it("renders the whole conversation through the real animated list", () => {
@@ -183,14 +201,15 @@ describe("booking chat stage composition (source contract)", () => {
     expect(chatSource).toContain("pe-1.5 ps-4");
     expect(chatSource).toContain("pe-20 ps-4");
     expect(chatSource).toContain("leading-6");
+    // The forms plugin's unlayered input padding is reset so typed text
+    // starts at the exact same origin as the placeholder glyphs.
+    expect(chatSource).toContain("!p-0");
     // Bubbles: 65–75% width, 15–16px text, tight padding.
     expect(chatSource).toContain("max-w-[72%]");
     expect(chatSource).toContain("text-[0.95rem]");
     expect(chatSource).toContain("px-4 py-3");
-    // Small avatars, compact stage triggers.
+    // Small avatars (no stepper remains — see the never-renders contract).
     expect(chatSource).toContain('shape="circle" size="sm"');
-    expect(chatSource).toContain("min-h-8");
-    expect(chatSource).toContain("text-[0.72rem]");
   });
 
   it("guides the journey inside one console: intent, matter, info cards, new request", () => {
@@ -225,12 +244,13 @@ describe("booking chat stage composition (source contract)", () => {
       'data-testid="booking-confirm-booking"',
       'data-testid="booking-pay-booking"',
       'data-testid="booking-payment-review"',
-      'data-testid="booking-stage-tabs"',
       'inputName="chatMessage"',
       "kmt-chat-scrollbar",
     ]) {
       expect(chatSource).toContain(hook);
     }
+    // The stage-tabs hook is gone with the stepper (see above).
+    expect(chatSource).not.toContain('data-testid="booking-stage-tabs"');
     // The runtime input keeps its contract in the vendored composer.
     const vanishSource = readFileSync(join(process.cwd(), "src/components/ui/placeholders-and-vanish-input.tsx"), "utf8");
     expect(vanishSource).toContain("name={inputName}");
