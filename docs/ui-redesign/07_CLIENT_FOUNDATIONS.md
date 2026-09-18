@@ -111,15 +111,25 @@ All 8 pages render identically in content, renewed in chrome.
 - [ ] Tables render identically apart from theming.
 - [ ] One phase commit; STOP.
 
-## Visual QA
+## Visual QA (Phase Gate — focused matrix, run once)
 
-- [ ] Shell + sidebar + mobile sheet captures × locale × theme × viewport.
-- [ ] Before/after dark captures for identity check.
+- [ ] Primary captures: (1) EN / Dark / 1440, (2) AR / Light / 390 — shell,
+  sidebar, mobile sheet, before/after dark identity check.
+- [ ] Lightweight smoke/layout checks only for 768/1024, EN-Light, AR-Dark
+  (1024 already covered for the 7-item nav risk; expand ONLY a failing
+  dimension per 00_MASTER_PLAN.md Verification Policy).
+- [ ] Representative client pages only (full 8-page census stays in Phase 13).
 
-## Technical QA
+## Technical QA (Phase Gate — run once)
 
-- [ ] `npm run typecheck`, `npm run lint`, production build green.
-- [ ] Client portal E2E (nav, filters, pagination) green; console clean.
+- [ ] `npm run typecheck`, `npm run lint` green.
+- [ ] Targeted client E2E (nav, filters, pagination on affected pages) green;
+  console clean. No unrelated suites.
+- [ ] No full production build by default (non-milestone) — run only if
+  module/import, dependency, or route/build behavior changed significantly
+  (record why).
+- [ ] Known unrelated failures: record + continue, no reinvestigation
+  (Known Failure Cache).
 
 ## Status
 

@@ -112,16 +112,21 @@ linked from production navigation.
 - [ ] Production build with flag off still `notFound()`s preview routes.
 - [ ] Commit(s) per task; STOP.
 
-## Visual QA
+## Visual QA (Phase Gate — focused matrix, run once)
 
-- [ ] Lab full-page captures × theme × locale.
-- [ ] Before/after bundle or file-count evidence for deletions.
+- [ ] Primary captures: (1) EN / Dark / 1440, (2) AR / Light / 390 — lab
+  full-page + before/after bundle or file-count evidence for deletions.
+- [ ] Lightweight smoke/layout checks only for 768/1024, EN-Light, AR-Dark;
+  expand ONLY a failing dimension (per 00_MASTER_PLAN.md Verification Policy).
 
-## Technical QA
+## Technical QA (Phase Gate — run once)
 
 - [ ] `npm run typecheck`, `npm run lint`, production build green twice
-  (pre- and post-deletion).
-- [ ] Unit + E2E suites green after deletions.
+  (pre- and post-deletion — milestone/deletion-safety phase, builds mandatory).
+- [ ] Targeted unit + E2E suites affected by deletions green (change scope
+  only — full exhaustive re-verification stays in Phase 13).
+- [ ] Known unrelated failures: record + continue, no reinvestigation
+  (Known Failure Cache).
 
 ## Status
 

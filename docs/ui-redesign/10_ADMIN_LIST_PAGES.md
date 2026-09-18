@@ -131,15 +131,25 @@ endpoints, and permissions unchanged.
 - [ ] Param names for tabs/views unchanged; shared links keep working.
 - [ ] One phase commit; STOP.
 
-## Visual QA
+## Visual QA (Phase Gate — focused matrix, run once)
 
-- [ ] Per-page list captures desktop + 390px × theme.
-- [ ] Popover/Sheet/Menu/Tabs interaction captures.
+- [ ] Primary captures: (1) EN / Dark / 1440, (2) AR / Light / 390 —
+  per-list captures + Popover/Sheet/Menu/Tabs interaction states.
+- [ ] Lightweight smoke/layout checks only for 768/1024, EN-Light, AR-Dark;
+  expand ONLY a failing dimension (per 00_MASTER_PLAN.md Verification Policy).
+- [ ] Representative admin list pages + affected families only (full admin
+  census stays in Phase 13).
 
-## Technical QA
+## Technical QA (Phase Gate — run once)
 
-- [ ] `npm run typecheck`, `npm run lint`, production build green.
-- [ ] Admin list E2E (filters, tabs, pagination, row menus) green.
+- [ ] `npm run typecheck`, `npm run lint` green.
+- [ ] Targeted admin list E2E (filters, tabs, pagination, row menus on
+  affected pages) green; console clean. No unrelated suites.
+- [ ] No full production build by default (non-milestone) — run only if
+  module/import, dependency, or route/build behavior changed significantly
+  (record why).
+- [ ] Known unrelated failures: record + continue, no reinvestigation
+  (Known Failure Cache).
 
 ## Status
 

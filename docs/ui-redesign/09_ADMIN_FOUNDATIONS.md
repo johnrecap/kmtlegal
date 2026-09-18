@@ -126,16 +126,25 @@ remain until their locked Phase 10/11 migration.
   eliminated, in this phase).
 - [ ] One phase commit; STOP.
 
-## Visual QA
+## Visual QA (Phase Gate — focused matrix, run once)
 
-- [ ] Sidebar expanded/collapsed, Sheet variants, Dialog variants, Menu,
-  Popover, Tabs, Accordion captures × theme.
-- [ ] Full admin shell before/after captures.
+- [ ] Primary captures: (1) EN / Dark / 1440, (2) AR / Light / 390 —
+  sidebar expanded/collapsed, Sheet/Dialog/Menu/Popover/Tabs/Accordion
+  variants + full admin shell before/after.
+- [ ] Lightweight smoke/layout checks only for 768/1024, EN-Light, AR-Dark;
+  expand ONLY a failing dimension (per 00_MASTER_PLAN.md Verification Policy).
+- [ ] Admin shell scope only (no public/client crawl).
 
-## Technical QA
+## Technical QA (Phase Gate — run once)
 
-- [ ] `npm run typecheck`, `npm run lint`, production build green.
-- [ ] Keyboard-only run (tabs, accordion, dialog trap, menu, sheet) passes.
+- [ ] `npm run typecheck`, `npm run lint` green.
+- [ ] Targeted keyboard-only run (tabs, accordion, dialog trap, menu, sheet)
+  passes; console clean. No unrelated suites.
+- [ ] No full production build by default (non-milestone) — run only if
+  module/import, dependency, or route/build behavior changed significantly
+  (record why).
+- [ ] Known unrelated failures: record + continue, no reinvestigation
+  (Known Failure Cache).
 
 ## Status
 

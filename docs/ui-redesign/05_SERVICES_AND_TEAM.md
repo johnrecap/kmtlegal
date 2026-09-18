@@ -115,18 +115,28 @@ accessible.
 - [ ] Mobile secondary sections use Accordion on both detail pages.
 - [ ] Team touch rule verified: no hover-required information, all images +
   names + roles visible, tap opens profile (touch-device captures).
-- [ ] EN+AR × light+dark × 4 viewports pass; console clean.
+- [ ] EN+AR focused matrix (EN/Dark/1440 + AR/Light/390 primaries;
+  lightweight smoke for the rest); console clean.
 - [ ] One phase commit; STOP.
 
-## Visual QA
+## Visual QA (Phase Gate — focused matrix, run once)
 
-- [ ] Index rows/cards captures per theme; detail desktop + mobile captures.
-- [ ] Accordion open/closed + focus captures.
+- [ ] Primary captures: (1) EN / Dark / 1440, (2) AR / Light / 390 —
+  index rows/cards, detail desktop, Accordion open/closed + focus states.
+- [ ] Lightweight smoke/layout checks only for 768/1024, EN-Light, AR-Dark;
+  expand ONLY a failing dimension (per 00_MASTER_PLAN.md Verification Policy).
+- [ ] No other route family's visuals crawled (services + team scope only).
 
-## Technical QA
+## Technical QA (Phase Gate — run once)
 
-- [ ] `npm run typecheck`, `npm run lint`, production build green.
-- [ ] Directory/detail E2E specs pass; keyboard-only Accordion run passes.
+- [ ] `npm run typecheck`, `npm run lint` green.
+- [ ] Targeted directory/detail E2E + keyboard-only Accordion run green;
+  console clean on services/team pages. No unrelated suites.
+- [ ] No full production build by default (non-milestone) — run only if
+  module/import, dependency, or route/build behavior changed significantly
+  (record why).
+- [ ] Known unrelated failures: record + continue, no reinvestigation
+  (Known Failure Cache).
 
 ## Status
 

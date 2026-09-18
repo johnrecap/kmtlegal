@@ -115,17 +115,26 @@ through shadcn Pagination.
 - [ ] Profile save (genuine async mutation) uses Stateful Button with correct
   states; payment navigation links remain semantic links (no button
   treatment anywhere on `/client/payments`).
-- [ ] EN+AR × light+dark × viewports pass; one phase commit; STOP.
+- [ ] EN+AR focused matrix (EN/Dark/1440 + AR/Light/390 primaries;
+  lightweight smoke for the rest); one phase commit; STOP.
 
-## Visual QA
+## Visual QA (Phase Gate — focused matrix, run once)
 
-- [ ] Per-page captures + chat-distinction + submit-state captures.
-- [ ] Mobile Accordion open/closed captures.
+- [ ] Primary captures: (1) EN / Dark / 1440, (2) AR / Light / 390 —
+  per-page captures + chat-distinction + submit-state + mobile Accordion
+  open/closed states.
+- [ ] Lightweight smoke/layout checks only for 768/1024, EN-Light, AR-Dark;
+  expand ONLY a failing dimension (per 00_MASTER_PLAN.md Verification Policy).
+- [ ] Affected client pages only (no public/admin crawl).
 
-## Technical QA
+## Technical QA (Phase Gate — run once)
 
-- [ ] `npm run typecheck`, `npm run lint`, production build green.
-- [ ] Portal E2E (assistant, upload, payments, profile) green; console clean.
+- [ ] `npm run typecheck`, `npm run lint`, production build green
+  (milestone phase — build mandatory).
+- [ ] Targeted portal E2E (assistant, upload, payments, profile) green;
+  console clean on client pages. No unrelated suites.
+- [ ] Known unrelated failures: record + continue, no reinvestigation
+  (Known Failure Cache).
 
 ## Status
 

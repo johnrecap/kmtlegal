@@ -126,15 +126,23 @@ mobile, reduced motion. Business endpoints and validation behavior preserved.
   identical.
 - [ ] One phase commit; STOP.
 
-## Visual QA
+## Visual QA (Phase Gate — focused matrix, run once)
 
-- [ ] Stage-by-stage captures (language → confirmation) × locale × theme.
-- [ ] 390px composer + bubbles + payment panel captures.
+- [ ] Primary captures per changed surface: (1) EN / Dark / 1440,
+  (2) AR / Light / 390 — chat stages, composer, payment panel.
+- [ ] Lightweight smoke/layout checks only for 768/1024, EN-Light, AR-Dark;
+  expand ONLY a failing dimension (per 00_MASTER_PLAN.md Verification Policy).
+- [ ] No other route family's visuals crawled (booking scope only).
 
-## Technical QA
+## Technical QA (Phase Gate — run once)
 
-- [ ] `npm run typecheck`, `npm run lint`, production build green.
-- [ ] Booking E2E (incl. no-stepper regression states) green; console clean.
+- [ ] `npm run typecheck`, `npm run lint`, production build green
+  (milestone phase — build mandatory).
+- [ ] Booking-targeted E2E (incl. no-stepper regression states) green;
+  console clean on booking pages. No unrelated suites.
+- [ ] Known failures: the PLAN-28 booking-stepper assertions are
+  BOOKING-SCOPED — resolve them here (pass or owner-approved re-baseline);
+  they must not be carried forward as "pre-existing" past Phase 04.
 
 ## Status
 

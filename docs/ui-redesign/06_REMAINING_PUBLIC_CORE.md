@@ -214,20 +214,27 @@ not in Phase 12 (Phase 12 handles only proven-dead orphans afterwards).
 - [ ] MEDIA: route + AR equivalent removed/unavailable; sitemap/metadata
   references removed; no Media-specific dead imports; admin social-draft
   functionality still works.
-- [ ] EN+AR × light+dark × 390/1440 pass; one phase commit; STOP.
+- [ ] EN+AR focused matrix (EN/Dark/1440 + AR/Light/390 primaries;
+  lightweight smoke for the rest); one phase commit; STOP.
 
-## Visual QA
+## Visual QA (Phase Gate — focused matrix, run once)
 
-- [ ] Submit-state sequences (idle/loading/success/error) captures.
-- [ ] Accordion + progress captures per page × theme.
+- [ ] Primary captures: (1) EN / Dark / 1440, (2) AR / Light / 390 —
+  submit-state sequences, Accordion + progress states per page.
+- [ ] Lightweight smoke/layout checks only for 768/1024, EN-Light, AR-Dark;
+  expand ONLY a failing dimension (per 00_MASTER_PLAN.md Verification Policy).
+- [ ] No other route family's visuals crawled (this phase's pages + deferred
+  removal surfaces only).
 
-## Technical QA
+## Technical QA (Phase Gate — run once)
 
-- [ ] `npm run typecheck`, `npm run lint`, production build green.
-- [ ] Form-submit + payment-poller + login + install E2E pass.
-- [ ] Deferred E2E: deferred public URLs unavailable (EN + AR, list + detail);
-  sitemap contains no deferred URLs; admin content hub (articles, case
-  studies, social) + public home/services/team smoke green.
+- [ ] `npm run typecheck`, `npm run lint`, production build green
+  (milestone phase — build mandatory).
+- [ ] Targeted E2E: form-submit + payment-poller + login + install, plus the
+  deferred checks (deferred URLs unavailable EN+AR, sitemap clean, admin hub
+  + home/services/team smoke green). No unrelated suites.
+- [ ] Known unrelated failures: record + continue, no reinvestigation
+  (Known Failure Cache).
 
 ## Status
 

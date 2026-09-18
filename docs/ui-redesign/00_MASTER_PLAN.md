@@ -20,23 +20,96 @@ Future workflow for every phase:
 2. Open the matching phase file in `docs/ui-redesign/`.
 3. Mark phase `Status` as `IN PROGRESS`.
 4. Execute tasks in listed order (`TASK-XX-01`, `TASK-XX-02`, …).
-5. Test after each logical task group (Visual QA + Technical QA sections).
+5. After each task or small task group: Level 1 fast task check (changed
+   surface only — see Verification Policy).
 6. Update checkboxes as tasks complete.
 7. Record files in `Files Actually Changed`.
 8. Record evidence in `QA Results` and `Implementation Notes`.
 9. Record impediments in `Blockers` (use `BLOCKED — OWNER DECISION REQUIRED`
    format; never select a substitute component).
-10. Mark `COMPLETE` only when every Acceptance Criterion passes.
+10. Run the Phase Gate ONCE (Level 2); mark `COMPLETE` only when every
+    Acceptance Criterion passes.
 11. STOP. Wait for the next explicit `START PHASE XX` command.
 
 Valid statuses only: `NOT STARTED` / `IN PROGRESS` / `BLOCKED` / `COMPLETE`.
 During this planning run every phase remains `NOT STARTED`.
 
+## Verification Policy (Binding On All Phases)
+
+Goal: fast iteration during implementation + targeted phase verification +
+full exhaustive QA only at final release. Exactly THREE levels exist.
+
+### Level 1 — Fast Task Check (during implementation)
+
+After a task or small logical task group, verify ONLY what changed:
+TypeScript/editor errors in touched files, the directly affected
+page/component in the browser, the directly affected interaction, that
+page's console, no obvious visual regression, and a targeted test only if
+one already exists for that feature. DO NOT run after every task: full
+typecheck, full lint, production build, full unit/E2E/smoke suites, all
+locales/themes/viewports, or exhaustive screenshots. No repeats of
+expensive checks unless later code could affect the result.
+
+### Level 2 — Phase Gate (run ONCE per phase, after all tasks)
+
+1. `npm run typecheck`. 2. `npm run lint`. 3. Targeted tests for the
+features/routes changed in THIS phase only (Home→Home tests,
+Booking→Booking tests, etc. — never unrelated suites). 4. Browser smoke of
+the affected route family only (e.g. Phase 03 = Home; Phase 10 =
+representative admin lists — full route census stays in Phase 13).
+5. Focused visual QA: TWO primary captures per major changed surface —
+(A) EN / Dark / 1440 and (B) AR / Light / 390 — which together cover
+desktop/mobile × LTR/RTL × dark/light. 768px, 1024px, EN-Light, and
+AR-Dark get lightweight smoke/layout checks only. If a failure appears in
+one dimension, expand QA ONLY around that dimension (RTL fail → expand
+Arabic; tablet fail → expand 768/1024; light fail → expand light).
+Additional screenshots only for changed breakpoints, RTL-specific
+behavior, theme-specific bugs, or interactions the primaries cannot show.
+
+### Level 3 — Full Release QA (Phase 13 only)
+
+The exhaustive matrix (390/768/1024/1440 × EN/AR × Light/Dark, keyboard,
+focus, RTL, reduced motion, hydration, console, CLS, performance, full
+unit, full E2E, production build) belongs to Phase 13. Do NOT duplicate
+Phase 13-level QA in earlier phases.
+
+### Production Build Policy
+
+Full `npm run build` is mandatory ONLY at milestones: Phase 02
+(foundations), 04 (booking), 06 (public complete), 08 (client complete),
+11 (admin complete), 12 (deletion safety), 13 (release). Non-milestones
+(03, 05, 07, 09, 10) run it ONLY if module/import architecture,
+dependencies, or route/build behavior changed significantly — record why
+if run.
+
+### Known Failure Cache
+
+A failure proven pre-existing, unrelated to the current phase, and owned
+by a future phase is recorded once in phase notes and NEVER reinvestigated
+(no clean-HEAD reproduction, no git archaeology, no root-cause work, no
+large reruns) unless the current phase touches that code or the failure
+changes. Later phases may note it still exists and continue. Example: the
+PLAN-28 booking-stepper assertions belong to Phase 04.
+
+### Investigation Budget
+
+On any failure FIRST classify: (A) caused by current phase → fix; (B)
+known pre-existing → record + continue; (C) unrelated/new external →
+record, expand scope only if it blocks the phase; (D) uncertain → minimum
+investigation to classify. No open-ended investigation, no proving
+unrelated defects at length.
+
+### Phase Completion
+
+COMPLETE requires: scoped implementation works, no new attributable
+blocker, Phase Gate passes, known unrelated failures documented. It does
+NOT require unrelated suites to be green.
+
 ## Commit Strategy (Per Implementation Phase)
 
 A. Record baseline / pre-phase state (commit hash + failing-or-passing QA).
-B. Implement the phase tasks in order.
-C. Run the phase Visual QA + Technical QA.
+B. Implement the phase tasks in order (Level 1 fast checks during work).
+C. Run the Phase Gate ONCE (phase Visual QA + Technical QA sections).
 D. Create ONE phase commit (phase scope only).
 E. STOP. Never combine several redesign phases into one commit.
 

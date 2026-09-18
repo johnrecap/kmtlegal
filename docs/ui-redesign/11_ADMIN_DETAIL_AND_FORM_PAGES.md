@@ -135,15 +135,23 @@ thread stays native with subtle transitions only.
 - [ ] Submit-error auto-expands the holding Accordion group.
 - [ ] One phase commit; STOP.
 
-## Visual QA
+## Visual QA (Phase Gate — focused matrix, run once)
 
-- [ ] Tabs/Accordion/Dialog/Sheet/Menu captures per group × theme.
-- [ ] Submit + confirm + error-state sequences.
+- [ ] Primary captures: (1) EN / Dark / 1440, (2) AR / Light / 390 —
+  Tabs/Accordion/Dialog/Sheet/Menu per group + submit + confirm +
+  error-state sequences.
+- [ ] Lightweight smoke/layout checks only for 768/1024, EN-Light, AR-Dark;
+  expand ONLY a failing dimension (per 00_MASTER_PLAN.md Verification Policy).
+- [ ] Affected detail/form groups only (no full admin crawl).
 
-## Technical QA
+## Technical QA (Phase Gate — run once)
 
-- [ ] `npm run typecheck`, `npm run lint`, production build green.
-- [ ] Admin detail/form E2E (plan35/plan36 suites where applicable) green.
+- [ ] `npm run typecheck`, `npm run lint`, production build green
+  (milestone phase — build mandatory).
+- [ ] Targeted admin detail/form E2E (plan35/plan36 suites where applicable)
+  green; console clean. No unrelated suites.
+- [ ] Known unrelated failures: record + continue, no reinvestigation
+  (Known Failure Cache).
 
 ## Status
 
