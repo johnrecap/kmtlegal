@@ -2,7 +2,7 @@
 import React from "react";
 import { fireEvent, render } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AnimatedList } from "@/components/ui/animated-list";
@@ -162,6 +162,33 @@ describe("booking chat stage composition (source contract)", () => {
     expect(chatSource).not.toContain("#ffaa40");
   });
 
+  it("renders the whole conversation through the real animated list", () => {
+    expect(chatSource).toContain("<AnimatedList");
+    expect(chatSource).toContain("delay={160}");
+    expect(chatSource).toContain("{messages.map((message) => (");
+    // Option panels arrive inside the same sequenced list, not around it.
+    expect(chatSource).toContain('<LanguageChoicePanel key="language-choice"');
+    expect(chatSource).toContain('<SlotChoicePanel key="slot-choice"');
+  });
+
+  it("guides the journey inside one console: intent, matter, info cards, new request", () => {
+    expect(chatSource).toContain("intentPrompt");
+    expect(chatSource).toContain("copy.matterPrompt");
+    expect(chatSource).toContain("copy.startNew");
+    expect(chatSource).toContain("startNewRequest");
+    expect(chatSource).toContain('data-testid="booking-matter-chip"');
+    expect(chatSource).toContain('data-testid="booking-new-request"');
+    // What-next + after-submit live as in-chat info cards.
+    expect(chatSource).toContain('kind: "info"');
+    expect(chatSource).toContain("AssistantInfoCard");
+    expect(chatSource).toContain("trustItems");
+    expect(chatSource).toContain("pageCopy.afterSubmitSteps");
+    // No external rail, no side panel, no trust chips in the header.
+    expect(chatSource).not.toContain("booking-trust-rail");
+    expect(chatSource).not.toContain("TrustRailItem");
+    expect(chatSource).not.toContain("BookingSupportPanel");
+  });
+
   it("preserves every booking flow test hook and rule", () => {
     for (const hook of [
       'data-testid="booking-stepper"',
@@ -190,12 +217,67 @@ describe("booking chat stage composition (source contract)", () => {
     // Submit logic untouched: the composer still delegates to submitMessage.
     expect(chatSource).toContain("onSubmit={submitMessage}");
     expect(chatSource).toContain("value={freeMessage}");
+    // Stage-aware placeholders come from real copy, not generic strings.
+    expect(chatSource).toContain("composerPlaceholders");
+    expect(chatSource).toContain("copy.contactPrompt");
+    expect(chatSource).toContain("copy.detailsPrompt");
   });
 
-  it("keeps assistant bubbles in the KMT palette with no toy colors", () => {
-    expect(chatSource).toContain("bg-[#0e0b07]");
+  it("keeps assistant bubbles theme-safe with no hard-coded dark surfaces", () => {
+    expect(chatSource).toContain("bg-[var(--kmt-assistant-bubble)]");
+    expect(chatSource).toContain("bg-[var(--kmt-assistant-user)]");
+    expect(chatSource).toContain("text-[var(--kmt-assistant-text)]");
+    expect(chatSource).not.toContain("bg-[#0e0b07]");
+    expect(chatSource).not.toContain("bg-black");
+    expect(chatSource).not.toContain("text-white");
+    expect(chatSource).not.toContain("amber-");
+    expect(chatSource).not.toContain("slate-");
     expect(chatSource).not.toContain("emerald-");
     expect(chatSource).not.toContain("bg-white/[0.075]");
+    // Send follows reading direction; status is a plain dot, no glow.
+    expect(chatSource).toContain("rtl:-scale-x-100");
+    expect(chatSource).toContain("bg-current");
+  });
+});
+
+describe("consultation assistant theme tokens (source contract)", () => {
+  const css = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
+
+  it("defines every assistant surface for light and dark", () => {
+    for (const token of [
+      "--kmt-assistant-shell",
+      "--kmt-assistant-log",
+      "--kmt-assistant-bubble",
+      "--kmt-assistant-user",
+      "--kmt-assistant-input",
+      "--kmt-assistant-text",
+      "--kmt-assistant-muted",
+      "--kmt-assistant-line",
+      "--kmt-assistant-chip",
+    ]) {
+      expect(css).toContain(token);
+    }
+    // Light contract: warm ivory/paper, deep text, bronze-gold line.
+    expect(css).toContain("--kmt-assistant-shell: #faf7f0");
+    expect(css).toContain("--kmt-assistant-text: #1c1812");
+    // Dark contract: deep black scale, warm-white text.
+    expect(css).toContain("--kmt-assistant-shell: #0a0908");
+    expect(css).toContain("--kmt-assistant-text: #f5efe3");
+  });
+});
+
+describe("consultation assistant copy (source contract)", () => {
+  const enSource = readFileSync(join(process.cwd(), "src/content/public-content.en.ts"), "utf8");
+  const arSource = readFileSync(join(process.cwd(), "src/content/public-content.ar.ts"), "utf8");
+
+  it("carries the guided-flow keys in both locales", () => {
+    for (const key of ["intentPrompt", "matterPrompt", "startNew"]) {
+      expect(enSource).toContain(key);
+      expect(arSource).toContain(key);
+    }
+    // Status reads as assistant readiness, never a form state.
+    expect(enSource).toContain('onlineNow: "Assistant ready"');
+    expect(arSource).toContain('onlineNow: "المساعد جاهز"');
   });
 });
 
@@ -203,27 +285,22 @@ describe("booking page zones (source contract)", () => {
   const pagesSource = readFileSync(join(process.cwd(), "src/features/public-site/public-pages.tsx"), "utf8");
   const componentsSource = readFileSync(join(process.cwd(), "src/features/public-site/public-components.tsx"), "utf8");
 
-  it("composes stage + subordinate support panel + rail", () => {
-    expect(pagesSource).toContain("BookingSupportPanel");
+  it("composes one centered assistant console with no external flow UI", () => {
     expect(pagesSource).toContain("ConsultationBookingChatFromQuery");
-    expect(pagesSource).toContain("AfterSubmitStrip");
     expect(pagesSource).toContain("BookingFlowHeader");
+    expect(pagesSource).toContain("max-w-[64rem]");
+    expect(pagesSource).not.toContain("BookingSupportPanel");
+    expect(pagesSource).not.toContain("AfterSubmitStrip");
+    expect(componentsSource).not.toContain("AfterSubmitStrip");
   });
 
-  it("support panel uses real trust copy with a gated gold glow", () => {
-    const panelSource = readFileSync(join(process.cwd(), "src/features/public-site/booking-support-panel.tsx"), "utf8");
-    expect(panelSource).toContain("copy.trustTitle");
-    expect(panelSource).toContain("copy.trustItems");
-    expect(panelSource).toContain("SupportGlowGate");
-    expect(panelSource).toContain("RequestedLawyerQueryNotice");
-    const gateSource = readFileSync(join(process.cwd(), "src/features/public-site/support-glow-gate.tsx"), "utf8");
-    expect(gateSource).toContain('variant="kmt-gold"');
-    expect(gateSource).toContain("(pointer: coarse)");
-    expect(gateSource).toContain("prefers-reduced-motion");
+  it("removed the migrated external panels instead of leaving dead files", () => {
+    expect(existsSync(join(process.cwd(), "src/features/public-site/booking-support-panel.tsx"))).toBe(false);
+    expect(existsSync(join(process.cwd(), "src/features/public-site/support-glow-gate.tsx"))).toBe(false);
   });
 
-  it("after-submit strip is a connected rail reusing real steps", () => {
-    expect(componentsSource).toContain("What-happens-after strip");
-    expect(componentsSource).toContain("border-t border-[var(--kmt-public-line)]");
+  it("keeps the flow header compact with no duplicated progress legend", () => {
+    expect(componentsSource).toContain("BookingFlowHeader");
+    expect(componentsSource).not.toContain("steps: ReadonlyArray<string>");
   });
 });

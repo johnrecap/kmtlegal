@@ -553,22 +553,20 @@ export function StatementBreak({ text, highlight }: { text: string; highlight?: 
 }
 
 /**
- * Booking flow header: a calm, compact tool header, not a photo hero. The
- * step legend mirrors the live BookingProgress labels inside the chat (which
- * owns state). The supporting sentence emphasizes the no-advice boundary
- * with the shared phrase-underline primitive.
+ * Booking flow header: a calm, compact tool header, not a photo hero. Stage
+ * progress lives ONLY inside the assistant (BookingStageTabs owns state) —
+ * no external duplicated progress legend. The supporting sentence
+ * emphasizes the no-advice boundary with the shared phrase-underline.
  */
 export function BookingFlowHeader({
   eyebrow,
   title,
   description,
-  steps,
   locale = "en"
 }: {
   eyebrow: string;
   title: string;
   description: string;
-  steps: ReadonlyArray<string>;
   locale?: PublicLocale;
 }) {
   return (
@@ -584,51 +582,7 @@ export function BookingFlowHeader({
             />
           </p>
         </div>
-        <ol className="mt-8 flex flex-wrap items-center gap-2" aria-label={steps.join(" · ")}>
-          {steps.map((step, index) => (
-            <li key={step} className="flex items-center gap-2">
-              {index > 0 ? (
-                <span aria-hidden="true" className="h-px w-6 bg-[var(--kmt-public-line)] sm:w-10" />
-              ) : null}
-              <span
-                className={cn(
-                  "inline-flex min-h-11 items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold",
-                  index === 0
-                    ? "border-kmt-gold/70 bg-kmt-gold/15 text-[var(--kmt-public-text)]"
-                    : "border-[var(--kmt-public-line)] text-[var(--kmt-public-muted)]"
-                )}
-              >
-                <span aria-hidden="true" className="text-xs tabular-nums text-[var(--kmt-public-gold)]">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                {step}
-              </span>
-            </li>
-          ))}
-        </ol>
       </div>
-    </section>
-  );
-}
-
-/** What-happens-after strip: a compact connected 4-step rail, not cards. */
-export function AfterSubmitStrip({ title, steps }: { title: string; steps: ReadonlyArray<string> }) {
-  return (
-    <section className={cn(publicPanel, "p-6 sm:p-8")}>
-      <div className="flex items-center gap-3">
-        <span aria-hidden="true" className="h-px w-10 bg-gradient-to-r from-[var(--kmt-public-gold)] to-transparent rtl:bg-gradient-to-l" />
-        <h2 className="text-xl font-semibold text-[var(--kmt-public-text)]">{title}</h2>
-      </div>
-      <ol className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-        {steps.map((step, index) => (
-          <li key={step} className="relative border-t border-[var(--kmt-public-line)] pt-4">
-            <span aria-hidden="true" className="text-sm font-semibold tabular-nums text-[var(--kmt-public-gold)]">
-              {String(index + 1).padStart(2, "0")}
-            </span>
-            <p className={cn("mt-2 text-sm leading-7", publicMutedText)}>{step}</p>
-          </li>
-        ))}
-      </ol>
     </section>
   );
 }

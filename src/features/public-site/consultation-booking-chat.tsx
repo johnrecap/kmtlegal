@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { MotionConfig } from "motion/react";
 import { KmtBrandLogo } from "@/components/brand";
 import { Button, MaterialSymbol } from "@/components/ui";
@@ -77,6 +78,11 @@ type PublicPaymentAttempt = {
   expiresAt: string;
 };
 
+type AssistantInfoCard = {
+  title: string;
+  items: ReadonlyArray<{ icon?: string; label: string; description?: string }>;
+};
+
 type ChatMessage = {
   id: string;
   role: "assistant" | "user";
@@ -84,6 +90,9 @@ type ChatMessage = {
   tone?: "default" | "error" | "success";
   actionHref?: string;
   actionLabel?: string;
+  /** "info" renders the title + numbered/icon rows card (what-next, after-submit). */
+  kind?: "text" | "info";
+  info?: AssistantInfoCard;
 };
 
 type ClientAccountSetupAction = {
@@ -128,14 +137,14 @@ type LanguageTransfer = {
 const languageTransferKey = "kmt.booking.language-transfer";
 const languageTransferLimit = 20_000;
 
-const darkSurfaceClasses = cn(
+const assistantShellClasses = cn(
   publicMotionForm,
-  "relative isolate overflow-hidden rounded-[1.75rem] border border-kmt-gold/45 bg-[linear-gradient(145deg,#17110a_0%,#090b0d_48%,#020202_100%)] before:absolute before:inset-x-8 before:top-0 before:h-px before:bg-gradient-to-l before:from-transparent before:via-kmt-gold/80 before:to-transparent after:pointer-events-none after:absolute after:inset-0 after:rounded-[1.75rem] after:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]"
+  "relative isolate overflow-hidden rounded-[1.75rem] border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-shell)] text-[var(--kmt-assistant-text)] before:absolute before:inset-x-8 before:top-0 before:h-px before:bg-gradient-to-l before:from-transparent before:via-kmt-gold/60 before:to-transparent"
 );
 
 const chipButtonClasses = cn(
   publicMotionButton,
-  "min-h-11 rounded-full !border-kmt-gold/45 !bg-black/30 !px-4 !text-sm !text-amber-100 hover:!bg-kmt-gold hover:!text-[#120d07]"
+  "min-h-11 rounded-full border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-chip)] px-4 text-sm text-[var(--kmt-assistant-text)] hover:border-kmt-gold/60 hover:bg-kmt-gold hover:text-[#120d07]"
 );
 
 const initialDraft: BookingDraft = {
@@ -164,9 +173,13 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   const copy = content.bookingChat;
   const logScrollRef = useRef<HTMLDivElement | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>(() => [
-    { id: "language-prompt", role: "assistant", text: getPublicContent(locale).bookingChat.languagePrompt }
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const initialCopy = getPublicContent(locale).bookingChat;
+    return [
+      { id: "assistant-greeting", role: "assistant", text: initialCopy.greeting },
+      { id: "language-prompt", role: "assistant", text: initialCopy.languagePrompt }
+    ];
+  });
   const initialServiceCategory = categoryFromInitialService(initialService, locale);
   const [draft, setDraft] = useState<BookingDraft>(() => ({ ...initialDraft, serviceCategory: initialServiceCategory }));
   const [freeMessage, setFreeMessage] = useState("");
@@ -180,12 +193,38 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   const [paymentReview, setPaymentReview] = useState<PaymentReview | null>(null);
   const [freeTextTurnsAfterLanguage, setFreeTextTurnsAfterLanguage] = useState(0);
   const [failureCount, setFailureCount] = useState(0);
-  const [quickActionsDismissed, setQuickActionsDismissed] = useState(false);
+  // Contextual action step: intent (book/inquire) right after language, then
+  // matter chips only while the booking still misses a service category.
+  // Previous option groups collapse as soon as the flow moves on.
+  const [actionStep, setActionStep] = useState<"intent" | "matter" | null>(null);
   const [latestResult, setLatestResult] = useState<LatestBookingResult | null>(null);
   const reduceMotionStage = usePrefersReducedMotion();
   const restoredSelection = useRef<BookingDraft | null>(null);
-  const showTrustRail = !chatLocale;
-  const showQuickActions = Boolean(chatLocale) && !quickActionsDismissed && !flow && !availableSlots.length && !readyToConfirm && !readyToCheckout;
+  const searchParams = useSearchParams();
+  const requestedLawyer = searchParams.get("lawyer");
+  const pageCopy = content.bookingPage;
+  const matterKnown = Boolean(draft.serviceCategory.trim());
+  const flowIdle = !availableSlots.length && !readyToConfirm && !readyToCheckout;
+  const showIntentActions = Boolean(chatLocale) && actionStep === "intent" && !flow && flowIdle && !latestResult;
+  const showMatterActions = Boolean(chatLocale) && (actionStep === "matter" || (flow === "booking" && !matterKnown && !latestResult)) && flowIdle;
+  const showNewRequest = Boolean(latestResult) && !flow && !isBusy;
+  const showQuickActions = showIntentActions || showMatterActions || showNewRequest;
+  // Stage-aware composer placeholders: real copy matched to the current step.
+  const composerPlaceholders = !chatLocale
+    ? [copy.languagePendingPlaceholder]
+    : flow === "inquiry"
+      ? [copy.inquiryPrompt]
+      : readyToCheckout
+        ? [copy.paymentReviewTitle, copy.cancellationPolicy]
+        : readyToConfirm
+          ? [copy.reviewPrompt]
+          : availableSlots.length
+            ? [copy.preferredSlotHint]
+            : !(draft.fullName.trim() && draft.phone.trim())
+              ? [copy.contactPrompt, copy.messagePlaceholder]
+              : !(draft.serviceCategory.trim() && draft.summary.trim().length >= 20)
+                ? [copy.detailsPrompt, copy.messagePlaceholder]
+                : [copy.messagePlaceholder, copy.preferredSlotHint];
 
   useEffect(() => {
     setIsHydrated(true);
@@ -313,7 +352,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       setReadyToConfirm(false);
       setReadyToCheckout(false);
       setPaymentReview(null);
-      setQuickActionsDismissed(true);
+      setActionStep(null);
       setMessages([
         { id: `assistant-greeting-${restoredLocale}`, role: "assistant", text: restoredCopy.greeting },
         { id: `assistant-payment-resume-${restoredLocale}`, role: "assistant", text: restoredCopy.resumePaymentDraft, tone: "success" }
@@ -343,12 +382,32 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     const frame = window.requestAnimationFrame(() => {
       chatLog.scrollTop = chatLog.scrollHeight;
     });
+    // New turns reveal through the sequenced list after the state lands;
+    // trailing pins keep the latest interaction in view. Native scrollTop
+    // only — no smooth scrolling, no conflict with page scrollers.
+    const firstPin = window.setTimeout(() => {
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }, 320);
+    const secondPin = window.setTimeout(() => {
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }, 780);
 
-    return () => window.cancelAnimationFrame(frame);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(firstPin);
+      window.clearTimeout(secondPin);
+    };
   }, [messages, availableSlots, readyToConfirm, readyToCheckout, isBusy]);
 
-  function append(role: ChatMessage["role"], text: string, tone: ChatMessage["tone"] = "default", action?: Pick<ChatMessage, "actionHref" | "actionLabel">) {
-    setMessages((current) => [...current, { id: `${role}-${Date.now()}-${current.length}`, role, text, tone, ...action }]);
+  function append(role: ChatMessage["role"], text: string, tone: ChatMessage["tone"] = "default", action?: Pick<ChatMessage, "actionHref" | "actionLabel">, info?: AssistantInfoCard) {
+    setMessages((current) => [...current, {
+      id: `${role}-${Date.now()}-${current.length}`,
+      role,
+      text,
+      tone,
+      ...action,
+      ...(info ? { kind: "info" as const, info } : null)
+    }]);
   }
 
   function appendRecoverableError(message: string) {
@@ -395,29 +454,43 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     setPaymentReview(null);
     setSelectedSlot("");
     setFreeTextTurnsAfterLanguage(0);
-    setQuickActionsDismissed(false);
+    setLatestResult(null);
+    setActionStep("intent");
+    // The choice becomes chat history; the assistant continues in that
+    // language with the intent question plus the what-next info card.
     setMessages((current) => [
       ...current,
       { id: `user-language-${nextLocale}`, role: "user", text: nextLocale === "ar" ? nextCopy.languageArabic : nextCopy.languageEnglish },
-      { id: `assistant-greeting-${nextLocale}`, role: "assistant", text: nextCopy.greeting }
+      { id: `assistant-intent-${nextLocale}`, role: "assistant", text: nextCopy.intentPrompt },
+      {
+        id: `assistant-what-next-${nextLocale}`,
+        role: "assistant",
+        text: nextCopy.trustTitle,
+        kind: "info",
+        info: { title: nextCopy.trustTitle, items: nextCopy.trustItems }
+      }
     ]);
   }
 
   function startBooking() {
     if (!chatLocale) return;
-    setQuickActionsDismissed(true);
+    const needsMatter = !draft.serviceCategory.trim();
+    // Matter chips appear only while the category is still missing; the
+    // assistant question names what they are for.
+    setActionStep(needsMatter ? "matter" : null);
+    if (needsMatter) append("assistant", copy.matterPrompt);
     void sendBookingMessage(copy.book, { userText: copy.book, flow: "booking" });
   }
 
   function startBookingWithCategory(label: string, category: string) {
     if (!chatLocale) return;
-    setQuickActionsDismissed(true);
+    setActionStep(null);
     void sendBookingMessage(label, { userText: label, flow: "booking", draftPatch: { serviceCategory: category } });
   }
 
   function startInquiry() {
     if (!chatLocale) return;
-    setQuickActionsDismissed(true);
+    setActionStep(null);
     setFlow("inquiry");
     setLatestResult(null);
     setAvailableSlots([]);
@@ -429,6 +502,30 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     append("assistant", copy.inquiryPrompt);
   }
 
+  function startNewRequest() {
+    if (!chatLocale || isBusy) return;
+    const nextCopy = getPublicContent(chatLocale).bookingChat;
+    setFlow(null);
+    setAvailableSlots([]);
+    setSlotWindow(null);
+    setSelectedSlot("");
+    setReadyToConfirm(false);
+    setReadyToCheckout(false);
+    setPaymentReview(null);
+    setLatestResult(null);
+    setFreeMessage("");
+    setFreeTextTurnsAfterLanguage(0);
+    setFailureCount(0);
+    setActionStep("intent");
+    setDraft({ ...initialDraft, serviceCategory: initialServiceCategory });
+    // One clear action after submit restarts the guided flow in the same
+    // console — the user never leaves the assistant.
+    setMessages([
+      { id: `assistant-greeting-restart-${Date.now()}`, role: "assistant", text: nextCopy.greeting },
+      { id: `assistant-intent-restart-${Date.now()}`, role: "assistant", text: nextCopy.intentPrompt }
+    ]);
+  }
+
   async function submitMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const text = freeMessage.trim();
@@ -438,7 +535,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     const nextFreeTextTurns = freeTextTurnsAfterLanguage + 1;
     setFreeTextTurnsAfterLanguage(nextFreeTextTurns);
     if (nextFreeTextTurns >= 2) {
-      setQuickActionsDismissed(true);
+      setActionStep(null);
     }
 
     if (looksLikeLegalAdvice(text)) {
@@ -564,7 +661,13 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       if (data.reference) {
         setLatestResult({ kind: "booking", reference: data.reference, appointments: data.appointment ? [data.appointment] : [] });
         append("assistant", `${copy.successTitle} · ${copy.reference}: ${data.reference}`, "success");
-        append("assistant", copy.nextStepsAfterBooking, "success");
+        // After-submit continuity lives in the same console: confirmation,
+        // the office next steps as an info card, then one clear action
+        // (the new-request chip) instead of an external panel.
+        append("assistant", pageCopy.afterSubmitTitle, "success", undefined, {
+          title: pageCopy.afterSubmitTitle,
+          items: pageCopy.afterSubmitSteps.map((step) => ({ label: step }))
+        });
         if (data.appointment) {
           append("assistant", `${data.appointment.title} · ${formatPublicDate(data.appointment.startsAt, activeLocale)}`, "success");
         }
@@ -576,7 +679,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         setReadyToConfirm(false);
         setReadyToCheckout(false);
         setPaymentReview(null);
-        setQuickActionsDismissed(true);
+        setActionStep(null);
         setDraft({ ...initialDraft, serviceCategory: initialServiceCategory });
       }
     } catch {
@@ -683,7 +786,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   return (
     <section
       aria-label={copy.title}
-      className={darkSurfaceClasses}
+      className={assistantShellClasses}
       data-hydrated={isHydrated ? "true" : "false"}
       data-testid="booking-stepper"
       dir={activeLocale === "ar" ? "rtl" : "ltr"}
@@ -700,124 +803,128 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         <BorderBeam size={90} duration={9} colorFrom="#eac987" colorTo="#a87830" borderWidth={1} />
       )}
       <MotionConfig reducedMotion="user">
-      <div className="relative z-10 flex h-[min(78vh,46rem)] min-h-[36rem] min-w-0 flex-col max-sm:h-[min(82svh,44rem)] max-sm:min-h-[34rem]" data-testid="booking-chat-shell">
-        <header className="shrink-0 px-5 pb-4 pt-5 sm:px-8 sm:pt-8">
-          <div className="flex flex-wrap items-start justify-between gap-5">
-            <div className="flex min-w-0 items-center gap-4">
-              <KmtBrandLogo label={copy.assistantName} shape="circle" size="lg" variant="mark" />
-              <div className="min-w-0">
-                <p className="truncate text-[1.9rem] font-semibold leading-tight text-white max-sm:text-lg">{copy.assistantName}</p>
-                <p className="mt-2 flex items-center gap-2 text-sm font-medium text-[#7ad36a]">
-                  <span className="h-2.5 w-2.5 rounded-full bg-[#7ad36a] shadow-[0_0_16px_rgba(122,211,106,0.85)]" aria-hidden="true" />
-                  {copy.onlineNow}
-                </p>
-                <p className="mt-1.5 text-xs leading-5 text-amber-100/55">{copy.scope}</p>
-              </div>
+      {/*
+        Fixed shell height: new turns must never move the composer or the
+        window (no layout jumping, input never pushed out of view). Growth
+        is absorbed by the internal log scroll, not the page.
+      */}
+      <div className="relative z-10 flex h-[min(76vh,44rem)] min-h-[34rem] min-w-0 flex-col max-sm:h-[min(82svh,42rem)] max-sm:min-h-[32rem]" data-testid="booking-chat-shell">
+        {/*
+          Simplified header: mark + name + live status + one-line scope,
+          then the internal stage progress. Trust content moved into the
+          conversation as the what-next info card (Phase 9).
+        */}
+        <header className="shrink-0 px-5 pb-3 pt-5 sm:px-8 sm:pt-6">
+          <div className="flex min-w-0 items-center gap-4">
+            <KmtBrandLogo label={copy.assistantName} shape="circle" size="lg" variant="mark" />
+            <div className="min-w-0">
+              <p className="truncate text-xl font-semibold leading-tight sm:text-2xl">{copy.assistantName}</p>
+              <p className="mt-1.5 flex items-center gap-2 text-sm font-medium text-[#2f7a3d] dark:text-[#7ad36a]">
+                <span className="h-2 w-2 shrink-0 rounded-full bg-current" aria-hidden="true" />
+                {copy.onlineNow}
+              </p>
+              <p className="mt-1 truncate text-xs leading-5 text-[var(--kmt-assistant-muted)]">{copy.scope}</p>
             </div>
           </div>
 
-          {showTrustRail ? (
-            <div className="mt-5 flex flex-wrap items-center gap-1.5 text-amber-50" data-testid="booking-trust-rail">
-              <TrustRailItem icon="person_check" label={copy.humanReviewOnly} />
-              <TrustRailItem icon="shield" label={copy.noLegalAdvice} />
-              <TrustRailItem icon="lock" label={copy.secureConfidential} />
-              <TrustRailItem icon="supervisor_account" label={copy.humanReviewBadge} />
-              <TrustRailItem icon="bolt" label={copy.fastResponse} />
-            </div>
-          ) : null}
           {chatLocale ? <BookingStageTabs copy={copy} draft={draft} readyToCheckout={readyToCheckout} selectedSlot={selectedSlot} /> : null}
         </header>
 
         <div
           ref={logScrollRef}
           aria-busy={isBusy ? "true" : "false"}
-          className="kmt-chat-scrollbar mx-5 mb-2 min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain rounded-2xl border border-white/[0.06] bg-black/30 px-4 py-5 sm:mx-8 sm:px-6"
+          className="kmt-chat-scrollbar mx-5 mb-2 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-2xl bg-[var(--kmt-assistant-log)] px-4 py-5 sm:mx-8 sm:px-6"
           data-testid="booking-chat-log"
           role="log"
         >
           {/*
-            Guided intro (Animated List): the language prompt + choice stage
-            in sequentially, conversationally. Live turns below stay instant:
-            hiding real responses behind a reveal timer would feel fake and
-            slow, so only the staged intro uses the sequenced list.
+            Real Animated List over the whole conversation: assistant turns,
+            user confirmations, follow-ups, option panels, confirmations and
+            the final success state all arrive sequentially through the same
+            sequenced list. Reduced motion renders everything settled.
           */}
-          {!chatLocale && messages.length === 1 ? (
-            <AnimatedList className="items-stretch gap-5" delay={420}>
-              <ChatBubble key={messages[0].id} message={messages[0]} />
-              <LanguageChoicePanel key="language-choice-intro" copy={copy} onSelect={chooseLanguage} />
-            </AnimatedList>
-          ) : (
-            <>
-              {messages.map((message) => (
-                <ChatBubble key={message.id} message={message} />
-              ))}
-              {!chatLocale ? <LanguageChoicePanel copy={copy} onSelect={chooseLanguage} /> : null}
-            </>
-          )}
-          {availableSlots.length ? <SlotChoicePanel locale={activeLocale} slotWindow={slotWindow ?? undefined} slots={availableSlots} onChoose={chooseSlot} /> : null}
-          {readyToConfirm ? (
-            <div className="flex flex-wrap justify-end gap-2">
-              <Button className={cn(publicMotionButton, publicMotionCta, "rounded-full")} data-testid="booking-confirm-booking" loading={isBusy} type="button" onClick={confirmBooking}>
-                <MaterialSymbol name="check_circle" />
-                {copy.submitBooking}
-              </Button>
-              <Button className={chipButtonClasses} disabled={isBusy} type="button" variant="secondary" onClick={editDetails}>
-                <MaterialSymbol name="edit" />
-                {copy.back}
-              </Button>
-            </div>
-          ) : null}
-          {readyToCheckout && paymentReview ? (
-            <PaymentReviewPanel
-              copy={copy}
-              draft={draft}
-              locale={activeLocale}
-              paymentReview={paymentReview}
-              selectedSlot={selectedSlot}
-              isBusy={isBusy}
-              onBack={editDetails}
-              onPay={payBooking}
-            />
-          ) : null}
+          <AnimatedList className="items-stretch gap-5" delay={160}>
+            {requestedLawyer ? <LawyerNoticeRow key="lawyer-notice" label={pageCopy.requestedLawyer} value={requestedLawyer} /> : null}
+            {messages.map((message) => (
+              <ChatBubble key={message.id} message={message} />
+            ))}
+            {!chatLocale ? <LanguageChoicePanel key="language-choice" copy={copy} onSelect={chooseLanguage} /> : null}
+            {availableSlots.length ? <SlotChoicePanel key="slot-choice" locale={activeLocale} slotWindow={slotWindow ?? undefined} slots={availableSlots} onChoose={chooseSlot} /> : null}
+            {readyToConfirm ? (
+              <div key="confirm-row" className="flex flex-wrap justify-end gap-2">
+                <Button className={cn(publicMotionButton, publicMotionCta, "rounded-full")} data-testid="booking-confirm-booking" loading={isBusy} type="button" onClick={confirmBooking}>
+                  <MaterialSymbol name="check_circle" />
+                  {copy.submitBooking}
+                </Button>
+                <Button className={chipButtonClasses} disabled={isBusy} type="button" variant="secondary" onClick={editDetails}>
+                  <MaterialSymbol name="edit" />
+                  {copy.back}
+                </Button>
+              </div>
+            ) : null}
+            {readyToCheckout && paymentReview ? (
+              <PaymentReviewPanel
+                key="payment-review"
+                copy={copy}
+                draft={draft}
+                locale={activeLocale}
+                paymentReview={paymentReview}
+                selectedSlot={selectedSlot}
+                isBusy={isBusy}
+                onBack={editDetails}
+                onPay={payBooking}
+              />
+            ) : null}
+          </AnimatedList>
           {isBusy ? <TypingIndicator label={copy.typing} /> : null}
         </div>
 
-        <div className="shrink-0 px-5 pb-5 sm:px-8 sm:pb-8">
+        <div className="shrink-0 px-5 pb-5 sm:px-8 sm:pb-6">
           {showQuickActions ? (
-            <div className="mb-5 flex flex-wrap gap-3" data-testid="booking-quick-actions">
-              <Button className={chipButtonClasses} data-testid="booking-quick-book" disabled={isBusy} size="sm" type="button" variant="secondary" onClick={startBooking}>
-                <MaterialSymbol className="text-xl" name="event_available" />
-                {copy.book}
-              </Button>
-              <Button className={chipButtonClasses} data-testid="booking-quick-inquiry" disabled={isBusy} size="sm" type="button" variant="secondary" onClick={startInquiry}>
-                <MaterialSymbol className="text-xl" name="search" />
-                {copy.inquire}
-              </Button>
-              {content.legalServices.map((service) => (
-                <Button key={service.slug} className={chipButtonClasses} disabled={isBusy} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(service.title, service.category)}>
-                  <MaterialSymbol className="text-xl" name={service.icon} />
-                  {service.title}
+            <div className="mb-4 flex flex-wrap gap-2" data-testid="booking-quick-actions">
+              {showIntentActions ? (
+                <>
+                  <Button className={chipButtonClasses} data-testid="booking-quick-book" disabled={isBusy} size="sm" type="button" variant="secondary" onClick={startBooking}>
+                    <MaterialSymbol className="text-xl" name="event_available" />
+                    {copy.book}
+                  </Button>
+                  <Button className={chipButtonClasses} data-testid="booking-quick-inquiry" disabled={isBusy} size="sm" type="button" variant="secondary" onClick={startInquiry}>
+                    <MaterialSymbol className="text-xl" name="search" />
+                    {copy.inquire}
+                  </Button>
+                </>
+              ) : null}
+              {showMatterActions ? (
+                <>
+                  {content.legalServices.map((service) => (
+                    <Button key={service.slug} className={chipButtonClasses} data-testid="booking-matter-chip" disabled={isBusy} size="sm" type="button" variant="secondary" onClick={() => startBookingWithCategory(service.title, service.category)}>
+                      <MaterialSymbol className="text-xl" name={service.icon} />
+                      {service.title}
+                    </Button>
+                  ))}
+                </>
+              ) : null}
+              {showNewRequest ? (
+                <Button className={chipButtonClasses} data-testid="booking-new-request" disabled={isBusy} size="sm" type="button" variant="secondary" onClick={startNewRequest}>
+                  <MaterialSymbol className="text-xl" name="restart_alt" />
+                  {copy.startNew}
                 </Button>
-              ))}
+              ) : null}
             </div>
           ) : null}
 
           <PlaceholdersAndVanishInput
             formTestId="booking-chat-composer"
-            formClassName="flex min-w-0 items-center gap-2 rounded-full border border-kmt-gold/55 bg-black/42 py-2 pe-2 ps-6 transition-colors focus-within:border-kmt-gold"
-            placeholders={
-              chatLocale
-                ? [copy.messagePlaceholder, copy.inquiryPrompt, copy.detailsPrompt, copy.preferredSlotHint]
-                : [copy.languagePendingPlaceholder]
-            }
+            formClassName="flex min-w-0 items-center gap-2 rounded-full border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-input)] py-2 pe-2 ps-6 transition-colors focus-within:border-kmt-gold"
+            placeholders={composerPlaceholders}
             value={freeMessage}
             onValueChange={setFreeMessage}
             onSubmit={submitMessage}
             disabled={!chatLocale || isBusy}
             inputName="chatMessage"
             ariaLabel={copy.messageLabel}
-            inputClassName="kmt-vanish-input min-h-12 w-full min-w-0 flex-1 border-0 bg-transparent text-base text-white outline-none disabled:text-slate-500 focus-visible:!outline-none focus:!ring-0"
-            placeholderClassName="w-full truncate pe-24 text-base text-amber-100/45"
+            inputClassName="kmt-vanish-input min-h-12 w-full min-w-0 flex-1 border-0 bg-transparent text-base text-[var(--kmt-assistant-text)] outline-none disabled:text-[var(--kmt-assistant-muted)] focus-visible:!outline-none focus:!ring-0"
+            placeholderClassName="w-full truncate pe-24 text-base text-[var(--kmt-assistant-muted)]"
             trailing={
               <Button
                 aria-label={copy.send}
@@ -825,12 +932,13 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
                 disabled={!chatLocale || isBusy || !freeMessage.trim()}
                 type="submit"
               >
-                <MaterialSymbol className="text-xl" name="send" />
+                {/* Forward = reading direction: mirrored in RTL. */}
+                <MaterialSymbol className="text-xl rtl:-scale-x-100" name="send" />
                 <span className="sr-only">{copy.send}</span>
               </Button>
             }
           />
-          <p className="mt-4 flex items-center justify-center gap-2 text-center text-sm text-amber-100/65">
+          <p className="mt-3 flex items-center justify-center gap-2 text-center text-sm text-[var(--kmt-assistant-muted)]">
             <MaterialSymbol className="text-lg" name="lock" />
             {copy.privacyNote}
           </p>
@@ -841,11 +949,17 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   );
 }
 
-function TrustRailItem({ icon, label }: { icon: string; label: string }) {
+/**
+ * System/helper row: small neutral line with icon + short text, never a
+ * bubble (lawyer pre-selection notice, etc.).
+ */
+function LawyerNoticeRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="inline-flex min-h-8 max-w-full items-center justify-center gap-1 rounded-full border border-kmt-gold/25 bg-[#12100c]/72 px-2 text-center transition-colors hover:border-kmt-gold/40 hover:bg-[#17130d]/82">
-      <MaterialSymbol className="shrink-0 text-sm text-kmt-gold" name={icon} />
-      <span className="min-w-0 truncate text-[0.68rem] font-medium leading-4 text-amber-50/90">{label}</span>
+    <div className="flex items-center justify-center gap-2 text-center text-xs text-[var(--kmt-assistant-muted)]">
+      <MaterialSymbol className="text-base text-[var(--kmt-public-gold)]" name="person_search" />
+      <span>
+        {label}: <bdi className="font-semibold text-[var(--kmt-assistant-text)]">{value}</bdi>
+      </span>
     </div>
   );
 }
@@ -884,11 +998,17 @@ function BookingStageTabs({
   ];
 
   return (
-    <div className="mt-5" data-testid="booking-stage-tabs">
+    <div className="mt-4" data-testid="booking-stage-tabs">
       <Tabs value={stage} aria-label={copy.paymentStatus} onValueChange={() => undefined}>
-        <TabsList className="scrollbar-hide overflow-x-auto">
+        <TabsList className="scrollbar-hide overflow-x-auto border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-chip)]">
           {stages.map((item, index) => (
-            <TabsTrigger key={item.value} value={item.value} disabled aria-label={`${index + 1} · ${item.label}`} className="max-sm:flex-none max-sm:px-4">
+            <TabsTrigger
+              key={item.value}
+              value={item.value}
+              disabled
+              aria-label={`${index + 1} · ${item.label}`}
+              className="text-[var(--kmt-assistant-muted)] hover:text-[var(--kmt-assistant-text)] data-[disabled]:hover:text-[var(--kmt-assistant-muted)] max-sm:flex-none max-sm:px-4"
+            >
               <span
                 aria-hidden="true"
                 className={cn(
@@ -902,10 +1022,10 @@ function BookingStageTabs({
             </TabsTrigger>
           ))}
         </TabsList>
-        <TabsContents className="mt-3">
+        <TabsContents className="mt-2.5">
           {stages.map((item) => (
             <TabsContent key={item.value} value={item.value}>
-              <p className="text-center text-xs leading-5 text-amber-100/60">{item.hint}</p>
+              <p className="text-center text-xs leading-5 text-[var(--kmt-assistant-muted)]">{item.hint}</p>
             </TabsContent>
           ))}
         </TabsContents>
@@ -930,28 +1050,65 @@ function LanguageChoicePanel({ copy, onSelect }: { copy: BookingChatCopy; onSele
   );
 }
 
+/**
+ * Role-coded bubbles. Assistant = theme bubble surface with avatar;
+ * user = warm gold-tinted surface; info = the assistant info card
+ * (what-next / after-submit: icon-or-numbered rows, subtle boundary).
+ */
 function ChatBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user";
 
+  if (message.kind === "info" && message.info) {
+    const info = message.info;
+    return (
+      <div className="kmt-chat-enter flex items-end gap-3">
+        <KmtBrandLogo className="shrink-0 max-sm:[&_span]:h-9 max-sm:[&_span]:w-9" label="" shape="circle" size="md" variant="mark" />
+        <div className="max-w-[80%] rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] px-5 py-4 max-sm:max-w-[88%] max-sm:px-4">
+          <p className="flex items-center gap-2 text-sm font-semibold text-[var(--kmt-assistant-text)]">
+            <MaterialSymbol className="text-lg text-[var(--kmt-public-gold)]" name="info" />
+            {info.title}
+          </p>
+          <ol className="mt-3 space-y-2.5">
+            {info.items.map((item, index) => (
+              <li key={`${item.label}-${index}`} className="flex gap-2.5 text-sm leading-6">
+                {item.icon ? (
+                  <MaterialSymbol className="mt-0.5 shrink-0 text-lg text-[var(--kmt-public-gold)]" name={item.icon} />
+                ) : (
+                  <span aria-hidden="true" className="shrink-0 text-xs font-semibold tabular-nums text-[var(--kmt-public-gold)]">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                )}
+                <span className="min-w-0 text-[var(--kmt-assistant-muted)]">
+                  <span className="font-semibold text-[var(--kmt-assistant-text)]">{item.label}</span>
+                  {item.description ? <span> · {item.description}</span> : null}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={cn("kmt-chat-enter flex items-end gap-4", isUser ? "justify-end" : "justify-start")}>
+    <div className={cn("kmt-chat-enter flex items-end gap-3", isUser ? "justify-end" : "justify-start")}>
       {!isUser ? (
         message.tone === "error" || message.tone === "success" ? (
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-kmt-gold/40 bg-[linear-gradient(145deg,rgba(183,134,64,0.18),rgba(0,0,0,0.35))] text-kmt-gold max-sm:h-9 max-sm:w-9">
-            <MaterialSymbol className="text-2xl max-sm:text-lg" name={message.tone === "error" ? "error" : "check_circle"} />
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] text-[var(--kmt-public-gold)] max-sm:h-9 max-sm:w-9">
+            <MaterialSymbol className="text-xl max-sm:text-lg" name={message.tone === "error" ? "error" : "check_circle"} />
           </span>
         ) : (
-          <KmtBrandLogo className="max-sm:[&_span]:h-9 max-sm:[&_span]:w-9" label="" shape="circle" size="md" variant="mark" />
+          <KmtBrandLogo className="shrink-0 max-sm:[&_span]:h-9 max-sm:[&_span]:w-9" label="" shape="circle" size="md" variant="mark" />
         )
       ) : null}
       <div
         className={cn(
-          "max-w-[78%] break-words rounded-[1.45rem] px-6 py-4 text-base leading-8 shadow-[0_22px_60px_-42px_rgba(0,0,0,0.95)] max-sm:max-w-[86%] max-sm:px-4 max-sm:py-3 max-sm:text-sm",
+          "max-w-[78%] break-words rounded-[1.45rem] px-5 py-3.5 text-base leading-8 max-sm:max-w-[86%] max-sm:px-4 max-sm:py-3 max-sm:text-sm",
           isUser
-            ? "rounded-ee-md border border-kmt-gold/55 bg-[linear-gradient(135deg,#bd8f3e,#8f6420)] text-white"
-            : "rounded-es-md border border-kmt-gold/20 bg-[#0e0b07] text-amber-50",
-          message.tone === "error" ? "border-red-300/35 bg-red-950/55 text-red-100" : undefined,
-          message.tone === "success" ? "border-kmt-gold/45 bg-kmt-gold/[0.12] text-amber-50" : undefined
+            ? "rounded-ee-md border border-kmt-gold/40 bg-[var(--kmt-assistant-user)] text-[var(--kmt-assistant-text)]"
+            : "rounded-es-md border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] text-[var(--kmt-assistant-text)]",
+          message.tone === "error" ? "border-red-500/40 bg-red-500/10" : undefined,
+          message.tone === "success" ? "border-kmt-gold/40 bg-kmt-gold/10" : undefined
         )}
         role={message.tone === "error" ? "alert" : undefined}
       >
@@ -983,16 +1140,16 @@ function SlotChoicePanel({
 }) {
   const groups = groupSlotsByDay(slots, locale);
   return (
-    <div className="space-y-3 ps-14 max-sm:ps-0" data-testid="booking-slot-choice-panel">
+    <div className="space-y-3" data-testid="booking-slot-choice-panel">
       {slotWindow?.alternatives ? (
-        <p className="max-w-[42rem] rounded-2xl border border-kmt-gold/20 bg-kmt-gold/10 px-4 py-3 text-sm leading-6 text-amber-50/85">
+        <p className="max-w-[42rem] rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] px-4 py-3 text-sm leading-6 text-[var(--kmt-assistant-muted)]">
           {locale === "ar" ? "أقرب بدائل متاحة الآن" : "Nearest visible alternatives"}
         </p>
       ) : null}
       {groups.map((group) => (
-        <div key={group.key} className="max-w-[42rem] rounded-3xl border border-kmt-gold/20 bg-black/20 p-3">
-          <div className="mb-3 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-[0.14em] text-amber-100/70">
-            <MaterialSymbol className="text-base text-kmt-gold" name="event" />
+        <div key={group.key} className="max-w-[42rem] rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] p-3">
+          <div className="mb-3 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--kmt-assistant-muted)]">
+            <MaterialSymbol className="text-base text-[var(--kmt-public-gold)]" name="event" />
             <span>{group.label}</span>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -1035,17 +1192,17 @@ function PaymentReviewPanel({
   const emailText = draft.email?.trim() || bookingFormCopy.unknown;
 
   return (
-    <div className="ms-auto max-w-[42rem] rounded-3xl border border-kmt-gold/35 bg-black/30 p-4" data-testid="booking-payment-review">
-      <div className="mb-4 flex items-center gap-2 text-amber-50">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-kmt-gold/45 bg-kmt-gold/15 text-kmt-gold">
+    <div className="ms-auto max-w-[42rem] rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] p-4" data-testid="booking-payment-review">
+      <div className="mb-4 flex items-center gap-2 text-[var(--kmt-assistant-text)]">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[var(--kmt-assistant-line)] bg-kmt-gold/15 text-[var(--kmt-public-gold)]">
           <MaterialSymbol name="payments" />
         </span>
         <div>
           <p className="text-xl font-semibold leading-tight">{copy.paymentReviewTitle}</p>
-          <p className="mt-1 text-sm text-amber-100/70">{copy.cancellationPolicy}</p>
+          <p className="mt-1 text-sm text-[var(--kmt-assistant-muted)]">{copy.cancellationPolicy}</p>
         </div>
       </div>
-      <dl className="grid gap-3 text-sm text-amber-50/85 sm:grid-cols-2">
+      <dl className="grid gap-3 text-sm text-[var(--kmt-assistant-muted)] sm:grid-cols-2">
         <PaymentReviewItem icon="category" label={bookingFormCopy.serviceCategory} value={requestArea} />
         <PaymentReviewItem icon="mail" label={bookingFormCopy.email} value={emailText} />
         <PaymentReviewItem className="sm:col-span-2" icon="description" label={copy.detailsTitle} value={requestText} />
@@ -1068,12 +1225,12 @@ function PaymentReviewPanel({
 
 function PaymentReviewItem({ icon, label, value, className }: { icon: string; label: string; value: string; className?: string }) {
   return (
-    <div className={cn("rounded-2xl border border-white/10 bg-white/[0.055] px-4 py-3", className)}>
-      <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-amber-100/55">
-        <MaterialSymbol className="text-base text-kmt-gold" name={icon} />
+    <div className={cn("rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-log)] px-4 py-3", className)}>
+      <dt className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--kmt-assistant-muted)]">
+        <MaterialSymbol className="text-base text-[var(--kmt-public-gold)]" name={icon} />
         {label}
       </dt>
-      <dd className="mt-2 break-words text-base font-semibold leading-7 text-white">
+      <dd className="mt-2 break-words text-base font-semibold leading-7 text-[var(--kmt-assistant-text)]">
         <bdi dir="auto">{value}</bdi>
       </dd>
     </div>
@@ -1082,9 +1239,9 @@ function PaymentReviewItem({ icon, label, value, className }: { icon: string; la
 
 function TypingIndicator({ label }: { label: string }) {
   return (
-    <div className="flex items-end gap-2 text-slate-300">
+    <div className="flex items-end gap-2 pt-1 text-[var(--kmt-assistant-muted)]">
       <KmtBrandLogo label="" shape="circle" size="sm" variant="mark" />
-      <div className="flex items-center gap-2 rounded-2xl rounded-es-sm border border-white/10 bg-white/[0.05] px-4 py-3 text-xs">
+      <div className="flex items-center gap-2 rounded-2xl rounded-es-sm border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] px-4 py-3 text-xs">
         <span>{label}</span>
         <span className="flex gap-1" aria-hidden="true">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-kmt-gold" />

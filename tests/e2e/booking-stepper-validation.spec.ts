@@ -26,7 +26,9 @@ test.describe("consultation booking chat", () => {
     await expect(page.getByTestId("booking-chat-shell")).toBeVisible();
     await expect(page.getByTestId("booking-chat-composer")).toBeVisible();
     await expect(page.getByTestId("booking-chat-log")).toHaveClass(/kmt-chat-scrollbar/);
-    await expect(page.getByTestId("booking-trust-rail")).toBeVisible();
+    // Greeting + language prompt open the conversation; no external rail.
+    await expect(page.getByTestId("booking-chat-log")).toContainText("أستطيع مساعدتك في حجز استشارة");
+    await expect(page.getByTestId("booking-trust-rail")).toHaveCount(0);
     await expect(page.getByTestId("booking-language-choice")).toBeVisible();
 
     await page.getByTestId("booking-language-ar").click();
@@ -42,7 +44,9 @@ test.describe("consultation booking chat", () => {
     expect(Math.abs(pageScrollAfterSubmit - pageScrollBeforeSubmit)).toBeLessThanOrEqual(2);
 
     await page.getByTestId("booking-quick-book").click();
-    await expect(page.getByTestId("booking-quick-actions")).toHaveCount(0);
+    // Booking starts: intent chips collapse, contextual matter chips appear.
+    await expect(page.getByTestId("booking-quick-book")).toHaveCount(0);
+    await expect(page.getByTestId("booking-matter-chip").first()).toBeVisible();
     await expect(page.getByTestId("booking-chat-step-card")).toHaveCount(0);
     await expect(chat.locator('input[name="fullName"]')).toHaveCount(0);
     await expect(chat.locator('input[name="phone"]')).toHaveCount(0);
@@ -50,6 +54,39 @@ test.describe("consultation booking chat", () => {
     await expect(chat.locator("#booking-consent")).toHaveCount(0);
 
     expect(consoleErrors).toEqual([]);
+  });
+
+  test("guides matter selection inside the conversation", async ({ page }) => {
+    await page.route("**/api/public/consultations/assistant", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          data: {
+            message: "تم.",
+            draft: { serviceCategory: "corporate-business-services", preferredMode: "ONLINE" }
+          }
+        })
+      });
+    });
+
+    await page.goto("/ar/book-consultation", { waitUntil: "domcontentloaded" });
+    await expect(page.getByTestId("booking-stepper")).toHaveAttribute("data-hydrated", "true");
+    await page.getByTestId("booking-language-ar").click();
+
+    // Intent question + what-next info live inside the same console.
+    const log = page.getByTestId("booking-chat-log");
+    await expect(log).toContainText("كيف يمكننا مساعدتك اليوم؟");
+    await expect(log).toContainText("ما الذي يحدث بعد ذلك");
+
+    await page.getByTestId("booking-quick-book").click();
+    const matter = page.getByTestId("booking-matter-chip");
+    await expect(matter).toHaveCount(4);
+
+    // Selection is recorded as a user message; options collapse.
+    await matter.nth(1).click();
+    await expect(matter).toHaveCount(0);
+    await expect(log).toContainText("الشركات والعقود التجارية");
   });
 
   test("hides quick actions after the second free-text message", async ({ page }) => {

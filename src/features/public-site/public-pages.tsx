@@ -6,11 +6,9 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
-import { BlurFade } from "@/components/ui/blur-fade";
 import { FocusCards } from "@/components/ui/focus-cards";
 import { canonicalPublicServiceSlug, findPublicService, getPublicContent, navForPath } from "@/content/public-content";
 import { ConsultationBookingChatFromQuery } from "@/features/public-site/booking-query-client";
-import { BookingSupportPanel } from "@/features/public-site/booking-support-panel";
 import { ContactForm } from "@/features/public-site/contact-form";
 import { DirectoryFilter } from "@/features/public-site/directory-filter";
 import { PolicyToc } from "@/features/public-site/policy-toc";
@@ -28,7 +26,6 @@ import { ReadingProgress } from "@/components/motion-ui/reading-progress";
 import { Reveal } from "@/components/motion-ui/reveal";
 import { StickyScroll } from "@/components/ui/sticky-scroll-reveal";
 import {
-  AfterSubmitStrip,
   BookingFlowHeader,
   CapabilityRows,
   DetailCta,
@@ -965,23 +962,19 @@ export async function BookConsultationPageView({ locale }: { locale: PublicLocal
         eyebrow={copy.heroEyebrow}
         title={chatCopy.heroTitle}
         description={chatCopy.heroDescription}
-        steps={[chatCopy.progressContact, chatCopy.progressDetails, chatCopy.progressSlot, chatCopy.progressPayment]}
         locale={locale}
       />
-      <PublicSection
-        eyebrow={copy.sectionEyebrow}
-        title={chatCopy.sectionTitle}
-        description={chatCopy.sectionDescription}
-      >
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-          <Suspense fallback={<div aria-hidden="true" className={cn(publicPanel, "min-h-[36rem] rounded-[1.75rem] border-kmt-gold/35 bg-black/30")} />}>
-            <ConsultationBookingChatFromQuery locale={locale} />
-          </Suspense>
-          <BookingSupportPanel copy={chatCopy} locale={locale} />
-        </div>
-        <BlurFade className="kmt-blur-fade mt-6" direction="up">
-          <AfterSubmitStrip title={copy.afterSubmitTitle} steps={[...copy.afterSubmitSteps]} />
-        </BlurFade>      </PublicSection>
+      {/*
+        One centered assistant console (64rem ≈ 1024px workspace): compact
+        intro above, the Consultation Assistant, footer below. No side
+        panels, no external progress, no after-submit rail — everything
+        operational lives inside the assistant.
+      */}
+      <div className="mx-auto w-full max-w-[64rem] px-4 py-10 sm:px-6 md:py-14 lg:px-10">
+        <Suspense fallback={<div aria-hidden="true" className={cn(publicPanel, "min-h-[32rem] rounded-[1.75rem] border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-shell)]")} />}>
+          <ConsultationBookingChatFromQuery locale={locale} />
+        </Suspense>
+      </div>
     </PublicShell>
   );
 }

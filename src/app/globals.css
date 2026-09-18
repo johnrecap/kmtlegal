@@ -97,6 +97,19 @@
   --kmt-gold-border: rgb(208 160 72 / 35%);
   --kmt-gold-glow: rgb(208 160 72 / 14%);
   --kmt-gold-text: #eac987;
+  /* Consultation assistant surfaces: full light/dark contract (Phase 11).
+     Light = warm ivory/paper scale; dark = deep-black scale. Every chat
+     surface reads these tokens — no hard-coded black/white in the chat. */
+  --kmt-assistant-shell: #faf7f0;
+  --kmt-assistant-log: #fffdf8;
+  --kmt-assistant-bubble: #ffffff;
+  --kmt-assistant-user: #f3e8d2;
+  --kmt-assistant-input: #ffffff;
+  --kmt-assistant-text: #1c1812;
+  --kmt-assistant-muted: #6b6252;
+  --kmt-assistant-line: rgb(117 90 38 / 25%);
+  --kmt-assistant-chip: #ffffff;
+  --kmt-assistant-avatar: #120d07;
 }
 
 .dark {
@@ -115,6 +128,16 @@
   --kmt-public-dropdown-shadow: 0 32px 80px rgb(0 0 0 / 65%);
   --kmt-public-panel-shadow: 0 24px 80px rgb(0 0 0 / 45%);
   --kmt-public-text-shadow: 0 4px 22px rgb(0 0 0 / 88%);
+  --kmt-assistant-shell: #0a0908;
+  --kmt-assistant-log: #050505;
+  --kmt-assistant-bubble: #14110c;
+  --kmt-assistant-user: #1d150a;
+  --kmt-assistant-input: #100e0c;
+  --kmt-assistant-text: #f5efe3;
+  --kmt-assistant-muted: #a8a094;
+  --kmt-assistant-line: rgb(208 160 72 / 18%);
+  --kmt-assistant-chip: rgb(236 220 190 / 5%);
+  --kmt-assistant-avatar: #120d07;
 }
 
 body {
