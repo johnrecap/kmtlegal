@@ -185,20 +185,13 @@ adds the dock.
 
 ## Phase 6 — Booking stages inside chat
 
-- **Current problem:** stage Tabs work but look like a giant segmented
-  control; must become compact (small labels + animated indicator).
-- **Root cause:** first-pass tab sizing.
-- **Tasks:** compact overrides — list `p-1`, triggers `min-h-8`
-  `text-[0.72rem]` `px-2.5 py-1.5`, keep disabled-status semantics +
-  animated indicator + hint line; verify RTL order + keyboard order.
-- **Component/source used:** Animate UI Radix Tabs (real component).
-- **Files changed:** `consultation-booking-chat.tsx`.
-- **Acceptance criteria:** slim stage row; active pill animates; completed
-  checks; future muted; AR reads 01→04 right-to-left.
-- **Screenshots reviewed:** `test-results/final-qa/` (stage states incl.
-  contact✓ details✓ slot-active).
-- **Status:** COMPLETE (triggers `min-h-8 text-[0.72rem]`, list `p-1`,
-  animated indicator + hint retained, triggers stay disabled-status).
+- **Status:** SUPERSEDED — per directive the visible stepper was removed
+  ENTIRELY (`BookingStageTabs` render + component + chat imports deleted;
+  no CSS hiding, no replacement dots/pills/percentages). Stage state
+  (contact/details/slot/payment) remains internal only; the conversation
+  communicates progress. Verified: source contracts forbid all stepper
+  strings; E2E regression walks 8 states × EN/AR asserting zero step
+  labels/tablist; screenshots before/after language/after first action.
 
 ## Phase 7 — RTL / Arabic
 

@@ -109,6 +109,118 @@ test.describe("consultation booking chat", () => {
     await expect(page.getByTestId("public-floating-dock")).toHaveCount(0);
   });
 
+  test("never renders a booking stepper in any assistant state", async ({ page }) => {
+    const journeys = [
+      {
+        path: "/book-consultation",
+        lang: "booking-language-en",
+        labels: ["Contact", "Details", "Slot", "Payment"],
+        contactText: "John Smith +201001234567",
+        detailsText: "I need a partnership contract reviewed before signing.",
+      },
+      {
+        path: "/ar/book-consultation",
+        lang: "booking-language-ar",
+        labels: ["التواصل", "التفاصيل", "الموعد", "الدفع"],
+        contactText: "أحمد محمد 01001234567",
+        detailsText: "أحتاج مراجعة عقد شراكة قبل التوقيع.",
+      },
+    ] as const;
+
+    for (const journey of journeys) {
+      let calls = 0;
+      await page.unroute("**/api/public/consultations/assistant");
+      await page.route("**/api/public/consultations/assistant", async (route) => {
+        const n = calls++;
+        const draft = {
+          serviceCategory: "corporate-business-services",
+          preferredMode: "ONLINE",
+          fullName: "x",
+          phone: "0100",
+          summary: "01234567890123456789",
+        };
+        const body: Record<string, unknown> = { data: { message: `step-reply-${n}`, draft } };
+        const data = (body.data ?? {}) as Record<string, unknown>;
+        if (n === 3) {
+          data.availableSlots = [
+            { id: "s1", startsAt: "2099-10-01T09:00:00.000Z", endsAt: "2099-10-01T09:30:00.000Z", mode: "ONLINE" },
+            { id: "s2", startsAt: "2099-10-01T11:00:00.000Z", endsAt: "2099-10-01T11:30:00.000Z", mode: "ONLINE" },
+          ];
+          data.slotWindow = { date: "", label: "", timeWindow: "", fromTime: "", toTime: "" };
+        }
+        if (n === 4) {
+          data.readyToConfirm = true;
+          data.readyToCheckout = true;
+          data.paymentReview = {
+            amount: "1500", currency: "EGP", pricingRuleId: "stepper-test",
+            priceVersion: 1, serviceCategory: "corporate-business-services",
+            mode: "ONLINE", label: null,
+          };
+          (draft as Record<string, unknown>).startsAt = "2099-10-01T09:00:00.000Z";
+        }
+        if (n === 5) {
+          data.message = "step-done";
+          data.reference = "CONS-STEP-99";
+          data.appointment = { title: "Consultation", startsAt: "2099-10-01T09:00:00.000Z", status: "PENDING" };
+        }
+        await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+      });
+
+      const shell = page.getByTestId("booking-chat-shell");
+      const assertNoStepper = async () => {
+        await expect(page.getByTestId("booking-stage-tabs")).toHaveCount(0);
+        await expect(shell.locator('[role="tablist"]')).toHaveCount(0);
+        for (const label of journey.labels) {
+          await expect(shell.getByText(label, { exact: true })).toHaveCount(0);
+        }
+      };
+
+      await page.goto(journey.path, { waitUntil: "domcontentloaded" });
+      await expect(page.getByTestId("booking-stepper")).toHaveAttribute("data-hydrated", "true");
+      // STATE 1: initial load.
+      await assertNoStepper();
+
+      // STATE 2/3: language selected.
+      await page.getByTestId(journey.lang).click();
+      await expect(page.getByTestId("booking-quick-actions")).toBeVisible();
+      await assertNoStepper();
+
+      // STATE 4: book consultation selected (contextual matter options).
+      await page.getByTestId("booking-quick-book").click();
+      await expect(page.getByTestId("booking-matter-chip").first()).toBeVisible();
+      await assertNoStepper();
+
+      // STATE 6: contact + details entered.
+      await page.getByTestId("booking-matter-chip").nth(1).click();
+      await page.locator('input[name="chatMessage"]').fill(journey.contactText);
+      await page.getByTestId("booking-chat-composer").locator('button[type="submit"]').click();
+      await expect(page.getByText("step-reply-2", { exact: false }).first()).toBeVisible();
+      await page.locator('input[name="chatMessage"]').fill(journey.detailsText);
+      await page.getByTestId("booking-chat-composer").locator('button[type="submit"]').click();
+      await expect(page.getByText("step-reply-3", { exact: false }).first()).toBeVisible();
+      await assertNoStepper();
+
+      // STATE 7/8: slot + payment stages (confirm row + review panel).
+      await expect(page.getByTestId("booking-slot-choice-panel")).toBeVisible();
+      await page.getByTestId("booking-slot-chip").first().click();
+      await expect(page.getByTestId("booking-confirm-booking")).toBeVisible();
+      await expect(page.getByTestId("booking-payment-review")).toBeVisible();
+      await assertNoStepper();
+
+      // Confirmation + after-submit.
+      await page.getByTestId("booking-confirm-booking").click();
+      await expect(page.getByText("CONS-STEP-99", { exact: false }).first()).toBeVisible();
+      await assertNoStepper();
+
+      // STATE 5: check reference path after a fresh request.
+      await page.getByTestId("booking-new-request").click();
+      await expect(page.getByTestId("booking-quick-inquiry")).toBeVisible();
+      await page.getByTestId("booking-quick-inquiry").click();
+      await expect(page.getByTestId("booking-quick-inquiry")).toHaveCount(0);
+      await assertNoStepper();
+    }
+  });
+
   test("hides quick actions after the second free-text message", async ({ page }) => {
     await page.goto("/ar/book-consultation", { waitUntil: "domcontentloaded" });
 

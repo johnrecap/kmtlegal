@@ -553,9 +553,9 @@ export function StatementBreak({ text, highlight }: { text: string; highlight?: 
 }
 
 /**
- * Booking flow header: a calm, compact tool header, not a photo hero. Stage
- * progress lives ONLY inside the assistant (BookingStageTabs owns state) —
- * no external duplicated progress legend. The supporting sentence
+ * Booking flow header: a calm, compact tool header, not a photo hero. There
+ * is no visual booking progress anywhere outside the conversation itself —
+ * the assistant owns stage state internally. The supporting sentence
  * emphasizes the no-advice boundary with the shared phrase-underline.
  */
 export function BookingFlowHeader({
