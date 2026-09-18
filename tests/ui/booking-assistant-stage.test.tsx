@@ -175,9 +175,14 @@ describe("booking chat stage composition (source contract)", () => {
     // Shell + viewport.
     expect(chatSource).toContain("h-[min(72vh,38rem)]");
     expect(chatSource).toContain("min-h-[30rem]");
-    // Composer pill + send.
+    // Composer pill 48–52px: 40px input/send + 8px vertical + border.
     expect(chatSource).toContain("min-h-10 w-full");
-    expect(chatSource).toContain("h-11 w-11 shrink-0");
+    expect(chatSource).toContain("h-10 w-10 shrink-0");
+    expect(chatSource).toContain("!min-h-0");
+    // Logical 16px text inset shared by input and placeholder.
+    expect(chatSource).toContain("pe-1.5 ps-4");
+    expect(chatSource).toContain("pe-20 ps-4");
+    expect(chatSource).toContain("leading-6");
     // Bubbles: 65–75% width, 15–16px text, tight padding.
     expect(chatSource).toContain("max-w-[72%]");
     expect(chatSource).toContain("text-[0.95rem]");

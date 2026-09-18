@@ -915,7 +915,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
           <PlaceholdersAndVanishInput
             formTestId="booking-chat-composer"
-            formClassName="flex min-w-0 items-center gap-2 rounded-full border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-input)] py-1 pe-1.5 ps-5 transition-colors focus-within:border-kmt-gold"
+            formClassName="flex min-w-0 items-center gap-2 rounded-full border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-input)] py-1 pe-1.5 ps-4 transition-colors focus-within:border-kmt-gold"
             placeholders={composerPlaceholders}
             value={freeMessage}
             onValueChange={setFreeMessage}
@@ -923,12 +923,12 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
             disabled={!chatLocale || isBusy}
             inputName="chatMessage"
             ariaLabel={copy.messageLabel}
-            inputClassName="kmt-vanish-input min-h-10 w-full min-w-0 flex-1 border-0 bg-transparent text-[0.95rem] text-[var(--kmt-assistant-text)] outline-none disabled:text-[var(--kmt-assistant-muted)] focus-visible:!outline-none focus:!ring-0"
-            placeholderClassName="w-full truncate pe-20 text-[0.95rem] text-[var(--kmt-assistant-muted)]"
+            inputClassName="kmt-vanish-input min-h-10 w-full min-w-0 flex-1 border-0 bg-transparent text-[0.95rem] leading-6 text-[var(--kmt-assistant-text)] outline-none disabled:text-[var(--kmt-assistant-muted)] focus-visible:!outline-none focus:!ring-0"
+            placeholderClassName="w-full truncate pe-20 ps-4 text-[0.95rem] leading-6 text-[var(--kmt-assistant-muted)]"
             trailing={
               <Button
                 aria-label={copy.send}
-                className={cn(publicMotionButton, publicMotionCta, "h-11 w-11 shrink-0 rounded-full !px-0")}
+                className={cn(publicMotionButton, publicMotionCta, "h-10 w-10 shrink-0 rounded-full !min-h-0 !px-0")}
                 disabled={!chatLocale || isBusy || !freeMessage.trim()}
                 type="submit"
               >

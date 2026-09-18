@@ -162,6 +162,17 @@ adds the dock.
 - **Status:** COMPLETE.
 - **Measured:** pill 54px, send 44px, placeholder offset 0.0px all
   combos; submit scroll e2e passes (fixed shell + stabilized viewport).
+- **Geometry correction (follow-up):** root causes found in the caller
+  classes, not the component — (a) the placeholder overlay spans the
+  form's full padding box while the placeholder text had no inset-start,
+  so glyphs touched the border (fixed with logical `ps-4` on the
+  placeholder, matching the input's 16px start); (b) the send Button's
+  default `min-h-11` beat `h-10` (different TW groups), holding the pill
+  at 54px (fixed with `!min-h-0` → send 40px, pill 50px). Original
+  Aceternity alignment (`inset-0` + `items-center`) preserved — no top /
+  translate hacks. Final measured: pill 50px, send 40×40, breathing 4px,
+  glyph inset 17px LTR+RTL symmetric, shared 24px line box, submit +
+  vanish intact. Close-ups: `test-results/composer-fix/`.
 
 ## Phase 6 — Booking stages inside chat
 
