@@ -119,6 +119,22 @@
   --kmt-assistant-line: rgb(117 90 38 / 25%);
   --kmt-assistant-chip: #ffffff;
   --kmt-assistant-avatar: #120d07;
+  /* Client portal surfaces: full light/dark contract (Phase 07).
+     Light = warm ivory / legal paper (never sterile white or blue-gray);
+     dark = deep obsidian / near-black preserving the pre-Phase-07 portal
+     identity (#060504 family) with restrained KMT gold. Every client
+     foundation surface reads these tokens — no hard-coded black/white. */
+  --kmt-client-shell: #faf7f0;
+  --kmt-client-surface: #fffdf8;
+  --kmt-client-surface-muted: #f1e9d7;
+  --kmt-client-header: rgb(250 247 240 / 92%);
+  --kmt-client-text: #1c1812;
+  --kmt-client-muted: #6b6252;
+  --kmt-client-gold: #755a26;
+  --kmt-client-gold-strong: #1c1812;
+  --kmt-client-line: rgb(117 90 38 / 22%);
+  --kmt-client-hover: rgb(117 90 38 / 7%);
+  --kmt-client-chip: #ffffff;
 }
 
 .dark {
@@ -147,6 +163,17 @@
   --kmt-assistant-line: rgb(208 160 72 / 18%);
   --kmt-assistant-chip: rgb(236 220 190 / 5%);
   --kmt-assistant-avatar: #120d07;
+  --kmt-client-shell: #060504;
+  --kmt-client-surface: #0b0a08;
+  --kmt-client-surface-muted: #100e0c;
+  --kmt-client-header: rgb(7 6 4 / 95%);
+  --kmt-client-text: #f8f3ea;
+  --kmt-client-muted: #c9c2b4;
+  --kmt-client-gold: #d0a048;
+  --kmt-client-gold-strong: #120d07;
+  --kmt-client-line: rgb(208 160 72 / 16%);
+  --kmt-client-hover: rgb(208 160 72 / 7%);
+  --kmt-client-chip: rgb(236 220 190 / 5%);
 }
 
 body {
@@ -178,20 +205,24 @@ a {
 }
 
 @layer components {
+  /* Client portal theme bridge (Phase 07). Unprefixed rules are the LIGHT
+     theme (warm paper via --kmt-client-* tokens). The duplicated `.dark`
+     rules preserve the pre-Phase-07 dark portal identity byte-for-byte and
+     win by specificity (0,3,0 over 0,2,0). */
   .client-portal-shell {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   .client-portal-shell .client-portal-table {
-    border-color: rgb(255 255 255 / 10%);
-    background: rgb(255 255 255 / 4.5%);
-    color: #f8f3ea;
+    border-color: var(--kmt-client-line);
+    background: var(--kmt-client-surface);
+    color: var(--kmt-client-text);
   }
 
   .client-portal-shell .client-portal-row {
-    border-color: rgb(255 255 255 / 10%);
-    background: rgb(0 0 0 / 15%);
-    color: #f8f3ea;
+    border-color: var(--kmt-client-line);
+    background: var(--kmt-client-surface);
+    color: var(--kmt-client-text);
     box-shadow: none;
   }
 
@@ -200,73 +231,61 @@ a {
   }
 
   .client-portal-shell .client-portal-table thead {
-    background: rgb(255 255 255 / 6%);
-    color: #cbd5e1;
+    background: var(--kmt-client-surface-muted);
+    color: var(--kmt-client-muted);
   }
 
   .client-portal-shell .client-portal-table th,
   .client-portal-shell .client-portal-table td {
-    border-color: rgb(255 255 255 / 10%);
+    border-color: var(--kmt-client-line);
   }
 
   .client-portal-shell .client-portal-table td {
-    color: #f8f3ea;
+    color: var(--kmt-client-text);
   }
 
   .client-portal-shell .client-portal-table tbody {
-    border-color: rgb(255 255 255 / 10%);
+    border-color: var(--kmt-client-line);
   }
 
   .client-portal-shell .client-portal-table tbody > :not([hidden]) ~ :not([hidden]) {
-    border-color: rgb(255 255 255 / 10%);
+    border-color: var(--kmt-client-line);
   }
 
   .client-portal-shell .client-portal-table tbody tr:hover {
-    background: rgb(255 255 255 / 5.5%);
+    background: var(--kmt-client-hover);
   }
 
   .client-portal-shell .client-portal-table a,
   .client-portal-shell .client-portal-row a,
   .client-portal-shell .client-portal-panel a {
-    color: #f0c36d;
-  }
-
-  .client-portal-shell :where(.client-portal-table, .client-portal-panel, .client-portal-row) .text-kmt-ink {
-    color: #f8f3ea;
-  }
-
-  .client-portal-shell :where(.client-portal-table, .client-portal-panel, .client-portal-row) .text-kmt-muted {
-    color: #cbd5e1;
-  }
-
-  .client-portal-shell :where(.client-portal-table, .client-portal-panel, .client-portal-row) .text-kmt-navy {
-    color: #f0c36d;
+    color: var(--kmt-client-gold);
   }
 
   .client-portal-shell .client-portal-panel label {
-    color: #f8f3ea;
+    color: var(--kmt-client-text);
   }
 
   .client-portal-shell .client-portal-panel input,
   .client-portal-shell .client-portal-panel textarea,
   .client-portal-shell .client-portal-panel select {
-    border-color: rgb(255 255 255 / 16%);
-    background: rgb(0 0 0 / 22%);
-    color: #f8f3ea;
-    color-scheme: dark;
+    border-color: var(--kmt-client-line);
+    background: var(--kmt-client-chip);
+    color: var(--kmt-client-text);
+    color-scheme: light;
   }
 
   .client-portal-shell .client-portal-panel select + span {
-    color: #c79a52;
+    color: var(--kmt-client-gold);
   }
 
   .client-portal-shell .client-portal-panel select:focus + span {
-    color: #f0c36d;
+    color: var(--kmt-client-gold);
   }
 
   .client-portal-shell .client-portal-panel select option {
-    background: #090806;
-    color: #f8f3ea;
+    background: var(--kmt-client-chip);
+    color: var(--kmt-client-text);
   }
 
   .client-portal-shell .client-portal-panel select option:checked {
@@ -293,7 +312,7 @@ a {
   .client-portal-shell .client-portal-table-empty {
     border-color: rgb(153 123 68 / 34%);
     background: rgb(153 123 68 / 10%);
-    color: #cbd5e1;
+    color: var(--kmt-client-muted);
   }
 
   .client-portal-shell .kmt-motion-card,
@@ -305,6 +324,137 @@ a {
 
   .client-portal-shell .kmt-motion-card::before,
   .client-portal-shell .kmt-motion-card-beam::after {
+    display: none !important;
+  }
+
+  /* Dark portal identity (pre-Phase-07 values, preserved exactly). */
+  .dark .client-portal-shell {
+    color-scheme: dark;
+  }
+
+  .dark .client-portal-shell .client-portal-table {
+    border-color: rgb(255 255 255 / 10%);
+    background: rgb(255 255 255 / 4.5%);
+    color: #f8f3ea;
+  }
+
+  .dark .client-portal-shell .client-portal-row {
+    border-color: rgb(255 255 255 / 10%);
+    background: rgb(0 0 0 / 15%);
+    color: #f8f3ea;
+    box-shadow: none;
+  }
+
+  .dark .client-portal-shell .client-portal-table table {
+    color: inherit;
+  }
+
+  .dark .client-portal-shell .client-portal-table thead {
+    background: rgb(255 255 255 / 6%);
+    color: #cbd5e1;
+  }
+
+  .dark .client-portal-shell .client-portal-table th,
+  .dark .client-portal-shell .client-portal-table td {
+    border-color: rgb(255 255 255 / 10%);
+  }
+
+  .dark .client-portal-shell .client-portal-table td {
+    color: #f8f3ea;
+  }
+
+  .dark .client-portal-shell .client-portal-table tbody {
+    border-color: rgb(255 255 255 / 10%);
+  }
+
+  .dark .client-portal-shell .client-portal-table tbody > :not([hidden]) ~ :not([hidden]) {
+    border-color: rgb(255 255 255 / 10%);
+  }
+
+  .dark .client-portal-shell .client-portal-table tbody tr:hover {
+    background: rgb(255 255 255 / 5.5%);
+  }
+
+  .dark .client-portal-shell .client-portal-table a,
+  .dark .client-portal-shell .client-portal-row a,
+  .dark .client-portal-shell .client-portal-panel a {
+    color: #f0c36d;
+  }
+
+  .dark .client-portal-shell :where(.client-portal-table, .client-portal-panel, .client-portal-row) .text-kmt-ink {
+    color: #f8f3ea;
+  }
+
+  .dark .client-portal-shell :where(.client-portal-table, .client-portal-panel, .client-portal-row) .text-kmt-muted {
+    color: #cbd5e1;
+  }
+
+  .dark .client-portal-shell :where(.client-portal-table, .client-portal-panel, .client-portal-row) .text-kmt-navy {
+    color: #f0c36d;
+  }
+
+  .dark .client-portal-shell .client-portal-panel label {
+    color: #f8f3ea;
+  }
+
+  .dark .client-portal-shell .client-portal-panel input,
+  .dark .client-portal-shell .client-portal-panel textarea,
+  .dark .client-portal-shell .client-portal-panel select {
+    border-color: rgb(255 255 255 / 16%);
+    background: rgb(0 0 0 / 22%);
+    color: #f8f3ea;
+    color-scheme: dark;
+  }
+
+  .dark .client-portal-shell .client-portal-panel select + span {
+    color: #c79a52;
+  }
+
+  .dark .client-portal-shell .client-portal-panel select:focus + span {
+    color: #f0c36d;
+  }
+
+  .dark .client-portal-shell .client-portal-panel select option {
+    background: #090806;
+    color: #f8f3ea;
+  }
+
+  .dark .client-portal-shell .client-portal-panel select option:checked {
+    background: #997b44;
+    color: #120d07;
+  }
+
+  .dark .client-portal-shell .client-portal-panel select option:disabled {
+    color: #64748b;
+  }
+
+  .dark .client-portal-shell .client-portal-panel input::placeholder,
+  .dark .client-portal-shell .client-portal-panel textarea::placeholder {
+    color: #94a3b8;
+  }
+
+  .dark .client-portal-shell .client-portal-panel input:focus,
+  .dark .client-portal-shell .client-portal-panel textarea:focus,
+  .dark .client-portal-shell .client-portal-panel select:focus {
+    border-color: rgb(153 123 68 / 72%);
+    box-shadow: 0 0 0 3px rgb(153 123 68 / 18%);
+  }
+
+  .dark .client-portal-shell .client-portal-table-empty {
+    border-color: rgb(153 123 68 / 34%);
+    background: rgb(153 123 68 / 10%);
+    color: #cbd5e1;
+  }
+
+  .dark .client-portal-shell .kmt-motion-card,
+  .dark .client-portal-shell .kmt-motion-card-beam {
+    animation: none !important;
+    transform: none !important;
+    transition-property: border-color, background-color, box-shadow !important;
+  }
+
+  .dark .client-portal-shell .kmt-motion-card::before,
+  .dark .client-portal-shell .kmt-motion-card-beam::after {
     display: none !important;
   }
 }

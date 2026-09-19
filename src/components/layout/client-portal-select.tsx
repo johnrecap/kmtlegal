@@ -175,7 +175,7 @@ export function ClientPortalSelect({
 
   return (
     <div ref={rootRef} className={cn("space-y-2", className)}>
-      <label id={labelId} className="block text-sm font-semibold text-white" htmlFor={controlId}>
+      <label id={labelId} className="block text-sm font-semibold text-[var(--kmt-client-text)]" htmlFor={controlId}>
         {label}
       </label>
       <input disabled={disabled} name={name} required={required} type="hidden" value={submittedValue} />
@@ -188,10 +188,10 @@ export function ClientPortalSelect({
           aria-expanded={isOpen}
           aria-haspopup="listbox"
           className={cn(
-            "flex min-h-11 w-full items-center justify-between gap-3 rounded border border-white/15 bg-black/25 px-3 py-2.5 text-start text-base text-stone-50 shadow-none transition-colors",
-            "hover:border-kmt-gold/55 hover:bg-white/[0.045]",
+            "flex min-h-11 w-full items-center justify-between gap-3 rounded border border-[var(--kmt-client-line)] bg-[var(--kmt-client-surface)] px-3 py-2.5 text-start text-base text-[var(--kmt-client-text)] shadow-none transition-colors",
+            "hover:border-kmt-gold/55 hover:bg-[var(--kmt-client-hover)] dark:hover:bg-white/[0.045]",
             "focus:border-kmt-gold/75 focus:outline-none focus:ring-2 focus:ring-kmt-gold/20",
-            disabled ? "cursor-not-allowed border-white/10 bg-white/[0.035] text-slate-500" : undefined
+            disabled ? "cursor-not-allowed border-[var(--kmt-client-line)] bg-[var(--kmt-client-surface-muted)] text-[var(--kmt-client-muted)]" : undefined
           )}
           disabled={disabled}
           type="button"
@@ -199,7 +199,7 @@ export function ClientPortalSelect({
           onKeyDown={handleButtonKeyDown}
         >
           <span className="block min-w-0 flex-1 truncate">{selectedOption?.label}</span>
-          <MaterialSymbol className={cn("text-[22px] text-[#c79a52] transition-transform", isOpen ? "rotate-180" : undefined)} name="expand_more" />
+          <MaterialSymbol className={cn("text-[22px] text-[var(--kmt-client-gold)] transition-transform", isOpen ? "rotate-180" : undefined)} name="expand_more" />
         </button>
         {isOpen ? (
           <ul
@@ -207,7 +207,7 @@ export function ClientPortalSelect({
             id={listboxId}
             aria-activedescendant={activeIndex >= 0 ? `${controlId}-option-${activeIndex}` : undefined}
             aria-labelledby={labelId}
-            className="absolute inset-x-0 top-[calc(100%+0.4rem)] z-50 max-h-64 overflow-y-auto rounded border border-kmt-gold/35 bg-[#090806] p-1 text-start shadow-[0_18px_58px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.05)] outline-none"
+            className="absolute inset-x-0 top-[calc(100%+0.4rem)] z-50 max-h-64 overflow-y-auto rounded border border-kmt-gold/35 bg-[var(--kmt-client-surface)] p-1 text-start shadow-[0_18px_58px_rgba(0,0,0,0.55),0_0_0_1px_rgba(255,255,255,0.05)] outline-none"
             role="listbox"
             tabIndex={-1}
             onKeyDown={handleListboxKeyDown}
@@ -224,8 +224,8 @@ export function ClientPortalSelect({
                   aria-selected={isSelected}
                   className={cn(
                     "cursor-pointer select-none rounded px-3 py-2 text-sm leading-6 transition-colors",
-                    isSelected ? "bg-kmt-gold text-[#120d07]" : isActive ? "bg-white/10 text-white" : "text-slate-100 hover:bg-white/[0.075]",
-                    option.disabled ? "cursor-not-allowed text-slate-500 hover:bg-transparent" : undefined
+                    isSelected ? "bg-kmt-gold text-[#120d07]" : isActive ? "bg-[var(--kmt-client-hover)] text-[var(--kmt-client-text)] dark:bg-white/10" : "text-[var(--kmt-client-text)] hover:bg-[var(--kmt-client-hover)] dark:hover:bg-white/[0.075]",
+                    option.disabled ? "cursor-not-allowed text-[var(--kmt-client-muted)] opacity-60 hover:bg-transparent" : undefined
                   )}
                   role="option"
                   onClick={() => chooseOption(option, index)}
@@ -239,7 +239,7 @@ export function ClientPortalSelect({
         ) : null}
       </div>
       {hint ? (
-        <p id={hintId} className="text-sm leading-6 text-slate-300">
+        <p id={hintId} className="text-sm leading-6 text-[var(--kmt-client-muted)]">
           {hint}
         </p>
       ) : null}

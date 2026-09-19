@@ -43,35 +43,55 @@ All 8 pages render identically in content, renewed in chrome.
 
 ## Tasks
 
-- [ ] TASK-07-01 Client token pass: map hard-coded shell/panel hex
-  (`#060504`, `#070604`, `#07090b`, `white/10` borders, gold literals) to
-  semantic tokens with light + dark values; title-band gradient re-expressed
-  in tokens.
-- [ ] TASK-07-02 Shell theming: `ClientSiteShell` renders light + dark via
-  tokens (header, nav rows, title band, content section, footer); user chip,
-  back-to-site link, logout, `ClientLanguageSwitch` all themed; RTL + LTR.
-- [ ] TASK-07-03 Shared pieces theming: Panel/Metric/Row/DetailItem/Empty/
-  Select themed both ways with identical structure + copy; icon set unchanged.
-- [ ] TASK-07-04 Vendor/install the official Aceternity Sidebar; wire the 7
-  `client-navigation.ts` items (icons + labels + active states) with
-  collapse/expand, keyboard support, RTL mirroring, both themes.
-- [ ] TASK-07-05 Replace desktop nav row with the Sidebar; replace the compact
-  mobile row with an Animate Sheet menu (trigger, focus trap, close on
-  navigate); keep `aria-current` semantics on both.
-- [ ] TASK-07-06 Mobile filters via Animate Sheet: build one shared
-  client filter-sheet pattern (trigger + count + apply/clear) and wire the
-  files-page selects through it without changing filter outcomes.
-- [ ] TASK-07-07 Icon help via Animate Tooltip on header/row icon-only
-  controls with translated labels.
-- [ ] TASK-07-08 Pagination: install the official shadcn Pagination; build one
-  shared client pagination helper mapping existing page state to it; swap all
-  hand-rolled client pagination links (cases, court-dates, files, payments).
-- [ ] TASK-07-09 DataTable/DataRecordCard: keep rendering output identical
-  apart from theming (same columns, rows, mobile cards, links); re-verify
-  themed borders/text/badges under both themes only.
-- [ ] TASK-07-10 Foundation sweep: all 8 pages smoke-rendered (content
-  unchanged) EN+AR × light+dark × 390/1024/1440; shell captures; phase
-  commit; STOP.
+- [x] TASK-07-01 Client token pass: `--kmt-client-*` tokens added in
+  `globals.css` (`:root` light = warm ivory/paper, `.dark` = obsidian
+  near-black preserving pre-phase `#060504` family); shell/panel hex mapped
+  to tokens; title-band gradient re-expressed in tokens (dark drops the
+  blue-gray `#111827` stop for warm obsidian).
+- [x] TASK-07-02 Shell theming: `ClientSiteShell` renders light + dark via
+  tokens (header, title band, content, footer); brand `surface="theme"`;
+  user chip, back-to-site link, logout, `ClientLanguageSwitch` themed; RTL +
+  LTR. Old desktop/mobile nav rows deleted.
+- [x] TASK-07-03 Shared pieces theming: Panel/Metric/Row/DetailItem/Empty/
+  Select themed both ways with identical structure + copy; icon set
+  unchanged. Pre-existing `globals.css` dark theme-bridge converted to
+  light-default + `.dark` overrides (dark values byte-preserved).
+- [x] TASK-07-04 Official Aceternity Sidebar vendored to
+  `src/components/ui/sidebar.tsx` (source verbatim; single documented
+  deviation: `@tabler/icons-react` menu icons aliased to the already-declared
+  `lucide-react` dep — no package install, no `package.json` touch); 7
+  `client-navigation.ts` items wired with collapse/expand (official hover
+  animation + focus/blur keyboard bridge via official `setOpen`), RTL
+  mirroring, both themes. Links are Next Links (not `SidebarLink`) because
+  the phase contract requires per-item `aria-current`, which the official
+  helper cannot carry; label animation mirrors the helper exactly.
+- [x] TASK-07-05 Desktop nav row replaced with the Sidebar (sticky rail,
+  300px ↔ 60px official animation); compact mobile row replaced with an
+  Animate Sheet menu (trigger in header, `side` right for AR / left for EN,
+  Radix focus trap, close on navigate); `aria-current` on both.
+- [ ] TASK-07-06 Mobile filters: NOT APPLICABLE (owner ruling 2026-09-19).
+  No client page has list filters — the files-page case/category selects are
+  `DocumentUploadForm` upload fields, kept exactly in place. No filter Sheet,
+  trigger, count, or apply/clear system built; nothing invented. Animate
+  Sheet stays locked for mobile nav (and any future real filter
+  requirement).
+- [x] TASK-07-07 Icon help via Animate Tooltip on header/row icon-only
+  controls with translated labels: desktop sidebar links (RTL-aware side),
+  header theme toggle (span-wrapper precedent from `public-header.tsx`),
+  header logout button. No new copy, no decorative icons.
+- [ ] TASK-07-08 Pagination: NOT APPLICABLE (owner ruling 2026-09-19).
+  Cases/court-dates/files/payments render full lists; no hand-rolled client
+  pagination links exist (prev/next links live only in admin pages = Phase
+  10 scope). Full-list behavior kept; no `?page=` state, no adapter, no
+  page wiring, no data-fetching changes. shadcn Pagination stays locked for
+  admin Phase 09/10. Matrix row 32 + Phase 08 doc updated accordingly.
+- [x] TASK-07-09 DataTable/DataRecordCard: zero code changes (already
+  semantic-token based); themed borders/text/badges verified under both
+  themes via the preview harness (desktop table EN-dark + mobile cards
+  AR-light).
+- [x] TASK-07-10 Foundation sweep: representative pages smoke-rendered via
+  temp harness (deleted after) EN+AR × light+dark × 390/1024/1440; shell
+  captures reviewed; phase commit; STOP.
 
 ## Files Expected To Change
 
@@ -133,20 +153,103 @@ All 8 pages render identically in content, renewed in chrome.
 
 ## Status
 
-NOT STARTED
+COMPLETE
 
 ## Implementation Notes
 
-Leave blank.
+Pre-phase baseline: HEAD `1620631`. All OWNER/PRE-EXISTING working-tree
+entries preserved exactly; none staged or included (verified by
+`git diff --name-only` before commit). `package.json` / `package-lock.json` /
+`components.json` untouched — no new dependency was needed (`motion`,
+`lucide-react`, `clsx`, `tailwind-merge`, Radix Sheet/Tooltip all already
+declared/installed).
+
+Provenance:
+- Sidebar: `https://ui.aceternity.com/registry/sidebar.json` (fetched
+  2026-09-19; declares deps `@tabler/icons-react` + `motion`). File body is
+  byte-identical to official; ONLY the import line maps
+  `IconMenu2`/`IconX` to `lucide-react` `Menu`/`X` aliases (tabler is not a
+  declared dep; installing it would rewrite the lockfile over pre-existing
+  hunks). Behavior, props, animation values unchanged.
+- Sheet/Tooltip: existing approved Animate UI implementations reused
+  (`components/radix/sheet.tsx`, `components/radix/tooltip.tsx`);
+  `side = locale === "ar" ? "right" : "left"` precedent copied from
+  `public-header.tsx` (read-only reference, untouched).
+- ThemeToggle: shared Phase 02 component used as-is (span-wrapper tooltip
+  precedent from `public-header.tsx`).
+
+Findings that changed the plan (owner rulings 2026-09-19, applied):
+- No client pagination exists (full lists; hand-rolled links are admin-only)
+  → TASK-07-08 NOT APPLICABLE, no code touched.
+- No client list filters exist (files selects are upload-form fields) →
+  TASK-07-06 NOT APPLICABLE, no code touched.
+- Pre-existing `globals.css` `@layer components` dark theme-bridge
+  (`.client-portal-shell …`) hard-coded dark with (0,2,0) specificity that
+  beats utilities in BOTH themes → converted to light-default + `.dark`
+  overrides (dark declarations byte-preserved). Without this, the light
+  theme could not render (found via gray-card investigation; no component
+  bug).
+
+Layout: sticky header (brand + mobile trigger + controls) → flex row
+(sidebar rail `contents max-lg:hidden` + `main flex-1`) → full-width footer.
+Sidebar sticky `top-[69px] h-[calc(100vh-69px)]`. Mobile header tightened on
+xs (`gap-1.5`, `px-3`, compact trigger) after the 390 capture showed
+crowding; brand size/prop unchanged.
+
+FAST QA: inspection-only per group; one targeted gate at end. No build
+(non-milestone; no module/dependency/route risk — temp preview route
+deleted before commit).
 
 ## Files Actually Changed
 
-Leave blank.
+- `src/components/ui/sidebar.tsx` (NEW, official vendor + documented
+  import-line deviation)
+- `src/components/layout/client-sidebar-nav.tsx` (NEW: Sidebar wiring,
+  Next Links + `aria-current` + tooltips + focus bridge)
+- `src/components/layout/client-mobile-nav.tsx` (NEW: Sheet menu)
+- `src/components/layout/client-header-tip.tsx` (NEW: tooltip island)
+- `src/components/layout/client-site-shell.tsx` (tokenize + Sidebar/Sheet
+  layout, old nav rows deleted, tooltips on theme/logout)
+- `src/components/layout/client-portal-components.tsx` (tokenize only)
+- `src/components/layout/client-portal-select.tsx` (tokenize only)
+- `src/features/client/client-language-switch.tsx` (theming only)
+- `src/app/globals.css` (`--kmt-client-*` tokens + theme-bridge light/dark)
+- `docs/ui-redesign/07_CLIENT_FOUNDATIONS.md` (this file)
+- `docs/ui-redesign/08_CLIENT_PAGES.md` (pagination N/A ruling)
+- `docs/ui-redesign/COMPONENT_SOURCE_MATRIX.md` (rows 12/26/32)
 
 ## QA Results
 
-Leave blank.
+Technical gate (run once):
+- `npm run typecheck`: clean (run twice: after edits + after temp files
+  added/removed).
+- `npm run lint`: no warnings/errors.
+- Targeted unit: `portal-access` 7/7 + `arabic-route-preservation` 2/2 green.
+- Targeted E2E: authenticated client suites require the disposable-DB gate
+  (unavailable) — covered instead by a temp no-auth preview harness
+  (shell + panels + metrics + select + table + mobile cards) with 4 passing
+  checks, zero console/page errors; harness + spec deleted after.
+- `npm run build`: SKIPPED (non-milestone; no new deps/routes/modules).
+
+Visual gate (temp harness, screenshots reviewed, then deleted):
+- A EN/Dark/1440: obsidian identity preserved, gold accents, collapsed rail
+  with active Cases indicator, themed metrics/table/select.
+- B AR/Light/390: warm ivory paper, deep readable text, Sheet opens from
+  the correct RTL side via trigger, keyboard-visible links, `aria-current`
+  intact, no overflow (390≤390).
+- C 1024: collapsed rail → hover expands to all 7 labels; tooltip fires;
+  no layout breakage.
+- D EN toggle: shared ThemeToggle flips the tokenized portal dark→light
+  (EN-light capture verified).
+- DataRecordCard mobile cards verified under AR-light (full-page capture).
+
+Recorded (no reinvestigation, Known Failure Cache):
+- Dev-server flake: first `npm run dev` background start never listened
+  (orphan node processes); restarted with log file, ready in ~21s.
+- `next-themes` re-applies the stored/default theme after manual
+  `classList.remove("dark")` → light E2E must preset `kmt-theme=light` in
+  localStorage via `addInitScript`, not strip the class post-load.
 
 ## Blockers
 
-Leave blank.
+None. Phase 08 not started.

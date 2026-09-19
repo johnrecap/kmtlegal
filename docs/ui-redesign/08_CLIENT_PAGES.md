@@ -4,7 +4,8 @@
 
 Redesign the 8 client pages on the Phase 07 foundation using only the locked
 client components: Sidebar/Sheet/Tooltip shell, kept DataTable +
-DataRecordCard, shadcn Pagination, Accordion for mobile detail groups,
+DataRecordCard (full-list rendering — no pagination per Phase 07 owner
+ruling), Accordion for mobile detail groups,
 Animated List + Vanish Input for the AI assistant (only), native textarea
 for team chat, File Upload for files, Stateful Button for genuine async
 mutations only (profile save; never for semantic navigation links).
@@ -30,15 +31,15 @@ the locked set. AI assistant and human team chat look deliberately different.
 Mobile detail groups collapse via Accordion while desktop panels stay fully
 visible. Uploads go through File Upload; the profile save (a genuine async
 mutation) uses Stateful Button; payment continue/follow/status/receipt
-actions stay semantic navigation links (never buttons); lists paginate
-through shadcn Pagination.
+actions stay semantic navigation links (never buttons); lists keep their current
+full-list rendering (no pagination — see owner ruling below).
 
 ## Component Decisions
 
 | Area | Current | Decision | Locked Component | Library | Official URL |
 |---|---|---|---|---|---|
 | Dashboard/cases/court-dates/payments tables | DataTable + DataRecordCard | KEEP CURRENT | None (local, kept) | — | — |
-| List pagination | shadcn Pagination helper (Phase 07) | KEEP CURRENT | Pagination | shadcn/ui | https://ui.shadcn.com/docs/components/pagination |
+| List pagination | None (full lists; NOT APPLICABLE per Phase 07 owner ruling — no pagination behavior exists to replace; shadcn Pagination stays locked stand-by) | KEEP CURRENT (no pagination introduced) | Pagination | shadcn/ui | https://ui.shadcn.com/docs/components/pagination |
 | Case detail mobile groups | Static stacked panels | REPLACE WITH: Animate UI Accordion | Accordion | Animate UI | https://animate-ui.com/docs/components/radix/accordion |
 | AI assistant log | Plain log | REPLACE WITH: Magic UI Animated List | Animated List | Magic UI | https://magicui.design/docs/components/animated-list |
 | AI assistant composer | Plain Textarea + send | REPLACE WITH: Aceternity Placeholders And Vanish Input | Placeholders And Vanish Input | Aceternity UI | https://ui.aceternity.com/components/placeholders-and-vanish-input |
@@ -53,8 +54,9 @@ through shadcn Pagination.
 
 - [ ] TASK-08-01 Dashboard: renew panels/metrics on Phase 07 pieces; figures,
   links, badges, empty states behavior-identical; tooltips on icon metrics.
-- [ ] TASK-08-02 Cases + court-dates: kept tables re-verified; pagination via
-  shared helper; mobile cards intact; status badges themed.
+- [ ] TASK-08-02 Cases + court-dates: kept tables re-verified; full-list
+  rendering preserved (no pagination per Phase 07 owner ruling); mobile
+  cards intact; status badges themed.
 - [ ] TASK-08-03 Case detail: desktop panels kept fully visible; mobile
   sessions/appointments/documents/payments groups → Accordion; download
   links + invoice figures untouched.

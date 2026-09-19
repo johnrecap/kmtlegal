@@ -49,7 +49,7 @@ export function ClientLanguageSwitch({ locale }: { locale: ClientLocale }) {
     <div>
       <button
         aria-label={`${copy.language}: ${copy.switchTo}`}
-        className="inline-flex min-h-11 items-center justify-center border border-white/15 px-3 text-xs font-semibold text-stone-200 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold disabled:cursor-wait disabled:opacity-60"
+        className="inline-flex min-h-11 items-center justify-center border border-[var(--kmt-client-line)] px-3 text-xs font-semibold text-[var(--kmt-client-text)] transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold disabled:cursor-wait disabled:opacity-60"
         disabled={busy}
         lang={nextLocale}
         onClick={changeLanguage}
