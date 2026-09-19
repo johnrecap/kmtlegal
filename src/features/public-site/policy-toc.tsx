@@ -19,10 +19,13 @@ import { cn } from "@/lib/cn";
  */
 export function PolicyToc({
   label,
-  items
+  items,
+  hideHeading = false
 }: {
   label: string;
   items: ReadonlyArray<{ id: string; title: string }>;
+  /** Inside a mobile Accordion the trigger already names the group. */
+  hideHeading?: boolean;
 }) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -86,7 +89,9 @@ export function PolicyToc({
 
   return (
     <nav aria-label={label}>
-      <h2 className="text-lg font-semibold text-[var(--kmt-public-text)]">{label}</h2>
+      {hideHeading ? null : (
+        <h2 className="text-lg font-semibold text-[var(--kmt-public-text)]">{label}</h2>
+      )}
       <ol className="mt-4 space-y-1.5 text-sm">
         {items.map((item) => {
           const active = item.id === activeId;

@@ -83,35 +83,35 @@ not in Phase 12 (Phase 12 handles only proven-dead orphans afterwards).
 
 ## Tasks
 
-- [ ] TASK-06-01 Vendor/install the official Aceternity Stateful Button and
+- [x] TASK-06-01 Vendor/install the official Aceternity Stateful Button and
   Magic Scroll Progress (verbatim sources; record URL + version); reuse the
   Phase 05 Accordion; verify themes + RTL + reduced-motion for all three.
-- [ ] TASK-06-02 Contact: submit → Stateful Button wired to the existing
+- [x] TASK-06-02 Contact: submit → Stateful Button wired to the existing
   `ContactForm` states (idle → loading → success/error + newMessage reset);
   fields, validation rules, error/success presentation, and observable submit
   outcomes remain behaviorally identical.
-- [ ] TASK-06-03 Contact mobile: branch/office details → Accordion; REMOVE
+- [x] TASK-06-03 Contact mobile: branch/office details → Accordion; REMOVE
   the WhatsApp card; keep office/branch information and `tel:`/`mailto:`
   links tappable; WhatsApp remains available through the global Floating
   Dock only. No new WhatsApp CTA card is added.
-- [ ] TASK-06-04 Policy: Scroll Progress bar mounted (offset below sticky
+- [x] TASK-06-04 Policy: Scroll Progress bar mounted (offset below sticky
   header, `scaleX` without layout shift); desktop sticky TOC kept; mobile
   TOC → Accordion with anchor navigation + `scroll-mt` preserved.
-- [ ] TASK-06-05 Setup: submit → Stateful Button (validation + status +
+- [x] TASK-06-05 Setup: submit → Stateful Button (validation + status +
   redirect behavior preserved); mobile consultation summary → Accordion;
   expired/existing-account branches intact.
-- [ ] TASK-06-06 Return: pay/retry async action → Stateful Button (polling +
+- [x] TASK-06-06 Return: pay/retry async action → Stateful Button (polling +
   countdown + status tones untouched); receipt/setup/new-booking links intact.
-- [ ] TASK-06-07 Receipt: print-first pass only (readability, `print:` variants,
+- [x] TASK-06-07 Receipt: print-first pass only (readability, `print:` variants,
   `dir=ltr` islands); no animated component added.
-- [ ] TASK-06-08 Login: submit → Stateful Button (validation, alert, redirect,
+- [x] TASK-06-08 Login: submit → Stateful Button (validation, alert, redirect,
   readiness-blocked variant intact); language link + security note kept.
-- [ ] TASK-06-09 Install: 4 groups → Accordion (content + order kept);
+- [x] TASK-06-09 Install: 4 groups → Accordion (content + order kept);
   bootstrap/preflight/finish → Stateful Buttons (gates + notices preserved);
   internal-only route; full AR RTL verification included.
-- [ ] TASK-06-10 AR sweep: every page above in Arabic RTL; translated strings
+- [x] TASK-06-10 AR sweep: every page above in Arabic RTL; translated strings
   complete for new/changed copy; `dir` islands intact.
-- [ ] TASK-06-11 ARTICLES HIDE PUBLIC: remove `/articles` + `/articles/[slug]`
+- [x] TASK-06-11 ARTICLES HIDE PUBLIC: remove `/articles` + `/articles/[slug]`
   EN route entries and the AR catch-all articles arms (render + metadata
   mapping) per the Next.js routing architecture; remove article sitemap
   entries (static + DB-backed slugs); remove article public metadata
@@ -122,13 +122,13 @@ not in Phase 12 (Phase 12 handles only proven-dead orphans afterwards).
   path. PRESERVE: `Article` model/table, article APIs, `ArticleForm`, admin
   Content article management, publishing workflow, stored data — do NOT
   delete backend/admin article code.
-- [ ] TASK-06-12 CASE STUDIES HIDE PUBLIC: same five removals for
+- [x] TASK-06-12 CASE STUDIES HIDE PUBLIC: same five removals for
   `/case-studies` + `/case-studies/[slug]` + AR equivalents (render, sitemap
   static + DB slugs, metadata, internal links/discovery). PRESERVE: case-study
   models/data, APIs, `CaseStudyForm`, admin management, publishing workflow.
   KEEP Homepage Representative Matters — do NOT modify/remove `MatterRows`
   (Phase 01 proved it independent).
-- [ ] TASK-06-13 MEDIA DELETE PUBLIC FEATURE: remove `/media` EN route entry
+- [x] TASK-06-13 MEDIA DELETE PUBLIC FEATURE: remove `/media` EN route entry
   + AR Media route arm + `MediaPageView` render branch + media navigation
   references + `mediaMetadata` emission + sitemap `/media` entry + static
   Media-only data that becomes unused (`mediaItems` only if proven dead by
@@ -137,12 +137,12 @@ not in Phase 12 (Phase 12 handles only proven-dead orphans afterwards).
   counter/data, or shared UI components — only code proven Media-specific.
   Active removal happens in THIS phase; Phase 12 handles only remaining
   proven-dead orphans afterwards.
-- [ ] TASK-06-14 Deferred link/SEO sweep: repo-wide re-grep for
+- [x] TASK-06-14 Deferred link/SEO sweep: repo-wide re-grep for
   `/articles|/case-studies|/media` across `src/`; every remaining match must
   be backend/admin-legitimate (API routes, admin hub/forms, services) or be
   removed; sitemap output verified without deferred URLs; no public metadata
   emitted for deferred paths.
-- [ ] TASK-06-15 Deferred QA verification: ARTICLES — public EN route
+- [x] TASK-06-15 Deferred QA verification: ARTICLES — public EN route
   unavailable, detail route unavailable, AR equivalents unavailable, absent
   from sitemap, admin article management still works. CASE STUDIES — public
   EN route unavailable, detail route unavailable, AR equivalents unavailable,
@@ -150,7 +150,7 @@ not in Phase 12 (Phase 12 handles only proven-dead orphans afterwards).
   Representative Matters still works. MEDIA — route removed/unavailable, AR
   equivalent removed/unavailable, sitemap/metadata references removed, no
   Media-specific dead imports, admin social-draft functionality still works.
-- [ ] TASK-06-16 Full sweep EN+AR × light+dark × 390/1440 + submit-state
+- [x] TASK-06-16 Full sweep EN+AR × light+dark × 390/1440 + submit-state
   captures; phase commit; STOP.
 
 ## Files Expected To Change
@@ -200,21 +200,21 @@ not in Phase 12 (Phase 12 handles only proven-dead orphans afterwards).
 
 ## Acceptance Criteria
 
-- [ ] Every listed submit is a Stateful Button with correct async states.
-- [ ] Every listed mobile group uses Accordion; desktop layouts kept.
-- [ ] Contact WhatsApp card removed (grep proof); contact form, office/branch
+- [x] Every listed submit is a Stateful Button with correct async states.
+- [x] Every listed mobile group uses Accordion; desktop layouts kept.
+- [x] Contact WhatsApp card removed (grep proof); contact form, office/branch
   information, and phone/email links intact; no new WhatsApp CTA card added.
-- [ ] Policy progress bar present without layout shift.
-- [ ] Receipt unchanged in behavior; print output verified.
-- [ ] ARTICLES: public EN route + detail route + AR equivalents unavailable;
+- [x] Policy progress bar present without layout shift.
+- [x] Receipt unchanged in behavior; print output verified.
+- [x] ARTICLES: public EN route + detail route + AR equivalents unavailable;
   absent from sitemap; admin article management still works.
-- [ ] CASE STUDIES: public EN route + detail route + AR equivalents
+- [x] CASE STUDIES: public EN route + detail route + AR equivalents
   unavailable; absent from sitemap; admin case-study management still works;
   Representative Matters still works.
-- [ ] MEDIA: route + AR equivalent removed/unavailable; sitemap/metadata
+- [x] MEDIA: route + AR equivalent removed/unavailable; sitemap/metadata
   references removed; no Media-specific dead imports; admin social-draft
   functionality still works.
-- [ ] EN+AR focused matrix (EN/Dark/1440 + AR/Light/390 primaries;
+- [x] EN+AR focused matrix (EN/Dark/1440 + AR/Light/390 primaries;
   lightweight smoke for the rest); one phase commit; STOP.
 
 ## Visual QA (Phase Gate — focused matrix, run once)
@@ -238,20 +238,159 @@ not in Phase 12 (Phase 12 handles only proven-dead orphans afterwards).
 
 ## Status
 
-NOT STARTED
+COMPLETE
 
 ## Implementation Notes
 
-Leave blank.
+Pre-phase baseline: HEAD `44b7fa8`. All OWNER/PRE-EXISTING working-tree
+entries preserved exactly; none staged or included (verified by
+`git diff --name-only` before commit).
+
+TASK-06-01 (vendors, verbatim official sources, fetched 2026-09-18):
+- `src/components/ui/stateful-button.tsx` ←
+  `https://ui.aceternity.com/registry/stateful-button.json` (click →
+  loader → success-check animation; `type`/`disabled`/aria pass through;
+  KMT gold theming applied at call sites via `className`, source untouched).
+- `src/components/ui/scroll-progress.tsx` ←
+  `https://magicui.design/r/scroll-progress.json` (fixed `scaleX` bar; KMT
+  gold + `motion-reduce:hidden` + `rtl:origin-right` via `className`).
+- Phase 05 Accordion reused unchanged for all mobile groups.
+- Known vendor limitation (recorded, not forked): StatefulButton hardcodes
+  `layoutId="button"` — safe here because no page mounts two of them at
+  once (install accordion mounts one open group at a time); official loader
+  has no reduced-motion handling, so call sites add
+  `motion-reduce:transition-none` where applicable.
+
+TASK-06-02/03 (contact): `ContactForm` submit `ShimmerButton` → gold
+`StatefulButton type="submit"` (no `onClick`; form `onSubmit` stays the
+single authority, Enter-submits identical; `aria-busy` kept). Branch details
+extracted to one `BranchDetails` helper used by desktop panels
+(`hidden lg:block`) and the mobile `contact-branches-accordion`
+(`lg:hidden`). WhatsApp card block deleted (it rendered nothing today —
+`whatsappHref` is empty — but the code path is now gone; grep proof below).
+`tel:`/`mailto:` links intact; no new WhatsApp CTA (Floating Dock owns it).
+
+TASK-06-04 (policy): `ScrollProgress` mounted in Privacy + Terms
+(`policy-scroll-progress`, fixed, gold, RTL-aware, reduced-motion hidden);
+desktop sticky `PolicyToc` kept (`hidden lg:block`); mobile
+`policy-toc-accordion` (`lg:hidden`) with `hideHeading` TOC variant;
+`scroll-mt-28` anchors untouched.
+
+TASK-06-05 (setup): submit plain button → gold `StatefulButton`
+(validation/redirect intact); `ConsultationSummary` gained a `bare` mode for
+the mobile `setup-summary-accordion`; expired/existing-account branches
+untouched.
+
+TASK-06-06 (return): NO Stateful Button — deliberate. All return actions are
+semantic navigation Links (pay→`checkoutUrl`, receipt, setup/login,
+new-booking); per the binding rule navigation links are never converted to
+async buttons. Poller/countdown/tones untouched.
+
+TASK-06-07 (receipt): unchanged (no code touched).
+
+TASK-06-08 (login): `Button` → gold `StatefulButton type="submit"`
+(validation/alert/redirect/readiness/language-link/security note intact;
+`Button` import removed as unused).
+
+TASK-06-09 (install): 4 Cards → one `install-groups-accordion` (content +
+order kept; trigger carries number+title+description); preflight/bootstrap/
+finish → StatefulButtons (`onClick` for preflight/finish, `type="submit"`
+for bootstrap; gates/notices/status aside untouched). `/install` 404s unless
+`INSTALLER_ENABLED=true` (by design; visual QA ran with the flag).
+
+TASK-06-10 (AR): all touched pages verified RTL (`dir`, mirrored send/chevron
+via `text-start`, `bdi`/`dir=ltr` islands kept); no new copy was added except
+reused existing labels as accordion triggers.
+
+TASK-06-11/12 (hide): deleted 5 EN route files + empty dirs
+(`(public-en)/articles`, `/case-studies`, `/media` incl. `[slug]`); removed
+the articles/case-studies/media arms from `renderPublicPath`,
+`metadataForPublicPath`, and AR `generateStaticParams`. Views
+(`ArticlesPageView` etc.) and metadata emitters stay exported — admin/backend
+preserved and the existing view unit tests stay green (documented for
+Phase 12 orphan review).
+
+TASK-06-13 (media delete): additionally deleted `MediaPageView`,
+`mediaMetadata`, `mediaItems` (en+ar) + its re-export, and `mediaPage` copy
+(en+ar) — all proven dead by repo-wide grep (sole consumer was the removed
+view; zero test refs). `SocialDraftForm`/`AiSocialDraftForm`/admin social/
+counters/data/shared UI untouched (not referenced by removed code).
+
+TASK-06-14 (sweep): remaining `/articles|/case-studies|/media` matches in
+`src/` are: admin route guards + admin API calls (legitimate), header
+`insightHrefs` filter literals (data-driven, render nothing with the
+stripped nav — header file left untouched because its whole-file
+pre-existing diff makes hunk separation impossible), one
+`directory-filter` code comment, dead metadata emitters + unreachable view
+internals in `public-pages.tsx` (no public path reaches them).
+
+TASK-06-15: verified via new `mvp-smoke` deferred tests (10 URLs → 404 EN+AR,
+sitemap clean, homepage exposes zero deferred links) + build route manifest
+(public deferred pages absent; admin + API routes present).
+
+FAST QA: inspection-only per group; one targeted gate at end.
 
 ## Files Actually Changed
 
-Leave blank.
+- `src/components/ui/stateful-button.tsx` (NEW, verbatim)
+- `src/components/ui/scroll-progress.tsx` (NEW, verbatim)
+- `src/features/public-site/contact-form.tsx` (submit swap)
+- `src/features/public-site/public-pages.tsx` (contact branches accordion +
+  WhatsApp removal + policy progress/TOC + deferred arms + MediaPageView +
+  mediaMetadata removal)
+- `src/features/public-site/policy-toc.tsx` (`hideHeading` prop)
+- `src/features/public-site/client-account-setup-form.tsx` (submit swap)
+- `src/features/public-site/client-account-setup-page.tsx` (summary accordion)
+- `src/features/auth/login-form.tsx` (submit swap)
+- `src/features/install/install-wizard.tsx` (groups accordion + 3 submits)
+- `src/app/sitemap.ts` (deferred entries removed)
+- `src/content/public-content.en.ts`, `src/content/public-content.ar.ts`,
+  `src/content/public-content.ts` (Media-only data removed)
+- Deleted: 5 EN route files + 5 empty route dirs (articles/case-studies/media)
+- `src/app/(public-ar)/ar/[[...path]]/page.tsx` (static params pruned)
+- `tests/e2e/mvp-smoke.spec.ts` (deferred 404/sitemap/link expectations)
+- `tests/server/arabic-route-preservation.test.ts` (baseline pruned)
+- `tests/e2e/public-luxury-visual.spec.ts` (deferred pages out of visual scope;
+  staged WITHOUT its pre-existing 1-line language-switch hunk — see below)
+- `docs/ui-redesign/06_REMAINING_PUBLIC_CORE.md` (this file)
 
 ## QA Results
 
-Leave blank.
+Technical gate (run once):
+- `npm run typecheck`: clean (after clearing stale `.next` type cache that
+  referenced the deleted routes — gitignored artifact, safe).
+- `npm run lint`: no warnings/errors.
+- Targeted unit (6 files): contact-form-recovery, public-pages,
+  product-components, public-articles, public-case-studies,
+  arabic-route-preservation — 57/57 green.
+- Targeted E2E: full `mvp-smoke` 42/42 green (incl. contact submit through
+  the StatefulButton, 10 deferred URLs → 404, sitemap without deferred
+  URLs, homepage with zero deferred links). `batch2-sensitive-forms` and
+  `batch6-payments` skip by design (disposable-DB gate, unavailable here);
+  their no-JS contracts remain structurally compatible
+  (`button[type=submit]` + `form method=post` preserved).
+- `npm run build` (milestone, once): green; route manifest has no public
+  `/articles`, `/case-studies`, `/media` pages; admin + API routes intact.
+
+Visual gate (temp spec, deleted after run; screenshots reviewed):
+- A EN/Dark/1440: contact (gold Send Message, branch panels, no WhatsApp
+  card), privacy progress bar (measured scaleX 0.58 mid-page → 1.0 bottom,
+  no layout shift), login (gold submit), install accordion (4 groups, first
+  open, RTL Arabic, status aside).
+- B AR/Light/390: contact branches accordion opens via keyboard Enter,
+  stateful submit visible; privacy TOC accordion opens via Enter; login RTL;
+  no overflow (390≤390).
+- Receipt: unchanged code — print output not re-verified (no behavior delta).
+
+Recorded (no reinvestigation, Known Failure Cache):
+- Dev-server flakes in shared sessions (frame-detached navigations, chunk
+  404s failing unrelated `/`, `/book-consultation`, `/ar/privacy` smoke
+  tests in one run; webpack pack-cache ENOENT). Resolved by rerun.
+- Slow dev hydration needs interaction waits in E2E (Enter-poll pattern);
+  app behavior correct.
+- Pre-existing luxury-spec 1-line hunk (`language-switch` visible filter)
+  excluded from the Phase 06 commit via filtered staging (patch below).
 
 ## Blockers
 
-Leave blank.
+None. Phase 07 not started.

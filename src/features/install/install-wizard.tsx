@@ -1,7 +1,14 @@
 "use client";
 
 import { type FormEvent, useEffect, useState } from "react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, TextInput } from "@/components/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, TextInput } from "@/components/ui";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/animate-ui/components/radix/accordion";
 import { useHydrated } from "@/lib/use-hydrated";
 import { booleanDisplayLabel, localizeApiMessage } from "@/lib/ui-copy";
 
@@ -193,14 +200,27 @@ export function InstallWizard({ initialToken }: InstallWizardProps) {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <div className="space-y-5">
-          <Card>
-            <CardHeader>
-              <CardTitle>1. نوع الاستضافة</CardTitle>
-              <CardDescription>اختر المسار الذي يطابق طريقة تشغيل هذا الخادم.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-3">
+        {/*
+          Installation groups ride one Animate UI Accordion (content + order
+          kept); async actions ride Aceternity Stateful Buttons. Gates,
+          validation, notices, and the status aside are untouched.
+        */}
+        <Accordion
+          className="space-y-5"
+          data-testid="install-groups-accordion"
+          type="single"
+          collapsible
+          defaultValue="hosting"
+        >
+          <AccordionItem value="hosting" className="rounded-lg border border-kmt-border bg-white px-5 py-1">
+            <AccordionTrigger className="text-start hover:no-underline">
+              <span>
+                <span className="block text-base font-semibold text-kmt-ink">1. نوع الاستضافة</span>
+                <span className="mt-1 block text-sm font-normal text-kmt-muted">اختر المسار الذي يطابق طريقة تشغيل هذا الخادم.</span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="grid gap-3 pb-5">
                 {hostingModes.map((mode) => (
                   <label
                     key={mode.value}
@@ -225,36 +245,42 @@ export function InstallWizard({ initialToken }: InstallWizardProps) {
                   </label>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </AccordionContent>
+          </AccordionItem>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>2. رمز التثبيت</CardTitle>
-              <CardDescription>سكربت التثبيت يعرض هذا الرمز مرة واحدة فقط. احتفظ به بشكل خاص.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <TextInput
-                autoComplete="off"
-                label="رمز إعداد التثبيت"
-                name="token"
-                onChange={(event) => setToken(event.target.value)}
-                placeholder="الصق رمز التثبيت"
-                value={token}
-              />
-              <Button disabled={!token || isBusy} loading={isBusy} onClick={runPreflight} type="button">
-                تشغيل فحص الجاهزية
-              </Button>
-            </CardContent>
-          </Card>
+          <AccordionItem value="token" className="rounded-lg border border-kmt-border bg-white px-5 py-1">
+            <AccordionTrigger className="text-start hover:no-underline">
+              <span>
+                <span className="block text-base font-semibold text-kmt-ink">2. رمز التثبيت</span>
+                <span className="mt-1 block text-sm font-normal text-kmt-muted">سكربت التثبيت يعرض هذا الرمز مرة واحدة فقط. احتفظ به بشكل خاص.</span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="space-y-4 pb-5">
+                <TextInput
+                  autoComplete="off"
+                  label="رمز إعداد التثبيت"
+                  name="token"
+                  onChange={(event) => setToken(event.target.value)}
+                  placeholder="الصق رمز التثبيت"
+                  value={token}
+                />
+                <StatefulButton disabled={!token || isBusy} onClick={runPreflight} type="button">
+                  تشغيل فحص الجاهزية
+                </StatefulButton>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>3. بيانات المكتب ومدير النظام الأول</CardTitle>
-              <CardDescription>يتم إنشاء الحساب الأول مرة واحدة فقط. لا توجد خطوة TOTP في هذه النسخة.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form className="grid gap-4" method="post" onSubmit={bootstrap}>
+          <AccordionItem value="admin" className="rounded-lg border border-kmt-border bg-white px-5 py-1">
+            <AccordionTrigger className="text-start hover:no-underline">
+              <span>
+                <span className="block text-base font-semibold text-kmt-ink">3. بيانات المكتب ومدير النظام الأول</span>
+                <span className="mt-1 block text-sm font-normal text-kmt-muted">يتم إنشاء الحساب الأول مرة واحدة فقط. لا توجد خطوة TOTP في هذه النسخة.</span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <form className="grid gap-4 pb-5" method="post" onSubmit={bootstrap}>
                 <div className="grid gap-4 md:grid-cols-2">
                   <TextInput disabled={!isHydrated || isBusy || Boolean(blockedReason)} label="اسم المكتب" name="firmName" required />
                   <TextInput disabled={!isHydrated || isBusy || Boolean(blockedReason)} label="البريد العام للمكتب" name="publicEmail" type="email" />
@@ -268,26 +294,32 @@ export function InstallWizard({ initialToken }: InstallWizardProps) {
                   <TextInput autoComplete="new-password" disabled={!isHydrated || isBusy || Boolean(blockedReason)} label="كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="password" required type="password" />
                   <TextInput autoComplete="new-password" disabled={!isHydrated || isBusy || Boolean(blockedReason)} label="تأكيد كلمة المرور" minLength={MIN_PASSWORD_LENGTH} name="confirmPassword" required type="password" />
                 </div>
-                <Button disabled={!isHydrated || isBusy || Boolean(blockedReason)} loading={isBusy} type="submit">
-                  إنشاء مدير النظام الأول
-                </Button>
+                <div>
+                  <StatefulButton disabled={!isHydrated || isBusy || Boolean(blockedReason)} type="submit">
+                    إنشاء مدير النظام الأول
+                  </StatefulButton>
+                </div>
               </form>
-            </CardContent>
-          </Card>
+            </AccordionContent>
+          </AccordionItem>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>4. قفل معالج التثبيت</CardTitle>
-              <CardDescription>بعد إنشاء مدير النظام، اقفل معالج التثبيت قبل استخدام لوحة المكتب.</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-wrap items-center gap-3">
-              <Button disabled={isBusy || (!superAdminEmail && !status?.hasActiveSuperAdmin) || isFinished} loading={isBusy} onClick={finish} type="button" variant="secondary">
-                قفل معالج التثبيت
-              </Button>
-              {superAdminEmail ? <span className="text-sm text-kmt-muted">تم إنشاء الحساب: <span className="ltr inline-block">{superAdminEmail}</span></span> : null}
-            </CardContent>
-          </Card>
-        </div>
+          <AccordionItem value="finish" className="rounded-lg border border-kmt-border bg-white px-5 py-1">
+            <AccordionTrigger className="text-start hover:no-underline">
+              <span>
+                <span className="block text-base font-semibold text-kmt-ink">4. قفل معالج التثبيت</span>
+                <span className="mt-1 block text-sm font-normal text-kmt-muted">بعد إنشاء مدير النظام، اقفل معالج التثبيت قبل استخدام لوحة المكتب.</span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="flex flex-wrap items-center gap-3 pb-5">
+                <StatefulButton disabled={isBusy || (!superAdminEmail && !status?.hasActiveSuperAdmin) || isFinished} onClick={finish} type="button">
+                  قفل معالج التثبيت
+                </StatefulButton>
+                {superAdminEmail ? <span className="text-sm text-kmt-muted">تم إنشاء الحساب: <span className="ltr inline-block">{superAdminEmail}</span></span> : null}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
 
         <aside className="space-y-5">
           <ModePanel hostingMode={hostingMode} />

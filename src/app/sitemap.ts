@@ -6,9 +6,6 @@ const staticPublicPaths = [
   "/",
   "/services",
   "/team",
-  "/articles",
-  "/case-studies",
-  "/media",
   "/contact",
   "/book-consultation",
   "/privacy",
@@ -56,26 +53,10 @@ function sitemapEntry(path: string, locale: PublicLocale, availableLocales: Publ
 }
 
 async function dbBackedContentPaths(): Promise<Array<{ path: string; locale: PublicLocale }>> {
-  if (!process.env.DATABASE_URL) return [];
-
-  try {
-    const { listPublishedArticles, listPublishedCaseStudies } = await import("@/server/public/content-service");
-    const [englishArticles, arabicArticles, englishCaseStudies, arabicCaseStudies] = await Promise.all([
-      listPublishedArticles("en"),
-      listPublishedArticles("ar"),
-      listPublishedCaseStudies("en"),
-      listPublishedCaseStudies("ar")
-    ]);
-
-    return [
-      ...englishArticles.map((article) => ({ path: `/articles/${article.slug}`, locale: "en" as const })),
-      ...arabicArticles.map((article) => ({ path: `/articles/${article.slug}`, locale: "ar" as const })),
-      ...englishCaseStudies.map((study) => ({ path: `/case-studies/${study.slug}`, locale: "en" as const })),
-      ...arabicCaseStudies.map((study) => ({ path: `/case-studies/${study.slug}`, locale: "ar" as const }))
-    ];
-  } catch {
-    return [];
-  }
+  // Phase 06 — Articles HIDE PUBLIC, Case Studies HIDE PUBLIC: no deferred
+  // slugs are emitted to the public sitemap in any locale. Backend models,
+  // APIs, and the publishing pipeline are untouched.
+  return [];
 }
 
 function siteOrigin() {

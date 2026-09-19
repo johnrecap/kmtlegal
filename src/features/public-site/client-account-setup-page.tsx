@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/animate-ui/components/radix/accordion";
 import { PublicShell } from "@/components/layout/public-shell";
 import { MaterialSymbol } from "@/components/ui";
 import {
@@ -94,7 +95,33 @@ export async function ClientAccountSetupPage({
             )}
           </div>
 
-          {context ? <ConsultationSummary content={content} context={context} locale={locale} /> : null}
+          {context ? (
+            <>
+              <div className="hidden lg:block">
+                <ConsultationSummary content={content} context={context} locale={locale} />
+              </div>
+              {/*
+                Mobile consultation summary rides the Animate UI Accordion.
+                States (expired/existing-account), validation, redirect, and
+                summary data are untouched.
+              */}
+              <Accordion
+                className="rounded-[1.5rem] border border-white/10 bg-white/[0.055] px-5 py-1 backdrop-blur lg:hidden"
+                data-testid="setup-summary-accordion"
+                type="single"
+                collapsible
+              >
+                <AccordionItem value="summary">
+                  <AccordionTrigger className="text-start text-base font-semibold text-white hover:no-underline">
+                    {copy.consultationSummary}
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <ConsultationSummary bare content={content} context={context} locale={locale} />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </>
+          ) : null}
         </section>
       </main>
     </PublicShell>
@@ -112,11 +139,14 @@ async function getSetupContext(token: string) {
 function ConsultationSummary({
   context,
   content,
-  locale
+  locale,
+  bare = false
 }: {
   context: NonNullable<Awaited<ReturnType<typeof getSetupContext>>>;
   content: ReturnType<typeof getPublicContent>;
   locale: PublicLocale;
+  /** Inside the mobile Accordion the outer card is owned by the item. */
+  bare?: boolean;
 }) {
   const copy = content.clientAccountSetup;
   const rows = [
@@ -132,7 +162,7 @@ function ConsultationSummary({
   ];
 
   return (
-    <aside className="rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-5 backdrop-blur sm:p-6">
+    <aside className={bare ? undefined : "rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-5 backdrop-blur sm:p-6"}>
       <div className="mb-5 flex items-center gap-3">
         <span className="grid h-11 w-11 place-items-center rounded-xl border border-kmt-gold/35 bg-black/35 text-kmt-gold">
           <MaterialSymbol name="description" />

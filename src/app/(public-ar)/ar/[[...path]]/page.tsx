@@ -12,9 +12,6 @@ export function generateStaticParams() {
     [],
     ["services"],
     ["team"],
-    ["articles"],
-    ["case-studies"],
-    ["media"],
     ["contact"],
     ["privacy"],
     ["terms"]

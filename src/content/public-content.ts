@@ -28,7 +28,6 @@ export const lawyers = defaultContent.lawyers;
 export const articles = defaultContent.articles;
 export const caseStudies = defaultContent.caseStudies;
 export const representativeMatters = defaultContent.representativeMatters;
-export const mediaItems = defaultContent.mediaItems;
 export const publicIndustries = defaultContent.publicIndustries;
 export const branches = defaultContent.branches;
 export const publicFooterContent = defaultContent.footerContent;

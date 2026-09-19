@@ -2,7 +2,7 @@
 
 import { FormEvent, useRef, useState } from "react";
 import { Button, MaterialSymbol, Select, Textarea, TextInput } from "@/components/ui";
-import { ShimmerButton } from "@/components/motion-ui/shimmer-button";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import { getPublicContent } from "@/content/public-content";
 import { publicPanel } from "@/features/public-site/public-components";
 import { publicMotionButton, publicMotionForm, publicMotionStatus } from "@/features/public-site/public-motion";
@@ -202,9 +202,20 @@ export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
         </p>
       ) : null}
       <div className="mt-5 flex flex-wrap gap-3">
-        <ShimmerButton disabled={!isHydrated || isSubmitting || isLockedAfterSuccess} loading={isSubmitting} type="submit">
+        {/*
+          Aceternity Stateful Button drives the submit interaction
+          (click → loader → success check). The form onSubmit above stays
+          the single authority for validation, guards, and outcomes; the
+          button carries no onClick so Enter-key submits behave identically.
+        */}
+        <StatefulButton
+          aria-busy={isSubmitting}
+          className="bg-kmt-gold font-semibold text-[#120d07] ring-offset-[var(--kmt-public-surface)] hover:ring-2 hover:ring-kmt-gold disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
+          disabled={!isHydrated || isSubmitting || isLockedAfterSuccess}
+          type="submit"
+        >
           {copy.submit}
-        </ShimmerButton>
+        </StatefulButton>
         {isLockedAfterSuccess ? (
           <Button
             className={publicMotionButton}

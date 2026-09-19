@@ -144,27 +144,6 @@ const representativeMatters = [
   }
 ] as const;
 
-const mediaItems = [
-  {
-    title: "Short Talk: Preparing A Consultation File",
-    type: "Video",
-    date: "2026-06-05",
-    description: "A concise explanation of how to organize facts and documents before contacting the office."
-  },
-  {
-    title: "Quick Guide: Contract Documents",
-    type: "Post",
-    date: "2026-06-10",
-    description: "An awareness checklist of common documents needed when reviewing a commercial contract."
-  },
-  {
-    title: "Seminar: Commercial Supply Risks",
-    type: "Seminar",
-    date: "2026-06-18",
-    description: "An awareness session on managing risk in supply relationships."
-  }
-] as const;
-
 const publicIndustries = [
   { title: "Family and mid-sized companies", summary: "Governance, contracts, partnerships, and decisions supported by clearer documentation." },
   { title: "Real estate and development", summary: "Ownership, development, lease, and partnership document review before commitment." },
@@ -230,7 +209,6 @@ export const publicContentEn = {
   articles,
   caseStudies,
   representativeMatters,
-  mediaItems,
   publicIndustries,
   branches,
   contactChannels,
@@ -406,16 +384,6 @@ export const publicContentEn = {
     generalOutcome: "General Outcome",
     lessons: "Lessons",
     backToCaseStudies: "Back to Case Studies"
-  },
-  mediaPage: {
-    metadataTitle: "Media and Content | KMT Legal",
-    metadataDescription: "Legal awareness content, seminars, and office updates.",
-    heroEyebrow: "Media",
-    heroTitle: "Legal Awareness and Office Updates",
-    heroDescription: "Articles, talks, and public updates that help clients prepare questions before contacting the office.",
-    sectionEyebrow: "Media",
-    sectionTitle: "Legal Awareness and Office Updates",
-    sectionDescription: "Public legal awareness content from the office for preparation and general understanding."
   },
   contactPage: {
     metadataTitle: "Contact KMT Legal",

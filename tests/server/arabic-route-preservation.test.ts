@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import { deriveArabicPublicRoutes, missingArabicRoutes } from "../../scripts/lib/public-route-inventory.mjs";
 
 const source = readFileSync("src/features/public-site/public-pages.tsx", "utf8");
-const baseline = ["/ar", "/ar/services", "/ar/services/[slug]", "/ar/team", "/ar/team/[slug]", "/ar/articles", "/ar/articles/[slug]", "/ar/case-studies", "/ar/case-studies/[slug]", "/ar/media", "/ar/contact", "/ar/book-consultation", "/ar/privacy", "/ar/terms"];
+// Phase 06 — Articles HIDE PUBLIC, Case Studies HIDE PUBLIC, Media DELETE:
+// the AR dispatcher no longer accepts these sections (they 404).
+const baseline = ["/ar", "/ar/services", "/ar/services/[slug]", "/ar/team", "/ar/team/[slug]", "/ar/contact", "/ar/book-consultation", "/ar/privacy", "/ar/terms"];
 
 describe("Arabic dispatcher preservation", () => {
   it("keeps every accepted route reachable through the actual dispatcher", async () => {

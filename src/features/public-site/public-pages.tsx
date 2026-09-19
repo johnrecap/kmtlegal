@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/animate-ui/components/radix/accordion";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
 import { FocusCards } from "@/components/ui/focus-cards";
@@ -142,11 +143,6 @@ export async function caseStudyDetailMetadata(locale: PublicLocale, slug: string
   );
 }
 
-export function mediaMetadata(locale: PublicLocale) {
-  const content = getPublicContent(locale);
-  return publicPageMetadata(locale, "/media", content.mediaPage.metadataTitle, content.mediaPage.metadataDescription);
-}
-
 export function contactMetadata(locale: PublicLocale) {
   const content = getPublicContent(locale);
   return publicPageMetadata(locale, "/contact", content.contactPage.metadataTitle, content.contactPage.metadataDescription);
@@ -182,11 +178,11 @@ export async function metadataForPublicPath(locale: PublicLocale, path: string[]
   if (section === "services" && slug && path.length === 2) return serviceDetailMetadata(locale, slug);
   if (section === "team" && !slug) return teamMetadata(locale);
   if (section === "team" && slug && path.length === 2) return teamDetailMetadata(locale, slug);
-  if (section === "articles" && !slug) return articlesMetadata(locale);
-  if (section === "articles" && slug && path.length === 2) return articleDetailMetadata(locale, slug);
-  if (section === "case-studies" && !slug) return caseStudiesMetadata(locale);
-  if (section === "case-studies" && slug && path.length === 2) return caseStudyDetailMetadata(locale, slug);
-  if (section === "media" && path.length === 1) return mediaMetadata(locale);
+  // Phase 06 — Articles HIDE PUBLIC, Case Studies HIDE PUBLIC, Media DELETE:
+  // no public metadata is emitted for these sections in any locale. The
+  // emitter functions below stay defined (admin/backend untouched) but have
+  // no public call site; article/case-study detail views stay exported for
+  // the preserved management pipeline and its tests.
   if (section === "contact" && path.length === 1) return contactMetadata(locale);
   if (section === "book-consultation" && path.length === 1) return bookingMetadata(locale);
   if (section === "privacy" && path.length === 1) return privacyMetadata(locale);
@@ -201,11 +197,8 @@ export async function renderPublicPath(locale: PublicLocale, path: string[] = []
   if (section === "services" && slug && path.length === 2) return <ServiceDetailPageView locale={locale} slug={slug} />;
   if (section === "team" && !slug) return <TeamPageView locale={locale} />;
   if (section === "team" && slug && path.length === 2) return <TeamDetailPageView locale={locale} slug={slug} />;
-  if (section === "articles" && !slug) return <ArticlesPageView locale={locale} />;
-  if (section === "articles" && slug && path.length === 2) return <ArticleDetailPageView locale={locale} slug={slug} />;
-  if (section === "case-studies" && !slug) return <CaseStudiesPageView locale={locale} />;
-  if (section === "case-studies" && slug && path.length === 2) return <CaseStudyDetailPageView locale={locale} slug={slug} />;
-  if (section === "media" && path.length === 1) return <MediaPageView locale={locale} />;
+  // Phase 06 — deferred sections fall through to notFound() below: no public
+  // rendering path remains for articles / case-studies / media in any locale.
   if (section === "contact" && path.length === 1) return <ContactPageView locale={locale} />;
   if (section === "book-consultation" && path.length === 1) return <BookConsultationPageView locale={locale} />;
   if (section === "privacy" && path.length === 1) return <PrivacyPageView locale={locale} />;
@@ -970,28 +963,50 @@ export async function CaseStudyDetailPageView({ locale, slug }: { locale: Public
   );
 }
 
-export function MediaPageView({ locale }: { locale: PublicLocale }) {
-  const content = getPublicContent(locale);
-  const copy = content.mediaPage;
-
+/**
+ * Branch contact rows (address, phone, hours, email) shared by the desktop
+ * branch panels and the mobile branches Accordion — one markup source.
+ */
+function BranchDetails({
+  branch,
+  channels
+}: {
+  branch: { address: string; hours: string; email: string };
+  channels: { phoneHref: string; phoneDisplay: string };
+}) {
   return (
-    <PublicShell currentPath={localizedPublicHref("/media", locale)} locale={locale} navItems={navForPath("/media", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/f9addb2d07ebf63d.png" imagePosition="object-[center_52%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
-      <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
-        <div className="grid gap-4 md:grid-cols-3">
-          {content.mediaItems.map((item) => (
-            <article key={item.title} className={cn(publicPanel, publicPanelHover, "p-5")}>
-              <div className="flex items-center justify-between gap-3">
-                <Badge className="border-kmt-gold/35 bg-kmt-gold/10 text-amber-100">{item.type}</Badge>
-                <span className="text-xs text-slate-400">{item.date}</span>
-              </div>
-              <h2 className="mt-4 text-xl font-semibold text-white">{item.title}</h2>
-              <p className={cn("mt-3 text-sm leading-7", publicMutedText)}>{item.description}</p>
-            </article>
-          ))}
-        </div>
-      </PublicSection>
-    </PublicShell>
+    <ul className="mt-4 space-y-3 text-sm">
+      <li className="flex gap-3">
+        <MaterialSymbol className={cn("mt-0.5 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="location_on" />
+        <span className={cn("leading-6", publicMutedText)}>{branch.address}</span>
+      </li>
+      {channels.phoneHref && channels.phoneDisplay ? (
+        <li className="flex gap-3">
+          <MaterialSymbol className={cn("mt-0.5 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="call" />
+          <a
+            className="leading-6 text-[var(--kmt-public-text)] transition-colors hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
+            dir="ltr"
+            href={channels.phoneHref}
+          >
+            <bdi>{channels.phoneDisplay}</bdi>
+          </a>
+        </li>
+      ) : null}
+      <li className="flex gap-3">
+        <MaterialSymbol className={cn("mt-0.5 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="schedule" />
+        <span className={cn("leading-6", publicMutedText)}>{branch.hours}</span>
+      </li>
+      <li className="flex gap-3">
+        <MaterialSymbol className={cn("mt-0.5 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="mail" />
+        <a
+          className="leading-6 text-[var(--kmt-public-text)] transition-colors hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
+          dir="ltr"
+          href={`mailto:${branch.email}`}
+        >
+          {branch.email}
+        </a>
+      </li>
+    </ul>
   );
 }
 
@@ -1006,60 +1021,35 @@ export function ContactPageView({ locale }: { locale: PublicLocale }) {
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
           <ContactForm locale={locale} />
-          <aside className="grid gap-4">
+          <aside className="grid content-start gap-4">
             {content.branches.map((branch) => (
-              <section key={branch.name} className={cn(publicPanel, publicMotionCardBeam, "p-5")}>
+              <section key={branch.name} className={cn(publicPanel, publicMotionCardBeam, "hidden p-5 lg:block")}>
                 <h2 className="text-xl font-semibold text-[var(--kmt-public-text)]">{branch.name}</h2>
-                <ul className="mt-4 space-y-3 text-sm">
-                  <li className="flex gap-3">
-                    <MaterialSymbol className={cn("mt-0.5 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="location_on" />
-                    <span className={cn("leading-6", publicMutedText)}>{branch.address}</span>
-                  </li>
-                  {channels.phoneHref && channels.phoneDisplay ? (
-                    <li className="flex gap-3">
-                      <MaterialSymbol className={cn("mt-0.5 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="call" />
-                      <a
-                        className="leading-6 text-[var(--kmt-public-text)] transition-colors hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
-                        dir="ltr"
-                        href={channels.phoneHref}
-                      >
-                        <bdi>{channels.phoneDisplay}</bdi>
-                      </a>
-                    </li>
-                  ) : null}
-                  <li className="flex gap-3">
-                    <MaterialSymbol className={cn("mt-0.5 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="schedule" />
-                    <span className={cn("leading-6", publicMutedText)}>{branch.hours}</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <MaterialSymbol className={cn("mt-0.5 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="mail" />
-                    <a
-                      className="leading-6 text-[var(--kmt-public-text)] transition-colors hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
-                      dir="ltr"
-                      href={`mailto:${branch.email}`}
-                    >
-                      {branch.email}
-                    </a>
-                  </li>
-                </ul>
+                <BranchDetails branch={branch} channels={channels} />
               </section>
             ))}
-            {channels.whatsappHref ? (
-              <section className={cn(publicPanel, publicMotionCardBeam, "p-5")}>
-                <div className="flex items-start gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-kmt-gold/25 bg-kmt-gold/10 text-[var(--kmt-public-gold)]">
-                    <MaterialSymbol className={cn("text-xl", publicMotionIcon, publicMotionIconHalo)} name="forum" />
-                  </span>
-                  <div>
-                    <h2 className="text-lg font-semibold text-[var(--kmt-public-text)]">{copy.whatsappLabel}</h2>
-                    <p className={cn("mt-1 text-sm leading-6", publicMutedText)}>{copy.whatsappNote}</p>
-                  </div>
-                </div>
-                <ButtonLink className={cn(publicMotionButton, publicMotionCta, "mt-4 w-full")} external href={channels.whatsappHref}>
-                  {copy.whatsappLabel}
-                </ButtonLink>
-              </section>
-            ) : null}
+            {/*
+              Mobile branch/office details ride the Animate UI Accordion.
+              The WhatsApp card is intentionally gone: WhatsApp stays
+              available through the global Floating Dock only.
+            */}
+            <Accordion
+              className={cn(publicPanel, "px-5 py-1 lg:hidden")}
+              data-testid="contact-branches-accordion"
+              type="single"
+              collapsible
+            >
+              {content.branches.map((branch) => (
+                <AccordionItem key={branch.name} value={branch.name}>
+                  <AccordionTrigger className="text-start text-base font-semibold text-[var(--kmt-public-text)] hover:no-underline">
+                    {branch.name}
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <BranchDetails branch={branch} channels={channels} />
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </aside>
         </div>
       </PublicSection>
@@ -1105,9 +1095,35 @@ export function PrivacyPageView({ locale }: { locale: PublicLocale }) {
   return (
     <PublicShell currentPath={localizedPublicHref("/privacy", locale)} locale={locale} navItems={navForPath("/privacy", locale)}>
       <PublicSection eyebrow={copy.eyebrow} title={copy.title} description={copy.description} headingLevel="h1">
+        {/*
+          Magic UI Scroll Progress: fixed gold hairline, no layout shift,
+          hidden under reduced motion, mirrored origin in RTL.
+        */}
+        <ScrollProgress
+          aria-hidden="true"
+          className="h-0.5 origin-left bg-none bg-[var(--kmt-public-gold)] motion-reduce:hidden rtl:origin-right"
+          data-testid="policy-scroll-progress"
+        />
         <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
           <aside className={cn(publicPanel, "p-5 lg:sticky lg:top-28")}>
-            <PolicyToc items={copy.sections} label={copy.contentsLabel} />
+            <div className="hidden lg:block">
+              <PolicyToc items={copy.sections} label={copy.contentsLabel} />
+            </div>
+            <Accordion
+              className="lg:hidden"
+              data-testid="policy-toc-accordion"
+              type="single"
+              collapsible
+            >
+              <AccordionItem value="toc">
+                <AccordionTrigger className="text-start text-base font-semibold text-[var(--kmt-public-text)] hover:no-underline">
+                  {copy.contentsLabel}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <PolicyToc hideHeading items={copy.sections} label={copy.contentsLabel} />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </aside>
 
           <article className={cn(publicPanel, "p-5 text-sm leading-8 sm:p-8")} data-testid="privacy-policy">
@@ -1184,9 +1200,31 @@ export function TermsPageView({ locale }: { locale: PublicLocale }) {
   return (
     <PublicShell currentPath={localizedPublicHref("/terms", locale)} locale={locale} navItems={navForPath("/terms", locale)}>
       <PublicSection eyebrow={copy.eyebrow} title={copy.title} description={copy.description} headingLevel="h1">
+        <ScrollProgress
+          aria-hidden="true"
+          className="h-0.5 origin-left bg-none bg-[var(--kmt-public-gold)] motion-reduce:hidden rtl:origin-right"
+          data-testid="policy-scroll-progress"
+        />
         <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:items-start">
           <aside className={cn(publicPanel, "p-5 lg:sticky lg:top-28")}>
-            <PolicyToc items={copy.sections} label={copy.contentsLabel} />
+            <div className="hidden lg:block">
+              <PolicyToc items={copy.sections} label={copy.contentsLabel} />
+            </div>
+            <Accordion
+              className="lg:hidden"
+              data-testid="policy-toc-accordion"
+              type="single"
+              collapsible
+            >
+              <AccordionItem value="toc">
+                <AccordionTrigger className="text-start text-base font-semibold text-[var(--kmt-public-text)] hover:no-underline">
+                  {copy.contentsLabel}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <PolicyToc hideHeading items={copy.sections} label={copy.contentsLabel} />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </aside>
 
           <article className={cn(publicPanel, "p-5 text-sm leading-8 sm:p-8")} data-testid="terms-policy">

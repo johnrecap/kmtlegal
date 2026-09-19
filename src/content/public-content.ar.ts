@@ -143,12 +143,6 @@ const representativeMatters = [
   }
 ] as const;
 
-const mediaItems = [
-  { title: "لقاء قصير: تجهيز ملف الاستشارة", type: "فيديو", date: "2026-06-05", description: "شرح مختصر لطريقة ترتيب الوقائع والمستندات قبل التواصل مع المكتب." },
-  { title: "دليل سريع: مستندات العقود", type: "منشور", date: "2026-06-10", description: "قائمة توعوية بالمستندات الشائعة عند مراجعة عقد تجاري." },
-  { title: "ندوة: مخاطر التوريد التجاري", type: "ندوة", date: "2026-06-18", description: "جلسة توعوية حول إدارة المخاطر في علاقات التوريد." }
-] as const;
-
 const publicIndustries = [
   { title: "الشركات العائلية والمتوسطة", summary: "حوكمة وعقود وشراكات وقرارات تساعد الإدارة على العمل بوثائق أوضح." },
   { title: "العقارات والتطوير", summary: "مراجعة مستندات ملكية وتعاقدات تطوير وإيجار ومشاركة قبل الالتزام." },
@@ -204,7 +198,6 @@ export const publicContentAr = {
   articles,
   caseStudies,
   representativeMatters,
-  mediaItems,
   publicIndustries,
   branches,
   contactChannels,
@@ -379,16 +372,6 @@ export const publicContentAr = {
     generalOutcome: "النتيجة العامة",
     lessons: "الدروس",
     backToCaseStudies: "العودة لدراسات الحالة"
-  },
-  mediaPage: {
-    metadataTitle: "الإعلام والمحتوى | KMT Legal",
-    metadataDescription: "توعية قانونية وتحديثات عامة من مكتب KMT Legal.",
-    heroEyebrow: "الإعلام",
-    heroTitle: "توعية قانونية وتحديثات من المكتب",
-    heroDescription: "مقالات ولقاءات وتحديثات عامة تساعدك على تجهيز الأسئلة قبل التواصل مع المكتب.",
-    sectionEyebrow: "الإعلام",
-    sectionTitle: "توعية قانونية وتحديثات من المكتب",
-    sectionDescription: "محتوى توعوي عام من المكتب للمساعدة في التحضير والفهم العام."
   },
   contactPage: {
     metadataTitle: "تواصل مع KMT Legal",

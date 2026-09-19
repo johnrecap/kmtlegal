@@ -4,22 +4,16 @@ const publicVisualPages = [
   { path: "/", name: "home", expectedDir: "ltr" },
   { path: "/services", name: "services", expectedDir: "ltr" },
   { path: "/team", name: "team", expectedDir: "ltr" },
-  { path: "/articles", name: "articles", expectedDir: "ltr" },
-  { path: "/case-studies", name: "case-studies", expectedDir: "ltr" },
-  { path: "/media", name: "media", expectedDir: "ltr" },
   { path: "/contact", name: "contact", expectedDir: "ltr" },
   { path: "/book-consultation", name: "book-consultation", expectedDir: "ltr" },
   { path: "/privacy", name: "privacy", expectedDir: "ltr" },
   { path: "/ar", name: "home-ar", expectedDir: "rtl" },
   { path: "/ar/services", name: "services-ar", expectedDir: "rtl" },
   { path: "/ar/team", name: "team-ar", expectedDir: "rtl" },
-  { path: "/ar/articles", name: "articles-ar", expectedDir: "rtl" },
-  { path: "/ar/case-studies", name: "case-studies-ar", expectedDir: "rtl" },
-  { path: "/ar/media", name: "media-ar", expectedDir: "rtl" },
   { path: "/ar/contact", name: "contact-ar", expectedDir: "rtl" },
   { path: "/ar/book-consultation", name: "book-consultation-ar", expectedDir: "rtl" },
   { path: "/ar/privacy", name: "privacy-ar", expectedDir: "rtl" }
-];
+]; // Phase 06: deferred articles/case-studies/media removed from visual scope.
 
 const publicVisualViewports = [
   { name: "desktop", width: 1440, height: 900 },
@@ -41,9 +35,6 @@ const publicCrawlSeedPages = [
   "/",
   "/services",
   "/team",
-  "/articles",
-  "/case-studies",
-  "/media",
   "/contact",
   "/book-consultation",
   "/privacy",
@@ -59,16 +50,10 @@ const publicHeroImagePages = [
   { path: "/", name: "home", expectedObjectPosition: "50% 55%" },
   { path: "/services", name: "services", expectedObjectPosition: "50% 62%" },
   { path: "/team", name: "team", expectedObjectPosition: "50% 38%" },
-  { path: "/articles", name: "articles", expectedObjectPosition: "50% 50%" },
-  { path: "/case-studies", name: "case-studies", expectedObjectPosition: "50% 50%" },
-  { path: "/media", name: "media", expectedObjectPosition: "50% 52%" },
   { path: "/contact", name: "contact", expectedObjectPosition: "50% 48%" },
   { path: "/ar", name: "home-ar", expectedObjectPosition: "50% 55%" },
   { path: "/ar/services", name: "services-ar", expectedObjectPosition: "50% 62%" },
   { path: "/ar/team", name: "team-ar", expectedObjectPosition: "50% 38%" },
-  { path: "/ar/articles", name: "articles-ar", expectedObjectPosition: "50% 50%" },
-  { path: "/ar/case-studies", name: "case-studies-ar", expectedObjectPosition: "50% 50%" },
-  { path: "/ar/media", name: "media-ar", expectedObjectPosition: "50% 52%" },
   { path: "/ar/contact", name: "contact-ar", expectedObjectPosition: "50% 48%" }
 ];
 // NOTE (Stage B visual architecture): /book-consultation intentionally has no

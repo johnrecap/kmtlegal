@@ -6,6 +6,7 @@ import type { PublicContent } from "@/content/public-content";
 import { useHydrated } from "@/lib/use-hydrated";
 import { cn } from "@/lib/cn";
 import { MaterialSymbol } from "@/components/ui";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import { publicMotionButton, publicMotionControl } from "./public-motion";
 
 type ClientAccountSetupCopy = PublicContent["clientAccountSetup"];
@@ -149,17 +150,21 @@ export function ClientAccountSetupForm({ token, initialEmail, copy }: ClientAcco
         </div>
       ) : null}
 
-      <button
-        className={cn(
-          "inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full border border-kmt-gold bg-kmt-gold px-5 text-sm font-semibold text-[#120d07] transition-colors hover:bg-[#c7a363] disabled:cursor-not-allowed disabled:opacity-60",
-          publicMotionButton
-        )}
+      {/*
+        Aceternity Stateful Button drives the submit interaction. The form
+        onSubmit above stays the single authority for validation, guards,
+        and redirect; the button carries no onClick so Enter-key submits
+        behave identically.
+      */}
+      <StatefulButton
+        aria-busy={isSubmitting}
+        className={cn("min-h-12 w-full border border-kmt-gold bg-kmt-gold px-5 text-sm font-semibold text-[#120d07] hover:bg-[#c7a363] hover:ring-kmt-gold disabled:cursor-not-allowed disabled:opacity-60", publicMotionButton)}
         disabled={!isHydrated || isSubmitting}
         type="submit"
       >
-        {isSubmitting ? <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> : <MaterialSymbol name="account_circle" />}
+        <MaterialSymbol name="account_circle" />
         <span>{copy.submit}</span>
-      </button>
+      </StatefulButton>
     </form>
   );
 }

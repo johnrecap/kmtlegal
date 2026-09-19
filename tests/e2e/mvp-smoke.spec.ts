@@ -5,9 +5,6 @@ const publicSmokePages = [
   "/",
   "/services",
   "/team",
-  "/articles",
-  "/case-studies",
-  "/media",
   "/contact",
   "/book-consultation",
   "/login",
@@ -16,7 +13,7 @@ const publicSmokePages = [
   "/terms"
 ];
 
-const publicResponsivePages = ["/", "/services", "/team", "/articles", "/case-studies", "/media", "/contact", "/book-consultation", "/privacy"];
+const publicResponsivePages = ["/", "/services", "/team", "/contact", "/book-consultation", "/privacy"];
 const arabicResponsivePages = ["/ar", "/ar/services", "/ar/contact", "/ar/book-consultation", "/ar/privacy"];
 
 const publicLuxurySurfacePages = [
@@ -348,17 +345,40 @@ test.describe("MVP smoke without database", () => {
     expect(response.headers()["content-type"]).toContain("image/png");
   });
 
-  test("homepage rendered article and case-study detail links resolve", async ({ page, request }) => {
+  test("deferred public routes are unavailable in both locales (Phase 06 hide/delete)", async ({ request }) => {
+    // Articles HIDE PUBLIC, Case Studies HIDE PUBLIC, Media DELETE: no
+    // public rendering path remains EN or AR; backend/admin systems stay.
+    for (const path of [
+      "/articles",
+      "/articles/contract-risk-basics",
+      "/case-studies",
+      "/case-studies/anonymous-commercial-dispute",
+      "/media",
+      "/ar/articles",
+      "/ar/articles/contract-risk-basics",
+      "/ar/case-studies",
+      "/ar/case-studies/anonymous-commercial-dispute",
+      "/ar/media"
+    ]) {
+      const response = await request.get(path);
+      expect(response.status(), `${path} should be unavailable to the public`).toBe(404);
+    }
+  });
+
+  test("sitemap carries no deferred article, case-study, or media URLs", async ({ request }) => {
+    const response = await request.get("/sitemap.xml");
+    const xml = await response.text();
+
+    expect(response.status()).toBeLessThan(400);
+    expect(xml).not.toContain("/articles");
+    expect(xml).not.toContain("/case-studies");
+    expect(xml).not.toContain("/media");
+  });
+
+  test("homepage exposes no article or case-study detail links", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    const hrefs = await page.locator('a[href^="/articles/"], a[href^="/case-studies/"]').evaluateAll((links) =>
-      links.map((link) => link.getAttribute("href")).filter((href): href is string => Boolean(href))
-    );
-
-    for (const href of hrefs) {
-      const response = await request.get(href);
-      expect(response.status(), `${href} should resolve when linked from the homepage`).toBeLessThan(400);
-    }
+    await expect(page.locator('a[href^="/articles/"], a[href^="/case-studies/"]')).toHaveCount(0);
   });
 
   test("homepage does not render stale article or case-study detail links without DB content", async ({ page }) => {

@@ -2,7 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useState } from "react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, MaterialSymbol, TextInput } from "@/components/ui";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, MaterialSymbol, TextInput } from "@/components/ui";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import { getAuthContent } from "@/content/auth-content";
 import type { ClientLocale } from "@/content/client-content";
 import { useHydrated } from "@/lib/use-hydrated";
@@ -165,15 +166,21 @@ export function LoginForm({ locale }: { locale: ClientLocale }) {
               {error}
             </div>
           ) : null}
-          <Button
+          {/*
+            Aceternity Stateful Button drives the submit interaction. The
+            form onSubmit above stays the single authority for validation,
+            error mapping, and redirect; the button carries no onClick so
+            Enter-key submits behave identically.
+          */}
+          <StatefulButton
+            aria-busy={isSubmitting}
+            className="w-full bg-kmt-gold font-semibold text-[#120d07] hover:ring-kmt-gold disabled:cursor-not-allowed disabled:opacity-60 motion-reduce:transition-none"
             disabled={!isHydrated || isSubmitting}
-            className="w-full"
-            loading={isSubmitting}
-            trailingIcon={<MaterialSymbol className="text-[18px] rtl:rotate-180" name="arrow_forward" />}
             type="submit"
           >
             {copy.submit}
-          </Button>
+            <MaterialSymbol className="text-[18px] rtl:rotate-180" name="arrow_forward" />
+          </StatefulButton>
         </form>
       </CardContent>
     </Card>
