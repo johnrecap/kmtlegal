@@ -83,10 +83,10 @@ describe("product UI primitives", () => {
     expect(html).toContain("name=\"category\"");
     expect(html).toContain("value=\"OTHER\"");
     expect(html).toContain("aria-haspopup=\"listbox\"");
-    expect(html).toContain("bg-black/25");
-    expect(html).toContain("text-[#c79a52]");
+    expect(html).toContain("bg-[var(--kmt-client-surface)]");
+    expect(html).toContain("text-[var(--kmt-client-gold)]");
     expect(componentSource).toContain("role=\"listbox\"");
-    expect(componentSource).toContain("bg-[#090806]");
+    expect(componentSource).toContain("bg-[var(--kmt-client-surface)]");
     expect(componentSource).toContain("bg-kmt-gold text-[#120d07]");
     expect(globalStyles).toContain(".client-portal-shell .client-portal-panel select option");
     expect(globalStyles).toContain("background: #090806");
@@ -188,11 +188,11 @@ describe("product UI primitives", () => {
     expect(html).toContain("href=\"/admin/clients\"");
     expect(html).toContain("href=\"/admin/cases\"");
     expect(html).toContain("data-testid=\"dashboard-mobile-navigation-trigger\"");
-    expect(html).toContain("<dialog");
+    expect(html).not.toContain("<dialog");
     expect(html).toContain("data-testid=\"dashboard-desktop-navigation\"");
-    expect(html).toContain("lg:block");
-    expect(html).toContain("تشغيل المكتب");
-    expect(html).toContain("الملفات");
+    expect(html).toContain("max-lg:hidden");
+    expect(html).toContain("aria-label=\"لوحة التحكم\"");
+    expect(html).toContain("aria-label=\"العملاء\"");
     expect(html).toContain("aria-current=\"page\"");
     expect(html).toContain("bg-kmt-gold/15");
     expect(html).toContain("/brand/kmt-logo-mark.webp");
@@ -256,19 +256,18 @@ describe("product UI primitives", () => {
     expect(errorSource).not.toContain("error.digest");
   });
 
-  it("uses a native RTL mobile dialog with focus, scroll, Escape, and navigation recovery", () => {
-    const mobileNavSource = readFileSync(join(process.cwd(), "src/components/layout/dashboard-mobile-nav.tsx"), "utf8");
+  it("uses an Animate Sheet mobile nav with focus trap, close on navigation, and RTL side", () => {
+    const mobileNavSource = readFileSync(join(process.cwd(), "src/components/admin/admin-mobile-nav.tsx"), "utf8");
 
-    expect(mobileNavSource).toContain("<dialog");
-    expect(mobileNavSource).toContain("showModal()");
-    expect(mobileNavSource).toContain("focusin");
-    expect(mobileNavSource).toContain('overflow = "hidden"');
-    expect(mobileNavSource).toContain('event.key === "Tab"');
-    expect(mobileNavSource).toContain("onCancel");
-    expect(mobileNavSource).toContain("usePathname");
-    expect(mobileNavSource).toContain("aria-expanded");
-    expect(mobileNavSource).toContain("aria-controls");
-    expect(mobileNavSource).toContain("start-0");
+    expect(mobileNavSource).toContain("Sheet");
+    expect(mobileNavSource).toContain("onOpenChange");
+    expect(mobileNavSource).toContain("setOpen(false)");
+    expect(mobileNavSource).toContain('side="right"');
+    expect(mobileNavSource).toContain("aria-label");
+    expect(mobileNavSource).toContain("dashboard-mobile-navigation-trigger");
+    expect(mobileNavSource).toContain("dashboard-mobile-navigation");
+    expect(mobileNavSource).not.toContain("<dialog");
+    expect(mobileNavSource).not.toContain("showModal()");
   });
 
   it("renders the client portal shell with the public dark visual language and no card motion", () => {
@@ -297,7 +296,7 @@ describe("product UI primitives", () => {
 
     expect(html).toContain("data-testid=\"client-portal-shell\"");
     expect(html).toContain("dir=\"rtl\"");
-    expect(html).toContain("bg-[#070604]/95");
+    expect(html).toContain("bg-[var(--kmt-client-header)]");
     expect(html).toContain("/brand/kmt-logo-mark.webp");
     expect(html).toContain("بوابة العميل");
     expect(html).toContain("href=\"/client/files\"");
