@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
+import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { conversationStatusLabels, formatDateTime, labelFrom } from "@/lib/legal-format";
@@ -149,9 +150,11 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
       notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="min-w-0 space-y-5">
-        <form action="/admin/messages" method="get">
+        <div className="flex flex-wrap items-start gap-3">
+        <form action="/admin/messages" className="min-w-0 flex-1" method="get">
           <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.messages.filters}>
             <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.messages.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالعميل أو الهاتف أو نص الرسالة" />
+            <span className="hidden lg:contents">
             <Select className="min-w-44" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
               <option value="">كل الحالات</option>
               {Object.entries(conversationStatusLabels).map(([value, label]) => (
@@ -160,7 +163,20 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
                 </option>
               ))}
             </Select>
-            <Select className="min-w-44" defaultValue={result.filters.assignedToId ?? ""} label="المسؤول" name="assignedToId">
+            </span>
+            <input type="hidden" name="assignedToId" value={result.filters.assignedToId ?? ""} />
+            <span className="hidden lg:contents">
+            <Button type="submit" variant="secondary">
+              تطبيق
+            </Button>
+            </span>
+          </FilterBar>
+        </form>
+        <MoreFiltersPopover triggerLabel="المزيد من الفلاتر">
+          <form action="/admin/messages" className="space-y-3" method="get">
+            <input type="hidden" name="q" value={result.filters.q ?? ""} />
+            <input type="hidden" name="status" value={result.filters.status ?? ""} />
+            <Select className="w-full" defaultValue={result.filters.assignedToId ?? ""} label="المسؤول" name="assignedToId">
               <option value="">كل الفريق</option>
               {assignees.map((assignee) => (
                 <option key={assignee.id} value={assignee.id}>
@@ -168,11 +184,36 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
                 </option>
               ))}
             </Select>
-            <Button type="submit" variant="secondary">
+            <Button className="w-full" type="submit" variant="secondary">
               تطبيق
             </Button>
-          </FilterBar>
-        </form>
+          </form>
+        </MoreFiltersPopover>
+        <MobileFiltersSheet description="ابحث وصفِّ محادثات العملاء." title="فلاتر الرسائل" triggerLabel="الفلاتر">
+          <form action="/admin/messages" className="space-y-3" method="get">
+            <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.messages.search} className="w-full" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالعميل أو الهاتف أو نص الرسالة" />
+            <Select className="w-full" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
+              <option value="">كل الحالات</option>
+              {Object.entries(conversationStatusLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </Select>
+            <Select className="w-full" defaultValue={result.filters.assignedToId ?? ""} label="المسؤول" name="assignedToId">
+              <option value="">كل الفريق</option>
+              {assignees.map((assignee) => (
+                <option key={assignee.id} value={assignee.id}>
+                  {assignee.name}
+                </option>
+              ))}
+            </Select>
+            <Button className="w-full" type="submit" variant="secondary">
+              تطبيق
+            </Button>
+          </form>
+        </MobileFiltersSheet>
+        </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
           <p>{result.total} محادثة</p>
@@ -189,18 +230,12 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
           mobileRender={(row) => <ConversationMobileCard row={row} />}
         />
 
-        <div className="flex flex-wrap items-center justify-end gap-3">
-          {result.page > 1 ? (
-            <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page - 1)}>
-              السابق
-            </Link>
-          ) : null}
-          {result.page < totalPages ? (
-            <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page + 1)}>
-              التالي
-            </Link>
-          ) : null}
-        </div>
+        <AdminPagination
+          page={result.page}
+          pageSize={result.pageSize}
+          total={result.total}
+          hrefForPage={(page) => listHref(result.filters, page)}
+        />
       </div>
     </DashboardShell>
   );

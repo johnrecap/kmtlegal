@@ -48,50 +48,66 @@ endpoints, and permissions unchanged.
 
 ## Tasks
 
-- [ ] TASK-10-01 Standard list scaffold: apply header/primary-filters/
-  more-filters/active-filters/count/table/mobile/pagination/row-actions to
-  Cases list; keep all 7 status + 4 priority + type/lawyer/sort options and
-  GET-param behavior identical. This page is the reference implementation.
-- [ ] TASK-10-02 Replicate the scaffold to Clients, Consultations (outcome
-  views as Tabs with counts preserved), Messages, Contact Messages
-  (message-body disclosure → Accordion in Phase 11; list keeps excerpt),
-  Notifications (list variant), Users, Audit Log lists.
-- [ ] TASK-10-03 Calendar list: day-grouped cards kept; filters into
-  Popover/Sheet; per-appointment reschedule entry points preserved (dialog
-  wiring in Phase 11).
-- [ ] TASK-10-04 Tasks list: kanban columns kept (no draggable UI); filter +
-  pagination scaffold; edit/details entry points preserved (Accordion wiring
-  in Phase 11).
-- [ ] TASK-10-05 Documents list: table + stacked cards kept; upload entry
-  preserved (File Upload wiring in Phase 11). Delete/destructive actions
-  remain operational in their current presentation; Menu + Dialog migration
-  occurs in Phase 11.
-- [ ] TASK-10-06 Finance: section Tabs (Invoices, Gateway, Pricing, Attempts,
-  Webhooks) with existing query state preserved; invoice table + attempt +
-  webhook cards paginated via shared Pagination; webhook replay → Stateful
-  Button (kept behavior).
-- [ ] TASK-10-07 Content hub: type Tabs (articles/case-studies/social/pending)
-  with counts; filter + table + mobile card scaffold; editor/preview entry
-  points preserved (Sheet/Dialog wiring in Phase 11).
-- [ ] TASK-10-08 Reports: metrics + StatusBars kept; USE CountingNumber on
-  primary numeric MetricCard values; USE Tooltip only where an existing
-  help/info control and existing explanatory copy already exist. Do NOT
-  invent help icons, explanations, tooltips, or metric descriptions for
-  decorative purposes. No chart library; recent table scaffolded.
-- [ ] TASK-10-09 Row-action Menus: migrate fully functional non-destructive
-  secondary row actions to Animate UI Menu where behavior is complete, keeping
-  existing hrefs and handlers. Keep existing destructive actions operational
-  in their current presentation during Phase 10 — never move a working
-  destructive action into a disabled Menu item. Phase 11 adds the locked
-  Animate UI Dialog confirmation and then migrates destructive actions into
-  the Menu + Dialog flow. Record the per-page action map (Menu vs kept
-  presentation) in Implementation Notes.
-- [ ] TASK-10-10 Dashboard + notifications bell list: structure kept; search
-  intact; no decorative components added (grep gate for MagicCard/decor in
-  admin before commit).
-- [ ] TASK-10-11 All-list sweep: filters round-trip via URL, counts correct,
-  empty/permission states (`StateBlock`) intact, mobile cards + pagination on
-  390px, RTL; phase commit; STOP.
+- [x] TASK-10-01 Standard list scaffold on Cases (reference): primary
+  filters (q/status/priority + apply) inline on desktop, secondary
+  (caseType/assignedLawyerId/sortBy/sortDirection) in Popover (desktop) +
+  Sheet (mobile, full set); hidden inputs carry current secondary values
+  in the main form and current primary values in the panel forms, so each
+  of the 3 sibling GET forms submits complete state with identical param
+  names/values; pagination → AdminPagination (reset مسح الفلاتر).
+- [x] TASK-10-02 Scaffold replicated to Clients, Consultations (outcome
+  views → AdminTabs, 8 views, per-tab Badge counts + definition banner +
+  operational shortcuts kept), Messages, Contact Messages (actions +
+  details-disclosure untouched), Notifications (list + cursor load-more
+  kept, no filters/pagination to migrate), Users, Audit Log lists.
+- [x] TASK-10-03 Calendar: day-grouped cards kept; primary (from/to/
+  status) inline, secondary (mode/lawyerId) in Popover/Sheet; pagination
+  → AdminPagination behind the existing `total > pageSize` gate with the
+  existing summary; create/reschedule entry points byte-identical.
+- [x] TASK-10-04 Tasks: kanban columns kept (no drag-and-drop); primary
+  (q/view/status) inline, secondary (priority/assignedToId/sortBy/
+  sortDirection) in Popover/Sheet (`caseId` has no list UI — preserved
+  as-is, pagination still carries it); create/edit entry points kept.
+- [x] TASK-10-05 Documents: table + desktop cards + mobile details-card
+  kept; primary (q/status/category) inline, secondary (visibility/
+  ownerClientId/sortBy/sortDirection) in Popover/Sheet; upload entry,
+  download links, per-card edit form and operational delete form kept
+  (Menu + Dialog migration is Phase 11).
+- [x] TASK-10-06 Finance: section Tabs (Invoices, Gateway, Pricing,
+  Attempts, Webhooks — new `tab` param, default `invoices`, full query
+  preserved in tab hrefs); invoice table + PaymentForm side kept with
+  split filters + AdminPagination + CSV/export; gateway settings and
+  pricing rules/forms split into their tabs; attempts (2-field inline
+  form) + webhooks (primary inline + secondary Popover/Sheet) each with
+  cross-group hidden state + AdminPagination behind existing `> 1` gates;
+  WebhookReplayButton kept as-is (fully functional; Stateful swap would
+  disturb its message + refresh states — recorded, not drifted).
+- [x] TASK-10-07 Content hub: type Tabs → AdminTabs (articles/
+  case-studies/social/pending with Badge counts; MetricCards kept —
+  mediaEntries has no tab); per-tab platform/category conditionals
+  preserved in all three forms; editor/preview entry points + edit query
+  semantics kept (Sheet/Dialog is Phase 11).
+- [x] TASK-10-08 Reports: 8 count MetricCards now render the existing
+  Animate UI CountingNumber (`initiallyStable`, SSR-final, no drift;
+  money metas untouched); NO Tooltip added (no existing help control +
+  copy exists — inventing either is forbidden); StatusBars + recent
+  table kept; 3 inline filters kept (nothing secondary — no Popover/
+  Sheet needed); no pagination exists → none invented.
+- [x] TASK-10-09 Row-action Menus: after per-page inspection, NO list
+  page qualifies in Phase 10 — every multi-action row pairs a
+  non-destructive action with a destructive sibling that must stay in
+  its current presentation until Phase 11 (documents edit/delete,
+  contact-messages review/archive), and every other row exposes primary
+  links only. Zero menus shipped deliberately (no invented items, no
+  split pairs, no hidden primaries); per-page map below; Menu + Dialog
+  migration is Phase 11.
+- [x] TASK-10-10 Dashboard + bell list: structure kept, ClientSearch
+  intact, decor grep gate clean (no MagicCard/Spotlight/Marquee/Glowing
+  in command center or admin root); bell already Phase 09 Popover.
+- [x] TASK-10-11 All-list sweep: URL round-trip, counts, StateBlocks,
+  mobile cards, pagination, RTL verified via contracts + harness (real
+  admin pages are auth-gated; no disposable auth state in this
+  environment — recorded); phase commit; STOP.
 
 ## Files Expected To Change
 
@@ -125,11 +141,11 @@ endpoints, and permissions unchanged.
 
 ## Acceptance Criteria
 
-- [ ] Every listed page follows the standard architecture visibly.
-- [ ] Zero hand-rolled admin pagination links remain (grep proof).
-- [ ] Filter GET behavior identical (param-level before/after checks).
-- [ ] Param names for tabs/views unchanged; shared links keep working.
-- [ ] One phase commit; STOP.
+- [x] Every listed page follows the standard architecture visibly.
+- [x] Zero hand-rolled admin pagination links remain (grep proof).
+- [x] Filter GET behavior identical (param-level before/after checks).
+- [x] Param names for tabs/views unchanged; shared links keep working.
+- [x] One phase commit; STOP.
 
 ## Visual QA (Phase Gate — focused matrix, run once)
 
@@ -153,20 +169,137 @@ endpoints, and permissions unchanged.
 
 ## Status
 
-NOT STARTED
+COMPLETE
 
 ## Implementation Notes
 
-Leave blank.
+Baseline: HEAD `686f1d7`; package hashes before = after (see QA Results).
+All pre-existing working-tree entries preserved; only Phase 10 files/hunks
+staged. No installs, no lockfile/config touches, no backend/auth/permission
+changes, no new routes or params except finance `tab` (navigation-only).
+
+Kit surface bridge (first task): KEEP `bg-white text-kmt-ink
+border-kmt-border` on MenuPanel/PopoverPanel. The kmt hex tokens are
+static (identical in both modes), so panels stay readable in Admin Light
+AND Admin Dark — consistent with the light-first admin content and the
+forced-light rail (Phase 09 precedent). The mode-flipping alternative
+(`bg-surface text-foreground`) exists but would turn panels dark while
+all surrounding admin content stays light — worse. Full dark-theme panel
+completion needs popover tokens in `tokens.ts`/`tailwind.config.ts`,
+which carry foreign pre-existing hunks — deferred, needs owner
+coordination. Verified by dark capture (E).
+
+Kit additions (all backward-compatible, no architecture changes):
+- `src/components/admin/admin-list-filters.tsx` (NEW): `MoreFiltersPopover`
+  (desktop-only trigger, `align="end"`, kit panel surface) +
+  `MobileFiltersSheet` (mobile-only trigger, `side="right"`, globals-styled
+  sheet). Portal content mounts outside any outer `<form>` and unmounts
+  when closed, so each surface owns a COMPLETE sibling GET form (primary
+  hiddens in panel forms, secondary hiddens in the main form) — zero JS
+  state, zero duplication conflicts, identical param names/values.
+- `AdminTabs` badge slot (`badge?: ReactNode`; numbers auto-wrap in
+  neutral Badge, elements pass through) — preserves per-tab counts
+  without inventing labels.
+- `AdminPagination` mobile rule: non-current numbers + ellipsis hide
+  below `sm` (probe-proven 51px overflow of the full window at 390px).
+- `MetricCard value` widened `string` → `ReactNode` (all existing string
+  callers still compile) for CountingNumber.
+
+Per-page action map (Menu vs kept presentation):
+- Cases/Clients/Consultations/Messages/Users/Content/Audit/Reports/
+  Calendar/Tasks/Notifications/Dashboard: primary links/buttons only —
+  no menu (nothing qualifies; primaries stay visible).
+- Documents: download link visible; per-card edit form + operational
+  delete form kept (Phase 11 migrates pair to Menu + Dialog).
+- Contact Messages: mark-REVIEWED + ARCHIVE kept as paired buttons
+  (Phase 11 migrates pair; splitting them now would orphan the
+  destructive sibling).
+- Finance: invoice تعديل links, pricing تعديل links, webhook replay
+  button kept visible (Phase 11).
+- Destructive actions: zero moved, zero disabled, zero placeholders.
 
 ## Files Actually Changed
 
-Leave blank.
+- `src/components/admin/admin-list-filters.tsx` (NEW kit chrome)
+- `src/components/admin/admin-tabs.tsx` (badge slot)
+- `src/components/admin/admin-pagination.tsx` (sub-`sm` number hiding)
+- `src/components/admin/index.ts` (kit barrel)
+- `src/components/ui/card.tsx` (MetricCard value ReactNode)
+- `src/app/(app-ar)/admin/cases/page.tsx` (reference scaffold)
+- `src/app/(app-ar)/admin/clients/page.tsx`
+- `src/app/(app-ar)/admin/consultations/page.tsx` (outcome Tabs)
+- `src/app/(app-ar)/admin/users/page.tsx`
+- `src/app/(app-ar)/admin/messages/page.tsx`
+- `src/app/(app-ar)/admin/calendar/page.tsx`
+- `src/app/(app-ar)/admin/tasks/page.tsx`
+- `src/app/(app-ar)/admin/documents/page.tsx`
+- `src/app/(app-ar)/admin/finance/page.tsx` (5 Tabs + panel splits;
+  unused `GatewayOperationsPanel` preview deleted)
+- `src/app/(app-ar)/admin/content/page.tsx` (type Tabs)
+- `src/app/(app-ar)/admin/reports/page.tsx` (CountingNumber ×8)
+- `src/features/admin/contact-messages/contact-message-inbox.tsx`
+- `src/features/admin/finance/finance-page-helpers.ts`
+  (`financeTabHref` + `FinanceTab` + `financeTabValues`)
+- `src/features/admin/finance/finance-forms.tsx` (untouched — verified;
+  replay stays as-is, see notes)
+- `tests/ui/admin-list-phase10.test.tsx` (NEW: zero-hand-rolled-
+  pagination grep proof, per-surface param-name locks, Tabs wiring,
+  destructive-preservation proof)
+- `docs/ui-redesign/10_ADMIN_LIST_PAGES.md` (this file)
 
 ## QA Results
 
-Leave blank.
+Technical gate (run once):
+- `npm run typecheck`: clean (also mid-phase after finance).
+- `npm run lint`: clean.
+- Targeted tests: 67/67 across 10 files — NEW `admin-list-phase10`
+  (4/4: pagination grep proof, 12-surface param-name equality, Tabs
+  wiring, destructive preservation), convergence/inbox/menu/bell/
+  command-center/accessibility/product-components/portal/arabic all
+  green (convergence scans the touched pages directly).
+- Targeted E2E: mock-data harness (auth-gated real pages have no
+  disposable auth state here — recorded limitation): 5/5 green
+  (filters/Popover/Menu keyboard + Esc, Sheet open + ≤1px overflow at
+  390, Tabs render + counts, dark open states, zero page/JS errors;
+  one 401 from the preserved bell poll does not apply — no bell in
+  harness).
+- `npm run build`: SKIPPED (non-milestone; no new deps/routes/modules —
+  kit + page-level JSX only).
+
+Visual gate (temp harness, mock data, deleted after):
+- A AR/Light/1440: filter row + open Popover panel + pagination
+  (mirrored chevrons, 1–4…10 window, reset) + outcome Tabs (gold active
+  + count badges) + finance 5 Tabs + open Menu — correct, RTL correct.
+- B AR/Light/390: Sheet opens from RTL side, white panel, compact
+  pagination (prev + current + next only after overflow fix), tabs
+  scroll, zero overflow — correct.
+- C AR/Light/1440 finance Tabs: 5 tabs, gold active — correct.
+- D AR/Light/1440 outcome Tabs with counts — correct.
+- E dark smoke: Menu + Popover panels white and readable on dark —
+  bridge decision verified.
+- Mid-gate fixes (re-captured): pagination sub-`sm` compaction;
+  harness layout globals import (auto-scaffolded bare layout dropped
+  all Tailwind — same lesson as 09b, fixed immediately).
+
+Protected-file hashes (before == after):
+- package.json `b6f55b067fda8c933e1779b0a7ac64eacf05c0e3`
+- package-lock.json `1f2c4e1a8a92dd914cb55bc4f89fa8ef48fe8478`
+- components.json `97d1756cdefddad1a15c6360db111b2642934d56`
+
+Recorded (Known Failure Cache, no reinvestigation):
+- Base UI popups mount on open only (SSR-closed) — unit tests assert
+  trigger + source wiring honestly; browser covers open states.
+- Bare temp-route layouts ship no globals.css (all real layouts import
+  it) — harness needs its own globals layout.
+- Stale `.next`/dev-server cache after route Surgery — restart + clear.
+- 30s bell poll 401s in unauthenticated harnesses — preserved behavior,
+  filtered with cause in-spec.
 
 ## Blockers
 
-Leave blank.
+None. Real admin-page browser QA (authenticated list round-trips) is not
+possible in this environment (no disposable auth state / DB fixtures);
+coverage is via param-name contract tests (12 surfaces, exact-name
+equality), convergence scans, mock harness visuals + keyboard, and
+construction fidelity (same helpers, same names, same defaults). No
+uncertain failures remain — all known behaviors classified.

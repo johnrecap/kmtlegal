@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
+import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, FilterBar, SearchInput, Select, StateBlock } from "@/components/ui";
-import { buttonClasses } from "@/components/ui/button";
 import { TaskCreateForm, TaskUpdateForm } from "@/features/admin/task-documents/task-document-forms";
 import { formatDate, labelFrom, taskPriorityLabels, taskStatusLabels } from "@/lib/legal-format";
 import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
@@ -154,14 +154,18 @@ export default async function AdminTasksPage({ searchParams }: { searchParams?: 
     >
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
         <div className="space-y-5">
-          <form action="/admin/tasks" method="get">
+          <div className="flex flex-wrap items-start gap-3">
+          <form action="/admin/tasks" className="min-w-0 flex-1" method="get">
             <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.tasks.filters}>
               <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.tasks.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث في المهام أو رقم القضية أو المسؤول" />
+              <span className="hidden lg:contents">
               <Select className="min-w-36" defaultValue={result.filters.view} label="النطاق" name="view">
                 <option value="all">كل النطاق</option>
                 <option value="mine">مهامي</option>
                 <option value="overdue">متأخرة</option>
               </Select>
+              </span>
+              <span className="hidden lg:contents">
               <Select className="min-w-40" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
                 <option value="">كل الحالات</option>
                 {taskStatusOptions.map((status) => (
@@ -170,7 +174,24 @@ export default async function AdminTasksPage({ searchParams }: { searchParams?: 
                   </option>
                 ))}
               </Select>
-              <Select className="min-w-40" defaultValue={result.filters.priority ?? ""} label="الأولوية" name="priority">
+              </span>
+              <input type="hidden" name="priority" value={result.filters.priority ?? ""} />
+              <input type="hidden" name="assignedToId" value={result.filters.assignedToId ?? ""} />
+              <input type="hidden" name="sortBy" value={result.filters.sortBy} />
+              <input type="hidden" name="sortDirection" value={result.filters.sortDirection} />
+              <span className="hidden lg:contents">
+              <Button type="submit" variant="secondary">
+                تطبيق
+              </Button>
+              </span>
+            </FilterBar>
+          </form>
+          <MoreFiltersPopover triggerLabel="المزيد من الفلاتر">
+            <form action="/admin/tasks" className="space-y-3" method="get">
+              <input type="hidden" name="q" value={result.filters.q ?? ""} />
+              <input type="hidden" name="view" value={result.filters.view} />
+              <input type="hidden" name="status" value={result.filters.status ?? ""} />
+              <Select className="w-full" defaultValue={result.filters.priority ?? ""} label="الأولوية" name="priority">
                 <option value="">كل الأولويات</option>
                 {taskPriorityOptions.map((priority) => (
                   <option key={priority} value={priority}>
@@ -179,7 +200,7 @@ export default async function AdminTasksPage({ searchParams }: { searchParams?: 
                 ))}
               </Select>
               {options.assignees.length > 1 ? (
-                <Select className="min-w-44" defaultValue={result.filters.assignedToId ?? ""} label="المسؤول" name="assignedToId">
+                <Select className="w-full" defaultValue={result.filters.assignedToId ?? ""} label="المسؤول" name="assignedToId">
                   <option value="">كل المسؤولين</option>
                   {options.assignees.map((assignee) => (
                     <option key={assignee.id} value={assignee.id}>
@@ -188,22 +209,73 @@ export default async function AdminTasksPage({ searchParams }: { searchParams?: 
                   ))}
                 </Select>
               ) : null}
-              <Select className="min-w-40" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+              <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
                 <option value="dueDate">الاستحقاق</option>
                 <option value="updatedAt">آخر تحديث</option>
                 <option value="createdAt">تاريخ الإنشاء</option>
                 <option value="priority">الأولوية</option>
                 <option value="status">الحالة</option>
               </Select>
-              <Select className="min-w-32" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+              <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
                 <option value="asc">تصاعدي</option>
                 <option value="desc">تنازلي</option>
               </Select>
-              <Button type="submit" variant="secondary">
+              <Button className="w-full" type="submit" variant="secondary">
                 تطبيق
               </Button>
-            </FilterBar>
-          </form>
+            </form>
+          </MoreFiltersPopover>
+          <MobileFiltersSheet description="ابحث وصفِّ مهام المكتب." title="فلاتر المهام" triggerLabel="الفلاتر">
+            <form action="/admin/tasks" className="space-y-3" method="get">
+              <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.tasks.search} className="w-full" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث في المهام أو رقم القضية أو المسؤول" />
+              <Select className="w-full" defaultValue={result.filters.view} label="النطاق" name="view">
+                <option value="all">كل النطاق</option>
+                <option value="mine">مهامي</option>
+                <option value="overdue">متأخرة</option>
+              </Select>
+              <Select className="w-full" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
+                <option value="">كل الحالات</option>
+                {taskStatusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {labelFrom(taskStatusLabels, status)}
+                  </option>
+                ))}
+              </Select>
+              <Select className="w-full" defaultValue={result.filters.priority ?? ""} label="الأولوية" name="priority">
+                <option value="">كل الأولويات</option>
+                {taskPriorityOptions.map((priority) => (
+                  <option key={priority} value={priority}>
+                    {labelFrom(taskPriorityLabels, priority)}
+                  </option>
+                ))}
+              </Select>
+              {options.assignees.length > 1 ? (
+                <Select className="w-full" defaultValue={result.filters.assignedToId ?? ""} label="المسؤول" name="assignedToId">
+                  <option value="">كل المسؤولين</option>
+                  {options.assignees.map((assignee) => (
+                    <option key={assignee.id} value={assignee.id}>
+                      {assignee.name}
+                    </option>
+                  ))}
+                </Select>
+              ) : null}
+              <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+                <option value="dueDate">الاستحقاق</option>
+                <option value="updatedAt">آخر تحديث</option>
+                <option value="createdAt">تاريخ الإنشاء</option>
+                <option value="priority">الأولوية</option>
+                <option value="status">الحالة</option>
+              </Select>
+              <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+                <option value="asc">تصاعدي</option>
+                <option value="desc">تنازلي</option>
+              </Select>
+              <Button className="w-full" type="submit" variant="secondary">
+                تطبيق
+              </Button>
+            </form>
+          </MobileFiltersSheet>
+          </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
             <p>{result.total} مهمة داخل الفلاتر الحالية</p>
@@ -232,23 +304,14 @@ export default async function AdminTasksPage({ searchParams }: { searchParams?: 
             <StateBlock title="لا توجد مهام" description="غيّر الفلاتر أو أنشئ مهمة جديدة مرتبطة بقضية داخل نطاقك." />
           )}
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/tasks">
-              مسح الفلاتر
-            </Link>
-            <div className="flex flex-wrap items-center gap-3">
-              {result.page > 1 ? (
-                <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page - 1)}>
-                  السابق
-                </Link>
-              ) : null}
-              {result.page < totalPages ? (
-                <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page + 1)}>
-                  التالي
-                </Link>
-              ) : null}
-            </div>
-          </div>
+          <AdminPagination
+            page={result.page}
+            pageSize={result.pageSize}
+            total={result.total}
+            hrefForPage={(page) => listHref(result.filters, page)}
+            resetHref="/admin/tasks"
+            resetLabel="مسح الفلاتر"
+          />
         </div>
 
         <Card>

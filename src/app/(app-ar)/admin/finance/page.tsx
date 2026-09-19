@@ -33,6 +33,8 @@ import {
   attemptTone,
   editHref,
   exportHref,
+  financeTabHref,
+  financeTabValues,
   flattenSearchParams,
   listHref,
   operationalFilterHref,
@@ -43,8 +45,10 @@ import {
   statusTone,
   webhookMoneyTone,
   webhookTone,
-  type FinanceSearchParams as SearchParams
+  type FinanceSearchParams as SearchParams,
+  type FinanceTab
 } from "@/features/admin/finance/finance-page-helpers";
+import { AdminPagination, AdminTabs, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { currencyValues, paymentStatusValues } from "@/lib/legal-finance";
 import { formatDate, formatDateTime, formatMoney, labelFrom, paymentStatusLabels } from "@/lib/legal-format";
 import { plan35AdminListAccessibilityCopy, plan35AdminRestrictedActionCopy } from "@/lib/ui-copy";
@@ -239,105 +243,8 @@ function PaymentMobileCard({ row, query }: { row: PaymentRow; query: Record<stri
   );
 }
 
-function GatewayOperationsPanel({
-  attempts,
-  pricingRules,
-  webhookEvents
-}: {
-  attempts: PaymentAttemptRow[];
-  pricingRules: PricingRuleRow[];
-  webhookEvents: PaymentWebhookRow[];
-}) {
-  return (
-    <div className="grid gap-5 xl:grid-cols-3">
-      <Card>
-        <CardHeader>
-          <CardTitle>تسعير حجز الاستشارة</CardTitle>
-          <CardDescription>مصدر السعر الوحيد قبل إنشاء محاولة الدفع.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {pricingRules.length ? (
-            pricingRules.slice(0, 6).map((rule) => (
-              <div key={rule.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="font-semibold text-kmt-ink">{rule.label || rule.serviceCategory || "سعر عام"}</p>
-                  <Badge tone={rule.active ? "active" : "neutral"}>{rule.active ? "نشط" : "متوقف"}</Badge>
-                </div>
-                <p className="mt-1 text-kmt-muted">
-                  {formatMoney(rule.amount.toString(), rule.currency)} · {rule.mode || "كل الطرق"} · v{rule.version}
-                </p>
-              </div>
-            ))
-          ) : (
-            <StateBlock tone="empty" title="لا توجد قواعد سعر" description="يجب إنشاء قاعدة سعر نشطة قبل تفعيل checkout العام." />
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>محاولات الدفع</CardTitle>
-          <CardDescription>آخر محاولات Hosted Checkout وحجز المواعيد المؤقت.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {attempts.length ? (
-            attempts.map((attempt) => (
-              <div key={attempt.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="font-semibold text-kmt-ink">{attempt.client.fullName}</p>
-                  <Badge tone={paymentRequiresReview(attempt) ? "danger" : attemptTone(attempt.status)}>{paymentNeedsOrderVerification(attempt) ? paymentReviewCopy.ar.orderVerification : paymentRequiresReview(attempt) ? paymentReviewCopy.ar.review : attempt.status}</Badge>
-                </div>
-                <p className="mt-1 text-kmt-muted">
-                  {formatMoney(attempt.amount.toString(), attempt.currency)} · {formatDateTime(attempt.appointment.startsAt)}
-                </p>
-                <p className="mt-1 truncate text-xs text-kmt-muted">{attempt.providerSessionId || attempt.id}</p>
-              </div>
-            ))
-          ) : (
-            <StateBlock tone="empty" title="لا توجد محاولات دفع" description="ستظهر محاولات الدفع هنا بعد إنشاء أول checkout." />
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>أحداث Webhook</CardTitle>
-          <CardDescription>حالة التوقيع والمعالجة وإعادة التشغيل الآمن.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {webhookEvents.length ? (
-            webhookEvents.map((event) => {
-              const money = event.moneyComparison;
-              return (
-                <div key={event.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="truncate font-semibold text-kmt-ink">{event.eventId}</p>
-                    <div className="flex flex-wrap items-center justify-end gap-2">
-                      <Badge tone={webhookMoneyTone(money.status)}>{webhookMoneyStatusLabels[money.status] ?? money.status}</Badge>
-                      <Badge tone={webhookTone(event.processingStatus)}>{event.processingStatus}</Badge>
-                    </div>
-                  </div>
-                  <p className="mt-1 text-kmt-muted">
-                    {event.provider} · توقيع {event.signatureStatus} · replay {event.replayCount}
-                  </p>
-                  <p className="mt-1 text-xs text-kmt-muted">
-                    المطلوب من العميل: {money.expectedAmount && money.expectedCurrency ? formatMoney(money.expectedAmount, money.expectedCurrency) : "غير مرتبط"} · الواصل من الويب هوك:{" "}
-                    {money.receivedAmount && money.receivedCurrency ? formatMoney(money.receivedAmount, money.receivedCurrency) : "غير موجود"}
-                  </p>
-                  <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(event.receivedAt)}</p>
-                </div>
-              );
-            })
-          ) : (
-            <StateBlock tone="empty" title="لا توجد Webhooks" description="ستظهر أحداث بوابة الدفع بعد أول إشعار من المزود." />
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
 function PaymentGatewayOperationsPanel({
+  activeTab,
   attempts,
   attemptPage,
   attemptPageSize,
@@ -352,6 +259,7 @@ function PaymentGatewayOperationsPanel({
   webhookPageSize,
   webhookTotal
 }: {
+  activeTab: FinanceTab;
   attempts: PaymentAttemptRow[];
   attemptPage: number;
   attemptPageSize: number;
@@ -371,66 +279,29 @@ function PaymentGatewayOperationsPanel({
 
   return (
     <div className="space-y-5">
+      {activeTab === "gateway" ? (
       <Card>
         <CardHeader>
-          <CardTitle>متابعة تشغيل الدفع</CardTitle>
-          <CardDescription>فلترة سريعة لمحاولات الدفع وإشعارات البوابة، مع إبراز الحالات التي تحتاج مراجعة مالية.</CardDescription>
+          <CardTitle>وضع الحجز وبوابة الدفع</CardTitle>
+          <CardDescription>لا يتم حفظ المفاتيح هنا. عند تفعيل الدردشة مع الدفع يجب وجود سعر استشارة نشط وبوابة دفع جاهزة.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action="/admin/finance" method="get">
-            <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.finance.operationsFilters}>
-              <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.finance.attemptsSearch} className="min-w-0 flex-1 sm:min-w-72" defaultValue={query.attemptQ ?? ""} name="attemptQ" placeholder="بحث في محاولات الدفع أو رقم الهاتف" />
-              <Select className="min-w-44" defaultValue={query.attemptStatus ?? ""} label="حالة محاولة الدفع" name="attemptStatus">
-                <option value="">كل المحاولات</option>
-                {paymentAttemptStatusValues.map((status) => (
-                  <option key={status} value={status}>
-                    {paymentAttemptStatusLabels[status]}
-                  </option>
-                ))}
-              </Select>
-              <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.finance.webhooksSearch} className="min-w-0 flex-1 sm:min-w-72" defaultValue={query.webhookQ ?? ""} name="webhookQ" placeholder="بحث في إشعارات البوابة" />
-              <Select className="min-w-44" defaultValue={query.webhookStatus ?? ""} label="حالة إشعار الدفع" name="webhookStatus">
-                <option value="">كل الإشعارات</option>
-                {webhookProcessingStatusValues.map((status) => (
-                  <option key={status} value={status}>
-                    {webhookProcessingStatusLabels[status]}
-                  </option>
-                ))}
-              </Select>
-              <Select className="min-w-36" defaultValue={query.webhookProvider ?? ""} label="بوابة الدفع" name="webhookProvider">
-                <option value="">كل البوابات</option>
-                {webhookProviderValues.map((provider) => (
-                  <option key={provider} value={provider}>
-                    {webhookProviderLabels[provider]}
-                  </option>
-                ))}
-              </Select>
-              <Select className="min-w-44" defaultValue={query.webhookMoneyStatus ?? ""} label="مطابقة الأموال" name="webhookMoneyStatus">
-                <option value="">كل حالات المطابقة</option>
-                {webhookMoneyStatusValues.map((status) => (
-                  <option key={status} value={status}>
-                    {webhookMoneyStatusLabels[status]}
-                  </option>
-                ))}
-              </Select>
-              <Button type="submit" variant="secondary">
-                تطبيق
-              </Button>
-              <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={operationalFilterHref({})}>
-                مسح فلاتر التشغيل
-              </Link>
-            </FilterBar>
-          </form>
+          {canManage ? (
+            <PaymentGatewaySettingsForm settings={gatewaySettings} />
+          ) : (
+            <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.paymentSettingsManage} />
+          )}
         </CardContent>
       </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>قيمة الاستشارة ومعلومات الدفع</CardTitle>
-          <CardDescription>السعر يأتي من قواعد المكتب فقط، والبوابة النشطة تستخدم للحجوزات الجديدة دون تغيير المحاولات القديمة.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
-          <div className="space-y-3">
+      ) : null}
+      {activeTab === "pricing" ? (
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <Card>
+          <CardHeader>
+            <CardTitle>قواعد أسعار الاستشارة</CardTitle>
+            <CardDescription>السعر يأتي من قواعد المكتب فقط.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
             {pricingRules.length ? (
               pricingRules.slice(0, 8).map((rule) => (
                 <div key={rule.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
@@ -455,30 +326,50 @@ function PaymentGatewayOperationsPanel({
             ) : (
               <StateBlock tone="empty" title="لا توجد قواعد سعر" description="يجب إنشاء قاعدة سعر نشطة قبل تفعيل الدفع العام للحجوزات." />
             )}
-          </div>
+          </CardContent>
+        </Card>
 
-          <div className="space-y-5">
+        <Card>
+          <CardHeader>
+            <CardTitle>{selectedPricingRule ? "تعديل سعر الاستشارة" : "سعر استشارة جديد"}</CardTitle>
+            <CardDescription>اترك التصنيف أو الطريقة فارغة لاستخدام السعر كقاعدة عامة.</CardDescription>
+          </CardHeader>
+          <CardContent>
             {canManage ? (
-              <>
-                <div className="rounded border border-kmt-border bg-kmt-surface-muted p-4">
-                  <h3 className="font-semibold text-kmt-ink">وضع الحجز وبوابة الدفع</h3>
-                  <p className="mb-4 mt-1 text-sm leading-6 text-kmt-muted">لا يتم حفظ المفاتيح هنا. عند تفعيل الدردشة مع الدفع يجب وجود سعر استشارة نشط وبوابة دفع جاهزة.</p>
-                  <PaymentGatewaySettingsForm settings={gatewaySettings} />
-                </div>
-                <div className="rounded border border-kmt-border bg-kmt-surface-muted p-4">
-                  <h3 className="font-semibold text-kmt-ink">{selectedPricingRule ? "تعديل سعر الاستشارة" : "سعر استشارة جديد"}</h3>
-                  <p className="mb-4 mt-1 text-sm leading-6 text-kmt-muted">اترك التصنيف أو الطريقة فارغة لاستخدام السعر كقاعدة عامة.</p>
-                  <ConsultationPricingRuleForm pricingRule={selectedPricingRule ? pricingRuleFormValue(selectedPricingRule) : undefined} />
-                </div>
-              </>
+              <ConsultationPricingRuleForm pricingRule={selectedPricingRule ? pricingRuleFormValue(selectedPricingRule) : undefined} />
             ) : (
               <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.paymentSettingsManage} />
             )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-5 xl:grid-cols-2">
+          </CardContent>
+        </Card>
+      </div>
+      ) : null}
+      {activeTab === "attempts" ? (
+      <div className="space-y-5">
+        <form action="/admin/finance" method="get">
+          <input name="tab" type="hidden" value="attempts" />
+          <input type="hidden" name="webhookQ" value={query.webhookQ ?? ""} />
+          <input type="hidden" name="webhookStatus" value={query.webhookStatus ?? ""} />
+          <input type="hidden" name="webhookProvider" value={query.webhookProvider ?? ""} />
+          <input type="hidden" name="webhookMoneyStatus" value={query.webhookMoneyStatus ?? ""} />
+          <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.finance.operationsFilters}>
+            <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.finance.attemptsSearch} className="min-w-0 flex-1 sm:min-w-72" defaultValue={query.attemptQ ?? ""} name="attemptQ" placeholder="بحث في محاولات الدفع أو رقم الهاتف" />
+            <Select className="min-w-44" defaultValue={query.attemptStatus ?? ""} label="حالة محاولة الدفع" name="attemptStatus">
+              <option value="">كل المحاولات</option>
+              {paymentAttemptStatusValues.map((status) => (
+                <option key={status} value={status}>
+                  {paymentAttemptStatusLabels[status]}
+                </option>
+              ))}
+            </Select>
+            <Button type="submit" variant="secondary">
+              تطبيق
+            </Button>
+            <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={operationalFilterHref({ tab: "attempts", webhookQ: query.webhookQ ?? "", webhookStatus: query.webhookStatus ?? "", webhookProvider: query.webhookProvider ?? "", webhookMoneyStatus: query.webhookMoneyStatus ?? "" })}>
+              مسح فلاتر التشغيل
+            </Link>
+          </FilterBar>
+        </form>
         <Card>
           <CardHeader>
             <CardTitle>محاولات الدفع</CardTitle>
@@ -507,27 +398,110 @@ function PaymentGatewayOperationsPanel({
               <StateBlock tone="empty" title="لا توجد محاولات دفع" description="ستظهر محاولات الدفع هنا بعد إنشاء أول checkout." />
             )}
             {attemptTotalPages > 1 ? (
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-sm text-kmt-muted">
-                <span>
-                  صفحة {attemptPage} من {attemptTotalPages}
-                </span>
-                <div className="flex flex-wrap items-center gap-2">
-                  {attemptPage > 1 ? (
-                    <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={operationsPageHref(query, "attemptPage", attemptPage - 1)}>
-                      السابق
-                    </Link>
-                  ) : null}
-                  {attemptPage < attemptTotalPages ? (
-                    <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={operationsPageHref(query, "attemptPage", attemptPage + 1)}>
-                      التالي
-                    </Link>
-                  ) : null}
-                </div>
-              </div>
+              <AdminPagination
+                page={attemptPage}
+                pageSize={attemptPageSize}
+                total={attemptTotal}
+                hrefForPage={(page) => operationsPageHref(query, "attemptPage", page)}
+                summary={`صفحة ${attemptPage} من ${attemptTotalPages}`}
+              />
             ) : null}
           </CardContent>
         </Card>
-
+      </div>
+      ) : null}
+      {activeTab === "webhooks" ? (
+      <div className="space-y-5">
+        <div className="flex flex-wrap items-start gap-3">
+        <form action="/admin/finance" className="min-w-0 flex-1" method="get">
+          <input name="tab" type="hidden" value="webhooks" />
+          <input type="hidden" name="attemptQ" value={query.attemptQ ?? ""} />
+          <input type="hidden" name="attemptStatus" value={query.attemptStatus ?? ""} />
+          <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.finance.operationsFilters}>
+            <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.finance.webhooksSearch} className="min-w-0 flex-1 sm:min-w-72" defaultValue={query.webhookQ ?? ""} name="webhookQ" placeholder="بحث في إشعارات البوابة" />
+            <span className="hidden lg:contents">
+            <Select className="min-w-44" defaultValue={query.webhookStatus ?? ""} label="حالة إشعار الدفع" name="webhookStatus">
+              <option value="">كل الإشعارات</option>
+              {webhookProcessingStatusValues.map((status) => (
+                <option key={status} value={status}>
+                  {webhookProcessingStatusLabels[status]}
+                </option>
+              ))}
+            </Select>
+            </span>
+            <input type="hidden" name="webhookProvider" value={query.webhookProvider ?? ""} />
+            <input type="hidden" name="webhookMoneyStatus" value={query.webhookMoneyStatus ?? ""} />
+            <span className="hidden lg:contents">
+            <Button type="submit" variant="secondary">
+              تطبيق
+            </Button>
+            </span>
+          </FilterBar>
+        </form>
+        <MoreFiltersPopover triggerLabel="المزيد من الفلاتر">
+          <form action="/admin/finance" className="space-y-3" method="get">
+            <input name="tab" type="hidden" value="webhooks" />
+            <input type="hidden" name="attemptQ" value={query.attemptQ ?? ""} />
+            <input type="hidden" name="attemptStatus" value={query.attemptStatus ?? ""} />
+            <input type="hidden" name="webhookQ" value={query.webhookQ ?? ""} />
+            <input type="hidden" name="webhookStatus" value={query.webhookStatus ?? ""} />
+            <Select className="w-full" defaultValue={query.webhookProvider ?? ""} label="بوابة الدفع" name="webhookProvider">
+              <option value="">كل البوابات</option>
+              {webhookProviderValues.map((provider) => (
+                <option key={provider} value={provider}>
+                  {webhookProviderLabels[provider]}
+                </option>
+              ))}
+            </Select>
+            <Select className="w-full" defaultValue={query.webhookMoneyStatus ?? ""} label="مطابقة الأموال" name="webhookMoneyStatus">
+              <option value="">كل حالات المطابقة</option>
+              {webhookMoneyStatusValues.map((status) => (
+                <option key={status} value={status}>
+                  {webhookMoneyStatusLabels[status]}
+                </option>
+              ))}
+            </Select>
+            <Button className="w-full" type="submit" variant="secondary">
+              تطبيق
+            </Button>
+          </form>
+        </MoreFiltersPopover>
+        <MobileFiltersSheet description="ابحث وصفِّ إشعارات بوابة الدفع." title="فلاتر الويب هوك" triggerLabel="الفلاتر">
+          <form action="/admin/finance" className="space-y-3" method="get">
+            <input name="tab" type="hidden" value="webhooks" />
+            <input type="hidden" name="attemptQ" value={query.attemptQ ?? ""} />
+            <input type="hidden" name="attemptStatus" value={query.attemptStatus ?? ""} />
+            <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.finance.webhooksSearch} className="w-full" defaultValue={query.webhookQ ?? ""} name="webhookQ" placeholder="بحث في إشعارات البوابة" />
+            <Select className="w-full" defaultValue={query.webhookStatus ?? ""} label="حالة إشعار الدفع" name="webhookStatus">
+              <option value="">كل الإشعارات</option>
+              {webhookProcessingStatusValues.map((status) => (
+                <option key={status} value={status}>
+                  {webhookProcessingStatusLabels[status]}
+                </option>
+              ))}
+            </Select>
+            <Select className="w-full" defaultValue={query.webhookProvider ?? ""} label="بوابة الدفع" name="webhookProvider">
+              <option value="">كل البوابات</option>
+              {webhookProviderValues.map((provider) => (
+                <option key={provider} value={provider}>
+                  {webhookProviderLabels[provider]}
+                </option>
+              ))}
+            </Select>
+            <Select className="w-full" defaultValue={query.webhookMoneyStatus ?? ""} label="مطابقة الأموال" name="webhookMoneyStatus">
+              <option value="">كل حالات المطابقة</option>
+              {webhookMoneyStatusValues.map((status) => (
+                <option key={status} value={status}>
+                  {webhookMoneyStatusLabels[status]}
+                </option>
+              ))}
+            </Select>
+            <Button className="w-full" type="submit" variant="secondary">
+              تطبيق
+            </Button>
+          </form>
+        </MobileFiltersSheet>
+        </div>
         <Card>
           <CardHeader>
             <CardTitle>أحداث Webhook</CardTitle>
@@ -583,27 +557,18 @@ function PaymentGatewayOperationsPanel({
               <StateBlock tone="empty" title="لا توجد Webhooks" description="ستظهر أحداث بوابة الدفع بعد أول إشعار من المزود." />
             )}
             {webhookTotalPages > 1 ? (
-              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 text-sm text-kmt-muted">
-                <span>
-                  صفحة {webhookPage} من {webhookTotalPages}
-                </span>
-                <div className="flex flex-wrap items-center gap-2">
-                  {webhookPage > 1 ? (
-                    <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={operationsPageHref(query, "webhookPage", webhookPage - 1)}>
-                      السابق
-                    </Link>
-                  ) : null}
-                  {webhookPage < webhookTotalPages ? (
-                    <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={operationsPageHref(query, "webhookPage", webhookPage + 1)}>
-                      التالي
-                    </Link>
-                  ) : null}
-                </div>
-              </div>
+              <AdminPagination
+                page={webhookPage}
+                pageSize={webhookPageSize}
+                total={webhookTotal}
+                hrefForPage={(page) => operationsPageHref(query, "webhookPage", page)}
+                summary={`صفحة ${webhookPage} من ${webhookTotalPages}`}
+              />
             ) : null}
           </CardContent>
         </Card>
       </div>
+      ) : null}
     </div>
   );
 }
@@ -652,6 +617,16 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
       editPayment = null;
     }
   }
+  const activeTab: FinanceTab = financeTabValues.includes(query.tab as FinanceTab)
+    ? (query.tab as FinanceTab)
+    : "invoices";
+  const financeTabs = [
+    { value: "invoices", label: "الفواتير", href: financeTabHref(query, "invoices") },
+    { value: "gateway", label: "البوابة", href: financeTabHref(query, "gateway") },
+    { value: "pricing", label: "الأسعار", href: financeTabHref(query, "pricing") },
+    { value: "attempts", label: "المحاولات", href: financeTabHref(query, "attempts") },
+    { value: "webhooks", label: "الويب هوك", href: financeTabHref(query, "webhooks") }
+  ];
 
   return (
     <DashboardShell
@@ -682,11 +657,21 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
           </div>
         ) : null}
 
+        <AdminTabs
+          active={activeTab}
+          ariaLabel="أقسام المالية"
+          tabs={financeTabs}
+        />
+
+        {activeTab === "invoices" ? (
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
           <div className="space-y-5">
-            <form action="/admin/finance" method="get">
+            <div className="flex flex-wrap items-start gap-3">
+            <form action="/admin/finance" className="min-w-0 flex-1" method="get">
+              <input name="tab" type="hidden" value="invoices" />
               <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.finance.invoicesFilters}>
                 <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.finance.invoicesSearch} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث برقم الفاتورة أو العميل أو الإيصال" />
+                <span className="hidden lg:contents">
                 <Select className="min-w-40" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
                   <option value="">كل الحالات</option>
                   {paymentStatusValues.map((status) => (
@@ -695,6 +680,8 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
                     </option>
                   ))}
                 </Select>
+                </span>
+                <span className="hidden lg:contents">
                 <Select className="min-w-36" defaultValue={result.filters.currency ?? ""} label="العملة" name="currency">
                   <option value="">كل العملات</option>
                   {currencyValues.map((currency) => (
@@ -703,7 +690,27 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
                     </option>
                   ))}
                 </Select>
-                <Select className="min-w-48" defaultValue={result.filters.clientId ?? ""} label="العميل" name="clientId">
+                </span>
+                <input type="hidden" name="clientId" value={result.filters.clientId ?? ""} />
+                <input type="hidden" name="caseId" value={result.filters.caseId ?? ""} />
+                <input type="hidden" name="dateFrom" value={result.filters.dateFrom ?? ""} />
+                <input type="hidden" name="dateTo" value={result.filters.dateTo ?? ""} />
+                <input type="hidden" name="sortBy" value={result.filters.sortBy} />
+                <input type="hidden" name="sortDirection" value={result.filters.sortDirection} />
+                <span className="hidden lg:contents">
+                <Button type="submit" variant="secondary">
+                  تطبيق
+                </Button>
+                </span>
+              </FilterBar>
+            </form>
+            <MoreFiltersPopover triggerLabel="المزيد من الفلاتر">
+              <form action="/admin/finance" className="space-y-3" method="get">
+                <input name="tab" type="hidden" value="invoices" />
+                <input type="hidden" name="q" value={result.filters.q ?? ""} />
+                <input type="hidden" name="status" value={result.filters.status ?? ""} />
+                <input type="hidden" name="currency" value={result.filters.currency ?? ""} />
+                <Select className="w-full" defaultValue={result.filters.clientId ?? ""} label="العميل" name="clientId">
                   <option value="">كل العملاء</option>
                   {options.clients.map((client) => (
                     <option key={client.id} value={client.id}>
@@ -711,7 +718,7 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
                     </option>
                   ))}
                 </Select>
-                <Select className="min-w-48" defaultValue={result.filters.caseId ?? ""} label="القضية" name="caseId">
+                <Select className="w-full" defaultValue={result.filters.caseId ?? ""} label="القضية" name="caseId">
                   <option value="">كل القضايا</option>
                   {options.cases.map((legalCase) => (
                     <option key={legalCase.id} value={legalCase.id}>
@@ -719,24 +726,79 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
                     </option>
                   ))}
                 </Select>
-                <TextInput className="min-w-36" defaultValue={result.filters.dateFrom ?? ""} label="من" name="dateFrom" type="date" />
-                <TextInput className="min-w-36" defaultValue={result.filters.dateTo ?? ""} label="إلى" name="dateTo" type="date" />
-                <Select className="min-w-40" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+                <TextInput className="w-full" defaultValue={result.filters.dateFrom ?? ""} label="من" name="dateFrom" type="date" />
+                <TextInput className="w-full" defaultValue={result.filters.dateTo ?? ""} label="إلى" name="dateTo" type="date" />
+                <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
                   <option value="issueDate">تاريخ الإصدار</option>
                   <option value="dueDate">تاريخ الاستحقاق</option>
                   <option value="createdAt">تاريخ الإدخال</option>
                   <option value="amount">القيمة</option>
                   <option value="status">الحالة</option>
                 </Select>
-                <Select className="min-w-32" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+                <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
                   <option value="desc">تنازلي</option>
                   <option value="asc">تصاعدي</option>
                 </Select>
-                <Button type="submit" variant="secondary">
+                <Button className="w-full" type="submit" variant="secondary">
                   تطبيق
                 </Button>
-              </FilterBar>
-            </form>
+              </form>
+            </MoreFiltersPopover>
+            <MobileFiltersSheet description="ابحث وصفِّ الفواتير." title="فلاتر الفواتير" triggerLabel="الفلاتر">
+              <form action="/admin/finance" className="space-y-3" method="get">
+                <input name="tab" type="hidden" value="invoices" />
+                <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.finance.invoicesSearch} className="w-full" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث برقم الفاتورة أو العميل أو الإيصال" />
+                <Select className="w-full" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
+                  <option value="">كل الحالات</option>
+                  {paymentStatusValues.map((status) => (
+                    <option key={status} value={status}>
+                      {labelFrom(paymentStatusLabels, status)}
+                    </option>
+                  ))}
+                </Select>
+                <Select className="w-full" defaultValue={result.filters.currency ?? ""} label="العملة" name="currency">
+                  <option value="">كل العملات</option>
+                  {currencyValues.map((currency) => (
+                    <option key={currency} value={currency}>
+                      {currency}
+                    </option>
+                  ))}
+                </Select>
+                <Select className="w-full" defaultValue={result.filters.clientId ?? ""} label="العميل" name="clientId">
+                  <option value="">كل العملاء</option>
+                  {options.clients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.fullName}
+                    </option>
+                  ))}
+                </Select>
+                <Select className="w-full" defaultValue={result.filters.caseId ?? ""} label="القضية" name="caseId">
+                  <option value="">كل القضايا</option>
+                  {options.cases.map((legalCase) => (
+                    <option key={legalCase.id} value={legalCase.id}>
+                      {legalCase.internalFileNumber} - {legalCase.title}
+                    </option>
+                  ))}
+                </Select>
+                <TextInput className="w-full" defaultValue={result.filters.dateFrom ?? ""} label="من" name="dateFrom" type="date" />
+                <TextInput className="w-full" defaultValue={result.filters.dateTo ?? ""} label="إلى" name="dateTo" type="date" />
+                <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+                  <option value="issueDate">تاريخ الإصدار</option>
+                  <option value="dueDate">تاريخ الاستحقاق</option>
+                  <option value="createdAt">تاريخ الإدخال</option>
+                  <option value="amount">القيمة</option>
+                  <option value="status">الحالة</option>
+                </Select>
+                <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+                  <option value="desc">تنازلي</option>
+                  <option value="asc">تصاعدي</option>
+                </Select>
+                <Button className="w-full" type="submit" variant="secondary">
+                  تطبيق
+                </Button>
+              </form>
+            </MobileFiltersSheet>
+            </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
               <p>{result.total} فاتورة داخل الفلاتر الحالية</p>
@@ -752,23 +814,14 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
 
             <DataTable caption={plan35AdminListAccessibilityCopy.finance.invoicesTable} columns={columns(query)} rows={result.items} empty="لا توجد فواتير مطابقة للفلاتر الحالية." mobileRender={(row) => <PaymentMobileCard row={row} query={query} />} />
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/finance">
-                مسح الفلاتر
-              </Link>
-              <div className="flex flex-wrap items-center gap-3">
-                {result.page > 1 ? (
-                  <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page - 1)}>
-                    السابق
-                  </Link>
-                ) : null}
-                {result.page < totalPages ? (
-                  <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page + 1)}>
-                    التالي
-                  </Link>
-                ) : null}
-              </div>
-            </div>
+            <AdminPagination
+              page={result.page}
+              pageSize={result.pageSize}
+              total={result.total}
+              hrefForPage={(page) => listHref(result.filters, page)}
+              resetHref="/admin/finance?tab=invoices"
+              resetLabel="مسح الفلاتر"
+            />
           </div>
 
           <Card>
@@ -792,8 +845,9 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
             </CardContent>
           </Card>
         </div>
-
+        ) : null}
         <PaymentGatewayOperationsPanel
+          activeTab={activeTab}
           attempts={paymentAttempts.items}
           attemptPage={paymentAttempts.page}
           attemptPageSize={paymentAttempts.pageSize}

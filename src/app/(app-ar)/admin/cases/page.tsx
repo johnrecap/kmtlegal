@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
+import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { Badge, Button, ButtonLink, DataRecordCard, DataTable, FilterBar, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { caseStatusLabels, formatDateTime, labelFrom, priorityLabels } from "@/lib/legal-format";
@@ -213,60 +214,136 @@ export default async function AdminCasesPage({ searchParams }: { searchParams?: 
       notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="space-y-5">
-        <form action="/admin/cases" method="get">
-          <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.cases.filters}>
-            <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.cases.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث برقم الملف أو العميل أو نوع القضية" />
-            <Select className="min-w-44" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
-              <option value="">كل الحالات</option>
-              {caseStatusOptions.map((status) => (
-                <option key={status} value={status}>
-                  {labelFrom(caseStatusLabels, status)}
-                </option>
-              ))}
-            </Select>
-            <Select className="min-w-40" defaultValue={result.filters.priority ?? ""} label="الأولوية" name="priority">
-              <option value="">كل الأولويات</option>
-              {priorityOptions.map((priority) => (
-                <option key={priority} value={priority}>
-                  {labelFrom(priorityLabels, priority)}
-                </option>
-              ))}
-            </Select>
-            <Select className="min-w-44" defaultValue={result.filters.caseType ?? ""} label="نوع القضية" name="caseType">
-              <option value="">كل الأنواع</option>
-              {options.caseTypes.map((caseType) => (
-                <option key={caseType} value={caseType}>
-                  {caseType}
-                </option>
-              ))}
-            </Select>
-            {options.lawyers.length ? (
-              <Select className="min-w-44" defaultValue={result.filters.assignedLawyerId ?? ""} label="المحامي" name="assignedLawyerId">
-                <option value="">كل المحامين</option>
-                {options.lawyers.map((lawyer) => (
-                  <option key={lawyer.id} value={lawyer.id}>
-                    {lawyer.name}
+        <div className="flex flex-wrap items-start gap-3">
+          <form action="/admin/cases" className="min-w-0 flex-1" method="get">
+            <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.cases.filters}>
+              <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.cases.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث برقم الملف أو العميل أو نوع القضية" />
+              <span className="hidden lg:contents">
+              <Select className="min-w-44" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
+                <option value="">كل الحالات</option>
+                {caseStatusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {labelFrom(caseStatusLabels, status)}
                   </option>
                 ))}
               </Select>
-            ) : null}
-            <Select className="min-w-40" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
-              <option value="updatedAt">آخر تحديث</option>
-              <option value="createdAt">تاريخ الإنشاء</option>
-              <option value="nextSessionAt">الجلسة القادمة</option>
-              <option value="internalFileNumber">رقم الملف</option>
-              <option value="status">الحالة</option>
-              <option value="priority">الأولوية</option>
-            </Select>
-            <Select className="min-w-32" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
-              <option value="desc">تنازلي</option>
-              <option value="asc">تصاعدي</option>
-            </Select>
-            <Button type="submit" variant="secondary">
-              تطبيق
-            </Button>
-          </FilterBar>
-        </form>
+              </span>
+              <span className="hidden lg:contents">
+              <Select className="min-w-40" defaultValue={result.filters.priority ?? ""} label="الأولوية" name="priority">
+                <option value="">كل الأولويات</option>
+                {priorityOptions.map((priority) => (
+                  <option key={priority} value={priority}>
+                    {labelFrom(priorityLabels, priority)}
+                  </option>
+                ))}
+              </Select>
+              </span>
+              <input type="hidden" name="caseType" value={result.filters.caseType ?? ""} />
+              <input type="hidden" name="assignedLawyerId" value={result.filters.assignedLawyerId ?? ""} />
+              <input type="hidden" name="sortBy" value={result.filters.sortBy} />
+              <input type="hidden" name="sortDirection" value={result.filters.sortDirection} />
+              <span className="hidden lg:contents">
+              <Button type="submit" variant="secondary">
+                تطبيق
+              </Button>
+              </span>
+            </FilterBar>
+          </form>
+          <MoreFiltersPopover triggerLabel="المزيد من الفلاتر">
+            <form action="/admin/cases" className="space-y-3" method="get">
+              <input type="hidden" name="q" value={result.filters.q ?? ""} />
+              <input type="hidden" name="status" value={result.filters.status ?? ""} />
+              <input type="hidden" name="priority" value={result.filters.priority ?? ""} />
+              <Select className="w-full" defaultValue={result.filters.caseType ?? ""} label="نوع القضية" name="caseType">
+                <option value="">كل الأنواع</option>
+                {options.caseTypes.map((caseType) => (
+                  <option key={caseType} value={caseType}>
+                    {caseType}
+                  </option>
+                ))}
+              </Select>
+              {options.lawyers.length ? (
+                <Select className="w-full" defaultValue={result.filters.assignedLawyerId ?? ""} label="المحامي" name="assignedLawyerId">
+                  <option value="">كل المحامين</option>
+                  {options.lawyers.map((lawyer) => (
+                    <option key={lawyer.id} value={lawyer.id}>
+                      {lawyer.name}
+                    </option>
+                  ))}
+                </Select>
+              ) : null}
+              <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+                <option value="updatedAt">آخر تحديث</option>
+                <option value="createdAt">تاريخ الإنشاء</option>
+                <option value="nextSessionAt">الجلسة القادمة</option>
+                <option value="internalFileNumber">رقم الملف</option>
+                <option value="status">الحالة</option>
+                <option value="priority">الأولوية</option>
+              </Select>
+              <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+                <option value="desc">تنازلي</option>
+                <option value="asc">تصاعدي</option>
+              </Select>
+              <Button className="w-full" type="submit" variant="secondary">
+                تطبيق
+              </Button>
+            </form>
+          </MoreFiltersPopover>
+          <MobileFiltersSheet description="ابحث وصفِّ قائمة القضايا." title="فلاتر القضايا" triggerLabel="الفلاتر">
+            <form action="/admin/cases" className="space-y-3" method="get">
+              <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.cases.search} className="w-full" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث برقم الملف أو العميل أو نوع القضية" />
+              <Select className="w-full" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
+                <option value="">كل الحالات</option>
+                {caseStatusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {labelFrom(caseStatusLabels, status)}
+                  </option>
+                ))}
+              </Select>
+              <Select className="w-full" defaultValue={result.filters.priority ?? ""} label="الأولوية" name="priority">
+                <option value="">كل الأولويات</option>
+                {priorityOptions.map((priority) => (
+                  <option key={priority} value={priority}>
+                    {labelFrom(priorityLabels, priority)}
+                  </option>
+                ))}
+              </Select>
+              <Select className="w-full" defaultValue={result.filters.caseType ?? ""} label="نوع القضية" name="caseType">
+                <option value="">كل الأنواع</option>
+                {options.caseTypes.map((caseType) => (
+                  <option key={caseType} value={caseType}>
+                    {caseType}
+                  </option>
+                ))}
+              </Select>
+              {options.lawyers.length ? (
+                <Select className="w-full" defaultValue={result.filters.assignedLawyerId ?? ""} label="المحامي" name="assignedLawyerId">
+                  <option value="">كل المحامين</option>
+                  {options.lawyers.map((lawyer) => (
+                    <option key={lawyer.id} value={lawyer.id}>
+                      {lawyer.name}
+                    </option>
+                  ))}
+                </Select>
+              ) : null}
+              <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+                <option value="updatedAt">آخر تحديث</option>
+                <option value="createdAt">تاريخ الإنشاء</option>
+                <option value="nextSessionAt">الجلسة القادمة</option>
+                <option value="internalFileNumber">رقم الملف</option>
+                <option value="status">الحالة</option>
+                <option value="priority">الأولوية</option>
+              </Select>
+              <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+                <option value="desc">تنازلي</option>
+                <option value="asc">تصاعدي</option>
+              </Select>
+              <Button className="w-full" type="submit" variant="secondary">
+                تطبيق
+              </Button>
+            </form>
+          </MobileFiltersSheet>
+        </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
           <p>{result.total} ملف قضية</p>
@@ -277,23 +354,14 @@ export default async function AdminCasesPage({ searchParams }: { searchParams?: 
 
         <DataTable caption={plan35AdminListAccessibilityCopy.cases.table} columns={columns} rows={result.items} empty="لا توجد قضايا مطابقة للفلاتر الحالية." mobileRender={(row) => <CaseMobileCard row={row} />} />
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/cases">
-            مسح الفلاتر
-          </Link>
-          <div className="flex flex-wrap items-center gap-3">
-            {result.page > 1 ? (
-              <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page - 1)}>
-                السابق
-              </Link>
-            ) : null}
-            {result.page < totalPages ? (
-              <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page + 1)}>
-                التالي
-              </Link>
-            ) : null}
-          </div>
-        </div>
+        <AdminPagination
+          page={result.page}
+          pageSize={result.pageSize}
+          total={result.total}
+          hrefForPage={(page) => listHref(result.filters, page)}
+          resetHref="/admin/cases"
+          resetLabel="مسح الفلاتر"
+        />
 
         <StateBlock
           title={adminCurrentCapabilityCopy.casesListScopeTitle}

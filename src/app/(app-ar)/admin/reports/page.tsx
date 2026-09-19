@@ -4,6 +4,7 @@ import Link from "next/link";
 import { paymentReviewCopy } from "@/lib/ui-copy";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
+import { CountingNumber } from "@/components/animate-ui";
 import {
   Badge,
   Button,
@@ -235,25 +236,25 @@ export default async function AdminReportsPage({ searchParams }: { searchParams?
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="إجمالي الفواتير"
-            value={String(report.finance.summary.invoiceCount)}
+            value={<CountingNumber initiallyStable number={report.finance.summary.invoiceCount} />}
             meta={summaryAmount(report.finance.summary.totalAmount, selectedCurrency)}
           />
-          <MetricCard label="مدفوع" value={String(report.finance.summary.paidCount)} meta={summaryAmount(report.finance.summary.paidAmount, selectedCurrency)} />
-          <MetricCard label="مفتوح" value={String(report.finance.summary.openCount)} meta={summaryAmount(report.finance.summary.openAmount, selectedCurrency)} />
-          <MetricCard label="متأخر" value={String(report.finance.summary.overdueCount)} meta={summaryAmount(report.finance.summary.overdueAmount, selectedCurrency)} />
+          <MetricCard label="مدفوع" value={<CountingNumber initiallyStable number={report.finance.summary.paidCount} />} meta={summaryAmount(report.finance.summary.paidAmount, selectedCurrency)} />
+          <MetricCard label="مفتوح" value={<CountingNumber initiallyStable number={report.finance.summary.openCount} />} meta={summaryAmount(report.finance.summary.openAmount, selectedCurrency)} />
+          <MetricCard label="متأخر" value={<CountingNumber initiallyStable number={report.finance.summary.overdueCount} />} meta={summaryAmount(report.finance.summary.overdueAmount, selectedCurrency)} />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="كل العملاء" value={String(report.operations.clients.total)} meta="ملفات CRM غير محذوفة" />
-          <MetricCard label="عملاء نشطون" value={String(report.operations.clients.active)} meta="status = ACTIVE" />
+          <MetricCard label="كل العملاء" value={<CountingNumber initiallyStable number={report.operations.clients.total} />} meta="ملفات CRM غير محذوفة" />
+          <MetricCard label="عملاء نشطون" value={<CountingNumber initiallyStable number={report.operations.clients.active} />} meta="status = ACTIVE" />
           <MetricCard
             label="طلبات استشارة"
-            value={String(report.operations.consultationsByStatus.reduce((sum, item) => sum + item.count, 0))}
+            value={<CountingNumber initiallyStable number={report.operations.consultationsByStatus.reduce((sum, item) => sum + item.count, 0)} />}
             meta="حسب نطاق التاريخ"
           />
           <MetricCard
             label="مهام داخلية"
-            value={String(report.operations.tasksByStatus.reduce((sum, item) => sum + item.count, 0))}
+            value={<CountingNumber initiallyStable number={report.operations.tasksByStatus.reduce((sum, item) => sum + item.count, 0)} />}
             meta="حسب نطاق التاريخ"
           />
         </div>

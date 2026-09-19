@@ -27,6 +27,8 @@ export type AdminPaginationProps = {
  * `hrefForPage`, conditional prev/next, reset link, count summary) so the
  * Phase 10 list migration is mechanical with zero behavior drift. Page
  * numbers render with an ellipsis window; prev/next chevrons mirror in RTL.
+ * Below the `sm` breakpoint only prev + current + next stay visible (the
+ * full number window overflows 390px viewports — verified by probe).
  * Labels arrive via props (Arabic defaults match the strings already in
  * production on every admin list page) — no new copy here.
  */
@@ -92,11 +94,11 @@ export function AdminPagination({
             ) : null}
             {windowPages.map((entry, index) =>
               entry === "ellipsis" ? (
-                <PaginationItem key={`ellipsis-${index}`}>
+                <PaginationItem key={`ellipsis-${index}`} className="hidden sm:block">
                   <PaginationEllipsis />
                 </PaginationItem>
               ) : (
-                <PaginationItem key={entry}>
+                <PaginationItem key={entry} className={entry === current ? undefined : "hidden sm:block"}>
                   <PaginationLink href={hrefForPage(entry)} isActive={entry === current}>
                     {entry}
                   </PaginationLink>

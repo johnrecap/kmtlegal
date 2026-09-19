@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
+import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, FilterBar, Select, StateBlock, TextInput } from "@/components/ui";
 import {
   AppointmentRescheduleForm,
@@ -139,10 +140,12 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
     >
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
         <div className="space-y-5">
-          <form action="/admin/calendar" method="get">
+          <div className="flex flex-wrap items-start gap-3">
+          <form action="/admin/calendar" className="min-w-0 flex-1" method="get">
             <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.calendar.filters}>
               <TextInput className="min-w-40" defaultValue={formatCairoDateInput(result.from)} label="من" name="from" type="date" />
               <TextInput className="min-w-40" defaultValue={formatCairoDateInput(result.to)} label="إلى" name="to" type="date" />
+              <span className="hidden lg:contents">
               <Select className="min-w-44" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
                 <option value="">كل الحالات</option>
                 {appointmentStatusOptions.map((status) => (
@@ -151,7 +154,22 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                   </option>
                 ))}
               </Select>
-              <Select className="min-w-40" defaultValue={result.filters.mode ?? ""} label="الطريقة" name="mode">
+              </span>
+              <input type="hidden" name="mode" value={result.filters.mode ?? ""} />
+              <input type="hidden" name="lawyerId" value={result.filters.lawyerId ?? ""} />
+              <span className="hidden lg:contents">
+              <Button type="submit" variant="secondary">
+                تطبيق
+              </Button>
+              </span>
+            </FilterBar>
+          </form>
+          <MoreFiltersPopover triggerLabel="المزيد من الفلاتر">
+            <form action="/admin/calendar" className="space-y-3" method="get">
+              <input type="hidden" name="from" value={formatCairoDateInput(result.from)} />
+              <input type="hidden" name="to" value={formatCairoDateInput(result.to)} />
+              <input type="hidden" name="status" value={result.filters.status ?? ""} />
+              <Select className="w-full" defaultValue={result.filters.mode ?? ""} label="الطريقة" name="mode">
                 <option value="">كل الطرق</option>
                 {appointmentModeOptions.map((mode) => (
                   <option key={mode} value={mode}>
@@ -160,7 +178,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                 ))}
               </Select>
               {filterOptions.lawyers.length ? (
-                <Select className="min-w-44" defaultValue={result.filters.lawyerId ?? ""} label="المحامي" name="lawyerId">
+                <Select className="w-full" defaultValue={result.filters.lawyerId ?? ""} label="المحامي" name="lawyerId">
                   <option value="">كل المحامين</option>
                   {filterOptions.lawyers.map((lawyer: CalendarLawyerOption) => (
                     <option key={lawyer.id} value={lawyer.id}>
@@ -169,11 +187,47 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                   ))}
                 </Select>
               ) : null}
-              <Button type="submit" variant="secondary">
+              <Button className="w-full" type="submit" variant="secondary">
                 تطبيق
               </Button>
-            </FilterBar>
-          </form>
+            </form>
+          </MoreFiltersPopover>
+          <MobileFiltersSheet description="صفِّ مواعيد التقويم حسب الفترة والحالة." title="فلاتر التقويم" triggerLabel="الفلاتر">
+            <form action="/admin/calendar" className="space-y-3" method="get">
+              <TextInput className="w-full" defaultValue={formatCairoDateInput(result.from)} label="من" name="from" type="date" />
+              <TextInput className="w-full" defaultValue={formatCairoDateInput(result.to)} label="إلى" name="to" type="date" />
+              <Select className="w-full" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
+                <option value="">كل الحالات</option>
+                {appointmentStatusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {labelFrom(appointmentStatusLabels, status)}
+                  </option>
+                ))}
+              </Select>
+              <Select className="w-full" defaultValue={result.filters.mode ?? ""} label="الطريقة" name="mode">
+                <option value="">كل الطرق</option>
+                {appointmentModeOptions.map((mode) => (
+                  <option key={mode} value={mode}>
+                    {labelFrom(modeLabels, mode)}
+                  </option>
+                ))}
+              </Select>
+              {filterOptions.lawyers.length ? (
+                <Select className="w-full" defaultValue={result.filters.lawyerId ?? ""} label="المحامي" name="lawyerId">
+                  <option value="">كل المحامين</option>
+                  {filterOptions.lawyers.map((lawyer: CalendarLawyerOption) => (
+                    <option key={lawyer.id} value={lawyer.id}>
+                      {lawyer.name}
+                    </option>
+                  ))}
+                </Select>
+              ) : null}
+              <Button className="w-full" type="submit" variant="secondary">
+                تطبيق
+              </Button>
+            </form>
+          </MobileFiltersSheet>
+          </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
             <p>{plan35CalendarUiCopy.visibleSummary(result.total, result.items.length, result.page, totalPages)}</p>
@@ -263,21 +317,15 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
           )}
 
           {result.total > result.pageSize ? (
-            <nav aria-label={plan35AdminListAccessibilityCopy.calendar.pagination} className="flex flex-wrap items-center justify-between gap-3 rounded border border-kmt-border bg-white p-3 text-sm">
-              <span className="text-kmt-muted">{plan35CalendarUiCopy.page(result.page, totalPages)}</span>
-              <div className="flex items-center gap-2">
-                {result.page > 1 ? (
-                  <Link className="font-semibold text-kmt-navy hover:underline" href={calendarHref({ ...pageFilters, page: String(result.page - 1) })}>
-                    {plan35CalendarUiCopy.previous}
-                  </Link>
-                ) : null}
-                {result.page < totalPages ? (
-                  <Link className="font-semibold text-kmt-navy hover:underline" href={calendarHref({ ...pageFilters, page: String(result.page + 1) })}>
-                    {plan35CalendarUiCopy.next}
-                  </Link>
-                ) : null}
-              </div>
-            </nav>
+            <AdminPagination
+              page={result.page}
+              pageSize={result.pageSize}
+              total={result.total}
+              hrefForPage={(page) => calendarHref({ ...pageFilters, page: String(page) })}
+              summary={plan35CalendarUiCopy.page(result.page, totalPages)}
+              resetHref="/admin/calendar"
+              resetLabel="إعادة الضبط"
+            />
           ) : null}
         </div>
 

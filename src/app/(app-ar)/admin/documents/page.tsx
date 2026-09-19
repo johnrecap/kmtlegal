@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
+import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import {
   Badge,
   Button,
@@ -16,7 +17,6 @@ import {
   Select,
   StateBlock
 } from "@/components/ui";
-import { buttonClasses } from "@/components/ui/button";
 import {
   AdminDocumentUploadForm,
   DocumentActionForm,
@@ -185,7 +185,8 @@ export default async function AdminDocumentsPage({ searchParams }: { searchParam
     >
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
         <div className="space-y-5">
-          <form action="/admin/documents" method="get">
+          <div className="flex flex-wrap items-start gap-3">
+          <form action="/admin/documents" className="min-w-0 flex-1" method="get">
             <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.documents.filters}>
               <SearchInput
                 ariaLabel={plan35AdminListAccessibilityCopy.documents.search}
@@ -194,6 +195,7 @@ export default async function AdminDocumentsPage({ searchParams }: { searchParam
                 name="q"
                 placeholder="ابحث باسم الملف أو العميل أو القضية"
               />
+              <span className="hidden lg:contents">
               <Select className="min-w-40" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
                 <option value="">كل الحالات</option>
                 {documentStatusOptions.map((status) => (
@@ -202,6 +204,8 @@ export default async function AdminDocumentsPage({ searchParams }: { searchParam
                   </option>
                 ))}
               </Select>
+              </span>
+              <span className="hidden lg:contents">
               <Select className="min-w-40" defaultValue={result.filters.category ?? ""} label="التصنيف" name="category">
                 <option value="">كل التصنيفات</option>
                 {documentCategoryOptions.map((category) => (
@@ -210,7 +214,24 @@ export default async function AdminDocumentsPage({ searchParams }: { searchParam
                   </option>
                 ))}
               </Select>
-              <Select className="min-w-40" defaultValue={result.filters.visibility ?? ""} label="الظهور" name="visibility">
+              </span>
+              <input type="hidden" name="visibility" value={result.filters.visibility ?? ""} />
+              <input type="hidden" name="ownerClientId" value={result.filters.ownerClientId ?? ""} />
+              <input type="hidden" name="sortBy" value={result.filters.sortBy} />
+              <input type="hidden" name="sortDirection" value={result.filters.sortDirection} />
+              <span className="hidden lg:contents">
+              <Button type="submit" variant="secondary">
+                تطبيق
+              </Button>
+              </span>
+            </FilterBar>
+          </form>
+          <MoreFiltersPopover triggerLabel="المزيد من الفلاتر">
+            <form action="/admin/documents" className="space-y-3" method="get">
+              <input type="hidden" name="q" value={result.filters.q ?? ""} />
+              <input type="hidden" name="status" value={result.filters.status ?? ""} />
+              <input type="hidden" name="category" value={result.filters.category ?? ""} />
+              <Select className="w-full" defaultValue={result.filters.visibility ?? ""} label="الظهور" name="visibility">
                 <option value="">كل مستويات الظهور</option>
                 {documentVisibilityOptions.map((visibility) => (
                   <option key={visibility} value={visibility}>
@@ -220,7 +241,7 @@ export default async function AdminDocumentsPage({ searchParams }: { searchParam
               </Select>
               {options.clients.length ? (
                 <Select
-                  className="min-w-44"
+                  className="w-full"
                   defaultValue={result.filters.ownerClientId ?? ""}
                   label="العميل"
                   name="ownerClientId"
@@ -233,22 +254,87 @@ export default async function AdminDocumentsPage({ searchParams }: { searchParam
                   ))}
                 </Select>
               ) : null}
-              <Select className="min-w-40" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+              <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
                 <option value="createdAt">تاريخ الرفع</option>
                 <option value="updatedAt">آخر تحديث</option>
                 <option value="fileName">اسم الملف</option>
                 <option value="status">الحالة</option>
                 <option value="category">التصنيف</option>
               </Select>
-              <Select className="min-w-32" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+              <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
                 <option value="desc">تنازلي</option>
                 <option value="asc">تصاعدي</option>
               </Select>
-              <Button type="submit" variant="secondary">
+              <Button className="w-full" type="submit" variant="secondary">
                 تطبيق
               </Button>
-            </FilterBar>
-          </form>
+            </form>
+          </MoreFiltersPopover>
+          <MobileFiltersSheet description="ابحث وصفِّ مستندات المكتب." title="فلاتر المستندات" triggerLabel="الفلاتر">
+            <form action="/admin/documents" className="space-y-3" method="get">
+              <SearchInput
+                ariaLabel={plan35AdminListAccessibilityCopy.documents.search}
+                className="w-full"
+                defaultValue={result.filters.q ?? ""}
+                name="q"
+                placeholder="ابحث باسم الملف أو العميل أو القضية"
+              />
+              <Select className="w-full" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
+                <option value="">كل الحالات</option>
+                {documentStatusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {labelFrom(documentStatusLabels, status)}
+                  </option>
+                ))}
+              </Select>
+              <Select className="w-full" defaultValue={result.filters.category ?? ""} label="التصنيف" name="category">
+                <option value="">كل التصنيفات</option>
+                {documentCategoryOptions.map((category) => (
+                  <option key={category} value={category}>
+                    {labelFrom(documentCategoryLabels, category)}
+                  </option>
+                ))}
+              </Select>
+              <Select className="w-full" defaultValue={result.filters.visibility ?? ""} label="الظهور" name="visibility">
+                <option value="">كل مستويات الظهور</option>
+                {documentVisibilityOptions.map((visibility) => (
+                  <option key={visibility} value={visibility}>
+                    {labelFrom(documentVisibilityLabels, visibility)}
+                  </option>
+                ))}
+              </Select>
+              {options.clients.length ? (
+                <Select
+                  className="w-full"
+                  defaultValue={result.filters.ownerClientId ?? ""}
+                  label="العميل"
+                  name="ownerClientId"
+                >
+                  <option value="">كل العملاء</option>
+                  {options.clients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.fullName}
+                    </option>
+                  ))}
+                </Select>
+              ) : null}
+              <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+                <option value="createdAt">تاريخ الرفع</option>
+                <option value="updatedAt">آخر تحديث</option>
+                <option value="fileName">اسم الملف</option>
+                <option value="status">الحالة</option>
+                <option value="category">التصنيف</option>
+              </Select>
+              <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+                <option value="desc">تنازلي</option>
+                <option value="asc">تصاعدي</option>
+              </Select>
+              <Button className="w-full" type="submit" variant="secondary">
+                تطبيق
+              </Button>
+            </form>
+          </MobileFiltersSheet>
+          </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
             <p>{result.total} مستند داخل الفلاتر الحالية</p>
@@ -333,23 +419,14 @@ export default async function AdminDocumentsPage({ searchParams }: { searchParam
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/documents">
-              مسح الفلاتر
-            </Link>
-            <div className="flex flex-wrap items-center gap-3">
-              {result.page > 1 ? (
-                <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page - 1)}>
-                  السابق
-                </Link>
-              ) : null}
-              {result.page < totalPages ? (
-                <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page + 1)}>
-                  التالي
-                </Link>
-              ) : null}
-            </div>
-          </div>
+          <AdminPagination
+            page={result.page}
+            pageSize={result.pageSize}
+            total={result.total}
+            hrefForPage={(page) => listHref(result.filters, page)}
+            resetHref="/admin/documents"
+            resetLabel="مسح الفلاتر"
+          />
         </div>
 
         <Card>

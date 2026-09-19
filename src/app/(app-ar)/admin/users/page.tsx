@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
+import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { AdminUserCreateForm } from "@/features/admin/governance/governance-forms";
@@ -142,9 +143,11 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
       <div className="space-y-5">
         {canCreateAdminUsers(guard.context.principal) ? <AdminUserCreateForm roles={options.roles} /> : null}
 
-        <form action="/admin/users" method="get">
+        <div className="flex flex-wrap items-start gap-3">
+        <form action="/admin/users" className="min-w-0 flex-1" method="get">
           <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.users.filters}>
             <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.users.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="بحث بالاسم أو البريد أو الهاتف" />
+            <span className="hidden lg:contents">
             <Select className="min-w-44" defaultValue={result.filters.roleId ?? ""} label="الدور" name="roleId">
               <option value="">كل الأدوار</option>
               {options.roles.map((role) => (
@@ -153,6 +156,8 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
                 </option>
               ))}
             </Select>
+            </span>
+            <span className="hidden lg:contents">
             <Select className="min-w-40" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
               <option value="">كل الحالات</option>
               {options.statuses.map((status) => (
@@ -161,22 +166,73 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
                 </option>
               ))}
             </Select>
-            <Select className="min-w-40" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+            </span>
+            <input type="hidden" name="sortBy" value={result.filters.sortBy} />
+            <input type="hidden" name="sortDirection" value={result.filters.sortDirection} />
+            <span className="hidden lg:contents">
+            <Button type="submit" variant="secondary">
+              تطبيق
+            </Button>
+            </span>
+          </FilterBar>
+        </form>
+        <MoreFiltersPopover triggerLabel="المزيد من الفلاتر">
+          <form action="/admin/users" className="space-y-3" method="get">
+            <input type="hidden" name="q" value={result.filters.q ?? ""} />
+            <input type="hidden" name="roleId" value={result.filters.roleId ?? ""} />
+            <input type="hidden" name="status" value={result.filters.status ?? ""} />
+            <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
               <option value="createdAt">تاريخ الإنشاء</option>
               <option value="updatedAt">آخر تحديث</option>
               <option value="name">الاسم</option>
               <option value="email">البريد</option>
               <option value="status">الحالة</option>
             </Select>
-            <Select className="min-w-32" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+            <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
               <option value="desc">تنازلي</option>
               <option value="asc">تصاعدي</option>
             </Select>
-            <Button type="submit" variant="secondary">
+            <Button className="w-full" type="submit" variant="secondary">
               تطبيق
             </Button>
-          </FilterBar>
-        </form>
+          </form>
+        </MoreFiltersPopover>
+        <MobileFiltersSheet description="ابحث وصفِّ حسابات المستخدمين." title="فلاتر المستخدمين" triggerLabel="الفلاتر">
+          <form action="/admin/users" className="space-y-3" method="get">
+            <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.users.search} className="w-full" defaultValue={result.filters.q ?? ""} name="q" placeholder="بحث بالاسم أو البريد أو الهاتف" />
+            <Select className="w-full" defaultValue={result.filters.roleId ?? ""} label="الدور" name="roleId">
+              <option value="">كل الأدوار</option>
+              {options.roles.map((role) => (
+                <option key={role.id} value={role.id}>
+                  {roleDisplayLabel(role.name)}
+                </option>
+              ))}
+            </Select>
+            <Select className="w-full" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
+              <option value="">كل الحالات</option>
+              {options.statuses.map((status) => (
+                <option key={status} value={status}>
+                  {userStatusLabel(status)}
+                </option>
+              ))}
+            </Select>
+            <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+              <option value="createdAt">تاريخ الإنشاء</option>
+              <option value="updatedAt">آخر تحديث</option>
+              <option value="name">الاسم</option>
+              <option value="email">البريد</option>
+              <option value="status">الحالة</option>
+            </Select>
+            <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+              <option value="desc">تنازلي</option>
+              <option value="asc">تصاعدي</option>
+            </Select>
+            <Button className="w-full" type="submit" variant="secondary">
+              تطبيق
+            </Button>
+          </form>
+        </MobileFiltersSheet>
+        </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
           <p>{result.total} مستخدم داخل الفلاتر الحالية</p>
@@ -187,23 +243,14 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
 
         <DataTable caption={plan35AdminListAccessibilityCopy.users.table} columns={columns} rows={result.items} empty="لا توجد حسابات مطابقة للفلاتر الحالية." mobileRender={(row) => <UserMobileCard row={row} />} />
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/users">
-            مسح الفلاتر
-          </Link>
-          <div className="flex flex-wrap items-center gap-3">
-            {result.page > 1 ? (
-              <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page - 1)}>
-                السابق
-              </Link>
-            ) : null}
-            {result.page < totalPages ? (
-              <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page + 1)}>
-                التالي
-              </Link>
-            ) : null}
-          </div>
-        </div>
+        <AdminPagination
+          page={result.page}
+          pageSize={result.pageSize}
+          total={result.total}
+          hrefForPage={(page) => listHref(result.filters, page)}
+          resetHref="/admin/users"
+          resetLabel="مسح الفلاتر"
+        />
       </div>
     </DashboardShell>
   );

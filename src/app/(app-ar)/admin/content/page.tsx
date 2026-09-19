@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
+import { AdminPagination, AdminTabs, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DataRecordCard, DataTable, FilterBar, MetricCard, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { AiSocialDraftForm, ArticleForm, CaseStudyForm, SocialDraftForm } from "@/features/admin/content/content-forms";
@@ -330,31 +331,25 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
           <MetricCard label="الإعلام والسوشيال" value={String(result.summary.mediaEntries)} meta="مداخل السوشيال كعداد قراءة فقط" />
         </div>
 
-        <div className="flex flex-wrap gap-2 border-b border-kmt-border">
-          {[
-            ["articles", "المقالات"],
-            ["case-studies", "دراسات الحالة"],
-            ["social", "منشورات السوشيال"],
-            ["pending", "قيد الاعتماد"]
-          ].map(([tab, label]) => (
-            <Link
-              key={tab}
-              className={`mb-[-1px] inline-flex min-h-11 items-center border-b-2 px-3 text-sm font-semibold ${
-                activeTab === tab ? "border-kmt-gold text-kmt-ink" : "border-transparent text-kmt-muted hover:text-kmt-ink"
-              }`}
-              href={tabHref(tab as ContentTab)}
-            >
-              {label}
-            </Link>
-          ))}
-        </div>
+        <AdminTabs
+          active={activeTab}
+          ariaLabel="أنواع المحتوى"
+          tabs={[
+            { value: "articles", label: "المقالات", href: tabHref("articles"), badge: result.summary.articles },
+            { value: "case-studies", label: "دراسات الحالة", href: tabHref("case-studies"), badge: result.summary.caseStudies },
+            { value: "social", label: "منشورات السوشيال", href: tabHref("social"), badge: result.summary.socialDrafts },
+            { value: "pending", label: "قيد الاعتماد", href: tabHref("pending"), badge: result.summary.pendingApproval }
+          ]}
+        />
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_26rem]">
           <div className="space-y-5">
-            <form action="/admin/content" method="get">
+            <div className="flex flex-wrap items-start gap-3">
+            <form action="/admin/content" className="min-w-0 flex-1" method="get">
               <input name="tab" type="hidden" value={activeTab} />
               <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.content.filters}>
                 <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.content.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="البحث في المحتوى..." />
+                <span className="hidden lg:contents">
                 <Select className="min-w-44" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
                   <option value="">كل الحالات</option>
                   {statusOptions(activeTab).map(([value, label]) => (
@@ -363,8 +358,25 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
                     </option>
                   ))}
                 </Select>
+                </span>
+                <input type="hidden" name="platform" value={result.filters.platform ?? ""} />
+                <input type="hidden" name="category" value={result.filters.category ?? ""} />
+                <input type="hidden" name="sortBy" value={result.filters.sortBy} />
+                <input type="hidden" name="sortDirection" value={result.filters.sortDirection} />
+                <span className="hidden lg:contents">
+                <Button type="submit" variant="secondary">
+                  تطبيق
+                </Button>
+                </span>
+              </FilterBar>
+            </form>
+            <MoreFiltersPopover triggerLabel="المزيد من الفلاتر">
+              <form action="/admin/content" className="space-y-3" method="get">
+                <input name="tab" type="hidden" value={activeTab} />
+                <input type="hidden" name="q" value={result.filters.q ?? ""} />
+                <input type="hidden" name="status" value={result.filters.status ?? ""} />
                 {activeTab === "social" ? (
-                  <Select className="min-w-40" defaultValue={result.filters.platform ?? ""} label="المنصة" name="platform">
+                  <Select className="w-full" defaultValue={result.filters.platform ?? ""} label="المنصة" name="platform">
                     <option value="">كل المنصات</option>
                     {socialPlatformValues.map((platform) => (
                       <option key={platform} value={platform}>
@@ -373,7 +385,7 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
                     ))}
                   </Select>
                 ) : activeTab !== "pending" ? (
-                  <Select className="min-w-40" defaultValue={result.filters.category ?? ""} label="التصنيف" name="category">
+                  <Select className="w-full" defaultValue={result.filters.category ?? ""} label="التصنيف" name="category">
                     <option value="">كل التصنيفات</option>
                     {result.categories.map((category) => (
                       <option key={category} value={category}>
@@ -382,22 +394,70 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
                     ))}
                   </Select>
                 ) : null}
-                <Select className="min-w-40" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+                <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
                   <option value="updatedAt">آخر تحديث</option>
                   <option value="createdAt">تاريخ الإنشاء</option>
                   <option value="publishedAt">تاريخ النشر</option>
                   <option value="scheduledAt">تاريخ الجدولة</option>
                   <option value="title">العنوان</option>
                 </Select>
-                <Select className="min-w-32" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+                <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
                   <option value="desc">تنازلي</option>
                   <option value="asc">تصاعدي</option>
                 </Select>
-                <Button type="submit" variant="secondary">
+                <Button className="w-full" type="submit" variant="secondary">
                   تطبيق
                 </Button>
-              </FilterBar>
-            </form>
+              </form>
+            </MoreFiltersPopover>
+            <MobileFiltersSheet description="ابحث وصفِّ عناصر المحتوى." title="فلاتر المحتوى" triggerLabel="الفلاتر">
+              <form action="/admin/content" className="space-y-3" method="get">
+                <input name="tab" type="hidden" value={activeTab} />
+                <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.content.search} className="w-full" defaultValue={result.filters.q ?? ""} name="q" placeholder="البحث في المحتوى..." />
+                <Select className="w-full" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
+                  <option value="">كل الحالات</option>
+                  {statusOptions(activeTab).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </Select>
+                {activeTab === "social" ? (
+                  <Select className="w-full" defaultValue={result.filters.platform ?? ""} label="المنصة" name="platform">
+                    <option value="">كل المنصات</option>
+                    {socialPlatformValues.map((platform) => (
+                      <option key={platform} value={platform}>
+                        {labelFrom(socialPlatformLabels, platform)}
+                      </option>
+                    ))}
+                  </Select>
+                ) : activeTab !== "pending" ? (
+                  <Select className="w-full" defaultValue={result.filters.category ?? ""} label="التصنيف" name="category">
+                    <option value="">كل التصنيفات</option>
+                    {result.categories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </Select>
+                ) : null}
+                <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+                  <option value="updatedAt">آخر تحديث</option>
+                  <option value="createdAt">تاريخ الإنشاء</option>
+                  <option value="publishedAt">تاريخ النشر</option>
+                  <option value="scheduledAt">تاريخ الجدولة</option>
+                  <option value="title">العنوان</option>
+                </Select>
+                <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+                  <option value="desc">تنازلي</option>
+                  <option value="asc">تصاعدي</option>
+                </Select>
+                <Button className="w-full" type="submit" variant="secondary">
+                  تطبيق
+                </Button>
+              </form>
+            </MobileFiltersSheet>
+            </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
               <p>{result.total} عنصر داخل الفلاتر الحالية</p>
@@ -414,23 +474,14 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
               mobileRender={(row) => <ContentMobileCard row={row} tab={activeTab} />}
             />
 
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={tabHref(activeTab)}>
-                مسح الفلاتر
-              </Link>
-              <div className="flex flex-wrap items-center gap-3">
-                {result.page > 1 ? (
-                  <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page - 1)}>
-                    السابق
-                  </Link>
-                ) : null}
-                {result.page < totalPages ? (
-                  <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page + 1)}>
-                    التالي
-                  </Link>
-                ) : null}
-              </div>
-            </div>
+            <AdminPagination
+              page={result.page}
+              pageSize={result.pageSize}
+              total={result.total}
+              hrefForPage={(page) => listHref(result.filters, page)}
+              resetHref={tabHref(activeTab)}
+              resetLabel="مسح الفلاتر"
+            />
           </div>
 
           <div className="space-y-5">

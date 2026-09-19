@@ -48,6 +48,16 @@ export function operationsPageHref(query: Record<string, string>, key: "attemptP
   return `/admin/finance?${params.toString()}`;
 }
 
+export type FinanceTab = "invoices" | "gateway" | "pricing" | "attempts" | "webhooks";
+
+export const financeTabValues: FinanceTab[] = ["invoices", "gateway", "pricing", "attempts", "webhooks"];
+
+export function financeTabHref(query: Record<string, string>, tab: FinanceTab) {
+  const params = new URLSearchParams(query);
+  params.set("tab", tab);
+  return `/admin/finance?${params.toString()}`;
+}
+
 export function listHref(filters: Record<string, string | number | undefined>, page: number) {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(filters)) if (value) params.set(key, String(value));

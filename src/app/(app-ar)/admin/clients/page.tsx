@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
+import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { ClientCreateForm } from "@/features/admin/clients/client-crm-forms";
@@ -182,9 +183,11 @@ export default async function AdminClientsPage({ searchParams }: { searchParams?
       ) : null}
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
         <div className="space-y-5">
-          <form action="/admin/clients" method="get">
+          <div className="flex flex-wrap items-start gap-3">
+          <form action="/admin/clients" className="min-w-0 flex-1" method="get">
             <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.clients.filters}>
               <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.clients.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالاسم أو الهاتف أو البريد" />
+              <span className="hidden lg:contents">
               <Select className="min-w-40" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
                 <option value="">كل الحالات</option>
                 {Object.entries(clientStatusLabels).map(([value, label]) => (
@@ -193,6 +196,8 @@ export default async function AdminClientsPage({ searchParams }: { searchParams?
                   </option>
                 ))}
               </Select>
+              </span>
+              <span className="hidden lg:contents">
               <Select className="min-w-40" defaultValue={result.filters.source ?? ""} label="المصدر" name="source">
                 <option value="">كل المصادر</option>
                 {options.sources.map((source) => (
@@ -201,8 +206,24 @@ export default async function AdminClientsPage({ searchParams }: { searchParams?
                   </option>
                 ))}
               </Select>
+              </span>
+              <input type="hidden" name="assignedLawyerId" value={result.filters.assignedLawyerId ?? ""} />
+              <input type="hidden" name="sortBy" value={result.filters.sortBy} />
+              <input type="hidden" name="sortDirection" value={result.filters.sortDirection} />
+              <span className="hidden lg:contents">
+              <Button type="submit" variant="secondary">
+                تطبيق
+              </Button>
+              </span>
+            </FilterBar>
+          </form>
+          <MoreFiltersPopover triggerLabel="المزيد من الفلاتر">
+            <form action="/admin/clients" className="space-y-3" method="get">
+              <input type="hidden" name="q" value={result.filters.q ?? ""} />
+              <input type="hidden" name="status" value={result.filters.status ?? ""} />
+              <input type="hidden" name="source" value={result.filters.source ?? ""} />
               {options.lawyers.length ? (
-                <Select className="min-w-44" defaultValue={result.filters.assignedLawyerId ?? ""} label="المحامي" name="assignedLawyerId">
+                <Select className="w-full" defaultValue={result.filters.assignedLawyerId ?? ""} label="المحامي" name="assignedLawyerId">
                   <option value="">كل المحامين</option>
                   {options.lawyers.map((lawyer) => (
                     <option key={lawyer.id} value={lawyer.id}>
@@ -211,21 +232,66 @@ export default async function AdminClientsPage({ searchParams }: { searchParams?
                   ))}
                 </Select>
               ) : null}
-              <Select className="min-w-40" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+              <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
                 <option value="createdAt">تاريخ الإنشاء</option>
                 <option value="updatedAt">آخر تحديث</option>
                 <option value="fullName">الاسم</option>
                 <option value="status">الحالة</option>
               </Select>
-              <Select className="min-w-32" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+              <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
                 <option value="desc">تنازلي</option>
                 <option value="asc">تصاعدي</option>
               </Select>
-              <Button type="submit" variant="secondary">
+              <Button className="w-full" type="submit" variant="secondary">
                 تطبيق
               </Button>
-            </FilterBar>
-          </form>
+            </form>
+          </MoreFiltersPopover>
+          <MobileFiltersSheet description="ابحث وصفِّ ملفات العملاء." title="فلاتر العملاء" triggerLabel="الفلاتر">
+            <form action="/admin/clients" className="space-y-3" method="get">
+              <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.clients.search} className="w-full" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالاسم أو الهاتف أو البريد" />
+              <Select className="w-full" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
+                <option value="">كل الحالات</option>
+                {Object.entries(clientStatusLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </Select>
+              <Select className="w-full" defaultValue={result.filters.source ?? ""} label="المصدر" name="source">
+                <option value="">كل المصادر</option>
+                {options.sources.map((source) => (
+                  <option key={source} value={source}>
+                    {sourceLabel(source)}
+                  </option>
+                ))}
+              </Select>
+              {options.lawyers.length ? (
+                <Select className="w-full" defaultValue={result.filters.assignedLawyerId ?? ""} label="المحامي" name="assignedLawyerId">
+                  <option value="">كل المحامين</option>
+                  {options.lawyers.map((lawyer) => (
+                    <option key={lawyer.id} value={lawyer.id}>
+                      {lawyer.name}
+                    </option>
+                  ))}
+                </Select>
+              ) : null}
+              <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+                <option value="createdAt">تاريخ الإنشاء</option>
+                <option value="updatedAt">آخر تحديث</option>
+                <option value="fullName">الاسم</option>
+                <option value="status">الحالة</option>
+              </Select>
+              <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+                <option value="desc">تنازلي</option>
+                <option value="asc">تصاعدي</option>
+              </Select>
+              <Button className="w-full" type="submit" variant="secondary">
+                تطبيق
+              </Button>
+            </form>
+          </MobileFiltersSheet>
+          </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
             <p>{result.total} ملف عميل</p>
@@ -242,23 +308,14 @@ export default async function AdminClientsPage({ searchParams }: { searchParams?
             mobileRender={(row) => <ClientMobileCard row={row} />}
           />
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/clients">
-              مسح الفلاتر
-            </Link>
-            <div className="flex flex-wrap items-center gap-3">
-              {result.page > 1 ? (
-                <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page - 1)}>
-                  السابق
-                </Link>
-              ) : null}
-              {result.page < totalPages ? (
-                <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page + 1)}>
-                  التالي
-                </Link>
-              ) : null}
-            </div>
-          </div>
+          <AdminPagination
+            page={result.page}
+            pageSize={result.pageSize}
+            total={result.total}
+            hrefForPage={(page) => listHref(result.filters, page)}
+            resetHref="/admin/clients"
+            resetLabel="مسح الفلاتر"
+          />
         </div>
 
         {options.canManage ? (

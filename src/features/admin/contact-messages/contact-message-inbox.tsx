@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import {
   Badge,
@@ -13,8 +12,8 @@ import {
   StateBlock,
   type DataTableColumn
 } from "@/components/ui";
-import { buttonClasses } from "@/components/ui/button";
 import { formatDateTime } from "@/lib/legal-format";
+import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { plan35ContactInboxUiCopy as copy } from "@/lib/ui-copy";
 
 export type ContactMessageInboxItem = {
@@ -202,7 +201,8 @@ export function ContactMessageInbox({
 
   return (
     <div className="space-y-5">
-      <form action="/admin/contact-messages" method="get">
+      <div className="flex flex-wrap items-start gap-3">
+      <form action="/admin/contact-messages" className="min-w-0 flex-1" method="get">
         <FilterBar ariaLabel={copy.filtersLabel}>
           <SearchInput
             ariaLabel={copy.searchLabel}
@@ -211,24 +211,67 @@ export function ContactMessageInbox({
             name="q"
             placeholder={copy.searchPlaceholder}
           />
+          <span className="hidden lg:contents">
           <Select className="min-w-40" defaultValue={data.filters.status ?? ""} label={copy.status} name="status">
             <option value="">{copy.allStatuses}</option>
             {Object.entries(copy.statuses).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </Select>
-          <Select className="min-w-40" defaultValue={data.filters.topic ?? ""} label={copy.topic} name="topic">
+          </span>
+          <input type="hidden" name="topic" value={data.filters.topic ?? ""} />
+          <input type="hidden" name="sortBy" value={data.filters.sortBy} />
+          <input type="hidden" name="sortDirection" value={data.filters.sortDirection} />
+          <input name="pageSize" type="hidden" value={data.pageSize} />
+          <span className="hidden lg:contents">
+          <Button type="submit" variant="secondary">{copy.apply}</Button>
+          </span>
+        </FilterBar>
+      </form>
+      <MoreFiltersPopover triggerLabel="المزيد من الفلاتر">
+        <form action="/admin/contact-messages" className="space-y-3" method="get">
+          <input type="hidden" name="q" value={data.filters.q ?? ""} />
+          <input type="hidden" name="status" value={data.filters.status ?? ""} />
+          <Select className="w-full" defaultValue={data.filters.topic ?? ""} label={copy.topic} name="topic">
             <option value="">{copy.allTopics}</option>
             {Object.entries(copy.topics).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </Select>
-          <Select className="min-w-40" defaultValue={data.filters.sortBy} label={copy.sort} name="sortBy">
+          <Select className="w-full" defaultValue={data.filters.sortBy} label={copy.sort} name="sortBy">
             {Object.entries(copy.sortOptions).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </Select>
-          <Select className="min-w-40" defaultValue={data.filters.sortDirection} label={copy.direction} name="sortDirection">
+          <Select className="w-full" defaultValue={data.filters.sortDirection} label={copy.direction} name="sortDirection">
             {Object.entries(copy.directions).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </Select>
           <input name="pageSize" type="hidden" value={data.pageSize} />
-          <Button type="submit" variant="secondary">{copy.apply}</Button>
-        </FilterBar>
-      </form>
+          <Button className="w-full" type="submit" variant="secondary">{copy.apply}</Button>
+        </form>
+      </MoreFiltersPopover>
+      <MobileFiltersSheet description={copy.filtersLabel} title="فلاتر رسائل التواصل" triggerLabel="الفلاتر">
+        <form action="/admin/contact-messages" className="space-y-3" method="get">
+          <SearchInput
+            ariaLabel={copy.searchLabel}
+            className="w-full"
+            defaultValue={data.filters.q ?? ""}
+            name="q"
+            placeholder={copy.searchPlaceholder}
+          />
+          <Select className="w-full" defaultValue={data.filters.status ?? ""} label={copy.status} name="status">
+            <option value="">{copy.allStatuses}</option>
+            {Object.entries(copy.statuses).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+          </Select>
+          <Select className="w-full" defaultValue={data.filters.topic ?? ""} label={copy.topic} name="topic">
+            <option value="">{copy.allTopics}</option>
+            {Object.entries(copy.topics).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+          </Select>
+          <Select className="w-full" defaultValue={data.filters.sortBy} label={copy.sort} name="sortBy">
+            {Object.entries(copy.sortOptions).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+          </Select>
+          <Select className="w-full" defaultValue={data.filters.sortDirection} label={copy.direction} name="sortDirection">
+            {Object.entries(copy.directions).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+          </Select>
+          <input name="pageSize" type="hidden" value={data.pageSize} />
+          <Button className="w-full" type="submit" variant="secondary">{copy.apply}</Button>
+        </form>
+      </MobileFiltersSheet>
+      </div>
 
       {!canManage ? <StateBlock description={copy.readerOnly} title={copy.title} tone="permission" /> : null}
       <div aria-live="polite" className="min-h-6 text-sm text-kmt-muted" role="status">
@@ -259,23 +302,16 @@ export function ContactMessageInbox({
         )}
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/contact-messages">
-          {copy.clearFilters}
-        </Link>
-        <div className="flex gap-3">
-          {data.page > 1 ? (
-            <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(data.filters, data.page - 1)}>
-              {copy.previous}
-            </Link>
-          ) : null}
-          {data.page < totalPages ? (
-            <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(data.filters, data.page + 1)}>
-              {copy.next}
-            </Link>
-          ) : null}
-        </div>
-      </div>
+      <AdminPagination
+        page={data.page}
+        pageSize={data.pageSize}
+        total={data.total}
+        hrefForPage={(page) => listHref(data.filters, page)}
+        resetHref="/admin/contact-messages"
+        resetLabel={copy.clearFilters}
+        previousLabel={copy.previous}
+        nextLabel={copy.next}
+      />
     </div>
   );
 }

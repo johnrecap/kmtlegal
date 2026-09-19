@@ -6,13 +6,22 @@ import {
   TabsList,
   TabsTrigger
 } from "@/components/animate-ui/components/radix/tabs";
+import { Badge } from "@/components/ui";
 import { cn } from "@/lib/cn";
 
 export type AdminTabItem = {
   value: string;
   label: string;
   href: string;
+  badge?: React.ReactNode;
 };
+
+function AdminTabBadge({ children }: { children: React.ReactNode }) {
+  if (typeof children === "number" || typeof children === "string") {
+    return <Badge tone="neutral">{children}</Badge>;
+  }
+  return <>{children}</>;
+}
 
 /**
  * Shared admin Tabs (Phase 09) over the verified Animate UI Tabs primitive.
@@ -25,6 +34,9 @@ export type AdminTabItem = {
  *   client-only panel swap that desyncs the URL.
  * - Only tabs present in `tabs` are navigable; unknown values must resolve
  *   to the default server-side (existing `activeTab` pattern).
+ * - Optional `badge` (Phase 10): count/status chip rendered inside the
+ *   trigger after the label — preserves per-tab counts (consultation
+ *   outcome views, content types) without inventing new labels.
  */
 export function AdminTabs({
   tabs,
@@ -60,10 +72,11 @@ export function AdminTabs({
         {tabs.map((tab) => (
           <TabsTrigger
             key={tab.value}
-            className="text-kmt-muted hover:text-kmt-ink data-[disabled]:hover:text-kmt-muted"
+            className="gap-2 text-kmt-muted hover:text-kmt-ink data-[disabled]:hover:text-kmt-muted"
             value={tab.value}
           >
-            {tab.label}
+            <span>{tab.label}</span>
+            {tab.badge !== undefined ? <AdminTabBadge>{tab.badge}</AdminTabBadge> : null}
           </TabsTrigger>
         ))}
       </TabsList>

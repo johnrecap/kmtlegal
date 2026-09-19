@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
+import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, TextInput, type DataTableColumn } from "@/components/ui";
-import { buttonClasses } from "@/components/ui/button";
 import { formatDateTime } from "@/lib/legal-format";
 import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
 import { listAdminAuditLogs } from "@/server/admin/governance-service";
@@ -205,17 +204,11 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
       notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="space-y-5">
-        <form action="/admin/audit-log" method="get">
+        <div className="flex flex-wrap items-start gap-3">
+        <form action="/admin/audit-log" className="min-w-0 flex-1" method="get">
           <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.auditLog.filters}>
             <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.auditLog.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="بحث في الإجراء أو المورد أو المنفذ" />
-            <Select className="min-w-48" defaultValue={result.filters.actorId ?? ""} label="المنفذ" name="actorId">
-              <option value="">كل المنفذين</option>
-              {result.filterOptions.actors.map((actor: AuditFilterActor) => (
-                <option key={actor.id} value={actor.id}>
-                  {actor.name}
-                </option>
-              ))}
-            </Select>
+            <span className="hidden lg:contents">
             <Select className="min-w-48" defaultValue={result.filters.action ?? ""} label="الإجراء" name="action">
               <option value="">كل الإجراءات</option>
               {result.filterOptions.actions.map((action: AuditFilterOption) => (
@@ -224,6 +217,8 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
                 </option>
               ))}
             </Select>
+            </span>
+            <span className="hidden lg:contents">
             <Select className="min-w-44" defaultValue={result.filters.resourceType ?? ""} label="المورد" name="resourceType">
               <option value="">كل الموارد</option>
               {result.filterOptions.resourceTypes.map((resourceType: AuditFilterOption) => (
@@ -232,28 +227,110 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
                 </option>
               ))}
             </Select>
-            <TextInput className="min-w-56" defaultValue={result.filters.clientId ?? ""} label="معرف العميل" name="clientId" dir="ltr" />
-            <TextInput className="min-w-56" defaultValue={result.filters.caseId ?? ""} label="معرف القضية" name="caseId" dir="ltr" />
-            <TextInput className="min-w-56" defaultValue={result.filters.lawyerId ?? ""} label="معرف المحامي" name="lawyerId" dir="ltr" />
-            <TextInput className="min-w-56" defaultValue={result.filters.appointmentId ?? ""} label="معرف الموعد" name="appointmentId" dir="ltr" />
-            <TextInput className="min-w-56" defaultValue={result.filters.documentId ?? ""} label="معرف المستند" name="documentId" dir="ltr" />
-            <TextInput className="min-w-56" defaultValue={result.filters.paymentId ?? ""} label="معرف الدفعة" name="paymentId" dir="ltr" />
-            <TextInput className="min-w-36" defaultValue={result.filters.dateFrom ?? ""} label="من" name="dateFrom" type="date" />
-            <TextInput className="min-w-36" defaultValue={result.filters.dateTo ?? ""} label="إلى" name="dateTo" type="date" />
-            <Select className="min-w-40" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+            </span>
+            <input type="hidden" name="actorId" value={result.filters.actorId ?? ""} />
+            <input type="hidden" name="clientId" value={result.filters.clientId ?? ""} />
+            <input type="hidden" name="caseId" value={result.filters.caseId ?? ""} />
+            <input type="hidden" name="lawyerId" value={result.filters.lawyerId ?? ""} />
+            <input type="hidden" name="appointmentId" value={result.filters.appointmentId ?? ""} />
+            <input type="hidden" name="documentId" value={result.filters.documentId ?? ""} />
+            <input type="hidden" name="paymentId" value={result.filters.paymentId ?? ""} />
+            <input type="hidden" name="dateFrom" value={result.filters.dateFrom ?? ""} />
+            <input type="hidden" name="dateTo" value={result.filters.dateTo ?? ""} />
+            <input type="hidden" name="sortBy" value={result.filters.sortBy} />
+            <input type="hidden" name="sortDirection" value={result.filters.sortDirection} />
+            <span className="hidden lg:contents">
+            <Button type="submit" variant="secondary">
+              تطبيق
+            </Button>
+            </span>
+          </FilterBar>
+        </form>
+        <MoreFiltersPopover triggerLabel="المزيد من الفلاتر">
+          <form action="/admin/audit-log" className="space-y-3" method="get">
+            <input type="hidden" name="q" value={result.filters.q ?? ""} />
+            <input type="hidden" name="action" value={result.filters.action ?? ""} />
+            <input type="hidden" name="resourceType" value={result.filters.resourceType ?? ""} />
+            <Select className="w-full" defaultValue={result.filters.actorId ?? ""} label="المنفذ" name="actorId">
+              <option value="">كل المنفذين</option>
+              {result.filterOptions.actors.map((actor: AuditFilterActor) => (
+                <option key={actor.id} value={actor.id}>
+                  {actor.name}
+                </option>
+              ))}
+            </Select>
+            <TextInput className="w-full" defaultValue={result.filters.clientId ?? ""} label="معرف العميل" name="clientId" dir="ltr" />
+            <TextInput className="w-full" defaultValue={result.filters.caseId ?? ""} label="معرف القضية" name="caseId" dir="ltr" />
+            <TextInput className="w-full" defaultValue={result.filters.lawyerId ?? ""} label="معرف المحامي" name="lawyerId" dir="ltr" />
+            <TextInput className="w-full" defaultValue={result.filters.appointmentId ?? ""} label="معرف الموعد" name="appointmentId" dir="ltr" />
+            <TextInput className="w-full" defaultValue={result.filters.documentId ?? ""} label="معرف المستند" name="documentId" dir="ltr" />
+            <TextInput className="w-full" defaultValue={result.filters.paymentId ?? ""} label="معرف الدفعة" name="paymentId" dir="ltr" />
+            <TextInput className="w-full" defaultValue={result.filters.dateFrom ?? ""} label="من" name="dateFrom" type="date" />
+            <TextInput className="w-full" defaultValue={result.filters.dateTo ?? ""} label="إلى" name="dateTo" type="date" />
+            <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
               <option value="createdAt">الوقت</option>
               <option value="action">الإجراء</option>
               <option value="resourceType">المورد</option>
             </Select>
-            <Select className="min-w-32" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+            <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
               <option value="desc">تنازلي</option>
               <option value="asc">تصاعدي</option>
             </Select>
-            <Button type="submit" variant="secondary">
+            <Button className="w-full" type="submit" variant="secondary">
               تطبيق
             </Button>
-          </FilterBar>
-        </form>
+          </form>
+        </MoreFiltersPopover>
+        <MobileFiltersSheet description="ابحث وصفِّ أحداث التدقيق." title="فلاتر سجل التدقيق" triggerLabel="الفلاتر">
+          <form action="/admin/audit-log" className="space-y-3" method="get">
+            <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.auditLog.search} className="w-full" defaultValue={result.filters.q ?? ""} name="q" placeholder="بحث في الإجراء أو المورد أو المنفذ" />
+            <Select className="w-full" defaultValue={result.filters.action ?? ""} label="الإجراء" name="action">
+              <option value="">كل الإجراءات</option>
+              {result.filterOptions.actions.map((action: AuditFilterOption) => (
+                <option key={action.value} value={action.value}>
+                  {action.label}
+                </option>
+              ))}
+            </Select>
+            <Select className="w-full" defaultValue={result.filters.resourceType ?? ""} label="المورد" name="resourceType">
+              <option value="">كل الموارد</option>
+              {result.filterOptions.resourceTypes.map((resourceType: AuditFilterOption) => (
+                <option key={resourceType.value} value={resourceType.value}>
+                  {resourceType.label}
+                </option>
+              ))}
+            </Select>
+            <Select className="w-full" defaultValue={result.filters.actorId ?? ""} label="المنفذ" name="actorId">
+              <option value="">كل المنفذين</option>
+              {result.filterOptions.actors.map((actor: AuditFilterActor) => (
+                <option key={actor.id} value={actor.id}>
+                  {actor.name}
+                </option>
+              ))}
+            </Select>
+            <TextInput className="w-full" defaultValue={result.filters.clientId ?? ""} label="معرف العميل" name="clientId" dir="ltr" />
+            <TextInput className="w-full" defaultValue={result.filters.caseId ?? ""} label="معرف القضية" name="caseId" dir="ltr" />
+            <TextInput className="w-full" defaultValue={result.filters.lawyerId ?? ""} label="معرف المحامي" name="lawyerId" dir="ltr" />
+            <TextInput className="w-full" defaultValue={result.filters.appointmentId ?? ""} label="معرف الموعد" name="appointmentId" dir="ltr" />
+            <TextInput className="w-full" defaultValue={result.filters.documentId ?? ""} label="معرف المستند" name="documentId" dir="ltr" />
+            <TextInput className="w-full" defaultValue={result.filters.paymentId ?? ""} label="معرف الدفعة" name="paymentId" dir="ltr" />
+            <TextInput className="w-full" defaultValue={result.filters.dateFrom ?? ""} label="من" name="dateFrom" type="date" />
+            <TextInput className="w-full" defaultValue={result.filters.dateTo ?? ""} label="إلى" name="dateTo" type="date" />
+            <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
+              <option value="createdAt">الوقت</option>
+              <option value="action">الإجراء</option>
+              <option value="resourceType">المورد</option>
+            </Select>
+            <Select className="w-full" defaultValue={result.filters.sortDirection} label="الاتجاه" name="sortDirection">
+              <option value="desc">تنازلي</option>
+              <option value="asc">تصاعدي</option>
+            </Select>
+            <Button className="w-full" type="submit" variant="secondary">
+              تطبيق
+            </Button>
+          </form>
+        </MobileFiltersSheet>
+        </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
           <p>{result.total} حدث تدقيق داخل الفلاتر الحالية</p>
@@ -264,23 +341,14 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
 
         <DataTable caption={plan35AdminListAccessibilityCopy.auditLog.table} columns={columns} rows={result.items} empty="لا توجد أحداث تدقيق مطابقة للفلاتر الحالية." mobileRender={(row) => <AuditMobileCard row={row} />} />
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/audit-log">
-            مسح الفلاتر
-          </Link>
-          <div className="flex flex-wrap items-center gap-3">
-            {result.page > 1 ? (
-              <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page - 1)}>
-                السابق
-              </Link>
-            ) : null}
-            {result.page < totalPages ? (
-              <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page + 1)}>
-                التالي
-              </Link>
-            ) : null}
-          </div>
-        </div>
+        <AdminPagination
+          page={result.page}
+          pageSize={result.pageSize}
+          total={result.total}
+          hrefForPage={(page) => listHref(result.filters, page)}
+          resetHref="/admin/audit-log"
+          resetLabel="مسح الفلاتر"
+        />
       </div>
     </DashboardShell>
   );

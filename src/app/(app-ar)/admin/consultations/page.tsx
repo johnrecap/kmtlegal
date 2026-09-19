@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
+import { AdminPagination, AdminTabs, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { consultationServiceCategoryLabel, consultationStatusLabels, formatDateTime, labelFrom, modeLabels, urgencyLabels } from "@/lib/legal-format";
@@ -288,37 +289,31 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
       notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="min-w-0 space-y-5">
-        <nav
-          aria-label={plan36ConsultationOutcomeCopy.list.tabsLabel}
-          className="flex min-h-11 max-w-full gap-2 overflow-x-auto pb-2"
-        >
-          {CONSULTATION_OUTCOME_VIEWS.map((view) => (
-            <Link
-              aria-current={result.filters.view === view ? "page" : undefined}
-              className={buttonClasses({
-                variant: result.filters.view === view ? "primary" : "secondary",
-                size: "sm",
-                className: "min-h-11 shrink-0"
-              })}
-              href={viewHref(result.filters, view)}
-              key={view}
-            >
-              <span>{plan36ConsultationOutcomeCopy.tabs[view]}</span>
+        <AdminTabs
+          active={result.filters.view}
+          ariaLabel={plan36ConsultationOutcomeCopy.list.tabsLabel}
+          tabs={CONSULTATION_OUTCOME_VIEWS.map((view) => ({
+            value: view,
+            label: plan36ConsultationOutcomeCopy.tabs[view],
+            href: viewHref(result.filters, view),
+            badge: (
               <Badge tone={result.filters.view === view ? "active" : "neutral"}>
                 {result.viewCounts[view]}
               </Badge>
-            </Link>
-          ))}
-        </nav>
+            )
+          }))}
+        />
 
         <p className="rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6 text-kmt-muted">
           {plan37ConsultationOverdueCopy.list.definitions[result.filters.view]}
         </p>
 
-        <form action="/admin/consultations" method="get">
+        <div className="flex flex-wrap items-start gap-3">
+        <form action="/admin/consultations" className="min-w-0 flex-1" method="get">
           <input name="view" type="hidden" value={result.filters.view} />
           <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.consultations.filters}>
             <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.consultations.search} className="min-w-0 flex-1 sm:min-w-80" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالاسم أو الهاتف أو نص طلب العميل" />
+            <span className="hidden lg:contents">
             <Select className="min-w-44" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
               <option value="">كل الحالات</option>
               {Object.entries(consultationStatusLabels).map(([value, label]) => (
@@ -327,20 +322,62 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
                 </option>
               ))}
             </Select>
-            <Select className="min-w-44" defaultValue={result.filters.assigned ?? ""} label="التعيين" name="assigned">
+            </span>
+            <input type="hidden" name="assigned" value={result.filters.assigned ?? ""} />
+            <input type="hidden" name="review" value={result.filters.review ?? ""} />
+            <span className="hidden lg:contents">
+            <Button type="submit" variant="secondary">
+              تطبيق
+            </Button>
+            </span>
+          </FilterBar>
+        </form>
+        <MoreFiltersPopover triggerLabel="المزيد من الفلاتر">
+          <form action="/admin/consultations" className="space-y-3" method="get">
+            <input name="view" type="hidden" value={result.filters.view} />
+            <input type="hidden" name="q" value={result.filters.q ?? ""} />
+            <input type="hidden" name="status" value={result.filters.status ?? ""} />
+            <Select className="w-full" defaultValue={result.filters.assigned ?? ""} label="التعيين" name="assigned">
               <option value="">كل الطلبات</option>
               <option value="unassigned">يحتاج تعيين محامي</option>
               <option value="assigned">تم تعيين محامي</option>
             </Select>
-            <Select className="min-w-44" defaultValue={result.filters.review ?? ""} label="مراجعة السكرتيرة" name="review">
+            <Select className="w-full" defaultValue={result.filters.review ?? ""} label="مراجعة السكرتيرة" name="review">
               <option value="">كل الطلبات</option>
               <option value="unreviewed">تحتاج مراجعة</option>
             </Select>
-            <Button type="submit" variant="secondary">
+            <Button className="w-full" type="submit" variant="secondary">
               تطبيق
             </Button>
-          </FilterBar>
-        </form>
+          </form>
+        </MoreFiltersPopover>
+        <MobileFiltersSheet description="ابحث وصفِّ طلبات الاستشارة." title="فلاتر الاستشارات" triggerLabel="الفلاتر">
+          <form action="/admin/consultations" className="space-y-3" method="get">
+            <input name="view" type="hidden" value={result.filters.view} />
+            <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.consultations.search} className="w-full" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالاسم أو الهاتف أو نص طلب العميل" />
+            <Select className="w-full" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
+              <option value="">كل الحالات</option>
+              {Object.entries(consultationStatusLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </Select>
+            <Select className="w-full" defaultValue={result.filters.assigned ?? ""} label="التعيين" name="assigned">
+              <option value="">كل الطلبات</option>
+              <option value="unassigned">يحتاج تعيين محامي</option>
+              <option value="assigned">تم تعيين محامي</option>
+            </Select>
+            <Select className="w-full" defaultValue={result.filters.review ?? ""} label="مراجعة السكرتيرة" name="review">
+              <option value="">كل الطلبات</option>
+              <option value="unreviewed">تحتاج مراجعة</option>
+            </Select>
+            <Button className="w-full" type="submit" variant="secondary">
+              تطبيق
+            </Button>
+          </form>
+        </MobileFiltersSheet>
+        </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
           <div className="flex flex-wrap gap-2">
@@ -365,18 +402,12 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
           mobileRender={(row) => <ConsultationMobileCard row={row} />}
         />
 
-        <div className="flex flex-wrap items-center justify-end gap-3">
-          {result.page > 1 ? (
-            <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page - 1)}>
-              السابق
-            </Link>
-          ) : null}
-          {result.page < totalPages ? (
-            <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={listHref(result.filters, result.page + 1)}>
-              التالي
-            </Link>
-          ) : null}
-        </div>
+        <AdminPagination
+          page={result.page}
+          pageSize={result.pageSize}
+          total={result.total}
+          hrefForPage={(page) => listHref(result.filters, page)}
+        />
       </div>
     </DashboardShell>
   );

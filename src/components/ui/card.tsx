@@ -32,7 +32,7 @@ export function MetricCard({
   className
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
   meta?: ReactNode;
   className?: string;
 }) {
