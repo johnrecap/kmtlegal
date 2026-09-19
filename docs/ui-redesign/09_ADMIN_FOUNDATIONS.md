@@ -51,7 +51,7 @@ remain until their locked Phase 10/11 migration.
 | Small overlays / extra filters | None / inline | REPLACE WITH: Animate UI Popover | Popover | Animate UI | https://animate-ui.com/docs/components/base/popover |
 | Icon help | None/title attrs | REPLACE WITH: Animate UI Tooltip | Tooltip | Animate UI | https://animate-ui.com/docs/components/radix/tooltip |
 | Async buttons | Plain buttons | REPLACE WITH: Aceternity UI Stateful Button | Stateful Button | Aceternity UI | https://ui.aceternity.com/components/stateful-button |
-| File upload | Native file inputs | REPLACE WITH: Aceternity UI File Upload | File Upload | Aceternity UI | https://ui.aceternity.com/components/file-upload |
+| File upload | Native file inputs | REUSE Phase 08 owner-approved adaptation (`src/components/ui/file-upload.tsx`); no second implementation | File Upload | Aceternity UI | https://ui.aceternity.com/components/file-upload |
 | Pagination | Hand-rolled links | REPLACE WITH: shadcn Pagination | Pagination | shadcn/ui | https://ui.shadcn.com/docs/components/pagination |
 | Tables + feedback | DataTable/DataRecordCard/FilterBar/InlineFeedback/StateBlock | KEEP CURRENT | None (local, kept) | — | — |
 
@@ -80,7 +80,10 @@ remain until their locked Phase 10/11 migration.
   advanced filters and small overlays; Tooltip for icon help.
 - [ ] TASK-09-09 Stateful Button + File Upload + Pagination wired to admin
   conventions (async states, accept lists, page-state mapping); reuse client
-  Phase 07 pagination helper pattern where identical, no duplication.
+  Phase 07 pagination helper pattern where identical, no duplication. File
+  Upload = reuse the SAME Phase 08 owner-approved adaptation file
+  (`src/components/ui/file-upload.tsx`); no second implementation, no
+  `react-dropzone` install.
 - [ ] TASK-09-10 Notification bell: rebuild the native `details` popover on
   the Popover primitive (30s poll + mark-read behavior preserved); full
   center page keeps its list (rewired in Phase 10).

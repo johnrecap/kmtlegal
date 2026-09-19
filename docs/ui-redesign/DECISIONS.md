@@ -124,7 +124,12 @@
 - Case detail desktop: KEEP visible panels; mobile: Animate UI Accordion — APPROVED
 - AI assistant: Magic Animated List + Aceternity Placeholders And Vanish Input — APPROVED
 - Human team chat: KEEP normal textarea composer; Vanish Input: REJECTED; AI-chat styling: REJECTED; the two chats stay deliberately distinct — APPROVED
-- Files upload: Aceternity File Upload — APPROVED
+- Files upload: Aceternity File Upload — APPROVED (status CURRENT —
+  OWNER-APPROVED ADAPTATION per pre-Phase-09 ruling: official visual/
+  behavioral architecture with the `react-dropzone` dependency replaced by
+  the documented native-DnD compatibility shim in
+  `src/components/ui/file-upload.tsx`; do not describe as verbatim, do not
+  replace, do not install `react-dropzone`)
 - Payments navigation: `continuePayment` checkout link, `followStatus` return link, case links, receipt view links — KEEP CURRENT as semantic links; Stateful Button for them: REJECTED. Stateful Button applies ONLY to a genuine async mutation — none verified on `/client/payments`, none introduced; mobile payment details: Animate UI Accordion — APPROVED
 - Profile save: Aceternity Stateful Button; mobile account information: Animate UI Accordion — APPROVED
 
@@ -141,7 +146,9 @@
 - Small overlays / notifications / extra filters: Animate UI Popover — APPROVED
 - Icon help: Animate UI Tooltip — APPROVED
 - Async buttons: Aceternity Stateful Button — APPROVED
-- File upload: Aceternity File Upload — APPROVED
+- File upload: Aceternity File Upload — APPROVED (reuse the SAME Phase 08
+  owner-approved adaptation file; no second admin implementation, no
+  `react-dropzone` install)
 - Pagination: shadcn Pagination — APPROVED
 - Dashboard: KEEP structure; MagicCard: REJECTED; CountingNumber for numeric motion + Tooltip for metric explanations: APPROVED; new decorative components: REJECTED
 - Tasks kanban: KEEP structure; draggable UI without separate approval: REJECTED

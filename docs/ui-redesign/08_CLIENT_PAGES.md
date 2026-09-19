@@ -186,23 +186,26 @@ Provenance:
 - Stateful Button: Phase 06 verbatim vendor, profile save only.
 - File Upload: official registry source fetched 2026-09-19
   (`ui.aceternity.com/registry/file-upload.json`, deps `react-dropzone` +
-  `motion` + tabler). `npm install react-dropzone` was attempted, then
-  FULLY REVERTED: it rewrote the lockfile (3803+/33−) over pre-existing
-  uncommitted hunks with no safe per-hunk separation, so per the binding
-  BLOCKED rule the dep path was abandoned — `package.json` restored
-  byte-identical to pre-install, all dropzone/attr-accept/file-selector
-  stanzas surgically removed from the lockfile (verified zero remnants;
-  remaining lockfile diff = pre-existing hunks + npm re-resolution churn,
-  left uncommitted and untouched by the Phase 08 commit). Shipped vendor =
-  official visual/behavioral port: GridPattern, motion variants, file cards,
-  single-shot click-to-browse preserved; `IconUpload`→lucide alias (Phase 07
-  precedent); `useDropzone` surface (`multiple:false`, `noClick`, `onDrop`,
-  `isDragActive`, reject→`console.log`) re-implemented with native HTML5
-  drag-and-drop; added `accept` prop enforcing the verified accept list on
-  picker + drops; one responsive fix (file-name `max-w-xs` overflows 390px
-  → `max-w-[12rem] sm:max-w-xs`, proven before/after). If the owner later
-  approves a proper install, `react-dropzone` can replace the native dnd
-  shim with no call-site changes.
+  `motion` + tabler). Status: CURRENT — OWNER-APPROVED ACETERNITY ADAPTATION
+  (pre-Phase-09 ruling 2026-09-19: keep the shipped implementation; do NOT
+  describe it as verbatim official source, do NOT replace it with a custom
+  uploader, do NOT install `react-dropzone`, reuse this SAME file in admin
+  Phase 09/11 with no second implementation). `npm install react-dropzone`
+  was attempted, then FULLY REVERTED: it rewrote the lockfile (3803+/33−)
+  over pre-existing uncommitted hunks with no safe per-hunk separation, so
+  per the binding BLOCKED rule the dep path was abandoned — `package.json`
+  restored byte-identical to pre-install, all
+  dropzone/attr-accept/file-selector stanzas surgically removed from the
+  lockfile (verified zero remnants; remaining lockfile diff = pre-existing
+  hunks + npm re-resolution churn, left uncommitted and untouched by the
+  Phase 08 commit). Shipped vendor = official visual/behavioral port:
+  GridPattern, motion variants, file cards, single-shot click-to-browse
+  preserved; `IconUpload`→lucide alias (Phase 07 precedent); `useDropzone`
+  surface (`multiple:false`, `noClick`, `onDrop`, `isDragActive`,
+  reject→`console.log`) re-implemented with native HTML5 drag-and-drop;
+  added `accept` prop enforcing the verified accept list on picker + drops;
+  one responsive fix (file-name `max-w-xs` overflows 390px →
+  `max-w-[12rem] sm:max-w-xs`, proven before/after).
 
 Build correction (found by the milestone build, fixed same phase):
 production build rejects non-route exports from `page.tsx` modules, so the

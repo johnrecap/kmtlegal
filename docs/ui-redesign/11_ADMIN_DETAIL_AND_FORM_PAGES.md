@@ -81,9 +81,10 @@ thread stays native with subtle transitions only.
   Sheet on mobile; day-grouped list kept; blocked-note states preserved.
 - [ ] TASK-11-07 Tasks: edit/details → Accordion; create → Sheet; kanban
   columns kept; no draggable UI.
-- [ ] TASK-11-08 Documents: upload → File Upload (accept list, 5MB hint,
-  visibility, owner/case mapping preserved); actions → Menu; delete →
-  Dialog; details → Accordion.
+- [ ] TASK-11-08 Documents: upload → File Upload (same Phase 08
+  owner-approved adaptation file, no second implementation; accept list,
+  5MB hint, visibility, owner/case mapping preserved); actions → Menu;
+  delete → Dialog; details → Accordion.
 - [ ] TASK-11-09 Finance ops: invoice create/edit → Stateful saves (query-param
   edit state preserved); gateway/pricing saves → Stateful; replay → Stateful
   Button (result grid + error box preserved).
