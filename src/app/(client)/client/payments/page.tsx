@@ -2,7 +2,8 @@ import { paymentRequiresReview, paymentNeedsOrderVerification } from "@/lib/lega
 import Link from "next/link";
 import { paymentReviewCopy } from "@/lib/ui-copy";
 import { ClientPortalMetric, ClientSiteShell, clientPortalRowClass, clientPortalSecondaryActionClass, clientPortalTableClass } from "@/components/layout";
-import { Badge, DataRecordCard, DataTable, type DataTableColumn } from "@/components/ui";
+import { Badge, DataTable, type DataTableColumn } from "@/components/ui";
+import { MobileCard } from "@/features/client/payment-mobile-card";
 import { buttonClasses } from "@/components/ui/button";
 import { formatDateTime, formatMoney } from "@/lib/legal-format";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
@@ -92,49 +93,6 @@ function paymentColumns(copy: ClientContent, locale: ClientLocale): Array<DataTa
   ];
 }
 
-function MobileCard({ row, copy, locale }: { row: PaymentRow; copy: ClientContent; locale: ClientLocale }) {
-  const receiptUrl = paymentReceiptLink(row);
-
-  return (
-    <DataRecordCard
-      className={clientPortalRowClass}
-      title={row.invoiceNumber}
-      description={row.receiptNumber ? `${copy.common.receipt}: ${row.receiptNumber}` : undefined}
-      badges={<Badge tone={paymentRequiresReview(row.paymentAttempt) ? "danger" : statusTone(row.status)}>{paymentRequiresReview(row.paymentAttempt) ? paymentReviewCopy[locale].review : copy.statuses.payment[row.status as keyof typeof copy.statuses.payment] ?? copy.common.unknown}</Badge>}
-      fields={[
-        {
-          label: copy.common.case,
-          value: row.case ? (
-            <Link className="font-semibold text-kmt-navy hover:underline" href={`/client/cases/${row.case.id}`}>
-              {row.case.internalFileNumber}
-            </Link>
-          ) : (
-            copy.common.noCase
-          )
-        },
-        { label: copy.common.amount, value: formatMoney(row.amount.toString(), row.currency, locale) },
-        { label: copy.common.issued, value: formatDateTime(row.issueDate, locale) },
-        { label: copy.common.dueDate, value: formatDateTime(row.dueDate, locale) }
-      ]}
-      action={
-        receiptUrl || row.case ? (
-          <div className="grid gap-2">
-            {receiptUrl ? (
-              <Link className={buttonClasses({ variant: "primary", size: "sm", className: `min-h-11 w-full ${clientPortalSecondaryActionClass}` })} href={receiptUrl}>
-                {copy.common.viewInvoice}
-              </Link>
-            ) : null}
-            {row.case ? (
-              <Link className={buttonClasses({ variant: "secondary", size: "sm", className: `min-h-11 w-full ${clientPortalSecondaryActionClass}` })} href={`/client/cases/${row.case.id}`}>
-                {copy.common.openCase}
-              </Link>
-            ) : null}
-          </div>
-        ) : null
-      }
-    />
-  );
-}
 
 function GatewayAttemptCards({ attempts, copy, locale }: { attempts: PaymentAttemptRow[]; copy: ClientContent; locale: ClientLocale }) {
   if (!attempts.length) {
@@ -144,10 +102,10 @@ function GatewayAttemptCards({ attempts, copy, locale }: { attempts: PaymentAtte
   return (
     <section className="space-y-3" aria-labelledby="client-payment-attempts-title">
       <div>
-        <h2 id="client-payment-attempts-title" className="text-lg font-semibold text-white">
+        <h2 id="client-payment-attempts-title" className="text-lg font-semibold text-[var(--kmt-client-text)]">
           {copy.payments.bookingAttempts}
         </h2>
-        <p className="mt-1 text-sm text-slate-300">{copy.payments.bookingAttemptsDescription}</p>
+        <p className="mt-1 text-sm text-[var(--kmt-client-muted)]">{copy.payments.bookingAttemptsDescription}</p>
       </div>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {attempts.map((attempt) => (

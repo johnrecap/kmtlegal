@@ -136,12 +136,12 @@ export default async function ClientHomePage() {
         >
           <ClientPortalRow>
             <div className="flex items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-amber-300/30 bg-amber-300/10 text-amber-100" aria-hidden="true">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-kmt-gold/35 bg-kmt-gold/10 text-[var(--kmt-client-gold)]" aria-hidden="true">
                 <MaterialSymbol name={nextStep.icon} />
               </span>
               <div>
-                <p className="font-semibold text-white">{nextStep.title}</p>
-                <p className="mt-1 text-sm leading-7 text-slate-300">{nextStep.description}</p>
+                <p className="font-semibold text-[var(--kmt-client-text)]">{nextStep.title}</p>
+                <p className="mt-1 text-sm leading-7 text-[var(--kmt-client-muted)]">{nextStep.description}</p>
               </div>
             </div>
           </ClientPortalRow>
@@ -162,12 +162,12 @@ export default async function ClientHomePage() {
                   <Link key={legalCase.id} className="block" href={`/client/cases/${legalCase.id}`}>
                     <ClientPortalRow>
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="font-semibold text-white">{legalCase.title}</p>
+                        <p className="font-semibold text-[var(--kmt-client-text)]">{legalCase.title}</p>
                         <Badge tone={legalCase.status === "ACTIVE" ? "active" : "neutral"}>
                           {copy.statuses.case[legalCase.status as keyof typeof copy.statuses.case] ?? copy.common.unknown}
                         </Badge>
                       </div>
-                      <p className="mt-1 text-sm text-slate-300">{legalCase.internalFileNumber}</p>
+                      <p className="mt-1 text-sm text-[var(--kmt-client-muted)]">{legalCase.internalFileNumber}</p>
                     </ClientPortalRow>
                   </Link>
                 ))}
@@ -190,10 +190,10 @@ export default async function ClientHomePage() {
                 {dashboard.appointments.map((appointment) => (
                   <ClientPortalRow key={appointment.id}>
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="font-semibold text-white">{appointment.title}</p>
+                      <p className="font-semibold text-[var(--kmt-client-text)]">{appointment.title}</p>
                       <Badge tone={dashboardAppointmentTone(appointment)}>{dashboardAppointmentStatus(appointment, copy)}</Badge>
                     </div>
-                    <p className="mt-1 text-sm text-slate-300">{formatDateTime(appointment.startsAt, locale)}</p>
+                    <p className="mt-1 text-sm text-[var(--kmt-client-muted)]">{formatDateTime(appointment.startsAt, locale)}</p>
                   </ClientPortalRow>
                 ))}
               </div>
@@ -216,12 +216,12 @@ export default async function ClientHomePage() {
               {dashboard.payments.map((payment) => (
                 <ClientPortalRow key={payment.id}>
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-semibold text-white">{payment.invoiceNumber}</p>
+                    <p className="font-semibold text-[var(--kmt-client-text)]">{payment.invoiceNumber}</p>
                     <Badge tone={payment.status === "PAID" ? "active" : payment.status === "CANCELLED" ? "closed" : "pending"}>
                       {copy.statuses.payment[payment.status as keyof typeof copy.statuses.payment] ?? copy.common.unknown}
                     </Badge>
                   </div>
-                  <p className="mt-2 text-lg font-semibold text-white">{formatMoney(payment.amount.toString(), payment.currency, locale)}</p>
+                  <p className="mt-2 text-lg font-semibold text-[var(--kmt-client-text)]">{formatMoney(payment.amount.toString(), payment.currency, locale)}</p>
                 </ClientPortalRow>
               ))}
             </div>

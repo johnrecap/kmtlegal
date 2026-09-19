@@ -1,18 +1,19 @@
 import { kmtTokens } from "@/lib/design-system/tokens";
 import {
   ClientPortalDetailItem,
-  ClientPortalEmpty,
   ClientPortalPanel,
-  ClientPortalRow,
   ClientSiteShell,
   clientPortalSecondaryActionClass
 } from "@/components/layout";
 import { Badge, ButtonLink } from "@/components/ui";
+import { ClientMobileAccordion } from "@/features/client/client-mobile-accordion";
 import {
-  formatBytes,
-  formatDateTime,
-  formatMoney
-} from "@/lib/legal-format";
+  CaseAppointmentsGroup,
+  CaseDocumentsGroup,
+  CasePaymentsGroup,
+  SessionsGroup
+} from "@/features/client/case-detail-groups";
+import { formatDateTime } from "@/lib/legal-format";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
 import { getPortalCaseDetail } from "@/server/portal/client-portal-service";
 import { clientNavForPath } from "../../client-navigation";
@@ -71,86 +72,39 @@ export default async function ClientCaseDetailPage({ params }: PageProps) {
               <ClientPortalDetailItem label={copy.common.nextDate} value={formatDateTime(legalCase.nextSessionAt, locale)} />
               <ClientPortalDetailItem label={copy.cases.fileCreated} value={formatDateTime(legalCase.createdAt, locale)} />
             </div>
-            {legalCase.summary ? <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-slate-100">{legalCase.summary}</p> : null}
+            {legalCase.summary ? <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-[var(--kmt-client-muted)]">{legalCase.summary}</p> : null}
         </ClientPortalPanel>
 
         <div className="grid gap-5 xl:grid-cols-2">
-          <ClientPortalPanel title={copy.cases.sessions}>
-              {legalCase.sessions.length ? (
-                <div className="space-y-3">
-                  {legalCase.sessions.map((session) => (
-                    <ClientPortalRow key={session.id}>
-                      <p className="font-semibold text-white">{session.courtName || copy.cases.followUpSession}</p>
-                      <p className="mt-1 text-sm text-slate-300">{formatDateTime(session.sessionDate, locale)}</p>
-                      {session.decision ? <p className="mt-2 text-sm leading-6 text-slate-100">{session.decision}</p> : null}
-                      {session.nextSessionDate ? <p className="mt-2 text-sm text-slate-300">{copy.common.nextSession}: {formatDateTime(session.nextSessionDate, locale)}</p> : null}
-                    </ClientPortalRow>
-                  ))}
-                </div>
-              ) : (
-                <ClientPortalEmpty title={copy.cases.noSessions} description={copy.cases.noSessionsDescription} icon="event_note" />
-              )}
+          <ClientPortalPanel className="hidden lg:block" title={copy.cases.sessions}>
+            <SessionsGroup copy={copy} legalCase={legalCase} locale={locale} />
           </ClientPortalPanel>
+          <ClientMobileAccordion testId="case-detail-sessions-accordion" title={copy.cases.sessions} value="sessions">
+            <SessionsGroup copy={copy} legalCase={legalCase} locale={locale} />
+          </ClientMobileAccordion>
 
-          <ClientPortalPanel title={copy.cases.appointments}>
-              {legalCase.appointments.length ? (
-                <div className="space-y-3">
-                  {legalCase.appointments.map((appointment) => (
-                    <ClientPortalRow key={appointment.id}>
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="font-semibold text-white">{appointment.title}</p>
-                        <Badge tone="pending">{copy.statuses.appointment[appointment.status as keyof typeof copy.statuses.appointment] ?? copy.common.unknown}</Badge>
-                      </div>
-                      <p className="mt-1 text-sm text-slate-300">
-                        {formatDateTime(appointment.startsAt, locale)} - {copy.statuses.appointmentType[appointment.type as keyof typeof copy.statuses.appointmentType] ?? copy.common.unknown} - {copy.statuses.mode[appointment.mode as keyof typeof copy.statuses.mode] ?? copy.common.unknown}
-                      </p>
-                    </ClientPortalRow>
-                  ))}
-                </div>
-              ) : (
-                <ClientPortalEmpty title={copy.cases.noAppointments} description={copy.cases.noAppointmentsDescription} icon="event" />
-              )}
+          <ClientPortalPanel className="hidden lg:block" title={copy.cases.appointments}>
+            <CaseAppointmentsGroup copy={copy} legalCase={legalCase} locale={locale} />
           </ClientPortalPanel>
+          <ClientMobileAccordion testId="case-detail-appointments-accordion" title={copy.cases.appointments} value="appointments">
+            <CaseAppointmentsGroup copy={copy} legalCase={legalCase} locale={locale} />
+          </ClientMobileAccordion>
         </div>
 
         <div className="grid gap-5 xl:grid-cols-2">
-          <ClientPortalPanel title={copy.cases.visibleDocuments}>
-              {legalCase.documents.length ? (
-                <div className="space-y-3">
-                  {legalCase.documents.map((document) => (
-                    <a key={document.id} className="block" href={`/api/files/${document.id}/download`}>
-                      <ClientPortalRow>
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="font-semibold text-kmt-navy">{document.fileName}</p>
-                          <Badge tone="neutral">{copy.statuses.document[document.status as keyof typeof copy.statuses.document] ?? copy.common.unknown}</Badge>
-                        </div>
-                        <p className="mt-1 text-sm text-slate-300">{formatBytes(document.fileSize)}</p>
-                      </ClientPortalRow>
-                    </a>
-                  ))}
-                </div>
-              ) : (
-                <ClientPortalEmpty title={copy.cases.noDocuments} description={copy.cases.noDocumentsDescription} icon="folder_open" />
-              )}
+          <ClientPortalPanel className="hidden lg:block" title={copy.cases.visibleDocuments}>
+            <CaseDocumentsGroup copy={copy} legalCase={legalCase} locale={locale} />
           </ClientPortalPanel>
+          <ClientMobileAccordion testId="case-detail-documents-accordion" title={copy.cases.visibleDocuments} value="documents">
+            <CaseDocumentsGroup copy={copy} legalCase={legalCase} locale={locale} />
+          </ClientMobileAccordion>
 
-          <ClientPortalPanel title={copy.cases.payments}>
-              {legalCase.payments.length ? (
-                <div className="space-y-3">
-                  {legalCase.payments.map((payment) => (
-                    <ClientPortalRow key={payment.id}>
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="font-semibold text-white">{payment.invoiceNumber}</p>
-                        <Badge tone={payment.status === "PAID" ? "active" : payment.status === "CANCELLED" ? "closed" : "pending"}>{copy.statuses.payment[payment.status as keyof typeof copy.statuses.payment] ?? copy.common.unknown}</Badge>
-                      </div>
-                      <p className="mt-2 text-lg font-semibold text-white">{formatMoney(payment.amount.toString(), payment.currency, locale)}</p>
-                    </ClientPortalRow>
-                  ))}
-                </div>
-              ) : (
-                <ClientPortalEmpty title={copy.cases.noPayments} description={copy.cases.noPaymentsDescription} icon="payments" />
-              )}
+          <ClientPortalPanel className="hidden lg:block" title={copy.cases.payments}>
+            <CasePaymentsGroup copy={copy} legalCase={legalCase} locale={locale} />
           </ClientPortalPanel>
+          <ClientMobileAccordion testId="case-detail-payments-accordion" title={copy.cases.payments} value="payments">
+            <CasePaymentsGroup copy={copy} legalCase={legalCase} locale={locale} />
+          </ClientMobileAccordion>
         </div>
       </div>
     </ClientSiteShell>

@@ -6,6 +6,7 @@ import { type FormEvent, useState } from "react";
 import { ClientPortalPanel, clientPortalPrimaryActionClass } from "@/components/layout";
 import { ClientPortalSelect, type ClientPortalSelectOption } from "@/components/layout/client-portal-select";
 import { Button } from "@/components/ui";
+import { FileUpload } from "@/components/ui/file-upload";
 import {
   clientErrorMessage,
   getClientContent,
@@ -27,12 +28,17 @@ type ApiErrorBody = {
 
 const documentCategoryValues = ["CONTRACT", "COURT_FILE", "IDENTITY", "EVIDENCE", "PAYMENT", "OTHER"] as const;
 
+const documentAccept =
+  ".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png";
+
 export function DocumentUploadForm({ cases, locale }: { cases: CaseOption[]; locale: ClientLocale }) {
   const router = useRouter();
   const isHydrated = useHydrated();
   const copy = getClientContent(locale);
   const [message, setMessage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadKey, setUploadKey] = useState(0);
   const documentCategoryOptions: ClientPortalSelectOption[] = documentCategoryValues.map((category) => ({
     value: category,
     label: copy.statuses.documentCategory[category]
@@ -47,12 +53,19 @@ export function DocumentUploadForm({ cases, locale }: { cases: CaseOption[]; loc
 
   async function upload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!selectedFile) {
+      return;
+    }
     setMessage(null);
     setIsUploading(true);
 
     try {
       const form = event.currentTarget;
       const formData = new FormData(form);
+      // The File Upload dropzone owns file selection outside the form data,
+      // so the verified single file is attached under the same `file` field
+      // name and payload semantics as the previous native input.
+      formData.set("file", selectedFile, selectedFile.name);
       formData.set("visibility", "CLIENT_VISIBLE");
       const response = await fetch("/api/files/upload", {
         method: "POST",
@@ -66,6 +79,8 @@ export function DocumentUploadForm({ cases, locale }: { cases: CaseOption[]; loc
       }
 
       form.reset();
+      setSelectedFile(null);
+      setUploadKey((key) => key + 1);
       setMessage(copy.upload.succeeded);
       router.refresh();
     } catch {
@@ -80,25 +95,26 @@ export function DocumentUploadForm({ cases, locale }: { cases: CaseOption[]; loc
       <form className="space-y-4" method="post" onSubmit={upload}>
         <ClientPortalSelect disabled={!isHydrated || isUploading} label={copy.upload.caseLabel} name="caseId" options={caseOptions} />
         <ClientPortalSelect disabled={!isHydrated || isUploading} defaultValue="OTHER" label={copy.upload.categoryLabel} name="category" options={documentCategoryOptions} />
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-white" htmlFor="portal-document-file">
+        <div className="space-y-2" data-testid="portal-document-dropzone">
+          <span className="block text-sm font-semibold text-[var(--kmt-client-text)]">
             {copy.upload.fileLabel}
-          </label>
-          <input
-            id="portal-document-file"
-            disabled={!isHydrated || isUploading}
-            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
-            className="client-portal-file-input w-full rounded border border-white/15 bg-black/20 px-3 py-2.5 text-sm text-slate-100 file:me-3 file:rounded file:border-0 file:bg-kmt-gold file:px-3 file:py-2 file:text-sm file:font-semibold file:text-[#120d07] hover:border-kmt-gold/50 focus:border-kmt-gold focus:ring-2 focus:ring-kmt-gold/20"
-            name="file"
-            required
-            type="file"
-          />
+          </span>
+          <div className="rounded-lg border border-[var(--kmt-client-line)] bg-[var(--kmt-client-surface)] px-2 py-2">
+            <FileUpload
+              key={uploadKey}
+              accept={documentAccept}
+              onChange={(files) => setSelectedFile(files[files.length - 1] ?? null)}
+            />
+          </div>
+          <p className="text-xs leading-6 text-[var(--kmt-client-muted)]">
+            {selectedFile ? `${selectedFile.name} · ${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB` : copy.upload.description}
+          </p>
         </div>
-        <Button disabled={!isHydrated || isUploading} className={clientPortalPrimaryActionClass} loading={isUploading} type="submit">
+        <Button disabled={!isHydrated || isUploading || !selectedFile} className={clientPortalPrimaryActionClass} loading={isUploading} type="submit">
           {copy.upload.submit}
         </Button>
         {message ? (
-          <div className="rounded border border-blue-300/35 bg-blue-950/45 px-3 py-2 text-sm leading-6 text-blue-100" role="status">
+          <div className="rounded border border-[var(--kmt-state-info-border)] bg-[var(--kmt-state-info-surface)] px-3 py-2 text-sm leading-6 text-[var(--kmt-state-info)]" role="status">
             {message}
           </div>
         ) : null}

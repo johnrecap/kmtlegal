@@ -3,7 +3,9 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { KmtBrandLogo } from "@/components/brand";
 import { ClientPortalPanel, ClientPortalRow, clientPortalPrimaryActionClass, clientPortalSecondaryActionClass } from "@/components/layout";
-import { Badge, Button, MaterialSymbol, Textarea } from "@/components/ui";
+import { Badge, Button, MaterialSymbol } from "@/components/ui";
+import { AnimatedList } from "@/components/ui/animated-list";
+import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import {
   formatBytes,
   formatDate,
@@ -130,7 +132,8 @@ export function ClientAssistantPanel({ locale }: { locale: ClientLocale }) {
     const trimmed = text.trim();
     if (!trimmed || isBusy) return;
 
-    setMessage("");
+    // The draft stays in the composer until the request succeeds, so a
+    // failed send keeps the text visible for retry (Phase 08 risk cover).
     const userMessage: ChatMessage = { id: `user-${Date.now()}`, role: "user", text: trimmed };
     setMessages((current) => [...current, userMessage]);
     setIsBusy(true);
@@ -159,6 +162,7 @@ export function ClientAssistantPanel({ locale }: { locale: ClientLocale }) {
           data
         }
       ]);
+      setMessage("");
     } catch {
       appendAssistantError(copy.assistant.networkError);
     } finally {
@@ -223,36 +227,40 @@ export function ClientAssistantPanel({ locale }: { locale: ClientLocale }) {
         </div>
 
         <div aria-busy={isBusy ? "true" : "false"} className="max-h-[36rem] space-y-4 overflow-y-auto px-4 py-5" data-testid="client-assistant-log" role="log">
-          {messages.map((item) => (
-            <ClientChatBubble copy={copy} item={item} key={item.id} locale={locale} />
-          ))}
+          <AnimatedList className="items-stretch gap-4" delay={160}>
+            {messages.map((item) => (
+              <ClientChatBubble copy={copy} item={item} key={item.id} locale={locale} />
+            ))}
+          </AnimatedList>
           {isBusy ? <TypingIndicator label={copy.assistant.typing} /> : null}
           <div ref={logEndRef} />
         </div>
 
-        <form className="flex items-end gap-2 border-t border-white/10 bg-black/35 px-4 py-4" data-testid="client-assistant-composer" onSubmit={submit}>
-          <div className="min-w-0 flex-1 [&_label]:sr-only">
-            <Textarea
-              className="min-h-12 resize-none rounded-2xl border-kmt-gold/25 bg-black/35 py-3 text-white placeholder:text-amber-100/45 focus:border-kmt-gold focus:ring-kmt-gold/25"
-              label={copy.assistant.inputLabel}
-              name="message"
-              placeholder={copy.assistant.placeholder}
-              value={message}
-              onChange={(event) => setMessage(event.target.value)}
-              required
-            />
-          </div>
-          <Button
-            aria-label={copy.assistant.send}
-            className={cn(clientPortalPrimaryActionClass, "h-12 w-12 shrink-0 rounded-full px-0")}
-            disabled={!message.trim()}
-            loading={isBusy}
-            type="submit"
-          >
-            <MaterialSymbol className="text-xl" name="send" />
-            <span className="sr-only">{copy.assistant.send}</span>
-          </Button>
-        </form>
+        <div className="border-t border-white/10 bg-black/35 px-4 py-4" data-testid="client-assistant-composer">
+          <PlaceholdersAndVanishInput
+            ariaLabel={copy.assistant.inputLabel}
+            formClassName="flex min-w-0 items-center gap-2"
+            inputClassName="min-h-12 flex-1 rounded-2xl border border-kmt-gold/25 bg-black/35 px-4 py-3 text-start text-sm text-white outline-none"
+            inputName="message"
+            placeholders={[copy.assistant.placeholder]}
+            placeholderClassName="pe-16 ps-4 text-start text-sm text-amber-100/45"
+            value={message}
+            onSubmit={submit}
+            onValueChange={setMessage}
+            trailing={
+              <Button
+                aria-label={copy.assistant.send}
+                className={cn(clientPortalPrimaryActionClass, "h-12 w-12 shrink-0 rounded-full px-0")}
+                disabled={!message.trim()}
+                loading={isBusy}
+                type="submit"
+              >
+                <MaterialSymbol className="text-xl rtl:-scale-x-100" name="send" />
+                <span className="sr-only">{copy.assistant.send}</span>
+              </Button>
+            }
+          />
+        </div>
       </div>
     </ClientPortalPanel>
   );

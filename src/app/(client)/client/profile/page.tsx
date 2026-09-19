@@ -1,4 +1,5 @@
 import { ClientPortalDetailItem, ClientPortalPanel, ClientSiteShell } from "@/components/layout";
+import { ClientMobileAccordion } from "@/features/client/client-mobile-accordion";
 import { ProfileForm } from "@/features/portal/profile-form";
 import { formatDateTime } from "@/lib/legal-format";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
@@ -35,13 +36,25 @@ export default async function ClientProfilePage() {
             city: profile.city
           }}
         />
-        <ClientPortalPanel description={copy.profile.accountDescription} title={copy.profile.accountTitle}>
+        <ClientPortalPanel className="hidden lg:block" description={copy.profile.accountDescription} title={copy.profile.accountTitle}>
           <div className="space-y-4 text-sm">
             <ClientPortalDetailItem label={copy.profile.loginEmail} value={profile.user?.email ?? copy.common.unknown} />
             <ClientPortalDetailItem label={copy.profile.responsibleLawyer} value={profile.assignedLawyer?.name ?? copy.common.unassigned} />
             <ClientPortalDetailItem label={copy.profile.fileCreated} value={formatDateTime(profile.createdAt, locale)} />
           </div>
         </ClientPortalPanel>
+        <ClientMobileAccordion
+          description={copy.profile.accountDescription}
+          testId="client-profile-account-accordion"
+          title={copy.profile.accountTitle}
+          value="account"
+        >
+          <div className="space-y-4 text-sm">
+            <ClientPortalDetailItem label={copy.profile.loginEmail} value={profile.user?.email ?? copy.common.unknown} />
+            <ClientPortalDetailItem label={copy.profile.responsibleLawyer} value={profile.assignedLawyer?.name ?? copy.common.unassigned} />
+            <ClientPortalDetailItem label={copy.profile.fileCreated} value={formatDateTime(profile.createdAt, locale)} />
+          </div>
+        </ClientMobileAccordion>
       </div>
     </ClientSiteShell>
   );

@@ -3,7 +3,8 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { ClientPortalPanel, clientPortalPrimaryActionClass } from "@/components/layout";
-import { Button, TextInput } from "@/components/ui";
+import { TextInput } from "@/components/ui";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import {
   clientErrorMessage,
   getClientContent,
@@ -70,11 +71,16 @@ export function ProfileForm({ profile, locale }: { profile: ProfileFormValue; lo
           <TextInput defaultValue={profile.phone} label={copy.profile.phone} name="phone" required />
           <TextInput defaultValue={profile.email ?? ""} label={copy.profile.email} name="email" type="email" />
           <TextInput defaultValue={profile.city ?? ""} label={copy.profile.city} name="city" />
-          <Button className={clientPortalPrimaryActionClass} loading={isSaving} type="submit">
+          {/* Genuine async mutation (PATCH /api/client/profile): Aceternity
+            Stateful Button drives the submit interaction. The form onSubmit
+            above stays the single authority for validation, status message,
+            and refresh; the button carries no onClick so Enter-key submits
+            behave identically. */}
+          <StatefulButton aria-busy={isSaving} className={clientPortalPrimaryActionClass} disabled={isSaving} type="submit">
             {copy.profile.save}
-          </Button>
+          </StatefulButton>
           {message ? (
-            <div className="rounded border border-blue-300/35 bg-blue-950/45 px-3 py-2 text-sm leading-6 text-blue-100" role="status">
+            <div className="rounded border border-[var(--kmt-state-info-border)] bg-[var(--kmt-state-info-surface)] px-3 py-2 text-sm leading-6 text-[var(--kmt-state-info)]" role="status">
               {message}
             </div>
           ) : null}
