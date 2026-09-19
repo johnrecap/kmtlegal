@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Badge, Button, MaterialSymbol, StateBlock, buttonClasses } from "@/components/ui";
+import {
+  Popover,
+  PopoverPanel,
+  PopoverTrigger
+} from "@/components/animate-ui/components/base/popover";
 import { formatDateTime } from "@/lib/legal-format";
 import { plan35NotificationUiCopy as copy, plan36ConsultationOutcomeCopy } from "@/lib/ui-copy";
 import type {
@@ -185,26 +190,25 @@ export function AdminNotificationPopover({
   }, [reloadPreview]);
 
   return (
-    <details
-      className="relative"
-      onToggle={(event) => {
-        if (event.currentTarget.open && document.visibilityState === "visible") {
+    <Popover
+      onOpenChange={(open) => {
+        if (open && document.visibilityState === "visible") {
           void reloadPreview();
         }
       }}
     >
-      <summary
+      <PopoverTrigger
         aria-label={copy.bellLabel}
         className={buttonClasses({
           variant: state.attentionCount ? "secondary" : "ghost",
           size: "sm",
-          className: "min-w-9 list-none gap-2 px-2 sm:px-3 [&::-webkit-details-marker]:hidden"
+          className: "min-w-9 gap-2 px-2 sm:px-3"
         })}
       >
         <MaterialSymbol className="text-[20px]" name="notifications" />
         {state.attentionCount ? <Badge tone="pending">{state.attentionCount}</Badge> : null}
-      </summary>
-      <div className="absolute left-0 z-30 mt-2 w-[min(24rem,calc(100vw-2rem))] rounded border border-kmt-border bg-kmt-canvas p-3 text-sm shadow-xl">
+      </PopoverTrigger>
+      <PopoverPanel align="end" className="w-[min(24rem,calc(100vw-2rem))] border-kmt-border bg-white p-3 text-sm text-kmt-ink">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
             <p className="font-semibold text-kmt-ink">{copy.popoverTitle}</p>
@@ -236,8 +240,8 @@ export function AdminNotificationPopover({
             </Button>
           ) : null}
         </div>
-      </div>
-    </details>
+      </PopoverPanel>
+    </Popover>
   );
 }
 

@@ -13,7 +13,9 @@ Observed standard (e.g. `/admin/users`): one GET `<form>` wrapping a
 
 - Primary filters: ALWAYS visible in the `FilterBar` (search + the 2–4 most
   used selects + apply). Never hide behind an overlay.
-- Advanced desktop filters: Animate UI Popover — BLOCKED (see below).
+- Advanced desktop filters: Animate UI Popover (`components/base/popover`,
+  Phase 09 CURRENT — owner-approved namespace adaptation). Wire in
+  Phase 10; same GET form fields, no invented filters.
 - Mobile filters: Animate UI Sheet (filter-sheet shell pattern; same GET
   form fields, no invented filters).
 - Active filters: visible summary line (count within current filters, e.g.
@@ -34,23 +36,18 @@ only for a verified locale need.
 
 ## Row-action conventions
 
-> BLOCKED PRIMITIVE STATUS (pre-Phase-10 owner verification 2026-09-19):
-> Animate UI Base Menu and Base Popover currently require
-> `@base-ui-components/react` (registry evidence:
-> `https://animate-ui.com/r/primitives-base-menu.json` and
-> `.../primitives-base-popover.json`, deps
-> `['motion', '@base-ui-components/react']`, verified twice). The repo
-> provides `@base-ui/react@1.8.0` instead; installs are forbidden and radix
-> substitution was rejected by the owner. Menu/Popover wiring (row actions,
-> advanced filters, notification bell) waits on the owner decision. The
-> conventions below stand so Phase 10 can wire immediately once resolved.
-> Native `details` bell and per-row buttons stay untouched until then.
+`AdminRowActions` (`admin-menu.tsx`, Animate UI Base Menu — Phase 09
+CURRENT, owner-approved namespace adaptation; no page wiring yet, that is
+Phase 10/11 scope):
 
 - Primary action: may remain a visible one-click control (link/button)
   where the existing workflow requires it. Do NOT hide working actions
-  during intermediate phases.
-- Secondary actions: Animate UI Menu (items + separators + shortcuts;
-  destructive item styling for dangerous entries).
+  during intermediate phases. Links needing native affordances
+  (open-in-new-tab) also stay visible — menu `href` entries navigate via
+  the app router (uniform mouse/keyboard/touch activation), so they
+  cannot offer new-tab.
+- Secondary actions: menu items + separators + shortcuts; destructive
+  item styling for dangerous entries.
 - Destructive actions: Menu entry + Animate UI Dialog confirmation in
   Phase 11. No destructive action executes without confirmation once its
   page migrates.
@@ -84,7 +81,9 @@ RTL come from the primitive. Phase 11 error-group auto-open: control via
 
 `AdminSidebarNav` (desktop rail, grouped, permission-filtered items flow in
 from `DashboardShell`), `AdminMobileNav` (Sheet), notification bell
-(pending Popover primitive decision — native `details` stays until then).
+(Animate UI Popover since Phase 09 completion — `AdminNotificationPopover`
+keeps its 30s poll + unread + mark-read + links; the full center page is
+untouched until Phase 10).
 `aria-current="page"` on active items in both navs; tooltips on collapsed
 rail icons with existing translated labels.
 

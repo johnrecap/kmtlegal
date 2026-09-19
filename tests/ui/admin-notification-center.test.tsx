@@ -37,16 +37,34 @@ const snapshot = {
 };
 
 describe("admin notification bell and center UI", () => {
-  it("renders generic and consultation items under one truthful attention count", () => {
+  it("renders the bell trigger with a truthful attention count while closed (panel is lazy)", () => {
     const html = renderToStaticMarkup(<AdminNotificationPopover initialSnapshot={snapshot} />);
+
+    expect(html).toContain('aria-label="فتح الإشعارات"');
+    expect(html).toContain(">2<");
+    expect(html).not.toContain("notification.read.self");
+  });
+
+  it("renders generic and consultation items under one truthful attention count", () => {
+    const html = renderToStaticMarkup(<AdminNotificationCenter initialSnapshot={snapshot} />);
+    const bellSource = readFileSync(
+      join(process.cwd(), "src/features/admin/notifications/admin-notification-popover.tsx"),
+      "utf8"
+    );
 
     expect(html).toContain("تم تحديث القضية");
     expect(html).toContain("CONS-62000000");
     expect(html).toContain(">2<");
     expect(html).toContain('href="/admin/cases"');
     expect(html).toContain("تحديد كمقروء");
-    expect(html).toContain('href="/admin/notifications"');
-    expect(html).not.toContain("notification.read.self");
+    // The bell panel shares this list: bell chrome is the Animate UI
+    // Popover (trigger + panel), not a native details element. The panel
+    // is lazy (Base UI mounts popups on open — verified in browser QA),
+    // so the bell link + list wiring is asserted on source.
+    expect(bellSource).toContain("PopoverPanel");
+    expect(bellSource).toContain("NotificationList");
+    expect(bellSource).toContain('href="/admin/notifications"');
+    expect(bellSource).not.toContain("<details");
   });
 
   it("keeps mark-read, retry, and live count updates accessible", () => {
@@ -68,7 +86,7 @@ describe("admin notification bell and center UI", () => {
     expect(source).toContain("setAttentionCount");
     expect(source).toContain("30_000");
     expect(source).toContain('document.visibilityState === "visible"');
-    expect(source).toContain("onToggle");
+    expect(source).toContain("onOpenChange");
     expect(source).toContain('document.addEventListener("visibilitychange"');
     expect(source).toContain('document.removeEventListener("visibilitychange"');
     expect(source).toContain("window.clearInterval(timer)");

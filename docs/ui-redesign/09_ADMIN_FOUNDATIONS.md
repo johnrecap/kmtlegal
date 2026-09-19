@@ -91,10 +91,13 @@ remain until their locked Phase 10/11 migration.
 - [x] TASK-09-07 Dialog primitive + `admin-dialog.tsx` variants
   (confirm/destructive/form/preview; Radix trap + Esc; Arabic copy via
   props; danger-toned destructive confirm). Page actions untouched.
-- [ ] TASK-09-08 Menu + Popover primitives: BLOCKED (see Blockers). Row
-  actions stay per-row buttons; advanced filters stay inline/GET; bell
-  stays native `details`. Conventions written so Phase 10 wires immediately
-  once resolved. No substitute, no emulation, no deferral of the choice.
+- [x] TASK-09-08 Menu + Popover primitives: COMPLETE (owner namespace
+  ruling applied — see Implementation Notes 09b). `AdminRowActions`
+  (`admin-menu.tsx`) row-action contract: secondary actions only,
+  item/link-item behavior via uniform MenuItem-level activation (`href` →
+  app-router push, `onSelect` → callback), separators, shortcuts,
+  destructive variant, keyboard/RTL/focus from the primitive. No
+  content-page row-action wiring (Phase 10/11 scope).
 - [x] TASK-09-09 Stateful Button (reuse, no new file) + File Upload (reuse
   SAME Phase 08 owner-approved adaptation, no second file, no
   `react-dropzone`) + Pagination (`pagination-shadcn.tsx` vendor +
@@ -102,9 +105,13 @@ remain until their locked Phase 10/11 migration.
   filter-preserving `hrefForPage`, conditional prev/next, reset link, count
   summary, Arabic defaults, mirrored chevrons, ellipsis window). No page
   migration (Phase 10).
-- [ ] TASK-09-10 Notification bell: BLOCKED on Popover (see Blockers).
-  30s poll + unread + mark-read + links verified untouched in
-  `admin-notification-popover.tsx` (zero changes).
+- [x] TASK-09-10 Notification bell: COMPLETE — native `details/summary`
+  migrated to Animate UI Base Popover (`Popover` + `PopoverTrigger` +
+  `PopoverPanel`, `align="end"` reproducing the old physical `left-0`
+  placement in the RTL shell, open-reload via `onOpenChange`). 30s poll +
+  unread + mark-read + notification links + permissions/data behavior
+  verified preserved; `AdminNotificationCenter` untouched; Notifications
+  page NOT redesigned.
 - [x] TASK-09-11 Shell swap (chrome only): Sidebar + Sheet-mobile-nav in
   `DashboardShellView`; old `aside` + `dashboard-mobile-nav.tsx` (deleted)
   + `DashboardNavigationLinks` (pruned, group helper kept and reused);
@@ -173,9 +180,64 @@ remain until their locked Phase 10/11 migration.
 
 ## Status
 
-IN PROGRESS — BLOCKED (Menu/Popover; all other tasks complete)
+COMPLETE (follow-up commit closes TASK-09-08 + TASK-09-10; blocker resolved
+by owner namespace ruling — see 09b notes below)
 
-## Implementation Notes
+## Implementation Notes (09b — Menu/Popover completion)
+
+Owner ruling applied: KEEP the locked Animate UI Base Menu / Base Popover;
+ONE allowed adaptation — `@base-ui-components/react/*` →
+`@base-ui/react/*` (installed `@base-ui/react@1.8.0` exposes `./menu` +
+`./popover` subpaths, verified in `node_modules`). Classification:
+OWNER-APPROVED ANIMATE UI DEPENDENCY-NAMESPACE ADAPTATION. No Radix
+substitution, no custom Menu/Popover, no emulation, no install; package
+hashes re-verified before (identical to partial-commit baseline) and
+after (identical — see QA Results).
+
+Vendored (official registry, fetched 2026-09-19):
+- `primitives/base/menu.tsx` + `components/base/menu.tsx` (namespace
+  adaptation only, documented in-file).
+- `primitives/base/popover.tsx` + `components/base/popover.tsx`
+  (namespace adaptation only, documented in-file).
+- Registry deps of the menu, both dependency-clean: `hooks/use-data-state`
+  (`src/hooks/use-data-state.tsx`, verbatim — react only) and
+  `primitives-effects-highlight`
+  (`primitives/effects/highlight.tsx`, verbatim — motion + `@/lib/utils`
+  only, both resolve).
+
+Additional API incompatibilities found by immediate typecheck (recorded
+per the implementation rule — both judged trivial + mechanical, no
+behavior/architecture effect, documented in-file):
+1. React 18 types: `useDataState` returns `RefObject<T | null>` (readonly)
+   vs Base UI `LegacyRef<HTMLElement>` — 4 call-site casts
+   (`highlightedRef as React.Ref<HTMLElement>` in SubmenuTrigger/Item/
+   CheckboxItem/RadioItem), zero runtime effect.
+2. React 18 types: `localRef.current = node` assignment in highlight
+   `refCallback` — `MutableRefObject` cast following the established
+   `primitives/animate/slot.tsx` precedent, zero runtime effect.
+3. Repo ESLint has no `no-explicit-any` rule (same note as local
+   `use-controlled-state`): official disable comment replaced with a KMT
+   note; `any` itself is registry-verbatim.
+
+Findings that are NOT defects (recorded, no action):
+- Base UI v1.8 mounts popups only after open (probed: even `defaultOpen`
+  renders closed in SSR static markup) — panel content is therefore
+  covered by browser keyboard QA + captures, unit tests honestly assert
+  trigger + source wiring.
+- Official `bg-popover`/`text-popover-foreground` utilities are DEAD in
+  this repo (no popover tokens in the theme; nothing else uses them, so
+  zero existing pixels affected). Kit binds the designed `className`
+  extension points to the admin light-only surface (`bg-white
+  text-kmt-ink border-kmt-border`) — verified white panel + kmt-border in
+  browser. Full token completion deferred: `tokens.ts` +
+  `tailwind.config.ts` carry foreign pre-existing hunks, so editing them
+  would entangle this commit — needs owner coordination.
+- Temp-harness discipline: the auto-scaffolded bare temp layout shipped
+  no `globals.css` (all real layouts import it) → first captures were
+  unstyled; fixed with a globals-importing temp layout, panels
+  re-captured correctly. All temp files deleted before commit.
+
+## Implementation Notes (09a — partial commit 4276fdb)
 
 Pre-phase baseline: HEAD `a349da6`. Package-file hashes recorded before
 and after (identical — see QA Results): package-lock
@@ -221,6 +283,20 @@ integration risk).
 
 ## Files Actually Changed
 
+09a partial (commit `4276fdb`) plus 09b completion (this commit):
+
+- `src/components/animate-ui/primitives/base/menu.tsx` (NEW, official +
+  documented namespace adaptation + ref-type casts)
+- `src/components/animate-ui/primitives/base/popover.tsx` (NEW, official +
+  documented namespace adaptation)
+- `src/components/animate-ui/components/base/menu.tsx` (NEW, official
+  verbatim)
+- `src/components/animate-ui/components/base/popover.tsx` (NEW, official
+  verbatim)
+- `src/components/animate-ui/primitives/effects/highlight.tsx` (NEW,
+  official verbatim + lint-compat note)
+- `src/hooks/use-data-state.tsx` (NEW, official verbatim)
+
 - `src/components/animate-ui/primitives/radix/dialog.tsx` (NEW, official
   verbatim)
 - `src/components/animate-ui/components/radix/dialog.tsx` (NEW, official
@@ -231,6 +307,8 @@ integration risk).
 - `src/components/admin/admin-mobile-nav.tsx` (NEW)
 - `src/components/admin/admin-tabs.tsx` (NEW)
 - `src/components/admin/admin-dialog.tsx` (NEW)
+- `src/components/admin/admin-menu.tsx` (NEW — `AdminRowActions`
+  row-action Menu contract)
 - `src/components/admin/admin-pagination.tsx` (NEW)
 - `src/components/admin/CONVENTIONS.md` (NEW: filter/pagination/row-action/
   tabs/dialog/accordion/shell/gallery conventions)
@@ -242,9 +320,45 @@ integration risk).
 - `src/components/layout/dashboard-mobile-nav.tsx` (DELETED, replaced)
 - `tests/ui/product-components.test.tsx` (stale assertions realigned,
   mobile-nav contract test rewritten)
+- `src/features/admin/notifications/admin-notification-popover.tsx`
+  (bell `details/summary` → Animate Popover; logic preserved)
+- `tests/ui/admin-menu.test.tsx` (NEW — trigger-lazy + source-wiring
+  contract)
+- `tests/ui/admin-notification-center.test.tsx` (bell assertions realigned
+  to the Popover contract: `onToggle` → `onOpenChange`, closed-trigger +
+  Center/shared-list assertions, `<details` absence)
 - `docs/ui-redesign/09_ADMIN_FOUNDATIONS.md` (this file)
+- `docs/ui-redesign/COMPONENT_SOURCE_MATRIX.md` (rows 29–30: namespace
+  adaptation)
+- `docs/ui-redesign/DECISIONS.md` (Menu/Popover adaptation status)
+- `src/components/admin/CONVENTIONS.md` (blocker box removed; Menu bell +
+  row-action + filter contracts current)
 
-## QA Results
+## QA Results (09b — Menu/Popover completion)
+
+- `npx tsc --noEmit`: clean (immediately after vendoring per the
+  implementation rule — surfaced the two mechanical ref issues above —
+  and again at gate).
+- `npm run lint`: clean (after replacing the registry disable-comment
+  with a KMT note; repo has no such rule).
+- Targeted unit: `admin-menu` 3/3 + `admin-notification-center` 3/3 green;
+  regression sanity `product-components` + `portal-access` +
+  `arabic-route-preservation` green (44/44 across the 5 gate files).
+- Targeted browser run (temp harness with globals layout, mock data,
+  deleted after): menu open → arrows move highlight → Enter activates
+  (`activated:edit`, menu closes) → focus returns to trigger → Esc keeps
+  focus; bell open → panel content (title/count/link/item/mark-read) →
+  Esc → focus returns to bell; zero page/JS errors (one 401 console entry
+  from the preserved poll in the unauthenticated harness identified and
+  filtered with cause documented in-spec).
+- Captures (exactly the two allowed): `p09b-menu-open` (white bordered
+  panel, items عرض/تعديل+E/حذف, gold highlight slab on focused item, RTL
+  correct) + `p09b-bell-open` (white panel, title + count + center link +
+  unread item + mark-read, RTL aligned) — reviewed, correct.
+- `npm run build`: SKIPPED (non-milestone; no new deps/routes/modules —
+  vendors resolve to declared deps only).
+
+## QA Results (09a — partial commit 4276fdb)
 
 Technical gate (run once):
 - `npm run typecheck`: clean (×3: after kit, after test updates, after
@@ -293,7 +407,17 @@ Recorded (Known Failure Cache, no reinvestigation):
 - Radix roving-tabs RTL order in this stack: ArrowLeft from the first
   trigger wraps to the LAST (probed empirically, asserted as such).
 
-## Blockers
+## Blockers (09b — resolved)
+
+RESOLVED by owner namespace ruling (applied above). Prior Menu/Popover
+evidence retained for the record: locked sources
+`https://animate-ui.com/r/primitives-base-menu.json` and
+`.../primitives-base-popover.json` (fetched twice 2026-09-19) declare
+deps `['motion', '@base-ui-components/react']`; repo provides
+`@base-ui/react@1.8.0`; `@base-ui-components/react` absent. No installs
+were run; no package files changed (hashes identical before/after).
+
+## Blockers (09a — superseded; retained for the record)
 
 BLOCKED — Menu + Popover only (OWNER DECISION REQUIRED, reported):
 - Locked: Animate UI Base Menu + Base Popover. CURRENT official registry

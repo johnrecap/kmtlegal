@@ -142,8 +142,18 @@
 - Tabs: Animate UI Tabs — APPROVED
 - Collapsible sections: Animate UI Accordion — APPROVED
 - Confirmation / destructive actions: Animate UI Dialog — APPROVED
-- Row actions: Animate UI Menu — APPROVED
-- Small overlays / notifications / extra filters: Animate UI Popover — APPROVED
+- Row actions: Animate UI Menu — APPROVED (status CURRENT —
+  OWNER-APPROVED ANIMATE UI DEPENDENCY-NAMESPACE ADAPTATION per Phase 09
+  owner ruling: official Base Menu source with
+  `@base-ui-components/react/menu` → `@base-ui/react/menu` only, plus two
+  trivial mechanical React-18 ref-type casts with zero runtime effect; do
+  not describe as verbatim, do not substitute, keep `AdminRowActions` as
+  the single row-action contract)
+- Small overlays / notifications / extra filters: Animate UI Popover —
+  APPROVED (status CURRENT — OWNER-APPROVED ANIMATE UI
+  DEPENDENCY-NAMESPACE ADAPTATION per Phase 09 owner ruling: official Base
+  Popover source with `@base-ui-components/react/popover` →
+  `@base-ui/react/popover` only; bell migrated off native `details`)
 - Icon help: Animate UI Tooltip — APPROVED
 - Async buttons: Aceternity Stateful Button — APPROVED
 - File upload: Aceternity File Upload — APPROVED (reuse the SAME Phase 08
