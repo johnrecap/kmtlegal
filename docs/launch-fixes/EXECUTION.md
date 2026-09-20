@@ -112,7 +112,8 @@ Primary owner worktree untouched. One task at a time. No merges to main, no depl
   (only unit coverage) — recorded honestly, not a failure of the closure.
   Full E2E / build not run per fast-verification policy.
 - Missing environment: none for this task.
-- Commit: (pending)
+- Commit: `cb4ab03` on `launch/task-01-client-create` (pushed; NOT merged
+  to main, no deploy)
 
 ## TASK 03 — Database + Uploads Backup and Restore
 
