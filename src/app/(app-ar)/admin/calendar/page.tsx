@@ -5,8 +5,8 @@ import { AdminNotificationBell } from "@/features/admin/notifications/admin-noti
 import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, FilterBar, Select, StateBlock, TextInput } from "@/components/ui";
 import {
-  AppointmentRescheduleForm,
-  CalendarAppointmentForm
+  AppointmentRescheduleDialogs,
+  CalendarAppointmentDialogs
 } from "@/features/admin/cases/case-action-forms";
 import { appointmentStatusLabels, appointmentTypeLabels, formatCairoDateInput, formatDate, formatDateTime, labelFrom, modeLabels } from "@/lib/legal-format";
 import { plan35AdminListAccessibilityCopy, plan35CalendarUiCopy, plan36ConsultationOutcomeCopy } from "@/lib/ui-copy";
@@ -285,13 +285,15 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                             <p>المكان: {appointment.location ?? "غير محدد"}</p>
                           </div>
                           {canManageCalendarAppointment(guard.context.principal, appointment) && canUseGenericCalendarReschedule(appointment) ? (
-                            <AppointmentRescheduleForm
-                              appointmentId={appointment.id}
-                              location={appointment.location}
-                              mode={appointment.mode}
-                              startsAt={appointment.startsAt}
-                              status={appointment.status}
-                            />
+                            <div className="mt-3">
+                              <AppointmentRescheduleDialogs
+                                appointmentId={appointment.id}
+                                location={appointment.location}
+                                mode={appointment.mode}
+                                startsAt={appointment.startsAt}
+                                status={appointment.status}
+                              />
+                            </div>
                           ) : canManageCalendarAppointment(guard.context.principal, appointment) && appointment.effectiveConsultationOutcome ? (
                             <p className="mt-4 text-sm text-kmt-muted">
                               {plan36ConsultationOutcomeCopy.calendar.genericRescheduleBlocked}
@@ -330,7 +332,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
         </div>
 
         <div className="space-y-4">
-          <CalendarAppointmentForm cases={caseOptions} defaultCaseId={defaultCaseId} />
+          <CalendarAppointmentDialogs cases={caseOptions} defaultCaseId={defaultCaseId} />
           <StateBlock
             title="حدود التقويم"
             description="التقويم هنا يغطي مواعيد القضايا والجلسات فقط. التذكيرات المتقدمة وإشعارات التقويم الخارجية مؤجلة لخطط لاحقة."

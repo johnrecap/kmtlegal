@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { Button, InlineFeedback, Select, Textarea, TextInput } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import { cairoLocalDateTimeToIso } from "@/lib/legal-format";
 import {
   localizeApiMessage,
@@ -119,9 +121,14 @@ export function ConsultationReopenForm({
         {reopenReasons.map((reason) => <option key={reason} value={reason}>{copy.reasons[reason]}</option>)}
       </Select>
       <Textarea disabled={busy} idPrefix={`consultation-reopen-${consultationId}`} label={copy.reopenForm.note} maxLength={800} name="note" />
-      <Button disabled={!lawyers.length} loading={busy} type="submit">
+      <StatefulButton
+        aria-busy={busy}
+        className={buttonClasses()}
+        disabled={!lawyers.length || busy}
+        type="submit"
+      >
         {copy.reopenForm.submit}
-      </Button>
+      </StatefulButton>
       {feedback ? (
         <InlineFeedback
           action={feedback.code === "CONSULTATION_STATE_CHANGED" ? (

@@ -2,8 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
+import { AdminTabs } from "@/components/admin";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/animate-ui/components/radix/accordion";
 import { Badge, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, MetricCard, StateBlock } from "@/components/ui";
-import { cn } from "@/lib/cn";
 import { adminCurrentCapabilityCopy, plan35ManualCaseUiCopy as manualCaseCopy } from "@/lib/ui-copy";
 import {
   appointmentStatusLabels,
@@ -21,7 +27,7 @@ import {
   taskPriorityLabels,
   taskStatusLabels
 } from "@/lib/legal-format";
-import { AppointmentRescheduleForm, CaseSessionForm, CaseStatusForm } from "@/features/admin/cases/case-action-forms";
+import { AppointmentRescheduleDialogs, CaseSessionForm, CaseStatusForm } from "@/features/admin/cases/case-action-forms";
 import { ManualCaseEditForm, type ManualCaseLawyerOption } from "@/features/admin/cases/manual-case-form";
 import {
   AdminDocumentUploadForm,
@@ -121,21 +127,11 @@ function DetailItem({ label, value }: { label: string; value: React.ReactNode })
 
 function CaseTabs({ caseId, active }: { caseId: string; active: string }) {
   return (
-    <nav className="flex flex-wrap gap-2 border-b border-kmt-border" aria-label="تبويبات ملف القضية">
-      {tabs.map((tab) => (
-        <Link
-          key={tab.value}
-          className={cn(
-            "mb-[-1px] inline-flex min-h-11 items-center border-b-2 px-3 text-sm font-semibold transition-colors",
-            active === tab.value ? "border-kmt-gold text-kmt-ink" : "border-transparent text-kmt-muted hover:text-kmt-ink"
-          )}
-          href={tabHref(caseId, tab.value)}
-          aria-current={active === tab.value ? "page" : undefined}
-        >
-          {tab.label}
-        </Link>
-      ))}
-    </nav>
+    <AdminTabs
+      active={active}
+      ariaLabel="تبويبات ملف القضية"
+      tabs={tabs.map((tab) => ({ value: tab.value, label: tab.label, href: tabHref(caseId, tab.value) }))}
+    />
   );
 }
 
@@ -296,13 +292,15 @@ function AppointmentsTab({ legalCase }: { legalCase: CaseDetail }) {
                   </Badge>
                 </div>
                 {legalCase.access.canManageSessions ? (
-                  <AppointmentRescheduleForm
-                    appointmentId={appointment.id}
-                    location={appointment.location}
-                    mode={appointment.mode}
-                    startsAt={appointment.startsAt}
-                    status={appointment.status}
-                  />
+                  <div className="mt-3">
+                    <AppointmentRescheduleDialogs
+                      appointmentId={appointment.id}
+                      location={appointment.location}
+                      mode={appointment.mode}
+                      startsAt={appointment.startsAt}
+                      status={appointment.status}
+                    />
+                  </div>
                 ) : null}
               </div>
             ))}
@@ -343,25 +341,31 @@ function TasksTab({ data }: { data: CaseTaskDocumentTabs }) {
                     </div>
                   </div>
                   {task.description ? <p className="mt-3 text-sm leading-7 text-kmt-muted">{task.description}</p> : null}
-                  <details className="mt-3">
-                    <summary className="cursor-pointer text-sm font-semibold text-kmt-navy">تعديل المهمة</summary>
-                    <TaskUpdateForm
-                      assignees={data.options.assignees}
-                      cases={data.options.cases}
-                      task={{
-                        id: task.id,
-                        updatedAt: task.updatedAt,
-                        title: task.title,
-                        description: task.description,
-                        status: task.status,
-                        priority: task.priority,
-                        assignedToId: task.assignedToId,
-                        caseId: task.caseId,
-                        case: task.case,
-                        dueDate: task.dueDate
-                      }}
-                    />
-                  </details>
+                  <Accordion type="single" collapsible className="mt-3">
+                    <AccordionItem value={`edit-${task.id}`}>
+                      <AccordionTrigger className="text-sm font-semibold text-kmt-navy">
+                        تعديل المهمة
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <TaskUpdateForm
+                          assignees={data.options.assignees}
+                          cases={data.options.cases}
+                          task={{
+                            id: task.id,
+                            updatedAt: task.updatedAt,
+                            title: task.title,
+                            description: task.description,
+                            status: task.status,
+                            priority: task.priority,
+                            assignedToId: task.assignedToId,
+                            caseId: task.caseId,
+                            case: task.case,
+                            dueDate: task.dueDate
+                          }}
+                        />
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </article>
               ))}
             </div>
@@ -398,40 +402,46 @@ function DocumentsTab({ data, documentOptions }: { data: CaseTaskDocumentTabs; d
         </CardHeader>
         <CardContent>
           {data.documents.length ? (
-            <div className="space-y-3">
+            <Accordion type="single" collapsible className="space-y-3">
               {data.documents.map((document) => (
-                <details key={document.id} className="rounded border border-kmt-border p-4">
-                  <summary className="cursor-pointer list-none">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <Link className="font-semibold text-kmt-navy hover:underline" href={`/api/files/${document.id}/download`}>
-                          {document.fileName}
-                        </Link>
-                        <p className="mt-1 text-sm text-kmt-muted">
+                <AccordionItem key={document.id} value={document.id} className="rounded border border-kmt-border px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <span className="flex flex-1 flex-wrap items-start justify-between gap-3 text-start">
+                      <span>
+                        <span className="block font-semibold text-kmt-navy">{document.fileName}</span>
+                        <span className="mt-1 block text-sm font-normal text-kmt-muted">
                           {formatBytes(document.fileSize)} · {labelFrom(documentCategoryLabels, document.category)} · {document.uploadedBy.name}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2">
+                        </span>
+                      </span>
+                      <span className="flex flex-wrap items-center gap-2">
                         <Badge tone={documentStatusTone(document.status)}>{labelFrom(documentStatusLabels, document.status)}</Badge>
                         <Badge tone={documentVisibilityTone(document.visibility)}>
                           {labelFrom(documentVisibilityLabels, document.visibility)}
                         </Badge>
-                      </div>
-                    </div>
-                  </summary>
-                  <DocumentActionForm
-                    canManage={data.access.canManageDocuments}
-                    document={{
-                      id: document.id,
-                      status: document.status,
-                      category: document.category,
-                      visibility: document.visibility
-                    }}
-                  />
-                  <DocumentDeleteForm canManage={data.access.canManageDocuments} documentId={document.id} />
-                </details>
+                      </span>
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <Link className="font-semibold text-kmt-navy hover:underline" href={`/api/files/${document.id}/download`}>
+                      {document.fileName}
+                    </Link>
+                    <p className="mt-1 text-sm text-kmt-muted">
+                      {formatBytes(document.fileSize)} · {labelFrom(documentCategoryLabels, document.category)} · {document.uploadedBy.name}
+                    </p>
+                    <DocumentActionForm
+                      canManage={data.access.canManageDocuments}
+                      document={{
+                        id: document.id,
+                        status: document.status,
+                        category: document.category,
+                        visibility: document.visibility
+                      }}
+                    />
+                    <DocumentDeleteForm canManage={data.access.canManageDocuments} documentId={document.id} />
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-            </div>
+            </Accordion>
           ) : (
             <StateBlock title="لا توجد مستندات مرتبطة" description="ارفع مستندًا من النموذج الجانبي أو استخدم صفحة مستندات المكتب." />
           )}

@@ -2,7 +2,16 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, CardContent, CardHeader, CardTitle, InlineFeedback, MaterialSymbol, TextInput } from "@/components/ui";
+import { Card, CardContent, CardHeader, CardTitle, InlineFeedback, MaterialSymbol, TextInput } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
+import { useInvalidFieldAccordion } from "@/components/admin/use-invalid-field-accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/animate-ui/components/radix/accordion";
 import { cn } from "@/lib/cn";
 import { consultationAvailabilityUiCopy as copy, localizeApiMessage } from "@/lib/ui-copy";
 import type { ConsultationAvailability, ConsultationMode } from "@/server/consultations/consultation-availability-service";
@@ -30,9 +39,29 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
   const [isSaving, setIsSaving] = useState(false);
 
   const enabledCount = useMemo(() => value.days.filter((day) => day.enabled).length, [value.days]);
+  const dayGroups = useInvalidFieldAccordion({
+    type: "multiple",
+    defaultValue: value.days.map((day) => `day-${day.weekday}`)
+  });
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // Client-side range check with validation auto-open: the failing
+    // weekday group must never stay closed (mirrors the server end>start
+    // rule before any fetch).
+    const invalidDay = value.days.find((day) => day.enabled && day.end <= day.start);
+    if (invalidDay) {
+      dayGroups.onValueChange(
+        dayGroups.value.includes(`day-${invalidDay.weekday}`)
+          ? dayGroups.value
+          : [...dayGroups.value, `day-${invalidDay.weekday}`]
+      );
+      setStatus({
+        tone: "error",
+        message: `وقت النهاية يجب أن يكون بعد وقت البداية في يوم ${copy.days[invalidDay.weekday]}.`
+      });
+      return;
+    }
     setIsSaving(true);
     setStatus({ tone: "idle", message: "" });
 
@@ -110,75 +139,95 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
           <CardTitle>{copy.weeklyHours}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <Accordion type="multiple" value={dayGroups.value} onValueChange={dayGroups.onValueChange} className="space-y-3">
             {value.days.map((day, index) => (
-              <section key={day.weekday} className="rounded border border-slate-200 bg-white p-4">
-                <div className="grid gap-4 lg:grid-cols-[minmax(11rem,1fr)_9rem_9rem_minmax(16rem,1fr)] lg:items-center">
-                  <label className="inline-flex min-h-11 items-center gap-3 text-sm font-semibold text-kmt-ink">
-                    <input
-                      checked={day.enabled}
-                      className="h-4 w-4 rounded border-slate-300 text-kmt-navy focus:ring-kmt-gold/30"
-                      id={`consultation-availability-${day.weekday}-enabled`}
-                      type="checkbox"
-                      onChange={(event) => updateDay(index, { enabled: event.target.checked })}
+              <AccordionItem
+                key={day.weekday}
+                value={`day-${day.weekday}`}
+                data-form-group={`day-${day.weekday}`}
+                className="rounded border border-slate-200 bg-white px-4"
+              >
+                <div className="flex items-center gap-3">
+                  <input
+                    checked={day.enabled}
+                    className="h-4 w-4 shrink-0 rounded border-slate-300 text-kmt-navy focus:ring-kmt-gold/30"
+                    id={`consultation-availability-${day.weekday}-enabled`}
+                    type="checkbox"
+                    onChange={(event) => updateDay(index, { enabled: event.target.checked })}
+                    aria-label={copy.days[day.weekday]}
+                  />
+                  <AccordionTrigger className="flex-1 py-3 hover:no-underline">
+                    <span className="flex flex-1 items-center justify-between gap-3 text-start text-sm font-semibold text-kmt-ink">
+                      <span>{copy.days[day.weekday]}</span>
+                      <span className="font-normal text-kmt-muted">
+                        {day.enabled ? `${day.start} - ${day.end}` : "متوقف"}
+                      </span>
+                    </span>
+                  </AccordionTrigger>
+                </div>
+                <AccordionContent>
+                  <div className="grid gap-4 pb-4 lg:grid-cols-[9rem_9rem_minmax(16rem,1fr)] lg:items-center">
+                    <TextInput
+                      disabled={!day.enabled}
+                      idPrefix={`consultation-availability-${day.weekday}`}
+                      label={copy.start}
+                      name={`start-${day.weekday}`}
+                      type="time"
+                      value={day.start}
+                      onChange={(event) => updateDay(index, { start: event.target.value })}
                     />
-                    <span>{copy.days[day.weekday]}</span>
-                  </label>
-                  <TextInput
-                    disabled={!day.enabled}
-                    idPrefix={`consultation-availability-${day.weekday}`}
-                    label={copy.start}
-                    name={`start-${day.weekday}`}
-                    type="time"
-                    value={day.start}
-                    onChange={(event) => updateDay(index, { start: event.target.value })}
-                  />
-                  <TextInput
-                    disabled={!day.enabled}
-                    idPrefix={`consultation-availability-${day.weekday}`}
-                    label={copy.end}
-                    name={`end-${day.weekday}`}
-                    type="time"
-                    value={day.end}
-                    onChange={(event) => updateDay(index, { end: event.target.value })}
-                  />
-                  <div className="space-y-2">
-                    <p className="text-sm font-semibold text-kmt-ink">{copy.availableMethods}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {modeOptions.map((mode) => (
-                        <label
-                          key={mode.value}
-                          className={cn(
-                            "inline-flex min-h-10 items-center gap-2 rounded border px-3 text-sm font-medium",
-                            day.enabled ? "border-slate-300 bg-white text-kmt-ink" : "border-slate-200 bg-slate-50 text-slate-400"
-                          )}
-                        >
-                          <input
-                            checked={day.modes.includes(mode.value)}
-                            disabled={!day.enabled}
-                            id={`consultation-availability-${day.weekday}-${mode.value.toLowerCase()}`}
-                            type="checkbox"
-                            onChange={(event) => toggleMode(index, mode.value, event.target.checked)}
-                          />
-                          {mode.label}
-                        </label>
-                      ))}
+                    <TextInput
+                      disabled={!day.enabled}
+                      idPrefix={`consultation-availability-${day.weekday}`}
+                      label={copy.end}
+                      name={`end-${day.weekday}`}
+                      type="time"
+                      value={day.end}
+                      onChange={(event) => updateDay(index, { end: event.target.value })}
+                    />
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold text-kmt-ink">{copy.availableMethods}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {modeOptions.map((mode) => (
+                          <label
+                            key={mode.value}
+                            className={cn(
+                              "inline-flex min-h-10 items-center gap-2 rounded border px-3 text-sm font-medium",
+                              day.enabled ? "border-slate-300 bg-white text-kmt-ink" : "border-slate-200 bg-slate-50 text-slate-400"
+                            )}
+                          >
+                            <input
+                              checked={day.modes.includes(mode.value)}
+                              disabled={!day.enabled}
+                              id={`consultation-availability-${day.weekday}-${mode.value.toLowerCase()}`}
+                              type="checkbox"
+                              onChange={(event) => toggleMode(index, mode.value, event.target.checked)}
+                            />
+                            {mode.label}
+                          </label>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </section>
+                </AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         </CardContent>
       </Card>
 
       {status.message ? <InlineFeedback title={status.message} tone={status.tone === "success" ? "success" : "error"} /> : null}
 
       <div className="flex flex-wrap justify-end gap-3">
-        <Button loading={isSaving} type="submit">
+        <StatefulButton
+          aria-busy={isSaving}
+          className={buttonClasses()}
+          disabled={isSaving}
+          type="submit"
+        >
           <MaterialSymbol name="save" />
           {copy.save}
-        </Button>
+        </StatefulButton>
       </div>
     </form>
   );

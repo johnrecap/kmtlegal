@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import {
-  Button,
   Card,
   CardContent,
   CardDescription,
@@ -15,6 +14,17 @@ import {
   TextInput,
   Textarea
 } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
+import { AdminDialog } from "@/components/admin/admin-dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger
+} from "@/components/animate-ui/components/radix/sheet";
 import { appointmentTypeLabels, caseStatusLabels, labelFrom, modeLabels } from "@/lib/legal-format";
 
 type ApiErrorBody = {
@@ -165,9 +175,14 @@ export function CaseStatusForm({
             <input className="mt-1 h-4 w-4 rounded border-slate-300 text-kmt-navy focus:ring-kmt-gold" disabled={isBusy} id={`case-status-${caseId}-confirmStatusChange`} name="confirmStatusChange" required type="checkbox" />
             <span>أؤكد أن تغيير الحالة تمت مراجعته وأنه مناسب لملف القضية.</span>
           </label>
-          <Button loading={isBusy} type="submit">
+          <StatefulButton
+            aria-busy={isBusy}
+            className={buttonClasses()}
+            disabled={isBusy}
+            type="submit"
+          >
             حفظ الحالة
-          </Button>
+          </StatefulButton>
           <ActionFeedback message={message} />
         </form>
       </CardContent>
@@ -227,9 +242,14 @@ export function CaseSessionForm({
           </div>
           <Textarea disabled={isBusy} idPrefix={`case-session-${caseId}`} label="القرار أو النتيجة" name="decision" />
           <Textarea disabled={isBusy} idPrefix={`case-session-${caseId}`} label="الإجراء القادم" name="nextAction" />
-          <Button loading={isBusy} type="submit">
+          <StatefulButton
+            aria-busy={isBusy}
+            className={buttonClasses()}
+            disabled={isBusy}
+            type="submit"
+          >
             إضافة الجلسة
-          </Button>
+          </StatefulButton>
           <ActionFeedback message={message} />
         </form>
       </CardContent>
@@ -306,9 +326,14 @@ export function CalendarAppointmentForm({ cases, defaultCaseId }: { cases: CaseO
           </div>
           <TextInput disabled={isBusy} idPrefix="calendar-appointment" label="المكان أو الرابط" name="location" />
           <Textarea disabled={isBusy} idPrefix="calendar-appointment" label="ملاحظات" name="notes" />
-          <Button loading={isBusy} type="submit">
+          <StatefulButton
+            aria-busy={isBusy}
+            className={buttonClasses()}
+            disabled={isBusy}
+            type="submit"
+          >
             إنشاء الموعد
-          </Button>
+          </StatefulButton>
           <ActionFeedback message={message} />
         </form>
       </CardContent>
@@ -353,10 +378,93 @@ export function AppointmentRescheduleForm({ appointmentId, status, startsAt, mod
         <TextInput defaultValue={location ?? ""} disabled={isBusy || isClosed} idPrefix={`appointment-reschedule-${appointmentId}`} label="المكان أو الرابط" name="location" />
       </div>
       <Textarea disabled={isBusy || isClosed} idPrefix={`appointment-reschedule-${appointmentId}`} label="سبب إعادة الجدولة" name="reason" />
-      <Button disabled={isClosed} loading={isBusy} size="sm" type="submit" variant="secondary">
+      <StatefulButton
+        aria-busy={isBusy}
+        className={buttonClasses({ variant: "secondary", size: "sm" })}
+        disabled={isClosed || isBusy}
+        type="submit"
+      >
         إعادة الجدولة
-      </Button>
+      </StatefulButton>
       <ActionFeedback message={message} />
     </form>
+  );
+}
+
+/**
+ * Calendar create/reschedule overlays (Phase 11). ONE underlying form
+ * component per operation (no forked logic): the desktop trigger opens an
+ * Animate UI Dialog, the mobile trigger opens an Animate UI Sheet. Only
+ * the opened shell mounts its form (closed overlays unmount), so the two
+ * placements never duplicate fields. Blocked/validation states live in
+ * the shared forms and are preserved verbatim.
+ */
+export function CalendarAppointmentDialogs({ cases, defaultCaseId }: { cases: CaseOption[]; defaultCaseId?: string }) {
+  return (
+    <>
+      <span className="hidden lg:block">
+        <AdminDialog
+          variant="form"
+          trigger={
+            <button className={buttonClasses()} type="button">
+              موعد جديد
+            </button>
+          }
+          title="موعد جديد"
+          description="إنشاء موعد مرتبط بقضية. مواعيد العملاء المستقلة أو التذكيرات المتقدمة خارج نطاق هذه الخطة."
+        >
+          <CalendarAppointmentForm cases={cases} defaultCaseId={defaultCaseId} />
+        </AdminDialog>
+      </span>
+      <span className="lg:hidden">
+        <Sheet>
+          <SheetTrigger className={buttonClasses({ className: "w-full" })}>موعد جديد</SheetTrigger>
+          <SheetContent aria-label="موعد جديد" className="overflow-y-auto border-kmt-border bg-white text-kmt-ink" side="right">
+            <SheetHeader>
+              <SheetTitle className="text-kmt-ink">موعد جديد</SheetTitle>
+              <SheetDescription className="text-kmt-muted">
+                إنشاء موعد مرتبط بقضية. مواعيد العملاء المستقلة أو التذكيرات المتقدمة خارج نطاق هذه الخطة.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-4">
+              <CalendarAppointmentForm cases={cases} defaultCaseId={defaultCaseId} />
+            </div>
+          </SheetContent>
+        </Sheet>
+      </span>
+    </>
+  );
+}
+
+export function AppointmentRescheduleDialogs(props: AppointmentRescheduleFormProps) {
+  return (
+    <>
+      <span className="hidden lg:block">
+        <AdminDialog
+          variant="form"
+          trigger={
+            <button className={buttonClasses({ variant: "secondary", size: "sm" })} type="button">
+              إعادة الجدولة
+            </button>
+          }
+          title="إعادة الجدولة"
+        >
+          <AppointmentRescheduleForm {...props} />
+        </AdminDialog>
+      </span>
+      <span className="lg:hidden">
+        <Sheet>
+          <SheetTrigger className={buttonClasses({ variant: "secondary", size: "sm" })}>إعادة الجدولة</SheetTrigger>
+          <SheetContent aria-label="إعادة الجدولة" className="overflow-y-auto border-kmt-border bg-white text-kmt-ink" side="right">
+            <SheetHeader>
+              <SheetTitle className="text-kmt-ink">إعادة الجدولة</SheetTitle>
+            </SheetHeader>
+            <div className="mt-4">
+              <AppointmentRescheduleForm {...props} />
+            </div>
+          </SheetContent>
+        </Sheet>
+      </span>
+    </>
   );
 }

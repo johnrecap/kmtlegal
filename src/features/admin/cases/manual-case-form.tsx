@@ -16,6 +16,14 @@ import {
   Textarea,
   TextInput
 } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/animate-ui/components/radix/accordion";
 import { labelFrom, partyTypeLabels, priorityLabels } from "@/lib/legal-format";
 import {
   plan35ApiErrorCopy,
@@ -248,6 +256,7 @@ export function ManualCaseCreateForm({
   const [lastPayload, setLastPayload] = useState<CreatePayload | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [partiesOpen, setPartiesOpen] = useState<string | undefined>("parties");
   const nextPartyRow = useRef(1);
   const normalizedSearch = clientSearch.trim().toLocaleLowerCase("ar");
   const visibleClients = normalizedSearch
@@ -288,6 +297,10 @@ export function ManualCaseCreateForm({
     const issue = createPayloadIssue(payload);
     if (issue) {
       setFeedback({ tone: "error", title: issue });
+      // Validation auto-open: the failing group must never stay closed.
+      if (issue === copy.validation.partyNameRequired) {
+        setPartiesOpen("parties");
+      }
       return;
     }
     setLastPayload(payload);
@@ -346,28 +359,46 @@ export function ManualCaseCreateForm({
         <CardContent><CaseCoreFields disabled={isBusy} /></CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{copy.partiesSection}</CardTitle>
-          <CardDescription>{copy.partiesDescription}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {partyRows.map((rowId) => (
-            <PartyFields
-              disabled={isBusy}
-              key={rowId}
-              onRemove={() => setPartyRows((current) => current.filter((candidate) => candidate !== rowId))}
-              rowId={rowId}
-            />
-          ))}
-          <Button disabled={isBusy} onClick={addParty} type="button" variant="secondary">{copy.addParty}</Button>
-        </CardContent>
-      </Card>
+      <Accordion type="single" collapsible value={partiesOpen} onValueChange={setPartiesOpen}>
+        <AccordionItem value="parties" data-form-group="parties" className="rounded-lg border border-kmt-border bg-white px-4">
+          <AccordionTrigger className="text-base font-semibold text-kmt-ink hover:no-underline">
+            {copy.partiesSection}
+          </AccordionTrigger>
+          {/*
+            keepRendered: party rows belong to the outer create form whose
+            submit lives outside this group. Unmounted rows would silently
+            drop from FormData on submit and never fire native `invalid`
+            events — kept mounted (collapsed) so data + validation survive
+            closing the group. Single instance: no ID duplication.
+          */}
+          <AccordionContent keepRendered>
+            <p className="mb-4 text-sm leading-6 text-kmt-muted">{copy.partiesDescription}</p>
+            <div className="space-y-4 pb-4">
+              {partyRows.map((rowId) => (
+                <PartyFields
+                  disabled={isBusy}
+                  key={rowId}
+                  onRemove={() => setPartyRows((current) => current.filter((candidate) => candidate !== rowId))}
+                  rowId={rowId}
+                />
+              ))}
+              <Button disabled={isBusy} onClick={addParty} type="button" variant="secondary">{copy.addParty}</Button>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       <FeedbackRegion feedback={feedback} isBusy={isBusy} onCollisionRetry={retryCollision} />
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <ButtonLink href="/admin/cases" variant="secondary">{copy.cancel}</ButtonLink>
-        <Button disabled={unavailable} loading={isBusy} type="submit">{copy.create}</Button>
+        <StatefulButton
+          aria-busy={isBusy}
+          className={buttonClasses()}
+          disabled={unavailable || isBusy}
+          type="submit"
+        >
+          {copy.create}
+        </StatefulButton>
       </div>
     </form>
   );
@@ -451,7 +482,14 @@ export function ManualCaseEditForm({
           )}
           <FeedbackRegion feedback={feedback} isBusy={isBusy} />
           <div className="flex justify-end">
-            <Button loading={isBusy} type="submit">{copy.save}</Button>
+            <StatefulButton
+              aria-busy={isBusy}
+              className={buttonClasses()}
+              disabled={isBusy}
+              type="submit"
+            >
+              {copy.save}
+            </StatefulButton>
           </div>
         </form>
       </CardContent>

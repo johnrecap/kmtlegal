@@ -14,6 +14,14 @@ import {
 } from "@/components/ui";
 import { formatDateTime } from "@/lib/legal-format";
 import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
+import { AdminRowActions } from "@/components/admin/admin-menu";
+import { AdminDialog } from "@/components/admin/admin-dialog";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/animate-ui/components/radix/accordion";
 import { plan35ContactInboxUiCopy as copy } from "@/lib/ui-copy";
 
 export type ContactMessageInboxItem = {
@@ -85,6 +93,7 @@ export function ContactMessageInbox({
   const [data, setData] = useState(initialData);
   const [busyMessageId, setBusyMessageId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<ContactMessageInboxItem | null>(null);
   const isBusy = busyMessageId !== null;
   const totalPages = Math.max(1, Math.ceil(data.total / data.pageSize));
 
@@ -121,30 +130,34 @@ export function ContactMessageInbox({
   function actionsFor(row: ContactMessageInboxItem) {
     if (!canManage || row.status === "ARCHIVED") return null;
     return (
-      <div className="flex flex-wrap gap-2">
-        {row.status === "NEW" ? (
-          <Button
-            disabled={isBusy}
-            loading={busyMessageId === row.id}
-            onClick={() => updateStatus(row.id, "REVIEWED")}
-            size="sm"
-            type="button"
-            variant="secondary"
-          >
-            {copy.markReviewed}
-          </Button>
-        ) : null}
-        <Button
-          disabled={isBusy}
-          loading={busyMessageId === row.id}
-          onClick={() => updateStatus(row.id, "ARCHIVED")}
-          size="sm"
-          type="button"
-          variant="ghost"
-        >
-          {copy.archive}
-        </Button>
-      </div>
+      <AdminRowActions
+        label={`إجراءات رسالة ${row.fullName}`}
+        entries={[
+          ...(row.status === "NEW"
+            ? [
+                {
+                  kind: "action" as const,
+                  action: {
+                    key: "reviewed",
+                    label: copy.markReviewed,
+                    disabled: isBusy,
+                    onSelect: () => updateStatus(row.id, "REVIEWED")
+                  }
+                }
+              ]
+            : []),
+          {
+            kind: "action" as const,
+            action: {
+              key: "archive",
+              label: copy.archive,
+              destructive: true,
+              disabled: isBusy,
+              onSelect: () => setArchiveTarget(row)
+            }
+          }
+        ]}
+      />
     );
   }
 
@@ -172,12 +185,16 @@ export function ContactMessageInbox({
       render: (row) => (
         <div className="min-w-64 max-w-xl">
           <p className="text-xs font-semibold text-kmt-muted">{topicLabel(row.topic)}</p>
-          <details className="mt-2 group">
-            <summary className="cursor-pointer text-sm font-semibold text-kmt-navy hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold">
-              {copy.openDetails}
-            </summary>
-            <p className="mt-2 break-words text-sm leading-7 text-kmt-ink" dir="auto">{row.message}</p>
-          </details>
+          <Accordion type="single" collapsible className="mt-2">
+            <AccordionItem value={`message-${row.id}`}>
+              <AccordionTrigger className="text-sm font-semibold text-kmt-navy">
+                {copy.openDetails}
+              </AccordionTrigger>
+              <AccordionContent>
+                <p className="break-words text-sm leading-7 text-kmt-ink" dir="auto">{row.message}</p>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       )
     },
@@ -311,6 +328,25 @@ export function ContactMessageInbox({
         resetLabel={copy.clearFilters}
         previousLabel={copy.previous}
         nextLabel={copy.next}
+      />
+      <AdminDialog
+        variant="destructive"
+        open={archiveTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setArchiveTarget(null);
+        }}
+        title="تأكيد أرشفة الرسالة"
+        description={archiveTarget ? `سيتم أرشفة رسالة ${archiveTarget.fullName}. لن تظهر في القوائم النشطة.` : undefined}
+        confirmLabel={copy.archive}
+        cancelLabel="إلغاء"
+        confirmBusy={archiveTarget ? busyMessageId === archiveTarget.id : false}
+        onConfirm={() => {
+          if (archiveTarget) {
+            const target = archiveTarget;
+            setArchiveTarget(null);
+            void updateStatus(target.id, "ARCHIVED");
+          }
+        }}
       />
     </div>
   );

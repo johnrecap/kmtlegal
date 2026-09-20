@@ -3,6 +3,12 @@ import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/animate-ui/components/radix/accordion";
+import {
   EmailPolicySettingForm,
   OfficeProfileSettingForm,
   SecurityStaff2faSettingForm,
@@ -64,22 +70,28 @@ export default async function AdminSettingsPage() {
             <StorageRuntimeDiagnosticPanel diagnostic={storageRuntimeDiagnostic} />
           </CardContent>
         </Card>
-        {settings.map((setting) => (
-          <Card key={setting.key}>
-            <CardHeader>
-              <CardTitle>{setting.label}</CardTitle>
-              <CardDescription>
-                {setting.description}
-                <span className="mt-1 block">
-                  آخر تحديث: {formatDateTime(setting.updatedAt)} · بواسطة {setting.updatedBy?.name ?? "غير مسجل"}
+        <Accordion type="multiple" defaultValue={settings.map((setting) => setting.key)} className="grid gap-5 xl:col-span-2 xl:grid-cols-2">
+          {settings.map((setting) => (
+            <AccordionItem key={setting.key} value={setting.key} className="rounded-lg border border-kmt-border bg-white px-4">
+              <AccordionTrigger className="hover:no-underline">
+                <span className="flex flex-1 flex-col gap-1 text-start">
+                  <span className="text-base font-semibold text-kmt-ink">{setting.label}</span>
+                  <span className="text-sm font-normal text-kmt-muted">
+                    {setting.description}
+                    <span className="mt-1 block">
+                      آخر تحديث: {formatDateTime(setting.updatedAt)} · بواسطة {setting.updatedBy?.name ?? "غير مسجل"}
+                    </span>
+                  </span>
                 </span>
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <SettingForm setting={setting} />
-            </CardContent>
-          </Card>
-        ))}
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="pb-4">
+                  <SettingForm setting={setting} />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </div>
     </DashboardShell>
   );

@@ -2,6 +2,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
+import { AdminDialog } from "@/components/admin/admin-dialog";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/animate-ui/components/radix/accordion";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger
+} from "@/components/animate-ui/components/radix/sheet";
 import { AdminPagination, AdminTabs, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DataRecordCard, DataTable, FilterBar, MetricCard, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
@@ -285,6 +300,121 @@ function socialDraftFormValue(draft: Awaited<ReturnType<typeof getAdminSocialDra
   };
 }
 
+type EditorPanelProps = {
+  activeTab: ContentTab;
+  editArticle: Awaited<ReturnType<typeof getAdminArticleDetail>> | null;
+  editCaseStudy: Awaited<ReturnType<typeof getAdminCaseStudyDetail>> | null;
+  editSocialDraft: Awaited<ReturnType<typeof getAdminSocialDraftDetail>> | null;
+  canArticleCreate: boolean;
+  canArticleApprove: boolean;
+  canCaseStudyCreate: boolean;
+  canCaseStudyApprove: boolean;
+  canSocialCreate: boolean;
+  canSocialApprove: boolean;
+  idPrefix?: string;
+};
+
+/**
+ * Shared editor forms (Phase 11): ONE form JSX rendered in the desktop
+ * side Card and in the mobile Sheet. The `idPrefix` disambiguates control
+ * IDs across the two placements (the desktop instance is CSS-hidden on
+ * mobile but stays mounted, and the Sheet instance mounts on open).
+ */
+function EditorPanelForms(props: EditorPanelProps) {
+  const {
+    activeTab,
+    editArticle,
+    editCaseStudy,
+    editSocialDraft,
+    canArticleCreate,
+    canArticleApprove,
+    canCaseStudyCreate,
+    canCaseStudyApprove,
+    canSocialCreate,
+    canSocialApprove,
+    idPrefix
+  } = props;
+  if (activeTab === "case-studies" || editCaseStudy) {
+    return canCaseStudyCreate ? (
+      <CaseStudyForm canApprove={canCaseStudyApprove} idPrefix={idPrefix} study={editCaseStudy ? caseStudyFormValue(editCaseStudy) : undefined} />
+    ) : (
+      <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.caseStudyCreate} />
+    );
+  }
+  if (activeTab === "social" || editSocialDraft) {
+    return canSocialCreate ? (
+      <SocialDraftForm canApprove={canSocialApprove} draft={editSocialDraft ? socialDraftFormValue(editSocialDraft) : undefined} idPrefix={idPrefix} />
+    ) : (
+      <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.socialDraftCreate} />
+    );
+  }
+  return canArticleCreate ? (
+    <ArticleForm article={editArticle ? articleFormValue(editArticle) : undefined} canApprove={canArticleApprove} idPrefix={idPrefix} />
+  ) : (
+    <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.articleCreate} />
+  );
+}
+
+/**
+ * Saved-content preview (Phase 11): preview-variant Dialog over the record
+ * being edited. Create mode has nothing saved to preview, so no trigger
+ * renders there.
+ */
+function ContentPreview({
+  editArticle,
+  editCaseStudy,
+  editSocialDraft
+}: Pick<EditorPanelProps, "editArticle" | "editCaseStudy" | "editSocialDraft">) {
+  if (editArticle) {
+    return (
+      <AdminDialog
+        variant="preview"
+        trigger={
+          <button className={buttonClasses({ variant: "ghost", size: "sm" })} type="button">
+            معاينة المقال
+          </button>
+        }
+        title={editArticle.title}
+      >
+        <p className="text-sm leading-7 text-kmt-muted">{editArticle.excerpt}</p>
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-kmt-ink" dir="auto">{editArticle.content}</p>
+      </AdminDialog>
+    );
+  }
+  if (editCaseStudy) {
+    return (
+      <AdminDialog
+        variant="preview"
+        trigger={
+          <button className={buttonClasses({ variant: "ghost", size: "sm" })} type="button">
+            معاينة دراسة الحالة
+          </button>
+        }
+        title={editCaseStudy.title}
+      >
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-kmt-ink" dir="auto">{editCaseStudy.challenge}</p>
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-kmt-ink" dir="auto">{editCaseStudy.approach}</p>
+      </AdminDialog>
+    );
+  }
+  if (editSocialDraft) {
+    return (
+      <AdminDialog
+        variant="preview"
+        trigger={
+          <button className={buttonClasses({ variant: "ghost", size: "sm" })} type="button">
+            معاينة المسودة
+          </button>
+        }
+        title={editSocialDraft.title}
+      >
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-kmt-ink" dir="auto">{editSocialDraft.content}</p>
+      </AdminDialog>
+    );
+  }
+  return null;
+}
+
 export default async function AdminContentPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
   const guard = await requireAdminRoutePage("/admin/content");
   if (guard.status === "forbidden") {
@@ -485,44 +615,85 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
           </div>
 
           <div className="space-y-5">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {editArticle || editCaseStudy || editSocialDraft ? "تعديل المحتوى" : activeTab === "case-studies" ? "دراسة حالة جديدة" : activeTab === "social" ? "مسودة سوشيال جديدة" : "مقال جديد"}
-                </CardTitle>
-                <CardDescription>النشر والاعتماد داخليان فقط. لا يوجد نشر خارجي تلقائي على منصات السوشيال في هذه النسخة.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {activeTab === "case-studies" || editCaseStudy ? (
-                  canCaseStudyCreate ? (
-                    <CaseStudyForm canApprove={canCaseStudyApprove} study={editCaseStudy ? caseStudyFormValue(editCaseStudy) : undefined} />
-                  ) : (
-                    <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.caseStudyCreate} />
-                  )
-                ) : activeTab === "social" || editSocialDraft ? (
-                  canSocialCreate ? (
-                    <SocialDraftForm canApprove={canSocialApprove} draft={editSocialDraft ? socialDraftFormValue(editSocialDraft) : undefined} />
-                  ) : (
-                    <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.socialDraftCreate} />
-                  )
-                ) : canArticleCreate ? (
-                  <ArticleForm article={editArticle ? articleFormValue(editArticle) : undefined} canApprove={canArticleApprove} />
-                ) : (
-                  <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.articleCreate} />
-                )}
-              </CardContent>
-            </Card>
-
-            {canSocialCreate ? (
+            <div className="hidden xl:block">
               <Card>
                 <CardHeader>
-                  <CardTitle>لوحة مسودات الذكاء الاصطناعي</CardTitle>
-                  <CardDescription>توليد مسودة توعوية فقط عبر بوابة مزود الذكاء الاصطناعي. تحفظ كل مسودة في حالة مراجعة قانونية وتحتاج مراجعة بشرية.</CardDescription>
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <CardTitle>
+                        {editArticle || editCaseStudy || editSocialDraft ? "تعديل المحتوى" : activeTab === "case-studies" ? "دراسة حالة جديدة" : activeTab === "social" ? "مسودة سوشيال جديدة" : "مقال جديد"}
+                      </CardTitle>
+                      <CardDescription>النشر والاعتماد داخليان فقط. لا يوجد نشر خارجي تلقائي على منصات السوشيال في هذه النسخة.</CardDescription>
+                    </div>
+                    <ContentPreview editArticle={editArticle} editCaseStudy={editCaseStudy} editSocialDraft={editSocialDraft} />
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <AiSocialDraftForm />
+                  <EditorPanelForms
+                    activeTab={activeTab}
+                    editArticle={editArticle}
+                    editCaseStudy={editCaseStudy}
+                    editSocialDraft={editSocialDraft}
+                    canArticleCreate={canArticleCreate}
+                    canArticleApprove={canArticleApprove}
+                    canCaseStudyCreate={canCaseStudyCreate}
+                    canCaseStudyApprove={canCaseStudyApprove}
+                    canSocialCreate={canSocialCreate}
+                    canSocialApprove={canSocialApprove}
+                  />
                 </CardContent>
               </Card>
+            </div>
+            <div className="xl:hidden">
+              <Sheet>
+                <SheetTrigger className={buttonClasses({ className: "w-full" })}>
+                  {editArticle || editCaseStudy || editSocialDraft ? "تعديل المحتوى" : activeTab === "case-studies" ? "دراسة حالة جديدة" : activeTab === "social" ? "مسودة سوشيال جديدة" : "مقال جديد"}
+                </SheetTrigger>
+                <SheetContent aria-label="محرر المحتوى" className="overflow-y-auto border-kmt-border bg-white text-kmt-ink" side="right">
+                  <SheetHeader>
+                    <SheetTitle className="text-kmt-ink">
+                      {editArticle || editCaseStudy || editSocialDraft ? "تعديل المحتوى" : activeTab === "case-studies" ? "دراسة حالة جديدة" : activeTab === "social" ? "مسودة سوشيال جديدة" : "مقال جديد"}
+                    </SheetTitle>
+                    <SheetDescription className="text-kmt-muted">
+                      النشر والاعتماد داخليان فقط. لا يوجد نشر خارجي تلقائي على منصات السوشيال في هذه النسخة.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="mt-4 space-y-4">
+                    <ContentPreview editArticle={editArticle} editCaseStudy={editCaseStudy} editSocialDraft={editSocialDraft} />
+                    <EditorPanelForms
+                      activeTab={activeTab}
+                      editArticle={editArticle}
+                      editCaseStudy={editCaseStudy}
+                      editSocialDraft={editSocialDraft}
+                      canArticleCreate={canArticleCreate}
+                      canArticleApprove={canArticleApprove}
+                      canCaseStudyCreate={canCaseStudyCreate}
+                      canCaseStudyApprove={canCaseStudyApprove}
+                      canSocialCreate={canSocialCreate}
+                      canSocialApprove={canSocialApprove}
+                      idPrefix="content-editor-mobile"
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+
+            {canSocialCreate ? (
+              <Accordion type="single" collapsible defaultValue="ai-drafts">
+                <AccordionItem value="ai-drafts" className="rounded-lg border border-kmt-border bg-white px-4">
+                  <AccordionTrigger className="hover:no-underline">
+                    <span className="flex flex-1 flex-col gap-1 text-start">
+                      <span className="text-base font-semibold text-kmt-ink">لوحة مسودات الذكاء الاصطناعي</span>
+                      <span className="text-sm font-normal text-kmt-muted">توليد مسودة توعوية فقط عبر بوابة مزود الذكاء الاصطناعي. تحفظ كل مسودة في حالة مراجعة قانونية وتحتاج مراجعة بشرية.</span>
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="pb-4">
+                      <AiSocialDraftForm />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             ) : null}
           </div>
         </div>

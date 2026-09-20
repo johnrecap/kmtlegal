@@ -3,6 +3,13 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
+import { AdminRowActions } from "@/components/admin/admin-menu";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/animate-ui/components/radix/accordion";
 import {
   Badge,
   Button,
@@ -99,64 +106,86 @@ function listHref(
 
 function DocumentCard({ document, options }: { document: DocumentRow; options: DocumentOptions }) {
   return (
-    <details className="rounded border border-kmt-border bg-white p-3">
-      <summary className="cursor-pointer list-none">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <Link
-              className="font-semibold text-kmt-navy hover:underline"
-              href={`/api/files/${document.id}/download`}
-            >
-              {document.fileName}
-            </Link>
-            <p className="mt-1 text-sm leading-6 text-kmt-muted">
-              {formatBytes(document.fileSize)} · {document.ownerClient?.fullName ?? "بدون عميل مالك"} ·{" "}
-              {document.uploadedBy.name}
+    <Accordion type="single" collapsible>
+      <AccordionItem value={document.id} className="rounded border border-kmt-border bg-white px-3">
+        <AccordionTrigger className="hover:no-underline">
+          <span className="flex flex-1 flex-wrap items-start justify-between gap-3 text-start">
+            <span className="min-w-0">
+              <span className="block font-semibold text-kmt-navy">{document.fileName}</span>
+              <span className="mt-1 block text-sm font-normal leading-6 text-kmt-muted">
+                {formatBytes(document.fileSize)} · {document.ownerClient?.fullName ?? "بدون عميل مالك"} ·{" "}
+                {document.uploadedBy.name}
+              </span>
+            </span>
+            <span className="flex flex-wrap items-center gap-2">
+              <Badge tone={statusTone(document.status)}>{labelFrom(documentStatusLabels, document.status)}</Badge>
+              <Badge tone={visibilityTone(document.visibility)}>
+                {labelFrom(documentVisibilityLabels, document.visibility)}
+              </Badge>
+            </span>
+          </span>
+        </AccordionTrigger>
+        <AccordionContent>
+          <div className="mb-3 flex justify-end">
+            <AdminRowActions
+              label={`إجراءات المستند ${document.fileName}`}
+              entries={[
+                {
+                  kind: "action",
+                  action: { key: "download", label: "تنزيل الملف", href: `/api/files/${document.id}/download` }
+                },
+                ...(document.case
+                  ? [
+                      {
+                        kind: "action" as const,
+                        action: {
+                          key: "case",
+                          label: "فتح القضية",
+                          href: `/admin/cases/${document.case.id}?tab=documents`
+                        }
+                      }
+                    ]
+                  : [])
+              ]}
+            />
+          </div>
+          <div className="mt-3 grid gap-3 text-sm leading-6 text-kmt-muted sm:grid-cols-2">
+            <p>
+              <span className="font-semibold text-kmt-ink">التصنيف: </span>
+              {labelFrom(documentCategoryLabels, document.category)}
+            </p>
+            <p>
+              <span className="font-semibold text-kmt-ink">تاريخ الرفع: </span>
+              {formatDateTime(document.createdAt)}
+            </p>
+            <p>
+              <span className="font-semibold text-kmt-ink">نوع الملف: </span>
+              {document.fileType}
+            </p>
+            <p>
+              <span className="font-semibold text-kmt-ink">القضية: </span>
+              {document.case ? (
+                <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/cases/${document.case.id}?tab=documents`}>
+                  {document.case.internalFileNumber} - {document.case.title}
+                </Link>
+              ) : (
+                "غير مرتبط"
+              )}
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge tone={statusTone(document.status)}>{labelFrom(documentStatusLabels, document.status)}</Badge>
-            <Badge tone={visibilityTone(document.visibility)}>
-              {labelFrom(documentVisibilityLabels, document.visibility)}
-            </Badge>
-          </div>
-        </div>
-      </summary>
-      <div className="mt-3 grid gap-3 text-sm leading-6 text-kmt-muted sm:grid-cols-2">
-        <p>
-          <span className="font-semibold text-kmt-ink">التصنيف: </span>
-          {labelFrom(documentCategoryLabels, document.category)}
-        </p>
-        <p>
-          <span className="font-semibold text-kmt-ink">تاريخ الرفع: </span>
-          {formatDateTime(document.createdAt)}
-        </p>
-        <p>
-          <span className="font-semibold text-kmt-ink">نوع الملف: </span>
-          {document.fileType}
-        </p>
-        <p>
-          <span className="font-semibold text-kmt-ink">القضية: </span>
-          {document.case ? (
-            <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/cases/${document.case.id}?tab=documents`}>
-              {document.case.internalFileNumber} - {document.case.title}
-            </Link>
-          ) : (
-            "غير مرتبط"
-          )}
-        </p>
-      </div>
-      <DocumentActionForm
-        canManage={options.canManage}
-        document={{
-          id: document.id,
-          status: document.status,
-          category: document.category,
-          visibility: document.visibility
-        }}
-      />
-      <DocumentDeleteForm canManage={options.canManage} documentId={document.id} />
-    </details>
+          <DocumentActionForm
+            canManage={options.canManage}
+            document={{
+              id: document.id,
+              status: document.status,
+              category: document.category,
+              visibility: document.visibility
+            }}
+          />
+          <DocumentDeleteForm canManage={options.canManage} documentId={document.id} />
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 }
 

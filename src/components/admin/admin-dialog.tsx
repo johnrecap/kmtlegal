@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import * as React from "react";
 import {
   Dialog,
   DialogClose,
@@ -56,8 +57,23 @@ export function AdminDialog({
   confirmDisabled,
   confirmBusy
 }: AdminDialogProps) {
+  // Confirm dismisses in both modes: controlled callers receive
+  // onOpenChange(false); trigger-driven (uncontrolled) dialogs track a
+  // local open state so confirm closes them too. The confirmed action
+  // (fetch + feedback) proceeds behind the closed dialog.
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  const resolvedOpen = open ?? internalOpen;
+  function handleOpenChange(next: boolean) {
+    setInternalOpen(next);
+    onOpenChange?.(next);
+  }
+  function handleConfirm() {
+    onConfirm?.();
+    setInternalOpen(false);
+    onOpenChange?.(false);
+  }
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={resolvedOpen} onOpenChange={handleOpenChange}>
       {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
       <DialogContent className="border-kmt-border bg-white text-kmt-ink">
         <DialogHeader>
@@ -78,7 +94,7 @@ export function AdminDialog({
               loading={confirmBusy}
               type="button"
               variant="primary"
-              onClick={onConfirm}
+              onClick={handleConfirm}
             >
               {confirmLabel}
             </Button>

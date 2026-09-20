@@ -35,6 +35,18 @@ function renderPasswordForm() {
       }}
     />
   );
+  // Password group renders open by default. The group trigger's accessible
+  // name carries the description suffix, so the exact-name query matches
+  // only the form submit.
+}
+
+function submitButton() {
+  // `hidden: true` because the Animate Dialog keeps its exit mounted in
+  // jsdom (Radix `hideOthers` leaves the background `aria-hidden`); the
+  // close itself was verified in a real browser via the Phase 11 Playwright
+  // harness. Exact name still matches only the form submit (the group
+  // trigger carries the description suffix).
+  return screen.getByRole("button", { hidden: true, name: "تغيير كلمة المرور" });
 }
 
 function fillPassword(password: string) {
@@ -57,14 +69,16 @@ describe("admin user password form", () => {
     vi.stubGlobal("fetch", fetchMock);
     renderPasswordForm();
 
-    await waitFor(() => expect(screen.getByRole("button", { name: "تغيير كلمة المرور" })).toBeEnabled());
+    await waitFor(() => expect(submitButton()).toBeEnabled());
     fillPassword(password);
-    fireEvent.click(screen.getByRole("button", { name: "تغيير كلمة المرور" }));
+    fireEvent.click(submitButton());
+    // Destructive gate: the submit opens a confirmation dialog first.
+    fireEvent.click(await screen.findByRole("button", { name: "تأكيد التغيير" }));
 
     await screen.findByText(plan35UserGovernanceUiCopy.password.stale);
     expect(screen.getByLabelText("كلمة المرور الجديدة")).toHaveValue(password);
-    expect(screen.getByRole("button", { name: "تغيير كلمة المرور" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: plan35UserGovernanceUiCopy.password.reload })).toBeVisible();
+    expect(submitButton()).toBeDisabled();
+    expect(screen.getByRole("button", { hidden: true, name: plan35UserGovernanceUiCopy.password.reload })).toBeVisible();
     const request = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
     expect(request).toMatchObject({ updatedAt: initialUpdatedAt, revokeSessions: true });
   });
@@ -86,14 +100,16 @@ describe("admin user password form", () => {
     vi.stubGlobal("fetch", fetchMock);
     renderPasswordForm();
 
-    await waitFor(() => expect(screen.getByRole("button", { name: "تغيير كلمة المرور" })).toBeEnabled());
+    await waitFor(() => expect(submitButton()).toBeEnabled());
     fillPassword("SyntheticPassword12!");
     fireEvent.click(screen.getByLabelText("إنهاء الجلسات الحالية لهذا المستخدم بعد تغيير كلمة المرور"));
-    fireEvent.click(screen.getByRole("button", { name: "تغيير كلمة المرور" }));
+    fireEvent.click(submitButton());
+    fireEvent.click(await screen.findByRole("button", { name: "تأكيد التغيير" }));
     await screen.findByText(plan35UserGovernanceUiCopy.password.saved);
 
     fillPassword("SyntheticPassword13!");
-    fireEvent.click(screen.getByRole("button", { name: "تغيير كلمة المرور" }));
+    fireEvent.click(submitButton());
+    fireEvent.click(await screen.findByRole("button", { name: "تأكيد التغيير" }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
 
     const firstRequest = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));

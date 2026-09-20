@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { Button, InlineFeedback, Select, StateBlock, TextInput, Textarea } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import { currencyValues, paymentStatusValues } from "@/lib/legal-finance";
 import { labelFrom, paymentStatusLabels } from "@/lib/legal-format";
 import { paymentGatewayUiCopy } from "@/lib/ui-copy";
@@ -316,9 +318,14 @@ export function PaymentForm({
         type="datetime-local"
       />
       <Textarea defaultValue={payment?.notes ?? ""} disabled={isBusy} idPrefix={`payment-${payment?.id ?? "create"}`} label="ملاحظات داخلية" name="notes" />
-      <Button loading={isBusy} type="submit">
+      <StatefulButton
+        aria-busy={isBusy}
+        className={buttonClasses()}
+        disabled={isBusy}
+        type="submit"
+      >
         {isEdit ? "حفظ الفاتورة" : "إنشاء فاتورة"}
-      </Button>
+      </StatefulButton>
       <ActionFeedback message={message} />
     </form>
   );
@@ -431,9 +438,14 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
       {blocksPaidChatSave ? (
         <InlineFeedback title="لا يمكن تفعيل شات الحجز مع الدفع قبل تجهيز بوابة الدفع المختارة وإنشاء سعر استشارة نشط." tone="warning" />
       ) : null}
-      <Button disabled={blocksPaidChatSave || isBusy} loading={isBusy} type="submit">
+      <StatefulButton
+        aria-busy={isBusy}
+        className={buttonClasses()}
+        disabled={blocksPaidChatSave || isBusy}
+        type="submit"
+      >
         حفظ إعدادات الحجز والدفع
-      </Button>
+      </StatefulButton>
       <ActionFeedback message={message} />
     </form>
   );
@@ -584,9 +596,14 @@ export function ConsultationPricingRuleForm({
         <input className="h-4 w-4 accent-kmt-navy" defaultChecked={pricingRule?.active ?? true} disabled={isBusy} id={`consultation-pricing-${pricingRule?.id ?? "create"}-active`} name="active" type="checkbox" />
         <span>سعر نشط</span>
       </label>
-      <Button loading={isBusy} type="submit">
+      <StatefulButton
+        aria-busy={isBusy}
+        className={buttonClasses()}
+        disabled={isBusy}
+        type="submit"
+      >
         {isEdit ? "حفظ سعر الاستشارة" : "إنشاء سعر استشارة"}
-      </Button>
+      </StatefulButton>
       <ActionFeedback message={message} />
     </form>
   );

@@ -1,8 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type FormEvent, useState } from "react";
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, InlineFeedback, Select, Textarea, TextInput } from "@/components/ui";
+import { type FormEvent, useRef, useState } from "react";
+import { Button, InlineFeedback, Select, Textarea, TextInput } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
+import { AdminDialog } from "@/components/admin/admin-dialog";
+import { useInvalidFieldAccordion } from "@/components/admin/use-invalid-field-accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/animate-ui/components/radix/accordion";
 import {
   commonUiCopy,
   localizeApiMessage,
@@ -76,6 +86,14 @@ export function ConsultationActionPanel({
   const router = useRouter();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [convertOpen, setConvertOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const convertFormRef = useRef<HTMLFormElement>(null);
+  const rejectFormRef = useRef<HTMLFormElement>(null);
+  const groups = useInvalidFieldAccordion({
+    type: "multiple",
+    defaultValue: ["schedule", "outcome", "reopen", "review", "assign", "convert", "reject"]
+  });
   const isClosed = status === "CONVERTED" || status === "REJECTED";
   const isFinalOutcome = outcomeStatus === "SUCCESSFUL" || outcomeStatus === "NO_SHOW" || outcomeStatus === "CANCELLED";
   const lifecycleEditable = outcomeStatus === "PENDING" || outcomeStatus === "AWAITING_RESULT";
@@ -163,62 +181,77 @@ export function ConsultationActionPanel({
 
   return (
     <div className="space-y-4">
-      {canSchedule ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{overdueCopy.scheduleForm.title}</CardTitle>
-            <CardDescription>{overdueCopy.scheduleForm.description}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ConsultationScheduleForm
-              consultationId={consultationId}
-              lawyers={lawyers}
-              outcomeVersion={outcomeVersion}
-            />
-          </CardContent>
-        </Card>
-      ) : null}
+      <Accordion type="multiple" value={groups.value} onValueChange={groups.onValueChange}>
+        {canSchedule ? (
+          <AccordionItem value="schedule" data-form-group="schedule" className="rounded-lg border border-kmt-border bg-white px-4">
+            <AccordionTrigger className="hover:no-underline">
+              <span className="flex flex-1 flex-col gap-1 text-start">
+                <span className="text-base font-semibold text-kmt-ink">{overdueCopy.scheduleForm.title}</span>
+                <span className="text-sm font-normal text-kmt-muted">{overdueCopy.scheduleForm.description}</span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="pb-4">
+                <ConsultationScheduleForm
+                  consultationId={consultationId}
+                  lawyers={lawyers}
+                  outcomeVersion={outcomeVersion}
+                />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        ) : null}
 
-      {canRecordOutcome ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{isFinalOutcome ? outcomeCopy.outcomeForm.correctionTitle : outcomeCopy.outcomeForm.title}</CardTitle>
-            <CardDescription>
-              {isFinalOutcome ? outcomeCopy.outcomeForm.correctionDescription : outcomeCopy.outcomeForm.description}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ConsultationOutcomeForm
-              consultationId={consultationId}
-              currentOutcome={outcomeStatus}
-              outcomeVersion={outcomeVersion}
-            />
-          </CardContent>
-        </Card>
-      ) : null}
+        {canRecordOutcome ? (
+          <AccordionItem value="outcome" data-form-group="outcome" className="rounded-lg border border-kmt-border bg-white px-4">
+            <AccordionTrigger className="hover:no-underline">
+              <span className="flex flex-1 flex-col gap-1 text-start">
+                <span className="text-base font-semibold text-kmt-ink">{isFinalOutcome ? outcomeCopy.outcomeForm.correctionTitle : outcomeCopy.outcomeForm.title}</span>
+                <span className="text-sm font-normal text-kmt-muted">
+                  {isFinalOutcome ? outcomeCopy.outcomeForm.correctionDescription : outcomeCopy.outcomeForm.description}
+                </span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="pb-4">
+                <ConsultationOutcomeForm
+                  consultationId={consultationId}
+                  currentOutcome={outcomeStatus}
+                  outcomeVersion={outcomeVersion}
+                />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        ) : null}
 
-      {canReopen ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{outcomeCopy.reopenForm.title}</CardTitle>
-            <CardDescription>{outcomeCopy.reopenForm.description}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ConsultationReopenForm
-              consultationId={consultationId}
-              lawyers={lawyers}
-              outcomeVersion={outcomeVersion}
-            />
-          </CardContent>
-        </Card>
-      ) : null}
+        {canReopen ? (
+          <AccordionItem value="reopen" data-form-group="reopen" className="rounded-lg border border-kmt-border bg-white px-4">
+            <AccordionTrigger className="hover:no-underline">
+              <span className="flex flex-1 flex-col gap-1 text-start">
+                <span className="text-base font-semibold text-kmt-ink">{outcomeCopy.reopenForm.title}</span>
+                <span className="text-sm font-normal text-kmt-muted">{outcomeCopy.reopenForm.description}</span>
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="pb-4">
+                <ConsultationReopenForm
+                  consultationId={consultationId}
+                  lawyers={lawyers}
+                  outcomeVersion={outcomeVersion}
+                />
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        ) : null}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>مراجعة السكرتيرة</CardTitle>
-          <CardDescription>بعد مراجعة بيانات الطلب، سيختفي من إشعارات الطلبات الجديدة وتنتقل مباشرة للطلب التالي إن وجد.</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <AccordionItem value="review" data-form-group="review" className="rounded-lg border border-kmt-border bg-white px-4">
+        <AccordionTrigger className="hover:no-underline">
+          <span className="flex flex-1 flex-col gap-1 text-start">
+            <span className="text-base font-semibold text-kmt-ink">مراجعة السكرتيرة</span>
+            <span className="text-sm font-normal text-kmt-muted">بعد مراجعة بيانات الطلب، سيختفي من إشعارات الطلبات الجديدة وتنتقل مباشرة للطلب التالي إن وجد.</span>
+          </span>
+        </AccordionTrigger>
+        <AccordionContent>
           {secretaryReviewedAt ? (
             <InlineFeedback
               className="mb-3"
@@ -226,22 +259,29 @@ export function ConsultationActionPanel({
               tone="info"
             />
           ) : null}
-          <form className="space-y-3" onSubmit={review}>
+          <form className="space-y-3 pb-4" onSubmit={review} onInvalidCapture={groups.onInvalidCapture}>
             <Textarea defaultValue={secretaryReviewNote ?? ""} disabled={!canReview || isBusy || Boolean(secretaryReviewedAt)} idPrefix={`consultation-review-${consultationId}`} label="ملاحظة مراجعة داخلية" name="note" />
-            <Button disabled={!canReview || Boolean(secretaryReviewedAt)} loading={isBusy} type="submit" variant="secondary">
+            <StatefulButton
+              aria-busy={isBusy}
+              className={buttonClasses({ variant: "secondary" })}
+              disabled={!canReview || Boolean(secretaryReviewedAt) || isBusy}
+              type="submit"
+            >
               تمت مراجعة السكرتيرة
-            </Button>
+            </StatefulButton>
           </form>
-        </CardContent>
-      </Card>
+        </AccordionContent>
+      </AccordionItem>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>تعيين المحامي</CardTitle>
-          <CardDescription>التعيين يحول الطلب إلى قيد المراجعة إذا لم يكن مغلقًا.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form className="grid gap-3 sm:grid-cols-[1fr_auto]" onSubmit={assign}>
+      <AccordionItem value="assign" data-form-group="assign" className="rounded-lg border border-kmt-border bg-white px-4">
+        <AccordionTrigger className="hover:no-underline">
+          <span className="flex flex-1 flex-col gap-1 text-start">
+            <span className="text-base font-semibold text-kmt-ink">تعيين المحامي</span>
+            <span className="text-sm font-normal text-kmt-muted">التعيين يحول الطلب إلى قيد المراجعة إذا لم يكن مغلقًا.</span>
+          </span>
+        </AccordionTrigger>
+        <AccordionContent>
+          <form className="grid gap-3 pb-4 sm:grid-cols-[1fr_auto]" onSubmit={assign} onInvalidCapture={groups.onInvalidCapture}>
             <Select defaultValue={assignedLawyerId ?? ""} disabled={!canAssign || isBusy} idPrefix={`consultation-assign-${consultationId}`} label="المحامي المسؤول" name="assignedLawyerId" required>
               <option value="">اختر محاميًا</option>
               {lawyers.map((lawyer) => (
@@ -250,20 +290,27 @@ export function ConsultationActionPanel({
                 </option>
               ))}
             </Select>
-            <Button className="self-end" disabled={!canAssign} loading={isBusy} type="submit" variant="secondary">
+            <StatefulButton
+              aria-busy={isBusy}
+              className={buttonClasses({ variant: "secondary", className: "self-end" })}
+              disabled={!canAssign || isBusy}
+              type="submit"
+            >
               تعيين
-            </Button>
+            </StatefulButton>
           </form>
-        </CardContent>
-      </Card>
+        </AccordionContent>
+      </AccordionItem>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>تحويل إلى قضية</CardTitle>
-          <CardDescription>ينشئ عميلًا أو يربط العميل الموجود، ثم ينشئ ملف قضية وموعدًا اختياريًا.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form className="grid gap-4" onSubmit={convert}>
+      <AccordionItem value="convert" data-form-group="convert" className="rounded-lg border border-kmt-border bg-white px-4">
+        <AccordionTrigger className="hover:no-underline">
+          <span className="flex flex-1 flex-col gap-1 text-start">
+            <span className="text-base font-semibold text-kmt-ink">تحويل إلى قضية</span>
+            <span className="text-sm font-normal text-kmt-muted">ينشئ عميلًا أو يربط العميل الموجود، ثم ينشئ ملف قضية وموعدًا اختياريًا.</span>
+          </span>
+        </AccordionTrigger>
+        <AccordionContent>
+          <form ref={convertFormRef} className="grid gap-4 pb-4" onSubmit={convert} onInvalidCapture={groups.onInvalidCapture}>
             <Select defaultValue={assignedLawyerId ?? ""} disabled={!canConvert || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="المحامي المسؤول" name="assignedLawyerId">
               <option value="">استخدم التعيين الحالي</option>
               {lawyers.map((lawyer) => (
@@ -292,32 +339,63 @@ export function ConsultationActionPanel({
               <TextInput defaultValue="60" disabled={!canConvert || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="مدة الموعد بالدقائق" name="appointmentDurationMinutes" type="number" />
             </div>
             <TextInput disabled={!canConvert || isBusy} idPrefix={`consultation-convert-${consultationId}`} label="مكان أو رابط الموعد" name="appointmentLocation" />
-            <Button disabled={!canConvert || lawyers.length === 0} loading={isBusy} type="submit">
+            <Button disabled={!canConvert || lawyers.length === 0 || isBusy} type="button" onClick={() => setConvertOpen(true)}>
               تحويل إلى قضية
             </Button>
           </form>
-        </CardContent>
-      </Card>
+          <AdminDialog
+            variant="confirm"
+            open={convertOpen}
+            onOpenChange={setConvertOpen}
+            title="تأكيد تحويل الطلب إلى قضية"
+            description="سيتم إنشاء عميل أو ربط العميل الموجود، ثم إنشاء ملف قضية وموعد حسب البيانات المدخلة."
+            confirmLabel="تأكيد التحويل"
+            cancelLabel="إلغاء"
+            confirmBusy={isBusy}
+            onConfirm={() => {
+              setConvertOpen(false);
+              convertFormRef.current?.requestSubmit();
+            }}
+          />
+        </AccordionContent>
+      </AccordionItem>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>رفض الطلب</CardTitle>
-          <CardDescription>استخدم الرفض فقط عندما لا يصلح الطلب للتحويل أو يحتاج قناة أخرى.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form className="space-y-3" onSubmit={reject}>
+      <AccordionItem value="reject" data-form-group="reject" className="rounded-lg border border-kmt-danger-border bg-kmt-danger-surface px-4">
+        <AccordionTrigger className="hover:no-underline">
+          <span className="flex flex-1 flex-col gap-1 text-start">
+            <span className="text-base font-semibold text-kmt-ink">رفض الطلب</span>
+            <span className="text-sm font-normal text-kmt-muted">استخدم الرفض فقط عندما لا يصلح الطلب للتحويل أو يحتاج قناة أخرى.</span>
+          </span>
+        </AccordionTrigger>
+        <AccordionContent>
+          <form ref={rejectFormRef} className="space-y-3 pb-4" onSubmit={reject} onInvalidCapture={groups.onInvalidCapture}>
             <Select defaultValue="CANCELLED_BY_OFFICE" disabled={!canReject || isBusy} idPrefix={`consultation-reject-${consultationId}`} label={outcomeCopy.outcomeForm.reason} name="reasonCode" required>
               <option value="CANCELLED_BY_OFFICE">{outcomeCopy.reasons.CANCELLED_BY_OFFICE}</option>
               <option value="CANCELLED_BY_CLIENT">{outcomeCopy.reasons.CANCELLED_BY_CLIENT}</option>
               <option value="OTHER">{outcomeCopy.reasons.OTHER}</option>
             </Select>
             <Textarea disabled={!canReject || isBusy} idPrefix={`consultation-reject-${consultationId}`} label="سبب داخلي مختصر" name="reason" />
-            <Button disabled={!canReject} loading={isBusy} type="submit" variant="danger">
+            <Button disabled={!canReject || isBusy} type="button" variant="danger" onClick={() => setRejectOpen(true)}>
               رفض الطلب
             </Button>
           </form>
-        </CardContent>
-      </Card>
+          <AdminDialog
+            variant="destructive"
+            open={rejectOpen}
+            onOpenChange={setRejectOpen}
+            title="تأكيد رفض الطلب"
+            description="سيتم إغلاق طلب الاستشارة بالسبب المحدد. لا يمكن التراجع عن الرفض من هنا."
+            confirmLabel="تأكيد الرفض"
+            cancelLabel="إلغاء"
+            confirmBusy={isBusy}
+            onConfirm={() => {
+              setRejectOpen(false);
+              rejectFormRef.current?.requestSubmit();
+            }}
+          />
+        </AccordionContent>
+      </AccordionItem>
+      </Accordion>
 
       {message ? <InlineFeedback title={message.text} tone={message.tone} /> : null}
     </div>

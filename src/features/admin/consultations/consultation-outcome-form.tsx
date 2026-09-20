@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { Button, InlineFeedback, Select, Textarea } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import {
   localizeApiMessage,
   plan36ConsultationOutcomeCopy as copy
@@ -128,9 +130,14 @@ export function ConsultationOutcomeForm({
         <input className="mt-1 h-5 w-5 shrink-0" disabled={busy} name="confirm" required type="checkbox" value="yes" />
         <span>{copy.outcomeForm.confirm}</span>
       </label>
-      <Button loading={busy} type="submit" variant={isCorrection ? "danger" : "primary"}>
+      <StatefulButton
+        aria-busy={busy}
+        className={buttonClasses({ variant: isCorrection ? "danger" : "primary" })}
+        disabled={busy}
+        type="submit"
+      >
         {isCorrection ? copy.outcomeForm.saveCorrection : copy.outcomeForm.save}
-      </Button>
+      </StatefulButton>
       {feedback ? (
         <InlineFeedback
           action={feedback.code === "CONSULTATION_STATE_CHANGED" ? (

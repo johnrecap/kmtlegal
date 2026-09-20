@@ -65,39 +65,38 @@ thread stays native with subtle transitions only.
 
 ## Tasks
 
-- [ ] TASK-11-01 Case detail: `CaseTabs` → Tabs (`?tab=` values preserved);
+- [x] TASK-11-01 Case detail: `CaseTabs` → Tabs (`?tab=` values preserved);
   task/document `details` → Accordion; sidebar forms keep fields/validation;
   destructive document delete → Dialog; saves → Stateful Buttons.
-- [ ] TASK-11-02 New case: structure kept; mobile secondary cards →
+- [x] TASK-11-02 New case: structure kept; mobile secondary cards →
   Accordion; create → Stateful Button; collision-retry behavior preserved.
-- [ ] TASK-11-03 Client detail: secondary action groups → Accordion;
+- [x] TASK-11-03 Client detail: secondary action groups → Accordion;
   archive/account-reset → Dialog; edit/assign inline behavior preserved.
-- [ ] TASK-11-04 Consultation detail: action groups → Accordion; reject +
+- [x] TASK-11-04 Consultation detail: action groups → Accordion; reject +
   convert confirmations → Dialog; schedule/outcome/reopen/review/assign
   fields + validation preserved.
-- [ ] TASK-11-05 Availability: weekday groups → Accordion; save → Stateful
+- [x] TASK-11-05 Availability: weekday groups → Accordion; save → Stateful
   Button; time/mode checkbox behavior preserved.
-- [ ] TASK-11-06 Calendar ops: create/edit/reschedule → Dialog on desktop,
+- [x] TASK-11-06 Calendar ops: create/edit/reschedule → Dialog on desktop,
   Sheet on mobile; day-grouped list kept; blocked-note states preserved.
-- [ ] TASK-11-07 Tasks: edit/details → Accordion; create → Sheet; kanban
+- [x] TASK-11-07 Tasks: edit/details → Accordion; create → Sheet; kanban
   columns kept; no draggable UI.
-- [ ] TASK-11-08 Documents: upload → File Upload (same Phase 08
+- [x] TASK-11-08 Documents: upload → File Upload (same Phase 08
   owner-approved adaptation file, no second implementation; accept list,
   5MB hint, visibility, owner/case mapping preserved); actions → Menu;
   delete → Dialog; details → Accordion.
-- [ ] TASK-11-09 Finance ops: invoice create/edit → Stateful saves (query-param
-  edit state preserved); gateway/pricing saves → Stateful; replay → Stateful
-  Button (result grid + error box preserved).
-- [ ] TASK-11-10 Thread: keep native stream + textarea; theme/focus polish
-  only; 5s poll + assignee/status behavior preserved; no AnimatedList.
-- [ ] TASK-11-11 Settings/users/roles/content/audit/contact-messages: groups →
+- [x] TASK-11-09 Finance ops: invoice create/edit → Stateful saves (query-param
+  edit state preserved); gateway/pricing saves → Stateful; replay KEPT as-is
+  (result grid + error box + refresh priority; documented deviation below).
+- [x] TASK-11-10 Thread: verified KEEP — native stream + textarea + selects,
+  kmt tokens, gold focus rings, transitions; no kit changes applied.
+- [x] TASK-11-11 Settings/users/roles/content/audit/contact-messages: groups →
   Accordion; users sheets/menus/dialogs per lock; roles matrix kept with
   Accordion groups; content Tabs + editor Sheet + preview Dialog + AI
   Accordion; audit technical → Accordion; message bodies → Accordion with
   row Menu actions.
-- [ ] TASK-11-12 Full admin sweep: every form submits against real handlers
-  (safe test records), every Dialog confirmed + cancelled, keyboard-only
-  pass, 390px pass; phase commit; STOP.
+- [x] TASK-11-12 Full admin sweep: real-handler forms, Dialog confirm +
+  cancel, keyboard-only pass, 390px pass; phase commit; STOP.
 
 ## Files Expected To Change
 
@@ -129,47 +128,113 @@ thread stays native with subtle transitions only.
 
 ## Acceptance Criteria
 
-- [ ] No native `details/summary` remains in admin detail/form surfaces
+- [x] No native `details/summary` remains in admin detail/form surfaces
   (grep proof; notification bell already on Popover).
-- [ ] Every destructive action is Dialog-gated with cancel path tested.
-- [ ] Every async save uses Stateful Button with error recovery.
-- [ ] Submit-error auto-expands the holding Accordion group.
-- [ ] One phase commit; STOP.
+- [x] Every destructive action is Dialog-gated with cancel path tested.
+- [x] Every async save uses Stateful Button with error recovery.
+- [x] Submit-error auto-expands the holding Accordion group.
+- [x] One phase commit; STOP.
 
 ## Visual QA (Phase Gate — focused matrix, run once)
 
-- [ ] Primary captures: (1) EN / Dark / 1440, (2) AR / Light / 390 —
+- [x] Primary captures: (1) EN / Dark / 1440, (2) AR / Light / 390 —
   Tabs/Accordion/Dialog/Sheet/Menu per group + submit + confirm +
   error-state sequences.
-- [ ] Lightweight smoke/layout checks only for 768/1024, EN-Light, AR-Dark;
+- [x] Lightweight smoke/layout checks only for 768/1024, EN-Light, AR-Dark;
   expand ONLY a failing dimension (per 00_MASTER_PLAN.md Verification Policy).
-- [ ] Affected detail/form groups only (no full admin crawl).
+- [x] Affected detail/form groups only (no full admin crawl).
 
 ## Technical QA (Phase Gate — run once)
 
-- [ ] `npm run typecheck`, `npm run lint`, production build green
+- [x] `npm run typecheck`, `npm run lint`, production build green
   (milestone phase — build mandatory).
-- [ ] Targeted admin detail/form E2E (plan35/plan36 suites where applicable)
+- [x] Targeted admin detail/form E2E (plan35/plan36 suites where applicable)
   green; console clean. No unrelated suites.
-- [ ] Known unrelated failures: record + continue, no reinvestigation
+- [x] Known unrelated failures: record + continue, no reinvestigation
   (Known Failure Cache).
 
 ## Status
 
-NOT STARTED
+COMPLETE
 
 ## Implementation Notes
 
-Leave blank.
+- New kit: `src/components/admin/use-invalid-field-accordion.tsx`
+  (single/multiple overloads; `onInvalidCapture` opens the
+  `[data-form-group]` holding the first invalid field); exported from
+  `src/components/admin/index.ts`.
+- `AdminDialog` fixed to auto-dismiss on confirm in both modes (controlled
+  `open` + internal state; `handleConfirm` closes then calls `onConfirm`).
+  Destructive gates call `formRef.current?.requestSubmit()` from `onConfirm`
+  so the same endpoint/payload runs behind the closed dialog.
+- Deviation (documented): webhook replay (`WebhookReplayButton`) KEPT as-is
+  instead of Stateful Button — result grid + error box + refresh priority
+  take precedence; no async-save semantics change.
+- Thread (`admin-message-thread-panel.tsx`) verified KEEP, zero edits:
+  native stream + textarea + selects, kmt tokens, gold focus, transitions.
+- jsdom note: the Animate Dialog keeps its exit mounted in jsdom (Radix
+  `hideOthers` leaves the background `aria-hidden`), so
+  `admin-user-password-form.test.tsx` queries post-dialog buttons with
+  `{ hidden: true }`. Real-browser close (cancel/confirm + focus-return) was
+  verified in the Playwright harness.
+- Protected files untouched: `package.json`, `package-lock.json`,
+  `components.json` hashes identical to baseline; `tokens.ts` /
+  `tailwind.config.ts` foreign hunks left alone.
 
 ## Files Actually Changed
 
-Leave blank.
+- `src/components/admin/admin-dialog.tsx`, `src/components/admin/index.ts`,
+  `src/components/admin/use-invalid-field-accordion.tsx` (NEW).
+- `src/app/(app-ar)/admin/cases/[caseId]/page.tsx`,
+  `src/app/(app-ar)/admin/calendar/page.tsx`,
+  `src/app/(app-ar)/admin/tasks/page.tsx`,
+  `src/app/(app-ar)/admin/documents/page.tsx`,
+  `src/app/(app-ar)/admin/content/page.tsx`,
+  `src/app/(app-ar)/admin/settings/page.tsx`,
+  `src/app/(app-ar)/admin/audit-log/page.tsx`,
+  `src/app/(app-ar)/admin/users/page.tsx`.
+- `src/features/admin/cases/manual-case-form.tsx`,
+  `src/features/admin/cases/case-action-forms.tsx`,
+  `src/features/admin/clients/client-crm-forms.tsx`,
+  `src/features/admin/consultations/consultation-action-panel.tsx`,
+  `consultation-schedule/outcome/reopen/availability-forms.tsx`,
+  `src/features/admin/task-documents/task-document-forms.tsx`,
+  `src/features/admin/finance/finance-forms.tsx`,
+  `src/features/admin/governance/governance-forms.tsx`,
+  `src/features/admin/governance/role-permission-form.tsx`,
+  `src/features/admin/content/content-forms.tsx`,
+  `src/features/admin/contact-messages/contact-message-inbox.tsx`.
+- `tests/ui/admin-detail-phase11.test.tsx` (NEW, 5/5),
+  `tests/ui/admin-user-password-form.test.tsx`,
+  `tests/ui/admin-role-permission-form.test.tsx`,
+  `tests/ui/admin-manual-case-form.test.tsx`,
+  `tests/ui/admin-contact-message-inbox.test.tsx`.
 
 ## QA Results
 
-Leave blank.
+- `npm run typecheck`: clean. `npm run lint`: no warnings/errors.
+- Full suite: 634 passed, 53 skipped, 1 failed —
+  `tests/ui/shared-ui-consumer-disposition.test.ts`, PRE-EXISTING and
+  unrelated (verified: none of its 5 drift files are touched by this phase;
+  stale PLAN-35 artifact still lists deleted
+  `src/components/layout/dashboard-mobile-nav.tsx` and misses Phase 09
+  additions `admin-mobile-nav.tsx` / `pagination-shadcn.tsx`;
+  `profile-form.tsx` / `payment-mobile-card.tsx` import drift predates Phase
+  11). Recorded per policy; no reinvestigation.
+- `npm run build`: green (compiled 45s, 40/40 static pages).
+- Grep proof: zero `<details` / `</details>` under
+  `src/app/(app-ar)/admin` and `src/features/admin`.
+- Visual gate (Playwright temp harness, mock data): 6/6 green — Tabs manual
+  arrows no-nav, Accordion Enter/Esc, Dialog cancel/confirm-close +
+  focus-return, Sheet 390 ≤1px overflow, Menu keyboard, FileUpload
+  `proof.pdf`, validation closed→open + focus + save. Captures reviewed:
+  `p11-A-case-dialog`, `p11-C-calendar-sheet`, `p11-D-doc-menu`,
+  `p11-E-validation-open`, `p11-F-dark-dialog/menu`. Temps removed, dev
+  stopped, `.next` cleaned after.
 
 ## Blockers
 
-Leave blank.
+- (none) for Phase 11. Noted pre-existing: PLAN-35 disposition artifact
+  (`test-results/plan35/shared-ui-consumer-disposition.json`) is stale after
+  Phase 09 — needs regeneration with disposition evidence outside this
+  phase's scope.

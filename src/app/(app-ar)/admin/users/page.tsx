@@ -3,6 +3,14 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger
+} from "@/components/animate-ui/components/radix/sheet";
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { AdminUserCreateForm } from "@/features/admin/governance/governance-forms";
@@ -141,7 +149,29 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
       notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="space-y-5">
-        {canCreateAdminUsers(guard.context.principal) ? <AdminUserCreateForm roles={options.roles} /> : null}
+        {canCreateAdminUsers(guard.context.principal) ? (
+          <>
+            <div className="hidden lg:block">
+              <AdminUserCreateForm roles={options.roles} />
+            </div>
+            <div className="lg:hidden">
+              <Sheet>
+                <SheetTrigger className={buttonClasses({ className: "w-full" })}>إنشاء حساب جديد</SheetTrigger>
+                <SheetContent aria-label="إنشاء حساب جديد" className="overflow-y-auto border-kmt-border bg-white text-kmt-ink" side="right">
+                  <SheetHeader>
+                    <SheetTitle className="text-kmt-ink">إنشاء حساب جديد</SheetTitle>
+                    <SheetDescription className="text-kmt-muted">
+                      متاح لمدير النظام فقط. يتم إنشاء البريد وكلمة المرور يدويًا بدون إرسال SMTP.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="mt-4">
+                    <AdminUserCreateForm roles={options.roles} idPrefix="admin-user-create-mobile" />
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+          </>
+        ) : null}
 
         <div className="flex flex-wrap items-start gap-3">
         <form action="/admin/users" className="min-w-0 flex-1" method="get">

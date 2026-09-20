@@ -2,11 +2,15 @@ import React from "react";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   ContactMessageInbox,
   type ContactMessageInboxData
 } from "@/features/admin/contact-messages/contact-message-inbox";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() })
+}));
 
 const longMixedMessage =
   "أحتاج مراجعة المستندات الخاصة بعقد التوريد — Contract reference ABC-2026-VERY-LONG-REFERENCE — مع توضيح الخطوات التالية دون قص محتوى الرسالة.";
@@ -51,6 +55,10 @@ describe("admin contact message inbox UI", () => {
     expect(html).toContain("md:hidden");
     expect(html).toContain('dir="auto"');
     expect(html).toContain('dir="ltr"');
+    // Desktop body lives in a lazily-mounted Accordion panel: the
+    // disclosure trigger stays visible while the body mounts on open.
+    // The mobile card keeps the full inline text (unchanged behavior).
+    expect(html).toContain("عرض التفاصيل");
     expect(html).toContain(longMixedMessage);
     expect(html).not.toContain("contact.manage.any");
   });
@@ -63,12 +71,16 @@ describe("admin contact message inbox UI", () => {
       "utf8"
     );
 
-    expect(managerHtml).toContain("تحديد كمراجعة");
-    expect(managerHtml).toContain("أرشفة");
-    expect(readerHtml).not.toContain("تحديد كمراجعة");
-    expect(readerHtml).not.toContain("أرشفة");
+    // Row actions live in a lazily-mounted Menu: the trigger renders for
+    // managers only; items (copy-driven labels) + handlers are proven on
+    // source, with the destructive archive behind a confirmation dialog.
+    expect(managerHtml).toContain("إجراءات رسالة");
+    expect(readerHtml).not.toContain("إجراءات رسالة");
+    expect(source).toContain("copy.markReviewed");
+    expect(source).toContain("copy.archive");
+    expect(source).toContain("تأكيد أرشفة الرسالة");
     expect(source).toContain('aria-live="polite"');
-    expect(source).toContain("disabled={isBusy}");
+    expect(source).toContain("disabled: isBusy");
     expect(source).toContain("/api/admin/contact-messages/");
   });
 

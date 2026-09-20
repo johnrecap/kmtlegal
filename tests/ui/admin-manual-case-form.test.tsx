@@ -53,7 +53,8 @@ describe("admin manual case form UI", () => {
       "utf8"
     );
 
-    expect(source).toContain("loading={isBusy}");
+    expect(source).toContain("StatefulButton");
+    expect(source).toContain("aria-busy");
     expect(source).toContain("replayed");
     expect(source).toContain("CASE_REFERENCE_CONFLICT");
     expect(source).toContain("crypto.randomUUID()");

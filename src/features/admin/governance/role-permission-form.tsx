@@ -11,6 +11,14 @@ import {
   CardTitle,
   InlineFeedback
 } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/animate-ui/components/radix/accordion";
 import {
   permissionDisplayLabel,
   permissionGroupDisplayLabel,
@@ -212,48 +220,55 @@ export function RolePermissionForm({ initialMatrix }: { initialMatrix: RolePermi
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            {groupedPermissions.map(([groupKey, permissions]) => (
-              <fieldset className="space-y-3" disabled={selectedRole.readOnly || isBusy} key={groupKey}>
-                <legend className="mb-3 text-base font-semibold text-kmt-navy">
-                  {permissionGroupDisplayLabel(groupKey)}
-                </legend>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {permissions.map((permission) => {
-                    const id = checkboxId(selectedRole.id, permission.key);
-                    return (
-                      <div className="rounded-lg border border-kmt-border bg-kmt-paper p-3" key={permission.key}>
-                        <label className="flex min-h-11 cursor-pointer items-start gap-3" htmlFor={id}>
-                          <input
-                            checked={selectedKeys.includes(permission.key)}
-                            className="mt-1 h-5 w-5 shrink-0 accent-kmt-gold"
-                            disabled={selectedRole.readOnly || isBusy}
-                            id={id}
-                            name="permissionKeys"
-                            onChange={(event) => togglePermission(permission.key, event.currentTarget.checked)}
-                            type="checkbox"
-                            value={permission.key}
-                          />
-                          <span className="text-sm font-medium leading-6 text-kmt-ink">
-                            {permissionDisplayLabel(permission.key)}
-                          </span>
-                        </label>
+            <Accordion type="multiple" defaultValue={groupedPermissions.map(([groupKey]) => groupKey)}>
+              {groupedPermissions.map(([groupKey, permissions]) => (
+                <AccordionItem key={groupKey} value={groupKey} className="rounded-lg border border-kmt-border px-4">
+                  <AccordionTrigger className="text-base font-semibold text-kmt-navy hover:no-underline">
+                    {permissionGroupDisplayLabel(groupKey)}
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <fieldset aria-label={permissionGroupDisplayLabel(groupKey)} className="space-y-3 pb-4" disabled={selectedRole.readOnly || isBusy}>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {permissions.map((permission) => {
+                          const id = checkboxId(selectedRole.id, permission.key);
+                          return (
+                            <div className="rounded-lg border border-kmt-border bg-kmt-paper p-3" key={permission.key}>
+                              <label className="flex min-h-11 cursor-pointer items-start gap-3" htmlFor={id}>
+                                <input
+                                  checked={selectedKeys.includes(permission.key)}
+                                  className="mt-1 h-5 w-5 shrink-0 accent-kmt-gold"
+                                  disabled={selectedRole.readOnly || isBusy}
+                                  id={id}
+                                  name="permissionKeys"
+                                  onChange={(event) => togglePermission(permission.key, event.currentTarget.checked)}
+                                  type="checkbox"
+                                  value={permission.key}
+                                />
+                                <span className="text-sm font-medium leading-6 text-kmt-ink">
+                                  {permissionDisplayLabel(permission.key)}
+                                </span>
+                              </label>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })}
-                </div>
-              </fieldset>
-            ))}
+                    </fieldset>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </CardContent>
         </Card>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button
-            disabled={selectedRole.readOnly || !isDirty}
-            loading={isBusy}
+          <StatefulButton
+            aria-busy={isBusy}
+            className={buttonClasses()}
+            disabled={selectedRole.readOnly || !isDirty || isBusy}
             type="submit"
           >
             {isBusy ? plan35RoleGovernanceUiCopy.saving : plan35RoleGovernanceUiCopy.save}
-          </Button>
+          </StatefulButton>
           {feedback?.tone === "warning" ? (
             <Button onClick={() => window.location.reload()} type="button" variant="secondary">
               {plan35RoleGovernanceUiCopy.reload}

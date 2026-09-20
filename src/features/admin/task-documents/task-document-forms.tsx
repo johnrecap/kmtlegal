@@ -2,8 +2,12 @@
 
 import { useHydrated } from "@/lib/use-hydrated";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { Button, InlineFeedback, Select, StateBlock, TextInput, Textarea } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
+import { FileUpload } from "@/components/ui/file-upload";
+import { AdminDialog } from "@/components/admin/admin-dialog";
 import {
   documentCategoryLabels,
   documentStatusLabels,
@@ -224,9 +228,14 @@ export function TaskCreateForm({
           </option>
         ))}
       </Select>
-      <Button disabled={controlsDisabled} loading={isBusy} type="submit">
+      <StatefulButton
+        aria-busy={isBusy}
+        className={buttonClasses()}
+        disabled={controlsDisabled}
+        type="submit"
+      >
         إنشاء المهمة
-      </Button>
+      </StatefulButton>
       <ActionFeedback message={message} />
     </form>
   );
@@ -321,9 +330,14 @@ export function TaskUpdateForm({
           </option>
         ))}
       </Select>
-      <Button disabled={controlsDisabled} loading={isBusy} size="sm" type="submit" variant="secondary">
+      <StatefulButton
+        aria-busy={isBusy}
+        className={buttonClasses({ variant: "secondary", size: "sm" })}
+        disabled={controlsDisabled}
+        type="submit"
+      >
         حفظ المهمة
-      </Button>
+      </StatefulButton>
       <ActionFeedback message={message} />
       {needsReview ? (
         <Button onClick={() => window.location.reload()} size="sm" type="button" variant="secondary">
@@ -349,6 +363,8 @@ export function AdminDocumentUploadForm({
   const isHydrated = useHydrated();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadKey, setUploadKey] = useState(0);
   const retainedDefaultCase = defaultCase && !cases.some((legalCase) => legalCase.id === defaultCase.id) ? defaultCase : null;
 
   if (!canManage) {
@@ -358,11 +374,18 @@ export function AdminDocumentUploadForm({
   async function upload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage(null);
+
+    if (!selectedFile) {
+      setMessage(errorMessage("اختر ملفًا لرفعه قبل الإرسال."));
+      return;
+    }
+
     setIsUploading(true);
 
     try {
       const form = event.currentTarget;
       const formData = new FormData(form);
+      formData.set("file", selectedFile);
       const response = await fetch("/api/files/upload", {
         method: "POST",
         body: formData
@@ -374,6 +397,8 @@ export function AdminDocumentUploadForm({
       }
 
       form.reset();
+      setSelectedFile(null);
+      setUploadKey((key) => key + 1);
       setMessage(successMessage("تم رفع المستند."));
       router.refresh();
     } catch {
@@ -423,24 +448,26 @@ export function AdminDocumentUploadForm({
         </Select>
       </div>
       <div className="space-y-2">
-        <label className="block text-sm font-semibold text-kmt-ink" htmlFor="document-upload-file">
+        <span className="block text-sm font-semibold text-kmt-ink" id="document-upload-file-label">
           الملف
-        </label>
-        <input
-          id="document-upload-file"
-          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
-          className="w-full rounded border border-slate-300 bg-white px-3 py-2.5 text-sm"
-          disabled={!isHydrated || isUploading}
-          name="file"
-          required
-          type="file"
-          aria-describedby="document-upload-file-hint"
-        />
+        </span>
+        <div className="rounded-lg border border-kmt-border bg-white px-2 py-2">
+          <FileUpload
+            key={uploadKey}
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
+            onChange={(files) => setSelectedFile(files[files.length - 1] ?? null)}
+          />
+        </div>
         <p className="text-sm leading-6 text-kmt-muted" id="document-upload-file-hint">الحد الأقصى 5MB. الأنواع المسموحة: PDF, DOC, DOCX, JPG, PNG.</p>
       </div>
-      <Button disabled={!isHydrated || isUploading} loading={isUploading} type="submit">
+      <StatefulButton
+        aria-busy={isUploading}
+        className={buttonClasses()}
+        disabled={!isHydrated || isUploading}
+        type="submit"
+      >
         رفع المستند
-      </Button>
+      </StatefulButton>
       <ActionFeedback message={message} />
     </form>
   );
@@ -509,9 +536,14 @@ export function DocumentActionForm({ document, canManage }: { document: Document
         </Select>
       </div>
       <Textarea disabled={isBusy} idPrefix={`document-action-${document.id}`} label="ملاحظة داخلية" name="note" />
-      <Button loading={isBusy} size="sm" type="submit" variant="secondary">
+      <StatefulButton
+        aria-busy={isBusy}
+        className={buttonClasses({ variant: "secondary", size: "sm" })}
+        disabled={isBusy}
+        type="submit"
+      >
         حفظ المستند
-      </Button>
+      </StatefulButton>
       <ActionFeedback message={message} />
     </form>
   );
@@ -521,6 +553,8 @@ export function DocumentDeleteForm({ documentId, canManage }: { documentId: stri
   const router = useRouter();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   if (!canManage) {
     return null;
@@ -553,16 +587,32 @@ export function DocumentDeleteForm({ documentId, canManage }: { documentId: stri
   }
 
   return (
-    <form className="mt-3 space-y-3 rounded border border-kmt-danger-border bg-kmt-danger-surface p-3" onSubmit={submit}>
-      <Textarea disabled={isBusy} idPrefix={`document-delete-${documentId}`} label="سبب الحذف" name="reason" />
-      <label className="flex items-start gap-2 text-sm leading-6 text-kmt-ink">
-        <input className="mt-1 h-4 w-4 rounded border-slate-300 text-kmt-danger focus:ring-kmt-gold" disabled={isBusy} id={`document-delete-${documentId}-confirmDelete`} name="confirmDelete" required type="checkbox" />
-        <span>أؤكد حذف المستند من القوائم النشطة. الملف لا يتم نشره أو عرضه بعد الحذف.</span>
-      </label>
-      <Button loading={isBusy} size="sm" type="submit" variant="danger">
-        حذف المستند
-      </Button>
-      <ActionFeedback message={message} />
-    </form>
+    <>
+      <form ref={formRef} className="mt-3 space-y-3 rounded border border-kmt-danger-border bg-kmt-danger-surface p-3" onSubmit={submit}>
+        <Textarea disabled={isBusy} idPrefix={`document-delete-${documentId}`} label="سبب الحذف" name="reason" />
+        <label className="flex items-start gap-2 text-sm leading-6 text-kmt-ink">
+          <input className="mt-1 h-4 w-4 rounded border-slate-300 text-kmt-danger focus:ring-kmt-gold" disabled={isBusy} id={`document-delete-${documentId}-confirmDelete`} name="confirmDelete" required type="checkbox" />
+          <span>أؤكد حذف المستند من القوائم النشطة. الملف لا يتم نشره أو عرضه بعد الحذف.</span>
+        </label>
+        <Button disabled={isBusy} size="sm" type="button" variant="danger" onClick={() => setConfirmOpen(true)}>
+          حذف المستند
+        </Button>
+        <ActionFeedback message={message} />
+      </form>
+      <AdminDialog
+        variant="destructive"
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="تأكيد حذف المستند"
+        description="سيتم حذف المستند من القوائم النشطة. الملف لا يتم نشره أو عرضه بعد الحذف. لا يمكن التراجع عن هذا الإجراء من هنا."
+        confirmLabel="تأكيد الحذف"
+        cancelLabel="إلغاء"
+        confirmBusy={isBusy}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          formRef.current?.requestSubmit();
+        }}
+      />
+    </>
   );
 }

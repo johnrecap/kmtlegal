@@ -114,7 +114,8 @@ describe("admin role-permission form", () => {
     );
 
     expect(source).toContain('method: "PATCH"');
-    expect(source).toContain("loading={isBusy}");
+    expect(source).toContain("StatefulButton");
+    expect(source).toContain("aria-busy");
     expect(source).toContain("disabled={selectedRole.readOnly");
     expect(source).not.toMatch(/onKeyDown=.*(Enter|Space)/);
   });

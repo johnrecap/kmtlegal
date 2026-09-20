@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/animate-ui/components/radix/accordion";
 import { Badge, Button, DataRecordCard, DataTable, FilterBar, SearchInput, Select, TextInput, type DataTableColumn } from "@/components/ui";
 import { formatDateTime } from "@/lib/legal-format";
 import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
@@ -62,33 +68,39 @@ function DetailList({ row }: { row: AuditRow }) {
 
 function TechnicalDetails({ row }: { row: AuditRow }) {
   return (
-    <details className="mt-3 text-xs text-kmt-muted">
-      <summary className="cursor-pointer font-semibold text-kmt-navy">تفاصيل تقنية</summary>
-      <dl className="mt-2 grid gap-1 rounded border border-kmt-border bg-slate-50 p-2" dir="ltr">
-        <div>
-          <dt className="inline font-semibold">action: </dt>
-          <dd className="inline break-all">{row.technical.action}</dd>
-        </div>
-        <div>
-          <dt className="inline font-semibold">resourceType: </dt>
-          <dd className="inline break-all">{row.technical.resourceType}</dd>
-        </div>
-        {row.technical.resourceId ? (
-          <div>
-            <dt className="inline font-semibold">resourceId: </dt>
-            <dd className="inline break-all">{row.technical.resourceId}</dd>
-          </div>
-        ) : null}
-        {(["clientId", "caseId", "lawyerId", "appointmentId", "documentId", "paymentId"] as const).map((key) =>
-          row.technical[key] ? (
-            <div key={key}>
-              <dt className="inline font-semibold">{key}: </dt>
-              <dd className="inline break-all">{row.technical[key]}</dd>
+    <Accordion type="single" collapsible className="mt-3 text-xs text-kmt-muted">
+      <AccordionItem value="technical">
+        <AccordionTrigger className="py-1 text-xs font-semibold text-kmt-navy">
+          تفاصيل تقنية
+        </AccordionTrigger>
+        <AccordionContent>
+          <dl className="grid gap-1 rounded border border-kmt-border bg-slate-50 p-2" dir="ltr">
+            <div>
+              <dt className="inline font-semibold">action: </dt>
+              <dd className="inline break-all">{row.technical.action}</dd>
             </div>
-          ) : null
-        )}
-      </dl>
-    </details>
+            <div>
+              <dt className="inline font-semibold">resourceType: </dt>
+              <dd className="inline break-all">{row.technical.resourceType}</dd>
+            </div>
+            {row.technical.resourceId ? (
+              <div>
+                <dt className="inline font-semibold">resourceId: </dt>
+                <dd className="inline break-all">{row.technical.resourceId}</dd>
+              </div>
+            ) : null}
+            {(["clientId", "caseId", "lawyerId", "appointmentId", "documentId", "paymentId"] as const).map((key) =>
+              row.technical[key] ? (
+                <div key={key}>
+                  <dt className="inline font-semibold">{key}: </dt>
+                  <dd className="inline break-all">{row.technical[key]}</dd>
+                </div>
+              ) : null
+            )}
+          </dl>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 }
 

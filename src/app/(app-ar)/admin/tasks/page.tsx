@@ -3,6 +3,21 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
+import { buttonClasses } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/animate-ui/components/radix/accordion";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger
+} from "@/components/animate-ui/components/radix/sheet";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, FilterBar, SearchInput, Select, StateBlock } from "@/components/ui";
 import { TaskCreateForm, TaskUpdateForm } from "@/features/admin/task-documents/task-document-forms";
 import { formatDate, labelFrom, taskPriorityLabels, taskStatusLabels } from "@/lib/legal-format";
@@ -105,25 +120,31 @@ function TaskCard({
       ) : (
         <p className="mt-2 text-sm text-kmt-muted">بدون قضية مرتبطة</p>
       )}
-      <details className="mt-3">
-        <summary className="cursor-pointer text-sm font-semibold text-kmt-navy">تعديل المهمة</summary>
-        <TaskUpdateForm
-          assignees={options.assignees}
-          cases={options.cases}
-          task={{
-            id: task.id,
-            updatedAt: task.updatedAt,
-            title: task.title,
-            description: task.description,
-            status: task.status,
-            priority: task.priority,
-            assignedToId: task.assignedToId,
-            caseId: task.caseId,
-            case: task.case,
-            dueDate: task.dueDate
-          }}
-        />
-      </details>
+      <Accordion type="single" collapsible className="mt-3">
+        <AccordionItem value={`edit-${task.id}`}>
+          <AccordionTrigger className="text-sm font-semibold text-kmt-navy">
+            تعديل المهمة
+          </AccordionTrigger>
+          <AccordionContent>
+            <TaskUpdateForm
+              assignees={options.assignees}
+              cases={options.cases}
+              task={{
+                id: task.id,
+                updatedAt: task.updatedAt,
+                title: task.title,
+                description: task.description,
+                status: task.status,
+                priority: task.priority,
+                assignedToId: task.assignedToId,
+                caseId: task.caseId,
+                case: task.case,
+                dueDate: task.dueDate
+              }}
+            />
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </article>
   );
 }
@@ -321,7 +342,20 @@ export default async function AdminTasksPage({ searchParams }: { searchParams?: 
           </CardHeader>
           <CardContent>
             {canCreateAdminTask(guard.context.principal) ? (
-              <TaskCreateForm assignees={options.assignees} cases={options.cases} />
+              <Sheet>
+                <SheetTrigger className={buttonClasses({ className: "w-full" })}>مهمة جديدة</SheetTrigger>
+                <SheetContent aria-label="مهمة جديدة" className="overflow-y-auto border-kmt-border bg-white text-kmt-ink" side="right">
+                  <SheetHeader>
+                    <SheetTitle className="text-kmt-ink">مهمة جديدة</SheetTitle>
+                    <SheetDescription className="text-kmt-muted">
+                      إنشاء مهمة داخلية وربطها بقضية عند الحاجة. كل تعديل يتم تسجيله في audit log.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="mt-4">
+                    <TaskCreateForm assignees={options.assignees} cases={options.cases} />
+                  </div>
+                </SheetContent>
+              </Sheet>
             ) : (
               <StateBlock tone="permission" title="إنشاء المهام غير متاح" description="هذا الحساب يمكنه قراءة المهام داخل نطاقه فقط." />
             )}

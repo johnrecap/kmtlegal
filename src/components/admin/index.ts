@@ -10,3 +10,4 @@ export { AdminDialog } from "./admin-dialog";
 export { AdminRowActions, type AdminMenuAction, type AdminMenuEntry } from "./admin-menu";
 export { AdminPagination, type AdminPaginationProps } from "./admin-pagination";
 export { MoreFiltersPopover, MobileFiltersSheet } from "./admin-list-filters";
+export { useInvalidFieldAccordion } from "./use-invalid-field-accordion";

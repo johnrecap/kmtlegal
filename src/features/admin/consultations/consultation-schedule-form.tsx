@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { Button, InlineFeedback, Select, TextInput } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
+import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import { cairoLocalDateTimeToIso } from "@/lib/legal-format";
 import {
   localizeApiMessage,
@@ -136,9 +138,14 @@ export function ConsultationScheduleForm({
           name="location"
         />
       </div>
-      <Button disabled={!lawyers.length} loading={busy} type="submit">
+      <StatefulButton
+        aria-busy={busy}
+        className={buttonClasses()}
+        disabled={!lawyers.length || busy}
+        type="submit"
+      >
         {copy.scheduleForm.submit}
-      </Button>
+      </StatefulButton>
       {!lawyers.length ? (
         <InlineFeedback title={copy.scheduleForm.unavailable} tone="info" />
       ) : null}
