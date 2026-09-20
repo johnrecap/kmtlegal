@@ -73,15 +73,23 @@ function makeFakeExec(staging: string, behavior: Record<string, boolean> = {}) {
   return { exec, calls };
 }
 
-function makeFakePg(empty: boolean = true) {
+function makeFakePg(emptyOrOpts: boolean | { empty?: boolean; writers?: number; documents?: Array<{ fileKey: string }> | null } = true) {
+  const opts = typeof emptyOrOpts === "boolean" ? { empty: emptyOrOpts } : emptyOrOpts;
+  const empty = opts.empty ?? true;
+  const writers = opts.writers ?? 0;
+  const documents = opts.documents ?? null;
   return {
     Client: class {
       async connect() {}
       async end() {}
       async query(sql: string) {
-        if (sql.includes("pg_stat_activity")) return { rows: [{ count: 0 }] };
+        if (sql.includes("pg_stat_activity")) return { rows: [{ count: writers }] };
         if (sql.includes("pg_tables")) return { rows: [{ count: empty ? 0 : 3 }] };
         if (sql.includes("server_version")) return { rows: [{ server_version: "18.0-fake" }] };
+        if (sql.includes('"Document"')) {
+          if (documents === null) throw new Error('relation "Document" does not exist');
+          return { rows: documents };
+        }
         return { rows: [] };
       }
     }
@@ -135,7 +143,12 @@ describe("paired backup/restore orchestration (MOCKED exec, real temp fs)", () =
     expect(result.ok).toBe(true);
     const manifest = JSON.parse(await fs.readFile(path.join(result.directory, "manifest.json"), "utf8"));
     expect(validateManifest(manifest)).toBe(true);
-    expect(manifest.consistency.method).toBe("paired-capture");
+    expect(manifest.consistency.mode).toBe("live");
+    expect(manifest.consistency.verifiedConsistent).toBe(false);
+    expect(result.artifactsVerified).toBe(true);
+    expect(result.checksumsVerified).toBe(true);
+    expect(result.verifiedConsistent).toBe(false);
+    expect(result.restoreDrillVerified).toBe(false);
     const serialized = JSON.stringify(manifest);
     expect(serialized).not.toContain("s3cret");
     const stat = await fs.stat(path.join(result.directory, "database.dump"));
@@ -257,5 +270,102 @@ describe("paired backup/restore orchestration (MOCKED exec, real temp fs)", () =
     expect(redactDatabaseUrl(SECRET_URL)).toBe("postgresql://localhost:5432/kmt_legal");
     expect(() => assertArchiveEntriesSafe(["ok/file.txt", "/abs.txt"])).toThrow(/Absolute/);
     expect(() => assertArchiveEntriesSafe(["../escape.txt"])).toThrow(/traversal/i);
+  });
+
+  it("maintenance-window capture records two quiet readings and verifiedConsistent", async () => {
+    const uploads = await makeUploads(root);
+    const backupRoot = path.join(root, "backups");
+    const staging = path.join(root, "staging-mw");
+    await fs.mkdir(staging, { recursive: true });
+    const { exec } = makeFakeExec(staging, {});
+    const result = await createPairedBackupSet(
+      {
+        env: baseEnv,
+        databaseUrl: SECRET_URL,
+        backupRoot,
+        uploadsRoot: uploads,
+        appDir: path.join(root, "app"),
+        setId: "kmt-paired-mw",
+        captureMode: "maintenance-window",
+        pauseRecord: "test-procedure: writers paused per runbook"
+      },
+      { exec, pgModule: makeFakePg() }
+    );
+    expect(result.verifiedConsistent).toBe(true);
+    const manifest = JSON.parse(await fs.readFile(path.join(result.directory, "manifest.json"), "utf8"));
+    expect(manifest.consistency.mode).toBe("maintenance-window");
+    expect(manifest.consistency.verifiedConsistent).toBe(true);
+    expect(manifest.consistency.writerPauseEvidence.writerChecks).toHaveLength(2);
+    expect(manifest.consistency.writerPauseEvidence.pauseRecord).toContain("writers paused");
+  });
+
+  it("maintenance-window without a pause record refuses verified-consistent completion", async () => {
+    const uploads = await makeUploads(root);
+    const backupRoot = path.join(root, "backups");
+    const { exec } = makeFakeExec(path.join(root, "s-mw"), {});
+    await expect(
+      createPairedBackupSet(
+        { env: baseEnv, databaseUrl: SECRET_URL, backupRoot, uploadsRoot: uploads, appDir: path.join(root, "app"), setId: "kmt-paired-mw-norecord", captureMode: "maintenance-window" },
+        { exec, pgModule: makeFakePg() }
+      )
+    ).rejects.toMatchObject({ stage: "consistency" });
+  });
+
+  it("active writers fail the quiet capture instead of claiming consistency", async () => {
+    const uploads = await makeUploads(root);
+    const backupRoot = path.join(root, "backups");
+    const { exec } = makeFakeExec(path.join(root, "s-busy"), {});
+    await expect(
+      createPairedBackupSet(
+        { env: baseEnv, databaseUrl: SECRET_URL, backupRoot, uploadsRoot: uploads, appDir: path.join(root, "app"), setId: "kmt-paired-busy", requireQuiet: true },
+        { exec, pgModule: makeFakePg({ writers: 2 }) }
+      )
+    ).rejects.toMatchObject({ stage: "quiesce" });
+  });
+
+  it("require-consistent fails a live capture instead of labeling it verified", async () => {
+    const uploads = await makeUploads(root);
+    const backupRoot = path.join(root, "backups");
+    const { exec } = makeFakeExec(path.join(root, "s-rc"), {});
+    await expect(
+      createPairedBackupSet(
+        { env: baseEnv, databaseUrl: SECRET_URL, backupRoot, uploadsRoot: uploads, appDir: path.join(root, "app"), setId: "kmt-paired-rc", requireConsistent: true },
+        { exec, pgModule: makeFakePg() }
+      )
+    ).rejects.toMatchObject({ stage: "consistency" });
+  });
+
+  it("restore document check fails on a required missing file and passes extras separately", async () => {
+    const { backupRoot, uploads } = await successfulBackup(root);
+    const staging = path.join(root, "staging-doccheck");
+    await fs.mkdir(staging, { recursive: true });
+    await fs.cp(uploads, staging, { recursive: true });
+    const { exec } = makeFakeExec(staging, {});
+    const targetUploads = path.join(root, "restored-docs");
+    const targetUrl = "postgresql://restore-role:other-secret@localhost:5432/kmt_launch_restore_docs";
+    const documents = [{ fileKey: "documents/2026/a.pdf" }, { fileKey: "documents/2026/gone.pdf" }];
+
+    await expect(
+      restorePairedBackupSet(
+        { backupRoot, setId: "kmt-paired-testset", targetDatabaseUrl: targetUrl, targetUploads, confirm: "kmt-paired-testset", verifyDocuments: true },
+        { exec, pgModule: makeFakePg({ documents }) }
+      )
+    ).rejects.toMatchObject({ stage: "verify" });
+
+    const ok = await restorePairedBackupSet(
+      { backupRoot, setId: "kmt-paired-testset", targetDatabaseUrl: targetUrl, targetUploads: path.join(root, "restored-docs-ok"), confirm: "kmt-paired-testset", verifyDocuments: true },
+      {
+        exec: makeFakeExec(staging, {}).exec,
+        pgModule: makeFakePg({ documents: [{ fileKey: "documents/2026/a.pdf" }] })
+      }
+    );
+    expect(ok.documentCheck).toMatchObject({ checked: true, required: 1 });
+    expect((ok.documentCheck as { extra: string[] }).extra).toContain("hello.txt");
+
+    const skipped = await restorePairedBackupSet(
+      { backupRoot, setId: "kmt-paired-testset", targetDatabaseUrl: targetUrl, targetUploads: path.join(root, "restored-docs-skip"), confirm: "kmt-paired-testset", verifyDocuments: true },
+      { exec, pgModule: makeFakePg({ documents: null }) }
+    );
+    expect(skipped.documentCheck).toMatchObject({ checked: false });
   });
 });

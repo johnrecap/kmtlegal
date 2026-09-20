@@ -44,23 +44,27 @@ async function runTool(run, stage, cmd, args) {
   }
 }
 
-async function quiescePreflight(requireQuiet, databaseUrl, pgModule = pg) {
-  if (!requireQuiet) return { method: "paired-capture", quiesceChecked: false, note: "No writer quiesce requested for this run." };
+async function countOtherBackends(databaseUrl, pgModule) {
   const client = new pgModule.Client({ connectionString: databaseUrl });
   await client.connect();
   try {
     const { rows } = await client.query(
       "SELECT count(*)::int AS count FROM pg_stat_activity WHERE datname = current_database() AND backend_type = 'client backend' AND pid <> pg_backend_pid()"
     );
-    if (rows[0].count !== 0) {
-      const error = new Error("[paired-backup:quiesce] Other database writers are connected; refusing capture. Stop writers or rerun without --require-quiet.");
-      error.stage = "quiesce";
-      throw error;
-    }
-    return { method: "paired-capture", quiesceChecked: true, note: "No other client backends connected at capture start." };
+    return rows[0].count;
   } finally {
     await client.end().catch(() => {});
   }
+}
+
+function parseCliArgs(argv) {
+  const out = {};
+  for (const arg of argv) {
+    const match = /^--([^=]+)=(.*)$/.exec(arg);
+    if (match) out[match[1]] = match[2];
+    else if (arg.startsWith("--")) out[arg.slice(2)] = true;
+  }
+  return out;
 }
 
 export async function createPairedBackupSet(options = {}, deps = {}) {
@@ -88,7 +92,29 @@ export async function createPairedBackupSet(options = {}, deps = {}) {
     if (await fs.stat(finalDir).then(() => true, () => false)) throwStage("publish", `Backup set already exists: ${setId}`);
     await fs.mkdir(tmpDir, { recursive: true, mode: 0o700 });
 
-    const consistency = await quiescePreflight(options.requireQuiet ?? env.PAIRED_BACKUP_REQUIRE_QUIET === "true", databaseUrl, deps.pgModule);
+    const captureMode = options.captureMode ?? env.PAIRED_BACKUP_CAPTURE_MODE ?? "live";
+    if (captureMode !== "live" && captureMode !== "maintenance-window") {
+      throwStage("config", "capture mode must be live or maintenance-window.");
+    }
+    const pauseRecord = options.pauseRecord ?? env.PAIRED_BACKUP_PAUSE_RECORD ?? null;
+    if (captureMode === "maintenance-window" && !pauseRecord) {
+      throwStage("consistency", "maintenance-window capture requires --pause-record describing how writers were paused; refusing verified-consistent completion.");
+    }
+    const quietDiagnostic = options.requireQuiet ?? env.PAIRED_BACKUP_REQUIRE_QUIET === "true";
+    const pgModule = deps.pgModule ?? pg;
+    const writerChecks = [];
+    async function writerDiagnostic(label) {
+      const count = await countOtherBackends(databaseUrl, pgModule);
+      writerChecks.push({ at: label, otherBackends: count, isoTime: new Date().toISOString() });
+      return count;
+    }
+    let startWriters = null;
+    if (captureMode === "maintenance-window" || quietDiagnostic) {
+      startWriters = await writerDiagnostic("capture-start");
+      if (startWriters !== 0) {
+        throwStage("quiesce", "Other database writers are connected; refusing capture. Pause writers first (see runbook). A quiet activity reading is diagnostic only, never proof.");
+      }
+    }
     const dumpPath = path.join(tmpDir, DB_DUMP_NAME);
     await runTool(run, "database-dump", toolPath("pg_dump", binDir), ["--dbname=" + databaseUrl, "--format=custom", `--file=${dumpPath}`]);
     const dumpStat = await fs.stat(dumpPath).catch(() => throwStage("database-dump", "pg_dump produced no file."));
@@ -100,6 +126,19 @@ export async function createPairedBackupSet(options = {}, deps = {}) {
     await runTool(run, "uploads-archive", "tar", ["-czf", archivePath, "-C", uploadsRoot, "."]);
     const archiveStat = await fs.stat(archivePath).catch(() => throwStage("uploads-archive", "tar produced no archive."));
     if (!archiveStat.isFile() || archiveStat.size === 0) throwStage("uploads-archive", "Uploads archive is empty.");
+
+    let endWriters = null;
+    if (captureMode === "maintenance-window") {
+      endWriters = await writerDiagnostic("pre-publish");
+      if (endWriters !== 0) {
+        throwStage("quiesce", "Writers appeared during capture; refusing verified-consistent completion.");
+      }
+    }
+    const verifiedConsistent =
+      captureMode === "maintenance-window" && startWriters === 0 && endWriters === 0;
+    if ((options.requireConsistent ?? env.PAIRED_BACKUP_REQUIRE_CONSISTENT === "true") && !verifiedConsistent) {
+      throwStage("consistency", "Verified-consistent completion required but not established; refusing.");
+    }
 
     const dumpVersion = await runTool(run, "tools", toolPath("pg_dump", binDir), ["--version"]).then((r) => String(r.stdout).trim().split("\n")[0]);
     const restoreVersion = await runTool(run, "tools", toolPath("pg_restore", binDir), ["--version"]).then((r) => String(r.stdout).trim().split("\n")[0]);
@@ -129,8 +168,15 @@ export async function createPairedBackupSet(options = {}, deps = {}) {
       uploadsSource: uploadsRoot,
       fileInventory,
       consistency: {
-        ...consistency,
-        boundary: "pg_dump runs in a single transaction snapshot; the uploads archive is captured immediately after the dump verifies. Files newer than the dump without a DB row are harmless orphans; DB rows newer than the archive surface as missing-file 404s with re-upload recovery."
+        mode: captureMode,
+        verifiedConsistent,
+        writerPauseEvidence: {
+          pauseRecord,
+          writerChecks,
+          operatorAttested: captureMode === "maintenance-window",
+          diagnosticOnlyNote: "pg_stat_activity readings are point-in-time diagnostics, not proof that future writes are prevented. The writer pause itself is established by the operator procedure (runbook pause/verify/capture/resume), never by this script's lock or readings."
+        },
+        boundary: "pg_dump runs in a single-transaction snapshot; the uploads archive is captured immediately after the dump verifies. A required database row without restored file bytes is a failed/incomplete restore (see restore --verify-documents), never a re-upload recovery."
       }
     });
     const manifestPath = path.join(tmpDir, MANIFEST_NAME);
@@ -139,8 +185,17 @@ export async function createPairedBackupSet(options = {}, deps = {}) {
     await fs.writeFile(checksumPath, `${await sha256File(manifestPath)}  ${MANIFEST_NAME}\n`, { mode: 0o600 });
 
     await fs.rename(tmpDir, finalDir);
-    logEvent({ ok: true, setId, directory: finalDir, database: redactDatabaseUrl(databaseUrl), files: fileInventory.length });
-    return { ok: true, setId, directory: finalDir };
+    const completion = {
+      ok: true,
+      setId,
+      directory: finalDir,
+      artifactsVerified: true,
+      checksumsVerified: true,
+      verifiedConsistent,
+      restoreDrillVerified: false
+    };
+    logEvent({ ...completion, database: redactDatabaseUrl(databaseUrl), files: fileInventory.length });
+    return completion;
   } catch (error) {
     await fs.rm(tmpDir, { recursive: true, force: true });
     logEvent({ ok: false, setId, stage: error.stage ?? "unknown", message: String(error.message).slice(0, 300) });
@@ -169,8 +224,13 @@ function throwStage(stage, message) {
 
 const invokedAsCli = process.argv[1] && process.argv[1].endsWith("paired-backup.mjs");
 if (invokedAsCli) {
-  const args = new Set(process.argv.slice(2));
-  createPairedBackupSet({ requireQuiet: args.has("--require-quiet") }).then(
+  const args = parseCliArgs(process.argv.slice(2));
+  createPairedBackupSet({
+    requireQuiet: args["require-quiet"] === true,
+    captureMode: args["capture-mode"],
+    pauseRecord: args["pause-record"],
+    requireConsistent: args["require-consistent"] === true
+  }).then(
     () => {},
     (error) => {
       process.exitCode = 1;

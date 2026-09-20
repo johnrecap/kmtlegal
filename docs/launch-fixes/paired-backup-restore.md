@@ -1,64 +1,95 @@
-# Paired Backup + Restore Runbook (TASK 03)
+# Paired Backup + Restore Runbook (TASK 03, corrected)
 
 One backup set = PostgreSQL custom-format dump + private-uploads archive +
 manifest + checksums, published atomically under `DATABASE_BACKUP_DIR/<setId>/`.
 
-## Backup
+## How backups get run (manual command — NOT wired into deploy)
+
+This is a **manually invoked** paired-backup command. The deployment script
+does NOT call it: `deploy/install/aapanel-pm2-update.sh` still runs only its
+DB-only `create_verified_database_backup` (line ~783, called ~909). Before
+operational use, the owner must: pass the real restore drill (blockers A+B
+in EXECUTION.md), decide scheduling (cron/PM2/timer), and sign off — none
+of which is wired here. Do not claim deploy coverage of uploads.
+
+## Capture modes (different facts, reported separately)
+
+Every completion reports four separate facts: `artifactsVerified`,
+`checksumsVerified`, `verifiedConsistent`, `restoreDrillVerified`.
+
+- `live` (default): artifacts + checksums verified; `verifiedConsistent:
+  false`. An uncontrolled live capture is NEVER labeled verified-consistent.
+- `maintenance-window`: additionally requires `--pause-record="<how writers
+  were paused>"` plus zero-writer readings at capture-start AND pre-publish
+  (two-point `pg_stat_activity` diagnostic). Only then
+  `verifiedConsistent: true` — evidence-based, not a lock proof.
+- `--require-consistent` fails the run unless `verifiedConsistent` is
+  established. `--require-quiet` remains a point-in-time diagnostic/sanity
+  check only; an empty reading does not prove future writes are prevented.
 
 ```bash
-DATABASE_URL=... DATABASE_BACKUP_DIR=... UPLOADS_DIR=... APP_RELEASE=... \
-  node scripts/paired-backup.mjs [--require-quiet]
+node scripts/paired-backup.mjs --capture-mode=maintenance-window \
+  --require-quiet --pause-record="pm2 stop kmtlegal kmtlegal-payment-maintenance; drain wait" \
+  --require-consistent
 ```
 
-- `--require-quiet` refuses capture while other DB writers are connected.
-- Set publishes ONLY after dump + `pg_restore --list` + archive + manifest +
-  checksums verify. Failures exit non-zero, clean their own tmp dir, and
-  never touch previous sets. A concurrent run is refused via lock file.
-- Layout: `database.dump`, `uploads.tar.gz`, `manifest.json`,
-  `manifest.sha256`. Dirs `0700`, files `0600` (Linux).
-- Env names only: `DATABASE_URL`, `DATABASE_BACKUP_DIR`, `UPLOADS_DIR`,
-  `APP_RELEASE`, `POSTGRES_BACKUP_BIN_DIR`, `PAIRED_BACKUP_REQUIRE_QUIET`.
+## Exact pause / verify / capture / resume (downtime window)
 
-## Consistency boundary
+Requires separate owner authorization (downtime). No in-app maintenance or
+drain mode exists — this is the missing operational prerequisite if a
+non-disruptive quiesce is ever required.
 
-`pg_dump` runs in a single-transaction snapshot; the uploads archive is
-captured immediately after the dump verifies. Residual skew: files newer
-than the dump without a DB row are harmless orphans; DB rows newer than
-the archive surface as missing-file 404s (re-upload recovery). For
-maintenance windows, run with `--require-quiet` after quiescing writers
-(payment worker, app instances) under separate owner authorization.
+1. Pause: `pm2 stop kmtlegal kmtlegal-payment-maintenance` (existing process
+   names from the deploy script). Drain: bounded wait, then verify no app
+   backends remain (DB `pg_stat_activity`, `pm2 status` shows stopped).
+2. Verify: capture-start reading must show zero other backends or the run
+   refuses (`quiesce` stage).
+3. Capture: the backup command above (dump → verify → archive → manifest →
+   checksums → atomic publish).
+4. Resume: `pm2 start kmtlegal` + `pm2 start kmtlegal-payment-maintenance`
+   (or the deploy script's start commands), confirm `online`, confirm the
+   manifest's two zero readings + `verifiedConsistent: true`.
 
 ## Restore (dry-run by default)
 
 ```bash
 node scripts/paired-restore.mjs --set=<setId>                       # inspect only
 node scripts/paired-restore.mjs --apply --set=<setId> \
-  --target-uploads=/path/to/empty/restore-uploads \
-  --confirm=<setId>                                                 # writes
+  --target-uploads=/path/to/empty/restore-uploads --confirm=<setId> \
+  [--verify-documents]                                              # writes
 # target DB via PAIRED_RESTORE_DATABASE_URL (must differ from source)
 ```
 
-Apply requires: checksum + manifest + archive-path validation, a NEW EMPTY
-target database (refused otherwise), an empty separate target uploads dir,
-and `--confirm=<setId>`. No `--create`: the archive's DB name never
-overrides the target. Objects restore with `--no-owner` (owned by the
-restore role); application grants follow existing conventions afterwards
-(DB-object ownership ≠ application user permissions).
+Apply requires: checksum/manifest/archive validation, a NEW EMPTY target
+database and empty target uploads dir, `--confirm=<setId>`. No `--create`.
+`--no-owner` restore (ownership ≠ app permissions; grants follow existing
+conventions afterwards).
+
+`--verify-documents` checks the RESTORED database (never live source):
+every non-deleted `Document.fileKey` must resolve to restored bytes matching
+the manifest inventory. A required missing file or checksum mismatch FAILS
+verification (`verify` stage, counts + up to 5 sample fileKeys — uuid paths,
+safe), preserves the restored targets for diagnosis, and is never reported
+as success. Extra archived files are a separate `extra` finding, not a
+failure. Missing `Document` table → explicit `skipped-no-document-table`.
 
 ## Verification / failure recovery
 
-- Backup: non-zero exit names the stage (`config|lock|quiesce|
-  database-dump|database-verify|uploads-source|uploads-scan|
-  uploads-archive|destination|publish|tools`). Re-run after fixing the cause.
-- Restore: `integrity|incomplete|manifest|archive|restore-target|
-  restore-database|restore-files|verify`. Never restores into source/prod,
-  never drops shared databases, never extracts outside the target.
+- Backup stages: `config|lock|consistency|quiesce|database-dump|
+  database-verify|uploads-source|uploads-scan|uploads-archive|destination|
+  publish|tools`. Failures exit non-zero, clean their own tmp dir, never
+  touch previous sets.
+- Restore stages: `incomplete|integrity|manifest|archive|restore-target|
+  restore-database|restore-files|verify`.
 - Post-restore drill (disposable env): synthetic Client A downloads with
-  matching checksum; Client B/anonymous denied; source intact. NOT RUN yet —
-  see EXECUTION.md TASK 03 blocker.
+  matching checksum; Client B/anonymous denied; source intact. NOT RUN yet.
 
-## Off-server copies
+## Env names / storage / off-server
 
-Backups live on the same server (`DATABASE_BACKUP_DIR`). This is NOT
-protection against total server loss. No external destination is
-configured; adding one needs owner approval.
+Env names only: `DATABASE_URL`, `DATABASE_BACKUP_DIR`, `UPLOADS_DIR`,
+`APP_RELEASE`, `POSTGRES_BACKUP_BIN_DIR`, `PAIRED_BACKUP_CAPTURE_MODE`,
+`PAIRED_BACKUP_PAUSE_RECORD`, `PAIRED_BACKUP_REQUIRE_QUIET`,
+`PAIRED_BACKUP_REQUIRE_CONSISTENT`, `PAIRED_RESTORE_DATABASE_URL`,
+`PAIRED_RESTORE_VERIFY_DOCUMENTS`. Storage: same-server dirs `0700`, files
+`0600` (Linux). Same-server backups are NOT protection against total
+server loss; no external destination configured (needs approval).

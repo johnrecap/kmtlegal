@@ -117,9 +117,31 @@ Primary owner worktree untouched. One task at a time. No merges to main, no depl
 
 ## TASK 03 — Database + Uploads Backup and Restore
 
-- Status: BLOCKED — REAL RESTORE VERIFICATION REQUIRED
-- Implementation: READY. Paired backup/restore scripts + mocked
-  orchestration tests + runbook (`docs/launch-fixes/paired-backup-restore.md`).
+- Status: BLOCKED — two separate outstanding items (implementation corrected,
+  NOT production-ready):
+  - A. Cross-store consistency prerequisite not yet proven (no real
+    maintenance-window capture + no in-app drain control exists).
+  - B. Real disposable-environment restore drill not yet run.
+- (Same-server/off-server limitation recorded separately below; unchanged.)
+- Correction applied (this run): the "newer rows → 404 + re-upload" outcome
+  is REJECTED as a recovery story — a required DB row without file bytes is
+  a failed/incomplete restore, enforced by restore `--verify-documents`.
+  `--require-quiet` is now an explicitly diagnostic-only sanity check, never
+  a consistency proof. Completion reports four separate facts
+  (`artifactsVerified`, `checksumsVerified`, `verifiedConsistent`,
+  `restoreDrillVerified`); live captures can no longer complete as
+  verified-consistent (`--require-consistent` fails them).
+- Consistency prerequisite (exact): maintenance-window capture with writers
+  genuinely paused for the whole window — `pm2 stop kmtlegal
+  kmtlegal-payment-maintenance`, bounded drain, zero-writer readings at
+  capture-start AND pre-publish, `--pause-record`, resume + verify
+  (runbook § pause/verify/capture/resume). Missing control: no in-app
+  maintenance/drain mode exists — non-disruptive quiesce is impossible;
+  downtime-window backups need separate owner authorization.
+- Integration status (accurate): MANUAL command only. The deployment script
+  does NOT call the paired backup (it still runs DB-only
+  `create_verified_database_backup`). Unwired by design in this correction;
+  scheduling + sign-off remain before operational use.
 - What was implemented (extends existing `create_verified_database_backup`
   + `postgres-backup-tools.sh` conventions; no deploy script rewritten):
   - `scripts/paired-backup-lib.mjs`: redaction, path-safety, manifest
@@ -135,21 +157,23 @@ Primary owner worktree untouched. One task at a time. No merges to main, no depl
     new-EMPTY target DB and empty target uploads required; no `--create`
     (archive DB name never overrides target); `--no-owner` restore
     (ownership vs app permissions documented).
-  - Consistency method: single-transaction pg_dump snapshot + immediate
-    uploads capture; optional `--require-quiet` writer check via
-    `pg_stat_activity`; residual skew documented (orphan files harmless,
-    newer rows → 404 + re-upload). Live maintenance/downtime needs
-    separate owner authorization.
+  - Consistency method (corrected): `--capture-mode=live|maintenance-window`
+    + `--pause-record` + two-point writer diagnostics; manifest
+    `consistency: { mode, verifiedConsistent, writerPauseEvidence }`.
+    Restore `--verify-documents` checks the restored DB: required missing
+    files / mismatches fail `verify` with safe samples; extras are a
+    separate finding. Live maintenance/downtime needs separate owner
+    authorization.
 - Files changed:
   - `scripts/paired-backup-lib.mjs`, `scripts/paired-backup.mjs`,
     `scripts/paired-restore.mjs` (new)
   - `tests/ops/paired-backup-restore.test.ts` (new, MOCKED exec / real temp fs)
   - `docs/launch-fixes/paired-backup-restore.md` (new runbook)
-- Automated checks (MOCKED / UNIT evidence, NOT restore proof): 9/9 passed —
-  success + previous-backup preservation, dump failure, archive failure,
-  unsafe destinations, incomplete set, corrupted checksum, dry-run +
-  traversal refusal, apply guards + file verification, non-empty DB refusal,
-  redaction. `node --check` clean on all 3 scripts.
+- Automated checks (MOCKED / UNIT evidence, NOT restore proof): 14/14 passed —
+  prior 9 plus maintenance-window two-reading success, missing pause-record
+  refusal, active-writer refusal, require-consistent refusal of live capture,
+  document-check missing failure / extra separation / no-table skip.
+  `node --check` clean on all 3 scripts.
 - Real restore drill: NOT RUN (10-step Client A/B + checksum + isolation
   procedure prepared in runbook § Verification).
 - Missing requirement: a disposable PostgreSQL reachable from the runtime

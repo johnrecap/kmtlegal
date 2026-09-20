@@ -8,6 +8,7 @@
 // different concerns: objects land owned by the restore role; grants follow
 // existing project conventions afterwards.
 
+import crypto from "node:crypto";
 import { execFile } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -109,6 +110,69 @@ async function assertEmptyDir(dir) {
   }
 }
 
+function sha256Buffer(data) {
+  return crypto.createHash("sha256").update(data).digest("hex");
+}
+
+// Drill verification against the RESTORED database (never the live source):
+// every non-deleted Document row must resolve to restored bytes, matching the
+// manifest inventory where listed. A required missing file or checksum
+// mismatch FAILS verification — never re-upload recovery, never silent.
+// Extra archived files are reported as a separate finding, not a failure.
+export async function verifyRestoredDocuments({ targetDatabaseUrl, targetUploads, manifest }, deps = {}) {
+  const pgModule = deps.pgModule ?? pg;
+  const client = new pgModule.Client({ connectionString: targetDatabaseUrl });
+  await client.connect();
+  let rows;
+  try {
+    const result = await client.query('SELECT "fileKey" FROM "Document" WHERE "deletedAt" IS NULL');
+    rows = result.rows;
+  } catch {
+    return { checked: false, note: "skipped-no-document-table" };
+  } finally {
+    await client.end().catch(() => {});
+  }
+  const expected = new Map(manifest.uploads.files.map((file) => [file.relative, file.sha256]));
+  const referenced = new Set();
+  const missing = [];
+  const mismatched = [];
+  for (const row of rows) {
+    const relative = String(row.fileKey ?? "").replace(/\\/g, "/").replace(/^\.\//, "");
+    if (!relative || relative.startsWith("/") || relative === ".." || relative.startsWith("../") || relative.includes("/../")) {
+      missing.push(relative || "(empty-fileKey)");
+      continue;
+    }
+    referenced.add(relative);
+    const absolute = path.join(targetUploads, relative);
+    if (!absolute.startsWith(targetUploads + path.sep)) {
+      missing.push(relative);
+      continue;
+    }
+    const data = await fs.readFile(absolute).catch(() => null);
+    if (!data) {
+      missing.push(relative);
+      continue;
+    }
+    const digest = sha256Buffer(data);
+    if (!expected.has(relative) || expected.get(relative) !== digest) {
+      if (!expected.has(relative)) missing.push(relative);
+      else mismatched.push(relative);
+    }
+  }
+  const restored = await (await import("./paired-backup-lib.mjs")).inventoryUploads(targetUploads);
+  const extra = restored.map((file) => file.relative).filter((relative) => !referenced.has(relative));
+  if (missing.length !== 0 || mismatched.length !== 0) {
+    const error = new Error(
+      `[paired-restore:verify] ${missing.length} required file(s) missing, ${mismatched.length} checksum mismatch(es).` +
+        ` Samples: ${[...missing, ...mismatched].slice(0, 5).join(", ")}. Restored targets preserved for diagnosis; not reported as success.`
+    );
+    error.stage = "verify";
+    error.detail = { missing: missing.length, mismatched: mismatched.length, extra: extra.length };
+    throw error;
+  }
+  return { checked: true, required: referenced.size, extra };
+}
+
 export async function inspectBackupSet(options = {}, deps = {}) {
   const run = deps.exec ?? execFileAsync;
   const { setDir, manifest } = await loadAndVerifySet({ backupRoot: options.backupRoot, setId: options.setId });
@@ -122,6 +186,8 @@ export async function inspectBackupSet(options = {}, deps = {}) {
     artifacts: manifest.artifacts,
     archiveEntries: entries.length,
     fileInventory: manifest.uploads.fileCount,
+    verifiedConsistent: manifest.consistency.verifiedConsistent === true,
+    restoreDrillVerified: false,
     consistency: manifest.consistency
   };
   logEvent({ ...report, database: manifest.database?.name ?? null });
@@ -166,8 +232,24 @@ export async function restorePairedBackupSet(options = {}, deps = {}) {
     if (expected.get(file.relative) !== file.sha256) throwRestore("verify", `Restored file mismatch: ${file.relative}`);
   }
 
-  logEvent({ ok: true, dryRun: false, setId: manifest.setId, targetDatabase: redactDatabaseUrl(targetDatabaseUrl), targetUploads: target, files: restored.length });
-  return { ok: true, setId: manifest.setId, targetDatabase: redactDatabaseUrl(targetDatabaseUrl), targetUploads: target, files: restored.length };
+  let documentCheck = { checked: false, note: "not-requested" };
+  if (options.verifyDocuments ?? env.PAIRED_RESTORE_VERIFY_DOCUMENTS === "true") {
+    documentCheck = await verifyRestoredDocuments({ targetDatabaseUrl, targetUploads: target, manifest }, { pgModule });
+  }
+
+  const completion = {
+    ok: true,
+    dryRun: false,
+    setId: manifest.setId,
+    targetDatabase: redactDatabaseUrl(targetDatabaseUrl),
+    targetUploads: target,
+    files: restored.length,
+    verifiedConsistent: manifest.consistency.verifiedConsistent === true,
+    restoreDrillVerified: false,
+    documentCheck
+  };
+  logEvent(completion);
+  return completion;
 }
 
 function throwRestore(stage, message) {
@@ -191,6 +273,7 @@ if (invokedAsCli) {
       setId: args.set,
       targetUploads: args["target-uploads"],
       confirm: args.confirm,
+      verifyDocuments: args["verify-documents"] === true,
       env
     });
   })().then(

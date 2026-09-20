@@ -126,7 +126,13 @@ export function validateManifest(manifest) {
     }
   }
   if (!manifest.uploads || !Array.isArray(manifest.uploads.files)) fail("manifest", "Manifest uploads inventory is missing.");
-  if (!manifest.consistency || !manifest.consistency.method) fail("manifest", "Manifest consistency method is missing.");
+  const consistency = manifest.consistency;
+  if (!consistency || (consistency.mode !== "live" && consistency.mode !== "maintenance-window")) {
+    fail("manifest", "Manifest consistency mode is missing (live|maintenance-window).");
+  }
+  if (typeof consistency.verifiedConsistent !== "boolean") {
+    fail("manifest", "Manifest must state verifiedConsistent explicitly.");
+  }
   return true;
 }
 
