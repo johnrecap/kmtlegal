@@ -29,8 +29,7 @@
         "FilterBar",
         "SearchInput",
         "Select",
-        "TextInput",
-        "button"
+        "TextInput"
       ],
       "disposition": "migrated",
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
@@ -143,8 +142,7 @@
         "FilterBar",
         "SearchInput",
         "Select",
-        "StateBlock",
-        "button"
+        "StateBlock"
       ],
       "disposition": "migrated",
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
@@ -323,9 +321,9 @@
       "evidence": "tests/ui/product-components.test.tsx"
     },
     {
-      "path": "src/components/domain/legal-cards.tsx",
+      "path": "src/components/admin/admin-mobile-nav.tsx",
       "contracts": [
-        "Button"
+        "buttonClasses"
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/product-components.test.tsx"
@@ -336,14 +334,6 @@
         "Button",
         "ButtonLink",
         "StateBlock"
-      ],
-      "disposition": "backward-compatible",
-      "evidence": "tests/ui/product-components.test.tsx"
-    },
-    {
-      "path": "src/components/layout/dashboard-mobile-nav.tsx",
-      "contracts": [
-        "buttonClasses"
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/product-components.test.tsx"
@@ -365,13 +355,22 @@
       "evidence": "tests/ui/product-components.test.tsx"
     },
     {
+      "path": "src/components/ui/pagination-shadcn.tsx",
+      "contracts": [
+        "button"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-list-phase10.test.tsx"
+    },
+    {
       "path": "src/features/admin/cases/case-action-forms.tsx",
       "contracts": [
         "InlineFeedback",
         "Select",
         "StateBlock",
         "TextInput",
-        "Textarea"
+        "Textarea",
+        "button"
       ],
       "disposition": "migrated",
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
@@ -384,7 +383,8 @@
         "Select",
         "StateBlock",
         "TextInput",
-        "Textarea"
+        "Textarea",
+        "button"
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/admin-manual-case-form.test.tsx"
@@ -396,7 +396,8 @@
         "Select",
         "StateBlock",
         "TextInput",
-        "Textarea"
+        "Textarea",
+        "button"
       ],
       "disposition": "migrated",
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
@@ -407,7 +408,8 @@
         "InlineFeedback",
         "Select",
         "TextInput",
-        "Textarea"
+        "Textarea",
+        "button"
       ],
       "disposition": "migrated",
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
@@ -416,7 +418,8 @@
       "path": "src/features/admin/consultations/consultation-availability-form.tsx",
       "contracts": [
         "InlineFeedback",
-        "TextInput"
+        "TextInput",
+        "button"
       ],
       "disposition": "migrated",
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
@@ -426,7 +429,8 @@
       "contracts": [
         "InlineFeedback",
         "Select",
-        "Textarea"
+        "Textarea",
+        "button"
       ],
       "disposition": "migrated",
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
@@ -436,8 +440,9 @@
       "contracts": [
         "InlineFeedback",
         "Select",
+        "TextInput",
         "Textarea",
-        "TextInput"
+        "button"
       ],
       "disposition": "migrated",
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
@@ -447,7 +452,8 @@
       "contracts": [
         "InlineFeedback",
         "Select",
-        "TextInput"
+        "TextInput",
+        "button"
       ],
       "disposition": "migrated",
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
@@ -461,8 +467,7 @@
         "FilterBar",
         "SearchInput",
         "Select",
-        "StateBlock",
-        "button"
+        "StateBlock"
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/admin-contact-message-inbox.test.tsx"
@@ -470,10 +475,10 @@
     {
       "path": "src/features/admin/content/content-forms.tsx",
       "contracts": [
-        "InlineFeedback",
         "Select",
         "TextInput",
-        "Textarea"
+        "Textarea",
+        "button"
       ],
       "disposition": "migrated",
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
@@ -506,7 +511,8 @@
         "Select",
         "StateBlock",
         "TextInput",
-        "Textarea"
+        "Textarea",
+        "button"
       ],
       "disposition": "migrated",
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
@@ -518,7 +524,8 @@
         "InlineFeedback",
         "Select",
         "StateBlock",
-        "TextInput"
+        "TextInput",
+        "button"
       ],
       "disposition": "migrated",
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
@@ -527,7 +534,8 @@
       "path": "src/features/admin/governance/role-permission-form.tsx",
       "contracts": [
         "Button",
-        "InlineFeedback"
+        "InlineFeedback",
+        "button"
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/admin-role-permission-form.test.tsx"
@@ -557,7 +565,8 @@
         "Select",
         "StateBlock",
         "TextInput",
-        "Textarea"
+        "Textarea",
+        "button"
       ],
       "disposition": "migrated",
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
@@ -573,8 +582,7 @@
     {
       "path": "src/features/client/client-assistant-panel.tsx",
       "contracts": [
-        "Button",
-        "Textarea"
+        "Button"
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/product-components.test.tsx"
@@ -584,6 +592,14 @@
       "contracts": [
         "Button",
         "Textarea"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/features/client/payment-mobile-card.tsx",
+      "contracts": [
+        "button"
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/product-components.test.tsx"
@@ -611,35 +627,6 @@
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/product-components.test.tsx"
-    },
-    {
-      "path": "src/features/portal/profile-form.tsx",
-      "contracts": [
-        "TextInput"
-      ],
-      "disposition": "backward-compatible",
-      "evidence": "tests/ui/product-components.test.tsx"
-    },
-    {
-      "path": "src/features/public-site/booking-stepper.tsx",
-      "contracts": [
-        "Select",
-        "TextInput",
-        "Textarea"
-      ],
-      "disposition": "backward-compatible",
-      "evidence": "tests/ui/public-pages.test.tsx"
-    },
-    {
-      "path": "src/features/public-site/consultation-assistant-panel.tsx",
-      "contracts": [
-        "Button",
-        "Select",
-        "TextInput",
-        "Textarea"
-      ],
-      "disposition": "backward-compatible",
-      "evidence": "tests/ui/public-pages.test.tsx"
     },
     {
       "path": "src/features/public-site/contact-form.tsx",
@@ -671,7 +658,6 @@
     {
       "path": "src/features/ui-preview/component-gallery.tsx",
       "contracts": [
-        "Badge",
         "Button",
         "ButtonLink",
         "DataTable",
@@ -687,7 +673,7 @@
         "Toast"
       ],
       "disposition": "backward-compatible",
-      "evidence": "tests/ui/product-components.test.tsx"
+      "evidence": "tests/ui/design-system-lab.test.tsx"
     },
     {
       "path": "src/features/ui-preview/gallery-islands.tsx",
@@ -696,6 +682,15 @@
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/features/ui-preview/lab-demos.tsx",
+      "contracts": [
+        "Button",
+        "buttonClasses"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/design-system-lab.test.tsx"
     },
     {
       "path": "src/server/auth/page-guards.tsx",
