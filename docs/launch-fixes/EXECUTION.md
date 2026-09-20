@@ -157,7 +157,8 @@ Primary owner worktree untouched. One task at a time. No merges to main, no depl
   sandbox limitation as TASK 01; no new PG troubleshooting performed.
 - Off-server limitation: backups stay on the same server; NOT protection
   against total server loss; no external service configured (needs approval).
-- Commit: (pending)
+- Commit: `64b4732` on `launch/task-01-client-create` (pushed; NOT merged
+  to main, no deploy, no package changes)
 
 ## TASK 04 — Staff TOTP Two-Factor Authentication
 
