@@ -101,10 +101,42 @@ re-verified; no new components are introduced in Phase 13.
 
 ## Status
 
-COMPLETE — with Blocker #1 (public-header kit lock) pending owner sign-off.
-All QA executed from clean worktree @ `170dd1d`; primary dirty owner tree
-untouched throughout. No source fixes required; release commit is
-documentation-only.
+COMPLETE — zero unresolved release blockers. Blocker #1 (public-header kit
+lock) RESOLVED via header commit `8f1b3a6` (see resolution note below).
+Primary dirty owner tree untouched throughout.
+
+## Blocker #1 Resolution (2026-09-20)
+
+- Landed the owner-approved header rework as ONE file:
+  `src/components/layout/public-header.tsx` (344+/343-, hash-verified
+  identical to the reviewed owner worktree file). No other owner hunks
+  included (process-steps GSAP→Timeline refinement deliberately excluded
+  as unrelated; brand-logo theme support was already landed in `170dd1d`,
+  byte-identical — nothing further required).
+- Locked imports (real files, verified in source): Sheet/Tooltip from
+  `@/components/animate-ui/components/radix/{sheet,tooltip}`,
+  `Menu/MenuItem` from `@/components/ui/navbar-menu`,
+  `NavBody/MobileNav/MobileNavHeader` from
+  `@/components/ui/resizable-navbar`; plus approved ShimmerCtaLink CTA,
+  RippleLink flyout CTA, ThemeToggle, `KmtBrandLogo surface="theme"`.
+- Nav content: insight hrefs absent from content EN+AR (header insight
+  branches unreachable); Home/Services/Team/Contact + CTA + login +
+  language + theme kept, nothing invented.
+- Behavior preserved: rAF scroll (scrolled>24, concealed>320),
+  glassed-pill, `sheetSide` AR-right/EN-left, close-on-navigate,
+  aria-expanded/current, focus rings, `MotionConfig reducedMotion="user"`,
+  radix focus trap/return.
+- Previously failing `public-pages.test.tsx` shell-nav test: GREEN
+  unmodified (restored `kmt-nav-indicator` contract) — no test weakening.
+- Targeted gate: header unit files 22/22, typecheck zero errors, lint
+  clean; browser EN-dark-1440 (NavBody pill, gold active + indicator,
+  hover/focus flyout with 4 practice links + CTA, Esc closes, conceal on
+  scroll-down + reveal on scroll-up, login/lang/CTA) + AR-light-390
+  (Sheet `data-side="right"`, aria-expanded, nav→`/ar/team` closes
+  sheet, overflow 0) + reduced-motion smoke — all zero console errors.
+- Re-gate on fresh `@8f1b3a6` checkout: `npm ci` + `prisma generate`
+  clean; typecheck GREEN; lint GREEN; full unit 616 passed / 0 failed /
+  53 skipped (91 files: 86 passed, 5 skipped); build GREEN (40/40).
 
 ## Implementation Notes
 
@@ -201,7 +233,7 @@ documentation-only.
 
 ## Blockers
 
-- #1 (owner sign-off required): committed public header
+- #1 (RESOLVED — see resolution note under Status): committed public header
   (`layout/public-header.tsx` @ `f845530`) is a custom implementation;
   DECISIONS.md #PUBLIC HEADER locks Resizable Navbar + Navbar Menu +
   Sheet + Tooltip (substitute: REJECTED). `resizable-navbar` never
