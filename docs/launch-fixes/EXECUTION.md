@@ -270,26 +270,55 @@ Primary owner worktree untouched. One task at a time. No merges to main, no depl
   approval. Explicit risk: a SOLE locked-out Super Admin has no in-app
   self-recovery (reset requires another Super Admin) — narrow owner
   decision required before enforcement.
+- Outstanding verification, distinguished (no implementation reopened):
+  - A. Real enrollment/login/recovery drill: NOT RUN — disposable database
+    unavailable (same sandbox limitation; unit proof only).
+  - B. Readiness: production readiness still rejects `STAFF_2FA_MODE=totp`
+    (`STAFF_2FA_MODE_UNSUPPORTED`) — an unresolved activation prerequisite,
+    not merely a missing database. Readiness checks were NOT bypassed or
+    removed; lifting the block needs explicit owner approval with the
+    drill + recovery plan above.
+  - C. Owner recovery: no safe owner-approved procedure exists for a
+    locked-out sole Super Admin — no bypass invented, no production
+    enforcement enabled.
+  - D. Replay evidence: rejecting verify from an already-ACTIVE session is
+    unit-proven, but credential-level replay prevention across separate
+    pending sessions is NOT YET PROVEN. Remaining scenario: accept a code
+    in pending session A, reject reuse of that accepted time-step/code in
+    pending session B, with no two concurrent acceptances. No confirmed
+    vulnerability is claimed — the atomic status-flip + password-per-login
+    is the inspected enforcement; the cross-session scenario awaits the
+    real drill.
 - Commit: `694eea8` on `launch/task-01-client-create` (pushed; NOT merged
   to main, no deploy, no package changes, no prod flag changes, no real
   accounts touched)
 
 ## TASK 05 — Paymob Sandbox End-to-End Verification
 
-- Status: NOT STARTED
-- Exact scope: VERIFICATION primarily — one real sandbox payment through
-  the full lifecycle (booking → receipt → account link) + edge cases
-  (replay, failure, expiry, late payment); no code rewrite unless a defect
-  is proven; TEST credentials only.
-- Checklist:
-  - [ ] Check current Paymob docs for the used integration
-  - [ ] Sandbox journey with signed callbacks
-  - [ ] Edge-case evidence (automated where unsafe live)
-- Files changed: —
-- Tests run: —
-- Runtime evidence: —
-- Missing environment: —
-- Commit: —
+- Status: BLOCKED — SANDBOX ENVIRONMENT REQUIRED (stopped early per
+  protocol; no checkout attempted, no code written, no payment tests
+  repeated as substitute)
+- Prerequisite check (presence only, names from current
+  `src/server/payments/*`; no values inspected or recorded):
+
+| Requirement | Available? | Exact missing setup | Blocks which verification |
+|---|---|---|---|
+| A. Disposable PostgreSQL (synthetic-only, designated, migratable) | NO | No reachable disposable instance; prior local setup failed and is not retried; no shared/prod DB may be used | Sandbox flow; also TASK 01 runtime, TASK 03 drill, TASK 04 drill |
+| B. Paymob TEST keys (`PAYMOB_SECRET_KEY`, `PAYMOB_PUBLIC_KEY`, `PAYMOB_HMAC_SECRET` or `PAYMENT_WEBHOOK_SECRET`, `PAYMOB_PAYMENT_METHOD_IDS`) | NO | All missing-or-empty in this environment; local dev env file carries them empty | Checkout creation, hosted TEST payment, signed callback verify |
+| C. Approved HTTPS staging endpoint (Paymob-reachable callback + return URL, app bound to disposable DB) | NO | No staging endpoint designated or approved; no tunnel started (needs approval) | Real callback delivery, return/receipt pages |
+| D. Synthetic booking prerequisites (slot, pricing rule, `PAYMENT_RECEIPT_SIGNING_SECRET`/`PAYMENT_STATUS_SIGNING_SECRET`/`AUTH_SECRET`, signing config) | CODE-READY, UNPROVISIONED | Secrets missing-or-empty; pricing/slots need the disposable DB from A | Price review, receipt/status links, account-setup link |
+| TEST-mode proof | NOT ESTABLISHED | Cannot be inferred from base URL (`PAYMOB_API_BASE_URL` defaults to accept.paymob.com regardless of mode); needs key/integration config | Entire flow — no payment initiated while TEST mode is uncertain |
+
+- Real sandbox flow: NOT RUN. Edge cases (replay, fail/cancel, expiry,
+  late-review): NOT RUN against provider (existing UNIT-ONLY coverage in
+  `batch6-payment-trust` stands as designed, not as sandbox proof).
+- Exact owner action needed (via secure configuration, never secrets in
+  chat): supply (1) disposable PostgreSQL connection designation,
+  (2) Paymob TEST key set + integration IDs with TEST mode confirmed in
+  the Paymob dashboard, (3) approved staging HTTPS endpoint + callback URL
+  registration. Then the 10-step synthetic flow in the task brief can run.
+- Files changed: `docs/launch-fixes/EXECUTION.md` only.
+- Commit: (pending)
 
 ## TASK 06 — ClamAV Upload Verification
 
