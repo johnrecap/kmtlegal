@@ -117,21 +117,47 @@ Primary owner worktree untouched. One task at a time. No merges to main, no depl
 
 ## TASK 03 — Database + Uploads Backup and Restore
 
-- Status: NOT STARTED
-- Exact scope: extend existing backup mechanism to pair DB + UPLOADS_DIR in
-  one backup set (id, timestamps, manifest, checksums, restricted perms);
-  restore into disposable DB + temp uploads dir; synthetic doc download +
-  checksum + authz checks; document commands/env/failure handling.
-- Checklist:
-  - [ ] Inspect backup/deploy scripts + uploads path
-  - [ ] Paired backup set implementation
-  - [ ] Disposable-environment restore drill + verification
-  - [ ] Documentation (commands, storage, env names, failures, off-server status)
-- Files changed: —
-- Tests run: —
-- Runtime evidence: —
-- Missing environment: —
-- Commit: —
+- Status: BLOCKED — REAL RESTORE VERIFICATION REQUIRED
+- Implementation: READY. Paired backup/restore scripts + mocked
+  orchestration tests + runbook (`docs/launch-fixes/paired-backup-restore.md`).
+- What was implemented (extends existing `create_verified_database_backup`
+  + `postgres-backup-tools.sh` conventions; no deploy script rewritten):
+  - `scripts/paired-backup-lib.mjs`: redaction, path-safety, manifest
+    schema/verify, sha256, symlink-refusing inventory, lock helpers.
+  - `scripts/paired-backup.mjs`: atomic `<dest>/<setId>/` publish only
+    after pg_dump + `pg_restore --list` + tar + manifest + checksums verify;
+    umask-style `0700/0600` perms; concurrent-run lock; unsafe destinations
+    refused (inside UPLOADS_DIR/checkout, public-looking); previous backups
+    never touched; staged tool errors; no secrets in manifest/logs.
+  - `scripts/paired-restore.mjs`: dry-run inspect by default; apply needs
+    `--apply --set --target-uploads --confirm=<setId>` + separate
+    `PAIRED_RESTORE_DATABASE_URL`; checksum/manifest/archive validation;
+    new-EMPTY target DB and empty target uploads required; no `--create`
+    (archive DB name never overrides target); `--no-owner` restore
+    (ownership vs app permissions documented).
+  - Consistency method: single-transaction pg_dump snapshot + immediate
+    uploads capture; optional `--require-quiet` writer check via
+    `pg_stat_activity`; residual skew documented (orphan files harmless,
+    newer rows → 404 + re-upload). Live maintenance/downtime needs
+    separate owner authorization.
+- Files changed:
+  - `scripts/paired-backup-lib.mjs`, `scripts/paired-backup.mjs`,
+    `scripts/paired-restore.mjs` (new)
+  - `tests/ops/paired-backup-restore.test.ts` (new, MOCKED exec / real temp fs)
+  - `docs/launch-fixes/paired-backup-restore.md` (new runbook)
+- Automated checks (MOCKED / UNIT evidence, NOT restore proof): 9/9 passed —
+  success + previous-backup preservation, dump failure, archive failure,
+  unsafe destinations, incomplete set, corrupted checksum, dry-run +
+  traversal refusal, apply guards + file verification, non-empty DB refusal,
+  redaction. `node --check` clean on all 3 scripts.
+- Real restore drill: NOT RUN (10-step Client A/B + checksum + isolation
+  procedure prepared in runbook § Verification).
+- Missing requirement: a disposable PostgreSQL reachable from the runtime
+  environment (CREATEDB or superuser) plus a disposable uploads dir — same
+  sandbox limitation as TASK 01; no new PG troubleshooting performed.
+- Off-server limitation: backups stay on the same server; NOT protection
+  against total server loss; no external service configured (needs approval).
+- Commit: (pending)
 
 ## TASK 04 — Staff TOTP Two-Factor Authentication
 
