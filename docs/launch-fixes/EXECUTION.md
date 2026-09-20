@@ -5,7 +5,20 @@ Primary owner worktree untouched. One task at a time. No merges to main, no depl
 
 ## TASK 01 — Connect Admin Client Creation
 
-- Status: BLOCKED (runtime verification unavailable; see missing environment)
+- Status: BLOCKED — runtime environment only (audit correction recorded)
+- Audit correction: the prior audit's client-create finding is NOT supported
+  by current source inspection.
+  - Client creation implementation: ALREADY PRESENT (`ClientCreateForm` +
+    `POST /api/admin/clients` → `createAdminClient`, since Phase 11 `ce6bced`).
+  - Permission-denied UI ("إضافة العملاء غير متاحة"): intentional
+    `!canManage` branch, not a missing-feature placeholder.
+  - Targeted code/tests: verified (contract test 6/6, neighbors 18/18,
+    typecheck + lint clean; commit `fe57331` + test preserved, implementation
+    unchanged).
+  - Authenticated database-backed browser flow: NOT VERIFIED (no
+    disposable PostgreSQL in this sandbox; no further PG/credential
+    troubleshooting per instruction).
+  - Existing client-management actions were not modified.
 - Exact scope: replace the "creation unavailable" placeholder on the Admin
   Clients page with a working form reusing existing service/endpoint/schema/
   permissions/components; no new required fields; no auto portal login.
@@ -59,19 +72,47 @@ Primary owner worktree untouched. One task at a time. No merges to main, no depl
 
 ## TASK 02 — Close Hidden Public Content APIs
 
-- Status: NOT STARTED
+- Status: COMPLETE
 - Exact scope: public articles + case-studies list/detail endpoints return
-  standard 404; models/rows/services/Admin CMS intact; Services/Team APIs
-  untouched; no Media restore.
+  the standard 404; models/rows/services/Admin CMS intact; Services/Team
+  APIs untouched; no Media restore.
+- Endpoints handled (all verified live before the change, now closed at the
+  route boundary before any service/DB read):
+  - `GET /api/public/articles` → 404 `NOT_FOUND`
+  - `GET /api/public/articles/[slug]` → 404 `NOT_FOUND` (any slug)
+  - `GET /api/public/case-studies` → 404 `NOT_FOUND`
+  - `GET /api/public/case-studies/[slug]` → 404 `NOT_FOUND` (any slug)
+- Consumer check: zero `src` fetchers of these endpoints (no Admin
+  component depends on them); Admin uses `/api/admin/content/*` +
+  `content-social-service` (untouched). Shared `content-service` NOT
+  deleted; models/rows untouched; Services/Team routes untouched.
 - Checklist:
-  - [ ] Locate every public articles/case-studies list/detail route
-  - [ ] Disable at route boundary before content fetch
-  - [ ] Targeted public-route tests + narrow Admin content verification
-- Files changed: —
-- Tests run: —
-- Runtime evidence: —
-- Missing environment: —
-- Commit: —
+  - [x] Located + verified the 4 live endpoints and their (lack of) consumers
+  - [x] Standard `jsonError(404, "NOT_FOUND", …)` at route boundary
+        (locale-aware, same shape as existing detail-404s)
+  - [x] Narrow route tests (real handlers; only the service mocked to
+        prove it is never called)
+  - [x] Directly-affected e2e expectations updated (published→404)
+  - [x] Existing Admin content tests re-run (shared service unchanged)
+- Files changed:
+  - `src/app/api/public/articles/route.ts`
+  - `src/app/api/public/articles/[slug]/route.ts`
+  - `src/app/api/public/case-studies/route.ts`
+  - `src/app/api/public/case-studies/[slug]/route.ts`
+  - `tests/server/public-content-closure.test.ts` (new)
+  - `tests/e2e/batch14-content-lifecycle.spec.ts` (2 expectations 200→404)
+- Tests run and results:
+  - `tests/server/public-content-closure.test.ts`: 4/4 passed (404 status,
+    `NOT_FOUND`, no `data`, no content strings, service spies uncalled)
+  - Neighbors: `admin-content-social` + `public-articles` + `public-case-
+    studies` page tests + TASK 01 contract test: 17/17 passed
+  - `npm run typecheck`: 0 errors; `next lint` on all changed files: clean
+- Runtime evidence / limitation: unconditional-404 unit proof via real
+  route handlers (no DB needed by design); Admin live CRUD NOT re-tested
+  (only unit coverage) — recorded honestly, not a failure of the closure.
+  Full E2E / build not run per fast-verification policy.
+- Missing environment: none for this task.
+- Commit: (pending)
 
 ## TASK 03 — Database + Uploads Backup and Restore
 
