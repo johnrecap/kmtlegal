@@ -318,7 +318,8 @@ Primary owner worktree untouched. One task at a time. No merges to main, no depl
   the Paymob dashboard, (3) approved staging HTTPS endpoint + callback URL
   registration. Then the 10-step synthetic flow in the task brief can run.
 - Files changed: `docs/launch-fixes/EXECUTION.md` only.
-- Commit: (pending)
+- Commit: `e9dadcb` on `launch/task-01-client-create` (pushed; NOT merged
+  to main, no deploy, no code written)
 
 ## TASK 06 — ClamAV Upload Verification
 
