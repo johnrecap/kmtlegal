@@ -298,7 +298,12 @@ describe("security, privacy, upload, and observability hardening", () => {
     const nextConfigSource = fs.readFileSync(path.join(process.cwd(), "next.config.mjs"), "utf8");
 
     expect(authMeSource).toContain('"Cache-Control": "no-store"');
-    expect(reset2faSource).toContain("FEATURE_DISABLED");
+    // Launch fixes TASK 04 wired the existing authorized reset service:
+    // Super-Admin-only server authority, audited, no unauthenticated access.
+    expect(reset2faSource).toContain("resetStaffTwoFactor");
+    expect(reset2faSource).toContain("getAuthContextFromRequest");
+    expect(reset2faSource).toContain('"Cache-Control": "no-store"');
+    expect(reset2faSource).not.toContain("FEATURE_DISABLED");
     expect(middlewareSource).toContain('response.headers.set("Cache-Control", "no-store")');
     expect(nextConfigSource).toContain('source: "/admin/:path*"');
     expect(nextConfigSource).toContain('source: "/client/:path*"');

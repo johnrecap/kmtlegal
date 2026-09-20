@@ -34,6 +34,24 @@ const authContentAr = {
     requestFailed: "تعذر تنفيذ الطلب الآن. حاول مرة أخرى.",
     serverUnavailable: "لا يمكن الوصول إلى الخدمة الآن. حاول مرة أخرى بعد قليل."
   },
+  twoFactor: {
+    formTitle: "التحقق الثنائي",
+    formDescription: "أدخل رمز التحقق المكوّن من 6 أرقام من تطبيق المصادقة.",
+    codeLabel: "رمز التحقق",
+    codePlaceholder: "000000",
+    submitVerify: "تحقق",
+    enrollTitle: "إعداد التحقق الثنائي",
+    enrollDescription: "أضف هذا المفتاح إلى تطبيق المصادقة، ثم أدخل الرمز الحالي للتفعيل.",
+    setupKeyLabel: "مفتاح الإعداد",
+    setupUriLabel: "رابط الإعداد اليدوي",
+    confirmEnroll: "تفعيل",
+    invalidCode: "الرمز غير صحيح أو انتهت الجلسة. حاول مرة أخرى.",
+    lockedSession: "تم قفل الجلسة مؤقتًا. سجل الدخول مرة أخرى.",
+    statusFailed: "تعذر تحميل حالة التحقق. أعد تحميل الصفحة.",
+    enrollFailed: "تعذر بدء الإعداد. حاول مرة أخرى.",
+    backToLogin: "العودة إلى تسجيل الدخول",
+    loading: "جارٍ التحميل…"
+  },
   readiness: {
     eyebrow: "جاهزية KMT Legal",
     title: "الخدمة لم تكتمل جاهزيتها بعد",
@@ -84,6 +102,24 @@ const authContentEn = {
     incompleteResponse: "Sign-in did not complete. Try again.",
     requestFailed: "The request could not be completed. Try again.",
     serverUnavailable: "The service cannot be reached right now. Try again shortly."
+  },
+  twoFactor: {
+    formTitle: "Two-factor verification",
+    formDescription: "Enter the 6-digit code from your authenticator app.",
+    codeLabel: "Verification code",
+    codePlaceholder: "000000",
+    submitVerify: "Verify",
+    enrollTitle: "Set up two-factor authentication",
+    enrollDescription: "Add this key to your authenticator app, then enter the current code to activate.",
+    setupKeyLabel: "Setup key",
+    setupUriLabel: "Manual setup link",
+    confirmEnroll: "Activate",
+    invalidCode: "The code is incorrect or the session expired. Try again.",
+    lockedSession: "The session is temporarily locked. Sign in again.",
+    statusFailed: "Could not load verification status. Reload the page.",
+    enrollFailed: "Could not start setup. Try again.",
+    backToLogin: "Back to sign in",
+    loading: "Loading…"
   },
   readiness: {
     eyebrow: "KMT Legal readiness",

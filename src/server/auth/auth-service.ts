@@ -117,13 +117,13 @@ export async function verifyPendingTotp(request: Request, code: string) {
 
   const credential = context.user.twoFactorCredential;
   if (!credential?.totpSecretEncrypted || credential.recoveryState !== "ENABLED") {
-    await recordTwoFactorFailure(request, context, "totp", "credential_not_ready");
+    await recordPendingTwoFactorFailure(request, context, "totp", "credential_not_ready");
     return null;
   }
 
   const secret = openSealedSecret(credential.totpSecretEncrypted);
   if (!verifyTotpCode(secret, code)) {
-    await recordTwoFactorFailure(request, context, "totp", "invalid_code");
+    await recordPendingTwoFactorFailure(request, context, "totp", "invalid_code");
     return null;
   }
 
@@ -234,7 +234,7 @@ export async function verifyEmailOtpForPendingSession(request: Request, otp: str
   });
 
   if (!challenge || challenge.attemptCount >= EMAIL_OTP_MAX_ATTEMPTS) {
-    await recordTwoFactorFailure(request, context, "email_otp", "invalid_or_expired_challenge");
+    await recordPendingTwoFactorFailure(request, context, "email_otp", "invalid_or_expired_challenge");
     return null;
   }
 
@@ -250,7 +250,7 @@ export async function verifyEmailOtpForPendingSession(request: Request, otp: str
       where: { id: challenge.id },
       data: { attemptCount: { increment: 1 } }
     });
-    await recordTwoFactorFailure(request, context, "email_otp", "invalid_code");
+    await recordPendingTwoFactorFailure(request, context, "email_otp", "invalid_code");
     return null;
   }
 
@@ -285,7 +285,7 @@ export async function verifyEmailOtpForPendingSession(request: Request, otp: str
   return { user: safeUser(context.user), permissions: context.principal.permissions ?? [] };
 }
 
-async function recordTwoFactorFailure(
+export async function recordPendingTwoFactorFailure(
   request: Request,
   context: AuthContext,
   method: "totp" | "email_otp",

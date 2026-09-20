@@ -105,7 +105,9 @@ export function LoginForm({ locale }: { locale: ClientLocale }) {
       }
 
       if (data.status === "two_factor_required") {
-        setError(copy.twoFactorUnavailable);
+        const target = requestedNext ? `/login/2fa?next=${encodeURIComponent(requestedNext)}` : "/login/2fa";
+        router.push(target);
+        router.refresh();
         return;
       }
 

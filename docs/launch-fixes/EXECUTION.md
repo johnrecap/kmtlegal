@@ -186,20 +186,91 @@ Primary owner worktree untouched. One task at a time. No merges to main, no depl
 
 ## TASK 04 — Staff TOTP Two-Factor Authentication
 
-- Status: NOT STARTED
-- Exact scope: functioning staff TOTP (enrollment + verification +
-  recovery) in test env reusing existing implementation; pending-2FA
-  sessions denied protected access; rate limits preserved; no SMTP; no
-  production flag changes.
-- Checklist:
-  - [ ] Inspect TOTP/enrollment/guards/pending-session/storage/recovery code
-  - [ ] Wire missing portions of existing design
-  - [ ] Targeted auth/2FA tests + test-DB login/enrollment/recovery flow
-- Files changed: —
-- Tests run: —
-- Runtime evidence: —
-- Missing environment: —
-- Commit: —
+- Status: BLOCKED — RUNTIME VERIFICATION REQUIRED (implementation + unit
+  tests complete; real enrollment/login/recovery drill NOT RUN — no
+  disposable database in this sandbox)
+- Existing auth-path map (verified in current source @ `3aede1b`):
+  - Staff predicate: existing `isStaffRole` policy (Client never pending).
+  - Login: `POST /api/auth/login` → `loginWithPassword` (already returns
+    `two_factor_required` + sets pending cookie for staff when
+    `STAFF_2FA_MODE=totp`).
+  - Mode: `staffTwoFactorMode/two-factor.ts` (`totp|disabled`, default
+    disabled; production default unchanged).
+  - TOTP: `totp.ts` (RFC6238 SHA1/base32/±1 window/timing-safe,
+    deterministic `now`; existing RFC vector test in `auth-core`).
+  - Pending enforcement: server-side — `session-store.ts:177` denies
+    pending sessions everywhere unless `allowPendingTwoFactor`; all page
+    guards use the default; only 2FA services opt in.
+  - Storage: AES-256-GCM `sealSecret/openSealedSecret` (`secret.ts`);
+    `StaffTwoFactorCredential` states `PENDING_SETUP|ENABLED|
+    RESET_REQUIRED|DISABLED_BY_ADMIN` (no migration needed).
+  - Verify: `verifyPendingTotp` (lock check, ENABLED-credential check,
+    atomic activate TX + audit). Same-session replay structurally
+    impossible (status flips ACTIVE atomically); cross-session same-window
+    reuse requires fresh password authentication.
+  - Reset: `resetStaffTwoFactor` (Super-Admin-only `twoFactor.reset.staff`,
+    audited, clears secret → RESET_REQUIRED). No role besides Super Admin
+    holds the permission.
+  - Rate limits: existing `rateLimiters.twoFactor` (8/10m) + 5-attempt
+    session lockout (10min), reused on all TOTP routes.
+  - Missing before this task: NO enrollment flow existed (secret
+    generation, setup-key/QR presentation, enrollment confirmation); TOTP
+    verify + reset routes were 503 stubs; `/login/2fa` was a notFound stub;
+    login form showed "unavailable" instead of redirecting.
+- Reused vs new: reused totp/two-factor/session-store/secret/rate-limit/
+  audit/kit components/login-status shape; new `totp-enrollment-service.ts`
+  (sealed-secret start, code-confirmed activation that also finalizes the
+  session, RESET_REQUIRED re-enrollment; ENABLED→409 so replacement
+  requires admin reset = reauthentication; DISABLED_BY_ADMIN→403; secrets
+  never logged/audited), 4 TOTP routes (enroll/enroll-confirm/status/
+  verify — pending-session-only, rate-limited, mode-gated to 503 when
+  disabled, no-store), wired admin reset route (active session +
+  `resetStaffTwoFactor` → 401/403 mapping), real `/login/2fa` page (server
+  redirects for non-pending/already-active/mode-disabled; kit Card form
+  with verify + enroll states, one-time-code text field preserving leading
+  zeros, no QR image / no external service), login-form redirect to
+  `/login/2fa`, ar+en copy. Email OTP routes untouched (still 503, no SMTP).
+  Production readiness still blocks `totp` mode (unchanged — activation
+  needs explicit owner approval later).
+- Files changed:
+  - `src/server/auth/totp-enrollment-service.ts` (new)
+  - `src/server/auth/auth-service.ts` (export failure recorder only)
+  - `src/app/api/auth/2fa/totp/enroll/route.ts`,
+    `.../enroll/confirm/route.ts`, `.../status/route.ts` (new)
+  - `src/app/api/auth/2fa/totp/verify/route.ts` (wired, keeps 503 default)
+  - `src/app/api/admin/users/[userId]/2fa/reset/route.ts` (wired)
+  - `src/app/(app-ar)/login/2fa/page.tsx` (real page, was notFound stub)
+  - `src/features/auth/two-factor-form.tsx` (new), `login-form.tsx`
+    (redirect on `two_factor_required`), `src/content/auth-content.ts`
+    (ar+en `twoFactor` copy)
+  - `tests/server/staff-totp-flow.test.ts`, `tests/ui/two-factor-form.test.tsx`
+  - `tests/server/security-hardening.test.ts` (reset-route assertion updated
+    to the wired hardened contract)
+- Tests run and results:
+  - `staff-totp-flow`: 15/15 (window edges/malformed, role×mode matrix,
+    pending denial, staff-pending vs Client-authenticated login, sealed
+    enrollment start with no plaintext in audit, 409-when-enabled,
+    confirm-activate with atomic ACTIVE, invalid-code 401 + attempt count,
+    ACTIVE-session confirm/verify rejection = replay, secret-free status,
+    Super-Admin-only reset + Client-target refusal, route contract incl.
+    rate-limit/mode/no-store, base32 vector)
+  - `two-factor-form`: 2/2 (shell render without external assets,
+    code-field + kit + endpoint contract)
+  - Neighbors (`auth-core`, `admin-governance`, `portal-access`,
+    `security-hardening`, `auth-audit-contract`): 63/63 with the new files
+  - `npm run typecheck`: 0 errors; `next lint` on all changed files: clean
+- Real drill: NOT RUN. Missing: disposable database for the synthetic
+  enroll → logout → password → pending-denied → TOTP → access → reset →
+  re-enroll → Client-login flow. No mocked harness presented as proof.
+- Rollout boundary: production flags/defaults unchanged
+  (`STAFF_2FA_MODE=disabled`, readiness still rejects `totp`); no
+  password-only fallback added; activation prerequisites — drill passed,
+  owner/admin enrollment + recovery plan verified, `AUTH_SECRET` supplied
+  securely, pre-existing-session behavior verified, explicit owner
+  approval. Explicit risk: a SOLE locked-out Super Admin has no in-app
+  self-recovery (reset requires another Super Admin) — narrow owner
+  decision required before enforcement.
+- Commit: (pending)
 
 ## TASK 05 — Paymob Sandbox End-to-End Verification
 
