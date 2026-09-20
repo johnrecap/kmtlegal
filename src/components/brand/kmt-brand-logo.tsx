@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 type KmtBrandLogoVariant = "mark" | "lockup" | "full";
-type KmtBrandLogoSurface = "dark" | "light";
+type KmtBrandLogoSurface = "dark" | "light" | "theme";
 type KmtBrandLogoSize = "sm" | "md" | "lg";
 type KmtBrandLogoShape = "rounded" | "circle";
 
@@ -64,8 +64,26 @@ export function KmtBrandLogo({
         <BrandMark alt="" imageClassName={imageClassName} shape={shape} size={size} surface={surface} />
         <span className="min-w-0">
           <span className={cn("block font-label-sm font-semibold uppercase leading-none tracking-[0.22em] text-kmt-gold", lockupTextClasses[size].kmt)}>KMT</span>
-          <span className={cn("block font-semibold leading-tight", surface === "dark" ? "text-[#f8f3ea]" : "text-kmt-ink", lockupTextClasses[size].legal)}>Legal</span>
-          {sublabel ? <span className={cn("block truncate font-medium leading-5", surface === "dark" ? "text-stone-400" : "text-kmt-muted", lockupTextClasses[size].sublabel)}>{sublabel}</span> : null}
+          <span
+            className={cn(
+              "block font-semibold leading-tight",
+              surface === "dark" ? "text-[#f8f3ea]" : surface === "light" ? "text-kmt-ink" : "text-kmt-ink dark:text-[#f8f3ea]",
+              lockupTextClasses[size].legal
+            )}
+          >
+            Legal
+          </span>
+          {sublabel ? (
+            <span
+              className={cn(
+                "block truncate font-medium leading-5",
+                surface === "dark" ? "text-stone-400" : surface === "light" ? "text-kmt-muted" : "text-kmt-muted dark:text-stone-400",
+                lockupTextClasses[size].sublabel
+              )}
+            >
+              {sublabel}
+            </span>
+          ) : null}
         </span>
       </>
     );
