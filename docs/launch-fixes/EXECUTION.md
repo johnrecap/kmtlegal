@@ -270,7 +270,9 @@ Primary owner worktree untouched. One task at a time. No merges to main, no depl
   approval. Explicit risk: a SOLE locked-out Super Admin has no in-app
   self-recovery (reset requires another Super Admin) — narrow owner
   decision required before enforcement.
-- Commit: (pending)
+- Commit: `694eea8` on `launch/task-01-client-create` (pushed; NOT merged
+  to main, no deploy, no package changes, no prod flag changes, no real
+  accounts touched)
 
 ## TASK 05 — Paymob Sandbox End-to-End Verification
 
