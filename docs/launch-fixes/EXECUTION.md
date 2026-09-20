@@ -52,9 +52,10 @@ Primary owner worktree untouched. One task at a time. No merges to main, no depl
   touched; throwaway cluster artifacts removed. With a working disposable
   DB, the remaining 30-minute verification is: migrate + seed, login as
   seeded `office.admin@kmt.local`, submit the form in Chromium (available),
-  assert detail/list, invalid-input error, Lawyer 403 + `!canManage`
+  assert detail/list, invalid-input error, Lawyer 403 +   `!canManage`
   StateBlock, anonymous 401.
-- Commit: (pending)
+- Commit: `9d80487` on `launch/task-01-client-create` (pushed; NOT merged
+  to main, no deploy)
 
 ## TASK 02 — Close Hidden Public Content APIs
 
