@@ -349,7 +349,8 @@ Primary owner worktree untouched. One task at a time. No merges to main, no depl
   loaded signatures + `MALWARE_SCAN_MODE`/`CLAMAV_*` test configuration +
   disposable DB/uploads from the shared table below.
 - Files changed: `docs/launch-fixes/EXECUTION.md` only.
-- Commit: (pending)
+- Commit: `0436a05` on `launch/task-01-client-create` (pushed; NOT merged
+  to main, no deploy, no code written)
 
 ---
 
