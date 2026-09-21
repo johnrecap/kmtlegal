@@ -103,7 +103,8 @@ test.describe.serial("batch14 content lifecycle browser", () => {
     await approverArticleForm.getByLabel("الحالة").selectOption("PUBLISHED");
     await approverArticleForm.getByRole("button", { name: "حفظ المقال" }).click();
     await expect(page.getByText("تم حفظ المقال.")).toBeVisible();
-    expect((await page.request.get(`/api/public/articles/${`draft-${ids.draftArticle}`}?locale=en`)).status()).toBe(200);
+    // Owner decision (launch fixes TASK 02): published articles stay out of public APIs.
+    expect((await page.request.get(`/api/public/articles/${`draft-${ids.draftArticle}`}?locale=en`)).status()).toBe(404);
 
     await login(page, `${ids.creator}@example.test`, baseURL);
     await page.goto("/admin/content?tab=articles", { waitUntil: "domcontentloaded" });
@@ -136,7 +137,8 @@ test.describe.serial("batch14 content lifecycle browser", () => {
     await approverStudyForm.getByLabel("الحالة", { exact: true }).selectOption("PUBLISHED");
     await approverStudyForm.getByRole("button", { name: "حفظ دراسة الحالة" }).click();
     await expect(page.getByText("تم حفظ دراسة الحالة.")).toBeVisible();
-    expect((await page.request.get(`/api/public/case-studies/${`study-${ids.draftStudy}`}?locale=en`)).status()).toBe(200);
+    // Owner decision (launch fixes TASK 02): published case studies stay out of public APIs.
+    expect((await page.request.get(`/api/public/case-studies/${`study-${ids.draftStudy}`}?locale=en`)).status()).toBe(404);
     const publishedStudyCard = page.locator("article").filter({ has: page.getByRole("link", { name: "Draft browser study" }) });
     await expect(publishedStudyCard.getByText("منشور", { exact: true })).toBeVisible();
     await expect(publishedStudyCard.getByText(`${marker} approver`, { exact: true })).toBeVisible();
