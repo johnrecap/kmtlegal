@@ -448,3 +448,35 @@ scripts/paired-backup.mjs --capture-mode=maintenance-window --require-quiet
    Never commit them.
 
 No blocked task was resumed. No code changed for this step.
+
+---
+
+## STAGING VERIFICATION ATTEMPT (resume command response)
+
+On the resume instruction, the status table was re-checked against the
+real environment instead of trusted — result: NO staging environment is
+reachable or described anywhere available to this session:
+
+- Branch `launch/task-01-client-create` in sync with origin at `326443e`;
+  no new commits, docs, or config describing staging access.
+- No staging URL, database designations, credentials, or env files exist
+  in the worktree; a read-only check of the primary worktree found no
+  staging material either. Nothing was modified there.
+- No hostnames were guessed and no infrastructure was probed — there is
+  no target to verify against.
+
+Therefore every `SHARED STAGING ENVIRONMENT STATUS` row remains
+OWNER ACTION REQUIRED (unverified), and none of TASK 01 / 04 / 06 / 05 /
+03 verification nor the combined operational smoke was executed — running
+them without a designated synthetic target would risk touching production
+or fabricating evidence, both explicitly forbidden.
+
+To proceed, the owner must supply (values via secure channel, never chat):
+1. Staging HTTPS base URL reachable for verification.
+2. Database designations for `KMT_STAGING_DB` (`DATABASE_URL`) and
+   `KMT_RESTORE_TEST_DB` (`PAIRED_RESTORE_DATABASE_URL`).
+3. Where the seeded synthetic account credentials are stored.
+4. Confirmation of ClamAV test daemon, Paymob TEST setup + callback
+   registration, and staging signing secrets.
+5. Whether this session's host is expected to reach the staging host
+   directly (URL fetch / DB TCP) or verification runs server-side.
