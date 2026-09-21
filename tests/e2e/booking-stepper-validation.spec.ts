@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { getPublicContent } from "../../src/content/public-content";
 
 test.describe("consultation booking chat", () => {
   test("sends legal-boundary requests to the server and retains the Arabic intake", async ({ page }) => {
@@ -19,7 +20,7 @@ test.describe("consultation booking chat", () => {
               : { summary: "will i win" },
             intake: isCategory
               ? { status: "understood", progressed: true, nextField: "fullName" }
-              : { status: "legal_boundary", progressed: false, nextField: "fullName" }
+              : { status: "legal_boundary", progressed: false, nextField: "serviceCategory" }
           }
         })
       });
@@ -39,7 +40,6 @@ test.describe("consultation booking chat", () => {
     expect(payloads[0]).toMatchObject({ message: "will i win", event: "message" });
     await expect(page.getByTestId("booking-chat-log")).toContainText("لا يقدم المساعد رأيًا قانونيًا");
 
-    await page.getByTestId("booking-quick-book").click();
     await expect(page.getByTestId("booking-matter-chip").first()).toBeVisible();
     await page.getByTestId("booking-matter-chip").nth(1).click();
     await expect.poll(() => payloads.length).toBe(2);
@@ -69,7 +69,7 @@ test.describe("consultation booking chat", () => {
     // Intent question + what-next info live inside the same console.
     const log = page.getByTestId("booking-chat-log");
     await expect(log).toContainText("كيف يمكننا مساعدتك اليوم؟");
-    await expect(log).toContainText("ما الذي يحدث بعد ذلك");
+    await expect(log).toContainText(getPublicContent("ar").bookingChat.trustTitle);
 
     await page.getByTestId("booking-quick-book").click();
     const matter = page.getByTestId("booking-matter-chip");
@@ -130,14 +130,14 @@ test.describe("consultation booking chat", () => {
         };
         const body: Record<string, unknown> = { data: { message: `step-reply-${n}`, draft } };
         const data = (body.data ?? {}) as Record<string, unknown>;
-        if (n === 3) {
+        if (n === 2) {
           data.availableSlots = [
             { id: "s1", startsAt: "2099-10-01T09:00:00.000Z", endsAt: "2099-10-01T09:30:00.000Z", mode: "ONLINE" },
             { id: "s2", startsAt: "2099-10-01T11:00:00.000Z", endsAt: "2099-10-01T11:30:00.000Z", mode: "ONLINE" },
           ];
           data.slotWindow = { date: "", label: "", timeWindow: "", fromTime: "", toTime: "" };
         }
-        if (n === 4) {
+        if (n === 3) {
           data.readyToConfirm = true;
           data.readyToCheckout = true;
           data.paymentReview = {
@@ -147,7 +147,7 @@ test.describe("consultation booking chat", () => {
           };
           (draft as Record<string, unknown>).startsAt = "2099-10-01T09:00:00.000Z";
         }
-        if (n === 5) {
+        if (n === 4) {
           data.message = "step-done";
           data.reference = "CONS-STEP-99";
           data.appointment = { title: "Consultation", startsAt: "2099-10-01T09:00:00.000Z", status: "PENDING" };
@@ -183,10 +183,10 @@ test.describe("consultation booking chat", () => {
       await page.getByTestId("booking-matter-chip").nth(1).click();
       await page.locator('input[name="chatMessage"]').fill(journey.contactText);
       await page.getByTestId("booking-chat-composer").locator('button[type="submit"]').click();
-      await expect(page.getByText("step-reply-2", { exact: false }).first()).toBeVisible();
+      await expect(page.getByText("step-reply-1", { exact: false }).first()).toBeVisible();
       await page.locator('input[name="chatMessage"]').fill(journey.detailsText);
       await page.getByTestId("booking-chat-composer").locator('button[type="submit"]').click();
-      await expect(page.getByText("step-reply-3", { exact: false }).first()).toBeVisible();
+      await expect(page.getByText("step-reply-2", { exact: false }).first()).toBeVisible();
       await assertNoStepper();
 
       // STATE 7/8: slot + payment stages (confirm row + review panel).
@@ -210,7 +210,12 @@ test.describe("consultation booking chat", () => {
     }
   });
 
-  test("hides quick actions after the second free-text message", async ({ page }) => {
+  test("hides intent actions when the server starts collecting intake", async ({ page }) => {
+    await page.route("**/api/analytics/events", route => route.fulfill({ status: 202, body: "{}" }));
+    await page.route("**/api/public/consultations/assistant", route => route.fulfill({ json: { data: {
+      message: "A lawyer will review the matter. What is your name?", draft: {},
+      intake: { status: "legal_boundary", progressed: false, nextField: "fullName" }
+    } } }));
     await page.goto("/ar/book-consultation", { waitUntil: "domcontentloaded" });
 
     const chat = page.getByTestId("consultation-assistant");
@@ -220,7 +225,7 @@ test.describe("consultation booking chat", () => {
 
     await chat.locator('input[name="chatMessage"]').fill("will i win");
     await chat.locator('button[type="submit"]').last().click();
-    await expect(page.getByTestId("booking-quick-actions")).toBeVisible();
+    await expect(page.getByTestId("booking-quick-actions")).toHaveCount(0);
 
     await chat.locator('input[name="chatMessage"]').fill("what should i do");
     await chat.locator('button[type="submit"]').last().click();

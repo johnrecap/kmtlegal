@@ -119,6 +119,7 @@ test("does not report a payment page ready when checkout returns no payment atte
   await expect(page.getByTestId("consultation-assistant")).toHaveAttribute("data-hydrated", "true");
   await page.getByTestId(`booking-language-${locale}`).click();
   await page.getByTestId("booking-quick-book").click();
+  await page.getByTestId("booking-matter-chip").nth(1).click();
   await page.getByTestId("booking-pay-booking").click();
   await expect(page.getByTestId("booking-chat-log")).toContainText(copy.fallbackError);
   await expect(page.getByTestId("booking-chat-log")).not.toContainText(copy.checkoutCreated);
