@@ -380,3 +380,71 @@ Non-environment decisions NOT resolved by supplying the above:
 - TASK 03 consistency procedure evidence + manual invocation / off-server-copy limitation
 - TASK 04 readiness rejection of TOTP mode + owner recovery procedure + cross-session replay evidence
 - TASK 01/02/04 completion statuses beyond their runtime drills
+
+---
+
+## SHARED STAGING ENVIRONMENT STATUS
+
+Plan only — no staging exists yet, nothing was executed, no code changed.
+Reuse (not a second architecture): `deploy/install/aapanel-pm2-update.sh`
+(flow), `deploy/env.production.example` (template), `deploy/nginx/
+kmt-legal.conf.example` + `deploy/systemd/` (examples), installer +
+`prisma db seed` (bootstrap + synthetic users), `scripts/paired-backup*`
+(runbook), `/api/health` (readiness). Staging = second checkout of the
+launch-fixes branch with separate dir/port/PM2 names/env/DBs/uploads.
+
+Corrections from source inspection: there is NO `STATUS_SIGNING_SECRET`
+variable — exact names are `PAYMENT_STATUS_SIGNING_SECRET`,
+`PAYMENT_RECEIPT_SIGNING_SECRET`, `CLIENT_ACCOUNT_SETUP_SIGNING_SECRET`,
+`AUTH_SECRET` (TOTP sealing also uses `AUTH_SECRET`).
+
+TOTP staging classification: readiness rejects `STAFF_2FA_MODE=totp` via a
+genuine release gate (`STAFF_2FA_MODE_UNSUPPORTED`, production-readiness.ts),
+not stale validation and not a missing prerequisite. It gates production
+only (`isProductionRuntime` = `APP_ENV`/`NODE_ENV` production); staging with
+a non-production `APP_ENV` can exercise TOTP while prod stays blocked.
+Lifting it for production needs the TASK 04 prerequisites + explicit owner
+release approval. Not bypassed, not removed.
+
+Staging maintenance-window drill commands (STAGING ONLY, recorded not run):
+`pm2 stop <staging-app> <staging-payments>` → bounded drain → zero-writer
+check (`pg_stat_activity`, same predicate as the script) → `node
+scripts/paired-backup.mjs --capture-mode=maintenance-window --require-quiet
+--pause-record="..." --require-consistent` (staging env) → confirm manifest
+`verifiedConsistent` → `pm2 start ...` → confirm online → restore with
+`PAIRED_RESTORE_DATABASE_URL`, separate `--target-uploads`, `--confirm`,
+`--verify-documents`. Never against production.
+
+| Requirement | Status | Evidence | Unblocks |
+|---|---|---|---|
+| Staging HTTPS app (launch-fixes branch, own dir/port/PM2) | OWNER ACTION REQUIRED | Repo flow + nginx example READY; no subdomain, checkout, or vhost exists | 01, 03, 04, 05, 06 |
+| Primary disposable PostgreSQL (`KMT_STAGING_DB`) | OWNER ACTION REQUIRED | `prisma migrate` + seed READY; no database designated | 01, 03, 04, 05, 06 |
+| Restore PostgreSQL (`KMT_RESTORE_TEST_DB`, empty, never source/prod) | OWNER ACTION REQUIRED | Restore script enforces emptiness/separation; no database designated | 03 |
+| Synthetic users (Super Admin, Office Admin, Lawyer, Client A/B) | OWNER ACTION REQUIRED | Seed provides synthetic staff/client users; Client B via TASK 01 flow once DB exists | 01, 04, 05, 06 |
+| Test uploads dir (`STAGING_UPLOADS_DIR`, private, writable) | OWNER ACTION REQUIRED | `vps-filesystem` driver + `UPLOADS_DIR` convention READY; no dir created | 01, 03, 06 |
+| Restore uploads dir (`RESTORE_TEST_UPLOADS_DIR`, separate, empty) | OWNER ACTION REQUIRED | Restore script enforces separation/emptiness; no dir created | 03 |
+| ClamAV (`MALWARE_SCAN_MODE`, `CLAMAV_HOST`/`CLAMAV_PORT` or `CLAMAV_SOCKET_PATH`, `CLAMAV_TIMEOUT_MS`) | OWNER ACTION REQUIRED | Adapter + zPING + deploy preflight READY; no daemon reachable (probed REFUSED) | 06 |
+| Paymob TEST (`PAYMOB_SECRET_KEY`, `PAYMOB_PUBLIC_KEY`, `PAYMOB_HMAC_SECRET` or `PAYMENT_WEBHOOK_SECRET`, `PAYMOB_PAYMENT_METHOD_IDS`) | OWNER ACTION REQUIRED | Integration code READY; keys missing-or-empty; TEST mode unconfirmed | 05 |
+| Application signing secrets (`AUTH_SECRET` 32+, `PAYMENT_RECEIPT_SIGNING_SECRET`, `PAYMENT_STATUS_SIGNING_SECRET`, `CLIENT_ACCOUNT_SETUP_SIGNING_SECRET`) | OWNER ACTION REQUIRED | Names + fallback chains verified in source; no staging values generated | 01, 04, 05 |
+| TOTP encryption/readiness (`AUTH_SECRET` sealing + readiness gate) | OWNER ACTION REQUIRED | Sealing + TOTP flow code READY; staging `STAFF_2FA_MODE=totp` pending; prod gate stays | 04 |
+| Backup maintenance controls (staging PM2 stop/start + drain + verify) | OWNER ACTION REQUIRED | Paired scripts + runbook READY; no staging processes to pause | 03 |
+
+### OWNER INPUT CHECKLIST (short)
+
+1. Create staging subdomain + TLS + nginx server block (reuse
+   `deploy/nginx/kmt-legal.conf.example` with the staging name).
+2. Provision two disposable PostgreSQL databases + connection designations
+   (`DATABASE_URL` for staging, `PAIRED_RESTORE_DATABASE_URL` for restore);
+   CREATE + DML inside them only, no superuser needed.
+3. Check out the launch-fixes branch to a separate staging dir with its own
+   port/PM2 names/uploads/backup dirs; run migrations + seed.
+4. Approve + provide a TEST `clamd` on the staging host (socket or TCP,
+   signatures loaded, not publicly exposed).
+5. Supply Paymob TEST keys + integration IDs and confirm TEST mode in the
+   Paymob dashboard; register the staging callback URL. Deliver via the
+   staging env file / server environment / secret manager — never chat.
+6. Generate strong staging-only secrets (`AUTH_SECRET` 32+, receipt/status/
+   account-setup signing secrets) into the staging env file (mode 600).
+   Never commit them.
+
+No blocked task was resumed. No code changed for this step.
