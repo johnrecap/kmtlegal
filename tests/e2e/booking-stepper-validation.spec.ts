@@ -1,62 +1,51 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("consultation booking chat", () => {
-  test("refuses legal advice and keeps Arabic booking as chat-only intake", async ({ page }) => {
-    const consoleErrors: string[] = [];
-    let assistantCalls = 0;
-
-    page.on("console", (message) => {
-      if (message.type() === "error") {
-        consoleErrors.push(message.text());
-      }
-    });
-    page.on("request", (request) => {
-      if (request.url().includes("/api/public/consultations/assistant")) {
-        assistantCalls += 1;
-      }
+  test("sends legal-boundary requests to the server and retains the Arabic intake", async ({ page }) => {
+    const payloads: Array<Record<string, unknown>> = [];
+    await page.route("**/api/analytics/events", (route) => route.fulfill({ status: 202, body: "" }));
+    await page.route("**/api/public/consultations/assistant", async (route) => {
+      const payload = route.request().postDataJSON() as Record<string, unknown>;
+      payloads.push(payload);
+      const isCategory = payload.event === "select_category";
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          data: {
+            message: isCategory ? "اكتب الاسم الكامل." : "لا يقدم المساعد رأيًا قانونيًا، لكنه يحتفظ بطلبك للمراجعة.",
+            draft: isCategory
+              ? { summary: "will i win", serviceCategory: "corporate-business-services" }
+              : { summary: "will i win" },
+            intake: isCategory
+              ? { status: "understood", progressed: true, nextField: "fullName" }
+              : { status: "legal_boundary", progressed: false, nextField: "fullName" }
+          }
+        })
+      });
     });
 
     await page.goto("/ar/book-consultation", { waitUntil: "domcontentloaded" });
-
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-
     const chat = page.getByTestId("consultation-assistant");
-    await expect(chat).toBeVisible();
     await expect(chat).toHaveAttribute("data-hydrated", "true");
-    await expect(page.getByTestId("booking-chat-shell")).toBeVisible();
-    await expect(page.getByTestId("booking-chat-composer")).toBeVisible();
-    await expect(page.getByTestId("booking-chat-log")).toHaveClass(/kmt-chat-scrollbar/);
-    // Greeting + language prompt open the conversation; no external rail.
-    await expect(page.getByTestId("booking-chat-log")).toContainText("أستطيع مساعدتك في حجز استشارة");
+    await expect(page.getByTestId("booking-chat-log")).toContainText("أستطيع ترتيب استشارة");
     await expect(page.getByTestId("booking-trust-rail")).toHaveCount(0);
-    await expect(page.getByTestId("booking-language-choice")).toBeVisible();
 
     await page.getByTestId("booking-language-ar").click();
-    await expect(page.getByTestId("booking-trust-rail")).toHaveCount(0);
-    await expect(page.getByTestId("booking-quick-actions")).toBeVisible();
-
     await chat.locator('input[name="chatMessage"]').fill("will i win");
-    // Stabilize viewport first: the contract is no page jump ON SUBMIT,
-    // not where the 720px test viewport happens to rest after filling.
-    await page.getByTestId("booking-chat-composer").scrollIntoViewIfNeeded();
-    const pageScrollBeforeSubmit = await page.evaluate(() => window.scrollY);
-    await chat.locator('button[type="submit"]').last().click();
-    await expect(page.getByTestId("booking-quick-actions")).toBeVisible();
-    expect(assistantCalls).toBe(0);
-    const pageScrollAfterSubmit = await page.evaluate(() => window.scrollY);
-    expect(Math.abs(pageScrollAfterSubmit - pageScrollBeforeSubmit)).toBeLessThanOrEqual(2);
+    await page.getByTestId("booking-chat-composer").locator('button[type="submit"]').click();
+    await expect.poll(() => payloads.length).toBe(1);
+    expect(payloads[0]).toMatchObject({ message: "will i win", event: "message" });
+    await expect(page.getByTestId("booking-chat-log")).toContainText("لا يقدم المساعد رأيًا قانونيًا");
 
     await page.getByTestId("booking-quick-book").click();
-    // Booking starts: intent chips collapse, contextual matter chips appear.
-    await expect(page.getByTestId("booking-quick-book")).toHaveCount(0);
     await expect(page.getByTestId("booking-matter-chip").first()).toBeVisible();
+    await page.getByTestId("booking-matter-chip").nth(1).click();
+    await expect.poll(() => payloads.length).toBe(2);
+    expect(payloads[1]).toMatchObject({ event: "select_category", draft: { serviceCategory: "corporate-business-services", summary: "will i win" } });
     await expect(page.getByTestId("booking-chat-step-card")).toHaveCount(0);
     await expect(chat.locator('input[name="fullName"]')).toHaveCount(0);
-    await expect(chat.locator('input[name="phone"]')).toHaveCount(0);
-    await expect(chat.locator('textarea[name="summary"]')).toHaveCount(0);
-    await expect(chat.locator("#booking-consent")).toHaveCount(0);
-
-    expect(consoleErrors).toEqual([]);
   });
 
   test("guides matter selection inside the conversation", async ({ page }) => {

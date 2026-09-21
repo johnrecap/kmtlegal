@@ -59,6 +59,7 @@ export type AIProviderAdapter = {
     task: AITask;
     locale: "ar" | "en";
     input: unknown;
+    outputSchema?: z.ZodType;
     safetyPolicy: AISafetyPolicy;
     requestId: string;
   }): Promise<AIProviderResult>;

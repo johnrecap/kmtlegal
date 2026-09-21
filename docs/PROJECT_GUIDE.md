@@ -44,6 +44,13 @@ not edit the exported Stitch source as part of ordinary product work.
 
 ## Recent Changes
 
+- 2026-09-21 - Repaired incremental public booking intake and AI-failure recovery.
+  - The assistant retains accepted facts, asks for one missing field, handles known actions/contact replies without a model, and continues booking after a legal-advice boundary.
+  - HTTP-200 intake metadata drives recovery; category changes remain explicit and invalidate stale slots. Intake copy uses a shared bilingual catalog.
+  - Added opt-in schema-constrained provider output and privacy-safe failure diagnostics. No production provider setting or database schema changed.
+  - Verification and operating limits: [booking intake recovery](reviews/2026-09-21/booking-intake-recovery.md).
+
+
 - 2026-09-13 - Batch 12 hardened sensitive admin-account writes.
   - Account creation and password reset now revalidate the actor's live exact-Super account,
     current active session, and user-management policy inside a serializable write transaction.

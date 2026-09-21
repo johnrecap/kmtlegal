@@ -183,7 +183,8 @@ describe("booking chat stage composition (source contract)", () => {
   it("renders the whole conversation through the real animated list", () => {
     expect(chatSource).toContain("<AnimatedList");
     expect(chatSource).toContain("delay={160}");
-    expect(chatSource).toContain("{messages.map((message) => (");
+    expect(chatSource).toContain("{messages.map((message, index) => (");
+    expect(chatSource).toContain("showAssistantAvatar");
     // Option panels arrive inside the same sequenced list, not around it.
     expect(chatSource).toContain('<LanguageChoicePanel key="language-choice"');
     expect(chatSource).toContain('<SlotChoicePanel key="slot-choice"');

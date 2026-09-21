@@ -26,6 +26,13 @@ For a current-state PRD and external model review brief, use `docs/KMT_LEGAL_CUR
 
 ## Recent Changes
 
+- 2026-09-21 - Repaired incremental public booking intake and AI-failure recovery.
+  - The assistant retains accepted facts, asks for one missing field, handles known actions/contact replies without a model, and continues booking after a legal-advice boundary.
+  - HTTP-200 intake metadata drives recovery; category changes remain explicit and invalidate stale slots. Intake copy uses a shared bilingual catalog.
+  - Added opt-in schema-constrained provider output and privacy-safe failure diagnostics. No production provider setting or database schema changed.
+  - Verification and operating limits: [booking intake recovery](docs/reviews/2026-09-21/booking-intake-recovery.md).
+
+
 - 2026-09-13 - Added the active UI and motion checklist requested by the user.
   - Scope: [52 open tasks](docs/KMT_UI_MOTION_TASKS.md) cover component inventory, reviewed previews, custom styling, motion, all visitor/client/admin pages, Tailwind removal, and acceptance evidence.
   - Status: these are pending redesign tasks, separate from completed hardening batches; preserve all 58 pages or obtain explicit approval before any reduction.

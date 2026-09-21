@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
+import { bookingAssistantCopy, BOOKING_SUMMARY_MIN_LENGTH } from "@/content/booking-assistant-copy";
 import { AI_REVIEW_DISCLAIMER, bookingIntakeExtractionOutputSchema, generateStructured } from "@/server/ai";
 import { createConsultationReviewNotifications } from "@/server/admin/notification-service";
 import {
@@ -96,6 +97,7 @@ const publicAssistantDraftSchema = z.object({
 export const publicConsultationAssistantSchema = z.object({
   locale: z.enum(["ar", "en"]).default("ar"),
   message: z.string().trim().min(1).max(2000),
+  event: z.enum(["start_booking", "select_category", "message"]).optional(),
   intent: assistantActionSchema.optional(),
   draft: publicAssistantDraftSchema.optional(),
   fullName: z.string().trim().min(2).max(120).optional().or(z.literal("")),
@@ -158,14 +160,12 @@ type BookingMergeResult = {
   aiUnavailable: boolean;
   lowConfidence: boolean;
   legalAdviceRequested: boolean;
-  clarifyingQuestion?: string;
   extraction?: BookingIntakeExtraction;
 };
 
 const BOOKING_AI_CONFIDENCE_THRESHOLD = 0.55;
 const BOOKING_AI_FIELD_CONFIDENCE_THRESHOLD = 0.5;
 const DEFAULT_ASSISTANT_SERVICE_CATEGORY = "legal-consultation";
-const BOOKING_SUMMARY_MIN_LENGTH = 20;
 const GENERIC_BOOKING_SUMMARY_TOKENS = new Set([
   "a",
   "an",
@@ -225,11 +225,8 @@ export async function handlePublicConsultationAssistant(input: { body: unknown; 
   const limitKey = getIpAddress(input.request) ?? canonicalPhone(body.phone || "") ?? "anonymous";
   await enforceRateLimit(rateLimiters.ai, `public-consultation-assistant:${limitKey}`);
 
-  if (isLegalAdviceRequest(body.message)) {
-    return scopedPublicAssistantReply(body.locale, isLegalAdviceRequest(body.message));
-  }
-
   if (body.intent === "appointment_inquiry" || body.reference) {
+    if (isLegalAdviceRequest(body.message)) return scopedPublicAssistantReply(body.locale, true);
     return publicAppointmentInquiry({ body, requestId: input.requestId });
   }
 
@@ -243,15 +240,42 @@ async function handlePublicBookingConversation(input: {
 }) {
   const bookingMode = await getPublicConsultationBookingMode();
   const mergeResult = await mergeBookingDraftWithAi(input.body, input.requestId);
-  if (mergeResult.legalAdviceRequested) {
-    return scopedPublicAssistantReply(input.body.locale, true);
-  }
-
   const draft = mergeResult.draft;
+  const previous = normalizeBookingDraft(baseBookingDraft(input.body));
+  const progressed = JSON.stringify(draft) !== JSON.stringify(previous) ||
+    input.body.event === "start_booking" || input.body.event === "select_category";
+  const categorySuggestion = input.body.event !== "select_category" && isAssaultMatter(input.body.message) &&
+    previous.serviceCategory && previous.serviceCategory !== DEFAULT_ASSISTANT_SERVICE_CATEGORY
+    ? { current: previous.serviceCategory, suggested: DEFAULT_ASSISTANT_SERVICE_CATEGORY } : undefined;
+  const respond = (response: Parameters<typeof bookingConversationResponse>[0]) => {
+    const responseProgressed = progressed || Boolean(response.readyToConfirm || response.readyToCheckout || response.availableSlots?.length);
+    const status = mergeResult.legalAdviceRequested ? "legal_boundary" : mergeResult.aiUnavailable ? "degraded" :
+      mergeResult.lowConfidence || !responseProgressed ? "needs_clarification" : "understood";
+    safeLog("info", "booking.intake", {
+      requestId: input.requestId, status, progressed: responseProgressed, nextField: response.missingFields[0] ?? null,
+      missingFieldCount: response.missingFields.length
+    });
+    return {
+      ...bookingConversationResponse({
+        ...response,
+        message: categorySuggestion
+          ? `${bookingAssistantCopy[input.body.locale].categorySuggestion} ${response.message}` : response.message
+      }),
+      intake: { status, progressed: responseProgressed, nextField: response.missingFields[0] ?? null },
+      ...(categorySuggestion ? { categorySuggestion } : {})
+    };
+  };
+  if (mergeResult.legalAdviceRequested) {
+    const missingFields = requiredBookingFields({ ...input.body, ...draft });
+    return respond({
+      locale: input.body.locale, draft, missingFields,
+      message: `${bookingAssistantCopy[input.body.locale].legalBoundary} ${bookingQuestionMessage(input.body.locale, missingFields[0])}`
+    });
+  }
   const explicitDate = toAsciiDigits(appointmentPreferenceText(input.body.message)).match(/\b(20\d{2}-\d{2}-\d{2})\b/)?.[1];
   if (explicitDate && !consultationSlotDateSchema.safeParse(explicitDate).success) {
     const nextDraft = normalizeBookingDraft({ ...draft, startsAt: "", availabilityPreference: normalizeAvailabilityPreference() });
-    return bookingConversationResponse({
+    return respond({
       locale: input.body.locale,
       draft: nextDraft,
       missingFields: requiredBookingFields({ ...input.body, ...nextDraft }),
@@ -260,11 +284,10 @@ async function handlePublicBookingConversation(input: {
       message: publicBookingSlotConfirmationError(input.body.locale, "")
     });
   }
-  const previous = normalizeBookingDraft(baseBookingDraft(input.body));
   const changedBookingTerms = draft.serviceCategory !== previous.serviceCategory || draft.preferredMode !== previous.preferredMode;
   const changedPreference = (["date", "fromTime", "toTime"] as const)
     .some(key => draft.availabilityPreference[key] !== previous.availabilityPreference[key]);
-  const needsNewSlot = changedBookingTerms || changedPreference || wantsAlternativeSlots(input.body.message);
+  const needsNewSlot = input.body.event === "select_category" || changedBookingTerms || changedPreference || wantsAlternativeSlots(input.body.message);
   if (needsNewSlot) draft.startsAt = "";
   const selectedSlot = needsNewSlot ? "" : input.body.selectedSlot || draft.startsAt || input.body.startsAt || "";
   const missingFields = requiredBookingFields({ ...input.body, ...draft, startsAt: selectedSlot });
@@ -272,7 +295,7 @@ async function handlePublicBookingConversation(input: {
   if (input.body.confirmBooking || (input.body.intent === "book_consultation_appointment" && input.body.consent === true && selectedSlot)) {
     const confirmMissing = requiredBookingFields({ ...input.body, ...draft, startsAt: selectedSlot });
     if (confirmMissing.length) {
-      return bookingConversationResponse({
+      return respond({
         locale: input.body.locale,
         draft,
         missingFields: confirmMissing,
@@ -284,7 +307,7 @@ async function handlePublicBookingConversation(input: {
     const selectedSlotError = publicBookingSlotConfirmationError(input.body.locale, selectedSlot);
     if (selectedSlotError) {
       const nextDraft = normalizeBookingDraft({ ...draft, startsAt: "" });
-      return bookingConversationResponse({
+      return respond({
         locale: input.body.locale,
         draft: nextDraft,
         missingFields: ["startsAt"],
@@ -316,7 +339,7 @@ async function handlePublicBookingConversation(input: {
         });
       }
       if (isDuplicateBookingError(error)) {
-        return bookingConversationResponse({
+        return respond({
           locale: input.body.locale,
           draft,
           missingFields: [],
@@ -332,7 +355,7 @@ async function handlePublicBookingConversation(input: {
     if (missingFields.length === 1 && missingFields.includes("startsAt")) {
       const hasPreference = hasAvailabilityPreference(draft.availabilityPreference);
       if (!hasPreference && !needsNewSlot) {
-        return bookingConversationResponse({
+        return respond({
           locale: input.body.locale,
           draft,
           missingFields,
@@ -358,7 +381,7 @@ async function handlePublicBookingConversation(input: {
           ? await listPublicConsultationSlots({ mode: draft.preferredMode, limit: 6 })
           : undefined;
 
-      return bookingConversationResponse({
+      return respond({
         locale: input.body.locale,
         draft,
         missingFields,
@@ -369,27 +392,16 @@ async function handlePublicBookingConversation(input: {
       });
     }
 
-    const firstNonSlotMissing = missingFields.find((field) => field !== "startsAt");
-    if ((mergeResult.aiUnavailable || mergeResult.lowConfidence) && firstNonSlotMissing) {
-      return bookingConversationResponse({
-        locale: input.body.locale,
-        draft,
-        missingFields,
-        selectedSlot,
-        message: bookingFollowUpMessage(input.body.locale, firstNonSlotMissing, input.body.message, mergeResult)
-      });
-    }
-
-    return bookingConversationResponse({
+    return respond({
       locale: input.body.locale,
       draft,
       missingFields,
       selectedSlot,
-      message: bookingFollowUpMessage(input.body.locale, missingFields[0], input.body.message, mergeResult)
+      message: bookingQuestionMessage(input.body.locale, missingFields[0])
     });
   }
 
-  return bookingConversationResponse({
+  return respond({
     locale: input.body.locale,
     draft,
     selectedSlot,
@@ -474,7 +486,7 @@ export async function handleClientConsultationAssistant(input: { actor: Principa
 }
 
 function mergeBookingDraft(body: PublicConsultationAssistantInput) {
-  const base = baseBookingDraft(body);
+  const base = normalizeBookingDraft(baseBookingDraft(body));
   return normalizeBookingDraft({
     ...base,
     ...extractBookingDetails(body.message, base)
@@ -482,13 +494,21 @@ function mergeBookingDraft(body: PublicConsultationAssistantInput) {
 }
 
 async function mergeBookingDraftWithAi(body: PublicConsultationAssistantInput, requestId: string): Promise<BookingMergeResult> {
-  const base = baseBookingDraft(body);
+  const base = normalizeBookingDraft(baseBookingDraft(body));
+  const structuredEvent = body.event === "start_booking" || body.event === "select_category";
+  if (body.event === "select_category" && !["legal-consultation", "corporate-business-services", "real-estate-legal-support", "claims-collections"].includes(base.serviceCategory)) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Consultation assistant payload is invalid.");
+  }
   const fallbackDraft = normalizeBookingDraft({
     ...base,
-    ...extractBookingDetails(body.message, base)
+    ...(structuredEvent ? {} : extractBookingDetails(body.message, base))
   });
+  const directLegalQuestion = !structuredEvent && isPublicLegalAdviceRequest(body.message);
+  if (directLegalQuestion) {
+    return { draft: fallbackDraft, aiUnavailable: false, lowConfidence: false, legalAdviceRequested: true };
+  }
 
-  if (shouldBypassBookingAi(body)) {
+  if (structuredEvent || shouldBypassBookingAi(body) || isRecognizedContactReply(body.message, fallbackDraft)) {
     return {
       draft: fallbackDraft,
       aiUnavailable: false,
@@ -507,9 +527,10 @@ async function mergeBookingDraftWithAi(body: PublicConsultationAssistantInput, r
     };
   }
 
-  if (extraction.legalAdviceRequested || extraction.intent === "legal_advice") {
+  if ((extraction.legalAdviceRequested || extraction.intent === "legal_advice") &&
+      extraction.confidence >= BOOKING_AI_CONFIDENCE_THRESHOLD && !isBookingMatterDescription(body.message)) {
     return {
-      draft: normalizeBookingDraft(base),
+      draft: fallbackDraft,
       aiUnavailable: false,
       lowConfidence: false,
       legalAdviceRequested: true,
@@ -517,7 +538,7 @@ async function mergeBookingDraftWithAi(body: PublicConsultationAssistantInput, r
     };
   }
 
-  const aiDraft = bookingDraftFromAiExtraction(extraction, fallbackDraft);
+  const aiDraft = bookingDraftFromAiExtraction(extraction, fallbackDraft, body.message);
   const mergedDraft = normalizeBookingDraft({
     ...fallbackDraft,
     ...aiDraft
@@ -528,7 +549,6 @@ async function mergeBookingDraftWithAi(body: PublicConsultationAssistantInput, r
     aiUnavailable: false,
     lowConfidence: extraction.confidence < BOOKING_AI_CONFIDENCE_THRESHOLD,
     legalAdviceRequested: false,
-    clarifyingQuestion: extraction.needsClarification ? extraction.clarifyingQuestion?.trim() : undefined,
     extraction
   };
 }
@@ -551,7 +571,7 @@ export function publicBookingAvailabilityPreferenceFromMessage(
 
 export function isInformativeBookingSummary(value: string | null | undefined) {
   const trimmed = value?.trim() ?? "";
-  if (trimmed.length < BOOKING_SUMMARY_MIN_LENGTH || isAvailabilityOnlyMessage(trimmed) || likelyNameOnly(trimmed)) {
+  if (trimmed.length < BOOKING_SUMMARY_MIN_LENGTH || isAvailabilityOnlyMessage(trimmed) || isCategoryOnlyMessage(trimmed) || likelyNameOnly(trimmed)) {
     return false;
   }
 
@@ -645,7 +665,7 @@ function extractBookingDetails(
   }
   if (!current.serviceCategory || /change|instead|switch|عايز|أريد|اريد|غير|بدل/i.test(text)) {
     const serviceCategory = serviceCategoryFromMessage(normalized);
-    if (serviceCategory) {
+    if (serviceCategory && !(current.serviceCategory && isAssaultMatter(text) && !/change|instead|switch|غير|بدل/i.test(text))) {
       next.serviceCategory = serviceCategory;
     }
   }
@@ -668,7 +688,7 @@ function extractBookingDetails(
   const name = nameFromMessage(text, Boolean(current.fullName));
   if (name) {
     next.fullName = name;
-  } else if (!current.fullName && likelyNameOnly(text) && !isInvalidBookingFullName(text) && !isAvailabilityOnlyMessage(text)) {
+  } else if (!current.fullName && likelyNameOnly(text) && !isInvalidBookingFullName(text) && !isAvailabilityOnlyMessage(text) && !isLegalAdviceRequest(text)) {
     next.fullName = text;
   }
 
@@ -676,11 +696,11 @@ function extractBookingDetails(
     .replace(email ?? "", "")
     .replace(phone ?? "", "")
     .trim();
-  if (!current.summary && isInformativeBookingSummary(summaryCandidate)) {
+  if (!current.summary && !isCategoryOnlyMessage(text) && isInformativeBookingSummary(summaryCandidate)) {
     next.summary = summaryCandidate;
   }
 
-  if (!current.city) {
+  if (!current.city && next.fullName !== text) {
     const city = cityFromMessage(text);
     if (city) {
       next.city = city;
@@ -725,6 +745,11 @@ function bookingIntakeExtractionInput(body: PublicConsultationAssistantInput, cu
     locale: body.locale,
     userMessage: body.message,
     currentDraft,
+    conversationContext: {
+      goal: "collect consultation booking details, not answer legal questions",
+      expectedField: requiredBookingFields({ ...body, ...currentDraft })[0] ?? null,
+      collectedFields: Object.entries(currentDraft).filter(([, value]) => typeof value === "string" && value).map(([key]) => key)
+    },
     today: new Date().toISOString(),
     timezone: OFFICE_TIMEZONE,
     allowedServiceCategories: [
@@ -750,7 +775,9 @@ function bookingIntakeExtractionInput(body: PublicConsultationAssistantInput, cu
       "Extract only what the client actually provided or clearly implied.",
       "Do not invent names, phone numbers, appointment slots, prices, legal opinions, or payment status.",
       "Use null for unknown fields.",
-      "Set legalAdviceRequested true when the user asks for a legal opinion, prediction, interpretation, or what action to take.",
+      "A matter description, name, contact detail, or request to BOOK a lawyer to interpret a document is booking intake, not legal advice.",
+      "Set legalAdviceRequested true only for a direct request for YOU to give an opinion, predict a result, or recommend a legal action now. Never reclassify the stored draft as a new user question.",
+      "Respect conversationContext.expectedField, accept partial replies, and keep previously collected fields.",
       "Use serviceCategory only from allowedServiceCategories.",
       "Use availabilityPreference for relative or preferred times; do not set a final booked slot."
     ],
@@ -785,7 +812,8 @@ function bookingIntakeExtractionInput(body: PublicConsultationAssistantInput, cu
 
 function bookingDraftFromAiExtraction(
   extraction: BookingIntakeExtraction,
-  current: ReturnType<typeof baseBookingDraft>
+  current: ReturnType<typeof baseBookingDraft>,
+  sourceMessage: string
 ): Partial<ReturnType<typeof normalizeBookingDraft>> {
   if (extraction.confidence < BOOKING_AI_CONFIDENCE_THRESHOLD) {
     return {};
@@ -793,25 +821,26 @@ function bookingDraftFromAiExtraction(
 
   const fields = extraction.fields ?? {};
   const next: Partial<ReturnType<typeof normalizeBookingDraft>> = {};
+  const sourceText = normalizedAssistantText(sourceMessage);
+  const isSourceText = (value: string) => sourceText.includes(normalizedAssistantText(value));
 
-  if (!current.fullName && trustedBookingAiField(extraction, "fullName") && fields.fullName && !isInvalidBookingFullName(fields.fullName)) {
+  if (!current.fullName && trustedBookingAiField(extraction, "fullName") && fields.fullName && isSourceText(fields.fullName) && !isInvalidBookingFullName(fields.fullName)) {
     next.fullName = fields.fullName;
   }
-  if (!current.phone && trustedBookingAiField(extraction, "phone") && fields.phone && isValidBookingPhone(fields.phone)) {
-    next.phone = fields.phone.replace(/[^\d+]/g, "");
+  if (!current.phone && trustedBookingAiField(extraction, "phone") && fields.phone && isValidBookingPhone(fields.phone) &&
+      toAsciiDigits(sourceMessage).replace(/\D/g, "").includes(toAsciiDigits(fields.phone).replace(/\D/g, ""))) {
+    next.phone = toAsciiDigits(fields.phone).replace(/[^\d+]/g, "");
   }
-  if (!current.email && trustedBookingAiField(extraction, "email") && fields.email) {
+  if (!current.email && trustedBookingAiField(extraction, "email") && fields.email && isSourceText(fields.email)) {
     next.email = fields.email;
   }
-  if (!current.city && trustedBookingAiField(extraction, "city") && fields.city) {
+  if (!current.city && trustedBookingAiField(extraction, "city") && fields.city && isSourceText(fields.city)) {
     next.city = fields.city;
   }
   if (!current.serviceCategory && trustedBookingAiField(extraction, "serviceCategory") && fields.serviceCategory) {
     next.serviceCategory = fields.serviceCategory;
   }
-  if (!current.summary && trustedBookingAiField(extraction, "summary") && fields.summary && isInformativeBookingSummary(fields.summary)) {
-    next.summary = fields.summary;
-  }
+  // The review must show the client's actual description, never model-authored legal prose.
   if (trustedBookingAiField(extraction, "urgency") && fields.urgency) {
     next.urgency = fields.urgency;
   }
@@ -821,7 +850,7 @@ function bookingDraftFromAiExtraction(
   if (trustedBookingAiField(extraction, "availabilityPreference") && fields.availabilityPreference) {
     const preference = availabilityPreferenceSchema.safeParse({
       date: fields.availabilityPreference.date ?? undefined,
-      label: fields.availabilityPreference.label ?? undefined,
+      label: undefined,
       timeWindow: fields.availabilityPreference.timeWindow ?? undefined,
       fromTime: fields.availabilityPreference.fromTime ?? undefined,
       toTime: fields.availabilityPreference.toTime ?? undefined
@@ -844,6 +873,7 @@ export function inferPublicConsultationServiceCategory(message: string) {
 }
 
 function serviceCategoryFromMessage(text: string) {
+  if (isAssaultMatter(text)) return DEFAULT_ASSISTANT_SERVICE_CATEGORY;
   if (
     containsAny(text, [
       "claim",
@@ -1037,7 +1067,8 @@ function likelyNameOnly(text: string) {
   ) {
     return false;
   }
-  return value.split(/\s+/).length <= 5;
+  if (containsAny(normalized, ["hello", "thank", "مرحبا", "شكرا", "محتاج", "اهلا", "استشاره", "مراجعه", "تفسير", "اتهجم", "اعتداء", "تهديد", "ضرب", "حصل", "عندي", "موضوع", "واضح", "فاهم", "معرفش", "لا اعرف", "not sure", "don't know"])) return false;
+  return /^[\p{L}\p{M} .'-]+$/u.test(value) && value.split(/\s+/).length >= 2 && value.split(/\s+/).length <= 5;
 }
 
 function isInvalidBookingFullName(value: string) {
@@ -1307,68 +1338,8 @@ function bookingConversationResponse(input: {
 }
 
 function bookingQuestionMessage(locale: "ar" | "en", field?: string) {
-  const messages = {
-    ar: {
-      fullName: "تمام. اكتب اسمك الكامل كما تحب أن يظهر في طلب الاستشارة.",
-      phone: "ما رقم الهاتف المناسب للتواصل معك؟",
-      serviceCategory: "ما الخدمة الأقرب لطلبك؟ يمكنك كتابة استشارة قانونية، شركات وأعمال، عقارات، أو تحصيل وتسويات.",
-      summary: `اكتب وصفًا قصيرًا لما تحتاجه من المكتب، ${BOOKING_SUMMARY_MIN_LENGTH} حرفًا على الأقل، بدون إرسال مستندات حساسة هنا.`,
-      startsAt: "اختر موعدًا مناسبًا من المواعيد المتاحة داخل المحادثة.",
-      fallback: `أستطيع تنظيم حجز الاستشارة فقط. اكتب الاسم والهاتف ووصفًا للمشكلة لا يقل عن ${BOOKING_SUMMARY_MIN_LENGTH} حرفًا والموعد المناسب إن وجد.`
-    },
-    en: {
-      fullName: "Great. Please write your full name for the consultation request.",
-      phone: "What phone number should the team use to contact you?",
-      serviceCategory: "Which service is closest to your request? You can write legal consultation, corporate and business, real estate, or claims and collections.",
-      summary: `Please write a short description of what you need from the office, at least ${BOOKING_SUMMARY_MIN_LENGTH} characters. Do not send sensitive documents here.`,
-      startsAt: "Choose a suitable time from the available slots inside the chat.",
-      fallback: `I can organize consultation booking only. Send your name, phone, a request description of at least ${BOOKING_SUMMARY_MIN_LENGTH} characters, and your preferred time if available.`
-    }
-  };
-
-  return messages[locale][(field as keyof (typeof messages)["en"]) || "fallback"] ?? messages[locale].fallback;
-}
-
-function bookingFollowUpMessage(locale: "ar" | "en", field: string | undefined, latestMessage: string, mergeResult?: BookingMergeResult) {
-  if (mergeResult?.aiUnavailable) {
-    return bookingAiUnavailableMessage(locale);
-  }
-  if (mergeResult?.lowConfidence) {
-    return mergeResult.clarifyingQuestion || unclearBookingFieldMessage(locale, field);
-  }
-  if (mergeResult?.clarifyingQuestion && field !== "startsAt") {
-    return mergeResult.clarifyingQuestion;
-  }
-  if (shouldClarifyBookingField(field, latestMessage)) {
-    return unclearBookingFieldMessage(locale, field);
-  }
-  return bookingQuestionMessage(locale, field);
-}
-
-function bookingAiUnavailableMessage(locale: "ar" | "en") {
-  return locale === "ar"
-    ? `تعذر فهم الرسالة تلقائيًا الآن. اكتب البيانات في رسالة واحدة: الاسم، رقم الهاتف، وصف المشكلة ${BOOKING_SUMMARY_MIN_LENGTH} حرفًا على الأقل، والموعد المناسب إن وجد.`
-    : `Automatic message understanding is unavailable right now. Send the details in one message: name, phone, a request description of at least ${BOOKING_SUMMARY_MIN_LENGTH} characters, and preferred time if available.`;
-}
-
-function shouldClarifyBookingField(field: string | undefined, latestMessage: string) {
-  const text = normalizedAssistantText(latestMessage);
-  if (!field || text.length < 2) {
-    return false;
-  }
-  if (containsAny(text, ["book consultation", "check reference", "حجز استشارة", "استعلام", "مرجع"])) {
-    return false;
-  }
-  return field === "serviceCategory";
-}
-
-function unclearBookingFieldMessage(locale: "ar" | "en", field: string | undefined) {
-  if (field === "serviceCategory") {
-    return locale === "ar"
-      ? "الإجابة مش واضحة بالنسبة لنوع الخدمة. اكتب الأقرب: استشارات حسب المجال، الشركات والعقود التجارية، مراجعة قانونية عقارية، أو المطالبات المالية والتسويات. لو الموضوع إيصال أمانة أو شيك أو مديونية، اختار المطالبات المالية والتسويات."
-      : "I could not identify the service from that answer. Write the closest service: consultations by area, companies and commercial contracts, real estate legal review, or debt claims and settlement. For trust receipts, cheques, debt, or collections, choose debt claims and settlement.";
-  }
-  return locale === "ar" ? "الإجابة مش واضحة. من فضلك أعد كتابة المطلوب بشكل أبسط." : "That answer is not clear. Please write it again more simply.";
+  const questions = bookingAssistantCopy[locale].questions;
+  return questions[field as keyof typeof questions] ?? questions.fallback;
 }
 
 function availabilityQuestionMessage(locale: "ar" | "en") {
@@ -1609,6 +1580,39 @@ export function isCrossClientDataRequest(message: string) {
     "someone else",
     "not my case"
   ]);
+}
+
+function isAssaultMatter(message: string) {
+  return containsAny(normalizedAssistantText(message), ["اتهجم", "اعتداء", "اعتدي", "اعتدى", "assault", "attacked"]);
+}
+
+function isCategoryOnlyMessage(message: string) {
+  const text = normalizedAssistantText(message);
+  return ["legal-consultation", "corporate-business-services", "real-estate-legal-support", "claims-collections"]
+    .some(category => [category, serviceCategoryLabel(category, "ar"), serviceCategoryLabel(category, "en")]
+      .some(label => normalizedAssistantText(label) === text));
+}
+
+function isBookingMatterDescription(message: string) {
+  const text = normalizedAssistantText(message);
+  if (containsAny(text, ["هكسب", "اكسب", "اعمل ايه", "what should i do", "will i win", "case outcome"])) return false;
+  return /(?:book|consultation|lawyer|review|حجز|استشار|محامي)/i.test(text) ||
+    /^(?:محتاج|عايز|اريد|أريد)\s+(?:تفسير|مراجعه)/u.test(text);
+}
+
+function isPublicLegalAdviceRequest(message: string) {
+  return isLegalAdviceRequest(message) && !isBookingMatterDescription(message);
+}
+
+function isRecognizedContactReply(message: string, draft: BookingDraft) {
+  const text = message.trim();
+  const phoneText = text.replace(/^(?:my phone(?: is)?|phone|رقمي|رقم الهاتف|هاتفي|تليفوني)\s*[:：]?\s*/i, "");
+  const emailText = text.replace(/^(?:my email(?: is)?|email|بريدي|البريد|ايميلي)\s*[:：]?\s*/i, "");
+  return Boolean(
+    (draft.fullName && (text === draft.fullName || text.replace(/^(?:my name is|i am|انا اسمي|اسمي|الاسم)\s+/i, "").trim() === draft.fullName) && !isLegalAdviceRequest(text)) ||
+    (draft.phone && isValidBookingPhone(phoneText) && /^[+\d٠-٩۰-۹().\s-]+$/u.test(phoneText)) ||
+    (draft.email && emailText.toLowerCase() === draft.email.toLowerCase())
+  );
 }
 
 function normalizedAssistantText(message: string) {
