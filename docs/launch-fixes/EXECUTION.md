@@ -323,17 +323,59 @@ Primary owner worktree untouched. One task at a time. No merges to main, no depl
 
 ## TASK 06 — ClamAV Upload Verification
 
-- Status: NOT STARTED
-- Exact scope: real ClamAV scan through the authenticated upload endpoint
-  in test/staging env (clean doc, EICAR, bad type, oversize, scanner-down);
-  prove scanner verdict (not file-type rejection); rejected content not
-  downloadable; fail-closed on downtime.
-- Checklist:
-  - [ ] Inspect malware-scan config + upload validation
-  - [ ] Endpoint tests against real test ClamAV instance
-  - [ ] Cleanup synthetic artifacts, restore settings
-- Files changed: —
-- Tests run: —
-- Runtime evidence: —
-- Missing environment: —
-- Commit: —
+- Status: BLOCKED — no test scanner available (runtime attempts stopped
+  per protocol; no code written)
+- Implementation inspected (current source, no changes): `src/server/
+  storage/malware-scan.ts` — zINSTREAM scan via Unix socket
+  (`CLAMAV_SOCKET_PATH`, default `/run/clamav/clamd.ctl`) or TCP
+  (`CLAMAV_HOST`/`CLAMAV_PORT`, default 3310); mode `MALWARE_SCAN_MODE`
+  (`required|disabled`; required in prod, disabled otherwise); fail-closed
+  503 `MALWARE_SCANNER_UNAVAILABLE` on transport failure, 422
+  `MALWARE_DETECTED` on `FOUND`; existing `pingClamAv` zPING used by
+  deploy preflight.
+- Probes performed (2, timed, read-only): (1) env presence — `MALWARE_
+  SCAN_MODE`, `CLAMAV_HOST`, `CLAMAV_PORT`, `CLAMAV_SOCKET_PATH`,
+  `CLAMAV_TIMEOUT_MS`, `UPLOADS_DIR` all unset in this environment;
+  (2) TCP `127.0.0.1:3310` — REFUSED. No daemon, no socket path on this
+  Windows host (socket default is Linux-only). Nothing installed,
+  no services touched, no ports exposed.
+- Checks performed: none beyond probes — no scanner to exercise, so no
+  clean/EICAR/type/size/downtime evidence exists. No EICAR fixture was
+  created (nothing to send it to; kept out of Git/storage by design).
+  SCANNER-ADAPTER and full-endpoint verification both NOT RUN. Existing
+  unit coverage (`malware-scan`, storage-contract, batch3/9 file specs)
+  stands as UNIT-ONLY, not real-scanner proof.
+- Missing prerequisites: designated TEST `clamd` (socket or TCP) with
+  loaded signatures + `MALWARE_SCAN_MODE`/`CLAMAV_*` test configuration +
+  disposable DB/uploads from the shared table below.
+- Files changed: `docs/launch-fixes/EXECUTION.md` only.
+- Commit: (pending)
+
+---
+
+## SHARED TEST ENVIRONMENT — OWNER SETUP REQUIRED
+
+Consolidated requirement table for all blocked runtime verification
+(TASK 01 browser flow, TASK 03 restore drill, TASK 04 TOTP drill,
+TASK 05 sandbox flow, TASK 06 scanner checks). Variable NAMES only.
+
+| Requirement | Already available? | Exact setup needed | Tasks unblocked |
+|---|---|---|---|
+| Isolated test application instance (own port, test env, no prod data) | NO | Test instance bound to the disposable DB/uploads below; `APP_ORIGIN` pointing at it | 01, 03, 04, 05, 06 |
+| Disposable PostgreSQL source database (synthetic-only, migratable/seedable) | NO | Pre-created empty database + connection designation (`DATABASE_URL`); CREATE on its own schema + normal DML; superuser NOT required | 01, 03, 04, 05, 06 |
+| Separate empty database for restore testing | NO | Second pre-created empty database (`PAIRED_RESTORE_DATABASE_URL`); same privilege level | 03 |
+| Synthetic staff/client accounts | CODE-READY | Existing `prisma db seed` demo users once DB exists | 01, 04, 05, 06 |
+| Separate test uploads + restore directories | NO | Writable temp dirs for `UPLOADS_DIR` (test) and restore target; outside web roots | 01, 03, 06 |
+| Designated ClamAV test scanner | NO | TEST `clamd` with loaded signatures via `CLAMAV_SOCKET_PATH` or `CLAMAV_HOST`/`CLAMAV_PORT`; `MALWARE_SCAN_MODE=required` + `CLAMAV_TIMEOUT_MS` for the test instance | 06 |
+| Paymob TEST configuration | NO | TEST `PAYMOB_SECRET_KEY`, `PAYMOB_PUBLIC_KEY`, `PAYMOB_HMAC_SECRET` (or `PAYMENT_WEBHOOK_SECRET`), `PAYMOB_PAYMENT_METHOD_IDS`, TEST mode confirmed in Paymob dashboard | 05 |
+| Approved HTTPS staging/callback endpoint | NO | Staging URL + Paymob callback registration + return-URL config; no tunnel without approval | 05 |
+| Application signing/encryption configuration | NO | Test values for `AUTH_SECRET`, `PAYMENT_RECEIPT_SIGNING_SECRET`, `PAYMENT_STATUS_SIGNING_SECRET`, `CLIENT_ACCOUNT_SETUP_SIGNING_SECRET` supplied securely, never in chat | 01, 04, 05 |
+
+Database privileges requested: CREATE + DML inside the two pre-created
+disposable databases only. Pre-created databases are acceptable; superuser
+is NOT required. No paid services, DNS changes, or tunnels without approval.
+
+Non-environment decisions NOT resolved by supplying the above:
+- TASK 03 consistency procedure evidence + manual invocation / off-server-copy limitation
+- TASK 04 readiness rejection of TOTP mode + owner recovery procedure + cross-session replay evidence
+- TASK 01/02/04 completion statuses beyond their runtime drills
