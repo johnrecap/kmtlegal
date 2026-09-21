@@ -228,7 +228,7 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.getByTestId("public-shell")).toHaveAttribute("dir", "rtl");
 
-    await page.getByTestId("public-language-switch").click();
+    await page.getByTestId("public-language-switch").filter({ visible: true }).click();
     await page.waitForURL("/");
 
     await expect(page.locator("html")).toHaveAttribute("dir", "ltr");

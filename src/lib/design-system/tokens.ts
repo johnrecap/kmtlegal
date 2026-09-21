@@ -1,8 +1,10 @@
 export const kmtTokens = {
   color: {
     navy: "#0f172a",
-    gold: "#997b44",
-    goldDark: "#755a26",
+    // Logo-anchored gold (extracted from public/brand/kmt-logo-*.webp|png
+    // via sharp bucket analysis: core #A87830, bright #D0A048).
+    gold: "#a87830",
+    goldDark: "#7c5a24",
     paper: "#ffffff",
     canvas: "#f8fafc",
     ink: "#0f172a",
@@ -31,16 +33,44 @@ export const kmtTokens = {
 } as const;
 
 export const kmtGoldRamp = {
-  50: "#faf6ee",
-  100: "#f4ebda",
-  200: "#e8d6b1",
-  300: "#dcbd85",
-  400: "#c7a363",
-  500: "#b08e50",
-  600: "#997b44",
-  700: "#755a26",
-  800: "#5d471e",
-  900: "#483718"
+  50: "#fbf5ea",
+  100: "#f4e6c9",
+  200: "#e9cf9e",
+  300: "#d8a850",
+  400: "#c79a52",
+  500: "#b8893b",
+  600: "#a87830",
+  700: "#7c5a24",
+  800: "#5c421c",
+  900: "#473318"
+} as const;
+
+/**
+ * Locked public visual direction: deep-black surface family. The public dark
+ * theme reads as deep black (canvas #050505); elevated panels step through
+ * this scale with deliberately subtle differences. Light theme keeps paper.
+ */
+export const kmtBlackScale = {
+  0: "#050505",
+  1: "#080808",
+  2: "#0b0b0b",
+  3: "#101010",
+  hover: "#141414"
+} as const;
+
+/**
+ * KMT logo gold family. Source of truth: public/brand/kmt-logo-source.jpg,
+ * kmt-logo-full.webp, kmt-logo-icon.png (avg #765a2c–#7d602e, highlights
+ * #b6893e/#cca556). Core #a87830, bright #d0a048. Gold signals hierarchy,
+ * interaction, premium detail, and conversion — never large fills.
+ */
+export const kmtGoldFamily = {
+  primary: "#a87830",
+  bright: "#d0a048",
+  muted: "#8a6a35",
+  border: "rgb(208 160 72 / 35%)",
+  glow: "rgb(208 160 72 / 14%)",
+  text: "#eac987"
 } as const;
 
 export const kmtSemanticLight = {
@@ -50,10 +80,10 @@ export const kmtSemanticLight = {
   "surface-muted": "#eceef0",
   border: "#e2e8f0",
   "muted-foreground": "#45464d",
-  primary: "#997b44",
+  primary: "#a87830",
   "primary-foreground": "#0d0a06",
-  accent: "#755a26",
-  ring: "#997b44"
+  accent: "#7c5a24",
+  ring: "#a87830"
 } as const;
 
 export const kmtSemanticDark = {
@@ -63,10 +93,10 @@ export const kmtSemanticDark = {
   "surface-muted": "#1e2127",
   border: "#2e323d",
   "muted-foreground": "#a7b0bf",
-  primary: "#c7a363",
+  primary: "#d0a048",
   "primary-foreground": "#1a1409",
-  accent: "#c7a363",
-  ring: "#c7a363"
+  accent: "#d0a048",
+  ring: "#d0a048"
 } as const;
 
 export const kmtStateDark = {

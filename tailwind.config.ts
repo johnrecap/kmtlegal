@@ -117,7 +117,7 @@ const config: Config = {
       },
       boxShadow: {
         "kmt-popover": "0 10px 15px -3px rgba(15, 23, 42, 0.05), 0 4px 6px -4px rgba(15, 23, 42, 0.05)",
-        "kmt-focus": "0 0 0 3px rgba(153, 123, 68, 0.18)"
+        "kmt-focus": "0 0 0 3px rgba(168, 120, 48, 0.2)"
       }
     }
   },
