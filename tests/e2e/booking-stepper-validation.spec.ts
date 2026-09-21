@@ -225,11 +225,13 @@ test.describe("consultation booking chat", () => {
 
     await chat.locator('input[name="chatMessage"]').fill("will i win");
     await chat.locator('button[type="submit"]').last().click();
-    await expect(page.getByTestId("booking-quick-actions")).toHaveCount(0);
+    await expect(page.getByTestId("booking-quick-book")).toHaveCount(0);
+    await expect(page.getByTestId("booking-quick-inquiry")).toHaveCount(0);
 
     await chat.locator('input[name="chatMessage"]').fill("what should i do");
     await chat.locator('button[type="submit"]').last().click();
-    await expect(page.getByTestId("booking-quick-actions")).toHaveCount(0);
+    await expect(page.getByTestId("booking-quick-book")).toHaveCount(0);
+    await expect(page.getByTestId("booking-quick-inquiry")).toHaveCount(0);
   });
 
   test("shows localized payment review labels instead of service slugs", async ({ page }) => {
