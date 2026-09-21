@@ -35,7 +35,10 @@ pm2 logs kmtlegal --lines 120 --nostream
 - Full local Vitest suite: **92 files passed, 5 skipped; 658 tests passed, 53 skipped**. Environment-dependent skipped suites were not counted as passes.
 - Focused intake/contract/conversation server suite: **81 tests passed**.
 - TypeScript (`tsc --noEmit`) and Next ESLint: passed.
-- Final browser and build results are recorded after integration below.
+- Browser regression coverage: **57 unique scenarios passed across sequential runs** in the three booking specs (`batch5-chat-recovery`, `booking-stepper-validation`, `booking-recovery`), including Arabic/English and 390/768/1440px viewports. The final run used the existing `http://localhost:3000` server with mocked booking/payment writes. Responsive-header selectors and old request-count expectations were updated; affected cases were rerun. Arabic mobile screenshot visually reviewed.
+- Latest integrated intake/provider/UI regression subset: **49 tests passed**.
+- Production build: **not completed locally**. `npm run build` successfully generated Prisma Client, then Next compilation terminated with `FATAL ERROR: Zone Allocation failed - process out of memory`, even with one worker and a 2048MB heap limit. Earlier isolated dev-server/browser runs also exhausted local memory; no successful production build is claimed.
+- The server update must complete its build and health gates before deployment can be considered verified.
 - No real provider, payment gateway, production database, or deployed booking was exercised.
 
 ## Deployment
