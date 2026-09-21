@@ -156,18 +156,17 @@ describe("public consultation contract", () => {
     expect(source).toContain("createPublicConsultationCheckout");
 
     const startsAtBranch = source.indexOf('if (missingFields.length === 1 && missingFields.includes("startsAt"))');
-    const aiFallbackBranch = source.indexOf("if ((mergeResult.aiUnavailable || mergeResult.lowConfidence) && firstNonSlotMissing)");
     expect(startsAtBranch).toBeGreaterThan(-1);
-    expect(aiFallbackBranch).toBeGreaterThan(-1);
-    expect(startsAtBranch).toBeLessThan(aiFallbackBranch);
+    expect(source).not.toContain("bookingAiUnavailableMessage");
   });
 
   it("shows the minimum request-description length in booking assistant copy", () => {
     const source = readFileSync(join(process.cwd(), "src/server/consultations/consultation-assistant-service.ts"), "utf8");
 
-    expect(source).toContain("const BOOKING_SUMMARY_MIN_LENGTH = 20");
-    expect(source).toContain("${BOOKING_SUMMARY_MIN_LENGTH} حرفًا على الأقل");
-    expect(source).toContain("at least ${BOOKING_SUMMARY_MIN_LENGTH} characters");
+    const copy = readFileSync(join(process.cwd(), "src/content/booking-assistant-copy.ts"), "utf8");
+    expect(copy).toContain("BOOKING_SUMMARY_MIN_LENGTH = 20");
+    expect(copy).toContain("${BOOKING_SUMMARY_MIN_LENGTH} حرفًا على الأقل");
+    expect(copy).toContain("at least ${BOOKING_SUMMARY_MIN_LENGTH} characters");
     expect(source).toContain("isInformativeBookingSummary(body.summary)");
   });
 
@@ -466,7 +465,8 @@ describe("public consultation contract", () => {
         };
         expect(bookingResult.draft.serviceCategory).toBe("");
         expect(bookingResult.draft.summary).toBe("");
-        expect(bookingResult.message).toContain("ملخصًا أوضح");
+        expect(bookingResult.message).toContain("اسمك الكامل");
+        expect(bookingResult.message).not.toContain("ملخصًا أوضح");
         expect(bookingResult.missingFields).toContain("summary");
         expect(bookingResult.missingFields).not.toContain("serviceCategory");
       }
@@ -588,7 +588,8 @@ describe("public consultation contract", () => {
       });
 
       const bookingResult = result as unknown as { message: string; missingFields: string[] };
-      expect(bookingResult.message).toContain("تعذر فهم الرسالة تلقائيًا");
+      expect(bookingResult.message).toContain("اسمك الكامل");
+      expect(bookingResult.message).not.toContain("في رسالة واحدة");
       expect(bookingResult.missingFields.length).toBeGreaterThan(0);
     });
   });

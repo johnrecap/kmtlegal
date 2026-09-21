@@ -31,6 +31,15 @@
 - Phrases that claim final legal advice are rejected.
 - Non-OpenAI-compatible providers must be wrapped behind the same adapter boundary.
 
+## Booking intake recovery (2026-09-21)
+
+- Known intake actions and standalone contact replies bypass the model. Remaining extraction receives the current missing field and collected-field context.
+- `AI_STRUCTURED_OUTPUTS=off` preserves compatibility; opt into `json_schema` only for a verified compatible model/provider. Local output validation remains active in both modes.
+- Safety validation distinguishes extracted intake fields from generated text and handles bounded negative disclaimers without allowing positive guarantees.
+- Privacy-safe provider diagnostics distinguish timeout, provider, schema and safety failure; intake progress logs include no client field values.
+- Public booking retains `recordRun: false`; do not assume intake runs appear in the `AiProviderRun` table.
+- Operational evidence and limits: `docs/reviews/2026-09-21/booking-intake-recovery.md`.
+
 ## Tests
 
 - `tests/server/ai-gateway.test.ts`

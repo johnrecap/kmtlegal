@@ -8,6 +8,7 @@ export type AIProviderConfig = {
   timeoutMs: number;
   maxTokens: number;
   temperature: number;
+  structuredOutputs?: "json_schema" | "off";
 };
 
 export function getAIProviderConfig(): AIProviderConfig {
@@ -20,7 +21,8 @@ export function getAIProviderConfig(): AIProviderConfig {
     model: process.env.AI_MODEL || defaultModelForProvider(provider),
     timeoutMs: boundedNumberFromEnv("AI_TIMEOUT_MS", 30_000, 1_000, 60_000),
     maxTokens: Math.trunc(boundedNumberFromEnv("AI_MAX_TOKENS", 1200, 100, 8_000)),
-    temperature: boundedNumberFromEnv("AI_TEMPERATURE", 0.2, 0, 2)
+    temperature: boundedNumberFromEnv("AI_TEMPERATURE", 0.2, 0, 2),
+    structuredOutputs: process.env.AI_STRUCTURED_OUTPUTS === "json_schema" ? "json_schema" : "off"
   };
 }
 

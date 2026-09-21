@@ -119,6 +119,12 @@ type AssistantApiBody = {
     appointment?: { title: string; startsAt: string; status: string };
     appointments?: Array<{ title: string; startsAt: string; status: string }>;
     clientAccountSetup?: ClientAccountSetupAction | null;
+    intake?: {
+      status: "understood" | "degraded" | "needs_clarification" | "legal_boundary";
+      progressed: boolean;
+      nextField: string | null;
+    };
+    categorySuggestion?: { current: string; suggested: string };
   };
   error?: {
     message?: string;
@@ -191,7 +197,9 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   const [readyToCheckout, setReadyToCheckout] = useState(false);
   const [paymentReview, setPaymentReview] = useState<PaymentReview | null>(null);
   const [freeTextTurnsAfterLanguage, setFreeTextTurnsAfterLanguage] = useState(0);
-  const [failureCount, setFailureCount] = useState(0);
+  const failureCount = useRef(0);
+  const contactOfferShown = useRef(false);
+  const [categorySuggestion, setCategorySuggestion] = useState<{ current: string; suggested: string } | null>(null);
   // Contextual action step: intent (book/inquire) right after language, then
   // matter chips only while the booking still misses a service category.
   // Previous option groups collapse as soon as the flow moves on.
@@ -411,14 +419,23 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
   function appendRecoverableError(message: string) {
     append("assistant", message, "error");
-    const nextFailureCount = failureCount + 1;
-    setFailureCount(nextFailureCount);
-    if (nextFailureCount >= 2) {
+    recordRecoverableFailure();
+  }
+
+  function recordRecoverableFailure() {
+    failureCount.current += 1;
+    if (failureCount.current >= 2 && !contactOfferShown.current) {
+      contactOfferShown.current = true;
       append("assistant", copy.whatsappFallback, "default", {
         actionHref: process.env.NEXT_PUBLIC_KMT_WHATSAPP_URL || "/contact",
         actionLabel: copy.whatsappFallbackLabel
       });
     }
+  }
+
+  function recordProgress() {
+    failureCount.current = 0;
+    contactOfferShown.current = false;
   }
 
   function appendClientAccountSetupMessage(action: ClientAccountSetupAction | null) {
@@ -473,18 +490,22 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
   function startBooking() {
     if (!chatLocale) return;
-    const needsMatter = !draft.serviceCategory.trim();
-    // Matter chips appear only while the category is still missing; the
-    // assistant question names what they are for.
-    setActionStep(needsMatter ? "matter" : null);
-    if (needsMatter) append("assistant", copy.matterPrompt);
-    void sendBookingMessage(copy.book, { userText: copy.book, flow: "booking" });
+    if (!draft.serviceCategory.trim()) {
+      // Selecting a category is a known local choice. Wait for that explicit
+      // choice before asking the server its one next intake question.
+      append("user", copy.book);
+      append("assistant", copy.matterPrompt);
+      setActionStep("matter");
+      return;
+    }
+    setActionStep(null);
+    void sendBookingMessage(copy.book, { userText: copy.book, flow: "booking", event: "start_booking" });
   }
 
   function startBookingWithCategory(label: string, category: string) {
     if (!chatLocale) return;
     setActionStep(null);
-    void sendBookingMessage(label, { userText: label, flow: "booking", draftPatch: { serviceCategory: category } });
+    void sendBookingMessage(label, { userText: label, flow: "booking", event: "select_category", draftPatch: { serviceCategory: category } });
   }
 
   function startInquiry() {
@@ -514,7 +535,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     setLatestResult(null);
     setFreeMessage("");
     setFreeTextTurnsAfterLanguage(0);
-    setFailureCount(0);
+    recordProgress();
+    setCategorySuggestion(null);
     setActionStep("intent");
     setDraft({ ...initialDraft, serviceCategory: initialServiceCategory });
     // One clear action after submit restarts the guided flow in the same
@@ -537,11 +559,6 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       setActionStep(null);
     }
 
-    if (looksLikeLegalAdvice(text)) {
-      append("user", text);
-      append("assistant", copy.legalRefusal);
-      return;
-    }
 
     if (flow === "inquiry" || looksLikeInquiry(text)) {
       await submitInquiryMessage(text);
@@ -579,7 +596,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         appendRecoverableError(errorMessage(body, copy));
         return;
       }
-      setFailureCount(0);
+      recordProgress();
       setLatestResult({ kind: "inquiry", message: body.data?.message ?? copy.inquiryResult, appointments: body.data?.appointments ?? [] });
       append("assistant", body.data?.message ?? copy.inquiryResult, "success");
       for (const appointment of body.data?.appointments ?? []) {
@@ -601,6 +618,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       draftPatch?: Partial<BookingDraft>;
       selectedSlot?: string;
       confirmBooking?: boolean;
+      event?: "start_booking" | "select_category" | "message";
     } = {}
   ) {
     if (options.userText) {
@@ -612,8 +630,21 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     setReadyToCheckout(false);
     setPaymentReview(null);
 
-    const nextDraft = normalizeDraft({ ...draft, ...options.draftPatch });
-    const nextSlot = options.selectedSlot ?? selectedSlot ?? nextDraft.startsAt;
+    const categoryChanged = options.event === "select_category" && options.draftPatch?.serviceCategory !== undefined;
+    const nextDraft = normalizeDraft({ ...draft, ...options.draftPatch, ...(categoryChanged ? { startsAt: "" } : {}) });
+    const nextSlot = categoryChanged ? "" : options.selectedSlot ?? selectedSlot ?? nextDraft.startsAt;
+    // Persist a category choice before the request so a failed request cannot
+    // make the next retry silently lose it. A category change also invalidates
+    // a prior slot and payment review before its request leaves the browser.
+    setDraft(nextDraft);
+    if (categoryChanged) {
+      setSelectedSlot("");
+      setAvailableSlots([]);
+      setSlotWindow(null);
+      setReadyToConfirm(false);
+      setReadyToCheckout(false);
+      setPaymentReview(null);
+    }
     const restoreUnprocessedMessage = () => {
       if (!options.confirmBooking && options.selectedSlot === undefined) setFreeMessage(message);
     };
@@ -625,6 +656,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         body: JSON.stringify({
           locale: activeLocale,
           message,
+          event: options.event ?? "message",
           draft: nextDraft,
           selectedSlot: nextSlot,
           confirmBooking: options.confirmBooking
@@ -645,9 +677,20 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         return;
       }
 
-      setFailureCount(0);
+      const noProgress = data.intake?.progressed === false &&
+        (data.intake.status === "degraded" || data.intake.status === "needs_clarification" || data.intake.status === "legal_boundary");
+      const progressed = !noProgress && hasBookingProgress(data, nextDraft);
+      if (progressed) {
+        recordProgress();
+      }
       const updatedDraft = normalizeDraft({ ...nextDraft, ...data.draft });
       setDraft(updatedDraft);
+      setCategorySuggestion(data.categorySuggestion ?? null);
+      if (data.intake?.nextField === "serviceCategory") {
+        setActionStep("matter");
+      } else if (data.intake) {
+        setActionStep(null);
+      }
       setAvailableSlots(data.availableSlots ?? []);
       setSlotWindow(data.slotWindow ?? null);
       // The server may explicitly clear a stale or unavailable appointment.
@@ -655,7 +698,10 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       setReadyToConfirm(Boolean(data.readyToConfirm));
       setReadyToCheckout(Boolean(data.readyToCheckout));
       setPaymentReview(data.paymentReview ?? null);
-      append("assistant", data.message ?? copy.scopeReply, data.reference ? "success" : "default");
+      append("assistant", data.message ?? copy.scopeReply, data.reference ? "success" : noProgress ? "error" : "default");
+      if (noProgress) {
+        recordRecoverableFailure();
+      }
 
       if (data.reference) {
         setLatestResult({ kind: "booking", reference: data.reference, appointments: data.appointment ? [data.appointment] : [] });
@@ -700,6 +746,18 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       flow: "booking",
       selectedSlot: slot.startsAt,
       draftPatch: { startsAt: slot.startsAt, preferredMode: slot.mode }
+    });
+  }
+
+  function respondToCategorySuggestion(category: string, message: string) {
+    if (isBusy) return;
+    setCategorySuggestion(null);
+    setActionStep(null);
+    void sendBookingMessage(message, {
+      userText: message,
+      flow: "booking",
+      event: "select_category",
+      draftPatch: { serviceCategory: category }
     });
   }
 
@@ -751,7 +809,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         appendRecoverableError(copy.fallbackError);
         return;
       }
-      setFailureCount(0);
+      recordProgress();
       append("assistant", body.data?.message ?? copy.checkoutCreated, "success");
       if (body.data?.reference) {
         append("assistant", `${copy.reference}: ${body.data.reference}`, "success");
@@ -846,10 +904,25 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
           */}
           <AnimatedList className="items-stretch gap-5" delay={160}>
             {requestedLawyer ? <LawyerNoticeRow key="lawyer-notice" label={pageCopy.requestedLawyer} value={requestedLawyer} /> : null}
-            {messages.map((message) => (
-              <ChatBubble key={message.id} message={message} />
+            {messages.map((message, index) => (
+              <ChatBubble
+                key={message.id}
+                message={message}
+                showAssistantAvatar={message.role === "assistant" && (index === 0 || messages[index - 1]?.role !== "assistant")}
+              />
             ))}
             {!chatLocale ? <LanguageChoicePanel key="language-choice" copy={copy} onSelect={chooseLanguage} /> : null}
+            {categorySuggestion ? (
+              <CategorySuggestionPanel
+                key={`category-suggestion-${categorySuggestion.current}-${categorySuggestion.suggested}`}
+                copy={copy}
+                currentLabel={categoryLabel(content, categorySuggestion.current)}
+                suggestedLabel={categoryLabel(content, categorySuggestion.suggested)}
+                isBusy={isBusy}
+                onKeep={() => respondToCategorySuggestion(categorySuggestion.current, copy.keepCategory)}
+                onChange={() => respondToCategorySuggestion(categorySuggestion.suggested, copy.useSuggestedCategory)}
+              />
+            ) : null}
             {availableSlots.length ? <SlotChoicePanel key="slot-choice" locale={activeLocale} slotWindow={slotWindow ?? undefined} slots={availableSlots} onChoose={chooseSlot} /> : null}
             {readyToConfirm ? (
               <div key="confirm-row" className="flex flex-wrap justify-end gap-2">
@@ -954,6 +1027,56 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
  * System/helper row: small neutral line with icon + short text, never a
  * bubble (lawyer pre-selection notice, etc.).
  */
+function hasBookingProgress(data: NonNullable<AssistantApiBody["data"]>, priorDraft: BookingDraft) {
+  const returned = data.draft;
+  const draftChanged = Boolean(returned && (
+    (returned.fullName !== undefined && returned.fullName !== priorDraft.fullName) ||
+    (returned.phone !== undefined && returned.phone !== priorDraft.phone) ||
+    (returned.email !== undefined && returned.email !== priorDraft.email) ||
+    (returned.city !== undefined && returned.city !== priorDraft.city) ||
+    (returned.serviceCategory !== undefined && returned.serviceCategory !== priorDraft.serviceCategory) ||
+    (returned.summary !== undefined && returned.summary !== priorDraft.summary) ||
+    (returned.startsAt !== undefined && returned.startsAt !== priorDraft.startsAt)
+  ));
+  return Boolean(data.reference || data.readyToConfirm || data.readyToCheckout || data.availableSlots?.length || data.intake?.progressed || draftChanged);
+}
+
+function categoryLabel(content: PublicContent, category: string) {
+  return content.legalServices.find((service) => service.category === category)?.title ?? category;
+}
+
+function CategorySuggestionPanel({
+  copy,
+  currentLabel,
+  suggestedLabel,
+  isBusy,
+  onKeep,
+  onChange
+}: {
+  copy: BookingChatCopy;
+  currentLabel: string;
+  suggestedLabel: string;
+  isBusy: boolean;
+  onKeep: () => void;
+  onChange: () => void;
+}) {
+  return (
+    <div className="kmt-chat-enter max-w-[36rem] rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] p-3" data-testid="booking-category-suggestion">
+      <p className="text-sm font-semibold text-[var(--kmt-assistant-text)]">{copy.categorySuggestionTitle}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button className={chipButtonClasses} disabled={isBusy} size="sm" type="button" variant="secondary" onClick={onKeep}>
+          <MaterialSymbol className="text-lg" name="check" />
+          {copy.keepCategory}: {currentLabel}
+        </Button>
+        <Button className={chipButtonClasses} disabled={isBusy} size="sm" type="button" variant="secondary" onClick={onChange}>
+          <MaterialSymbol className="text-lg" name="swap_horiz" />
+          {copy.useSuggestedCategory}: {suggestedLabel}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function LawyerNoticeRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-center gap-2 text-center text-xs text-[var(--kmt-assistant-muted)]">
@@ -986,14 +1109,17 @@ function LanguageChoicePanel({ copy, onSelect }: { copy: BookingChatCopy; onSele
  * user = warm gold-tinted surface; info = the assistant info card
  * (what-next / after-submit: icon-or-numbered rows, subtle boundary).
  */
-function ChatBubble({ message }: { message: ChatMessage }) {
+function ChatBubble({ message, showAssistantAvatar = true }: { message: ChatMessage; showAssistantAvatar?: boolean }) {
   const isUser = message.role === "user";
+  const assistantMarker = showAssistantAvatar
+    ? <KmtBrandLogo className="shrink-0" label="" shape="circle" size="sm" variant="mark" />
+    : <span aria-hidden="true" className="h-8 w-8 shrink-0" />;
 
   if (message.kind === "info" && message.info) {
     const info = message.info;
     return (
       <div className="kmt-chat-enter flex items-end gap-3">
-        <KmtBrandLogo className="shrink-0" label="" shape="circle" size="sm" variant="mark" />
+        {assistantMarker}
         <div className="max-w-[76%] rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] px-4 py-3 max-sm:max-w-[88%] max-sm:px-3.5">
           <p className="flex items-center gap-2 text-sm font-semibold text-[var(--kmt-assistant-text)]">
             <MaterialSymbol className="text-lg text-[var(--kmt-public-gold)]" name="info" />
@@ -1028,9 +1154,7 @@ function ChatBubble({ message }: { message: ChatMessage }) {
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] text-[var(--kmt-public-gold)]">
             <MaterialSymbol className="text-lg" name={message.tone === "error" ? "error" : "check_circle"} />
           </span>
-        ) : (
-          <KmtBrandLogo className="shrink-0" label="" shape="circle" size="sm" variant="mark" />
-        )
+        ) : assistantMarker
       ) : null}
       <div
         className={cn(
@@ -1255,9 +1379,6 @@ function looksLikeInquiry(value: string) {
   return /booking reference|check reference|reference number|previous reference|cons-|مرجع|استعلام|رقم الطلب|رقم الحجز/.test(text);
 }
 
-function looksLikeLegalAdvice(value: string) {
-  return /legal advice|will i win|what should i do|case outcome|interpret|رأيك|رايك|هكسب|اكسب|اعمل ايه|اعمل إيه|فسر|تفسير/.test(normalizeText(value));
-}
 
 function normalizeText(value: string) {
   return value

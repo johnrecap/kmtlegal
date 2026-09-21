@@ -1,4 +1,4 @@
-﻿import { publicLegalServicesEn as legalServices, publicServiceCategoriesEn as serviceCategories } from "./public-services";
+import { publicLegalServicesEn as legalServices, publicServiceCategoriesEn as serviceCategories } from "./public-services";
 
 const practiceAreaMatrix = legalServices.map((service) => ({
   key: service.areaKey,
@@ -427,17 +427,17 @@ export const publicContentEn = {
     title: "Consultation request assistant",
     assistantName: "KMT Consultation Assistant",
     status: "Booking only",
-    scope: "Booking and reference checks only. No legal advice.",
+    scope: "Consultation booking and reference checks. No legal advice.",
     onlineNow: "Assistant ready",
     humanReviewOnly: "Human review only",
     noLegalAdvice: "No legal advice",
     secureConfidential: "Confidential intake",
     humanReviewBadge: "Human Review",
     fastResponse: "Reviewed follow-up",
-    languagePrompt: "Please choose the conversation language. / من فضلك اختر لغة المحادثة.",
+    languagePrompt: "Choose a language. / اختر اللغة.",
     languageArabic: "العربية",
     languageEnglish: "English",
-    greeting: "Hello. I can help you book a consultation or check a previous booking reference. I will collect only the details needed for team review.",
+    greeting: "Hello. I can arrange a consultation or check a booking reference.",
     intentPrompt: "How can we help you today?",
     matterPrompt: "Choose the consultation area to continue.",
     book: "Book consultation",
@@ -479,6 +479,9 @@ export const publicContentEn = {
     resumePaymentDraft: "We restored your previous details. You can choose a new time or edit the request without starting over.",
     whatsappFallback: "The request could not be completed more than once. You can contact the office directly and we will help with booking.",
     whatsappFallbackLabel: "Contact the office",
+    categorySuggestionTitle: "Suggested consultation area",
+    keepCategory: "Keep this area",
+    useSuggestedCategory: "Use suggested area",
     nextStepsAfterBooking: "What happens next: the team reviews the request, then contacts you to confirm the appointment or request missing details.",
     preferredSlot: "Preferred appointment time",
     preferredSlotHint: "Optional. Office booking slots are reviewed by the team.",
@@ -495,11 +498,11 @@ export const publicContentEn = {
     requestId: "Request id",
     typing: "The assistant is checking the request",
     privacyNote: "Please do not share sensitive documents here. Our team will guide you securely.",
-    trustTitle: "What happens next",
+    trustTitle: "Next steps",
     trustItems: [
-      { icon: "verified_user", label: "Human review", description: "The office team reviews the request before any legal decision." },
-      { icon: "event_available", label: "Timing confirmation", description: "The team contacts you to confirm suitability and timing." },
-      { icon: "lock", label: "Limited data", description: "Do not send documents in this public conversation." }
+      { icon: "verified_user", label: "Human review", description: "The office reviews the request." },
+      { icon: "event_available", label: "Timing", description: "The team confirms suitability and time." },
+      { icon: "lock", label: "Limited data", description: "Do not send documents here." }
     ]
   },
   paymentReturn: {

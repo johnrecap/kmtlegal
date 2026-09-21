@@ -1,4 +1,4 @@
-﻿import { publicLegalServicesAr as legalServices, publicServiceCategoriesAr as serviceCategories } from "./public-services";
+import { publicLegalServicesAr as legalServices, publicServiceCategoriesAr as serviceCategories } from "./public-services";
 
 const practiceAreaMatrix = legalServices.map((service) => ({
   key: service.areaKey,
@@ -415,17 +415,17 @@ export const publicContentAr = {
     title: "مساعد طلب الاستشارة",
     assistantName: "مساعد طلب الاستشارة",
     status: "حجز فقط",
-    scope: "حجز واستعلام عن مرجع فقط. بدون رأي قانوني.",
+    scope: "حجز استشارات واستعلام عن مرجع. بدون رأي قانوني.",
     onlineNow: "المساعد جاهز",
     humanReviewOnly: "مراجعة بشرية فقط",
     noLegalAdvice: "بدون رأي قانوني",
     secureConfidential: "بيانات محدودة للمراجعة",
     humanReviewBadge: "مراجعة بشرية",
     fastResponse: "متابعة من المكتب",
-    languagePrompt: "من فضلك اختر لغة المحادثة. / Please choose the conversation language.",
+    languagePrompt: "اختر اللغة. / Choose a language.",
     languageArabic: "العربية",
     languageEnglish: "English",
-    greeting: "مرحبًا. أستطيع مساعدتك في حجز استشارة أو الاستعلام عن رقم مرجع سابق. سأجمع فقط البيانات اللازمة لمراجعة الفريق.",
+    greeting: "مرحبًا. أستطيع ترتيب استشارة أو الاستعلام عن رقم مرجع للحجز.",
     intentPrompt: "كيف يمكننا مساعدتك اليوم؟",
     matterPrompt: "اختر مجال الاستشارة للمتابعة.",
     book: "حجز استشارة",
@@ -467,6 +467,9 @@ export const publicContentAr = {
     resumePaymentDraft: "استعدنا بياناتك السابقة. يمكنك اختيار موعد جديد أو تعديل البيانات بدون البدء من الصفر.",
     whatsappFallback: "تعذر إكمال الطلب أكثر من مرة. يمكنك التواصل مع المكتب مباشرة وسنساعدك في الحجز.",
     whatsappFallbackLabel: "التواصل مع المكتب",
+    categorySuggestionTitle: "مجال استشارة مقترح",
+    keepCategory: "الاحتفاظ بهذا المجال",
+    useSuggestedCategory: "استخدام المجال المقترح",
     nextStepsAfterBooking: "ما الذي يحدث بعد ذلك: سيراجع الفريق الطلب، ثم يتواصل معك لتأكيد الموعد أو طلب أي بيانات ناقصة.",
     preferredSlot: "الموعد المفضل",
     preferredSlotHint: "اختياري. مواعيد المكتب تخضع لمراجعة الفريق.",
@@ -483,11 +486,11 @@ export const publicContentAr = {
     requestId: "رقم الطلب",
     typing: "المساعد يراجع الطلب",
     privacyNote: "من فضلك لا تشارك مستندات حساسة هنا. الفريق سيرشدك للطريقة الآمنة.",
-    trustTitle: "ما الذي يحدث بعد ذلك",
+    trustTitle: "الخطوات التالية",
     trustItems: [
-      { icon: "verified_user", label: "مراجعة بشرية", description: "يراجع فريق المكتب الطلب قبل أي قرار قانوني." },
-      { icon: "event_available", label: "تأكيد الموعد", description: "يتواصل الفريق معك لتأكيد الملاءمة والتوقيت." },
-      { icon: "lock", label: "بيانات محدودة", description: "لا ترسل مستندات داخل هذه المحادثة العامة." }
+      { icon: "verified_user", label: "مراجعة بشرية", description: "يراجع المكتب الطلب." },
+      { icon: "event_available", label: "تأكيد الموعد", description: "يؤكد الفريق الملاءمة والوقت." },
+      { icon: "lock", label: "بيانات محدودة", description: "لا ترسل مستندات هنا." }
     ]
   },
   paymentReturn: {
