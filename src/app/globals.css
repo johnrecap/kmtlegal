@@ -978,6 +978,7 @@ a {
 
   .kmt-motion-arrow {
     --kmt-arrow-shift: 0px !important;
+    transform: rotate(var(--kmt-arrow-rotate)) !important;
     transition: none !important;
   }
 }

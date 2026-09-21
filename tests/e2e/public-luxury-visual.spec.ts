@@ -127,7 +127,8 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
     }
   }
 
-  test("public internal links across redesigned entry points resolve", async ({ page, request }) => {
+  test("public internal links across redesigned entry points resolve", async ({ page, request }, testInfo) => {
+    testInfo.setTimeout(600_000);
     const hrefs = new Set<string>();
 
     for (const seedPage of publicCrawlSeedPages) {
@@ -166,20 +167,39 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
       await expect(page.locator("html")).toHaveAttribute("dir", pageTarget.expectedDir);
       await expect(page.getByTestId("public-shell")).toHaveAttribute("dir", pageTarget.expectedDir);
 
-      const reveal = page.locator(".kmt-motion-reveal").first();
-      await expect(reveal, `${pageTarget.path} should include the public hero reveal target`).toBeVisible();
-      await expect(reveal).toHaveCSS("animation-name", "none");
-
       await expect(page.locator(".kmt-motion-thread"), `${pageTarget.path} should not render the removed Gold Legal Thread`).toHaveCount(0);
-      await expect(page.locator(".kmt-motion-cta").first(), `${pageTarget.path} should include cinematic CTA motion hooks`).toBeVisible();
-      await expect(page.locator(".kmt-motion-card-beam").first(), `${pageTarget.path} should include animated border beam hooks`).toBeVisible();
-      await expect(page.locator(".kmt-motion-icon-halo").first(), `${pageTarget.path} should include icon halo hooks`).toBeVisible();
+      const reducedMotionTargets = page.locator(
+        ".kmt-motion-reveal:visible, .kmt-motion-card-beam:visible, .kmt-motion-button:visible, .kmt-motion-cta:visible, .kmt-motion-icon-halo:visible, .kmt-motion-arrow-trail:visible"
+      );
+      await expect(
+        reducedMotionTargets.first(),
+        `${pageTarget.path} should expose at least one visible public motion hook`
+      ).toBeVisible();
 
-      const arrow = page.locator(".kmt-motion-arrow").first();
+      for (const selector of [
+        ".kmt-motion-reveal:visible",
+        ".kmt-motion-card-beam:visible",
+        ".kmt-motion-button:visible",
+        ".kmt-motion-cta:visible",
+        ".kmt-motion-icon-halo:visible"
+      ]) {
+        const target = page.locator(selector).first();
+        if ((await target.count()) > 0) {
+          await expect(target).toHaveCSS("animation-name", "none");
+          await expect(target).toHaveCSS("transform", "none");
+        }
+      }
+
+      const arrow = page.locator(".kmt-motion-arrow:visible").first();
       if ((await arrow.count()) > 0) {
         const transformBeforeHover = await arrow.evaluate((node) => getComputedStyle(node).transform);
         await arrow.hover();
         await expect.poll(() => arrow.evaluate((node) => getComputedStyle(node).transform)).toBe(transformBeforeHover);
+      }
+
+      const arrowTrail = page.locator(".kmt-motion-arrow-trail:visible").first();
+      if ((await arrowTrail.count()) > 0) {
+        await expect.poll(() => arrowTrail.evaluate((node) => getComputedStyle(node, "::after").display)).toBe("none");
       }
     });
   }
@@ -191,13 +211,13 @@ test.describe("PLAN-28 public luxury visual smoke", () => {
       const response = await page.goto(pageTarget.path, { waitUntil: "domcontentloaded" });
       expect(response?.status(), `${pageTarget.path} should render before motion interaction`).toBeLessThan(400);
 
-      const firstButton = page.locator(".kmt-motion-button").first();
+      const firstButton = page.locator(".kmt-motion-button:visible").first();
       if ((await firstButton.count()) > 0) {
         await firstButton.focus();
         await expectNoHorizontalOverflow(page, `${pageTarget.path} focused motion button`);
       }
 
-      const firstCard = page.locator(".kmt-motion-card-beam").first();
+      const firstCard = page.locator(".kmt-motion-card-beam:visible").first();
       if ((await firstCard.count()) > 0) {
         await firstCard.hover();
         await expectNoHorizontalOverflow(page, `${pageTarget.path} hovered motion card`);

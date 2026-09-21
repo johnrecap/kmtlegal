@@ -580,6 +580,15 @@
       "evidence": "tests/ui/product-components.test.tsx"
     },
     {
+      "path": "src/features/auth/two-factor-form.tsx",
+      "contracts": [
+        "InlineFeedback",
+        "TextInput"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/two-factor-form.test.tsx"
+    },
+    {
       "path": "src/features/client/client-assistant-panel.tsx",
       "contracts": [
         "Button"
