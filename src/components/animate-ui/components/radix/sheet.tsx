@@ -69,9 +69,9 @@ function SheetContent({
       <SheetOverlay />
       <SheetContentPrimitive
         className={cn(
-          'bg-background fixed z-50 flex flex-col gap-4 shadow-lg',
-          side === 'right' && 'h-full w-[350px] border-s',
-          side === 'left' && 'h-full w-[350px] border-e',
+          'bg-background text-foreground fixed z-50 flex flex-col gap-4 shadow-lg',
+          side === 'right' && 'h-full w-[min(22rem,100vw)] max-w-full border-s',
+          side === 'left' && 'h-full w-[min(22rem,100vw)] max-w-full border-e',
           side === 'top' && 'w-full h-[350px] border-b',
           side === 'bottom' && 'w-full h-[350px] border-t',
           className,
@@ -81,9 +81,9 @@ function SheetContent({
       >
         {children}
         {showCloseButton && (
-          <SheetClose className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 end-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
+          <SheetClose className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 end-4 grid min-h-11 min-w-11 place-items-center rounded opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none motion-reduce:transition-none">
             <XIcon className="size-4" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">إغلاق</span>
           </SheetClose>
         )}
       </SheetContentPrimitive>

@@ -73,8 +73,14 @@ function summaryAmount(amount: number, currency?: string) {
   if (currency) {
     return formatMoney(amount, currency);
   }
+  return "اختر عملة لعرض القيمة";
+}
 
-  return `${new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 2 }).format(amount)} مجموع خام`;
+function comparisonLabel(current: number, previous?: number) {
+  if (previous === undefined) return null;
+  if (previous === 0) return current === 0 ? "دون تغير عن الفترة السابقة" : "لا توجد قيمة مقابلة في الفترة السابقة";
+  const change = Math.round(((current - previous) / previous) * 100);
+  return `${change > 0 ? "+" : ""}${change}% مقارنة بالفترة السابقة`;
 }
 
 function StatusBars({
@@ -111,14 +117,21 @@ function StatusBars({
                   <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
                     <div className="flex items-center gap-2">
                       <Badge tone={statusTone(item.status)}>{labelFrom(labels, item.status)}</Badge>
-                      <span className="text-kmt-muted">{item.count} سجل</span>
+                      <span className="text-muted-foreground">{item.count} سجل</span>
                     </div>
-                    <span className="font-medium text-kmt-ink">
+                    <span className="font-medium text-foreground">
                       {item.amount !== undefined ? summaryAmount(item.amount, currency) : `${percentage}%`}
                     </span>
                   </div>
-                  <div className="h-2 rounded-full bg-slate-100">
-                    <div className="h-2 rounded-full bg-kmt-gold" style={{ width: `${percentage}%` }} />
+                  <div
+                    aria-label={`${labelFrom(labels, item.status)}: ${item.count} سجل، ${percentage}%`}
+                    aria-valuemax={100}
+                    aria-valuemin={0}
+                    aria-valuenow={percentage}
+                    className="h-2 rounded-full bg-surface-muted"
+                    role="progressbar"
+                  >
+                    <div aria-hidden="true" className="h-2 rounded-full bg-kmt-gold" style={{ width: `${percentage}%` }} />
                   </div>
                 </div>
               );
@@ -136,10 +149,10 @@ const recentPaymentColumns: Array<DataTableColumn<RecentPaymentRow>> = [
     header: "الفاتورة",
     render: (row) => (
       <div>
-        <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/finance?editPaymentId=${row.id}`}>
+        <Link className="font-semibold text-primary hover:underline" href={`/admin/finance?editPaymentId=${row.id}`}>
           {row.invoiceNumber}
         </Link>
-        <p className="mt-1 text-xs text-kmt-muted">{formatDate(row.issueDate)}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{formatDate(row.issueDate)}</p>
       </div>
     )
   },
@@ -169,7 +182,7 @@ function RecentPaymentMobileCard({ row }: { row: RecentPaymentRow }) {
   return (
     <DataRecordCard
       title={
-        <Link className="text-kmt-navy hover:underline" href={`/admin/finance?editPaymentId=${row.id}`}>
+        <Link className="text-primary hover:underline" href={`/admin/finance?editPaymentId=${row.id}`}>
           {row.invoiceNumber}
         </Link>
       }
@@ -228,36 +241,43 @@ export default async function AdminReportsPage({ searchParams }: { searchParams?
           </FilterBar>
         </form>
 
-        {!selectedCurrency ? (
-          <InlineFeedback title="التقارير المالية تعرض مجموعًا خامًا عند اختيار كل العملات. اختر عملة واحدة لقراءة مالية قابلة للمقارنة." tone="warning" />
+        {!selectedCurrency ? <InlineFeedback title="القيم المالية معروضة منفصلة حسب العملة؛ اختر عملة واحدة لإجراء مقارنة مالية مباشرة." tone="info" /> : null}
+
+        {!selectedCurrency && report.finance.byCurrency.length ? (
+          <section aria-labelledby="report-currencies-title">
+            <h2 className="text-lg font-semibold text-foreground" id="report-currencies-title">الإجماليات حسب العملة</h2>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {report.finance.byCurrency.map((item) => (
+                <Card key={item.currency} className="p-4">
+                  <p className="text-sm font-semibold text-muted-foreground"><bdi>{item.currency}</bdi></p>
+                  <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{formatMoney(item.amount, item.currency)}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{item.count} فاتورة</p>
+                </Card>
+              ))}
+            </div>
+          </section>
         ) : null}
 
-          <p className="text-sm text-kmt-muted">{paymentReviewCopy.ar.totals} {paymentReviewCopy.ar.count}: {report.finance.summary.reviewCount}. {paymentReviewCopy.ar.unallocated}: {report.finance.summary.unallocatedReviewCount}</p>
+          <p className="text-sm text-muted-foreground">{paymentReviewCopy.ar.totals} {paymentReviewCopy.ar.count}: {report.finance.summary.reviewCount}. {paymentReviewCopy.ar.unallocated}: {report.finance.summary.unallocatedReviewCount}</p>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="إجمالي الفواتير"
             value={<CountingNumber initiallyStable number={report.finance.summary.invoiceCount} />}
-            meta={summaryAmount(report.finance.summary.totalAmount, selectedCurrency)}
+            meta={<>{summaryAmount(report.finance.summary.totalAmount, selectedCurrency)}{comparisonLabel(report.finance.summary.invoiceCount, report.comparison?.finance.summary.invoiceCount) ? <> · {comparisonLabel(report.finance.summary.invoiceCount, report.comparison?.finance.summary.invoiceCount)}</> : null}</>}
           />
-          <MetricCard label="مدفوع" value={<CountingNumber initiallyStable number={report.finance.summary.paidCount} />} meta={summaryAmount(report.finance.summary.paidAmount, selectedCurrency)} />
-          <MetricCard label="مفتوح" value={<CountingNumber initiallyStable number={report.finance.summary.openCount} />} meta={summaryAmount(report.finance.summary.openAmount, selectedCurrency)} />
-          <MetricCard label="متأخر" value={<CountingNumber initiallyStable number={report.finance.summary.overdueCount} />} meta={summaryAmount(report.finance.summary.overdueAmount, selectedCurrency)} />
+          <MetricCard label="مدفوع" value={<CountingNumber initiallyStable number={report.finance.summary.paidCount} />} meta={<>{summaryAmount(report.finance.summary.paidAmount, selectedCurrency)}{comparisonLabel(report.finance.summary.paidCount, report.comparison?.finance.summary.paidCount) ? <> · {comparisonLabel(report.finance.summary.paidCount, report.comparison?.finance.summary.paidCount)}</> : null}</>} />
+          <MetricCard label="مفتوح" value={<CountingNumber initiallyStable number={report.finance.summary.openCount} />} meta={<>{summaryAmount(report.finance.summary.openAmount, selectedCurrency)}{comparisonLabel(report.finance.summary.openCount, report.comparison?.finance.summary.openCount) ? <> · {comparisonLabel(report.finance.summary.openCount, report.comparison?.finance.summary.openCount)}</> : null}</>} />
+          <MetricCard label="متأخر" value={<CountingNumber initiallyStable number={report.finance.summary.overdueCount} />} meta={<>{summaryAmount(report.finance.summary.overdueAmount, selectedCurrency)}{comparisonLabel(report.finance.summary.overdueCount, report.comparison?.finance.summary.overdueCount) ? <> · {comparisonLabel(report.finance.summary.overdueCount, report.comparison?.finance.summary.overdueCount)}</> : null}</>} />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="كل العملاء" value={<CountingNumber initiallyStable number={report.operations.clients.total} />} meta="ملفات CRM غير محذوفة" />
-          <MetricCard label="عملاء نشطون" value={<CountingNumber initiallyStable number={report.operations.clients.active} />} meta="status = ACTIVE" />
-          <MetricCard
-            label="طلبات استشارة"
-            value={<CountingNumber initiallyStable number={report.operations.consultationsByStatus.reduce((sum, item) => sum + item.count, 0)} />}
-            meta="حسب نطاق التاريخ"
-          />
-          <MetricCard
-            label="مهام داخلية"
-            value={<CountingNumber initiallyStable number={report.operations.tasksByStatus.reduce((sum, item) => sum + item.count, 0)} />}
-            meta="حسب نطاق التاريخ"
-          />
-        </div>
+        <Card className="p-4">
+          <dl className="grid gap-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
+            <div><dt className="text-muted-foreground">كل العملاء</dt><dd className="mt-1 text-lg font-semibold text-foreground">{report.operations.clients.total}</dd></div>
+            <div><dt className="text-muted-foreground">عملاء نشطون</dt><dd className="mt-1 text-lg font-semibold text-foreground">{report.operations.clients.active}</dd></div>
+            <div><dt className="text-muted-foreground">طلبات استشارة في الفترة</dt><dd className="mt-1 text-lg font-semibold text-foreground">{report.operations.consultationsByStatus.reduce((sum, item) => sum + item.count, 0)}</dd></div>
+            <div><dt className="text-muted-foreground">مهام داخلية في الفترة</dt><dd className="mt-1 text-lg font-semibold text-foreground">{report.operations.tasksByStatus.reduce((sum, item) => sum + item.count, 0)}</dd></div>
+          </dl>
+        </Card>
 
         <div className="grid gap-5 xl:grid-cols-2">
           <StatusBars
@@ -294,7 +314,7 @@ export default async function AdminReportsPage({ searchParams }: { searchParams?
                 <CardTitle>أحدث الفواتير داخل نطاق التقرير</CardTitle>
                 <CardDescription>قراءة تشغيلية سريعة، وليست كشف حساب أو تقرير ضريبي.</CardDescription>
               </div>
-              <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/finance">
+              <Link className="text-sm font-semibold text-primary hover:underline" href="/admin/finance">
                 فتح الفواتير
               </Link>
             </div>

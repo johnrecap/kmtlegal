@@ -119,8 +119,8 @@ function documentVisibilityTone(visibility: string) {
 function DetailItem({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <p className="text-xs font-semibold text-kmt-muted">{label}</p>
-      <div className="mt-1 text-sm leading-6 text-kmt-ink">{value || "غير محدد"}</div>
+      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
+      <div className="mt-1 text-sm leading-6 text-foreground">{value || "غير محدد"}</div>
     </div>
   );
 }
@@ -159,14 +159,14 @@ function OverviewTab({
             <DetailItem label="الأولوية" value={<Badge tone={legalCase.priority === "URGENT" || legalCase.priority === "HIGH" ? "pending" : "neutral"}>{labelFrom(priorityLabels, legalCase.priority)}</Badge>} />
             <DetailItem label="المحكمة" value={legalCase.courtName} />
             <DetailItem label="رقم القضية الخارجي" value={legalCase.externalCaseNumber} />
-            <DetailItem label="العميل" value={<Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/clients/${legalCase.client.id}`}>{legalCase.client.fullName}</Link>} />
+            <DetailItem label="العميل" value={<Link className="font-semibold text-primary hover:underline" href={`/admin/clients/${legalCase.client.id}`}>{legalCase.client.fullName}</Link>} />
             <DetailItem label="المحامي المسؤول" value={legalCase.assignedLawyer.name} />
             <DetailItem label="الجلسة القادمة" value={formatDateTime(legalCase.nextSessionAt)} />
           </div>
           {legalCase.summary ? (
-            <div className="mt-5 rounded border border-kmt-border bg-slate-50 p-4">
-              <p className="text-xs font-semibold text-kmt-muted">ملخص القضية</p>
-              <p className="mt-2 text-sm leading-7 text-kmt-ink">{legalCase.summary}</p>
+            <div className="mt-5 rounded border border-border bg-surface-muted p-4">
+              <p className="text-xs font-semibold text-muted-foreground">ملخص القضية</p>
+              <p className="mt-2 text-sm leading-7 text-foreground">{legalCase.summary}</p>
             </div>
           ) : null}
         </CardContent>
@@ -202,12 +202,12 @@ function OverviewTab({
           {legalCase.parties.length ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {legalCase.parties.map((party) => (
-                <div key={party.id} className="rounded border border-kmt-border p-3">
+                <div key={party.id} className="rounded border border-border p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-semibold text-kmt-ink">{party.name}</p>
+                    <p className="font-semibold text-foreground">{party.name}</p>
                     <Badge>{labelFrom(partyTypeLabels, party.partyType)}</Badge>
                   </div>
-                  {party.notes ? <p className="mt-2 text-sm leading-6 text-kmt-muted">{party.notes}</p> : null}
+                  {party.notes ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{party.notes}</p> : null}
                 </div>
               ))}
             </div>
@@ -236,24 +236,24 @@ function SessionsTab({ legalCase }: { legalCase: CaseDetail }) {
         {legalCase.sessions.length ? (
           <div className="space-y-3">
             {legalCase.sessions.map((session) => (
-              <div key={session.id} className="rounded border border-kmt-border p-4">
+              <div key={session.id} className="rounded border border-border p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-kmt-ink">{formatDateTime(session.sessionDate)}</p>
-                    <p className="mt-1 text-sm text-kmt-muted">{session.courtName ?? legalCase.courtName ?? "غير محدد"} · بواسطة {session.createdBy.name}</p>
+                    <p className="font-semibold text-foreground">{formatDateTime(session.sessionDate)}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{session.courtName ?? legalCase.courtName ?? "غير محدد"} · بواسطة {session.createdBy.name}</p>
                   </div>
                   {session.nextSessionDate ? <Badge tone="pending">جلسة قادمة: {formatDateTime(session.nextSessionDate)}</Badge> : null}
                 </div>
                 {session.decision ? (
                   <div className="mt-3">
-                    <p className="text-xs font-semibold text-kmt-muted">القرار</p>
-                    <p className="mt-1 text-sm leading-7 text-kmt-ink">{session.decision}</p>
+                    <p className="text-xs font-semibold text-muted-foreground">القرار</p>
+                    <p className="mt-1 text-sm leading-7 text-foreground">{session.decision}</p>
                   </div>
                 ) : null}
                 {session.nextAction ? (
                   <div className="mt-3">
-                    <p className="text-xs font-semibold text-kmt-muted">الإجراء القادم</p>
-                    <p className="mt-1 text-sm leading-7 text-kmt-ink">{session.nextAction}</p>
+                    <p className="text-xs font-semibold text-muted-foreground">الإجراء القادم</p>
+                    <p className="mt-1 text-sm leading-7 text-foreground">{session.nextAction}</p>
                   </div>
                 ) : null}
               </div>
@@ -278,14 +278,14 @@ function AppointmentsTab({ legalCase }: { legalCase: CaseDetail }) {
         {legalCase.appointments.length ? (
           <div className="space-y-4">
             {legalCase.appointments.map((appointment) => (
-              <div key={appointment.id} className="rounded border border-kmt-border p-4">
+              <div key={appointment.id} className="rounded border border-border p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="font-semibold text-kmt-ink">{appointment.title}</p>
-                    <p className="mt-1 text-sm text-kmt-muted">
+                    <p className="font-semibold text-foreground">{appointment.title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {formatDateTime(appointment.startsAt)} · {labelFrom(appointmentTypeLabels, appointment.type)} · {labelFrom(modeLabels, appointment.mode)}
                     </p>
-                    {appointment.location ? <p className="mt-1 text-sm text-kmt-muted">{appointment.location}</p> : null}
+                    {appointment.location ? <p className="mt-1 text-sm text-muted-foreground">{appointment.location}</p> : null}
                   </div>
                   <Badge tone={appointment.status === "COMPLETED" ? "active" : appointment.status === "CANCELLED" ? "closed" : "pending"}>
                     {labelFrom(appointmentStatusLabels, appointment.status)}
@@ -325,11 +325,11 @@ function TasksTab({ data }: { data: CaseTaskDocumentTabs }) {
           {data.tasks.length ? (
             <div className="space-y-3">
               {data.tasks.map((task) => (
-                <article key={task.id} className="rounded border border-kmt-border p-4" data-task-id={task.id}>
+                <article key={task.id} className="rounded border border-border p-4" data-task-id={task.id}>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="font-semibold text-kmt-ink">{task.title}</p>
-                      <p className="mt-1 text-sm text-kmt-muted">
+                      <p className="font-semibold text-foreground">{task.title}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
                         {task.assignedTo.name} · {formatDateTime(task.dueDate)}
                       </p>
                     </div>
@@ -340,10 +340,10 @@ function TasksTab({ data }: { data: CaseTaskDocumentTabs }) {
                       </Badge>
                     </div>
                   </div>
-                  {task.description ? <p className="mt-3 text-sm leading-7 text-kmt-muted">{task.description}</p> : null}
+                  {task.description ? <p className="mt-3 text-sm leading-7 text-muted-foreground">{task.description}</p> : null}
                   <Accordion type="single" collapsible className="mt-3">
                     <AccordionItem value={`edit-${task.id}`}>
-                      <AccordionTrigger className="text-sm font-semibold text-kmt-navy">
+                      <AccordionTrigger className="text-sm font-semibold text-primary">
                         تعديل المهمة
                       </AccordionTrigger>
                       <AccordionContent>
@@ -404,12 +404,12 @@ function DocumentsTab({ data, documentOptions }: { data: CaseTaskDocumentTabs; d
           {data.documents.length ? (
             <Accordion type="single" collapsible className="space-y-3">
               {data.documents.map((document) => (
-                <AccordionItem key={document.id} value={document.id} className="rounded border border-kmt-border px-4">
+                <AccordionItem key={document.id} value={document.id} className="rounded border border-border px-4">
                   <AccordionTrigger className="hover:no-underline">
                     <span className="flex flex-1 flex-wrap items-start justify-between gap-3 text-start">
                       <span>
-                        <span className="block font-semibold text-kmt-navy">{document.fileName}</span>
-                        <span className="mt-1 block text-sm font-normal text-kmt-muted">
+                        <span className="block font-semibold text-primary">{document.fileName}</span>
+                        <span className="mt-1 block text-sm font-normal text-muted-foreground">
                           {formatBytes(document.fileSize)} · {labelFrom(documentCategoryLabels, document.category)} · {document.uploadedBy.name}
                         </span>
                       </span>
@@ -422,10 +422,10 @@ function DocumentsTab({ data, documentOptions }: { data: CaseTaskDocumentTabs; d
                     </span>
                   </AccordionTrigger>
                   <AccordionContent>
-                    <Link className="font-semibold text-kmt-navy hover:underline" href={`/api/files/${document.id}/download`}>
+                    <Link className="font-semibold text-primary hover:underline" href={`/api/files/${document.id}/download`}>
                       {document.fileName}
                     </Link>
-                    <p className="mt-1 text-sm text-kmt-muted">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {formatBytes(document.fileSize)} · {labelFrom(documentCategoryLabels, document.category)} · {document.uploadedBy.name}
                     </p>
                     <DocumentActionForm

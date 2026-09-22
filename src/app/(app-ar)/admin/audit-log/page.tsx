@@ -23,7 +23,8 @@ export const metadata: Metadata = {
 };
 
 type SearchParams = Record<string, string | string[] | undefined>;
-type AuditRow = Awaited<ReturnType<typeof listAdminAuditLogs>>["items"][number];
+type AuditResult = Awaited<ReturnType<typeof listAdminAuditLogs>>;
+type AuditRow = AuditResult["items"][number];
 type AuditFilterActor = { id: string; name: string };
 type AuditFilterOption = { value: string; label: string };
 
@@ -51,15 +52,15 @@ function categoryTone(category: string) {
 
 function DetailList({ row }: { row: AuditRow }) {
   if (!row.details.length) {
-    return <p className="text-sm text-kmt-muted">لا توجد تفاصيل إضافية للعرض.</p>;
+    return <p className="text-sm text-muted-foreground">لا توجد تفاصيل إضافية للعرض.</p>;
   }
 
   return (
     <dl className="grid gap-2 text-sm">
       {row.details.slice(0, 4).map((detail) => (
         <div key={`${detail.label}-${detail.value}`} className="flex flex-wrap gap-x-2 gap-y-1">
-          <dt className="font-semibold text-kmt-muted">{detail.label}:</dt>
-          <dd className="text-kmt-ink">{detail.value}</dd>
+          <dt className="font-semibold text-muted-foreground">{detail.label}:</dt>
+          <dd className="text-foreground">{detail.value}</dd>
         </div>
       ))}
     </dl>
@@ -68,13 +69,13 @@ function DetailList({ row }: { row: AuditRow }) {
 
 function TechnicalDetails({ row }: { row: AuditRow }) {
   return (
-    <Accordion type="single" collapsible className="mt-3 text-xs text-kmt-muted">
+    <Accordion type="single" collapsible className="mt-3 text-xs text-muted-foreground">
       <AccordionItem value="technical">
-        <AccordionTrigger className="py-1 text-xs font-semibold text-kmt-navy">
+        <AccordionTrigger className="py-1 text-xs font-semibold text-primary">
           تفاصيل تقنية
         </AccordionTrigger>
         <AccordionContent>
-          <dl className="grid gap-1 rounded border border-kmt-border bg-slate-50 p-2" dir="ltr">
+          <dl className="grid gap-1 rounded border border-border bg-surface-muted p-2" dir="ltr">
             <div>
               <dt className="inline font-semibold">action: </dt>
               <dd className="inline break-all">{row.technical.action}</dd>
@@ -101,6 +102,35 @@ function TechnicalDetails({ row }: { row: AuditRow }) {
         </AccordionContent>
       </AccordionItem>
     </Accordion>
+  );
+}
+
+function AuditEntityFilters({ result }: { result: AuditResult }) {
+  return (
+    <>
+      <Select className="w-full" defaultValue={result.filters.clientId ?? ""} label="العميل" name="clientId">
+        <option value="">كل العملاء</option>
+        {result.filterOptions.clients.map((client) => <option key={client.id} value={client.id}>{client.name}</option>)}
+      </Select>
+      <Select className="w-full" defaultValue={result.filters.caseId ?? ""} label="القضية" name="caseId">
+        <option value="">كل القضايا</option>
+        {result.filterOptions.cases.map((legalCase) => <option key={legalCase.id} value={legalCase.id}>{legalCase.label}</option>)}
+      </Select>
+      <Select className="w-full" defaultValue={result.filters.lawyerId ?? ""} label="المحامي" name="lawyerId">
+        <option value="">كل المحامين</option>
+        {result.filterOptions.lawyers.map((lawyer) => <option key={lawyer.id} value={lawyer.id}>{lawyer.name}</option>)}
+      </Select>
+      <Accordion type="single" collapsible>
+        <AccordionItem value="advanced-identifiers" className="rounded-lg border border-border px-3">
+          <AccordionTrigger className="text-sm">معرّفات تقنية متقدمة</AccordionTrigger>
+          <AccordionContent className="space-y-3">
+            <TextInput className="w-full" defaultValue={result.filters.appointmentId ?? ""} label="معرف الموعد" name="appointmentId" dir="ltr" />
+            <TextInput className="w-full" defaultValue={result.filters.documentId ?? ""} label="معرف المستند" name="documentId" dir="ltr" />
+            <TextInput className="w-full" defaultValue={result.filters.paymentId ?? ""} label="معرف الدفعة" name="paymentId" dir="ltr" />
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </>
   );
 }
 
@@ -136,12 +166,12 @@ const columns: Array<DataTableColumn<AuditRow>> = [
     render: (row) => (
       <div>
         <div className="flex flex-wrap items-center gap-2">
-          <p className="font-semibold text-kmt-ink">{row.event.label}</p>
+          <p className="font-semibold text-foreground">{row.event.label}</p>
           <Badge tone={categoryTone(row.event.category)}>{row.event.category}</Badge>
           <Badge tone={severityTone(row.event.severity)}>{row.event.severity}</Badge>
         </div>
-        <p className="mt-1 text-sm leading-6 text-kmt-muted">{row.summary}</p>
-        <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(row.occurredAt)}</p>
+        <p className="mt-1 text-sm leading-6 text-muted-foreground">{row.summary}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(row.occurredAt)}</p>
       </div>
     )
   },
@@ -156,7 +186,7 @@ const columns: Array<DataTableColumn<AuditRow>> = [
     render: (row) => (
       <div>
         <p>{row.resource.label}</p>
-        <p className="mt-1 text-xs text-kmt-muted">المرجع الداخلي محفوظ للتدقيق</p>
+        <p className="mt-1 text-xs text-muted-foreground">المرجع الداخلي محفوظ للتدقيق</p>
       </div>
     )
   },
@@ -271,12 +301,7 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
                 </option>
               ))}
             </Select>
-            <TextInput className="w-full" defaultValue={result.filters.clientId ?? ""} label="معرف العميل" name="clientId" dir="ltr" />
-            <TextInput className="w-full" defaultValue={result.filters.caseId ?? ""} label="معرف القضية" name="caseId" dir="ltr" />
-            <TextInput className="w-full" defaultValue={result.filters.lawyerId ?? ""} label="معرف المحامي" name="lawyerId" dir="ltr" />
-            <TextInput className="w-full" defaultValue={result.filters.appointmentId ?? ""} label="معرف الموعد" name="appointmentId" dir="ltr" />
-            <TextInput className="w-full" defaultValue={result.filters.documentId ?? ""} label="معرف المستند" name="documentId" dir="ltr" />
-            <TextInput className="w-full" defaultValue={result.filters.paymentId ?? ""} label="معرف الدفعة" name="paymentId" dir="ltr" />
+            <AuditEntityFilters result={result} />
             <TextInput className="w-full" defaultValue={result.filters.dateFrom ?? ""} label="من" name="dateFrom" type="date" />
             <TextInput className="w-full" defaultValue={result.filters.dateTo ?? ""} label="إلى" name="dateTo" type="date" />
             <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
@@ -320,12 +345,7 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
                 </option>
               ))}
             </Select>
-            <TextInput className="w-full" defaultValue={result.filters.clientId ?? ""} label="معرف العميل" name="clientId" dir="ltr" />
-            <TextInput className="w-full" defaultValue={result.filters.caseId ?? ""} label="معرف القضية" name="caseId" dir="ltr" />
-            <TextInput className="w-full" defaultValue={result.filters.lawyerId ?? ""} label="معرف المحامي" name="lawyerId" dir="ltr" />
-            <TextInput className="w-full" defaultValue={result.filters.appointmentId ?? ""} label="معرف الموعد" name="appointmentId" dir="ltr" />
-            <TextInput className="w-full" defaultValue={result.filters.documentId ?? ""} label="معرف المستند" name="documentId" dir="ltr" />
-            <TextInput className="w-full" defaultValue={result.filters.paymentId ?? ""} label="معرف الدفعة" name="paymentId" dir="ltr" />
+            <AuditEntityFilters result={result} />
             <TextInput className="w-full" defaultValue={result.filters.dateFrom ?? ""} label="من" name="dateFrom" type="date" />
             <TextInput className="w-full" defaultValue={result.filters.dateTo ?? ""} label="إلى" name="dateTo" type="date" />
             <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
@@ -344,7 +364,7 @@ export default async function AdminAuditLogPage({ searchParams }: { searchParams
         </MobileFiltersSheet>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
           <p>{result.total} حدث تدقيق داخل الفلاتر الحالية</p>
           <p>
             صفحة {result.page} من {totalPages}

@@ -170,6 +170,7 @@ describe("product UI primitives", () => {
   });
 
   it("renders distinct dashboard navigation routes", () => {
+    const accountMenuSource = readFileSync(join(process.cwd(), "src/components/admin/admin-account-menu.tsx"), "utf8");
     const html = renderToStaticMarkup(
       <DashboardShell
         eyebrow="لوحة المكتب"
@@ -190,14 +191,14 @@ describe("product UI primitives", () => {
     expect(html).toContain("data-testid=\"dashboard-mobile-navigation-trigger\"");
     expect(html).not.toContain("<dialog");
     expect(html).toContain("data-testid=\"dashboard-desktop-navigation\"");
-    expect(html).toContain("max-lg:hidden");
+    expect(html).toContain("lg:flex");
     expect(html).toContain("aria-label=\"لوحة التحكم\"");
     expect(html).toContain("aria-label=\"العملاء\"");
     expect(html).toContain("aria-current=\"page\"");
-    expect(html).toContain("bg-kmt-gold/15");
+    expect(html).toContain("bg-primary/15");
     expect(html).toContain("/brand/kmt-logo-mark.webp");
-    expect(html).toContain("action=\"/api/auth/logout\"");
-    expect(html).toContain("تسجيل الخروج");
+    expect(accountMenuSource).toContain('action="/api/auth/logout"');
+    expect(accountMenuSource).toContain("plan35AdminShellCopy.logout");
   });
 
   it("filters the admin workspace before rendering desktop and mobile navigation", () => {
@@ -220,7 +221,14 @@ describe("product UI primitives", () => {
       </DashboardShell>
     );
 
-    expect(groupTransitions).toEqual(["تشغيل المكتب", "الملفات والمالية", "الإدارة"]);
+    expect(groupTransitions).toEqual([
+      "مساحة العمل",
+      "القضايا والعملاء",
+      "المواعيد والتواصل",
+      "الملفات والمالية",
+      "المحتوى والتقارير",
+      "إدارة النظام"
+    ]);
     expect(html).toContain("href=\"/admin\"");
     expect(html).toContain("href=\"/admin/content\"");
     expect(html).not.toContain("href=\"/admin/clients\"");
@@ -247,9 +255,12 @@ describe("product UI primitives", () => {
     const loadingSource = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/loading.tsx"), "utf8");
     const errorSource = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/error.tsx"), "utf8");
     const notFoundSource = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/not-found.tsx"), "utf8");
+    const layoutSource = readFileSync(join(process.cwd(), "src/app/(app-ar)/admin/layout.tsx"), "utf8");
 
     for (const source of [loadingSource, errorSource, notFoundSource]) expect(source).toContain("AdminShellState");
-    expect(stateSource).toContain("useAdminAccess");
+    expect(layoutSource).toContain("AdminPersistentShell");
+    expect(stateSource).toContain("DashboardPageFrame");
+    expect(stateSource).toContain("SkeletonTable");
     expect(errorSource).toContain('"use client"');
     expect(errorSource).toContain("reset");
     expect(errorSource).not.toContain("error.message");

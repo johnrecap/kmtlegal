@@ -1,9 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   adminDocumentDeleteSchema,
   adminDocumentListQuerySchema,
   adminDocumentUpdateSchema,
   adminTaskListQuerySchema,
+  adminTaskStatusValues,
   adminTaskWriteSchema,
   canCreateAdminTask,
   canListAdminDocuments,
@@ -12,6 +13,7 @@ import {
   canManageAdminTask,
   canReadAdminTask,
   documentScopeWhereForPrincipal,
+  listAdminTasks,
   taskScopeWhereForPrincipal
 } from "@/server/admin/task-document-service";
 import { ROLES, type Principal } from "@/server/auth/policy";
@@ -117,8 +119,10 @@ describe("admin task and document management contract", () => {
     });
 
     expect(taskList.view).toBe("overdue");
+    expect(taskList.display).toBe("list");
     expect(taskList.page).toBe(2);
     expect(taskList.pageSize).toBe(20);
+    expect(adminTaskListQuerySchema.parse({ display: "board" }).display).toBe("board");
 
     const taskWrite = adminTaskWriteSchema.parse({
       title: "Review contract clause",
@@ -160,5 +164,50 @@ describe("admin task and document management contract", () => {
     })).toThrow();
     expect(() => adminDocumentDeleteSchema.parse({ reason: "duplicate", confirmDelete: false })).toThrow();
     expect(adminDocumentDeleteSchema.parse({ reason: "duplicate", confirmDelete: true }).confirmDelete).toBe(true);
+  });
+
+  it("calculates status totals outside pagination and exposes read-only task actions", async () => {
+    const readOnlyLawyer: Principal = {
+      id: assignedLawyer.id,
+      roleName: ROLES.lawyer,
+      permissions: ["task.read.assigned", "case.read.assigned"]
+    };
+    const task = {
+      id: "55555555-5555-4555-8555-555555555555",
+      title: "مهمة في الصفحة الثانية",
+      description: null,
+      status: "NEW",
+      priority: "NORMAL",
+      assignedToId: readOnlyLawyer.id,
+      caseId: null,
+      dueDate: null,
+      createdById: officeAdmin.id,
+      createdAt: new Date("2026-09-01T08:00:00.000Z"),
+      updatedAt: new Date("2026-09-01T08:00:00.000Z"),
+      assignedTo: { id: readOnlyLawyer.id, name: "محامٍ للقراءة", email: "reader@example.test" },
+      createdBy: { id: officeAdmin.id, name: "مدير المكتب" },
+      case: null
+    };
+    const totals = [25, 4, 3, 2, 8, 1];
+    const count = vi.fn()
+      .mockResolvedValueOnce(1)
+      .mockResolvedValueOnce(totals[0])
+      .mockResolvedValueOnce(totals[1])
+      .mockResolvedValueOnce(totals[2])
+      .mockResolvedValueOnce(totals[3])
+      .mockResolvedValueOnce(totals[4])
+      .mockResolvedValueOnce(totals[5]);
+    const findMany = vi.fn().mockResolvedValue([task]);
+
+    const result = await listAdminTasks({
+      actor: readOnlyLawyer,
+      query: { page: 2, pageSize: 1, status: "NEW" },
+      client: { task: { count, findMany } } as never
+    });
+
+    expect(result.statusTotals).toEqual(Object.fromEntries(adminTaskStatusValues.map((status, index) => [status, totals[index]])));
+    expect(result.items[0]?.canUpdate).toBe(false);
+    expect(result.access.canCreate).toBe(false);
+    expect(count).toHaveBeenCalledTimes(1 + adminTaskStatusValues.length);
   });
 });

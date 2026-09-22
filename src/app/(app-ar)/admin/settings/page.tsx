@@ -72,11 +72,11 @@ export default async function AdminSettingsPage() {
         </Card>
         <Accordion type="multiple" defaultValue={settings.map((setting) => setting.key)} className="grid gap-5 xl:col-span-2 xl:grid-cols-2">
           {settings.map((setting) => (
-            <AccordionItem key={setting.key} value={setting.key} className="rounded-lg border border-kmt-border bg-white px-4">
+            <AccordionItem key={setting.key} value={setting.key} className="rounded-lg border border-border bg-surface px-4">
               <AccordionTrigger className="hover:no-underline">
                 <span className="flex flex-1 flex-col gap-1 text-start">
-                  <span className="text-base font-semibold text-kmt-ink">{setting.label}</span>
-                  <span className="text-sm font-normal text-kmt-muted">
+                  <span className="text-base font-semibold text-foreground">{setting.label}</span>
+                  <span className="text-sm font-normal text-muted-foreground">
                     {setting.description}
                     <span className="mt-1 block">
                       آخر تحديث: {formatDateTime(setting.updatedAt)} · بواسطة {setting.updatedBy?.name ?? "غير مسجل"}

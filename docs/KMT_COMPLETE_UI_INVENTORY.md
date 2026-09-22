@@ -1398,7 +1398,7 @@ CSS vars `--kmt-public-*` with `:root` (light: paper `#f6f3ec`, gold
 | Footer CTA/muted surfaces | `--kmt-public-surface-muted` (`#100e0c`) | `--kmt-public-surface-muted` (`#ede8dc`) | Yes | `border-kmt-gold/25` accents both themes |
 | `KmtBrandLogo` | `surface="dark"` / `theme` variants | `surface="light"` (admin), `theme` (public) | Partial (surface prop) | Variant chosen per shell at call site |
 | `ClientSiteShell` | Hard dark: `bg-[#060504]`, `bg-[#090806]`, `text-[#f8f3ea]`, gradient band | No light styling (dark-only shell) | No (hex literals) | Yes — `#060504/#070604/#07090b/#111827`, `white/10` borders |
-| `DashboardShellView` (admin) | `ThemeToggle` present; surfaces `bg-white`, `text-kmt-ink` | Light-first (`bg-kmt-canvas`, white cards) | Partial (`kmt-*` tokens) | `bg-white`, `backdrop:bg-slate-950/55` dialog scrim |
+| `DashboardShellView` (admin) | Semantic background/surface/foreground/popover tokens | Light default with a complete dark counterpart | Yes | Persistent layout owns the sidebar, header, account context, notification bell and theme control |
 | `ClientPortalMetric`/panels | Dark cards (`bg-white/[0.05]`, gold text) | No light variant | No | `bg-kmt-gold`, `text-white`, `border-white/15` literals |
 | Chat bubbles (booking/client) | User gold `bg-kmt-gold`; assistant `bg-white/[0.05]`; staff navy | Same (no light variant) | Partial | `bg-kmt-gold`, `bg-kmt-gold/15`, `bg-white/[0.05]` |
 | `Badge` tones | `active/pending/neutral/closed/danger` classes | Same classes both themes | Partial (tone map) | Tone color literals in `badge.tsx` |

@@ -25,7 +25,13 @@ export const ADMIN_ROUTE_IDS = [
 
 export type AdminRouteId = (typeof ADMIN_ROUTE_IDS)[number];
 export type AdminRouteActiveMatch = "exact" | "prefix";
-export type AdminRouteGroup = "office-operations" | "files-finance" | "administration";
+export type AdminRouteGroup =
+  | "workspace"
+  | "matters-clients"
+  | "schedule-communications"
+  | "files-finance"
+  | "content-reports"
+  | "administration";
 
 export type AdminRoutePolicy = {
   id: AdminRouteId;
@@ -45,21 +51,21 @@ type AdminRouteDefinition = Omit<AdminRoutePolicy, "labelKey" | "staffFallback">
 };
 
 export const ADMIN_ROUTE_POLICIES: readonly AdminRoutePolicy[] = [
-  route({ id: "dashboard.home", href: "/admin", activeMatch: "exact", group: "office-operations", icon: "dashboard", requiredAnyPermissions: [], staffFallback: true }),
-  route({ id: "consultations.availability", href: "/admin/consultation-availability", activeMatch: "prefix", group: "office-operations", icon: "event_available", requiredAnyPermissions: ["appointment.manage.any", "settings.manage.any"] }),
-  route({ id: "consultations.list", href: "/admin/consultations", activeMatch: "prefix", group: "office-operations", icon: "rate_review", requiredAnyPermissions: ["consultation.review.any", "consultation.review.assigned"] }),
-  route({ id: "clients.list", href: "/admin/clients", activeMatch: "prefix", group: "office-operations", icon: "groups", requiredAnyPermissions: ["client.read.any", "client.read.assigned"] }),
-  route({ id: "messages.list", href: "/admin/messages", activeMatch: "prefix", group: "office-operations", icon: "forum", requiredAnyPermissions: ["conversation.read.any", "conversation.manage.any"] }),
-  route({ id: "cases.list", href: "/admin/cases", activeMatch: "prefix", group: "office-operations", icon: "gavel", requiredAnyPermissions: ["case.read.any", "case.read.assigned"] }),
-  route({ id: "cases.create", href: "/admin/cases/new", activeMatch: "exact", group: "office-operations", icon: "add_circle", requiredAnyPermissions: ["case.create.any"] }),
-  route({ id: "calendar.list", href: "/admin/calendar", activeMatch: "prefix", group: "office-operations", icon: "event", requiredAnyPermissions: ["appointment.manage.any", "appointment.read.assigned"] }),
-  route({ id: "tasks.list", href: "/admin/tasks", activeMatch: "prefix", group: "office-operations", icon: "task_alt", requiredAnyPermissions: ["task.manage.any", "task.manage.assigned", "task.read.assigned"] }),
+  route({ id: "dashboard.home", href: "/admin", activeMatch: "exact", group: "workspace", icon: "dashboard", requiredAnyPermissions: [], staffFallback: true }),
+  route({ id: "consultations.availability", href: "/admin/consultation-availability", activeMatch: "prefix", group: "schedule-communications", icon: "event_available", requiredAnyPermissions: ["appointment.manage.any", "settings.manage.any"] }),
+  route({ id: "consultations.list", href: "/admin/consultations", activeMatch: "prefix", group: "schedule-communications", icon: "rate_review", requiredAnyPermissions: ["consultation.review.any", "consultation.review.assigned"] }),
+  route({ id: "clients.list", href: "/admin/clients", activeMatch: "prefix", group: "matters-clients", icon: "groups", requiredAnyPermissions: ["client.read.any", "client.read.assigned"] }),
+  route({ id: "messages.list", href: "/admin/messages", activeMatch: "prefix", group: "schedule-communications", icon: "forum", requiredAnyPermissions: ["conversation.read.any", "conversation.manage.any"] }),
+  route({ id: "cases.list", href: "/admin/cases", activeMatch: "prefix", group: "matters-clients", icon: "gavel", requiredAnyPermissions: ["case.read.any", "case.read.assigned"] }),
+  route({ id: "cases.create", href: "/admin/cases/new", activeMatch: "exact", group: "matters-clients", icon: "add_circle", requiredAnyPermissions: ["case.create.any"] }),
+  route({ id: "calendar.list", href: "/admin/calendar", activeMatch: "prefix", group: "schedule-communications", icon: "event", requiredAnyPermissions: ["appointment.manage.any", "appointment.read.assigned"] }),
+  route({ id: "tasks.list", href: "/admin/tasks", activeMatch: "prefix", group: "matters-clients", icon: "task_alt", requiredAnyPermissions: ["task.manage.any", "task.manage.assigned", "task.read.assigned"] }),
   route({ id: "documents.list", href: "/admin/documents", activeMatch: "prefix", group: "files-finance", icon: "folder", requiredAnyPermissions: ["document.manage.any", "document.read.assigned"] }),
   route({ id: "finance.list", href: "/admin/finance", activeMatch: "prefix", group: "files-finance", icon: "receipt_long", requiredAnyPermissions: ["finance.read.any", "finance.manage.any"] }),
-  route({ id: "reports.list", href: "/admin/reports", activeMatch: "prefix", group: "files-finance", icon: "monitoring", requiredAnyPermissions: ["report.read.any"] }),
-  route({ id: "content.home", href: "/admin/content", activeMatch: "prefix", group: "administration", icon: "campaign", requiredAnyPermissions: ["content.create.any", "content.approve.any", "caseStudy.create.any", "caseStudy.approve.any", "socialDraft.create.any", "socialDraft.approve.any"] }),
-  route({ id: "contacts.list", href: "/admin/contact-messages", activeMatch: "prefix", group: "office-operations", icon: "contact_mail", requiredAnyPermissions: ["contact.read.any", "contact.manage.any"] }),
-  route({ id: "notifications.list", href: "/admin/notifications", activeMatch: "prefix", group: "office-operations", icon: "notifications", requiredAnyPermissions: ["notification.read.self"] }),
+  route({ id: "reports.list", href: "/admin/reports", activeMatch: "prefix", group: "content-reports", icon: "monitoring", requiredAnyPermissions: ["report.read.any"] }),
+  route({ id: "content.home", href: "/admin/content", activeMatch: "prefix", group: "content-reports", icon: "campaign", requiredAnyPermissions: ["content.create.any", "content.approve.any", "caseStudy.create.any", "caseStudy.approve.any", "socialDraft.create.any", "socialDraft.approve.any"] }),
+  route({ id: "contacts.list", href: "/admin/contact-messages", activeMatch: "prefix", group: "schedule-communications", icon: "contact_mail", requiredAnyPermissions: ["contact.read.any", "contact.manage.any"] }),
+  route({ id: "notifications.list", href: "/admin/notifications", activeMatch: "prefix", group: "schedule-communications", icon: "notifications", requiredAnyPermissions: ["notification.read.self"] }),
   route({ id: "users.list", href: "/admin/users", activeMatch: "prefix", group: "administration", icon: "manage_accounts", requiredAnyPermissions: ["user.manage.any"] }),
   route({ id: "roles.list", href: "/admin/roles", activeMatch: "prefix", group: "administration", icon: "admin_panel_settings", requiredAnyPermissions: [], requiredAllPermissions: ["role.manage.any", "permission.manage.any"], exactRole: "Super Admin" }),
   route({ id: "settings.home", href: "/admin/settings", activeMatch: "prefix", group: "administration", icon: "settings", requiredAnyPermissions: ["settings.manage.any"] }),

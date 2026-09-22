@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type FormEvent, useRef, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { InlineFeedback, Select, TextInput, Textarea } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { Button as StatefulButton } from "@/components/ui/stateful-button";
@@ -16,14 +16,9 @@ import {
   socialPlatformValues
 } from "@/lib/legal-content";
 import { labelFrom } from "@/lib/legal-format";
-import { contentLifecycleUiCopy, localizeApiMessage, sourceTypeDisplayLabel } from "@/lib/ui-copy";
+import { contentLifecycleUiCopy, sourceTypeDisplayLabel } from "@/lib/ui-copy";
 import { useHydrated } from "@/lib/use-hydrated";
-
-type ApiMessage = {
-  error?: {
-    message?: string;
-  };
-};
+import { readAdminApiErrorMessage } from "@/features/admin/shared/admin-api-error";
 
 type ActionMessage = {
   tone: "success" | "error";
@@ -69,8 +64,45 @@ type SocialDraftValue = {
 };
 
 async function readMessage(response: Response) {
-  const body = (await response.json().catch(() => ({}))) as ApiMessage;
-  return body.error?.message ? localizeApiMessage(body.error.message) : "تعذر تنفيذ الإجراء الآن.";
+  return readAdminApiErrorMessage(response);
+}
+
+function useUnsavedFormGuard() {
+  const [dirty, setDirty] = useState(false);
+  const dirtyRef = useRef(false);
+  const markDirty = useCallback(() => {
+    dirtyRef.current = true;
+    setDirty(true);
+  }, []);
+  const markSaved = useCallback(() => {
+    dirtyRef.current = false;
+    setDirty(false);
+  }, []);
+
+  useEffect(() => {
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      if (!dirtyRef.current) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    const guardLink = (event: MouseEvent) => {
+      if (!dirtyRef.current) return;
+      const target = event.target instanceof Element ? event.target.closest("a[href]") : null;
+      if (!target) return;
+      if (!window.confirm("لديك تعديلات غير محفوظة. هل تريد مغادرة المحرر وفقد هذه التعديلات؟")) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    document.addEventListener("click", guardLink, true);
+    return () => {
+      window.removeEventListener("beforeunload", beforeUnload);
+      document.removeEventListener("click", guardLink, true);
+    };
+  }, []);
+
+  return { dirty, markDirty, markSaved };
 }
 
 function textValue(formData: FormData, key: string) {
@@ -130,7 +162,7 @@ function CheckboxField({
   name: string;
 }) {
   return (
-    <label className="flex items-start gap-3 rounded border border-kmt-border bg-white px-3 py-2 text-sm font-semibold leading-6 text-kmt-ink">
+    <label className="flex items-start gap-3 rounded border border-border bg-surface px-3 py-2 text-sm font-semibold leading-6 text-foreground">
       <input className="mt-1 h-4 w-4 accent-kmt-navy" defaultChecked={defaultChecked} disabled={disabled} id={`${idPrefix}-${name}`} name={name} type="checkbox" />
       <span>{label}</span>
     </label>
@@ -162,6 +194,7 @@ export function ArticleForm({ article, canApprove, idPrefix }: { article?: Artic
   const isEdit = Boolean(article?.id);
   const isProtected = isEdit && !canApprove && article?.status === "PUBLISHED";
   const prefix = idPrefix ?? `article-${article?.id ?? "create"}`;
+  const unsaved = useUnsavedFormGuard();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -192,6 +225,7 @@ export function ArticleForm({ article, canApprove, idPrefix }: { article?: Artic
       if (!isEdit) {
         form.reset();
       }
+      unsaved.markSaved();
       setMessage({ tone: "success", text: isEdit ? "تم حفظ المقال." : "تم إنشاء المقال." });
       router.refresh();
     } catch {
@@ -203,10 +237,11 @@ export function ArticleForm({ article, canApprove, idPrefix }: { article?: Artic
   }
 
   return (
-    <form aria-busy={isBusy} className="grid gap-4" onSubmit={submit}>
+    <form aria-busy={isBusy} className="grid gap-4" onChangeCapture={unsaved.markDirty} onSubmit={submit}>
       {isProtected ? <InlineFeedback title={contentLifecycleUiCopy.protectedEdit(labelFrom(articleStatusLabels, article?.status ?? "PUBLISHED"))} tone="warning" /> : null}
+      {unsaved.dirty ? <InlineFeedback title="لديك تعديلات غير محفوظة." tone="warning" /> : null}
       <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected || !isHydrated}>
-      <TextInput defaultValue={article?.title ?? ""} disabled={isBusy} idPrefix={prefix} label="عنوان المقال" name="title" required />
+      <TextInput defaultValue={article?.title ?? ""} dir="auto" disabled={isBusy} idPrefix={prefix} label="عنوان المقال" name="title" required />
       <TextInput defaultValue={article?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case مثل contract-risk-basics." idPrefix={prefix} label="معرّف الرابط (Slug)" name="slug" required />
       <div className="grid gap-4 sm:grid-cols-2">
         <Select defaultValue={article?.locale ?? "en"} disabled={isBusy} idPrefix={prefix} label="لغة المحتوى" name="locale">
@@ -215,8 +250,8 @@ export function ArticleForm({ article, canApprove, idPrefix }: { article?: Artic
         </Select>
         <TextInput defaultValue={article?.category ?? ""} disabled={isBusy} idPrefix={prefix} label="التصنيف" name="category" required />
       </div>
-      <Textarea defaultValue={article?.excerpt ?? ""} disabled={isBusy} idPrefix={prefix} label="الملخص" name="excerpt" required />
-      <Textarea className="min-h-48" defaultValue={article?.content ?? ""} disabled={isBusy} idPrefix={prefix} label="المحتوى" name="content" required />
+      <Textarea defaultValue={article?.excerpt ?? ""} dir="auto" disabled={isBusy} idPrefix={prefix} label="الملخص" name="excerpt" required />
+      <Textarea className="min-h-48" defaultValue={article?.content ?? ""} dir="auto" disabled={isBusy} idPrefix={prefix} label="المحتوى" name="content" required />
       <div className="grid gap-4 sm:grid-cols-2">
         <Select defaultValue={article?.status ?? "DRAFT"} disabled={isBusy} idPrefix={prefix} label="الحالة" name="status">
           {allowedArticleStatuses(canApprove, article?.status).map((status) => (
@@ -250,6 +285,7 @@ export function CaseStudyForm({ study, canApprove, idPrefix }: { study?: CaseStu
   const isEdit = Boolean(study?.id);
   const isProtected = isEdit && !canApprove && ["APPROVED", "PUBLISHED"].includes(study?.status ?? "");
   const prefix = idPrefix ?? `case-study-${study?.id ?? "create"}`;
+  const unsaved = useUnsavedFormGuard();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -283,6 +319,7 @@ export function CaseStudyForm({ study, canApprove, idPrefix }: { study?: CaseStu
       if (!isEdit) {
         form.reset();
       }
+      unsaved.markSaved();
       setMessage({ tone: "success", text: isEdit ? "تم حفظ دراسة الحالة." : "تم إنشاء دراسة الحالة." });
       router.refresh();
     } catch {
@@ -294,10 +331,11 @@ export function CaseStudyForm({ study, canApprove, idPrefix }: { study?: CaseStu
   }
 
   return (
-    <form aria-busy={isBusy} className="grid gap-4" onSubmit={submit}>
+    <form aria-busy={isBusy} className="grid gap-4" onChangeCapture={unsaved.markDirty} onSubmit={submit}>
       {isProtected ? <InlineFeedback title={contentLifecycleUiCopy.protectedEdit(labelFrom(caseStudyStatusLabels, study?.status ?? "PUBLISHED"))} tone="warning" /> : null}
+      {unsaved.dirty ? <InlineFeedback title="لديك تعديلات غير محفوظة." tone="warning" /> : null}
       <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected || !isHydrated}>
-      <TextInput defaultValue={study?.title ?? ""} disabled={isBusy} idPrefix={prefix} label="عنوان دراسة الحالة" name="title" required />
+      <TextInput defaultValue={study?.title ?? ""} dir="auto" disabled={isBusy} idPrefix={prefix} label="عنوان دراسة الحالة" name="title" required />
       <TextInput defaultValue={study?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case." idPrefix={prefix} label="معرّف الرابط (Slug)" name="slug" required />
       <div className="grid gap-4 sm:grid-cols-2">
         <Select defaultValue={study?.locale ?? "en"} disabled={isBusy} idPrefix={prefix} label="لغة المحتوى" name="locale">
@@ -306,10 +344,10 @@ export function CaseStudyForm({ study, canApprove, idPrefix }: { study?: CaseStu
         </Select>
         <TextInput defaultValue={study?.category ?? ""} disabled={isBusy} idPrefix={prefix} label="التصنيف" name="category" required />
       </div>
-      <Textarea defaultValue={study?.challenge ?? ""} disabled={isBusy} idPrefix={prefix} label="التحدي" name="challenge" required />
-      <Textarea defaultValue={study?.approach ?? ""} disabled={isBusy} idPrefix={prefix} label="طريقة التعامل" name="approach" required />
-      <Textarea defaultValue={study?.generalOutcome ?? ""} disabled={isBusy} idPrefix={prefix} label="النتيجة العامة" name="generalOutcome" required />
-      <Textarea defaultValue={study?.lessons ?? ""} disabled={isBusy} idPrefix={prefix} label="الدروس" name="lessons" required />
+      <Textarea defaultValue={study?.challenge ?? ""} dir="auto" disabled={isBusy} idPrefix={prefix} label="التحدي" name="challenge" required />
+      <Textarea defaultValue={study?.approach ?? ""} dir="auto" disabled={isBusy} idPrefix={prefix} label="طريقة التعامل" name="approach" required />
+      <Textarea defaultValue={study?.generalOutcome ?? ""} dir="auto" disabled={isBusy} idPrefix={prefix} label="النتيجة العامة" name="generalOutcome" required />
+      <Textarea defaultValue={study?.lessons ?? ""} dir="auto" disabled={isBusy} idPrefix={prefix} label="الدروس" name="lessons" required />
       <CheckboxField defaultChecked={study?.isAnonymized ?? false} disabled={isBusy} idPrefix={prefix} label="تمت مراجعة إخفاء الهوية ولا توجد أسماء عملاء أو أرقام قضايا أو بيانات اتصال." name="isAnonymized" />
       <div className="grid gap-4 sm:grid-cols-2">
         <Select defaultValue={study?.status ?? "DRAFT"} disabled={isBusy} idPrefix={prefix} label="الحالة" name="status">
@@ -344,6 +382,7 @@ export function SocialDraftForm({ draft, canApprove, idPrefix }: { draft?: Socia
   const isEdit = Boolean(draft?.id);
   const isProtected = isEdit && !canApprove && ["APPROVED", "SCHEDULED", "PUBLISHED"].includes(draft?.status ?? "");
   const prefix = idPrefix ?? `social-draft-${draft?.id ?? "create"}`;
+  const unsaved = useUnsavedFormGuard();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -373,6 +412,7 @@ export function SocialDraftForm({ draft, canApprove, idPrefix }: { draft?: Socia
       if (!isEdit) {
         form.reset();
       }
+      unsaved.markSaved();
       setMessage({ tone: "success", text: isEdit ? "تم حفظ مسودة السوشيال." : "تم إنشاء مسودة السوشيال." });
       router.refresh();
     } catch {
@@ -384,10 +424,11 @@ export function SocialDraftForm({ draft, canApprove, idPrefix }: { draft?: Socia
   }
 
   return (
-    <form aria-busy={isBusy} className="grid gap-4" onSubmit={submit}>
+    <form aria-busy={isBusy} className="grid gap-4" onChangeCapture={unsaved.markDirty} onSubmit={submit}>
       {isProtected ? <InlineFeedback title={contentLifecycleUiCopy.protectedEdit(labelFrom(socialDraftStatusLabels, draft?.status ?? "PUBLISHED"))} tone="warning" /> : null}
+      {unsaved.dirty ? <InlineFeedback title="لديك تعديلات غير محفوظة." tone="warning" /> : null}
       <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected || !isHydrated}>
-      <TextInput defaultValue={draft?.title ?? ""} disabled={isBusy} idPrefix={prefix} label="عنوان داخلي" name="title" required />
+      <TextInput defaultValue={draft?.title ?? ""} dir="auto" disabled={isBusy} idPrefix={prefix} label="عنوان داخلي" name="title" required />
       <div className="grid gap-4 sm:grid-cols-2">
         <Select defaultValue={draft?.platform ?? "linkedin"} disabled={isBusy} idPrefix={prefix} label="المنصة" name="platform">
           {socialPlatformValues.map((platform) => (
@@ -404,7 +445,7 @@ export function SocialDraftForm({ draft, canApprove, idPrefix }: { draft?: Socia
           ))}
         </Select>
       </div>
-      <Textarea className="min-h-36" defaultValue={draft?.content ?? ""} disabled={isBusy} idPrefix={prefix} label="المحتوى" name="content" required />
+      <Textarea className="min-h-36" defaultValue={draft?.content ?? ""} dir="auto" disabled={isBusy} idPrefix={prefix} label="المحتوى" name="content" required />
       <div className="grid gap-4 sm:grid-cols-2">
         <TextInput defaultValue={draft?.sourceType ?? ""} disabled={isBusy} idPrefix={prefix} label="نوع المصدر" name="sourceType" />
         <TextInput defaultValue={draft?.sourceId ?? ""} disabled={isBusy} idPrefix={prefix} label="معرف المصدر" name="sourceId" />
@@ -429,6 +470,7 @@ export function AiSocialDraftForm({ idPrefix }: { idPrefix?: string }) {
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const prefix = idPrefix ?? "ai-social-draft";
+  const unsaved = useUnsavedFormGuard();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -453,6 +495,7 @@ export function AiSocialDraftForm({ idPrefix }: { idPrefix?: string }) {
       }
 
       form.reset();
+      unsaved.markSaved();
       setMessage({ tone: "success", text: "تم توليد مسودة بالذكاء الاصطناعي وحفظها في حالة مراجعة قانونية." });
       router.refresh();
     } catch {
@@ -463,7 +506,8 @@ export function AiSocialDraftForm({ idPrefix }: { idPrefix?: string }) {
   }
 
   return (
-    <form className="grid gap-4" onSubmit={submit}>
+    <form className="grid gap-4" onChangeCapture={unsaved.markDirty} onSubmit={submit}>
+      {unsaved.dirty ? <InlineFeedback title="لديك تعديلات غير محفوظة." tone="warning" /> : null}
       <TextInput disabled={isBusy} idPrefix={prefix} label="عنوان المسودة" name="title" required />
       <div className="grid gap-4 sm:grid-cols-2">
         <Select defaultValue="linkedin" disabled={isBusy} idPrefix={prefix} label="المنصة" name="platform">

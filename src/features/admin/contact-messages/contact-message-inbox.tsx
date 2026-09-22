@@ -167,12 +167,12 @@ export function ContactMessageInbox({
       header: copy.sender,
       render: (row) => (
         <div className="min-w-44">
-          <p className="font-semibold text-kmt-ink" dir="auto">{row.fullName}</p>
-          <a className="mt-1 block break-all text-xs text-kmt-navy hover:underline" dir="ltr" href={`mailto:${row.email}`}>
+          <p className="font-semibold text-foreground" dir="auto">{row.fullName}</p>
+          <a className="mt-1 block break-all text-xs text-primary hover:underline" dir="ltr" href={`mailto:${row.email}`}>
             {row.email}
           </a>
           {row.phone ? (
-            <a className="mt-1 block text-xs text-kmt-muted hover:underline" dir="ltr" href={`tel:${row.phone}`}>
+            <a className="mt-1 block text-xs text-muted-foreground hover:underline" dir="ltr" href={`tel:${row.phone}`}>
               {row.phone}
             </a>
           ) : null}
@@ -184,14 +184,14 @@ export function ContactMessageInbox({
       header: copy.message,
       render: (row) => (
         <div className="min-w-64 max-w-xl">
-          <p className="text-xs font-semibold text-kmt-muted">{topicLabel(row.topic)}</p>
+          <p className="text-xs font-semibold text-muted-foreground">{topicLabel(row.topic)}</p>
           <Accordion type="single" collapsible className="mt-2">
             <AccordionItem value={`message-${row.id}`}>
-              <AccordionTrigger className="text-sm font-semibold text-kmt-navy">
+              <AccordionTrigger className="text-sm font-semibold text-primary">
                 {copy.openDetails}
               </AccordionTrigger>
               <AccordionContent>
-                <p className="break-words text-sm leading-7 text-kmt-ink" dir="auto">{row.message}</p>
+                <p className="break-words text-sm leading-7 text-foreground" dir="auto">{row.message}</p>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -291,10 +291,10 @@ export function ContactMessageInbox({
       </div>
 
       {!canManage ? <StateBlock description={copy.readerOnly} title={copy.title} tone="permission" /> : null}
-      <div aria-live="polite" className="min-h-6 text-sm text-kmt-muted" role="status">
+      <div aria-live="polite" className="min-h-6 text-sm text-muted-foreground" role="status">
         {feedback}
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
         <p>{data.total} {copy.totalSuffix}</p>
         <p>{copy.page} {data.page} {copy.of} {totalPages}</p>
       </div>

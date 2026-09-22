@@ -75,9 +75,12 @@ export const plan35AdminRouteLabels = {
 export type Plan35AdminRouteLabelKey = keyof typeof plan35AdminRouteLabels;
 
 export const plan35AdminRouteGroupLabels = {
-  "office-operations": "تشغيل المكتب",
+  workspace: "مساحة العمل",
+  "matters-clients": "القضايا والعملاء",
+  "schedule-communications": "المواعيد والتواصل",
   "files-finance": "الملفات والمالية",
-  administration: "الإدارة"
+  "content-reports": "المحتوى والتقارير",
+  administration: "إدارة النظام"
 } as const;
 
 export const plan35DashboardMetricCopy = {
@@ -551,9 +554,9 @@ export const plan35ManualCaseUiCopy = {
 } as const;
 
 export const plan35AdminShellCopy = {
-  adminMode: "إدارة المكتب",
+  adminMode: "مساحة عمل المكتب",
   portalMode: "بوابة العميل",
-  adminBadge: "إدارة",
+  adminBadge: "فريق المكتب",
   clientBadge: "عميل",
   workspaceEyebrow: "مساحة عمل المكتب",
   desktopNavigation: "التنقل في لوحة التحكم",
@@ -563,9 +566,26 @@ export const plan35AdminShellCopy = {
   navigationTitle: "القائمة الرئيسية لمساحة العمل",
   logout: "تسجيل الخروج",
   themeToggle: "تبديل بين الوضع الليلي والنهاري",
+  skipToContent: "تخطَّ إلى المحتوى",
+  pageBreadcrumb: "مسار الصفحة",
+  workspaceHome: "مساحة العمل",
+  accountMenu: "قائمة الحساب",
   unknownSection: "شاشة إدارية",
   fallbackUser: "فريق المكتب"
 } as const;
+
+export const adminRoleScopeLabels: Record<string, string> = {
+  "Super Admin": "كل بيانات المكتب وإدارة النظام",
+  "Office Admin": "كل عمليات وبيانات المكتب",
+  Secretary: "المواعيد والاستشارات وتشغيل المكتب",
+  "Marketing Staff": "المحتوى والتواصل",
+  Lawyer: "القضايا والمهام والملفات المسندة"
+};
+
+export function adminRoleScopeLabel(roleName: string | null | undefined) {
+  if (!roleName) return "نطاق الصلاحيات الممنوح";
+  return adminRoleScopeLabels[roleName] ?? "نطاق الصلاحيات الممنوح";
+}
 
 export const plan35AdminRestrictedActionCopy = {
   caseStudyCreate: {

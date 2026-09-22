@@ -50,7 +50,7 @@ export default async function AdminContactMessagesPage({
       title={copy.title}
       userLabel={guard.context.user.name}
     >
-      <p className="mb-5 max-w-3xl text-sm leading-7 text-kmt-muted">{copy.description}</p>
+      <p className="mb-5 max-w-3xl text-sm leading-7 text-muted-foreground">{copy.description}</p>
       <ContactMessageInbox
         canManage={canManageAdminContactMessages(guard.context.principal)}
         initialData={result}

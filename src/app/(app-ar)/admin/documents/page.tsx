@@ -3,13 +3,6 @@ import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
-import { AdminRowActions } from "@/components/admin/admin-menu";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger
-} from "@/components/animate-ui/components/radix/accordion";
 import {
   Badge,
   Button,
@@ -18,23 +11,19 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  DataTable,
   FilterBar,
   SearchInput,
   Select,
   StateBlock
 } from "@/components/ui";
 import {
-  AdminDocumentUploadForm,
-  DocumentActionForm,
-  DocumentDeleteForm
+  AdminDocumentUploadForm
 } from "@/features/admin/task-documents/task-document-forms";
+import { DocumentList } from "@/features/admin/task-documents/document-list";
 import {
   documentCategoryLabels,
   documentStatusLabels,
   documentVisibilityLabels,
-  formatBytes,
-  formatDateTime,
   labelFrom
 } from "@/lib/legal-format";
 import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
@@ -66,20 +55,6 @@ function flattenSearchParams(searchParams: SearchParams) {
   );
 }
 
-function statusTone(status: string) {
-  if (status === "ACCEPTED") {
-    return "active" as const;
-  }
-  if (status === "REJECTED" || status === "DELETED") {
-    return "danger" as const;
-  }
-  return "pending" as const;
-}
-
-function visibilityTone(visibility: string) {
-  return visibility === "CLIENT_VISIBLE" ? ("active" as const) : ("neutral" as const);
-}
-
 function listHref(
   filters: {
     q?: string;
@@ -102,91 +77,6 @@ function listHref(
   }
   params.set("page", String(page));
   return `/admin/documents?${params.toString()}`;
-}
-
-function DocumentCard({ document, options }: { document: DocumentRow; options: DocumentOptions }) {
-  return (
-    <Accordion type="single" collapsible>
-      <AccordionItem value={document.id} className="rounded border border-kmt-border bg-white px-3">
-        <AccordionTrigger className="hover:no-underline">
-          <span className="flex flex-1 flex-wrap items-start justify-between gap-3 text-start">
-            <span className="min-w-0">
-              <span className="block font-semibold text-kmt-navy">{document.fileName}</span>
-              <span className="mt-1 block text-sm font-normal leading-6 text-kmt-muted">
-                {formatBytes(document.fileSize)} · {document.ownerClient?.fullName ?? "بدون عميل مالك"} ·{" "}
-                {document.uploadedBy.name}
-              </span>
-            </span>
-            <span className="flex flex-wrap items-center gap-2">
-              <Badge tone={statusTone(document.status)}>{labelFrom(documentStatusLabels, document.status)}</Badge>
-              <Badge tone={visibilityTone(document.visibility)}>
-                {labelFrom(documentVisibilityLabels, document.visibility)}
-              </Badge>
-            </span>
-          </span>
-        </AccordionTrigger>
-        <AccordionContent>
-          <div className="mb-3 flex justify-end">
-            <AdminRowActions
-              label={`إجراءات المستند ${document.fileName}`}
-              entries={[
-                {
-                  kind: "action",
-                  action: { key: "download", label: "تنزيل الملف", href: `/api/files/${document.id}/download` }
-                },
-                ...(document.case
-                  ? [
-                      {
-                        kind: "action" as const,
-                        action: {
-                          key: "case",
-                          label: "فتح القضية",
-                          href: `/admin/cases/${document.case.id}?tab=documents`
-                        }
-                      }
-                    ]
-                  : [])
-              ]}
-            />
-          </div>
-          <div className="mt-3 grid gap-3 text-sm leading-6 text-kmt-muted sm:grid-cols-2">
-            <p>
-              <span className="font-semibold text-kmt-ink">التصنيف: </span>
-              {labelFrom(documentCategoryLabels, document.category)}
-            </p>
-            <p>
-              <span className="font-semibold text-kmt-ink">تاريخ الرفع: </span>
-              {formatDateTime(document.createdAt)}
-            </p>
-            <p>
-              <span className="font-semibold text-kmt-ink">نوع الملف: </span>
-              {document.fileType}
-            </p>
-            <p>
-              <span className="font-semibold text-kmt-ink">القضية: </span>
-              {document.case ? (
-                <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/cases/${document.case.id}?tab=documents`}>
-                  {document.case.internalFileNumber} - {document.case.title}
-                </Link>
-              ) : (
-                "غير مرتبط"
-              )}
-            </p>
-          </div>
-          <DocumentActionForm
-            canManage={options.canManage}
-            document={{
-              id: document.id,
-              status: document.status,
-              category: document.category,
-              visibility: document.visibility
-            }}
-          />
-          <DocumentDeleteForm canManage={options.canManage} documentId={document.id} />
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
-  );
 }
 
 export default async function AdminDocumentsPage({ searchParams }: { searchParams?: Promise<SearchParams> }) {
@@ -365,88 +255,18 @@ export default async function AdminDocumentsPage({ searchParams }: { searchParam
           </MobileFiltersSheet>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
             <p>{result.total} مستند داخل الفلاتر الحالية</p>
             <p>
               صفحة {result.page} من {totalPages}
             </p>
           </div>
 
-          <DataTable
+          <DocumentList
             caption={plan35AdminListAccessibilityCopy.documents.table}
-            columns={[
-              {
-                key: "file",
-                header: "الملف",
-                render: (document) => (
-                  <div>
-                    <Link className="font-semibold text-kmt-navy hover:underline" href={`/api/files/${document.id}/download`}>
-                      {document.fileName}
-                    </Link>
-                    <p className="mt-1 text-xs text-kmt-muted">
-                      {formatBytes(document.fileSize)} · {document.fileType}
-                    </p>
-                  </div>
-                )
-              },
-              {
-                key: "owner",
-                header: "المالك / القضية",
-                render: (document) => (
-                  <div className="space-y-1">
-                    <p>{document.ownerClient?.fullName ?? "غير محدد"}</p>
-                    {document.case ? (
-                      <Link className="text-xs font-semibold text-kmt-navy hover:underline" href={`/admin/cases/${document.case.id}?tab=documents`}>
-                        {document.case.internalFileNumber}
-                      </Link>
-                    ) : (
-                      <p className="text-xs text-kmt-muted">بدون قضية</p>
-                    )}
-                  </div>
-                )
-              },
-              {
-                key: "category",
-                header: "التصنيف",
-                render: (document) => labelFrom(documentCategoryLabels, document.category)
-              },
-              {
-                key: "status",
-                header: "الحالة",
-                render: (document) => (
-                  <Badge tone={statusTone(document.status)}>{labelFrom(documentStatusLabels, document.status)}</Badge>
-                )
-              },
-              {
-                key: "visibility",
-                header: "الظهور",
-                render: (document) => (
-                  <Badge tone={visibilityTone(document.visibility)}>
-                    {labelFrom(documentVisibilityLabels, document.visibility)}
-                  </Badge>
-                )
-              },
-              {
-                key: "uploaded",
-                header: "الرفع",
-                render: (document) => (
-                  <div>
-                    <p>{document.uploadedBy.name}</p>
-                    <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(document.createdAt)}</p>
-                  </div>
-                )
-              }
-            ]}
-            empty={<StateBlock title="لا توجد مستندات" description="غير الفلاتر أو ارفع مستندًا جديدًا داخل نطاق صلاحياتك." />}
-            rows={result.items}
-            mobileRender={(document) => <DocumentCard document={document} options={options} />}
+            documents={result.items}
+            options={{ canManage: options.canManage }}
           />
-
-          <div className="hidden space-y-3 md:block">
-            {result.items.map((document) => (
-              <DocumentCard key={document.id} document={document} options={options} />
-            ))}
-          </div>
 
           <AdminPagination
             page={result.page}

@@ -74,8 +74,8 @@ remain until their locked Phase 10/11 migration.
 - [x] TASK-09-03 Sidebar primitive: `admin-sidebar-nav.tsx` on the SAME
   Phase 07 Sidebar; grouped `admin-navigation.ts` items (permission filter
   flows from `DashboardShell`, active matching preserved); collapse + focus
-  keyboard bridge + RTL + both themes (rail forced light in dark to match
-  the light-only admin content); brand lockup rides the collapse; tooltips
+  keyboard bridge + RTL + both themes (the historical forced-light rail was
+  superseded by the semantic light/dark admin shell); brand lockup rides the collapse; tooltips
   on collapsed icons.
 - [x] TASK-09-04 Sheet shells: `admin-mobile-nav.tsx` (navigation shell:
   trigger/focus-trap/close-on-navigate, RTL side, grouped items, testids +
@@ -227,11 +227,9 @@ Findings that are NOT defects (recorded, no action):
 - Official `bg-popover`/`text-popover-foreground` utilities are DEAD in
   this repo (no popover tokens in the theme; nothing else uses them, so
   zero existing pixels affected). Kit binds the designed `className`
-  extension points to the admin light-only surface (`bg-white
-  text-kmt-ink border-kmt-border`) — verified white panel + kmt-border in
-  browser. Full token completion deferred: `tokens.ts` +
-  `tailwind.config.ts` carry foreign pre-existing hunks, so editing them
-  would entangle this commit — needs owner coordination.
+  extension points were later migrated to semantic `popover`/`surface`
+  tokens. The deferred token work was completed in the 2026-09-22 admin
+  workspace modernization.
 - Temp-harness discipline: the auto-scaffolded bare temp layout shipped
   no `globals.css` (all real layouts import it) → first captures were
   unstyled; fixed with a globals-importing temp layout, panels
@@ -384,9 +382,8 @@ Visual gate (temp harness with REAL shell + kit, mock data, deleted after):
   children); Accordion groups.
 - B AR/Light/390: Sheet opens from the correct RTL side with grouped
   links; no overflow (390≤390).
-- C dark-once: admin content is light-only by pre-existing design; rail
-  forced light (`dark:bg-white`) for chrome coherence; toggle flips `html`
-  class correctly.
+- C dark-once was historical evidence for the earlier single-theme admin.
+  The current shell and page surfaces now use semantic tokens in both themes.
 - Mid-gate fixes (all re-captured): Tabs light styling, Pagination
   prev/next composition, rail dark coherence. Stale-capture discipline:
   C-dark/B-sheet re-run after fixes.

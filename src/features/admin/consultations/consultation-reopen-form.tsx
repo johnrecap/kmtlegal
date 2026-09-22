@@ -7,12 +7,11 @@ import { buttonClasses } from "@/components/ui/button";
 import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import { cairoLocalDateTimeToIso } from "@/lib/legal-format";
 import {
-  localizeApiMessage,
   plan36ConsultationOutcomeCopy as copy
 } from "@/lib/ui-copy";
+import { AdminApiError, readAdminApiResponse } from "@/features/admin/shared/admin-api-error";
 
 type LawyerOption = { id: string; name: string; email: string };
-type ApiErrorBody = { error?: { code?: string; message?: string } };
 type Feedback = { tone: "success" | "error"; text: string; code?: string };
 const reopenReasons = [
   "REOPEN_CLIENT_REQUEST",
@@ -60,21 +59,15 @@ export function ConsultationReopenForm({
           expectedOutcomeVersion: outcomeVersion
         })
       });
-      const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
-      if (!response.ok) {
-        setFeedback({
-          tone: "error",
-          code: body.error?.code,
-          text: body.error?.message
-            ? localizeApiMessage(body.error.message, "ar")
-            : copy.feedback.failed
-        });
-        return;
-      }
+      await readAdminApiResponse(response);
       setFeedback({ tone: "success", text: copy.feedback.reopened });
       router.refresh();
-    } catch {
-      setFeedback({ tone: "error", text: copy.feedback.failed });
+    } catch (error) {
+      setFeedback({
+        tone: "error",
+        code: error instanceof AdminApiError ? error.code : undefined,
+        text: error instanceof AdminApiError ? error.message : copy.feedback.failed
+      });
     } finally {
       setBusy(false);
     }

@@ -16,6 +16,7 @@ export type DataTableProps<Row extends { id: string }> = {
   className?: string;
   emptyClassName?: string;
   mobileRender?: (row: Row) => ReactNode;
+  mobileBreakpoint?: "md" | "lg";
   stickyHeader?: boolean;
 };
 
@@ -27,6 +28,7 @@ export function DataTable<Row extends { id: string }>({
   className,
   emptyClassName,
   mobileRender,
+  mobileBreakpoint = "md",
   stickyHeader = false
 }: DataTableProps<Row>) {
   if (rows.length === 0) {
@@ -38,8 +40,13 @@ export function DataTable<Row extends { id: string }>({
     );
   }
 
+  const tableVisibility = mobileRender
+    ? mobileBreakpoint === "lg" ? "hidden lg:block" : "hidden md:block"
+    : undefined;
+  const mobileVisibility = mobileBreakpoint === "lg" ? "space-y-3 lg:hidden" : "space-y-3 md:hidden";
+
   const table = (
-    <div className={cn("max-w-full min-w-0 overflow-x-auto rounded-lg border border-border bg-surface", mobileRender ? "hidden md:block" : undefined, className)}>
+    <div className={cn("max-w-full min-w-0 overflow-x-auto rounded-lg border border-border bg-surface", tableVisibility, className)}>
       <table className="min-w-full border-collapse text-sm">
         {caption ? <caption className="sr-only">{caption}</caption> : null}
         <thead className={cn("bg-surface-muted text-muted-foreground", stickyHeader && "sticky top-0 z-10")}>
@@ -72,7 +79,7 @@ export function DataTable<Row extends { id: string }>({
 
   return (
     <>
-      <div className="space-y-3 md:hidden">
+      <div className={mobileVisibility}>
         {rows.map((row) => (
           <div key={row.id}>{mobileRender(row)}</div>
         ))}

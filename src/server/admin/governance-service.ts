@@ -987,10 +987,13 @@ type AuditFilterOptions = {
   actions: AuditFilterOption[];
   resourceTypes: AuditFilterOption[];
   actors: Array<{ id: string; name: string }>;
+  clients: Array<{ id: string; name: string }>;
+  cases: Array<{ id: string; label: string }>;
+  lawyers: Array<{ id: string; name: string }>;
 };
 
 async function getAuditFilterOptions(): Promise<AuditFilterOptions> {
-  const [actions, resourceTypes, actors] = await Promise.all([
+  const [actions, resourceTypes, actors, clientRefs, caseRefs, lawyerRefs] = await Promise.all([
     prisma.auditLog.findMany({ distinct: ["action"], select: { action: true }, orderBy: { action: "asc" }, take: 100 }),
     prisma.auditLog.findMany({
       distinct: ["resourceType"],
@@ -1003,13 +1006,37 @@ async function getAuditFilterOptions(): Promise<AuditFilterOptions> {
       select: { id: true, name: true },
       orderBy: { name: "asc" },
       take: 100
+    }),
+    prisma.auditLog.findMany({ where: { clientId: { not: null } }, distinct: ["clientId"], select: { clientId: true }, take: 150 }),
+    prisma.auditLog.findMany({ where: { caseId: { not: null } }, distinct: ["caseId"], select: { caseId: true }, take: 150 }),
+    prisma.auditLog.findMany({ where: { lawyerId: { not: null } }, distinct: ["lawyerId"], select: { lawyerId: true }, take: 150 })
+  ]);
+
+  const [clients, cases, lawyers] = await Promise.all([
+    prisma.client.findMany({
+      where: { id: { in: clientRefs.flatMap((item) => item.clientId ? [item.clientId] : []) } },
+      select: { id: true, fullName: true },
+      orderBy: { fullName: "asc" }
+    }),
+    prisma.legalCase.findMany({
+      where: { id: { in: caseRefs.flatMap((item) => item.caseId ? [item.caseId] : []) } },
+      select: { id: true, internalFileNumber: true, title: true },
+      orderBy: { internalFileNumber: "asc" }
+    }),
+    prisma.user.findMany({
+      where: { id: { in: lawyerRefs.flatMap((item) => item.lawyerId ? [item.lawyerId] : []) } },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" }
     })
   ]);
 
   return {
     actions: actions.map((item) => auditFilterOption(item.action, auditActionOptionLabel(item.action))),
     resourceTypes: resourceTypes.map((item) => auditFilterOption(item.resourceType, auditResourceLabel(item.resourceType))),
-    actors
+    actors,
+    clients: clients.map((client) => ({ id: client.id, name: client.fullName })),
+    cases: cases.map((legalCase) => ({ id: legalCase.id, label: `${legalCase.internalFileNumber} - ${legalCase.title}` })),
+    lawyers
   };
 }
 

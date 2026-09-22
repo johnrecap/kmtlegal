@@ -36,10 +36,10 @@ export function AdminCommandCenter({
 
   return (
     <div className="min-w-0 space-y-8" data-testid="admin-command-center">
-      <header className="rounded-xl border border-kmt-navy/10 bg-kmt-navy px-5 py-6 text-white sm:px-7">
+      <header className="rounded-xl border border-kmt-navy/10 bg-surface-strong px-5 py-6 text-white sm:px-7">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
-            <p className="text-sm font-semibold text-kmt-goldLight">{plan35DashboardUiCopy.eyebrow}</p>
+            <p className="text-sm font-semibold text-primary">{plan35DashboardUiCopy.eyebrow}</p>
             <h2 className="mt-2 text-2xl font-semibold sm:text-3xl">{plan35DashboardUiCopy.title}</h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-white/80">{plan35DashboardUiCopy.description}</p>
             <p className="mt-4 text-xs text-white/70">
@@ -54,7 +54,7 @@ export function AdminCommandCenter({
                   className={buttonClasses({
                     variant: index === 0 ? "primary" : "secondary",
                     size: "sm",
-                    className: index === 0 ? undefined : "border-white text-white hover:bg-white hover:text-kmt-navy"
+                    className: index === 0 ? undefined : "border-white text-white hover:bg-surface hover:text-primary"
                   })}
                   data-primary={index === 0 || undefined}
                   href={action.href}
@@ -109,7 +109,7 @@ export function AdminCommandCenter({
 
 function ClientSearch() {
   return (
-    <form action="/admin/clients" aria-label={plan35DashboardUiCopy.clientSearchLabel} className="flex min-w-0 flex-col gap-3 rounded-lg border border-kmt-border bg-white p-4 sm:flex-row" method="get" role="search">
+    <form action="/admin/clients" aria-label={plan35DashboardUiCopy.clientSearchLabel} className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-surface p-4 sm:flex-row" method="get" role="search">
       <SearchInput
         ariaLabel={plan35DashboardUiCopy.clientSearchLabel}
         className="min-w-0 flex-1"
@@ -126,7 +126,7 @@ function RecentActivity({ activities }: { activities: DashboardActivity[] }) {
   return (
     <section aria-labelledby="dashboard-activity-title">
       <SectionHeading id="dashboard-activity-title" title={plan35DashboardUiCopy.recentActivityTitle} />
-      <ol className="mt-4 divide-y divide-kmt-border rounded-lg border border-kmt-border bg-white">
+      <ol className="mt-4 divide-y divide-kmt-border rounded-lg border border-border bg-surface">
         {activities.map((activity) => <ActivityRow activity={activity} key={`${activity.kind}:${activity.id}`} />)}
       </ol>
     </section>
@@ -137,10 +137,10 @@ function ActivityRow({ activity }: { activity: DashboardActivity }) {
   const presentation = activityPresentation(activity);
   return (
     <li>
-      <Link className="flex min-w-0 flex-col gap-2 p-4 hover:bg-kmt-canvas focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold sm:flex-row sm:items-center sm:justify-between" href={activity.href}>
+      <Link className="flex min-w-0 flex-col gap-2 p-4 hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold sm:flex-row sm:items-center sm:justify-between" href={activity.href}>
         <div className="min-w-0">
-          <p className="font-semibold text-kmt-ink"><DisplayValue value={presentation.title} /></p>
-          <p className="mt-1 break-words text-sm text-kmt-muted" data-visual-dynamic>
+          <p className="font-semibold text-foreground"><DisplayValue value={presentation.title} /></p>
+          <p className="mt-1 break-words text-sm text-muted-foreground" data-visual-dynamic>
             <ActivityMeta activity={activity} />
           </p>
         </div>
@@ -184,8 +184,8 @@ function ActivityMeta({ activity }: { activity: DashboardActivity }) {
 function SectionHeading({ id, title, description }: { id: string; title: string; description?: string }) {
   return (
     <div>
-      <h2 className="text-xl font-semibold text-kmt-ink" id={id}>{title}</h2>
-      {description ? <p className="mt-1 text-sm leading-6 text-kmt-muted">{description}</p> : null}
+      <h2 className="text-xl font-semibold text-foreground" id={id}>{title}</h2>
+      {description ? <p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p> : null}
     </div>
   );
 }

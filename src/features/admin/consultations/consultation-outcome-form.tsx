@@ -6,13 +6,12 @@ import { Button, InlineFeedback, Select, Textarea } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import {
-  localizeApiMessage,
   plan36ConsultationOutcomeCopy as copy
 } from "@/lib/ui-copy";
+import { AdminApiError, readAdminApiResponse } from "@/features/admin/shared/admin-api-error";
 
 type FinalOutcome = "SUCCESSFUL" | "NO_SHOW" | "CANCELLED";
 type Feedback = { tone: "success" | "error"; text: string; code?: string };
-type ApiErrorBody = { error?: { code?: string; message?: string } };
 
 const initialReasons = [
   "COMPLETED_AS_SCHEDULED",
@@ -66,24 +65,18 @@ export function ConsultationOutcomeForm({
           note: formData.get("note")
         })
       });
-      const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
-      if (!response.ok) {
-        setFeedback({
-          tone: "error",
-          code: body.error?.code,
-          text: body.error?.message
-            ? localizeApiMessage(body.error.message, "ar")
-            : copy.feedback.failed
-        });
-        return;
-      }
+      await readAdminApiResponse(response);
       setFeedback({
         tone: "success",
         text: isCorrection ? copy.feedback.outcomeCorrected : copy.feedback.outcomeSaved
       });
       router.refresh();
-    } catch {
-      setFeedback({ tone: "error", text: copy.feedback.failed });
+    } catch (error) {
+      setFeedback({
+        tone: "error",
+        code: error instanceof AdminApiError ? error.code : undefined,
+        text: error instanceof AdminApiError ? error.message : copy.feedback.failed
+      });
     } finally {
       setBusy(false);
     }
@@ -126,7 +119,7 @@ export function ConsultationOutcomeForm({
         maxLength={800}
         name="note"
       />
-      <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded border border-kmt-border p-3 text-sm leading-6 text-kmt-ink">
+      <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded border border-border p-3 text-sm leading-6 text-foreground">
         <input className="mt-1 h-5 w-5 shrink-0" disabled={busy} name="confirm" required type="checkbox" value="yes" />
         <span>{copy.outcomeForm.confirm}</span>
       </label>

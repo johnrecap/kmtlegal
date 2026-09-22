@@ -106,6 +106,12 @@ const webhookProviderLabels: Record<string, string> = {
   paymob: "Paymob"
 };
 
+const webhookSignatureStatusLabels: Record<string, string> = {
+  VERIFIED: "موثّق",
+  UNVERIFIED: "غير متحقق",
+  INVALID: "غير صالح"
+};
+
 const webhookMoneyStatusLabels: Record<string, string> = {
   MATCHED: "مطابق",
   AMOUNT_MISMATCH: "فرق مبلغ",
@@ -147,8 +153,8 @@ function columns(query: Record<string, string>): Array<DataTableColumn<PaymentRo
       header: "الفاتورة",
       render: (row) => (
         <div>
-          <p className="font-semibold text-kmt-ink">{row.invoiceNumber}</p>
-          <p className="mt-1 text-xs text-kmt-muted">أُنشئت بواسطة {row.createdBy?.name ?? "النظام"}</p>
+          <p className="font-semibold text-foreground">{row.invoiceNumber}</p>
+          <p className="mt-1 text-xs text-muted-foreground">أُنشئت بواسطة {row.createdBy?.name ?? "النظام"}</p>
         </div>
       )
     },
@@ -157,10 +163,10 @@ function columns(query: Record<string, string>): Array<DataTableColumn<PaymentRo
       header: "العميل / القضية",
       render: (row) => (
         <div>
-          <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/clients/${row.client.id}`}>
+          <Link className="font-semibold text-primary hover:underline" href={`/admin/clients/${row.client.id}`}>
             {row.client.fullName}
           </Link>
-          <p className="mt-1 text-xs text-kmt-muted">
+          <p className="mt-1 text-xs text-muted-foreground">
             {row.case ? `${row.case.internalFileNumber} - ${row.case.title}` : "بدون قضية مرتبطة"}
           </p>
         </div>
@@ -182,7 +188,7 @@ function columns(query: Record<string, string>): Array<DataTableColumn<PaymentRo
       render: (row) => (
         <div className="text-sm leading-6">
           <p>إصدار: {formatDate(row.issueDate)}</p>
-          <p className="text-kmt-muted">استحقاق: {formatDate(row.dueDate)}</p>
+          <p className="text-muted-foreground">استحقاق: {formatDate(row.dueDate)}</p>
         </div>
       )
     },
@@ -192,7 +198,7 @@ function columns(query: Record<string, string>): Array<DataTableColumn<PaymentRo
       render: (row) => (
         <div className="text-sm leading-6">
           <p>{row.paymentMethod || "غير محدد"}</p>
-          <p className="text-kmt-muted">{row.receiptNumber || "بدون إيصال"}</p>
+          <p className="text-muted-foreground">{row.receiptNumber || "بدون إيصال"}</p>
         </div>
       )
     },
@@ -205,7 +211,7 @@ function columns(query: Record<string, string>): Array<DataTableColumn<PaymentRo
       key: "action",
       header: "",
       render: (row) => (
-        <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={editHref(row.id, query)}>
+        <Link className="text-sm font-semibold text-primary hover:underline" href={editHref(row.id, query)}>
           تعديل
         </Link>
       )
@@ -223,7 +229,7 @@ function PaymentMobileCard({ row, query }: { row: PaymentRow; query: Record<stri
         {
           label: "العميل",
           value: (
-            <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/clients/${row.client.id}`}>
+            <Link className="font-semibold text-primary hover:underline" href={`/admin/clients/${row.client.id}`}>
               {row.client.fullName}
             </Link>
           )
@@ -304,18 +310,18 @@ function PaymentGatewayOperationsPanel({
           <CardContent className="space-y-3">
             {pricingRules.length ? (
               pricingRules.slice(0, 8).map((rule) => (
-                <div key={rule.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
+                <div key={rule.id} className="rounded border border-border bg-surface px-3 py-3 text-sm">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="font-semibold text-kmt-ink">{rule.label || rule.serviceCategory || "سعر عام"}</p>
-                      <p className="mt-1 text-kmt-muted">
+                      <p className="font-semibold text-foreground">{rule.label || rule.serviceCategory || "سعر عام"}</p>
+                      <p className="mt-1 text-muted-foreground">
                         {formatMoney(rule.amount.toString(), rule.currency)} · {rule.mode || "كل الطرق"} · v{rule.version}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge tone={rule.active ? "active" : "neutral"}>{rule.active ? "نشط" : "متوقف"}</Badge>
                       {canManage ? (
-                        <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={pricingRuleEditHref(rule.id, query)}>
+                        <Link className="text-sm font-semibold text-primary hover:underline" href={pricingRuleEditHref(rule.id, query)}>
                           تعديل
                         </Link>
                       ) : null}
@@ -365,7 +371,7 @@ function PaymentGatewayOperationsPanel({
             <Button type="submit" variant="secondary">
               تطبيق
             </Button>
-            <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={operationalFilterHref({ tab: "attempts", webhookQ: query.webhookQ ?? "", webhookStatus: query.webhookStatus ?? "", webhookProvider: query.webhookProvider ?? "", webhookMoneyStatus: query.webhookMoneyStatus ?? "" })}>
+            <Link className="text-sm font-semibold text-primary hover:underline" href={operationalFilterHref({ tab: "attempts", webhookQ: query.webhookQ ?? "", webhookStatus: query.webhookStatus ?? "", webhookProvider: query.webhookProvider ?? "", webhookMoneyStatus: query.webhookMoneyStatus ?? "" })}>
               مسح فلاتر التشغيل
             </Link>
           </FilterBar>
@@ -378,15 +384,15 @@ function PaymentGatewayOperationsPanel({
           <CardContent className="space-y-3">
             {attempts.length ? (
               attempts.map((attempt) => (
-                <div key={attempt.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
+                <div key={attempt.id} className="rounded border border-border bg-surface px-3 py-3 text-sm">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="font-semibold text-kmt-ink">{attempt.client.fullName}</p>
+                    <p className="font-semibold text-foreground">{attempt.client.fullName}</p>
                     <Badge tone={paymentRequiresReview(attempt) ? "danger" : attemptTone(attempt.status)}>{paymentNeedsOrderVerification(attempt) ? paymentReviewCopy.ar.orderVerification : paymentRequiresReview(attempt) ? paymentReviewCopy.ar.review : paymentAttemptStatusLabels[attempt.status] ?? attempt.status}</Badge>
                   </div>
-                  <p className="mt-1 text-kmt-muted">
+                  <p className="mt-1 text-muted-foreground">
                     {formatMoney(attempt.amount.toString(), attempt.currency)} · {attempt.provider} · {formatDateTime(attempt.appointment.startsAt)}
                   </p>
-                  <p className="mt-1 truncate text-xs text-kmt-muted">{attempt.providerSessionId || attempt.id}</p>
+                  <p className="mt-1 truncate text-xs text-muted-foreground">{attempt.providerSessionId || attempt.id}</p>
                   {paymentIssueText(attempt.failureCode) ? (
                     <div className="mt-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900" role="status">
                       {paymentIssueText(attempt.failureCode)}
@@ -504,7 +510,7 @@ function PaymentGatewayOperationsPanel({
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>أحداث Webhook</CardTitle>
+            <CardTitle>إشعارات بوابة الدفع</CardTitle>
             <CardDescription>حالة التوقيع والمعالجة وإعادة التشغيل الآمن. المعروض {webhookEvents.length} من {webhookTotal}.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -513,37 +519,40 @@ function PaymentGatewayOperationsPanel({
                 const money = event.moneyComparison;
                 const moneyIssue = money.differenceAmount && money.differenceAmount !== "0" ? `فرق القيمة: ${formatMoney(money.differenceAmount, money.expectedCurrency ?? money.receivedCurrency ?? "EGP")}` : "";
                 return (
-                  <div key={event.id} className="rounded border border-kmt-border bg-white px-3 py-3 text-sm">
+                  <div key={event.id} className="rounded border border-border bg-surface px-3 py-3 text-sm">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="truncate font-semibold text-kmt-ink">{event.eventId}</p>
+                      <p className="truncate font-semibold text-foreground">{event.eventId}</p>
                       <div className="flex flex-wrap items-center justify-end gap-2">
                         <Badge tone={webhookMoneyTone(money.status)}>{webhookMoneyStatusLabels[money.status] ?? money.status}</Badge>
                         <Badge tone={webhookTone(event.processingStatus)}>{webhookProcessingStatusLabels[event.processingStatus] ?? event.processingStatus}</Badge>
                       </div>
                     </div>
-                    <p className="mt-1 text-kmt-muted">
-                      {event.provider} · توقيع {event.signatureStatus} · replay {event.replayCount}
+                    <p className="mt-1 text-muted-foreground">
+                      {webhookProviderLabels[event.provider] ?? "بوابة الدفع"} · التوقيع {webhookSignatureStatusLabels[event.signatureStatus] ?? "غير معروف"} · مرات إعادة المعالجة {event.replayCount}
                     </p>
-                    <div className="mt-3 grid gap-2 rounded border border-kmt-border bg-kmt-surface-muted px-3 py-2 text-xs leading-5 text-kmt-muted sm:grid-cols-2">
+                    <details className="mt-3 rounded border border-border bg-surface-muted px-3 py-2 text-xs leading-5 text-muted-foreground">
+                      <summary className="min-h-11 cursor-pointer py-2 font-semibold text-foreground">التفاصيل المالية والتقنية</summary>
+                      <div className="grid gap-2 pt-2 sm:grid-cols-2">
                       <p>
-                        <span className="font-semibold text-kmt-ink">المبلغ المطلوب من العميل: </span>
+                        <span className="font-semibold text-foreground">المبلغ المطلوب من العميل: </span>
                         {money.expectedAmount && money.expectedCurrency ? formatMoney(money.expectedAmount, money.expectedCurrency) : "غير مرتبط بمحاولة دفع"}
                       </p>
                       <p>
-                        <span className="font-semibold text-kmt-ink">المبلغ الواصل من الويب هوك: </span>
+                        <span className="font-semibold text-foreground">المبلغ الواصل من الويب هوك: </span>
                         {money.receivedAmount && money.receivedCurrency ? formatMoney(money.receivedAmount, money.receivedCurrency) : "غير موجود في الإشعار"}
                       </p>
                       <p>
-                        <span className="font-semibold text-kmt-ink">حالة البوابة: </span>
+                        <span className="font-semibold text-foreground">حالة البوابة: </span>
                         {money.providerStatus ?? "غير محددة"}
                       </p>
                       <p>
-                        <span className="font-semibold text-kmt-ink">نتيجة المطابقة: </span>
+                        <span className="font-semibold text-foreground">نتيجة المطابقة: </span>
                         {webhookMoneyStatusLabels[money.status] ?? money.status}
                         {moneyIssue ? ` · ${moneyIssue}` : ""}
                       </p>
-                    </div>
-                    <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(event.receivedAt)}</p>
+                      </div>
+                    </details>
+                    <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(event.receivedAt)}</p>
                     {paymentIssueText(event.errorCode || (event.signatureStatus === "INVALID" ? "INVALID_SIGNATURE" : null)) ? (
                       <div className="mt-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900" role="status">
                         {paymentIssueText(event.errorCode || (event.signatureStatus === "INVALID" ? "INVALID_SIGNATURE" : null))}
@@ -625,7 +634,7 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
     { value: "gateway", label: "البوابة", href: financeTabHref(query, "gateway") },
     { value: "pricing", label: "الأسعار", href: financeTabHref(query, "pricing") },
     { value: "attempts", label: "المحاولات", href: financeTabHref(query, "attempts") },
-    { value: "webhooks", label: "الويب هوك", href: financeTabHref(query, "webhooks") }
+    { value: "webhooks", label: "إشعارات البوابة", href: financeTabHref(query, "webhooks") }
   ];
 
   return (
@@ -650,7 +659,7 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
           <MetricCard label="المتأخر" value={String(result.summary.overdueCount)} meta={summaryAmount(result.summary.overdueAmount, selectedCurrency)} />
         </div>
 
-          <p className="text-sm text-kmt-muted">{paymentReviewCopy.ar.totals} {paymentReviewCopy.ar.count}: {result.summary.reviewCount}. {paymentReviewCopy.ar.unallocated}: {result.summary.unallocatedReviewCount}</p>
+          <p className="text-sm text-muted-foreground">{paymentReviewCopy.ar.totals} {paymentReviewCopy.ar.count}: {result.summary.reviewCount}. {paymentReviewCopy.ar.unallocated}: {result.summary.unallocatedReviewCount}</p>
           {!selectedCurrency ? (
           <div className="rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
             الأرقام المجمعة المعروضة هنا مجموع خام عبر العملات. استخدم فلتر العملة للحصول على قراءة مالية دقيقة.
@@ -800,7 +809,7 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
             </MobileFiltersSheet>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
               <p>{result.total} فاتورة داخل الفلاتر الحالية</p>
               <div className="flex flex-wrap items-center gap-3">
                 <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={exportHref(query)}>

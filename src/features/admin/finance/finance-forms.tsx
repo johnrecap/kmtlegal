@@ -8,6 +8,7 @@ import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import { currencyValues, paymentStatusValues } from "@/lib/legal-finance";
 import { labelFrom, paymentStatusLabels } from "@/lib/legal-format";
 import { paymentGatewayUiCopy } from "@/lib/ui-copy";
+import { readAdminApiErrorMessage } from "@/features/admin/shared/admin-api-error";
 
 type ClientOption = {
   id: string;
@@ -75,20 +76,13 @@ export type PricingRuleValue = {
   label?: string | null;
 };
 
-type ApiErrorBody = {
-  error?: {
-    message?: string;
-  };
-};
-
 type ActionMessage = {
   tone: "success" | "error";
   text: string;
 };
 
 async function readMessage(response: Response) {
-  const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
-  return body.error?.message ?? "تعذر تنفيذ الإجراء الآن.";
+  return readAdminApiErrorMessage(response);
 }
 
 function toDateInput(value?: string | null) {
@@ -238,12 +232,12 @@ export function PaymentForm({
         />
       ) : (
         <div className="space-y-2">
-          <span className="block text-sm font-semibold text-kmt-ink">رقم الفاتورة</span>
+          <span className="block text-sm font-semibold text-foreground">رقم الفاتورة</span>
           <input name="invoiceNumber" type="hidden" value="" />
-          <div className="flex min-h-11 items-center rounded border border-slate-300 bg-slate-50 px-3 py-2.5 text-base text-kmt-muted">
+          <div className="flex min-h-11 items-center rounded border border-border bg-surface-muted px-3 py-2.5 text-base text-muted-foreground">
             سيتم توليده تلقائيًا عند إنشاء الفاتورة
           </div>
-          <p className="text-sm leading-6 text-kmt-muted">يستخدم تاريخ الإصدار لترقيم الفاتورة بصيغة INV-YYYY-0001.</p>
+          <p className="text-sm leading-6 text-muted-foreground">يستخدم تاريخ الإصدار لترقيم الفاتورة بصيغة INV-YYYY-0001.</p>
         </div>
       )}
       <div className="grid gap-4 sm:grid-cols-2">
@@ -380,11 +374,11 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
         <option value="AI_CHAT_PAID">شات AI + دفع رسوم الحجز</option>
         <option value="AI_CHAT_FREE">شات AI بدون رسوم حجز</option>
       </Select>
-      <div className="rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6">
-        <p className="font-semibold text-kmt-ink">
+      <div className="rounded border border-border bg-surface px-3 py-2 text-sm leading-6">
+        <p className="font-semibold text-foreground">
           {bookingMode === "AI_CHAT_PAID" ? "الشات والدفع مفعلان للحجوزات الجديدة." : "الشات مفعل، وسيتم تأكيد الموعد من المحادثة بدون تحصيل رسوم حجز."}
         </p>
-        <p className="mt-1 text-xs text-kmt-muted">
+        <p className="mt-1 text-xs text-muted-foreground">
           {bookingMode === "AI_CHAT_PAID"
             ? "يتطلب هذا الوضع بوابة دفع جاهزة وسعر استشارة نشط قبل الحفظ."
             : "لا يشترط هذا الوضع وجود سعر استشارة أو إعدادات بوابة دفع، لكن نص طلب العميل سيظل ظاهرًا للسكرتيرة للمراجعة والتوزيع."}
@@ -406,9 +400,9 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
       </Select>
       <div className="grid gap-2">
         {settings.providers.map((provider) => (
-          <div key={provider.provider} className="rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6">
+          <div key={provider.provider} className="rounded border border-border bg-surface px-3 py-2 text-sm leading-6">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-semibold text-kmt-ink">{provider.label}</span>
+              <span className="font-semibold text-foreground">{provider.label}</span>
               <span className={provider.enabled && provider.configured ? "text-kmt-success-strong" : "text-kmt-warning-strong"}>
                 {!provider.enabled
                   ? paymentGatewayUiCopy.standbyProvider
@@ -417,7 +411,7 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
                     : paymentGatewayUiCopy.missingConfiguration}
               </span>
             </div>
-            <p className="mt-1 text-xs text-kmt-muted">
+            <p className="mt-1 text-xs text-muted-foreground">
               {!provider.enabled
                 ? paymentGatewayUiCopy.disabledProviderHint
                 : provider.configured
@@ -427,11 +421,11 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
           </div>
         ))}
       </div>
-      <div className="rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6">
+      <div className="rounded border border-border bg-surface px-3 py-2 text-sm leading-6">
         <p className={settings.hasActivePricingRule ? "font-semibold text-kmt-success-strong" : "font-semibold text-kmt-warning-strong"}>
           {settings.hasActivePricingRule ? "يوجد سعر استشارة نشط." : "لا يوجد سعر استشارة نشط."}
         </p>
-        <p className="mt-1 text-xs text-kmt-muted">
+        <p className="mt-1 text-xs text-muted-foreground">
           {selectedProvider?.configured ? `${selectedProvider.label} جاهزة للتفعيل.` : `${selectedProvider?.label ?? "بوابة الدفع"} ناقصة إعدادات.`}
         </p>
       </div>
@@ -592,7 +586,7 @@ export function ConsultationPricingRuleForm({
         required
         type="datetime-local"
       />
-      <label className="flex items-center gap-3 rounded border border-kmt-border bg-white px-3 py-2 text-sm font-semibold text-kmt-ink">
+      <label className="flex items-center gap-3 rounded border border-border bg-surface px-3 py-2 text-sm font-semibold text-foreground">
         <input className="h-4 w-4 accent-kmt-navy" defaultChecked={pricingRule?.active ?? true} disabled={isBusy} id={`consultation-pricing-${pricingRule?.id ?? "create"}-active`} name="active" type="checkbox" />
         <span>سعر نشط</span>
       </label>

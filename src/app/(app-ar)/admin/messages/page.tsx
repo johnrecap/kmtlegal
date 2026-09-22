@@ -64,10 +64,10 @@ const columns: Array<DataTableColumn<ConversationRow>> = [
     header: "العميل",
     render: (row) => (
       <div>
-        <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/messages/${row.id}`}>
+        <Link className="font-semibold text-primary hover:underline" href={`/admin/messages/${row.id}`}>
           {row.client.fullName}
         </Link>
-        <p className="mt-1 text-xs text-kmt-muted" dir="ltr">{row.client.phone}</p>
+        <p className="mt-1 text-xs text-muted-foreground" dir="ltr">{row.client.phone}</p>
       </div>
     )
   },
@@ -76,8 +76,8 @@ const columns: Array<DataTableColumn<ConversationRow>> = [
     header: "آخر رسالة",
     render: (row) => (
       <div className="max-w-lg">
-        <p className="line-clamp-2 break-words text-sm text-kmt-ink">{row.latestMessage?.body ?? "لا توجد رسائل"}</p>
-        <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(row.lastMessageAt)}</p>
+        <p className="line-clamp-2 break-words text-sm text-foreground">{row.latestMessage?.body ?? "لا توجد رسائل"}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(row.lastMessageAt)}</p>
       </div>
     )
   },
@@ -95,7 +95,7 @@ const columns: Array<DataTableColumn<ConversationRow>> = [
     key: "action",
     header: "",
     render: (row) => (
-      <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={`/admin/messages/${row.id}`}>
+      <Link className="text-sm font-semibold text-primary hover:underline" href={`/admin/messages/${row.id}`}>
         فتح
       </Link>
     )
@@ -106,7 +106,7 @@ function ConversationMobileCard({ row }: { row: ConversationRow }) {
   return (
     <DataRecordCard
       title={
-        <Link className="text-kmt-navy hover:underline" href={`/admin/messages/${row.id}`}>
+        <Link className="text-primary hover:underline" href={`/admin/messages/${row.id}`}>
           {row.client.fullName}
         </Link>
       }
@@ -215,7 +215,7 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
         </MobileFiltersSheet>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
           <p>{result.total} محادثة</p>
           <p>
             صفحة {result.page} من {totalPages}

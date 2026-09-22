@@ -1,5 +1,5 @@
 import React from "react";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
@@ -34,10 +34,11 @@ const tableFiles = [
   "src/app/(app-ar)/admin/clients/page.tsx",
   "src/app/(app-ar)/admin/consultations/page.tsx",
   "src/app/(app-ar)/admin/content/page.tsx",
-  "src/app/(app-ar)/admin/documents/page.tsx",
+  "src/features/admin/task-documents/document-list.tsx",
   "src/app/(app-ar)/admin/finance/page.tsx",
   "src/app/(app-ar)/admin/messages/page.tsx",
   "src/app/(app-ar)/admin/reports/page.tsx",
+  "src/app/(app-ar)/admin/tasks/page.tsx",
   "src/app/(app-ar)/admin/users/[userId]/page.tsx",
   "src/app/(app-ar)/admin/users/page.tsx",
   "src/features/admin/contact-messages/contact-message-inbox.tsx"
@@ -145,6 +146,35 @@ describe("PLAN-35 admin UI/RTL convergence", () => {
       expect(searches.every((tag) => tag.includes("ariaLabel=")), file).toBe(true);
     }
   });
+
+  it("keeps admin surfaces on semantic neutral tokens in both themes", () => {
+    const files = [
+      ...tsxFiles("src/app/(app-ar)/admin"),
+      ...tsxFiles("src/components/admin"),
+      ...tsxFiles("src/features/admin")
+    ];
+
+    for (const file of files) {
+      const source = sourceOf(file);
+      expect(source, file).not.toMatch(/(?:dark:)?bg-white\b/);
+      expect(source, file).not.toMatch(/(?:bg|text|border)-(?:slate|gray)-\d{2,3}\b/);
+      expect(source, file).not.toContain("bg-kmt-paper");
+    }
+  });
+
+  it("mounts one persistent admin shell and renders page state inside its content frame", () => {
+    const layout = sourceOf("src/app/(app-ar)/admin/layout.tsx");
+    const shell = sourceOf("src/features/admin/shell/admin-persistent-shell.tsx");
+    const shellView = sourceOf("src/components/layout/dashboard-shell-view.tsx");
+    const dashboardShellContent = sourceOf("src/features/admin/shell/admin-dashboard-shell-content.tsx");
+
+    expect(layout).toContain("AdminPersistentShell");
+    expect(layout).toContain("AdminNotificationBell");
+    expect(shellView).toContain("AdminSidebarNav");
+    expect(shellView).toContain("notificationBell");
+    expect(shell).toContain("DashboardShellView");
+    expect(dashboardShellContent).toContain("DashboardPageFrame");
+  });
 });
 
 function sourceOf(relativePath: string) {
@@ -153,4 +183,13 @@ function sourceOf(relativePath: string) {
 
 function occurrences(source: string, pattern: RegExp) {
   return source.match(pattern)?.length ?? 0;
+}
+
+function tsxFiles(relativeRoot: string): string[] {
+  const absoluteRoot = join(process.cwd(), ...relativeRoot.split("/"));
+  return readdirSync(absoluteRoot, { withFileTypes: true }).flatMap((entry) => {
+    const child = `${relativeRoot}/${entry.name}`;
+    if (entry.isDirectory()) return tsxFiles(child);
+    return entry.isFile() && entry.name.endsWith(".tsx") ? [child] : [];
+  });
 }

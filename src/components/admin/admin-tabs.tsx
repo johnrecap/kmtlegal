@@ -67,12 +67,12 @@ export function AdminTabs({
     >
       <TabsList
         aria-label={ariaLabel}
-        className={cn("w-full justify-start overflow-x-auto border-kmt-border bg-white sm:justify-start")}
+        className={cn("w-full justify-start overflow-x-auto border-border bg-surface sm:justify-start")}
       >
         {tabs.map((tab) => (
           <TabsTrigger
             key={tab.value}
-            className="gap-2 text-kmt-muted hover:text-kmt-ink data-[disabled]:hover:text-kmt-muted"
+            className="min-h-11 gap-2 text-muted-foreground hover:text-foreground data-[disabled]:hover:text-muted-foreground"
             value={tab.value}
           >
             <span>{tab.label}</span>

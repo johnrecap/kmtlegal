@@ -7,6 +7,7 @@ export { AdminSidebarNav } from "./admin-sidebar-nav";
 export { AdminMobileNav } from "./admin-mobile-nav";
 export { AdminTabs, type AdminTabItem } from "./admin-tabs";
 export { AdminDialog } from "./admin-dialog";
+export { AdminAccountMenu } from "./admin-account-menu";
 export { AdminRowActions, type AdminMenuAction, type AdminMenuEntry } from "./admin-menu";
 export { AdminPagination, type AdminPaginationProps } from "./admin-pagination";
 export { MoreFiltersPopover, MobileFiltersSheet } from "./admin-list-filters";

@@ -137,10 +137,10 @@ const columns: Array<DataTableColumn<ConsultationRow>> = [
     header: "العميل",
     render: (row) => (
       <div>
-        <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/consultations/${row.id}`}>
+        <Link className="font-semibold text-primary hover:underline" href={`/admin/consultations/${row.id}`}>
           {row.fullName}
         </Link>
-        <p className="mt-1 text-xs text-kmt-muted">{row.phone}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{row.phone}</p>
       </div>
     )
   },
@@ -150,7 +150,7 @@ const columns: Array<DataTableColumn<ConsultationRow>> = [
     render: (row) => (
       <div className="min-w-0">
         <p className="break-words font-medium">{consultationServiceCategoryLabel(row.serviceCategory)}</p>
-        <p className="mt-1 text-xs text-kmt-muted">{labelFrom(modeLabels, row.preferredMode)}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{labelFrom(modeLabels, row.preferredMode)}</p>
       </div>
     )
   },
@@ -173,12 +173,12 @@ const columns: Array<DataTableColumn<ConsultationRow>> = [
     render: (row) => row.primaryAppointment ? (
       <div className="text-sm">
         <p>{plan36ConsultationOutcomeCopy.list.startsAt}: {formatDateTime(row.primaryAppointment.startsAt)}</p>
-        <p className="mt-1 text-xs text-kmt-muted">
+        <p className="mt-1 text-xs text-muted-foreground">
           {plan36ConsultationOutcomeCopy.list.endsAt}: {formatDateTime(row.primaryAppointment.endsAt)}
         </p>
       </div>
     ) : (
-      <div className="text-sm text-kmt-muted">
+      <div className="text-sm text-muted-foreground">
         <span>{plan36ConsultationOutcomeCopy.list.noPrimaryAppointment}</span>
         {row.operationalTiming.isOverdueUnbooked && row.operationalTiming.overdueAt ? (
           <p className="mt-1 text-xs text-kmt-danger">
@@ -207,7 +207,7 @@ const columns: Array<DataTableColumn<ConsultationRow>> = [
     key: "action",
     header: "",
     render: (row) => (
-      <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={`/admin/consultations/${row.id}`}>
+      <Link className="text-sm font-semibold text-primary hover:underline" href={`/admin/consultations/${row.id}`}>
         مراجعة
       </Link>
     )
@@ -218,7 +218,7 @@ function ConsultationMobileCard({ row }: { row: ConsultationRow }) {
   return (
     <DataRecordCard
       title={
-        <Link className="text-kmt-navy hover:underline" href={`/admin/consultations/${row.id}`}>
+        <Link className="text-primary hover:underline" href={`/admin/consultations/${row.id}`}>
           {row.fullName}
         </Link>
       }
@@ -304,7 +304,7 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
           }))}
         />
 
-        <p className="rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6 text-kmt-muted">
+        <p className="rounded border border-border bg-surface px-3 py-2 text-sm leading-6 text-muted-foreground">
           {plan37ConsultationOverdueCopy.list.definitions[result.filters.view]}
         </p>
 
@@ -379,7 +379,7 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
         </MobileFiltersSheet>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
           <div className="flex flex-wrap gap-2">
             <Link className={buttonClasses({ variant: result.filters.view === operationalActionView && result.filters.assigned === "unassigned" ? "primary" : "secondary", size: "sm" })} href={listHref({ view: operationalActionView, assigned: "unassigned" }, 1)}>
               {result.unassignedTotal} يحتاج تعيين محامي

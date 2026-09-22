@@ -27,6 +27,7 @@ import {
   AccordionTrigger
 } from "@/components/animate-ui/components/radix/accordion";
 import { sourceTypeDisplayLabel } from "@/lib/ui-copy";
+import { readAdminApiErrorMessage } from "@/features/admin/shared/admin-api-error";
 
 type LawyerOption = {
   id: string;
@@ -74,8 +75,7 @@ const statusOptions = [
 ];
 
 async function readMessage(response: Response) {
-  const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
-  return body.error?.message ?? "تعذر تنفيذ الإجراء الآن.";
+  return readAdminApiErrorMessage(response);
 }
 
 function ActionFeedback({ message }: { message: ActionMessage | null }) {
@@ -297,11 +297,11 @@ export function ClientActionPanel({
   return (
     <div className="space-y-4">
       <Accordion type="multiple" value={groups.value} onValueChange={groups.onValueChange}>
-        <AccordionItem value="edit" data-form-group="edit" className="rounded-lg border border-kmt-border bg-white px-4">
+        <AccordionItem value="edit" data-form-group="edit" className="rounded-lg border border-border bg-surface px-4">
           <AccordionTrigger className="hover:no-underline">
             <span className="flex flex-1 flex-col gap-1 text-start">
-              <span className="text-base font-semibold text-kmt-ink">تعديل بيانات العميل</span>
-              <span className="text-sm font-normal text-kmt-muted">تعديل بيانات CRM الأساسية فقط؛ لا يتم تعديل حساب الدخول من هنا.</span>
+              <span className="text-base font-semibold text-foreground">تعديل بيانات العميل</span>
+              <span className="text-sm font-normal text-muted-foreground">تعديل بيانات CRM الأساسية فقط؛ لا يتم تعديل حساب الدخول من هنا.</span>
             </span>
           </AccordionTrigger>
           <AccordionContent>
@@ -338,11 +338,11 @@ export function ClientActionPanel({
           </AccordionContent>
         </AccordionItem>
 
-        <AccordionItem value="assign" data-form-group="assign" className="rounded-lg border border-kmt-border bg-white px-4">
+        <AccordionItem value="assign" data-form-group="assign" className="rounded-lg border border-border bg-surface px-4">
           <AccordionTrigger className="hover:no-underline">
             <span className="flex flex-1 flex-col gap-1 text-start">
-              <span className="text-base font-semibold text-kmt-ink">تعيين المحامي</span>
-              <span className="text-sm font-normal text-kmt-muted">التعيين هنا يخص ملف العميل. تعيين القضايا نفسها يأتي في خطة إدارة القضايا.</span>
+              <span className="text-base font-semibold text-foreground">تعيين المحامي</span>
+              <span className="text-sm font-normal text-muted-foreground">التعيين هنا يخص ملف العميل. تعيين القضايا نفسها يأتي في خطة إدارة القضايا.</span>
             </span>
           </AccordionTrigger>
           <AccordionContent>
@@ -368,24 +368,24 @@ export function ClientActionPanel({
         </AccordionItem>
 
       {canManageAccount ? (
-        <AccordionItem value="account" data-form-group="account" className="rounded-lg border border-kmt-border bg-white px-4">
+        <AccordionItem value="account" data-form-group="account" className="rounded-lg border border-border bg-surface px-4">
           <AccordionTrigger className="hover:no-underline">
             <span className="flex flex-1 flex-col gap-1 text-start">
-              <span className="text-base font-semibold text-kmt-ink">حساب بوابة العميل</span>
-              <span className="text-sm font-normal text-kmt-muted">إنشاء أو تحديث حساب دخول للعميل فقط. لا يمكن استخدام هذا المسار لإنشاء حساب موظف.</span>
+              <span className="text-base font-semibold text-foreground">حساب بوابة العميل</span>
+              <span className="text-sm font-normal text-muted-foreground">إنشاء أو تحديث حساب دخول للعميل فقط. لا يمكن استخدام هذا المسار لإنشاء حساب موظف.</span>
             </span>
           </AccordionTrigger>
           <AccordionContent>
             {client.user ? (
               <div className="space-y-4 pb-4">
-                <div className="rounded border border-kmt-border bg-slate-50 p-3 text-sm leading-6">
-                  <p className="font-semibold text-kmt-ink">{client.user.email}</p>
-                  <p className="text-kmt-muted">الحالة: {client.user.status}</p>
+                <div className="rounded border border-border bg-surface-muted p-3 text-sm leading-6">
+                  <p className="font-semibold text-foreground">{client.user.email}</p>
+                  <p className="text-muted-foreground">الحالة: {client.user.status}</p>
                 </div>
                 <form ref={passwordFormRef} className="grid gap-3" method="post" onSubmit={resetClientAccountPassword} onInvalidCapture={groups.onInvalidCapture}>
                   <TextInput disabled={!isHydrated || isBusy} idPrefix={`client-account-password-${client.id}`} label="كلمة مرور جديدة" minLength={10} name="password" required type="password" />
-                  <label className="flex items-center gap-2 text-sm text-kmt-muted">
-                    <input className="h-4 w-4 rounded border-kmt-border" defaultChecked id={`client-account-password-${client.id}-revokeSessions`} name="revokeSessions" type="checkbox" />
+                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <input className="h-4 w-4 rounded border-border" defaultChecked id={`client-account-password-${client.id}-revokeSessions`} name="revokeSessions" type="checkbox" />
                     إنهاء جلسات العميل الحالية
                   </label>
                   <Button disabled={!isHydrated || isBusy} type="button" variant="secondary" onClick={() => setPasswordResetOpen(true)}>
@@ -432,8 +432,8 @@ export function ClientActionPanel({
       <AccordionItem value="archive" data-form-group="archive" className="rounded-lg border border-kmt-danger-border bg-kmt-danger-surface px-4">
         <AccordionTrigger className="hover:no-underline">
           <span className="flex flex-1 flex-col gap-1 text-start">
-            <span className="text-base font-semibold text-kmt-ink">أرشفة العميل</span>
-            <span className="text-sm font-normal text-kmt-muted">الأرشفة تغير حالة العميل فقط ولا تحذف القضايا أو السجلات المرتبطة.</span>
+            <span className="text-base font-semibold text-foreground">أرشفة العميل</span>
+            <span className="text-sm font-normal text-muted-foreground">الأرشفة تغير حالة العميل فقط ولا تحذف القضايا أو السجلات المرتبطة.</span>
           </span>
         </AccordionTrigger>
         <AccordionContent>

@@ -76,11 +76,11 @@ const columns: Array<DataTableColumn<CaseRow>> = [
     header: "القضية",
     render: (row) => (
       <div>
-        <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/cases/${row.id}`}>
+        <Link className="font-semibold text-primary hover:underline" href={`/admin/cases/${row.id}`}>
           {row.internalFileNumber}
         </Link>
-        <p className="mt-1 text-sm text-kmt-ink">{row.title}</p>
-        <p className="mt-1 text-xs text-kmt-muted">{row.caseType}</p>
+        <p className="mt-1 text-sm text-foreground">{row.title}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{row.caseType}</p>
       </div>
     )
   },
@@ -89,10 +89,10 @@ const columns: Array<DataTableColumn<CaseRow>> = [
     header: "العميل",
     render: (row) => (
       <div>
-        <Link className="font-medium text-kmt-navy hover:underline" href={`/admin/clients/${row.client.id}`}>
+        <Link className="font-medium text-primary hover:underline" href={`/admin/clients/${row.client.id}`}>
           {row.client.fullName}
         </Link>
-        <p className="mt-1 text-xs text-kmt-muted">{row.client.phone}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{row.client.phone}</p>
       </div>
     )
   },
@@ -120,7 +120,7 @@ const columns: Array<DataTableColumn<CaseRow>> = [
     key: "counts",
     header: "الارتباطات",
     render: (row) => (
-      <span className="text-sm text-kmt-muted">
+      <span className="text-sm text-muted-foreground">
         {row._count.sessions} جلسة · {row._count.appointments} موعد · {row._count.tasks} مهمة
       </span>
     )
@@ -134,7 +134,7 @@ const columns: Array<DataTableColumn<CaseRow>> = [
     key: "action",
     header: "",
     render: (row) => (
-      <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={`/admin/cases/${row.id}`}>
+      <Link className="text-sm font-semibold text-primary hover:underline" href={`/admin/cases/${row.id}`}>
         فتح
       </Link>
     )
@@ -145,13 +145,13 @@ function CaseMobileCard({ row }: { row: CaseRow }) {
   return (
     <DataRecordCard
       title={
-        <Link className="text-kmt-navy hover:underline" href={`/admin/cases/${row.id}`}>
+        <Link className="text-primary hover:underline" href={`/admin/cases/${row.id}`}>
           {row.internalFileNumber}
         </Link>
       }
       description={
         <>
-          <span className="block text-kmt-ink">{row.title}</span>
+          <span className="block text-foreground">{row.title}</span>
           <span className="block text-xs">{row.caseType}</span>
         </>
       }
@@ -165,7 +165,7 @@ function CaseMobileCard({ row }: { row: CaseRow }) {
         {
           label: "العميل",
           value: (
-            <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/clients/${row.client.id}`}>
+            <Link className="font-semibold text-primary hover:underline" href={`/admin/clients/${row.client.id}`}>
               {row.client.fullName}
             </Link>
           )
@@ -345,7 +345,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams?: 
           </MobileFiltersSheet>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
           <p>{result.total} ملف قضية</p>
           <p>
             صفحة {result.page} من {totalPages}

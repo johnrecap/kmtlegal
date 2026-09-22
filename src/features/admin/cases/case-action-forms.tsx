@@ -26,12 +26,7 @@ import {
   SheetTrigger
 } from "@/components/animate-ui/components/radix/sheet";
 import { appointmentTypeLabels, caseStatusLabels, labelFrom, modeLabels } from "@/lib/legal-format";
-
-type ApiErrorBody = {
-  error?: {
-    message?: string;
-  };
-};
+import { readAdminApiErrorMessage } from "@/features/admin/shared/admin-api-error";
 
 type CaseOption = {
   id: string;
@@ -60,8 +55,7 @@ const appointmentTypeOptions = ["CONSULTATION", "COURT_SESSION", "INTERNAL_MEETI
 const appointmentModeOptions = ["COURT", "OFFICE", "ONLINE", "PHONE"];
 
 async function readMessage(response: Response) {
-  const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
-  return body.error?.message ?? "تعذر تنفيذ الإجراء الآن.";
+  return readAdminApiErrorMessage(response);
 }
 
 function toIsoFromLocal(value: FormDataEntryValue | null) {
@@ -171,8 +165,8 @@ export function CaseStatusForm({
             ))}
           </Select>
           <Textarea disabled={isBusy} idPrefix={`case-status-${caseId}`} label="سبب التغيير" name="reason" />
-          <label className="flex items-start gap-2 text-sm leading-6 text-kmt-ink">
-            <input className="mt-1 h-4 w-4 rounded border-slate-300 text-kmt-navy focus:ring-kmt-gold" disabled={isBusy} id={`case-status-${caseId}-confirmStatusChange`} name="confirmStatusChange" required type="checkbox" />
+          <label className="flex items-start gap-2 text-sm leading-6 text-foreground">
+            <input className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-kmt-gold" disabled={isBusy} id={`case-status-${caseId}-confirmStatusChange`} name="confirmStatusChange" required type="checkbox" />
             <span>أؤكد أن تغيير الحالة تمت مراجعته وأنه مناسب لملف القضية.</span>
           </label>
           <StatefulButton
@@ -362,7 +356,7 @@ export function AppointmentRescheduleForm({ appointmentId, status, startsAt, mod
   }
 
   return (
-    <form className="mt-3 grid gap-3 rounded border border-kmt-border bg-slate-50 p-3" onSubmit={submit}>
+    <form className="mt-3 grid gap-3 rounded border border-border bg-surface-muted p-3" onSubmit={submit}>
       <div className="grid gap-3 sm:grid-cols-2">
         <TextInput defaultValue={toDateTimeLocal(startsAt)} disabled={isBusy || isClosed} idPrefix={`appointment-reschedule-${appointmentId}`} label="موعد جديد" name="startsAt" required type="datetime-local" />
         <TextInput defaultValue="60" disabled={isBusy || isClosed} idPrefix={`appointment-reschedule-${appointmentId}`} label="المدة بالدقائق" name="durationMinutes" type="number" />
@@ -419,10 +413,10 @@ export function CalendarAppointmentDialogs({ cases, defaultCaseId }: { cases: Ca
       <span className="lg:hidden">
         <Sheet>
           <SheetTrigger className={buttonClasses({ className: "w-full" })}>موعد جديد</SheetTrigger>
-          <SheetContent aria-label="موعد جديد" className="overflow-y-auto border-kmt-border bg-white text-kmt-ink" side="right">
+          <SheetContent aria-label="موعد جديد" className="overflow-y-auto border-border bg-surface text-foreground" side="right">
             <SheetHeader>
-              <SheetTitle className="text-kmt-ink">موعد جديد</SheetTitle>
-              <SheetDescription className="text-kmt-muted">
+              <SheetTitle className="text-foreground">موعد جديد</SheetTitle>
+              <SheetDescription className="text-muted-foreground">
                 إنشاء موعد مرتبط بقضية. مواعيد العملاء المستقلة أو التذكيرات المتقدمة خارج نطاق هذه الخطة.
               </SheetDescription>
             </SheetHeader>
@@ -455,9 +449,9 @@ export function AppointmentRescheduleDialogs(props: AppointmentRescheduleFormPro
       <span className="lg:hidden">
         <Sheet>
           <SheetTrigger className={buttonClasses({ variant: "secondary", size: "sm" })}>إعادة الجدولة</SheetTrigger>
-          <SheetContent aria-label="إعادة الجدولة" className="overflow-y-auto border-kmt-border bg-white text-kmt-ink" side="right">
+          <SheetContent aria-label="إعادة الجدولة" className="overflow-y-auto border-border bg-surface text-foreground" side="right">
             <SheetHeader>
-              <SheetTitle className="text-kmt-ink">إعادة الجدولة</SheetTitle>
+              <SheetTitle className="text-foreground">إعادة الجدولة</SheetTitle>
             </SheetHeader>
             <div className="mt-4">
               <AppointmentRescheduleForm {...props} />

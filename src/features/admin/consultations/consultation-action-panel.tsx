@@ -15,10 +15,10 @@ import {
 } from "@/components/animate-ui/components/radix/accordion";
 import {
   commonUiCopy,
-  localizeApiMessage,
   plan36ConsultationOutcomeCopy as outcomeCopy,
   plan37ConsultationOverdueCopy as overdueCopy
 } from "@/lib/ui-copy";
+import { readAdminApiErrorMessage } from "@/features/admin/shared/admin-api-error";
 import { ConsultationOutcomeForm } from "./consultation-outcome-form";
 import { ConsultationReopenForm } from "./consultation-reopen-form";
 import { ConsultationScheduleForm } from "./consultation-schedule-form";
@@ -27,13 +27,6 @@ type LawyerOption = {
   id: string;
   name: string;
   email: string;
-};
-
-type ApiErrorBody = {
-  error?: {
-    code?: string;
-    message?: string;
-  };
 };
 
 type ApiSuccessBody = {
@@ -48,10 +41,7 @@ type ActionMessage = {
 };
 
 async function readMessage(response: Response) {
-  const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
-  return body.error?.message
-    ? localizeApiMessage(body.error.message, "ar")
-    : outcomeCopy.feedback.failed;
+  return readAdminApiErrorMessage(response, outcomeCopy.feedback.failed);
 }
 
 export function ConsultationActionPanel({
@@ -183,11 +173,11 @@ export function ConsultationActionPanel({
     <div className="space-y-4">
       <Accordion type="multiple" value={groups.value} onValueChange={groups.onValueChange}>
         {canSchedule ? (
-          <AccordionItem value="schedule" data-form-group="schedule" className="rounded-lg border border-kmt-border bg-white px-4">
+          <AccordionItem value="schedule" data-form-group="schedule" className="rounded-lg border border-border bg-surface px-4">
             <AccordionTrigger className="hover:no-underline">
               <span className="flex flex-1 flex-col gap-1 text-start">
-                <span className="text-base font-semibold text-kmt-ink">{overdueCopy.scheduleForm.title}</span>
-                <span className="text-sm font-normal text-kmt-muted">{overdueCopy.scheduleForm.description}</span>
+                <span className="text-base font-semibold text-foreground">{overdueCopy.scheduleForm.title}</span>
+                <span className="text-sm font-normal text-muted-foreground">{overdueCopy.scheduleForm.description}</span>
               </span>
             </AccordionTrigger>
             <AccordionContent>
@@ -203,11 +193,11 @@ export function ConsultationActionPanel({
         ) : null}
 
         {canRecordOutcome ? (
-          <AccordionItem value="outcome" data-form-group="outcome" className="rounded-lg border border-kmt-border bg-white px-4">
+          <AccordionItem value="outcome" data-form-group="outcome" className="rounded-lg border border-border bg-surface px-4">
             <AccordionTrigger className="hover:no-underline">
               <span className="flex flex-1 flex-col gap-1 text-start">
-                <span className="text-base font-semibold text-kmt-ink">{isFinalOutcome ? outcomeCopy.outcomeForm.correctionTitle : outcomeCopy.outcomeForm.title}</span>
-                <span className="text-sm font-normal text-kmt-muted">
+                <span className="text-base font-semibold text-foreground">{isFinalOutcome ? outcomeCopy.outcomeForm.correctionTitle : outcomeCopy.outcomeForm.title}</span>
+                <span className="text-sm font-normal text-muted-foreground">
                   {isFinalOutcome ? outcomeCopy.outcomeForm.correctionDescription : outcomeCopy.outcomeForm.description}
                 </span>
               </span>
@@ -225,11 +215,11 @@ export function ConsultationActionPanel({
         ) : null}
 
         {canReopen ? (
-          <AccordionItem value="reopen" data-form-group="reopen" className="rounded-lg border border-kmt-border bg-white px-4">
+          <AccordionItem value="reopen" data-form-group="reopen" className="rounded-lg border border-border bg-surface px-4">
             <AccordionTrigger className="hover:no-underline">
               <span className="flex flex-1 flex-col gap-1 text-start">
-                <span className="text-base font-semibold text-kmt-ink">{outcomeCopy.reopenForm.title}</span>
-                <span className="text-sm font-normal text-kmt-muted">{outcomeCopy.reopenForm.description}</span>
+                <span className="text-base font-semibold text-foreground">{outcomeCopy.reopenForm.title}</span>
+                <span className="text-sm font-normal text-muted-foreground">{outcomeCopy.reopenForm.description}</span>
               </span>
             </AccordionTrigger>
             <AccordionContent>
@@ -244,11 +234,11 @@ export function ConsultationActionPanel({
           </AccordionItem>
         ) : null}
 
-      <AccordionItem value="review" data-form-group="review" className="rounded-lg border border-kmt-border bg-white px-4">
+      <AccordionItem value="review" data-form-group="review" className="rounded-lg border border-border bg-surface px-4">
         <AccordionTrigger className="hover:no-underline">
           <span className="flex flex-1 flex-col gap-1 text-start">
-            <span className="text-base font-semibold text-kmt-ink">مراجعة السكرتيرة</span>
-            <span className="text-sm font-normal text-kmt-muted">بعد مراجعة بيانات الطلب، سيختفي من إشعارات الطلبات الجديدة وتنتقل مباشرة للطلب التالي إن وجد.</span>
+            <span className="text-base font-semibold text-foreground">مراجعة السكرتيرة</span>
+            <span className="text-sm font-normal text-muted-foreground">بعد مراجعة بيانات الطلب، سيختفي من إشعارات الطلبات الجديدة وتنتقل مباشرة للطلب التالي إن وجد.</span>
           </span>
         </AccordionTrigger>
         <AccordionContent>
@@ -273,11 +263,11 @@ export function ConsultationActionPanel({
         </AccordionContent>
       </AccordionItem>
 
-      <AccordionItem value="assign" data-form-group="assign" className="rounded-lg border border-kmt-border bg-white px-4">
+      <AccordionItem value="assign" data-form-group="assign" className="rounded-lg border border-border bg-surface px-4">
         <AccordionTrigger className="hover:no-underline">
           <span className="flex flex-1 flex-col gap-1 text-start">
-            <span className="text-base font-semibold text-kmt-ink">تعيين المحامي</span>
-            <span className="text-sm font-normal text-kmt-muted">التعيين يحول الطلب إلى قيد المراجعة إذا لم يكن مغلقًا.</span>
+            <span className="text-base font-semibold text-foreground">تعيين المحامي</span>
+            <span className="text-sm font-normal text-muted-foreground">التعيين يحول الطلب إلى قيد المراجعة إذا لم يكن مغلقًا.</span>
           </span>
         </AccordionTrigger>
         <AccordionContent>
@@ -302,11 +292,11 @@ export function ConsultationActionPanel({
         </AccordionContent>
       </AccordionItem>
 
-      <AccordionItem value="convert" data-form-group="convert" className="rounded-lg border border-kmt-border bg-white px-4">
+      <AccordionItem value="convert" data-form-group="convert" className="rounded-lg border border-border bg-surface px-4">
         <AccordionTrigger className="hover:no-underline">
           <span className="flex flex-1 flex-col gap-1 text-start">
-            <span className="text-base font-semibold text-kmt-ink">تحويل إلى قضية</span>
-            <span className="text-sm font-normal text-kmt-muted">ينشئ عميلًا أو يربط العميل الموجود، ثم ينشئ ملف قضية وموعدًا اختياريًا.</span>
+            <span className="text-base font-semibold text-foreground">تحويل إلى قضية</span>
+            <span className="text-sm font-normal text-muted-foreground">ينشئ عميلًا أو يربط العميل الموجود، ثم ينشئ ملف قضية وموعدًا اختياريًا.</span>
           </span>
         </AccordionTrigger>
         <AccordionContent>
@@ -363,8 +353,8 @@ export function ConsultationActionPanel({
       <AccordionItem value="reject" data-form-group="reject" className="rounded-lg border border-kmt-danger-border bg-kmt-danger-surface px-4">
         <AccordionTrigger className="hover:no-underline">
           <span className="flex flex-1 flex-col gap-1 text-start">
-            <span className="text-base font-semibold text-kmt-ink">رفض الطلب</span>
-            <span className="text-sm font-normal text-kmt-muted">استخدم الرفض فقط عندما لا يصلح الطلب للتحويل أو يحتاج قناة أخرى.</span>
+            <span className="text-base font-semibold text-foreground">رفض الطلب</span>
+            <span className="text-sm font-normal text-muted-foreground">استخدم الرفض فقط عندما لا يصلح الطلب للتحويل أو يحتاج قناة أخرى.</span>
           </span>
         </AccordionTrigger>
         <AccordionContent>

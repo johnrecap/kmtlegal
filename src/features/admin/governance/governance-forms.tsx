@@ -32,6 +32,7 @@ import {
   technicalValueDisplayLabel
 } from "@/lib/ui-copy";
 import type { StorageRuntimeDiagnostic } from "@/server/storage/runtime-diagnostic";
+import { readAdminApiErrorMessage } from "@/features/admin/shared/admin-api-error";
 
 type ApiMessage = {
   error?: {
@@ -79,8 +80,7 @@ type SettingValue = Record<string, unknown>;
 const MIN_PASSWORD_LENGTH = 10;
 
 async function readMessage(response: Response) {
-  const body = (await response.json().catch(() => ({}))) as ApiMessage;
-  return body.error?.message ?? "تعذر تنفيذ الإجراء الآن.";
+  return readAdminApiErrorMessage(response);
 }
 
 function textValue(formData: FormData, key: string) {
@@ -312,11 +312,11 @@ export function AdminUserActionPanel({
   return (
     <div className="space-y-4">
       <Accordion type="multiple" value={groups.value} onValueChange={groups.onValueChange}>
-        <AccordionItem value="manage" data-form-group="manage" className="rounded-lg border border-kmt-border bg-white px-4">
+        <AccordionItem value="manage" data-form-group="manage" className="rounded-lg border border-border bg-surface px-4">
           <AccordionTrigger className="hover:no-underline">
             <span className="flex flex-1 flex-col gap-1 text-start">
-              <span className="text-base font-semibold text-kmt-ink">إدارة المستخدم</span>
-              <span className="text-sm font-normal text-kmt-muted">تغيير الاسم والدور والحالة. لا يتم تعديل كلمة المرور أو البريد من هذه الشاشة.</span>
+              <span className="text-base font-semibold text-foreground">إدارة المستخدم</span>
+              <span className="text-sm font-normal text-muted-foreground">تغيير الاسم والدور والحالة. لا يتم تعديل كلمة المرور أو البريد من هذه الشاشة.</span>
             </span>
           </AccordionTrigger>
           <AccordionContent>
@@ -371,20 +371,20 @@ export function AdminUserActionPanel({
         </AccordionItem>
 
         {user.roleName === "Client" ? (
-          <AccordionItem value="client" data-form-group="client" className="rounded-lg border border-kmt-border bg-white px-4">
+          <AccordionItem value="client" data-form-group="client" className="rounded-lg border border-border bg-surface px-4">
             <AccordionTrigger className="hover:no-underline">
               <span className="flex flex-1 flex-col gap-1 text-start">
-                <span className="text-base font-semibold text-kmt-ink">ملف العميل في CRM</span>
-                <span className="text-sm font-normal text-kmt-muted">حسابات العملاء تحتاج ملف عميل مربوط حتى تظهر في صفحة العملاء وبوابة العميل.</span>
+                <span className="text-base font-semibold text-foreground">ملف العميل في CRM</span>
+                <span className="text-sm font-normal text-muted-foreground">حسابات العملاء تحتاج ملف عميل مربوط حتى تظهر في صفحة العملاء وبوابة العميل.</span>
               </span>
             </AccordionTrigger>
             <AccordionContent>
               <div className="space-y-3 pb-4">
                 {clientProfile ? (
                   <>
-                    <div className="rounded border border-kmt-border bg-slate-50 p-3 text-sm leading-6">
-                      <p className="font-semibold text-kmt-ink">{clientProfile.fullName}</p>
-                      <p className="text-kmt-muted">الحالة: {clientProfile.status}</p>
+                    <div className="rounded border border-border bg-surface-muted p-3 text-sm leading-6">
+                      <p className="font-semibold text-foreground">{clientProfile.fullName}</p>
+                      <p className="text-muted-foreground">الحالة: {clientProfile.status}</p>
                     </div>
                     <ButtonLink className="w-full" href={`/admin/clients/${clientProfile.id}`} variant="secondary">
                       فتح ملف العميل
@@ -392,7 +392,7 @@ export function AdminUserActionPanel({
                   </>
                 ) : canManageClientAccount ? (
                   <form className="grid gap-3" onSubmit={createLinkedClientProfile}>
-                    <p className="text-sm leading-6 text-kmt-muted">
+                    <p className="text-sm leading-6 text-muted-foreground">
                       هذا الحساب غير ظاهر في CRM لأنه لا يملك ملف عميل مربوط. سيتم إنشاء ملف عميل بنفس الاسم والبريد والهاتف وربطه بهذا الحساب.
                     </p>
                     <StatefulButton
@@ -417,11 +417,11 @@ export function AdminUserActionPanel({
         ) : null}
 
         {canChangePassword ? (
-          <AccordionItem value="password" data-form-group="password" className="rounded-lg border border-kmt-border bg-white px-4">
+          <AccordionItem value="password" data-form-group="password" className="rounded-lg border border-border bg-surface px-4">
             <AccordionTrigger className="hover:no-underline">
               <span className="flex flex-1 flex-col gap-1 text-start">
-                <span className="text-base font-semibold text-kmt-ink">تغيير كلمة المرور</span>
-                <span className="text-sm font-normal text-kmt-muted">متاح لمدير النظام فقط. لا يتم إرسال كلمة المرور بالبريد لأن SMTP غير مفعل في هذه النسخة.</span>
+                <span className="text-base font-semibold text-foreground">تغيير كلمة المرور</span>
+                <span className="text-sm font-normal text-muted-foreground">متاح لمدير النظام فقط. لا يتم إرسال كلمة المرور بالبريد لأن SMTP غير مفعل في هذه النسخة.</span>
               </span>
             </AccordionTrigger>
             <AccordionContent>
@@ -663,7 +663,7 @@ export function StorageRuntimeDiagnosticPanel({
         <DiagnosticValue className="sm:col-span-2" label={copy.allowedTypes} value={diagnostic.allowedTypes.join(", ")} ltr />
         <DiagnosticValue className="sm:col-span-2" label={copy.checkedAt} value={formatDateTime(diagnostic.checkedAt)} dynamic />
       </dl>
-      <p className="text-sm font-semibold text-kmt-muted">{copy.readOnly}</p>
+      <p className="text-sm font-semibold text-muted-foreground">{copy.readOnly}</p>
     </div>
   );
 }
@@ -682,9 +682,9 @@ function DiagnosticValue({
   className?: string;
 }) {
   return (
-    <div className={`rounded-lg border border-kmt-border bg-kmt-canvas p-3 ${className ?? ""}`}>
-      <dt className="text-kmt-muted">{label}</dt>
-      <dd className="mt-1 break-words font-semibold text-kmt-ink" data-visual-dynamic={dynamic || undefined} dir={ltr ? "ltr" : undefined}>
+    <div className={`rounded-lg border border-border bg-background p-3 ${className ?? ""}`}>
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="mt-1 break-words font-semibold text-foreground" data-visual-dynamic={dynamic || undefined} dir={ltr ? "ltr" : undefined}>
         {value}
       </dd>
     </div>
@@ -776,7 +776,7 @@ function CheckboxField({
   name: string;
 }) {
   return (
-    <label className="flex items-center gap-3 rounded border border-kmt-border bg-white px-3 py-2 text-sm font-semibold text-kmt-ink">
+    <label className="flex items-center gap-3 rounded border border-border bg-surface px-3 py-2 text-sm font-semibold text-foreground">
       <input className="h-4 w-4 accent-kmt-navy" defaultChecked={defaultChecked} disabled={disabled} id={`${idPrefix}-${name}`} name={name} type="checkbox" />
       <span>{label}</span>
     </label>

@@ -39,10 +39,7 @@ export type AdminMenuEntry =
  * need native affordances such as open-in-new-tab) stay visible per-row;
  * this Menu holds SECONDARY actions only. Destructive entries open an
  * `AdminDialog` confirmation in Phase 11 — they never execute here.
- * Panel surface: official `bg-popover`/`text-popover-foreground` utilities
- * are dead in this repo (no popover tokens in the theme), so the kit binds
- * the designed extension point (`MenuPanel className`) to the admin
- * light-only surface (`bg-white text-kmt-ink border-kmt-border`).
+ * Panel surfaces use the shared semantic popover tokens in both themes.
  * `defaultOpen` is a test/gallery affordance (closed in production).
  */
 export function AdminRowActions({
@@ -60,11 +57,11 @@ export function AdminRowActions({
     <Menu defaultOpen={defaultOpen}>
       <MenuTrigger
         aria-label={label}
-        className={buttonClasses({ variant: "ghost", size: "sm", className: "min-w-9 px-2" })}
+        className={buttonClasses({ variant: "ghost", size: "sm", className: "min-w-11 px-2" })}
       >
         <MoreVertical className="size-4" aria-hidden="true" />
       </MenuTrigger>
-      <MenuPanel className="border-kmt-border bg-white text-kmt-ink">
+      <MenuPanel className="border-border bg-popover text-popover-foreground">
         {entries.map((entry) =>
           entry.kind === "separator" ? (
             <MenuSeparator key={entry.key} />

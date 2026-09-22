@@ -1,9 +1,16 @@
-# Admin UI Kit — Conventions (Phase 09)
+# Admin UI Kit — Current conventions
 
 Single home: `src/components/admin/*`. No per-page duplication: Phases 10–11
 must consume these primitives and conventions only. No NEW one-off overlay
 may be introduced (native `<dialog>`, `details/summary` disclosures,
 hand-rolled tab/pagination links migrate to the kit on their locked phase).
+
+All neutral surfaces must use semantic tokens (`background`, `surface`,
+`surface-muted`, `surface-strong`, `foreground`, `muted-foreground`,
+`border`, `card`, `popover`). Fixed white/slate/gray admin surfaces are a
+regression. Identity gold and semantic success/warning/danger tokens are
+allowed for meaning and emphasis. Every primitive must render in light and
+dark mode; light remains the admin default.
 
 ## Filter conventions
 
@@ -80,12 +87,34 @@ RTL come from the primitive. Phase 11 error-group auto-open: control via
 ## Shell chrome
 
 `AdminSidebarNav` (desktop rail, grouped, permission-filtered items flow in
-from `DashboardShell`), `AdminMobileNav` (Sheet), notification bell
+from the persistent admin layout), `AdminMobileNav` (Sheet), notification bell
 (Animate UI Popover since Phase 09 completion — `AdminNotificationPopover`
 keeps its 30s poll + unread + mark-read + links; the full center page is
 untouched until Phase 10).
 `aria-current="page"` on active items in both navs; tooltips on collapsed
 rail icons with existing translated labels.
+
+The route layout mounts this chrome once. Page-level `DashboardShell`
+instances render only `DashboardPageFrame` (breadcrumbs, title, optional
+description and primary action). Loading/error/not-found states replace the
+content frame and must not remove navigation. Desktop sidebar width changes
+only through the persisted explicit toggle (280px expanded, 72px collapsed);
+hover must never resize the workspace.
+
+## Responsive table convention
+
+`DataTable` owns one desktop table and one `mobileRender` record surface.
+Use `mobileBreakpoint="lg"` for dense operational tables that must remain
+cards through 1024px. Record forms and destructive confirmations live once
+outside the table/card renderers and target the selected record, preventing
+duplicate IDs and duplicate dialog trees.
+
+## API error convention
+
+Admin client actions use `features/admin/shared/admin-api-error.ts`. It maps
+the established API error shape to safe Arabic copy, preserves error codes
+for domain-specific recovery, and includes the request ID when available.
+Raw server messages are never rendered directly.
 
 ## Gallery-ready examples (Phase 12)
 

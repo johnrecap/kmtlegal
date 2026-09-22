@@ -35,20 +35,20 @@ function NotificationItemView({
     item.resourceType === "ConsultationRequest";
 
   return (
-    <li className="rounded border border-kmt-border bg-white p-3 shadow-sm">
+    <li className="rounded border border-border bg-surface p-3 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           {item.href ? (
-            <Link className="break-words font-semibold text-kmt-navy hover:underline" dir="auto" href={item.href}>
+            <Link className="break-words font-semibold text-primary hover:underline" dir="auto" href={item.href}>
               {title}
             </Link>
           ) : (
-            <p className="break-words font-semibold text-kmt-ink" dir="auto">{title}</p>
+            <p className="break-words font-semibold text-foreground" dir="auto">{title}</p>
           )}
-          <p className="mt-1 break-words text-sm leading-6 text-kmt-muted" dir="auto">{description}</p>
-          <p className="mt-2 text-xs text-kmt-muted">{formatDateTime(new Date(item.createdAt))}</p>
+          <p className="mt-1 break-words text-sm leading-6 text-muted-foreground" dir="auto">{description}</p>
+          <p className="mt-2 text-xs text-muted-foreground">{formatDateTime(new Date(item.createdAt))}</p>
           {item.kind === "consultation-review" && item.startsAt ? (
-            <p className="mt-1 text-xs text-kmt-muted">{formatDateTime(new Date(item.startsAt))}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(new Date(item.startsAt))}</p>
           ) : null}
         </div>
         {isGeneric && !item.readAt ? (
@@ -162,9 +162,15 @@ export function AdminNotificationPopover({
   const reloadPreview = useCallback(async () => {
     try {
       const response = await fetch("/api/admin/notifications?limit=5", { headers: { Accept: "application/json" } });
-      if (!response.ok) return;
+      if (!response.ok) {
+        setLoadFailed(true);
+        return;
+      }
       const body = (await response.json().catch(() => ({}))) as SnapshotResponse;
-      if (!body.data) return;
+      if (!body.data) {
+        setLoadFailed(true);
+        return;
+      }
       setItems(body.data.items);
       setAttentionCount(body.data.attentionCount);
       setGenericUnreadCount(body.data.genericUnreadCount);
@@ -208,15 +214,15 @@ export function AdminNotificationPopover({
         <MaterialSymbol className="text-[20px]" name="notifications" />
         {state.attentionCount ? <Badge tone="pending">{state.attentionCount}</Badge> : null}
       </PopoverTrigger>
-      <PopoverPanel align="end" className="w-[min(24rem,calc(100vw-2rem))] border-kmt-border bg-white p-3 text-sm text-kmt-ink">
+      <PopoverPanel align="end" className="w-[min(24rem,calc(100vw-2rem))] border-border bg-surface p-3 text-sm text-foreground">
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
-            <p className="font-semibold text-kmt-ink">{copy.popoverTitle}</p>
-            <p className="mt-1 text-xs text-kmt-muted">
+            <p className="font-semibold text-foreground">{copy.popoverTitle}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
               {state.attentionCount ? `${state.attentionCount} ${copy.attentionSummary}` : copy.noAttention}
             </p>
           </div>
-          <Link className="shrink-0 text-xs font-semibold text-kmt-navy hover:underline" href="/admin/notifications">
+          <Link className="shrink-0 text-xs font-semibold text-primary hover:underline" href="/admin/notifications">
             {copy.openCenter}
           </Link>
         </div>
@@ -232,7 +238,7 @@ export function AdminNotificationPopover({
             <NotificationList busyId={state.busyId} items={state.items} onMarkRead={state.markRead} />
           )}
         </div>
-        <div aria-live="polite" className="mt-2 min-h-5 text-xs text-kmt-muted" role="status">
+        <div aria-live="polite" className="mt-2 min-h-5 text-xs text-muted-foreground" role="status">
           {state.feedback}
           {state.retryItem ? (
             <Button className="ms-2" onClick={() => state.markRead(state.retryItem!)} size="sm" type="button" variant="ghost">
@@ -286,22 +292,22 @@ export function AdminNotificationCenter({ initialSnapshot }: { initialSnapshot: 
   return (
     <div className="space-y-4">
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded border border-kmt-border bg-white p-4">
-          <p className="text-sm text-kmt-muted">{copy.attentionSummary}</p>
-          <p className="mt-2 text-2xl font-bold text-kmt-ink">{state.attentionCount}</p>
+        <div className="rounded border border-border bg-surface p-4">
+          <p className="text-sm text-muted-foreground">{copy.attentionSummary}</p>
+          <p className="mt-2 text-2xl font-bold text-foreground">{state.attentionCount}</p>
         </div>
-        <div className="rounded border border-kmt-border bg-white p-4">
-          <p className="text-sm text-kmt-muted">{copy.unreadGeneric}</p>
-          <p className="mt-2 text-2xl font-bold text-kmt-ink">{state.genericUnreadCount}</p>
+        <div className="rounded border border-border bg-surface p-4">
+          <p className="text-sm text-muted-foreground">{copy.unreadGeneric}</p>
+          <p className="mt-2 text-2xl font-bold text-foreground">{state.genericUnreadCount}</p>
         </div>
-        <div className="rounded border border-kmt-border bg-white p-4">
-          <p className="text-sm text-kmt-muted">{copy.consultationReview}</p>
-          <p className="mt-2 text-2xl font-bold text-kmt-ink">{initialSnapshot.consultationReviewCount}</p>
+        <div className="rounded border border-border bg-surface p-4">
+          <p className="text-sm text-muted-foreground">{copy.consultationReview}</p>
+          <p className="mt-2 text-2xl font-bold text-foreground">{initialSnapshot.consultationReviewCount}</p>
         </div>
       </div>
 
       <NotificationList busyId={state.busyId} items={state.items} onMarkRead={state.markRead} />
-      <div aria-live="polite" className="min-h-6 text-sm text-kmt-muted" role="status">
+      <div aria-live="polite" className="min-h-6 text-sm text-muted-foreground" role="status">
         {state.feedback}
       </div>
 
@@ -318,7 +324,7 @@ export function AdminNotificationCenter({ initialSnapshot }: { initialSnapshot: 
           {isLoadingMore ? copy.loadingMore : copy.loadMore}
         </Button>
       ) : state.items.length ? (
-        <p className="text-center text-sm text-kmt-muted" role="status">{copy.exhausted}</p>
+        <p className="text-center text-sm text-muted-foreground" role="status">{copy.exhausted}</p>
       ) : null}
     </div>
   );

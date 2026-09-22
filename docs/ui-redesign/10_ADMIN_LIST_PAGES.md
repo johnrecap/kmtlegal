@@ -178,16 +178,11 @@ All pre-existing working-tree entries preserved; only Phase 10 files/hunks
 staged. No installs, no lockfile/config touches, no backend/auth/permission
 changes, no new routes or params except finance `tab` (navigation-only).
 
-Kit surface bridge (first task): KEEP `bg-white text-kmt-ink
-border-kmt-border` on MenuPanel/PopoverPanel. The kmt hex tokens are
-static (identical in both modes), so panels stay readable in Admin Light
-AND Admin Dark — consistent with the light-first admin content and the
-forced-light rail (Phase 09 precedent). The mode-flipping alternative
-(`bg-surface text-foreground`) exists but would turn panels dark while
-all surrounding admin content stays light — worse. Full dark-theme panel
-completion needs popover tokens in `tokens.ts`/`tailwind.config.ts`,
-which carry foreign pre-existing hunks — deferred, needs owner
-coordination. Verified by dark capture (E).
+Historical bridge note: MenuPanel/PopoverPanel originally used fixed light
+classes while the administration area was single-theme. This was superseded
+on 2026-09-22: popover and surface tokens are complete, the shell and page
+surfaces switch together, and fixed neutral admin colors are rejected by a
+regression test.
 
 Kit additions (all backward-compatible, no architecture changes):
 - `src/components/admin/admin-list-filters.tsx` (NEW): `MoreFiltersPopover`

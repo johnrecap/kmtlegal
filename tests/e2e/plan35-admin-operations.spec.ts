@@ -59,13 +59,13 @@ test.describe("PLAN-35 admin responsive accessibility characterization", () => {
     expect(result).toEqual({ duplicateIds: [], brokenLabels: [], brokenDescriptions: [] });
   });
 
-  test("opens mobile navigation from the keyboard as a native modal dialog", async ({ page }) => {
+  test("opens mobile navigation from the keyboard as a Radix Sheet dialog", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await loadSurface(page);
     const { trigger, dialog } = await openMobileNavigation(page);
     await expect(trigger).toHaveAttribute("aria-expanded", "true");
-    await expect(dialog).toHaveJSProperty("open", true);
-    expect(await dialog.evaluate((element) => element.tagName)).toBe("DIALOG");
+    await expect(dialog).toHaveAttribute("data-state", "open");
+    expect(await dialog.evaluate((element) => element.getAttribute("role"))).toBe("dialog");
     expect(await dialog.evaluate((element) => element.contains(document.activeElement))).toBe(true);
   });
 
@@ -74,7 +74,7 @@ test.describe("PLAN-35 admin responsive accessibility characterization", () => {
     await loadSurface(page);
     const { trigger, dialog } = await openMobileNavigation(page);
     const contained = await page.evaluate(() => {
-      const modal = document.querySelector<HTMLDialogElement>("dialog[open]");
+      const modal = document.querySelector<HTMLElement>('[role="dialog"][data-state="open"]');
       const outside = Array.from(document.querySelectorAll<HTMLElement>('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])')).find((item) => modal && !modal.contains(item));
       outside?.focus();
       return Boolean(modal?.contains(document.activeElement));

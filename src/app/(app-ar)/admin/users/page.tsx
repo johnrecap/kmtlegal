@@ -68,10 +68,10 @@ const columns: Array<DataTableColumn<UserRow>> = [
     header: "المستخدم",
     render: (row) => (
       <div>
-        <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/users/${row.id}`}>
+        <Link className="font-semibold text-primary hover:underline" href={`/admin/users/${row.id}`}>
           {row.name}
         </Link>
-        <p className="mt-1 text-xs text-kmt-muted">{row.email}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{row.email}</p>
       </div>
     )
   },
@@ -81,7 +81,7 @@ const columns: Array<DataTableColumn<UserRow>> = [
     key: "counts",
     header: "النشاط",
     render: (row) => (
-      <span className="text-sm text-kmt-muted">
+      <span className="text-sm text-muted-foreground">
         {row.counts.sessions} جلسة · {row.counts.auditLogs} حدث تدقيق · {row.counts.assignedTasks} مهمة
       </span>
     )
@@ -91,7 +91,7 @@ const columns: Array<DataTableColumn<UserRow>> = [
     key: "action",
     header: "",
     render: (row) => (
-      <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={`/admin/users/${row.id}`}>
+      <Link className="text-sm font-semibold text-primary hover:underline" href={`/admin/users/${row.id}`}>
         فتح
       </Link>
     )
@@ -102,7 +102,7 @@ function UserMobileCard({ row }: { row: UserRow }) {
   return (
     <DataRecordCard
       title={
-        <Link className="text-kmt-navy hover:underline" href={`/admin/users/${row.id}`}>
+        <Link className="text-primary hover:underline" href={`/admin/users/${row.id}`}>
           {row.name}
         </Link>
       }
@@ -157,10 +157,10 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
             <div className="lg:hidden">
               <Sheet>
                 <SheetTrigger className={buttonClasses({ className: "w-full" })}>إنشاء حساب جديد</SheetTrigger>
-                <SheetContent aria-label="إنشاء حساب جديد" className="overflow-y-auto border-kmt-border bg-white text-kmt-ink" side="right">
+                <SheetContent aria-label="إنشاء حساب جديد" className="overflow-y-auto border-border bg-surface text-foreground" side="right">
                   <SheetHeader>
-                    <SheetTitle className="text-kmt-ink">إنشاء حساب جديد</SheetTitle>
-                    <SheetDescription className="text-kmt-muted">
+                    <SheetTitle className="text-foreground">إنشاء حساب جديد</SheetTitle>
+                    <SheetDescription className="text-muted-foreground">
                       متاح لمدير النظام فقط. يتم إنشاء البريد وكلمة المرور يدويًا بدون إرسال SMTP.
                     </SheetDescription>
                   </SheetHeader>
@@ -264,7 +264,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams?: 
         </MobileFiltersSheet>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
           <p>{result.total} مستخدم داخل الفلاتر الحالية</p>
           <p>
             صفحة {result.page} من {totalPages}

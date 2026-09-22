@@ -44,8 +44,8 @@ type PageProps = {
 function DetailItem({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <p className="text-xs font-semibold text-kmt-muted">{label}</p>
-      <div className="mt-1 text-sm leading-6 text-kmt-ink">{value || "غير محدد"}</div>
+      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
+      <div className="mt-1 text-sm leading-6 text-foreground">{value || "غير محدد"}</div>
     </div>
   );
 }
@@ -139,12 +139,12 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
               {client.cases.length ? (
                 <div className="space-y-3">
                   {client.cases.map((legalCase) => (
-                    <Link key={legalCase.id} className="block rounded border border-kmt-border p-3 hover:bg-slate-50" href={`/admin/cases/${legalCase.id}`}>
+                    <Link key={legalCase.id} className="block rounded border border-border p-3 hover:bg-surface-muted" href={`/admin/cases/${legalCase.id}`}>
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="font-semibold text-kmt-ink">{legalCase.internalFileNumber}</p>
+                        <p className="font-semibold text-foreground">{legalCase.internalFileNumber}</p>
                         <Badge tone={legalCase.status === "ACTIVE" ? "active" : "neutral"}>{labelFrom(caseStatusLabels, legalCase.status)}</Badge>
                       </div>
-                      <p className="mt-1 text-sm text-kmt-muted">
+                      <p className="mt-1 text-sm text-muted-foreground">
                         {legalCase.title} · {labelFrom(priorityLabels, legalCase.priority)} · {formatDateTime(legalCase.nextSessionAt)}
                       </p>
                     </Link>
@@ -165,14 +165,14 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
                 {client.consultationRequests.length ? (
                   <div className="space-y-3">
                     {client.consultationRequests.map((consultation) => (
-                      <Link key={consultation.id} className="block rounded border border-kmt-border p-3 hover:bg-slate-50" href={`/admin/consultations/${consultation.id}`}>
+                      <Link key={consultation.id} className="block rounded border border-border p-3 hover:bg-surface-muted" href={`/admin/consultations/${consultation.id}`}>
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="break-words font-semibold text-kmt-navy">{labelFrom(serviceCategoryLabels, consultation.serviceCategory)}</p>
+                          <p className="break-words font-semibold text-primary">{labelFrom(serviceCategoryLabels, consultation.serviceCategory)}</p>
                           <Badge tone={consultation.status === "CONVERTED" ? "active" : consultation.status === "REJECTED" ? "danger" : "pending"}>
                             {labelFrom(consultationStatusLabels, consultation.status)}
                           </Badge>
                         </div>
-                        <p className="mt-1 text-sm text-kmt-muted">
+                        <p className="mt-1 text-sm text-muted-foreground">
                           {labelFrom(urgencyLabels, consultation.urgency)} · {formatDateTime(consultation.createdAt)}
                         </p>
                       </Link>
@@ -192,12 +192,12 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
                 {client.appointments.length ? (
                   <div className="space-y-3">
                     {client.appointments.map((appointment) => (
-                      <div key={appointment.id} className="rounded border border-kmt-border p-3">
+                      <div key={appointment.id} className="rounded border border-border p-3">
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="font-semibold text-kmt-ink">{appointment.title}</p>
+                          <p className="font-semibold text-foreground">{appointment.title}</p>
                           <Badge tone={appointment.status === "COMPLETED" ? "active" : "pending"}>{labelFrom(appointmentStatusLabels, appointment.status)}</Badge>
                         </div>
-                        <p className="mt-1 text-sm text-kmt-muted">
+                        <p className="mt-1 text-sm text-muted-foreground">
                           {formatDateTime(appointment.startsAt)} · {labelFrom(appointmentTypeLabels, appointment.type)} · {labelFrom(modeLabels, appointment.mode)}
                         </p>
                       </div>

@@ -8,11 +8,15 @@ import { plan35AdminShellCopy } from "@/lib/ui-copy";
 export type AdminAccessSnapshot = {
   navItems: DashboardNavItem[];
   userLabel: string;
+  roleLabel?: string;
+  scopeLabel?: string;
+  persistentShell?: boolean;
 };
 
 const emptyAdminAccess: AdminAccessSnapshot = {
   navItems: [],
-  userLabel: plan35AdminShellCopy.fallbackUser
+  userLabel: plan35AdminShellCopy.fallbackUser,
+  persistentShell: false
 };
 
 const AdminAccessContext = createContext<AdminAccessSnapshot>(emptyAdminAccess);

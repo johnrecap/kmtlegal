@@ -165,35 +165,35 @@ export function RolePermissionForm({ initialMatrix }: { initialMatrix: RolePermi
               className={`min-h-11 w-full rounded-lg border p-3 text-start transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold ${
                 role.id === selectedRole.id
                   ? "border-kmt-gold bg-kmt-gold/10"
-                  : "border-kmt-border bg-white hover:border-kmt-navy/40"
+                  : "border-border bg-surface hover:border-kmt-navy/40"
               }`}
               key={role.id}
               onClick={() => selectRole(role.id)}
               type="button"
             >
               <span className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-semibold text-kmt-ink">{roleDisplayLabel(role.name)}</span>
+                <span className="font-semibold text-foreground">{roleDisplayLabel(role.name)}</span>
                 <Badge tone={role.status === "ACTIVE" ? "active" : "neutral"}>
                   {role.status === "ACTIVE"
                     ? plan35RoleGovernanceUiCopy.status.active
                     : plan35RoleGovernanceUiCopy.status.inactive}
                 </Badge>
               </span>
-              <span className="mt-2 block text-xs leading-5 text-kmt-muted">
+              <span className="mt-2 block text-xs leading-5 text-muted-foreground">
                 {role.userCount} {plan35RoleGovernanceUiCopy.usersSuffix}
               </span>
               {role.protected ? (
-                <span className="mt-2 block text-xs leading-5 text-kmt-muted">
+                <span className="mt-2 block text-xs leading-5 text-muted-foreground">
                   {plan35RoleGovernanceUiCopy.protectedRole}
                 </span>
               ) : null}
               {role.status !== "ACTIVE" ? (
-                <span className="mt-2 block text-xs leading-5 text-kmt-muted">
+                <span className="mt-2 block text-xs leading-5 text-muted-foreground">
                   {plan35RoleGovernanceUiCopy.inactiveRole}
                 </span>
               ) : null}
               {role.effectiveWildcard ? (
-                <span className="mt-2 block text-xs leading-5 text-kmt-muted">
+                <span className="mt-2 block text-xs leading-5 text-muted-foreground">
                   {plan35RoleGovernanceUiCopy.effectiveWildcard}
                 </span>
               ) : null}
@@ -222,8 +222,8 @@ export function RolePermissionForm({ initialMatrix }: { initialMatrix: RolePermi
           <CardContent className="space-y-6">
             <Accordion type="multiple" defaultValue={groupedPermissions.map(([groupKey]) => groupKey)}>
               {groupedPermissions.map(([groupKey, permissions]) => (
-                <AccordionItem key={groupKey} value={groupKey} className="rounded-lg border border-kmt-border px-4">
-                  <AccordionTrigger className="text-base font-semibold text-kmt-navy hover:no-underline">
+                <AccordionItem key={groupKey} value={groupKey} className="rounded-lg border border-border px-4">
+                  <AccordionTrigger className="text-base font-semibold text-primary hover:no-underline">
                     {permissionGroupDisplayLabel(groupKey)}
                   </AccordionTrigger>
                   <AccordionContent>
@@ -232,7 +232,7 @@ export function RolePermissionForm({ initialMatrix }: { initialMatrix: RolePermi
                         {permissions.map((permission) => {
                           const id = checkboxId(selectedRole.id, permission.key);
                           return (
-                            <div className="rounded-lg border border-kmt-border bg-kmt-paper p-3" key={permission.key}>
+                            <div className="rounded-lg border border-border bg-surface p-3" key={permission.key}>
                               <label className="flex min-h-11 cursor-pointer items-start gap-3" htmlFor={id}>
                                 <input
                                   checked={selectedKeys.includes(permission.key)}
@@ -244,7 +244,7 @@ export function RolePermissionForm({ initialMatrix }: { initialMatrix: RolePermi
                                   type="checkbox"
                                   value={permission.key}
                                 />
-                                <span className="text-sm font-medium leading-6 text-kmt-ink">
+                                <span className="text-sm font-medium leading-6 text-foreground">
                                   {permissionDisplayLabel(permission.key)}
                                 </span>
                               </label>

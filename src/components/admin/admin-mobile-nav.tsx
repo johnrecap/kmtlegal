@@ -37,18 +37,18 @@ export function AdminMobileNav({ navItems, modeLabel }: { navItems: DashboardNav
         </button>
       </SheetTrigger>
       <SheetContent
-        className="border-kmt-border bg-white p-0 text-kmt-ink"
+        className="border-border bg-surface p-0 text-foreground"
         side="right"
       >
-        <SheetHeader className="flex min-h-16 flex-row items-center justify-between gap-3 border-b border-kmt-border px-4">
-          <KmtBrandLogo size="sm" sublabel={modeLabel} surface="light" variant="lockup" />
+        <SheetHeader className="flex min-h-16 flex-row items-center justify-between gap-3 border-b border-border px-4">
+          <KmtBrandLogo size="sm" sublabel={modeLabel} variant="lockup" />
           <SheetTitle className="sr-only">{plan35AdminShellCopy.navigationTitle}</SheetTitle>
         </SheetHeader>
         <nav aria-label={plan35AdminShellCopy.mobileNavigation} className="flex-1 overflow-y-auto p-3" data-testid="dashboard-mobile-navigation">
           {groupDashboardNavItems(navItems).map((navGroup, groupIndex) => (
             <div key={`${navGroup.group ?? "nav"}-${groupIndex}`} className={groupIndex ? "mt-4" : undefined}>
               {navGroup.group ? (
-                <p className="px-3 pb-2 pt-1 text-xs font-semibold text-kmt-muted">{navGroup.group}</p>
+                <p className="px-3 pb-2 pt-1 text-xs font-semibold text-muted-foreground">{navGroup.group}</p>
               ) : null}
               <div className="space-y-1">
                 {navGroup.items.map((navItem) => (
@@ -59,8 +59,8 @@ export function AdminMobileNav({ navItems, modeLabel }: { navItems: DashboardNav
                       "flex min-h-11 w-full items-center gap-3 rounded px-3 py-2.5 text-start text-sm font-medium transition-colors",
                       "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold",
                       navItem.active
-                        ? "bg-kmt-gold/15 text-kmt-ink"
-                        : "text-kmt-muted hover:bg-kmt-canvas hover:text-kmt-ink"
+                        ? "bg-primary/15 text-foreground"
+                        : "text-muted-foreground hover:bg-surface-muted hover:text-foreground"
                     )}
                     href={navItem.href}
                     onClick={() => setOpen(false)}

@@ -28,10 +28,7 @@ import {
  * state and no cross-portal input duplication are needed (portal content
  * mounts outside the outer `<form>` and unmounts when closed — it can
  * never be a plain inline fieldset).
- * Panel surface follows the Phase 09 bridge (`bg-white text-kmt-ink
- * border-kmt-border`: official `bg-popover` utilities are dead in this
- * repo's theme; admin is light-first with static kmt hex, readable in
- * both modes).
+ * Panels use the semantic surface contract shared by both themes.
  */
 export function MoreFiltersPopover({
   triggerLabel,
@@ -51,7 +48,7 @@ export function MoreFiltersPopover({
         </PopoverTrigger>
         <PopoverPanel
           align="end"
-          className="w-[min(24rem,calc(100vw-2rem))] space-y-3 border-kmt-border bg-white p-4 text-kmt-ink"
+          className="w-[min(24rem,calc(100vw-2rem))] space-y-3 border-border bg-popover p-4 text-popover-foreground"
         >
           {children}
         </PopoverPanel>
@@ -82,12 +79,12 @@ export function MobileFiltersSheet({
         </SheetTrigger>
         <SheetContent
           aria-label={title}
-          className="overflow-y-auto border-kmt-border bg-white text-kmt-ink"
+          className="overflow-y-auto border-border bg-surface text-foreground"
           side="right"
         >
           <SheetHeader>
-            <SheetTitle className="text-kmt-ink">{title}</SheetTitle>
-            {description ? <SheetDescription className="text-kmt-muted">{description}</SheetDescription> : null}
+            <SheetTitle className="text-foreground">{title}</SheetTitle>
+            {description ? <SheetDescription className="text-muted-foreground">{description}</SheetDescription> : null}
           </SheetHeader>
           <div className="mt-4 space-y-3">{children}</div>
         </SheetContent>

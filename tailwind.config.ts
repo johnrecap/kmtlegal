@@ -24,8 +24,27 @@ const config: Config = {
         foreground: "var(--foreground)",
         surface: {
           DEFAULT: "var(--surface)",
-          muted: "var(--surface-muted)"
+          muted: "var(--surface-muted)",
+          strong: "var(--surface-strong)",
+          "strong-foreground": "var(--surface-strong-foreground)"
         },
+        card: {
+          DEFAULT: "var(--surface)",
+          foreground: "var(--foreground)"
+        },
+        popover: {
+          DEFAULT: "var(--surface)",
+          foreground: "var(--foreground)"
+        },
+        secondary: {
+          DEFAULT: "var(--surface-muted)",
+          foreground: "var(--foreground)"
+        },
+        destructive: {
+          DEFAULT: "var(--state-danger)",
+          foreground: "var(--surface)"
+        },
+        input: "var(--border)",
         border: "var(--border)",
         "muted-foreground": "var(--muted-foreground)",
         primary: {

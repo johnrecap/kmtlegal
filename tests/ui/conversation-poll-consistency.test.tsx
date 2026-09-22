@@ -30,16 +30,50 @@ let poll: (() => Promise<void>) | undefined;
 beforeEach(() => {
   poll = undefined;
   const activeIntervals = new Map<number, () => Promise<void>>();
-  let nextIntervalId = 1;
-  vi.spyOn(window, "setInterval").mockImplementation((callback) => {
-    const intervalId = nextIntervalId++;
-    activeIntervals.set(intervalId, callback as () => Promise<void>);
-    poll = callback as () => Promise<void>;
-    return intervalId as never;
-  });
+  const activeTimeouts = new Map<number, () => Promise<void>>();
+  let nextIntervalId = -10000;
+  let nextTimeoutId = -1;
+  const nativeSetInterval = window.setInterval.bind(window);
+  const nativeClearInterval = window.clearInterval.bind(window);
+  const nativeSetTimeout = window.setTimeout.bind(window);
+  const nativeClearTimeout = window.clearTimeout.bind(window);
+  vi.spyOn(window, "setInterval").mockImplementation(((...parameters: Parameters<typeof window.setInterval>) => {
+    const [callback, delay, ...args] = parameters;
+    if (Number(delay) >= 5000) {
+      const intervalId = nextIntervalId--;
+      activeIntervals.set(intervalId, callback as () => Promise<void>);
+      poll = callback as () => Promise<void>;
+      return intervalId;
+    }
+    return nativeSetInterval(callback, delay, ...args);
+  }) as typeof window.setInterval);
   vi.spyOn(window, "clearInterval").mockImplementation((intervalId) => {
-    activeIntervals.delete(Number(intervalId));
-    poll = Array.from(activeIntervals.values()).at(-1);
+    const numericId = Number(intervalId);
+    if (activeIntervals.has(numericId)) {
+      activeIntervals.delete(numericId);
+      poll = Array.from(activeIntervals.values()).at(-1) ?? Array.from(activeTimeouts.values()).at(-1);
+      return;
+    }
+    nativeClearInterval(intervalId);
+  });
+  vi.spyOn(window, "setTimeout").mockImplementation(((...parameters: Parameters<typeof window.setTimeout>) => {
+    const [callback, delay, ...args] = parameters;
+    if (Number(delay) >= 5000) {
+      const timeoutId = nextTimeoutId--;
+      activeTimeouts.set(timeoutId, callback as () => Promise<void>);
+      poll = callback as () => Promise<void>;
+      return timeoutId;
+    }
+    return nativeSetTimeout(callback, delay, ...args);
+  }) as typeof window.setTimeout);
+  vi.spyOn(window, "clearTimeout").mockImplementation((timeoutId) => {
+    const numericId = Number(timeoutId);
+    if (activeTimeouts.has(numericId)) {
+      activeTimeouts.delete(numericId);
+      poll = Array.from(activeTimeouts.values()).at(-1) ?? Array.from(activeIntervals.values()).at(-1);
+      return;
+    }
+    nativeClearTimeout(timeoutId);
   });
   Element.prototype.scrollIntoView = vi.fn();
 });
@@ -75,6 +109,8 @@ describe("conversation poll consistency", () => {
     const pendingPoll = poll!();
     fireEvent.change(screen.getByLabelText("الحالة"), { target: { value: "WAITING_CLIENT" } });
     await waitFor(() => expect(screen.getByLabelText("الحالة")).toHaveValue("WAITING_CLIENT"));
+    fireEvent.click(screen.getByRole("button", { name: "حفظ التغييرات" }));
+    await waitFor(() => expect(fetchMock.mock.calls.some(([, init]) => init?.method === "PATCH")).toBe(true));
     await act(async () => {
       stale.resolve(response({ data: initialAdmin }));
       await pendingPoll;
@@ -113,8 +149,11 @@ describe("conversation poll consistency", () => {
     await act(async () => { await slowPoll; });
     await screen.findByText("new staff reply");
     mode = "next";
-    await act(async () => { await new Promise<void>((resolve) => setTimeout(resolve, 0)); });
-    await act(async () => { await poll!(); });
+    const nextPoll = await waitFor(() => {
+      expect(poll).toBeTypeOf("function");
+      return poll!;
+    });
+    await act(async () => { await nextPoll(); });
     expect(fetchMock).toHaveBeenCalledTimes(2);
     await screen.findByText("newer server poll");
   });

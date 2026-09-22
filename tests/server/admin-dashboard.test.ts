@@ -133,8 +133,25 @@ describe("admin dashboard canonical scope contract", () => {
       "cases.active",
       "clients.active"
     ]);
-    expect(snapshot.metrics.map((entry) => entry.key)).toEqual(DASHBOARD_METRIC_KEYS);
-    expect(snapshot.prioritySections.map((entry) => entry.key)).toEqual(DASHBOARD_PRIORITY_SECTION_KEYS);
+    expect(snapshot.metrics.map((entry) => entry.key)).toEqual([
+      "tasks.overdue",
+      "appointments.today",
+      "consultations.unreviewed",
+      "consultations.overdue_unbooked",
+      "consultations.awaiting_result",
+      "consultations.missed",
+      "contacts.new",
+      "documents.under-review",
+      "cases.active",
+      "clients.active"
+    ]);
+    expect(snapshot.prioritySections.map((entry) => entry.key)).toEqual([
+      "tasks.overdue",
+      "appointments.today",
+      "consultations.unreviewed",
+      "contacts.new",
+      "documents.under-review"
+    ]);
     expect(DASHBOARD_QUICK_ACTION_ROUTE_IDS).toEqual([
       "cases.create",
       "calendar.list",
@@ -320,11 +337,11 @@ describe("admin dashboard canonical scope contract", () => {
     expect(marketingSnapshot.quickActionRouteIds).toEqual(["content.home"]);
     expect(lawyerSnapshot.quickActionRouteIds).toEqual(["calendar.list"]);
     expect(lawyerSnapshot.metrics.map((entry) => entry.key)).toEqual([
-      "appointments.today",
       "tasks.overdue",
-      "consultations.unreviewed",
-      "documents.under-review",
+      "appointments.today",
       "cases.active",
+      "documents.under-review",
+      "consultations.unreviewed",
       "clients.active"
     ]);
   });

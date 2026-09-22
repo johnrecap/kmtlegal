@@ -300,6 +300,31 @@ test.describe("MVP smoke without database", () => {
     const analyticsEvents = await collectAnalyticsEvents(page);
 
     await page.route("**/api/public/consultations/assistant", async (route) => {
+      const payload = route.request().postDataJSON() as {
+        draft?: Record<string, unknown>;
+        message?: string;
+      };
+
+      if (payload.message?.toLowerCase().includes("will i win")) {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            data: {
+              message: "I cannot provide a legal opinion, interpret documents, or predict outcomes here. I can book a consultation so the office team can review your request.",
+              draft: payload.draft ?? {},
+              missingFields: ["fullName", "phone", "serviceCategory", "summary", "startsAt"],
+              intake: {
+                status: "legal_boundary",
+                progressed: false,
+                nextField: "fullName"
+              }
+            }
+          })
+        });
+        return;
+      }
+
       await route.fulfill({
         status: 503,
         contentType: "application/json",
@@ -327,7 +352,7 @@ test.describe("MVP smoke without database", () => {
     await form.locator('button[type="submit"]').last().click();
     await expect(form.getByText("I cannot provide a legal opinion")).toBeVisible();
 
-    await page.getByTestId("booking-quick-book").click();
+    await page.getByTestId("booking-matter-chip").first().click();
     await expect(form.getByText("req-booking-plan28")).toBeVisible();
     await expect(page.getByTestId("booking-chat-step-card")).toHaveCount(0);
     await expect(form.locator('input[name="fullName"]')).toHaveCount(0);

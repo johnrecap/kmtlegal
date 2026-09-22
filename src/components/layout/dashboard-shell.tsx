@@ -2,6 +2,7 @@ import type { AdminRouteId } from "@/lib/admin-route-policy";
 import { canAccessAdminRoute, resolveAdminRoutePolicy } from "@/lib/admin-route-policy";
 import type { Principal } from "@/server/auth/policy";
 import { DashboardShellView, type DashboardShellViewProps } from "./dashboard-shell-view";
+import { AdminDashboardShellContent } from "@/features/admin/shell/admin-dashboard-shell-content";
 import type { DashboardNavItem } from "./dashboard-navigation";
 
 export type { DashboardNavItem } from "./dashboard-navigation";
@@ -24,6 +25,16 @@ export function DashboardShell({ principal, actionRouteId, ...viewProps }: Dashb
     ? authorizedAdminNavItems(viewProps.navItems, principal)
     : viewProps.navItems;
   const actionAllowed = !actionRouteId || !principal || canAccessAdminRoute(principal, actionRouteId);
+
+  if (viewProps.mode !== "portal") {
+    return (
+      <AdminDashboardShellContent
+        {...viewProps}
+        action={actionAllowed ? viewProps.action : undefined}
+        navItems={navItems}
+      />
+    );
+  }
 
   return (
     <DashboardShellView

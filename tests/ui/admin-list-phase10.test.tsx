@@ -37,9 +37,9 @@ const expectedFilterNames: Record<(typeof listFiles)[number], string[]> = {
   ],
   "src/app/(app-ar)/admin/users/page.tsx": ["q", "roleId", "sortBy", "sortDirection", "status"],
   "src/app/(app-ar)/admin/messages/page.tsx": ["assignedToId", "q", "status"],
-  "src/app/(app-ar)/admin/calendar/page.tsx": ["from", "lawyerId", "mode", "status", "to"],
+  "src/app/(app-ar)/admin/calendar/page.tsx": ["display", "from", "lawyerId", "mode", "status", "to"],
   "src/app/(app-ar)/admin/tasks/page.tsx": [
-    "assignedToId", "priority", "q", "sortBy", "sortDirection", "status", "view"
+    "assignedToId", "display", "priority", "q", "sortBy", "sortDirection", "status", "view"
   ],
   "src/app/(app-ar)/admin/documents/page.tsx": [
     "category", "ownerClientId", "q", "sortBy", "sortDirection", "status", "visibility"
@@ -92,7 +92,7 @@ describe("Phase 10 admin list migration contracts", () => {
   });
 
   it("keeps destructive list actions in their current presentation (no dead menu items, no placeholders)", () => {
-    const documents = read("src/app/(app-ar)/admin/documents/page.tsx");
+    const documents = read("src/features/admin/task-documents/document-list.tsx");
     expect(documents).toContain("DocumentDeleteForm");
 
     const inbox = read("src/features/admin/contact-messages/contact-message-inbox.tsx");

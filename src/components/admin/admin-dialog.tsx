@@ -75,10 +75,10 @@ export function AdminDialog({
   return (
     <Dialog open={resolvedOpen} onOpenChange={handleOpenChange}>
       {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
-      <DialogContent className="border-kmt-border bg-white text-kmt-ink">
+      <DialogContent className="border-border bg-surface text-foreground">
         <DialogHeader>
-          <DialogTitle className="text-kmt-ink">{title}</DialogTitle>
-          {description ? <DialogDescription className="text-kmt-muted">{description}</DialogDescription> : null}
+          <DialogTitle className="text-foreground">{title}</DialogTitle>
+          {description ? <DialogDescription className="text-muted-foreground">{description}</DialogDescription> : null}
         </DialogHeader>
         {children}
         {variant === "confirm" || variant === "destructive" ? (
@@ -89,7 +89,7 @@ export function AdminDialog({
               </Button>
             </DialogClose>
             <Button
-              className={cn(variant === "destructive" && "border-kmt-danger bg-kmt-danger text-white hover:border-kmt-danger-strong hover:bg-kmt-danger-strong")}
+              className={cn(variant === "destructive" && "border-danger bg-danger text-white hover:border-danger-strong hover:bg-danger-strong")}
               disabled={confirmDisabled}
               loading={confirmBusy}
               type="button"

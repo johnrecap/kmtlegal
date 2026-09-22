@@ -76,10 +76,10 @@ const columns: Array<DataTableColumn<ClientRow>> = [
     header: "العميل",
     render: (row) => (
       <div>
-        <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/clients/${row.id}`}>
+        <Link className="font-semibold text-primary hover:underline" href={`/admin/clients/${row.id}`}>
           {row.fullName}
         </Link>
-        <p className="mt-1 text-xs text-kmt-muted">{row.phone}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{row.phone}</p>
       </div>
     )
   },
@@ -102,7 +102,7 @@ const columns: Array<DataTableColumn<ClientRow>> = [
     key: "counts",
     header: "الارتباطات",
     render: (row) => (
-      <span className="text-sm text-kmt-muted">
+      <span className="text-sm text-muted-foreground">
         {row._count.cases} قضية · {row._count.consultationRequests} استشارة · {row._count.documents} مستند
       </span>
     )
@@ -116,7 +116,7 @@ const columns: Array<DataTableColumn<ClientRow>> = [
     key: "action",
     header: "",
     render: (row) => (
-      <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={`/admin/clients/${row.id}`}>
+      <Link className="text-sm font-semibold text-primary hover:underline" href={`/admin/clients/${row.id}`}>
         فتح
       </Link>
     )
@@ -127,7 +127,7 @@ function ClientMobileCard({ row }: { row: ClientRow }) {
   return (
     <DataRecordCard
       title={
-        <Link className="text-kmt-navy hover:underline" href={`/admin/clients/${row.id}`}>
+        <Link className="text-primary hover:underline" href={`/admin/clients/${row.id}`}>
           {row.fullName}
         </Link>
       }
@@ -293,7 +293,7 @@ export default async function AdminClientsPage({ searchParams }: { searchParams?
           </MobileFiltersSheet>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
             <p>{result.total} ملف عميل</p>
             <p>
               صفحة {result.page} من {totalPages}

@@ -221,7 +221,7 @@ function PartyFields({
 }) {
   const prefix = `manual-case-party-${rowId}`;
   return (
-    <div className="rounded-lg border border-kmt-border bg-kmt-canvas/60 p-4">
+    <div className="rounded-lg border border-border bg-background/60 p-4">
       <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_14rem]">
         <TextInput disabled={disabled} idPrefix={prefix} label={copy.partyName} name={`party-${rowId}-name`} />
         <Select defaultValue="OPPOSING_PARTY" disabled={disabled} idPrefix={prefix} label={copy.partyType} name={`party-${rowId}-partyType`}>
@@ -328,7 +328,7 @@ export function ManualCaseCreateForm({
           <CardDescription>{copy.createDescription}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
-          <h2 className="text-base font-semibold text-kmt-ink">{copy.clientSection}</h2>
+          <h2 className="text-base font-semibold text-foreground">{copy.clientSection}</h2>
           <TextInput
             disabled={isBusy}
             idPrefix="manual-case"
@@ -360,8 +360,8 @@ export function ManualCaseCreateForm({
       </Card>
 
       <Accordion type="single" collapsible value={partiesOpen} onValueChange={setPartiesOpen}>
-        <AccordionItem value="parties" data-form-group="parties" className="rounded-lg border border-kmt-border bg-white px-4">
-          <AccordionTrigger className="text-base font-semibold text-kmt-ink hover:no-underline">
+        <AccordionItem value="parties" data-form-group="parties" className="rounded-lg border border-border bg-surface px-4">
+          <AccordionTrigger className="text-base font-semibold text-foreground hover:no-underline">
             {copy.partiesSection}
           </AccordionTrigger>
           {/*
@@ -372,7 +372,7 @@ export function ManualCaseCreateForm({
             closing the group. Single instance: no ID duplication.
           */}
           <AccordionContent keepRendered>
-            <p className="mb-4 text-sm leading-6 text-kmt-muted">{copy.partiesDescription}</p>
+            <p className="mb-4 text-sm leading-6 text-muted-foreground">{copy.partiesDescription}</p>
             <div className="space-y-4 pb-4">
               {partyRows.map((rowId) => (
                 <PartyFields

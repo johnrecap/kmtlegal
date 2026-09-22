@@ -13,18 +13,9 @@ import {
   AccordionTrigger
 } from "@/components/animate-ui/components/radix/accordion";
 import { cn } from "@/lib/cn";
-import { consultationAvailabilityUiCopy as copy, localizeApiMessage } from "@/lib/ui-copy";
+import { consultationAvailabilityUiCopy as copy } from "@/lib/ui-copy";
 import type { ConsultationAvailability, ConsultationMode } from "@/server/consultations/consultation-availability-service";
-
-type AvailabilityResponse = {
-  data?: {
-    value: ConsultationAvailability;
-  };
-  error?: {
-    message?: string;
-    requestId?: string;
-  };
-};
+import { AdminApiError, readAdminApiResponse } from "@/features/admin/shared/admin-api-error";
 
 const modeOptions: Array<{ value: ConsultationMode; label: string }> = [
   { value: "ONLINE", label: copy.modes.ONLINE },
@@ -71,19 +62,20 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(value)
       });
-      const body = (await response.json().catch(() => ({}))) as AvailabilityResponse;
-      if (!response.ok || !body.data?.value) {
-        const localizedError = body.error?.message ? localizeApiMessage(body.error.message, "ar") : copy.saveFailed;
-        const message = body.error?.requestId ? `${localizedError} (${body.error.requestId})` : localizedError;
-        setStatus({ tone: "error", message });
+      const data = await readAdminApiResponse<{ value: ConsultationAvailability }>(response);
+      if (!data?.value) {
+        setStatus({ tone: "error", message: copy.saveFailed });
         return;
       }
 
-      setValue(body.data.value);
+      setValue(data.value);
       setStatus({ tone: "success", message: copy.saved });
       router.refresh();
-    } catch {
-      setStatus({ tone: "error", message: copy.connectionFailed });
+    } catch (error) {
+      setStatus({
+        tone: "error",
+        message: error instanceof AdminApiError ? error.message : copy.connectionFailed
+      });
     } finally {
       setIsSaving(false);
     }
@@ -128,7 +120,7 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
               onChange={(event) => updateNumber("bookingWindowDays", event.target.value)}
             />
           </div>
-          <p className="mt-4 text-sm leading-6 text-kmt-muted">
+          <p className="mt-4 text-sm leading-6 text-muted-foreground">
             {copy.timezone}: {value.timezone}. {copy.enabledDays}: {enabledCount}.
           </p>
         </CardContent>
@@ -145,21 +137,21 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
                 key={day.weekday}
                 value={`day-${day.weekday}`}
                 data-form-group={`day-${day.weekday}`}
-                className="rounded border border-slate-200 bg-white px-4"
+                className="rounded border border-border bg-surface px-4"
               >
                 <div className="flex items-center gap-3">
                   <input
                     checked={day.enabled}
-                    className="h-4 w-4 shrink-0 rounded border-slate-300 text-kmt-navy focus:ring-kmt-gold/30"
+                    className="h-4 w-4 shrink-0 rounded border-border text-primary focus:ring-kmt-gold/30"
                     id={`consultation-availability-${day.weekday}-enabled`}
                     type="checkbox"
                     onChange={(event) => updateDay(index, { enabled: event.target.checked })}
                     aria-label={copy.days[day.weekday]}
                   />
                   <AccordionTrigger className="flex-1 py-3 hover:no-underline">
-                    <span className="flex flex-1 items-center justify-between gap-3 text-start text-sm font-semibold text-kmt-ink">
+                    <span className="flex flex-1 items-center justify-between gap-3 text-start text-sm font-semibold text-foreground">
                       <span>{copy.days[day.weekday]}</span>
-                      <span className="font-normal text-kmt-muted">
+                      <span className="font-normal text-muted-foreground">
                         {day.enabled ? `${day.start} - ${day.end}` : "متوقف"}
                       </span>
                     </span>
@@ -186,14 +178,14 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
                       onChange={(event) => updateDay(index, { end: event.target.value })}
                     />
                     <div className="space-y-2">
-                      <p className="text-sm font-semibold text-kmt-ink">{copy.availableMethods}</p>
+                      <p className="text-sm font-semibold text-foreground">{copy.availableMethods}</p>
                       <div className="flex flex-wrap gap-2">
                         {modeOptions.map((mode) => (
                           <label
                             key={mode.value}
                             className={cn(
                               "inline-flex min-h-10 items-center gap-2 rounded border px-3 text-sm font-medium",
-                              day.enabled ? "border-slate-300 bg-white text-kmt-ink" : "border-slate-200 bg-slate-50 text-slate-400"
+                              day.enabled ? "border-border bg-surface text-foreground" : "border-border bg-surface-muted text-muted-foreground"
                             )}
                           >
                             <input

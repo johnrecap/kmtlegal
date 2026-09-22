@@ -68,10 +68,10 @@ export function AdminPagination({
 
   return (
     <div className={cn("space-y-3", className)}>
-      {summary ? <p className="text-sm text-kmt-muted">{summary}</p> : null}
+      {summary ? <p className="text-sm text-muted-foreground">{summary}</p> : null}
       <div className="flex flex-wrap items-center justify-between gap-3">
         {resetHref && resetLabel ? (
-          <a className="text-sm font-semibold text-kmt-navy hover:underline" href={resetHref}>
+          <a className="text-sm font-semibold text-primary hover:underline" href={resetHref}>
             {resetLabel}
           </a>
         ) : (

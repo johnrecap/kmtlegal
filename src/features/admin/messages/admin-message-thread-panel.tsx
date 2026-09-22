@@ -1,9 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { AdminDialog } from "@/components/admin/admin-dialog";
 import { Badge, Button, MaterialSymbol } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { conversationStatusLabels, formatDateTime, labelFrom } from "@/lib/legal-format";
+import { readAdminApiResponse } from "@/features/admin/shared/admin-api-error";
 
 type ConversationMessage = {
   id: string;
@@ -17,12 +19,7 @@ type ConversationThread = {
   id: string;
   status: string;
   subject: string | null;
-  client: {
-    id: string;
-    fullName: string;
-    phone: string;
-    email: string | null;
-  };
+  client: { id: string; fullName: string; phone: string; email: string | null };
   assignedTo: { id: string; name: string; email: string } | null;
   lastMessageAt: string | Date;
   closedAt: string | Date | null;
@@ -36,24 +33,12 @@ type ConversationAssignee = {
   role: { name: string };
 };
 
-async function readJson(response: Response) {
-  const payload = await response.json().catch(() => null);
-  if (!response.ok) {
-    throw new Error(payload?.error?.message ?? "حدث خطأ أثناء تنفيذ الطلب.");
-  }
-  return payload;
-}
+type ThreadUpdate = { status?: string; assignedToId?: string | null };
 
 function statusTone(status: string) {
-  if (status === "WAITING_STAFF") {
-    return "pending" as const;
-  }
-  if (status === "WAITING_CLIENT" || status === "OPEN") {
-    return "active" as const;
-  }
-  if (status === "CLOSED" || status === "ARCHIVED") {
-    return "closed" as const;
-  }
+  if (status === "WAITING_STAFF") return "pending" as const;
+  if (status === "WAITING_CLIENT" || status === "OPEN") return "active" as const;
+  if (status === "CLOSED" || status === "ARCHIVED") return "closed" as const;
   return "neutral" as const;
 }
 
@@ -73,13 +58,24 @@ export function AdminMessageThreadPanel({
   const [thread, setThread] = useState(initialThread);
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [pollError, setPollError] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [hasNewMessages, setHasNewMessages] = useState(false);
+  const [draftStatus, setDraftStatus] = useState(initialThread.status);
+  const [draftAssigneeId, setDraftAssigneeId] = useState(initialThread.assignedTo?.id ?? "");
+  const [pendingManagementUpdate, setPendingManagementUpdate] = useState<ThreadUpdate | null>(null);
   const mutationVersion = useRef(0);
   const mutationPending = useRef(false);
   const mounted = useRef(true);
   const draftVersion = useRef(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isNearBottomRef = useRef(true);
+  const initializedScrollRef = useRef(false);
+  const knownLatestMessageIdRef = useRef<string | null>(initialThread.messages.at(-1)?.id ?? null);
+  const sentMessageIdRef = useRef<string | null>(null);
   const isClosed = thread.status === "CLOSED" || thread.status === "ARCHIVED";
+  const managementDirty = draftStatus !== thread.status || draftAssigneeId !== (thread.assignedTo?.id ?? "");
 
   useEffect(() => {
     mounted.current = true;
@@ -90,49 +86,97 @@ export function AdminMessageThreadPanel({
   }, []);
 
   useEffect(() => {
-    let mounted = true;
-    let pollInFlight = false;
+    let disposed = false;
+    let timer: number | undefined;
+    let controller: AbortController | null = null;
+    let failureCount = 0;
+
+    const schedule = (delay: number) => {
+      window.clearTimeout(timer);
+      if (!disposed) timer = window.setTimeout(poll, delay);
+    };
+
     const poll = async () => {
-      if (pollInFlight || mutationPending.current) return;
-      pollInFlight = true;
+      if (disposed || controller) return;
+      if (document.hidden || !navigator.onLine || mutationPending.current) {
+        schedule(5000);
+        return;
+      }
+
+      controller = new AbortController();
       const versionAtStart = mutationVersion.current;
       try {
-        const response = await fetch(`/api/admin/messages/${thread.id}`, { cache: "no-store" });
-        const payload = await readJson(response);
-        if (
-          mounted &&
-          !mutationPending.current &&
-          versionAtStart === mutationVersion.current
-        ) {
-          setThread(payload.data);
-        }
-      } catch {
-        if (
-          mounted &&
-          !mutationPending.current &&
-          versionAtStart === mutationVersion.current
-        ) {
-          setError("تعذر تحديث المحادثة الآن.");
-        }
+        const response = await fetch(`/api/admin/messages/${thread.id}`, { cache: "no-store", signal: controller.signal });
+        const data = await readAdminApiResponse<ConversationThread>(response);
+        failureCount = 0;
+        setPollError(null);
+        if (!disposed && !mutationPending.current && versionAtStart === mutationVersion.current) setThread(data);
+      } catch (pollFailure) {
+        if (controller.signal.aborted || disposed) return;
+        failureCount += 1;
+        setPollError(pollFailure instanceof Error ? pollFailure.message : "تعذر تحديث المحادثة تلقائيًا.");
       } finally {
-        pollInFlight = false;
+        controller = null;
+        schedule(Math.min(30000, 5000 * 2 ** Math.min(failureCount, 3)));
       }
     };
-    const timer = window.setInterval(poll, 5000);
+
+    const resume = () => {
+      if (!document.hidden && navigator.onLine) schedule(0);
+    };
+    document.addEventListener("visibilitychange", resume);
+    window.addEventListener("online", resume);
+    schedule(5000);
     return () => {
-      mounted = false;
-      window.clearInterval(timer);
+      disposed = true;
+      window.clearTimeout(timer);
+      controller?.abort();
+      document.removeEventListener("visibilitychange", resume);
+      window.removeEventListener("online", resume);
     };
   }, [thread.id]);
 
   const messages = useMemo(() => thread.messages ?? [], [thread.messages]);
 
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const latest = messages.at(-1)?.id ?? null;
+
+    if (!initializedScrollRef.current) {
+      container.scrollTop = container.scrollHeight;
+      initializedScrollRef.current = true;
+      knownLatestMessageIdRef.current = latest;
+      return;
+    }
+
+    if (latest && latest !== knownLatestMessageIdRef.current) {
+      if (sentMessageIdRef.current === latest || isNearBottomRef.current) {
+        requestAnimationFrame(() => {
+          const target = container.querySelector<HTMLElement>(`[data-message-id="${latest}"]`);
+          target?.scrollIntoView({ block: "end", behavior: "smooth" });
+        });
+        sentMessageIdRef.current = null;
+        setHasNewMessages(false);
+      } else {
+        setHasNewMessages(true);
+      }
+      knownLatestMessageIdRef.current = latest;
+    }
+  }, [messages]);
+
+  function scrollToLatest() {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+    isNearBottomRef.current = true;
+    setHasNewMessages(false);
+  }
+
   async function sendReply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmed = message.trim();
-    if (!trimmed || mutationPending.current || isSending || isUpdating || !canReply || isClosed) {
-      return;
-    }
+    if (!trimmed || mutationPending.current || isSending || isUpdating || !canReply || isClosed) return;
 
     const operationVersion = ++mutationVersion.current;
     const sentDraftVersion = draftVersion.current;
@@ -145,17 +189,12 @@ export function AdminMessageThreadPanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: trimmed })
       });
-      const payload = await readJson(response);
-      if (mounted.current && operationVersion === mutationVersion.current) {
-        setThread(payload.data);
-      }
-      if (mounted.current && draftVersion.current === sentDraftVersion) {
-        setMessage("");
-      }
+      const data = await readAdminApiResponse<ConversationThread>(response);
+      sentMessageIdRef.current = data.messages.at(-1)?.id ?? null;
+      if (mounted.current && operationVersion === mutationVersion.current) setThread(data);
+      if (mounted.current && draftVersion.current === sentDraftVersion) setMessage("");
     } catch (replyError) {
-      if (mounted.current) {
-        setError(replyError instanceof Error ? replyError.message : "تعذر إرسال الرد.");
-      }
+      if (mounted.current) setError(replyError instanceof Error ? replyError.message : "تعذر إرسال الرد.");
     } finally {
       mutationPending.current = false;
       mutationVersion.current += 1;
@@ -163,8 +202,8 @@ export function AdminMessageThreadPanel({
     }
   }
 
-  async function updateThread(body: { status?: string; assignedToId?: string | null }) {
-    if (mutationPending.current || isSending || isUpdating) return;
+  async function updateThread(body: ThreadUpdate) {
+    if (mutationPending.current || isSending || isUpdating) return false;
     const operationVersion = ++mutationVersion.current;
     mutationPending.current = true;
     setIsUpdating(true);
@@ -175,14 +214,16 @@ export function AdminMessageThreadPanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body)
       });
-      const payload = await readJson(response);
+      const data = await readAdminApiResponse<ConversationThread>(response);
       if (mounted.current && operationVersion === mutationVersion.current) {
-        setThread(payload.data);
+        setThread(data);
+        setDraftStatus(data.status);
+        setDraftAssigneeId(data.assignedTo?.id ?? "");
       }
+      return true;
     } catch (updateError) {
-      if (mounted.current) {
-        setError(updateError instanceof Error ? updateError.message : "تعذر تحديث المحادثة.");
-      }
+      if (mounted.current) setError(updateError instanceof Error ? updateError.message : "تعذر تحديث المحادثة.");
+      return false;
     } finally {
       mutationPending.current = false;
       mutationVersion.current += 1;
@@ -190,135 +231,120 @@ export function AdminMessageThreadPanel({
     }
   }
 
+  function saveManagementDraft() {
+    if (!managementDirty) return;
+    const body: ThreadUpdate = {};
+    if (canAssign && draftAssigneeId !== (thread.assignedTo?.id ?? "")) body.assignedToId = draftAssigneeId || null;
+    if (canManage && draftStatus !== thread.status) body.status = draftStatus;
+    if (body.status === "CLOSED" || body.status === "ARCHIVED") {
+      setPendingManagementUpdate(body);
+      return;
+    }
+    void updateThread(body);
+  }
+
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
-      <section className="min-w-0 overflow-hidden rounded-lg border border-kmt-border bg-white shadow-sm shadow-slate-200/50">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-kmt-border px-4 py-4">
+      <section className="min-w-0 overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-4">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-kmt-gold">محادثة مباشرة</p>
-            <h2 className="break-words text-xl font-semibold text-kmt-ink">{thread.client.fullName}</h2>
-            <p className="mt-1 break-words text-sm text-kmt-muted">{thread.subject ?? "محادثة مع فريق المكتب"}</p>
+            <p className="text-sm font-semibold text-primary">محادثة مباشرة</p>
+            <h2 className="break-words text-xl font-semibold text-foreground">{thread.client.fullName}</h2>
+            <p className="mt-1 break-words text-sm text-muted-foreground">{thread.subject ?? "محادثة مع فريق المكتب"}</p>
           </div>
           <Badge tone={statusTone(thread.status)}>{labelFrom(conversationStatusLabels, thread.status)}</Badge>
         </div>
 
-        <div className="max-h-[36rem] min-h-[28rem] space-y-4 overflow-y-auto bg-kmt-canvas/70 p-4">
-          {messages.length ? (
-            messages.map((item) => {
-              const isStaff = item.senderType === "STAFF";
-              return (
-                <div key={item.id} className={cn("flex gap-3", isStaff ? "justify-end" : "justify-start")}>
-                  {!isStaff ? (
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-kmt-gold/30 bg-white text-kmt-gold">
-                      <MaterialSymbol className="text-[19px]" name="person" />
-                    </div>
-                  ) : null}
-                  <div
-                    className={cn(
-                      "max-w-[82%] rounded-2xl px-4 py-3 text-sm leading-7 shadow-sm",
-                      isStaff ? "rounded-br-md bg-kmt-navy text-white" : "rounded-bl-md border border-kmt-border bg-white text-kmt-ink"
-                    )}
-                  >
-                    <p className="whitespace-pre-wrap break-words">{item.body}</p>
-                    <p className={cn("mt-2 text-xs", isStaff ? "text-white/70" : "text-kmt-muted")}>
-                      {item.senderUser?.name ?? (isStaff ? "الفريق" : thread.client.fullName)} · {formatDateTime(item.createdAt)}
-                    </p>
-                  </div>
-                  {isStaff ? (
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-kmt-gold text-white">
-                      <MaterialSymbol className="text-[19px]" name="support_agent" />
-                    </div>
-                  ) : null}
+        <div
+          ref={scrollContainerRef}
+          className="relative max-h-[36rem] min-h-[28rem] space-y-4 overflow-y-auto bg-background/70 p-4"
+          onScroll={(event) => {
+            const target = event.currentTarget;
+            isNearBottomRef.current = target.scrollHeight - target.scrollTop - target.clientHeight < 96;
+            if (isNearBottomRef.current) setHasNewMessages(false);
+          }}
+        >
+          {messages.length ? messages.map((item) => {
+            const isStaff = item.senderType === "STAFF";
+            return (
+              <div key={item.id} data-message-id={item.id} className={cn("flex gap-3", isStaff ? "justify-end" : "justify-start")}>
+                {!isStaff ? <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-surface text-primary"><MaterialSymbol className="text-[19px]" name="person" /></div> : null}
+                <div className={cn("max-w-[82%] rounded-2xl px-4 py-3 text-sm leading-7 shadow-sm", isStaff ? "rounded-br-md bg-surface-strong text-surface-strong-foreground" : "rounded-bl-md border border-border bg-surface text-foreground")}>
+                  <p className="whitespace-pre-wrap break-words">{item.body}</p>
+                  <p className={cn("mt-2 text-xs", isStaff ? "text-surface-strong-foreground/70" : "text-muted-foreground")}>{item.senderUser?.name ?? (isStaff ? "الفريق" : thread.client.fullName)} · {formatDateTime(item.createdAt)}</p>
                 </div>
-              );
-            })
-          ) : (
-            <div className="flex min-h-60 items-center justify-center rounded-lg border border-dashed border-kmt-border bg-white text-sm text-kmt-muted">
-              لا توجد رسائل في هذه المحادثة بعد.
-            </div>
-          )}
+                {isStaff ? <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"><MaterialSymbol className="text-[19px]" name="support_agent" /></div> : null}
+              </div>
+            );
+          }) : <div className="flex min-h-60 items-center justify-center rounded-lg border border-dashed border-border bg-surface text-sm text-muted-foreground">لا توجد رسائل في هذه المحادثة بعد.</div>}
+          {hasNewMessages ? <Button className="sticky bottom-2 mx-auto flex" onClick={scrollToLatest} size="sm" type="button">رسائل جديدة</Button> : null}
         </div>
 
-        <form className="border-t border-kmt-border bg-white p-4" onSubmit={sendReply}>
-          {error ? <p className="mb-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p> : null}
-          <div className="flex min-w-0 gap-3">
+        <form className="border-t border-border bg-surface p-4" onSubmit={sendReply}>
+          {error ? <p id="admin-reply-error" className="mb-3 rounded border border-danger-border bg-danger-surface px-3 py-2 text-sm text-danger" role="alert">{error}</p> : null}
+          {pollError ? <p className="mb-3 text-sm text-warning" role="status">التحديث التلقائي متوقف مؤقتًا: {pollError}</p> : null}
+          <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="admin-message-reply">رد فريق المكتب</label>
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
             <textarea
-              className="min-h-20 min-w-0 flex-1 resize-y rounded border border-kmt-border bg-white px-3 py-2 text-sm leading-6 outline-none transition focus:border-kmt-gold"
+              id="admin-message-reply"
+              aria-describedby={error ? "admin-reply-error" : undefined}
+              aria-invalid={Boolean(error)}
+              className="min-h-24 min-w-0 flex-1 resize-y rounded border border-input bg-surface px-3 py-2 text-sm leading-6 text-foreground outline-none transition focus:border-primary motion-reduce:transition-none"
               value={message}
-              onChange={(event) => {
-                draftVersion.current += 1;
-                setMessage(event.target.value);
-              }}
+              onChange={(event) => { draftVersion.current += 1; setMessage(event.target.value); }}
               placeholder={isClosed ? "المحادثة مغلقة." : "اكتب رد الفريق للعميل..."}
               disabled={!canReply || isClosed || isSending || isUpdating}
               maxLength={2000}
             />
-            <Button className="self-end" type="submit" loading={isSending} disabled={!message.trim() || !canReply || isClosed || isSending || isUpdating}>
-              إرسال
-            </Button>
+            <Button className="self-end" type="submit" loading={isSending} disabled={!message.trim() || !canReply || isClosed || isSending || isUpdating}>إرسال</Button>
           </div>
         </form>
       </section>
 
       <aside className="space-y-4">
-        <div className="rounded-lg border border-kmt-border bg-white p-4 shadow-sm shadow-slate-200/50">
-          <h3 className="text-base font-semibold text-kmt-ink">بيانات العميل</h3>
+        <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
+          <h3 className="text-base font-semibold text-foreground">بيانات العميل</h3>
           <dl className="mt-4 space-y-3 text-sm">
-            <div>
-              <dt className="font-semibold text-kmt-muted">الهاتف</dt>
-              <dd className="mt-1 text-kmt-ink" dir="ltr">{thread.client.phone}</dd>
-            </div>
-            <div>
-              <dt className="font-semibold text-kmt-muted">البريد</dt>
-              <dd className="mt-1 break-words text-kmt-ink" dir="ltr">{thread.client.email ?? "غير محدد"}</dd>
-            </div>
-            <div>
-              <dt className="font-semibold text-kmt-muted">آخر رسالة</dt>
-              <dd className="mt-1 text-kmt-ink">{formatDateTime(thread.lastMessageAt)}</dd>
-            </div>
+            <div><dt className="font-semibold text-muted-foreground">الهاتف</dt><dd className="mt-1 text-foreground" dir="ltr"><bdi>{thread.client.phone}</bdi></dd></div>
+            <div><dt className="font-semibold text-muted-foreground">البريد</dt><dd className="mt-1 break-words text-foreground" dir="ltr"><bdi>{thread.client.email ?? "غير محدد"}</bdi></dd></div>
+            <div><dt className="font-semibold text-muted-foreground">آخر رسالة</dt><dd className="mt-1 text-foreground">{formatDateTime(thread.lastMessageAt)}</dd></div>
           </dl>
         </div>
 
-        <div className="rounded-lg border border-kmt-border bg-white p-4 shadow-sm shadow-slate-200/50">
-          <h3 className="text-base font-semibold text-kmt-ink">إدارة المحادثة</h3>
+        <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
+          <h3 className="text-base font-semibold text-foreground">إدارة المحادثة</h3>
           <div className="mt-4 space-y-4">
-            <label className="block text-sm font-semibold text-kmt-muted">
-              المسؤول
-              <select
-                className="mt-2 min-h-11 w-full rounded border border-kmt-border bg-white px-3 text-kmt-ink outline-none focus:border-kmt-gold"
-                value={thread.assignedTo?.id ?? ""}
-                disabled={!canAssign || isUpdating || isSending}
-                onChange={(event) => updateThread({ assignedToId: event.target.value || null })}
-              >
-                <option value="">غير معين</option>
-                {assignees.map((assignee) => (
-                  <option key={assignee.id} value={assignee.id}>
-                    {assignee.name} - {assignee.role.name}
-                  </option>
-                ))}
+            <label className="block text-sm font-semibold text-muted-foreground">المسؤول
+              <select className="mt-2 min-h-11 w-full rounded border border-input bg-surface px-3 text-foreground outline-none focus:border-primary" value={draftAssigneeId} disabled={!canAssign || isUpdating || isSending} onChange={(event) => setDraftAssigneeId(event.target.value)}>
+                <option value="">غير معين</option>{assignees.map((assignee) => <option key={assignee.id} value={assignee.id}>{assignee.name} - {assignee.role.name}</option>)}
               </select>
             </label>
-
-            <label className="block text-sm font-semibold text-kmt-muted">
-              الحالة
-              <select
-                className="mt-2 min-h-11 w-full rounded border border-kmt-border bg-white px-3 text-kmt-ink outline-none focus:border-kmt-gold"
-                value={thread.status}
-                disabled={!canManage || isUpdating || isSending}
-                onChange={(event) => updateThread({ status: event.target.value })}
-              >
-                {Object.entries(conversationStatusLabels).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
+            <label className="block text-sm font-semibold text-muted-foreground">الحالة
+              <select className="mt-2 min-h-11 w-full rounded border border-input bg-surface px-3 text-foreground outline-none focus:border-primary" value={draftStatus} disabled={!canManage || isUpdating || isSending} onChange={(event) => setDraftStatus(event.target.value)}>
+                {Object.entries(conversationStatusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
               </select>
             </label>
-
-            {isUpdating ? <p className="text-sm text-kmt-muted">جاري تحديث المحادثة...</p> : null}
+            <Button className="w-full" disabled={!managementDirty || isUpdating || isSending} loading={isUpdating} onClick={saveManagementDraft} type="button" variant="secondary">حفظ التغييرات</Button>
+            {managementDirty ? <p className="text-xs text-warning" role="status">لديك تغييرات غير محفوظة.</p> : null}
           </div>
         </div>
       </aside>
+
+      <AdminDialog
+        variant="destructive"
+        open={Boolean(pendingManagementUpdate)}
+        onOpenChange={(open) => { if (!open) setPendingManagementUpdate(null); }}
+        title={pendingManagementUpdate?.status === "ARCHIVED" ? "تأكيد أرشفة المحادثة" : "تأكيد إغلاق المحادثة"}
+        description="لن يتمكن الفريق أو العميل من إضافة ردود جديدة حتى إعادة فتح المحادثة."
+        confirmLabel={pendingManagementUpdate?.status === "ARCHIVED" ? "أرشفة المحادثة" : "إغلاق المحادثة"}
+        confirmBusy={isUpdating}
+        onConfirm={() => {
+          const body = pendingManagementUpdate;
+          if (!body) return;
+          setPendingManagementUpdate(null);
+          void updateThread(body);
+        }}
+      />
     </div>
   );
 }

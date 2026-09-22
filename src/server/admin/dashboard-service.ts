@@ -4,7 +4,7 @@ import {
   getAdminRoutePolicy,
   type AdminRouteId
 } from "@/lib/admin-route-policy";
-import { hasPermission, type PermissionKey, type Principal } from "@/server/auth/policy";
+import { hasPermission, ROLES, type PermissionKey, type Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
 import { canReadAdminContactMessages } from "./contact-message-service";
@@ -54,6 +54,22 @@ export const DASHBOARD_QUICK_ACTION_ROUTE_IDS = [
   "content.home",
   "roles.list"
 ] as const satisfies readonly AdminRouteId[];
+
+const ROLE_METRIC_PRIORITY: Record<string, readonly DashboardMetricKey[]> = {
+  [ROLES.lawyer]: ["tasks.overdue", "appointments.today", "cases.active", "documents.under-review", "consultations.unreviewed", "clients.active"],
+  [ROLES.secretary]: ["appointments.today", "consultations.unreviewed", "contacts.new", "tasks.overdue", "documents.under-review", "clients.active"],
+  [ROLES.marketingStaff]: ["contacts.new"],
+  [ROLES.officeAdmin]: ["tasks.overdue", "appointments.today", "consultations.unreviewed", "consultations.overdue_unbooked", "consultations.awaiting_result", "consultations.missed", "contacts.new", "documents.under-review", "cases.active", "clients.active"],
+  [ROLES.superAdmin]: ["tasks.overdue", "appointments.today", "consultations.unreviewed", "consultations.overdue_unbooked", "consultations.awaiting_result", "consultations.missed", "contacts.new", "documents.under-review", "cases.active", "clients.active"]
+};
+
+const ROLE_QUICK_ACTION_PRIORITY: Record<string, readonly AdminRouteId[]> = {
+  [ROLES.lawyer]: ["cases.create", "calendar.list"],
+  [ROLES.secretary]: ["calendar.list", "contacts.list", "cases.create"],
+  [ROLES.marketingStaff]: ["content.home"],
+  [ROLES.officeAdmin]: ["cases.create", "calendar.list", "contacts.list", "roles.list", "content.home"],
+  [ROLES.superAdmin]: ["roles.list", "cases.create", "calendar.list", "contacts.list", "content.home"]
+};
 
 export type DashboardMetricKey = (typeof DASHBOARD_METRIC_KEYS)[number];
 export type DashboardPrioritySectionKey = (typeof DASHBOARD_PRIORITY_SECTION_KEYS)[number];
@@ -366,7 +382,7 @@ export async function getAdminDashboard(
     generatedAt,
     cairoRange: cairoDayRange(generatedAt)
   };
-  const specs = DASHBOARD_METRIC_SPECS.filter((spec) => hasMetricPermissions(actor, spec));
+  const specs = orderDashboardSpecs(actor, DASHBOARD_METRIC_SPECS.filter((spec) => hasMetricPermissions(actor, spec)));
   const entries = await Promise.all(specs.map(async (spec) => [spec.key, await guardedLoad(() => spec.load(context))] as const));
   const results = new Map<DashboardMetricKey, DashboardLoadResult>(entries);
 
@@ -374,7 +390,7 @@ export async function getAdminDashboard(
     version: 1,
     generatedAt: generatedAt.toISOString(),
     metrics: specs.map((spec) => dashboardMetric(spec, context, results.get(spec.key)!)),
-    prioritySections: dashboardSections(specs, context, results),
+    prioritySections: dashboardSections(actor, specs, context, results),
     quickActionRouteIds: dashboardQuickActions(actor),
     recentActivity: dashboardRecentActivity(results)
   };
@@ -409,14 +425,27 @@ function dashboardMetric(
   return { ...fields, state: "unavailable", value: null, recoveryKey: "admin.dashboard.metricUnavailable" };
 }
 
+function orderDashboardSpecs(actor: Principal, specs: readonly DashboardMetricSpec[]) {
+  const priority = ROLE_METRIC_PRIORITY[actor.roleName] ?? [];
+  const rank = new Map(priority.map((key, index) => [key, index]));
+  return [...specs].sort((left, right) =>
+    (rank.get(left.key) ?? Number.MAX_SAFE_INTEGER) - (rank.get(right.key) ?? Number.MAX_SAFE_INTEGER)
+  );
+}
+
 function dashboardSections(
+  actor: Principal,
   specs: readonly DashboardMetricSpec[],
   context: DashboardLoadContext,
   results: ReadonlyMap<DashboardMetricKey, DashboardLoadResult>
 ): DashboardPrioritySection[] {
   const specsByKey = new Map(specs.map((spec) => [spec.key, spec]));
   const sections: DashboardPrioritySection[] = [];
-  for (const key of DASHBOARD_PRIORITY_SECTION_KEYS) {
+  const priority = ROLE_METRIC_PRIORITY[actor.roleName] ?? DASHBOARD_PRIORITY_SECTION_KEYS;
+  const orderedKeys = [...priority.filter((key): key is DashboardPrioritySectionKey =>
+    (DASHBOARD_PRIORITY_SECTION_KEYS as readonly string[]).includes(key)
+  ), ...DASHBOARD_PRIORITY_SECTION_KEYS.filter((key) => !priority.includes(key))];
+  for (const key of orderedKeys) {
     const spec = specsByKey.get(key);
     if (!spec) continue;
     const result = results.get(key)!;
@@ -431,8 +460,10 @@ function dashboardSections(
 }
 
 function dashboardQuickActions(actor: Principal) {
-  return DASHBOARD_QUICK_ACTION_ROUTE_IDS.filter((routeId) =>
-    Boolean(getAdminRoutePolicy(routeId) && canAccessAdminRoute(actor, routeId))
+  const priority = ROLE_QUICK_ACTION_PRIORITY[actor.roleName] ?? DASHBOARD_QUICK_ACTION_ROUTE_IDS;
+  const ordered = [...priority, ...DASHBOARD_QUICK_ACTION_ROUTE_IDS.filter((routeId) => !priority.includes(routeId))];
+  return ordered.filter((routeId, index) =>
+    ordered.indexOf(routeId) === index && Boolean(getAdminRoutePolicy(routeId) && canAccessAdminRoute(actor, routeId))
   );
 }
 

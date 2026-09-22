@@ -62,7 +62,7 @@ export function DashboardPriorityList({ section }: { section: DashboardPriorityS
       </CardContent>
       <CardFooter>
         <Link
-          className="font-semibold text-kmt-navy hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
+          className="font-semibold text-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
           data-testid="dashboard-section-link"
           href={section.href}
         >
@@ -78,16 +78,16 @@ function PriorityItem({ item }: { item: DashboardPriorityItem }) {
   return (
     <li>
       <Link
-        className="block min-w-0 rounded-lg border border-kmt-border p-4 transition-colors hover:bg-kmt-canvas focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
+        className="block min-w-0 rounded-lg border border-border p-4 transition-colors hover:bg-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
         href={item.href}
       >
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <p className="min-w-0 flex-1 font-semibold text-kmt-ink">
+          <p className="min-w-0 flex-1 font-semibold text-foreground">
             <DisplayValue value={presentation.title} />
           </p>
           <Badge tone={presentation.tone}>{presentation.badge}</Badge>
         </div>
-        <p className="mt-2 break-words text-sm leading-6 text-kmt-muted" data-visual-dynamic>
+        <p className="mt-2 break-words text-sm leading-6 text-muted-foreground" data-visual-dynamic>
           <PriorityItemMeta item={item} />
         </p>
       </Link>

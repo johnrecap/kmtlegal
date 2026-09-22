@@ -86,7 +86,7 @@ function safeConfidence(value: unknown) {
 
 function AiClassificationSummary({ value }: { value: unknown }) {
   if (!value) {
-    return <p className="text-sm text-kmt-muted">لا توجد نتيجة AI محفوظة لهذا الطلب.</p>;
+    return <p className="text-sm text-muted-foreground">لا توجد نتيجة AI محفوظة لهذا الطلب.</p>;
   }
 
   if (!isRecord(value)) {
@@ -119,8 +119,8 @@ function AiClassificationSummary({ value }: { value: unknown }) {
       </div>
       {reasons.length ? (
         <div>
-          <p className="text-xs font-semibold text-kmt-muted">ملاحظات التصنيف</p>
-          <ul className="mt-2 list-disc space-y-1 pr-5 text-sm leading-6 text-kmt-ink">
+          <p className="text-xs font-semibold text-muted-foreground">ملاحظات التصنيف</p>
+          <ul className="mt-2 list-disc space-y-1 pr-5 text-sm leading-6 text-foreground">
             {reasons.map((reason) => (
               <li key={reason}>{reason}</li>
             ))}
@@ -128,7 +128,7 @@ function AiClassificationSummary({ value }: { value: unknown }) {
         </div>
       ) : null}
       {notes.length ? (
-        <div className="rounded border border-kmt-border bg-slate-50 px-3 py-2 text-sm leading-7 text-kmt-ink">
+        <div className="rounded border border-border bg-surface-muted px-3 py-2 text-sm leading-7 text-foreground">
           {notes.map((note) => (
             <p key={note}>{note}</p>
           ))}
@@ -141,8 +141,8 @@ function AiClassificationSummary({ value }: { value: unknown }) {
 function DetailItem({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <p className="text-xs font-semibold text-kmt-muted">{label}</p>
-      <div className="mt-1 text-sm leading-6 text-kmt-ink">{value || "غير محدد"}</div>
+      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
+      <div className="mt-1 text-sm leading-6 text-foreground">{value || "غير محدد"}</div>
     </div>
   );
 }
@@ -254,9 +254,9 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
                 />
               </div>
               {consultation.outcomeNote ? (
-                <div className="mt-4 rounded border border-kmt-border bg-kmt-canvas p-3">
-                  <p className="text-xs font-semibold text-kmt-muted">{plan36ConsultationOutcomeCopy.detail.note}</p>
-                  <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-kmt-ink">{consultation.outcomeNote}</p>
+                <div className="mt-4 rounded border border-border bg-background p-3">
+                  <p className="text-xs font-semibold text-muted-foreground">{plan36ConsultationOutcomeCopy.detail.note}</p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-foreground">{consultation.outcomeNote}</p>
                 </div>
               ) : null}
               {consultation.outcomeReasonCode === "BACKFILL_CONVERTED_WITHOUT_PRIMARY" ? (
@@ -313,7 +313,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
                   label="القضية المحولة"
                   value={
                     consultation.convertedCase ? (
-                      <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/cases/${consultation.convertedCase.id}`}>
+                      <Link className="font-semibold text-primary hover:underline" href={`/admin/cases/${consultation.convertedCase.id}`}>
                         {consultation.convertedCase.internalFileNumber}
                       </Link>
                     ) : null
@@ -329,7 +329,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
               <CardDescription>هذا هو النص الذي كتبه العميل في الشات، والسكرتيرة تستخدمه لتحديد المجال الداخلي والمحامي المسؤول.</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="whitespace-pre-wrap text-sm leading-7 text-kmt-ink">{consultation.summary}</p>
+              <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">{consultation.summary}</p>
               {consultation.opposingPartyName ? (
                 <p className="mt-4 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
                   الطرف المقابل: {consultation.opposingPartyName}
@@ -344,7 +344,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
               <CardDescription>سياق تنظيمي مستخرج من شات الحجز ليساعد السكرتيرة والفريق على مراجعة الطلب وتعيين المحامي المناسب.</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="mb-4 whitespace-pre-wrap text-sm leading-7 text-kmt-ink">{officeAiSummary}</p>
+              <p className="mb-4 whitespace-pre-wrap text-sm leading-7 text-foreground">{officeAiSummary}</p>
               <AiClassificationSummary value={consultation.aiClassification} />
             </CardContent>
           </Card>
@@ -357,9 +357,9 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
               {consultation.appointments.length ? (
                 <div className="space-y-3">
                   {consultation.appointments.map((appointment) => (
-                    <div key={appointment.id} className="rounded border border-kmt-border p-3">
-                      <p className="font-semibold text-kmt-ink">{appointment.title}</p>
-                      <p className="mt-1 text-sm text-kmt-muted">
+                    <div key={appointment.id} className="rounded border border-border p-3">
+                      <p className="font-semibold text-foreground">{appointment.title}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
                         {formatDateTime(appointment.startsAt)} - {labelFrom(modeLabels, appointment.mode)}
                       </p>
                     </div>

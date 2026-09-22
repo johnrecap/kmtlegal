@@ -41,7 +41,8 @@
         "FilterBar",
         "Select",
         "StateBlock",
-        "TextInput"
+        "TextInput",
+        "button"
       ],
       "disposition": "migrated",
       "evidence": "tests/ui/admin-ui-convergence.test.tsx"
@@ -138,7 +139,6 @@
       "path": "src/app/(app-ar)/admin/documents/page.tsx",
       "contracts": [
         "Button",
-        "DataTable",
         "FilterBar",
         "SearchInput",
         "Select",
@@ -205,6 +205,8 @@
       "path": "src/app/(app-ar)/admin/tasks/page.tsx",
       "contracts": [
         "Button",
+        "DataTable",
+        "DataTableColumn",
         "FilterBar",
         "SearchInput",
         "Select",
@@ -321,6 +323,14 @@
       "evidence": "tests/ui/product-components.test.tsx"
     },
     {
+      "path": "src/components/admin/admin-account-menu.tsx",
+      "contracts": [
+        "buttonClasses"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
       "path": "src/components/admin/admin-mobile-nav.tsx",
       "contracts": [
         "buttonClasses"
@@ -339,11 +349,11 @@
       "evidence": "tests/ui/product-components.test.tsx"
     },
     {
-      "path": "src/components/layout/dashboard-shell-view.tsx",
+      "path": "src/components/admin/admin-sidebar-nav.tsx",
       "contracts": [
         "buttonClasses"
       ],
-      "disposition": "backward-compatible",
+      "disposition": "migrated",
       "evidence": "tests/ui/product-components.test.tsx"
     },
     {
@@ -557,6 +567,17 @@
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/admin-notification-center.test.tsx"
+    },
+    {
+      "path": "src/features/admin/task-documents/document-list.tsx",
+      "contracts": [
+        "Button",
+        "DataTable",
+        "DataTableColumn",
+        "StateBlock"
+      ],
+      "disposition": "migrated",
+      "evidence": "tests/ui/admin-ui-convergence.test.tsx"
     },
     {
       "path": "src/features/admin/task-documents/task-document-forms.tsx",

@@ -1,9 +1,8 @@
 "use client";
 
-import { Button, ButtonLink, StateBlock } from "@/components/ui";
-import { useAdminAccess } from "@/features/admin/shell/admin-access-context";
+import { Button, ButtonLink, SkeletonCard, SkeletonTable, StateBlock } from "@/components/ui";
 import { plan35AdminShellCopy } from "@/lib/ui-copy";
-import { DashboardShellView } from "./dashboard-shell-view";
+import { DashboardPageFrame } from "./dashboard-page-frame";
 
 type AdminShellStateAction =
   | { label: string; href: string }
@@ -22,20 +21,29 @@ export function AdminShellState({
   action?: AdminShellStateAction;
   testId?: string;
 }) {
-  const access = useAdminAccess();
   const stateAction = action ? <AdminStateAction action={action} /> : undefined;
 
+  if (tone === "loading") {
+    return (
+      <DashboardPageFrame description={description} eyebrow={plan35AdminShellCopy.workspaceEyebrow} title={title}>
+        <div aria-label={description} className="space-y-5" data-testid={testId} role="status">
+          <div className="grid gap-4 md:grid-cols-3">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+          <SkeletonTable rows={6} />
+        </div>
+      </DashboardPageFrame>
+    );
+  }
+
   return (
-    <DashboardShellView
-      eyebrow={plan35AdminShellCopy.workspaceEyebrow}
-      navItems={access.navItems}
-      title={title}
-      userLabel={access.userLabel}
-    >
+    <DashboardPageFrame eyebrow={plan35AdminShellCopy.workspaceEyebrow} title={title}>
       <div data-testid={testId}>
         <StateBlock action={stateAction} description={description} title={title} tone={tone} />
       </div>
-    </DashboardShellView>
+    </DashboardPageFrame>
   );
 }
 

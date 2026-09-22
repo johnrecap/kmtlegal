@@ -50,8 +50,8 @@ const auditColumns: Array<DataTableColumn<AuditRow>> = [
     header: "الإجراء",
     render: (row) => (
       <div>
-        <p className="font-semibold text-kmt-ink">{auditActionOptionLabel(row.action)}</p>
-        <p className="mt-1 text-xs text-kmt-muted">
+        <p className="font-semibold text-foreground">{auditActionOptionLabel(row.action)}</p>
+        <p className="mt-1 text-xs text-muted-foreground">
           {row.actor
             ? `${row.actor.name} · ${roleDisplayLabel(row.actor.roleName)}`
             : plan35UserGovernanceUiCopy.systemAction}
@@ -118,7 +118,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
       notificationBell={<AdminNotificationBell principal={guard.context.principal} />}
     >
       <div className="mb-5">
-        <Link className="text-sm font-semibold text-kmt-navy hover:underline" href="/admin/users">
+        <Link className="text-sm font-semibold text-primary hover:underline" href="/admin/users">
           العودة إلى المستخدمين
         </Link>
       </div>
@@ -192,7 +192,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
                 <CardTitle>الارتباطات</CardTitle>
                 <CardDescription>روابط تشغيلية مرتبطة بحساب الدخول.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm text-kmt-muted">
+              <CardContent className="space-y-2 text-sm text-muted-foreground">
                 {user.clientProfile ? <p>ملف العميل: {user.clientProfile.fullName} · {user.clientProfile.status}</p> : null}
                 {user.lawyerProfile ? <p>ملف المحامي: {user.lawyerProfile.title}</p> : null}
               </CardContent>

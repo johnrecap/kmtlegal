@@ -176,6 +176,23 @@ function createdAtWhere(filters: Pick<AdminReportQuery, "dateFrom" | "dateTo">) 
   };
 }
 
+function previousReportPeriod(filters: AdminReportQuery) {
+  const { from, to } = financeReportDateRange(filters);
+  if (!from || !to) return null;
+  const duration = to.getTime() - from.getTime() + 1;
+  const previousTo = new Date(from.getTime() - 1);
+  const previousFrom = new Date(previousTo.getTime() - duration + 1);
+  return {
+    filters: {
+      ...filters,
+      dateFrom: previousFrom.toISOString(),
+      dateTo: previousTo.toISOString()
+    } satisfies AdminReportQuery,
+    from: previousFrom.toISOString(),
+    to: previousTo.toISOString()
+  };
+}
+
 function paymentOrderBy(filters: AdminPaymentListQuery): Prisma.PaymentOrderByWithRelationInput[] {
   if (filters.sortBy === "dueDate") {
     return [{ dueDate: filters.sortDirection }, { issueDate: "desc" }, { createdAt: "desc" }];
@@ -702,6 +719,7 @@ export async function getAdminReports(input: { actor: Principal; query: unknown 
   const filters = normalizeReportQuery(input.query);
   const paymentWhere = reportPaymentWhere(filters);
   const operationalDateWhere = createdAtWhere(filters);
+  const previousPeriod = previousReportPeriod(filters);
 
   const [
     financeSummary,
@@ -711,7 +729,9 @@ export async function getAdminReports(input: { actor: Principal; query: unknown 
     taskGroups,
     clientCount,
     activeClientCount,
-    recentPayments
+    recentPayments,
+    currencyGroups,
+    previousFinanceSummary
   ] = await Promise.all([
     paymentSummary(paymentWhere),
     prisma.payment.groupBy({
@@ -746,15 +766,32 @@ export async function getAdminReports(input: { actor: Principal; query: unknown 
       },
       orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }],
       take: 8
-    })
+    }),
+    prisma.payment.groupBy({
+      by: ["currency"],
+      where: paymentWhere,
+      _count: { _all: true },
+      _sum: { amount: true },
+      orderBy: { currency: "asc" }
+    }),
+    previousPeriod ? paymentSummary(reportPaymentWhere(previousPeriod.filters)) : Promise.resolve(null)
   ]);
 
   return {
     filters,
     finance: {
       summary: financeSummary,
-      byStatus: paymentStatusGroups(paymentGroups)
+      byStatus: paymentStatusGroups(paymentGroups),
+      byCurrency: currencyGroups.map((group) => ({
+        currency: group.currency,
+        count: group._count._all,
+        amount: Number(group._sum.amount ?? 0)
+      }))
     },
+    comparison: previousFinanceSummary && previousPeriod ? {
+      period: { from: previousPeriod.from, to: previousPeriod.to },
+      finance: { summary: previousFinanceSummary }
+    } : null,
     operations: {
       consultationsByStatus: statusCounts(["NEW", "REVIEWING", "SCHEDULED", "REJECTED", "CONVERTED"] as const, consultationGroups),
       casesByStatus: statusCounts(["NEW", "UNDER_REVIEW", "ACTIVE", "AWAITING_JUDGMENT", "COMPLETED", "CLOSED", "ARCHIVED"] as const, caseGroups),

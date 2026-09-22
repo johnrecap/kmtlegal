@@ -9,9 +9,11 @@ import { documentCategorySchema, documentVisibilitySchema, canReadDocument } fro
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
 import { caseScopeWhereForPrincipal, dateFromActionInput } from "./case-operations-service";
 
-const taskStatusSchema = z.enum(["NEW", "IN_PROGRESS", "REVIEW", "COMPLETED", "OVERDUE", "ARCHIVED"]);
+export const adminTaskStatusValues = ["NEW", "IN_PROGRESS", "REVIEW", "COMPLETED", "OVERDUE", "ARCHIVED"] as const;
+const taskStatusSchema = z.enum(adminTaskStatusValues);
 const taskPrioritySchema = z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]);
 const taskViewSchema = z.enum(["all", "mine", "overdue"]);
+const taskDisplaySchema = z.enum(["list", "board"]);
 const taskSortBySchema = z.enum(["dueDate", "updatedAt", "createdAt", "priority", "status"]);
 const documentStatusSchema = z.enum(["NEW", "UNDER_REVIEW", "NEEDS_CLARIFICATION", "ACCEPTED", "REJECTED", "DELETED"]);
 const documentUpdateStatusSchema = documentStatusSchema.exclude(["DELETED"]);
@@ -21,6 +23,7 @@ const optionalDateStringSchema = z.string().trim().max(40).optional().or(z.liter
 export const adminTaskListQuerySchema = z.object({
   q: z.string().trim().max(120).optional().or(z.literal("")),
   view: taskViewSchema.default("all"),
+  display: taskDisplaySchema.default("list"),
   status: taskStatusSchema.optional().or(z.literal("")),
   priority: taskPrioritySchema.optional().or(z.literal("")),
   assignedToId: uuidSchema.optional().or(z.literal("")),
@@ -329,13 +332,15 @@ async function findDocumentForAction(actor: Principal, documentIdInput: string) 
   return document;
 }
 
-export async function listAdminTasks(input: { actor: Principal; query: unknown }) {
+export async function listAdminTasks(input: { actor: Principal; query: unknown; client?: Pick<typeof prisma, "task"> }) {
+  const client = input.client ?? prisma;
   const filters = normalizeTaskListQuery(input.query);
   const pagination = toPagination(filters);
   const where = taskListWhere(input.actor, filters);
+  const distributionWhere = taskListWhere(input.actor, { ...filters, status: "" });
 
-  const [items, total] = await Promise.all([
-    prisma.task.findMany({
+  const [pageItems, total, statusCounts] = await Promise.all([
+    client.task.findMany({
       where,
       include: {
         assignedTo: { select: { id: true, name: true, email: true } },
@@ -346,10 +351,56 @@ export async function listAdminTasks(input: { actor: Principal; query: unknown }
       skip: pagination.skip,
       take: pagination.take
     }),
-    prisma.task.count({ where })
+    client.task.count({ where }),
+    Promise.all(
+      adminTaskStatusValues.map(async (status) => ({
+        status,
+        count: await client.task.count({ where: { AND: [distributionWhere, { status }] } })
+      }))
+    )
   ]);
 
-  return { items, total, filters, page: pagination.page, pageSize: pagination.pageSize };
+  const statusTotals = Object.fromEntries(statusCounts.map(({ status, count }) => [status, count])) as Record<
+    (typeof adminTaskStatusValues)[number],
+    number
+  >;
+  const decorateTask = <T extends TaskPermissionProbe>(task: T) => ({
+    ...task,
+    canUpdate: canManageAdminTask(input.actor, task)
+  });
+  const items = pageItems.map(decorateTask);
+  const boardColumns =
+    filters.display === "board"
+      ? await Promise.all(
+          adminTaskStatusValues.map(async (status) => ({
+            status,
+            total: statusTotals[status],
+            items: (
+              await client.task.findMany({
+                where: { AND: [distributionWhere, { status }] },
+                include: {
+                  assignedTo: { select: { id: true, name: true, email: true } },
+                  createdBy: { select: { id: true, name: true } },
+                  case: { select: { id: true, internalFileNumber: true, title: true, assignedLawyerId: true } }
+                },
+                orderBy: taskOrderBy(filters),
+                take: 12
+              })
+            ).map(decorateTask)
+          }))
+        )
+      : null;
+
+  return {
+    items,
+    total,
+    statusTotals,
+    boardColumns,
+    access: { canCreate: canCreateAdminTask(input.actor) },
+    filters,
+    page: pagination.page,
+    pageSize: pagination.pageSize
+  };
 }
 
 export async function createAdminTask(input: { actor: Principal; body: unknown; request?: Request }) {

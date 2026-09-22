@@ -9,14 +9,6 @@ import {
   AccordionItem,
   AccordionTrigger
 } from "@/components/animate-ui/components/radix/accordion";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger
-} from "@/components/animate-ui/components/radix/sheet";
 import { AdminPagination, AdminTabs, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, DataRecordCard, DataTable, FilterBar, MetricCard, SearchInput, Select, StateBlock, type DataTableColumn } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
@@ -195,10 +187,10 @@ function columns(tab: ContentTab): Array<DataTableColumn<ContentRow>> {
       header: "العنصر",
       render: (row) => (
         <div>
-          <Link className="font-semibold text-kmt-navy hover:underline" href={row.href}>
+          <Link className="font-semibold text-primary hover:underline" href={row.href}>
             {row.title}
           </Link>
-          <p className="mt-1 text-xs text-kmt-muted">{typeLabel(row.type)}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{typeLabel(row.type)}</p>
         </div>
       )
     },
@@ -226,7 +218,7 @@ function columns(tab: ContentTab): Array<DataTableColumn<ContentRow>> {
       key: "action",
       header: "",
       render: (row) => (
-        <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={row.href}>
+        <Link className="text-sm font-semibold text-primary hover:underline" href={row.href}>
           فتح
         </Link>
       )
@@ -238,7 +230,7 @@ function ContentMobileCard({ row, tab }: { row: ContentRow; tab: ContentTab }) {
   return (
     <DataRecordCard
       title={
-        <Link className="text-kmt-navy hover:underline" href={row.href}>
+        <Link className="text-primary hover:underline" href={row.href}>
           {row.title}
         </Link>
       }
@@ -376,8 +368,8 @@ function ContentPreview({
         }
         title={editArticle.title}
       >
-        <p className="text-sm leading-7 text-kmt-muted">{editArticle.excerpt}</p>
-        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-kmt-ink" dir="auto">{editArticle.content}</p>
+        <p className="text-sm leading-7 text-muted-foreground">{editArticle.excerpt}</p>
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-foreground" dir="auto">{editArticle.content}</p>
       </AdminDialog>
     );
   }
@@ -392,8 +384,8 @@ function ContentPreview({
         }
         title={editCaseStudy.title}
       >
-        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-kmt-ink" dir="auto">{editCaseStudy.challenge}</p>
-        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-kmt-ink" dir="auto">{editCaseStudy.approach}</p>
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-foreground" dir="auto">{editCaseStudy.challenge}</p>
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-foreground" dir="auto">{editCaseStudy.approach}</p>
       </AdminDialog>
     );
   }
@@ -408,7 +400,7 @@ function ContentPreview({
         }
         title={editSocialDraft.title}
       >
-        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-kmt-ink" dir="auto">{editSocialDraft.content}</p>
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-foreground" dir="auto">{editSocialDraft.content}</p>
       </AdminDialog>
     );
   }
@@ -428,6 +420,7 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
   const editType = query.editType;
   const editId = query.editId;
+  const editorMode = query.editor === "new" || Boolean(editId);
 
   const canArticleCreate = canCreateArticles(guard.context.principal);
   const canArticleApprove = canApproveArticles(guard.context.principal);
@@ -472,8 +465,8 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
           ]}
         />
 
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_26rem]">
-          <div className="space-y-5">
+        <div className={editorMode ? "grid gap-5" : "grid gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]"}>
+          <div className={editorMode ? "hidden" : "space-y-5"}>
             <div className="flex flex-wrap items-start gap-3">
             <form action="/admin/content" className="min-w-0 flex-1" method="get">
               <input name="tab" type="hidden" value={activeTab} />
@@ -589,7 +582,7 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
             </MobileFiltersSheet>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
+            <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
               <p>{result.total} عنصر داخل الفلاتر الحالية</p>
               <p>
                 صفحة {result.page} من {totalPages}
@@ -615,7 +608,7 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
           </div>
 
           <div className="space-y-5">
-            <div className="hidden xl:block">
+            <div className={editorMode ? "block" : "hidden xl:block"}>
               <Card>
                 <CardHeader>
                   <div className="flex flex-wrap items-start justify-between gap-3">
@@ -629,62 +622,41 @@ export default async function AdminContentPage({ searchParams }: { searchParams?
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <EditorPanelForms
-                    activeTab={activeTab}
-                    editArticle={editArticle}
-                    editCaseStudy={editCaseStudy}
-                    editSocialDraft={editSocialDraft}
-                    canArticleCreate={canArticleCreate}
-                    canArticleApprove={canArticleApprove}
-                    canCaseStudyCreate={canCaseStudyCreate}
-                    canCaseStudyApprove={canCaseStudyApprove}
-                    canSocialCreate={canSocialCreate}
-                    canSocialApprove={canSocialApprove}
-                  />
+                  {editorMode ? (
+                    <div className="space-y-5">
+                      <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={tabHref(activeTab)}>العودة إلى قائمة المحتوى</Link>
+                      <EditorPanelForms
+                        activeTab={activeTab}
+                        editArticle={editArticle}
+                        editCaseStudy={editCaseStudy}
+                        editSocialDraft={editSocialDraft}
+                        canArticleCreate={canArticleCreate}
+                        canArticleApprove={canArticleApprove}
+                        canCaseStudyCreate={canCaseStudyCreate}
+                        canCaseStudyApprove={canCaseStudyApprove}
+                        canSocialCreate={canSocialCreate}
+                        canSocialApprove={canSocialApprove}
+                      />
+                    </div>
+                  ) : (
+                    <StateBlock
+                      action={<Link className={buttonClasses()} href={`${tabHref(activeTab)}&editor=new`}>فتح المحرر</Link>}
+                      description="يفتح المحرر في مساحة كاملة حتى لا تتزاحم الحقول مع قائمة المحتوى."
+                      title="إنشاء محتوى جديد"
+                    />
+                  )}
                 </CardContent>
               </Card>
             </div>
-            <div className="xl:hidden">
-              <Sheet>
-                <SheetTrigger className={buttonClasses({ className: "w-full" })}>
-                  {editArticle || editCaseStudy || editSocialDraft ? "تعديل المحتوى" : activeTab === "case-studies" ? "دراسة حالة جديدة" : activeTab === "social" ? "مسودة سوشيال جديدة" : "مقال جديد"}
-                </SheetTrigger>
-                <SheetContent aria-label="محرر المحتوى" className="overflow-y-auto border-kmt-border bg-white text-kmt-ink" side="right">
-                  <SheetHeader>
-                    <SheetTitle className="text-kmt-ink">
-                      {editArticle || editCaseStudy || editSocialDraft ? "تعديل المحتوى" : activeTab === "case-studies" ? "دراسة حالة جديدة" : activeTab === "social" ? "مسودة سوشيال جديدة" : "مقال جديد"}
-                    </SheetTitle>
-                    <SheetDescription className="text-kmt-muted">
-                      النشر والاعتماد داخليان فقط. لا يوجد نشر خارجي تلقائي على منصات السوشيال في هذه النسخة.
-                    </SheetDescription>
-                  </SheetHeader>
-                  <div className="mt-4 space-y-4">
-                    <ContentPreview editArticle={editArticle} editCaseStudy={editCaseStudy} editSocialDraft={editSocialDraft} />
-                    <EditorPanelForms
-                      activeTab={activeTab}
-                      editArticle={editArticle}
-                      editCaseStudy={editCaseStudy}
-                      editSocialDraft={editSocialDraft}
-                      canArticleCreate={canArticleCreate}
-                      canArticleApprove={canArticleApprove}
-                      canCaseStudyCreate={canCaseStudyCreate}
-                      canCaseStudyApprove={canCaseStudyApprove}
-                      canSocialCreate={canSocialCreate}
-                      canSocialApprove={canSocialApprove}
-                      idPrefix="content-editor-mobile"
-                    />
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
+            {!editorMode ? <Link className={buttonClasses({ className: "w-full xl:hidden" })} href={`${tabHref(activeTab)}&editor=new`}>فتح محرر المحتوى</Link> : null}
 
-            {canSocialCreate ? (
+            {canSocialCreate && editorMode ? (
               <Accordion type="single" collapsible defaultValue="ai-drafts">
-                <AccordionItem value="ai-drafts" className="rounded-lg border border-kmt-border bg-white px-4">
+                <AccordionItem value="ai-drafts" className="rounded-lg border border-border bg-surface px-4">
                   <AccordionTrigger className="hover:no-underline">
                     <span className="flex flex-1 flex-col gap-1 text-start">
-                      <span className="text-base font-semibold text-kmt-ink">لوحة مسودات الذكاء الاصطناعي</span>
-                      <span className="text-sm font-normal text-kmt-muted">توليد مسودة توعوية فقط عبر بوابة مزود الذكاء الاصطناعي. تحفظ كل مسودة في حالة مراجعة قانونية وتحتاج مراجعة بشرية.</span>
+                      <span className="text-base font-semibold text-foreground">لوحة مسودات الذكاء الاصطناعي</span>
+                      <span className="text-sm font-normal text-muted-foreground">توليد مسودة توعوية فقط عبر بوابة مزود الذكاء الاصطناعي. تحفظ كل مسودة في حالة مراجعة قانونية وتحتاج مراجعة بشرية.</span>
                     </span>
                   </AccordionTrigger>
                   <AccordionContent>

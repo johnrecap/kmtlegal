@@ -78,6 +78,8 @@ export const kmtSemanticLight = {
   foreground: "#191c1e",
   surface: "#ffffff",
   "surface-muted": "#eceef0",
+  "surface-strong": "#18202c",
+  "surface-strong-foreground": "#f8f3ea",
   border: "#e2e8f0",
   "muted-foreground": "#45464d",
   primary: "#a87830",
@@ -91,6 +93,8 @@ export const kmtSemanticDark = {
   foreground: "#f8f3ea",
   surface: "#15171c",
   "surface-muted": "#1e2127",
+  "surface-strong": "#242832",
+  "surface-strong-foreground": "#f8f3ea",
   border: "#2e323d",
   "muted-foreground": "#a7b0bf",
   primary: "#d0a048",
@@ -179,6 +183,8 @@ type KmtSemanticPalette = {
   foreground: string;
   surface: string;
   "surface-muted": string;
+  "surface-strong": string;
+  "surface-strong-foreground": string;
   border: string;
   "muted-foreground": string;
   primary: string;
@@ -200,6 +206,8 @@ function toSemanticVars(semantic: KmtSemanticPalette, states: KmtStatePalette) {
     "--foreground": semantic.foreground,
     "--surface": semantic.surface,
     "--surface-muted": semantic["surface-muted"],
+    "--surface-strong": semantic["surface-strong"],
+    "--surface-strong-foreground": semantic["surface-strong-foreground"],
     "--border": semantic.border,
     "--muted-foreground": semantic["muted-foreground"],
     "--primary": semantic.primary,

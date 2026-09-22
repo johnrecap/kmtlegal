@@ -15,14 +15,17 @@ import {
 import type { Principal } from "@/server/auth/policy";
 
 const adminNavigationGroupOrder: readonly AdminRouteGroup[] = [
-  "office-operations",
+  "workspace",
+  "matters-clients",
+  "schedule-communications",
   "files-finance",
+  "content-reports",
   "administration"
 ];
 
 function policiesInNavigationOrder(policies: readonly AdminRoutePolicy[]) {
   return adminNavigationGroupOrder.flatMap((group) =>
-    policies.filter((policy) => policy.group === group)
+    policies.filter((policy) => policy.group === group && policy.id !== "cases.create")
   );
 }
 

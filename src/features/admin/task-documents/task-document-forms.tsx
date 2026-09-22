@@ -17,6 +17,7 @@ import {
   taskStatusLabels
 } from "@/lib/legal-format";
 import { plan35TaskUiCopy } from "@/lib/ui-copy";
+import { readAdminApiErrorMessage } from "@/features/admin/shared/admin-api-error";
 
 type AssigneeOption = {
   id: string;
@@ -60,15 +61,6 @@ type DocumentValue = {
   visibility: string;
 };
 
-type ApiErrorBody = {
-  error?: {
-    message?: string;
-  };
-  data?: {
-    id?: string;
-  };
-};
-
 type ActionMessage = {
   tone: "success" | "error";
   text: string;
@@ -81,8 +73,7 @@ const documentCategoryOptions = ["CONTRACT", "COURT_FILE", "IDENTITY", "EVIDENCE
 const documentVisibilityOptions = ["CLIENT_VISIBLE", "STAFF_ONLY", "INTERNAL_ONLY"];
 
 async function readMessage(response: Response) {
-  const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
-  return body.error?.message ?? "تعذر تنفيذ الإجراء الآن.";
+  return readAdminApiErrorMessage(response);
 }
 
 function toIsoFromLocal(value: FormDataEntryValue | null) {
@@ -287,7 +278,7 @@ export function TaskUpdateForm({
   }
 
   return (
-    <form className="mt-3 grid gap-3 rounded border border-kmt-border bg-slate-50 p-3" onSubmit={submit}>
+    <form className="mt-3 grid gap-3 rounded border border-border bg-surface-muted p-3" onSubmit={submit}>
       <input id={`task-update-${task.id}-updatedAt`} name="updatedAt" type="hidden" value={expectedUpdatedAt} />
       <TextInput defaultValue={task.title ?? ""} disabled={controlsDisabled} idPrefix={`task-update-${task.id}`} label="العنوان" name="title" required />
       <Textarea defaultValue={task.description ?? ""} disabled={controlsDisabled} idPrefix={`task-update-${task.id}`} label="الوصف" name="description" />
@@ -448,17 +439,17 @@ export function AdminDocumentUploadForm({
         </Select>
       </div>
       <div className="space-y-2">
-        <span className="block text-sm font-semibold text-kmt-ink" id="document-upload-file-label">
+        <span className="block text-sm font-semibold text-foreground" id="document-upload-file-label">
           الملف
         </span>
-        <div className="rounded-lg border border-kmt-border bg-white px-2 py-2">
+        <div className="rounded-lg border border-border bg-surface px-2 py-2">
           <FileUpload
             key={uploadKey}
             accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png"
             onChange={(files) => setSelectedFile(files[files.length - 1] ?? null)}
           />
         </div>
-        <p className="text-sm leading-6 text-kmt-muted" id="document-upload-file-hint">الحد الأقصى 5MB. الأنواع المسموحة: PDF, DOC, DOCX, JPG, PNG.</p>
+        <p className="text-sm leading-6 text-muted-foreground" id="document-upload-file-hint">الحد الأقصى 5MB. الأنواع المسموحة: PDF, DOC, DOCX, JPG, PNG.</p>
       </div>
       <StatefulButton
         aria-busy={isUploading}
@@ -511,7 +502,7 @@ export function DocumentActionForm({ document, canManage }: { document: Document
   }
 
   return (
-    <form className="mt-3 grid gap-3 rounded border border-kmt-border bg-slate-50 p-3" onSubmit={submit}>
+    <form className="mt-3 grid gap-3 rounded border border-border bg-surface-muted p-3" onSubmit={submit}>
       <div className="grid gap-3 sm:grid-cols-3">
         <Select defaultValue={document.status} disabled={isBusy} idPrefix={`document-action-${document.id}`} label="الحالة" name="status">
           {documentStatusOptions.map((status) => (
@@ -590,8 +581,8 @@ export function DocumentDeleteForm({ documentId, canManage }: { documentId: stri
     <>
       <form ref={formRef} className="mt-3 space-y-3 rounded border border-kmt-danger-border bg-kmt-danger-surface p-3" onSubmit={submit}>
         <Textarea disabled={isBusy} idPrefix={`document-delete-${documentId}`} label="سبب الحذف" name="reason" />
-        <label className="flex items-start gap-2 text-sm leading-6 text-kmt-ink">
-          <input className="mt-1 h-4 w-4 rounded border-slate-300 text-kmt-danger focus:ring-kmt-gold" disabled={isBusy} id={`document-delete-${documentId}-confirmDelete`} name="confirmDelete" required type="checkbox" />
+        <label className="flex items-start gap-2 text-sm leading-6 text-foreground">
+          <input className="mt-1 h-4 w-4 rounded border-border text-kmt-danger focus:ring-kmt-gold" disabled={isBusy} id={`document-delete-${documentId}-confirmDelete`} name="confirmDelete" required type="checkbox" />
           <span>أؤكد حذف المستند من القوائم النشطة. الملف لا يتم نشره أو عرضه بعد الحذف.</span>
         </label>
         <Button disabled={isBusy} size="sm" type="button" variant="danger" onClick={() => setConfirmOpen(true)}>

@@ -4,6 +4,7 @@ import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { AdminPagination, MobileFiltersSheet, MoreFiltersPopover } from "@/components/admin";
 import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, FilterBar, Select, StateBlock, TextInput } from "@/components/ui";
+import { buttonClasses } from "@/components/ui/button";
 import {
   AppointmentRescheduleDialogs,
   CalendarAppointmentDialogs
@@ -65,6 +66,7 @@ function calendarHref(filters: {
   status?: string;
   mode?: string;
   lawyerId?: string;
+  display?: string;
   page?: string;
   pageSize?: string;
 }) {
@@ -75,6 +77,18 @@ function calendarHref(filters: {
     }
   }
   return `/admin/calendar?${params.toString()}`;
+}
+
+function offsetDateInput(value: string, days: number) {
+  const date = new Date(`${value}T12:00:00.000Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function cairoWeekRange(reference: string) {
+  const date = new Date(`${reference}T12:00:00.000Z`);
+  const start = offsetDateInput(reference, -date.getUTCDay());
+  return { from: start, to: offsetDateInput(start, 6) };
 }
 
 function groupAppointmentsByDay(appointments: CalendarAppointment[]) {
@@ -98,6 +112,16 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
   }
 
   const query = flattenSearchParams((await searchParams) ?? {});
+  const display = ["agenda", "week", "day"].includes(query.display) ? query.display : "agenda";
+  const today = formatCairoDateInput(new Date());
+  if (display === "day" && !query.from && !query.to) {
+    query.from = today;
+    query.to = today;
+  }
+  if (display === "week" && !query.from && !query.to) {
+    Object.assign(query, cairoWeekRange(today));
+  }
+  if (display !== "agenda" && !query.pageSize) query.pageSize = "80";
   let result: Awaited<ReturnType<typeof listAdminCalendarAppointments>>;
   let caseOptions: Awaited<ReturnType<typeof listCalendarCaseOptions>>;
   let filterOptions: Awaited<ReturnType<typeof getAdminCaseFilterOptions>>;
@@ -125,6 +149,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
     status: result.filters.status,
     mode: result.filters.mode,
     lawyerId: result.filters.lawyerId,
+    display,
     pageSize: String(result.pageSize)
   };
 
@@ -140,6 +165,14 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
     >
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem]">
         <div className="space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <nav aria-label="طريقة عرض التقويم" className="flex rounded-lg border border-border bg-surface p-1">
+              <Link aria-current={display === "agenda" ? "page" : undefined} className={buttonClasses({ variant: display === "agenda" ? "primary" : "ghost", size: "sm" })} href={calendarHref({ display: "agenda", from: formatCairoDateInput(result.from), to: formatCairoDateInput(result.to) })}>الأجندة</Link>
+              <Link aria-current={display === "week" ? "page" : undefined} className={buttonClasses({ variant: display === "week" ? "primary" : "ghost", size: "sm" })} href={calendarHref({ display: "week", ...cairoWeekRange(today), pageSize: "80" })}>الأسبوع</Link>
+              <Link aria-current={display === "day" ? "page" : undefined} className={buttonClasses({ variant: display === "day" ? "primary" : "ghost", size: "sm" })} href={calendarHref({ display: "day", from: today, to: today, pageSize: "80" })}>اليوم</Link>
+            </nav>
+            <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={calendarHref({ display: "day", from: today, to: today, pageSize: "80" })}>اذهب إلى اليوم</Link>
+          </div>
           <div className="flex flex-wrap items-start gap-3">
           <form action="/admin/calendar" className="min-w-0 flex-1" method="get">
             <FilterBar ariaLabel={plan35AdminListAccessibilityCopy.calendar.filters}>
@@ -157,6 +190,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
               </span>
               <input type="hidden" name="mode" value={result.filters.mode ?? ""} />
               <input type="hidden" name="lawyerId" value={result.filters.lawyerId ?? ""} />
+              <input type="hidden" name="display" value={display} />
               <span className="hidden lg:contents">
               <Button type="submit" variant="secondary">
                 تطبيق
@@ -169,6 +203,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
               <input type="hidden" name="from" value={formatCairoDateInput(result.from)} />
               <input type="hidden" name="to" value={formatCairoDateInput(result.to)} />
               <input type="hidden" name="status" value={result.filters.status ?? ""} />
+              <input type="hidden" name="display" value={display} />
               <Select className="w-full" defaultValue={result.filters.mode ?? ""} label="الطريقة" name="mode">
                 <option value="">كل الطرق</option>
                 {appointmentModeOptions.map((mode) => (
@@ -194,6 +229,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
           </MoreFiltersPopover>
           <MobileFiltersSheet description="صفِّ مواعيد التقويم حسب الفترة والحالة." title="فلاتر التقويم" triggerLabel="الفلاتر">
             <form action="/admin/calendar" className="space-y-3" method="get">
+              <input type="hidden" name="display" value={display} />
               <TextInput className="w-full" defaultValue={formatCairoDateInput(result.from)} label="من" name="from" type="date" />
               <TextInput className="w-full" defaultValue={formatCairoDateInput(result.to)} label="إلى" name="to" type="date" />
               <Select className="w-full" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
@@ -229,19 +265,27 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
           </MobileFiltersSheet>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-kmt-muted">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
             <p>{plan35CalendarUiCopy.visibleSummary(result.total, result.items.length, result.page, totalPages)}</p>
-            <Link className="font-semibold text-kmt-navy hover:underline" href="/admin/calendar">
+            <Link className="font-semibold text-primary hover:underline" href="/admin/calendar">
               إعادة الضبط
             </Link>
           </div>
+
+          {display !== "agenda" && result.total > result.items.length ? (
+            <StateBlock
+              tone="warning"
+              title="تم تحميل جزء من النطاق"
+              description={`يحتوي هذا النطاق على ${result.total} موعدًا، ويظهر الآن ${result.items.length}. استخدم الصفحات التالية لاستكمال النطاق.`}
+            />
+          ) : null}
 
           {groupedAppointments.length ? (
             <div className="space-y-5">
               {groupedAppointments.map((group) => (
                 <section key={group.key} className="space-y-3" aria-labelledby={`calendar-${group.key}`}>
                   <div className="flex items-center justify-between gap-3">
-                    <h2 id={`calendar-${group.key}`} className="text-base font-semibold text-kmt-ink">
+                    <h2 id={`calendar-${group.key}`} className="text-base font-semibold text-foreground">
                       {group.label}
                     </h2>
                     <Badge>{plan35CalendarUiCopy.groupVisibleCount(group.items.length)}</Badge>
@@ -267,15 +311,15 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <div className="grid gap-3 text-sm leading-6 text-kmt-muted sm:grid-cols-2">
+                          <div className="grid gap-3 text-sm leading-6 text-muted-foreground sm:grid-cols-2">
                             <p>
-                              العميل: <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/clients/${appointment.client.id}`}>{appointment.client.fullName}</Link>
+                              العميل: <Link className="font-semibold text-primary hover:underline" href={`/admin/clients/${appointment.client.id}`}>{appointment.client.fullName}</Link>
                             </p>
                             <p>المحامي: {appointment.lawyer?.name ?? "غير معين"}</p>
                             <p>
                               القضية:{" "}
                               {appointment.case ? (
-                                <Link className="font-semibold text-kmt-navy hover:underline" href={`/admin/cases/${appointment.case.id}`}>
+                                <Link className="font-semibold text-primary hover:underline" href={`/admin/cases/${appointment.case.id}`}>
                                   {appointment.case.internalFileNumber}
                                 </Link>
                               ) : (
@@ -295,7 +339,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
                               />
                             </div>
                           ) : canManageCalendarAppointment(guard.context.principal, appointment) && appointment.effectiveConsultationOutcome ? (
-                            <p className="mt-4 text-sm text-kmt-muted">
+                            <p className="mt-4 text-sm text-muted-foreground">
                               {plan36ConsultationOutcomeCopy.calendar.genericRescheduleBlocked}
                             </p>
                           ) : null}
@@ -311,7 +355,7 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
               title="لا توجد مواعيد في هذه الفترة"
               description="غيّر الفلاتر أو أنشئ موعدًا جديدًا مرتبطًا بقضية مفتوحة داخل نطاقك."
               action={
-                <Link className="text-sm font-semibold text-kmt-navy hover:underline" href={calendarHref({})}>
+                <Link className="text-sm font-semibold text-primary hover:underline" href={calendarHref({})}>
                   عرض الفترة الافتراضية
                 </Link>
               }

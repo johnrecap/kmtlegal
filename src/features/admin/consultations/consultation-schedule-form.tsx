@@ -7,13 +7,12 @@ import { buttonClasses } from "@/components/ui/button";
 import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import { cairoLocalDateTimeToIso } from "@/lib/legal-format";
 import {
-  localizeApiMessage,
   plan36ConsultationOutcomeCopy,
   plan37ConsultationOverdueCopy as copy
 } from "@/lib/ui-copy";
+import { AdminApiError, readAdminApiResponse } from "@/features/admin/shared/admin-api-error";
 
 type LawyerOption = { id: string; name: string; email: string };
-type ApiErrorBody = { error?: { code?: string; message?: string } };
 type Feedback = { tone: "success" | "error"; text: string; code?: string };
 
 export function ConsultationScheduleForm({
@@ -54,28 +53,23 @@ export function ConsultationScheduleForm({
           expectedOutcomeVersion: outcomeVersion
         })
       });
-      const body = (await response.json().catch(() => ({}))) as ApiErrorBody;
-      if (!response.ok) {
-        const code = body.error?.code;
-        setFeedback({
-          tone: "error",
-          code,
-          text:
-            code === "APPOINTMENT_CONFLICT"
-              ? copy.feedback.conflict
-              : code === "CONSULTATION_STATE_CHANGED"
-                ? copy.feedback.stale
-                : body.error?.message
-                  ? localizeApiMessage(body.error.message, "ar")
-                  : copy.feedback.failed
-        });
-        return;
-      }
+      await readAdminApiResponse(response);
 
       setFeedback({ tone: "success", text: copy.feedback.scheduled });
       router.refresh();
-    } catch {
-      setFeedback({ tone: "error", text: copy.feedback.failed });
+    } catch (error) {
+      const code = error instanceof AdminApiError ? error.code : undefined;
+      setFeedback({
+        tone: "error",
+        code,
+        text: code === "APPOINTMENT_CONFLICT"
+          ? copy.feedback.conflict
+          : code === "CONSULTATION_STATE_CHANGED"
+            ? copy.feedback.stale
+            : error instanceof AdminApiError
+              ? error.message
+              : copy.feedback.failed
+      });
     } finally {
       setBusy(false);
     }
