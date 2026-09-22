@@ -12,12 +12,12 @@ function deferred<T>(): Deferred<T> {
   let resolve!: (value: T) => void;
   return { promise: new Promise<T>((next) => { resolve = next; }), resolve };
 }
-function response(data: unknown, ok = true) {
-  return { ok, json: async () => data } as Response;
+function response(data: unknown, ok = true, status = ok ? 200 : 409) {
+  return { ok, status, headers: new Headers(), json: async () => data } as Response;
 }
 
 const initialAdmin = {
-  id: "10000000-0000-4000-8000-000000000001", status: "WAITING_STAFF", subject: "Synthetic", lastMessageAt: "2026-09-13T00:00:00.000Z", closedAt: null,
+  id: "10000000-0000-4000-8000-000000000001", status: "WAITING_STAFF", subject: "Synthetic", lastMessageAt: "2026-09-13T00:00:00.000Z", closedAt: null, updatedAt: "2026-09-13T00:00:00.000Z",
   client: { id: "20000000-0000-4000-8000-000000000001", fullName: "Synthetic Client", phone: "201000000000", email: "client@example.test" }, assignedTo: null,
   messages: [{ id: "30000000-0000-4000-8000-000000000001", senderType: "CLIENT" as const, body: "initial admin message", createdAt: "2026-09-13T00:00:00.000Z", senderUser: null }]
 };
@@ -156,6 +156,77 @@ describe("conversation poll consistency", () => {
     await act(async () => { await nextPoll(); });
     expect(fetchMock).toHaveBeenCalledTimes(2);
     await screen.findByText("newer server poll");
+  });
+
+  it("keeps touched management fields, syncs untouched fields, and rebases only after review latest", async () => {
+    const latestAdmin = {
+      ...initialAdmin,
+      status: "OPEN",
+      updatedAt: "2026-09-13T00:02:00.000Z",
+      assignedTo: { id: "staff-2", name: "Second Staff", email: "staff2@example.test" }
+    };
+    const savedAdmin = {
+      ...latestAdmin,
+      status: "WAITING_CLIENT",
+      updatedAt: "2026-09-13T00:03:00.000Z"
+    };
+    const review = deferred<Response>();
+    const patchBodies: Array<Record<string, unknown>> = [];
+    let patchCount = 0;
+    let reviewing = false;
+    const fetchMock = vi.fn((_: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === "PATCH") {
+        patchCount += 1;
+        patchBodies.push(JSON.parse(String(init.body)) as Record<string, unknown>);
+        return Promise.resolve(patchCount === 1
+          ? response({ error: { code: "CONFLICT", requestId: "conflict-request" } }, false, 409)
+          : response({ data: savedAdmin }));
+      }
+      return reviewing ? review.promise : Promise.resolve(response({ data: latestAdmin }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    render(
+      <AdminMessageThreadPanel
+        initialThread={initialAdmin}
+        assignees={[{ id: "staff-2", name: "Second Staff", email: "staff2@example.test", role: { name: "Secretary" } }]}
+        canAssign
+        canManage
+        canReply
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("الحالة"), { target: { value: "WAITING_CLIENT" } });
+    await act(async () => { await poll!(); });
+    expect(screen.getByLabelText("الحالة")).toHaveValue("WAITING_CLIENT");
+    expect(screen.getByLabelText("المسؤول")).toHaveValue("staff-2");
+
+    fireEvent.click(screen.getByRole("button", { name: "حفظ التغييرات" }));
+    await screen.findByText(/تغيرت البيانات منذ فتح الصفحة.*conflict-request/);
+    expect(patchBodies[0]).toEqual({
+      status: "WAITING_CLIENT",
+      updatedAt: "2026-09-13T00:00:00.000Z"
+    });
+    expect(screen.getByLabelText("الحالة")).toHaveValue("WAITING_CLIENT");
+
+    reviewing = true;
+    fireEvent.click(screen.getByRole("button", { name: "مراجعة أحدث البيانات" }));
+    await waitFor(() => expect(screen.getByLabelText("الحالة")).toBeDisabled());
+    expect(screen.getByPlaceholderText("اكتب رد الفريق للعميل...")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "حفظ التغييرات" })).toBeDisabled();
+
+    await act(async () => {
+      review.resolve(response({ data: latestAdmin }));
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(screen.getByLabelText("الحالة")).not.toBeDisabled());
+    expect(screen.getByLabelText("الحالة")).toHaveValue("WAITING_CLIENT");
+
+    fireEvent.click(screen.getByRole("button", { name: "حفظ التغييرات" }));
+    await waitFor(() => expect(patchBodies).toHaveLength(2));
+    expect(patchBodies[1]).toEqual({
+      status: "WAITING_CLIENT",
+      updatedAt: "2026-09-13T00:02:00.000Z"
+    });
   });
 
   it("keeps the client draft on 409 and rejects an old poll after a successful reply", async () => {

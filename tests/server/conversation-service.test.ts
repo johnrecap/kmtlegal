@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Principal } from "@/server/auth/policy";
 import {
   adminConversationListQuerySchema,
+  adminConversationUpdateSchema,
   canAssignAdminConversations,
   canManageAdminConversations,
   canReadAdminConversations,
@@ -53,5 +54,10 @@ describe("conversation service contracts", () => {
     expect(clientConversationCreateSchema.parse({ message: "hello", subject: "Support" }).subject).toBe("Support");
     expect(adminConversationListQuerySchema.parse({ status: "WAITING_STAFF", page: "2" }).page).toBe(2);
     expect(() => adminConversationListQuerySchema.parse({ status: "UNKNOWN" })).toThrow();
+    expect(adminConversationUpdateSchema.parse({ status: "CLOSED", updatedAt: "2026-09-22T10:00:00.000Z" })).toEqual({
+      status: "CLOSED",
+      updatedAt: "2026-09-22T10:00:00.000Z"
+    });
+    expect(() => adminConversationUpdateSchema.parse({ status: "CLOSED" })).toThrow();
   });
 });

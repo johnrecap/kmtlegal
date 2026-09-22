@@ -76,6 +76,7 @@ describe("admin notification bell and center UI", () => {
       join(process.cwd(), "src/features/admin/notifications/admin-notification-bell.tsx"),
       "utf8"
     );
+    const pollingSource = readFileSync(join(process.cwd(), "src/lib/use-safe-polling.ts"), "utf8");
     const copySource = readFileSync(join(process.cwd(), "src/lib/ui-copy.ts"), "utf8");
 
     expect(source).toContain("/api/admin/notifications/");
@@ -85,11 +86,17 @@ describe("admin notification bell and center UI", () => {
     expect(copySource).toContain('retry: "إعادة المحاولة"');
     expect(source).toContain("setAttentionCount");
     expect(source).toContain("30_000");
+    expect(source).toContain("useSafePolling");
+    expect(source).toContain("maxBackoffMs: 60_000");
     expect(source).toContain('document.visibilityState === "visible"');
     expect(source).toContain("onOpenChange");
-    expect(source).toContain('document.addEventListener("visibilitychange"');
-    expect(source).toContain('document.removeEventListener("visibilitychange"');
-    expect(source).toContain("window.clearInterval(timer)");
+    expect(source).toContain("pollNow");
+    expect(pollingSource).toContain('document.addEventListener("visibilitychange"');
+    expect(pollingSource).toContain('document.removeEventListener("visibilitychange"');
+    expect(pollingSource).toContain('window.addEventListener("online"');
+    expect(pollingSource).toContain('window.addEventListener("offline"');
+    expect(pollingSource).toContain("controller?.abort()");
+    expect(pollingSource).toContain("TERMINAL_HTTP_STATUSES");
     expect(bellSource).toContain("AdminNotificationPopover");
   });
 

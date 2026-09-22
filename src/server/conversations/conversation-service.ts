@@ -32,7 +32,8 @@ export const adminConversationListQuerySchema = z.object({
 export const adminConversationUpdateSchema = z
   .object({
     status: conversationThreadStatusSchema.optional(),
-    assignedToId: uuidSchema.nullish().or(z.literal(""))
+    assignedToId: uuidSchema.nullish().or(z.literal("")),
+    updatedAt: z.string().datetime({ offset: true })
   })
   .strict()
   .refine((value) => value.status !== undefined || value.assignedToId !== undefined, {
@@ -531,11 +532,19 @@ export async function updateAdminConversation(input: {
     updateData.closedAt = body.status === "CLOSED" || body.status === "ARCHIVED" ? new Date() : null;
   }
 
-  const updated = await prisma.conversationThread.update({
-    where: { id: thread.id },
-    data: updateData,
-    include: detailThreadInclude
-  });
+  let updated: DetailThread;
+  try {
+    updated = await prisma.conversationThread.update({
+      where: { id: thread.id, updatedAt: new Date(body.updatedAt) },
+      data: updateData,
+      include: detailThreadInclude
+    });
+  } catch (error) {
+    if (isPrismaRecordNotFound(error)) {
+      throw new ApiError(409, "CONFLICT", "Conversation changed after the management form was loaded.");
+    }
+    throw error;
+  }
 
   await appendAuditLogBestEffort({
     actorId: input.actor.id,
@@ -554,6 +563,10 @@ export async function updateAdminConversation(input: {
   });
 
   return serializeThread(updated);
+}
+
+function isPrismaRecordNotFound(error: unknown) {
+  return Boolean(error && typeof error === "object" && "code" in error && error.code === "P2025");
 }
 
 export async function listConversationAssignees(input: { actor: Principal }) {

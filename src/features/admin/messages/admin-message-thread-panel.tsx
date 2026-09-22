@@ -5,7 +5,9 @@ import { AdminDialog } from "@/components/admin/admin-dialog";
 import { Badge, Button, MaterialSymbol } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { conversationStatusLabels, formatDateTime, labelFrom } from "@/lib/legal-format";
-import { readAdminApiResponse } from "@/features/admin/shared/admin-api-error";
+import { useSafePolling } from "@/lib/use-safe-polling";
+import { AdminApiError, readAdminApiResponse } from "@/features/admin/shared/admin-api-error";
+import { repairCopy } from "@/features/admin/shared/repair-copy";
 
 type ConversationMessage = {
   id: string;
@@ -23,6 +25,7 @@ type ConversationThread = {
   assignedTo: { id: string; name: string; email: string } | null;
   lastMessageAt: string | Date;
   closedAt: string | Date | null;
+  updatedAt: string | Date;
   messages: ConversationMessage[];
 };
 
@@ -42,6 +45,10 @@ function statusTone(status: string) {
   return "neutral" as const;
 }
 
+function threadVersion(value: string | Date) {
+  return value instanceof Date ? value.toISOString() : value;
+}
+
 export function AdminMessageThreadPanel({
   initialThread,
   assignees,
@@ -57,84 +64,88 @@ export function AdminMessageThreadPanel({
 }) {
   const [thread, setThread] = useState(initialThread);
   const [message, setMessage] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [managementError, setManagementError] = useState<string | null>(null);
   const [pollError, setPollError] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [hasNewMessages, setHasNewMessages] = useState(false);
   const [draftStatus, setDraftStatus] = useState(initialThread.status);
   const [draftAssigneeId, setDraftAssigneeId] = useState(initialThread.assignedTo?.id ?? "");
+  const [touchedFields, setTouchedFields] = useState({ status: false, assignee: false });
+  const [hasManagementConflict, setHasManagementConflict] = useState(false);
+  const [isReviewingLatest, setIsReviewingLatest] = useState(false);
   const [pendingManagementUpdate, setPendingManagementUpdate] = useState<ThreadUpdate | null>(null);
   const mutationVersion = useRef(0);
   const mutationPending = useRef(false);
   const mounted = useRef(true);
   const draftVersion = useRef(0);
+  const touchedFieldsRef = useRef(touchedFields);
+  const managementBaselineVersionRef = useRef(threadVersion(initialThread.updatedAt));
+  const reviewControllerRef = useRef<AbortController | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isNearBottomRef = useRef(true);
   const initializedScrollRef = useRef(false);
   const knownLatestMessageIdRef = useRef<string | null>(initialThread.messages.at(-1)?.id ?? null);
   const sentMessageIdRef = useRef<string | null>(null);
   const isClosed = thread.status === "CLOSED" || thread.status === "ARCHIVED";
-  const managementDirty = draftStatus !== thread.status || draftAssigneeId !== (thread.assignedTo?.id ?? "");
+  const managementDirty = touchedFields.status || touchedFields.assignee;
+
+  function setManagementTouched(next: { status: boolean; assignee: boolean }) {
+    touchedFieldsRef.current = next;
+    setTouchedFields(next);
+  }
+
+  function beginManagementEdit(field: "status" | "assignee") {
+    const current = touchedFieldsRef.current;
+    if (!current.status && !current.assignee) {
+      managementBaselineVersionRef.current = threadVersion(thread.updatedAt);
+    }
+    setManagementTouched({ ...current, [field]: true });
+    setHasManagementConflict(false);
+    setManagementError(null);
+  }
+
+  function applyServerThread(data: ConversationThread, options: { resetManagement?: boolean; reviewLatest?: boolean } = {}) {
+    setThread(data);
+    if (options.resetManagement) {
+      setDraftStatus(data.status);
+      setDraftAssigneeId(data.assignedTo?.id ?? "");
+      setManagementTouched({ status: false, assignee: false });
+      managementBaselineVersionRef.current = threadVersion(data.updatedAt);
+      return;
+    }
+
+    const touched = touchedFieldsRef.current;
+    if (!touched.status) setDraftStatus(data.status);
+    if (!touched.assignee) setDraftAssigneeId(data.assignedTo?.id ?? "");
+    if (options.reviewLatest) managementBaselineVersionRef.current = threadVersion(data.updatedAt);
+  }
 
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
       mutationVersion.current += 1;
+      reviewControllerRef.current?.abort();
     };
   }, []);
 
-  useEffect(() => {
-    let disposed = false;
-    let timer: number | undefined;
-    let controller: AbortController | null = null;
-    let failureCount = 0;
-
-    const schedule = (delay: number) => {
-      window.clearTimeout(timer);
-      if (!disposed) timer = window.setTimeout(poll, delay);
-    };
-
-    const poll = async () => {
-      if (disposed || controller) return;
-      if (document.hidden || !navigator.onLine || mutationPending.current) {
-        schedule(5000);
-        return;
-      }
-
-      controller = new AbortController();
+  useSafePolling({
+    intervalMs: 5_000,
+    maxBackoffMs: 60_000,
+    resetKey: thread.id,
+    isPaused: () => mutationPending.current,
+    poll: async (signal) => {
       const versionAtStart = mutationVersion.current;
-      try {
-        const response = await fetch(`/api/admin/messages/${thread.id}`, { cache: "no-store", signal: controller.signal });
-        const data = await readAdminApiResponse<ConversationThread>(response);
-        failureCount = 0;
-        setPollError(null);
-        if (!disposed && !mutationPending.current && versionAtStart === mutationVersion.current) setThread(data);
-      } catch (pollFailure) {
-        if (controller.signal.aborted || disposed) return;
-        failureCount += 1;
-        setPollError(pollFailure instanceof Error ? pollFailure.message : "تعذر تحديث المحادثة تلقائيًا.");
-      } finally {
-        controller = null;
-        schedule(Math.min(30000, 5000 * 2 ** Math.min(failureCount, 3)));
-      }
-    };
-
-    const resume = () => {
-      if (!document.hidden && navigator.onLine) schedule(0);
-    };
-    document.addEventListener("visibilitychange", resume);
-    window.addEventListener("online", resume);
-    schedule(5000);
-    return () => {
-      disposed = true;
-      window.clearTimeout(timer);
-      controller?.abort();
-      document.removeEventListener("visibilitychange", resume);
-      window.removeEventListener("online", resume);
-    };
-  }, [thread.id]);
+      const response = await fetch(`/api/admin/messages/${thread.id}`, { cache: "no-store", signal });
+      const data = await readAdminApiResponse<ConversationThread>(response);
+      if (!signal.aborted && !mutationPending.current && versionAtStart === mutationVersion.current) applyServerThread(data);
+    },
+    onSuccess: () => setPollError(null),
+    onError: () => setPollError(repairCopy.refreshFailed),
+    onTerminal: () => setPollError(repairCopy.sessionEnded)
+  });
 
   const messages = useMemo(() => thread.messages ?? [], [thread.messages]);
 
@@ -176,13 +187,13 @@ export function AdminMessageThreadPanel({
   async function sendReply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const trimmed = message.trim();
-    if (!trimmed || mutationPending.current || isSending || isUpdating || !canReply || isClosed) return;
+    if (!trimmed || mutationPending.current || isSending || isUpdating || isReviewingLatest || !canReply || isClosed) return;
 
     const operationVersion = ++mutationVersion.current;
     const sentDraftVersion = draftVersion.current;
     mutationPending.current = true;
     setIsSending(true);
-    setError(null);
+    setSendError(null);
     try {
       const response = await fetch(`/api/admin/messages/${thread.id}/messages`, {
         method: "POST",
@@ -191,10 +202,10 @@ export function AdminMessageThreadPanel({
       });
       const data = await readAdminApiResponse<ConversationThread>(response);
       sentMessageIdRef.current = data.messages.at(-1)?.id ?? null;
-      if (mounted.current && operationVersion === mutationVersion.current) setThread(data);
+      if (mounted.current && operationVersion === mutationVersion.current) applyServerThread(data);
       if (mounted.current && draftVersion.current === sentDraftVersion) setMessage("");
     } catch (replyError) {
-      if (mounted.current) setError(replyError instanceof Error ? replyError.message : "تعذر إرسال الرد.");
+      if (mounted.current) setSendError(replyError instanceof Error ? replyError.message : "تعذر إرسال الرد.");
     } finally {
       mutationPending.current = false;
       mutationVersion.current += 1;
@@ -203,26 +214,29 @@ export function AdminMessageThreadPanel({
   }
 
   async function updateThread(body: ThreadUpdate) {
-    if (mutationPending.current || isSending || isUpdating) return false;
+    if (mutationPending.current || isSending || isUpdating || isReviewingLatest) return false;
     const operationVersion = ++mutationVersion.current;
     mutationPending.current = true;
     setIsUpdating(true);
-    setError(null);
+    setManagementError(null);
+    setHasManagementConflict(false);
     try {
       const response = await fetch(`/api/admin/messages/${thread.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
+        body: JSON.stringify({ ...body, updatedAt: managementBaselineVersionRef.current })
       });
       const data = await readAdminApiResponse<ConversationThread>(response);
       if (mounted.current && operationVersion === mutationVersion.current) {
-        setThread(data);
-        setDraftStatus(data.status);
-        setDraftAssigneeId(data.assignedTo?.id ?? "");
+        applyServerThread(data, { resetManagement: true });
       }
       return true;
     } catch (updateError) {
-      if (mounted.current) setError(updateError instanceof Error ? updateError.message : "تعذر تحديث المحادثة.");
+      if (mounted.current) {
+        const conflict = updateError instanceof AdminApiError && (updateError.status === 409 || updateError.code === "CONFLICT");
+        setHasManagementConflict(conflict);
+        setManagementError(updateError instanceof Error ? updateError.message : repairCopy.refreshFailed);
+      }
       return false;
     } finally {
       mutationPending.current = false;
@@ -234,13 +248,38 @@ export function AdminMessageThreadPanel({
   function saveManagementDraft() {
     if (!managementDirty) return;
     const body: ThreadUpdate = {};
-    if (canAssign && draftAssigneeId !== (thread.assignedTo?.id ?? "")) body.assignedToId = draftAssigneeId || null;
-    if (canManage && draftStatus !== thread.status) body.status = draftStatus;
+    if (canAssign && touchedFields.assignee) body.assignedToId = draftAssigneeId || null;
+    if (canManage && touchedFields.status) body.status = draftStatus;
     if (body.status === "CLOSED" || body.status === "ARCHIVED") {
       setPendingManagementUpdate(body);
       return;
     }
     void updateThread(body);
+  }
+
+  async function reviewLatestManagementState() {
+    if (isReviewingLatest || mutationPending.current || reviewControllerRef.current) return;
+    const operationVersion = ++mutationVersion.current;
+    const controller = new AbortController();
+    reviewControllerRef.current = controller;
+    mutationPending.current = true;
+    setIsReviewingLatest(true);
+    setManagementError(null);
+    try {
+      const response = await fetch(`/api/admin/messages/${thread.id}`, { cache: "no-store", signal: controller.signal });
+      const data = await readAdminApiResponse<ConversationThread>(response);
+      if (mounted.current && !controller.signal.aborted && operationVersion === mutationVersion.current) {
+        applyServerThread(data, { reviewLatest: true });
+        setHasManagementConflict(false);
+      }
+    } catch (reviewError) {
+      if (mounted.current && !controller.signal.aborted) setManagementError(reviewError instanceof Error ? reviewError.message : repairCopy.refreshFailed);
+    } finally {
+      if (reviewControllerRef.current === controller) reviewControllerRef.current = null;
+      mutationPending.current = false;
+      mutationVersion.current += 1;
+      if (mounted.current) setIsReviewingLatest(false);
+    }
   }
 
   return (
@@ -281,22 +320,22 @@ export function AdminMessageThreadPanel({
         </div>
 
         <form className="border-t border-border bg-surface p-4" onSubmit={sendReply}>
-          {error ? <p id="admin-reply-error" className="mb-3 rounded border border-danger-border bg-danger-surface px-3 py-2 text-sm text-danger" role="alert">{error}</p> : null}
-          {pollError ? <p className="mb-3 text-sm text-warning" role="status">التحديث التلقائي متوقف مؤقتًا: {pollError}</p> : null}
+          {sendError ? <p id="admin-reply-error" className="mb-3 rounded border border-danger-border bg-danger-surface px-3 py-2 text-sm text-danger" role="alert">{sendError}</p> : null}
+          {pollError ? <p className="mb-3 text-sm text-warning" role="status">{pollError}</p> : null}
           <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="admin-message-reply">رد فريق المكتب</label>
           <div className="flex min-w-0 flex-col gap-3 sm:flex-row">
             <textarea
               id="admin-message-reply"
-              aria-describedby={error ? "admin-reply-error" : undefined}
-              aria-invalid={Boolean(error)}
+              aria-describedby={sendError ? "admin-reply-error" : undefined}
+              aria-invalid={Boolean(sendError)}
               className="min-h-24 min-w-0 flex-1 resize-y rounded border border-input bg-surface px-3 py-2 text-sm leading-6 text-foreground outline-none transition focus:border-primary motion-reduce:transition-none"
               value={message}
               onChange={(event) => { draftVersion.current += 1; setMessage(event.target.value); }}
               placeholder={isClosed ? "المحادثة مغلقة." : "اكتب رد الفريق للعميل..."}
-              disabled={!canReply || isClosed || isSending || isUpdating}
+              disabled={!canReply || isClosed || isSending || isUpdating || isReviewingLatest}
               maxLength={2000}
             />
-            <Button className="self-end" type="submit" loading={isSending} disabled={!message.trim() || !canReply || isClosed || isSending || isUpdating}>إرسال</Button>
+            <Button className="self-end" type="submit" loading={isSending} disabled={!message.trim() || !canReply || isClosed || isSending || isUpdating || isReviewingLatest}>إرسال</Button>
           </div>
         </form>
       </section>
@@ -315,17 +354,23 @@ export function AdminMessageThreadPanel({
           <h3 className="text-base font-semibold text-foreground">إدارة المحادثة</h3>
           <div className="mt-4 space-y-4">
             <label className="block text-sm font-semibold text-muted-foreground">المسؤول
-              <select className="mt-2 min-h-11 w-full rounded border border-input bg-surface px-3 text-foreground outline-none focus:border-primary" value={draftAssigneeId} disabled={!canAssign || isUpdating || isSending} onChange={(event) => setDraftAssigneeId(event.target.value)}>
+              <select className="mt-2 min-h-11 w-full rounded border border-input bg-surface px-3 text-foreground outline-none focus:border-primary" value={draftAssigneeId} disabled={!canAssign || isUpdating || isSending || isReviewingLatest} onChange={(event) => { beginManagementEdit("assignee"); setDraftAssigneeId(event.target.value); }}>
                 <option value="">غير معين</option>{assignees.map((assignee) => <option key={assignee.id} value={assignee.id}>{assignee.name} - {assignee.role.name}</option>)}
               </select>
             </label>
             <label className="block text-sm font-semibold text-muted-foreground">الحالة
-              <select className="mt-2 min-h-11 w-full rounded border border-input bg-surface px-3 text-foreground outline-none focus:border-primary" value={draftStatus} disabled={!canManage || isUpdating || isSending} onChange={(event) => setDraftStatus(event.target.value)}>
+              <select className="mt-2 min-h-11 w-full rounded border border-input bg-surface px-3 text-foreground outline-none focus:border-primary" value={draftStatus} disabled={!canManage || isUpdating || isSending || isReviewingLatest} onChange={(event) => { beginManagementEdit("status"); setDraftStatus(event.target.value); }}>
                 {Object.entries(conversationStatusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
               </select>
             </label>
-            <Button className="w-full" disabled={!managementDirty || isUpdating || isSending} loading={isUpdating} onClick={saveManagementDraft} type="button" variant="secondary">حفظ التغييرات</Button>
+            <Button className="w-full" disabled={!managementDirty || isUpdating || isSending || isReviewingLatest} loading={isUpdating} onClick={saveManagementDraft} type="button" variant="secondary">حفظ التغييرات</Button>
             {managementDirty ? <p className="text-xs text-warning" role="status">لديك تغييرات غير محفوظة.</p> : null}
+            {managementError ? <p className="rounded border border-danger-border bg-danger-surface px-3 py-2 text-sm text-danger" role="alert">{managementError}</p> : null}
+            {hasManagementConflict ? (
+              <Button className="w-full" disabled={isReviewingLatest} loading={isReviewingLatest} onClick={reviewLatestManagementState} type="button" variant="ghost">
+                {repairCopy.reviewLatest}
+              </Button>
+            ) : null}
           </div>
         </div>
       </aside>

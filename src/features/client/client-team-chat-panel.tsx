@@ -6,6 +6,7 @@ import { ClientPortalPanel, clientPortalPrimaryActionClass, clientPortalSecondar
 import { Badge, Button, MaterialSymbol, Textarea } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { formatDateTime } from "@/lib/legal-format";
+import { useSafePolling } from "@/lib/use-safe-polling";
 import {
   clientErrorMessage,
   getClientContent,
@@ -41,6 +42,16 @@ type DetailBody = {
   error?: { code?: string };
 };
 
+class ClientRequestError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ClientRequestError";
+    this.status = status;
+  }
+}
+
 async function readJson<T>(
   response: Response,
   locale: ClientLocale,
@@ -48,7 +59,7 @@ async function readJson<T>(
 ): Promise<T> {
   const payload = (await response.json().catch(() => null)) as T & { error?: { code?: string } };
   if (!response.ok) {
-    throw new Error(clientErrorMessage(locale, payload?.error?.code, copy.teamChat.requestError));
+    throw new ClientRequestError(clientErrorMessage(locale, payload?.error?.code, copy.teamChat.requestError), response.status);
   }
   return payload;
 }
@@ -73,7 +84,9 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [initialError, setInitialError] = useState<string | null>(null);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
   const [reloadVersion, setReloadVersion] = useState(0);
   const mutationVersion = useRef(0);
   const mutationPending = useRef(false);
@@ -98,11 +111,13 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
 
   useEffect(() => {
     let mounted = true;
+    const controller = new AbortController();
     const load = async () => {
       const versionAtStart = mutationVersion.current;
       setIsLoading(true);
+      setInitialError(null);
       try {
-        const response = await fetch("/api/client/messages", { cache: "no-store" });
+        const response = await fetch("/api/client/messages", { cache: "no-store", signal: controller.signal });
         const payload = await readJson<ListBody>(response, locale, copy);
         const latest = payload.data?.items?.[0];
         if (!latest) {
@@ -115,7 +130,7 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
           }
           return;
         }
-        const detailResponse = await fetch(`/api/client/messages/${latest.id}`, { cache: "no-store" });
+        const detailResponse = await fetch(`/api/client/messages/${latest.id}`, { cache: "no-store", signal: controller.signal });
         const detailPayload = await readJson<DetailBody>(detailResponse, locale, copy);
         if (
           mounted &&
@@ -125,12 +140,13 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
           setThread(detailPayload.data ?? null);
         }
       } catch (loadError) {
+        if (controller.signal.aborted) return;
         if (
           mounted &&
           !mutationPending.current &&
           versionAtStart === mutationVersion.current
         ) {
-          setError(loadError instanceof Error ? loadError.message : copy.teamChat.networkError);
+          setInitialError(loadError instanceof Error ? loadError.message : copy.teamChat.networkError);
         }
       } finally {
         if (mounted) {
@@ -141,47 +157,29 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
     load();
     return () => {
       mounted = false;
+      controller.abort();
     };
   }, [copy, locale, reloadVersion]);
 
-  useEffect(() => {
-    if (!thread?.id || isClosed) {
-      return;
-    }
-    let mounted = true;
-    let pollInFlight = false;
-    const timer = window.setInterval(async () => {
-      if (pollInFlight || mutationPending.current) return;
-      pollInFlight = true;
+  useSafePolling({
+    enabled: Boolean(thread?.id && !isClosed),
+    intervalMs: 5_000,
+    maxBackoffMs: 60_000,
+    resetKey: thread?.id ?? null,
+    isPaused: () => mutationPending.current,
+    poll: async (signal) => {
+      if (!thread?.id) return;
       const versionAtStart = mutationVersion.current;
-      try {
-        const response = await fetch(`/api/client/messages/${thread.id}`, { cache: "no-store" });
-        const payload = await readJson<DetailBody>(response, locale, copy);
-        if (
-          mounted &&
-          payload.data &&
-          !mutationPending.current &&
-          versionAtStart === mutationVersion.current
-        ) {
-          setThread(payload.data);
-        }
-      } catch {
-        if (
-          mounted &&
-          !mutationPending.current &&
-          versionAtStart === mutationVersion.current
-        ) {
-          setError(copy.teamChat.refreshError);
-        }
-      } finally {
-        pollInFlight = false;
+      const response = await fetch(`/api/client/messages/${thread.id}`, { cache: "no-store", signal });
+      const payload = await readJson<DetailBody>(response, locale, copy);
+      if (!signal.aborted && payload.data && !mutationPending.current && versionAtStart === mutationVersion.current) {
+        setThread(payload.data);
       }
-    }, 5000);
-    return () => {
-      mounted = false;
-      window.clearInterval(timer);
-    };
-  }, [copy, isClosed, locale, thread?.id]);
+    },
+    onSuccess: () => setRefreshError(null),
+    onError: () => setRefreshError(copy.teamChat.refreshError),
+    onTerminal: (pollError) => setRefreshError(pollError instanceof Error ? pollError.message : copy.teamChat.requestError)
+  });
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ block: "end" });
@@ -199,7 +197,7 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
     const operationContext = contextVersion.current;
     mutationPending.current = true;
     setIsSending(true);
-    setError(null);
+    setSendError(null);
     try {
       const endpoint = thread?.id && !isClosed ? `/api/client/messages/${thread.id}/messages` : "/api/client/messages";
       const response = await fetch(endpoint, {
@@ -216,7 +214,7 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
       }
     } catch (sendError) {
       if (mounted.current && operationContext === contextVersion.current) {
-        setError(sendError instanceof Error ? sendError.message : copy.teamChat.networkError);
+        setSendError(sendError instanceof Error ? sendError.message : copy.teamChat.networkError);
       }
     } finally {
       mutationPending.current = false;
@@ -257,17 +255,25 @@ export function ClientTeamChatPanel({ onBack, locale }: { onBack: () => void; lo
         <div aria-busy={isLoading || isSending ? "true" : "false"} className="max-h-[34rem] min-h-[26rem] space-y-4 overflow-y-auto px-5 py-5" role="log">
           {isLoading ? (
             <p className="rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-slate-300">{copy.teamChat.loading}</p>
+          ) : initialError ? (
+            <div className="rounded-2xl border border-red-300/30 bg-red-950/45 px-4 py-3 text-sm text-red-100" role="alert">
+              <p>{initialError}</p>
+              <Button className="mt-3" onClick={() => setReloadVersion((version) => version + 1)} size="sm" type="button" variant="secondary">
+                {copy.teamChat.retry}
+              </Button>
+            </div>
           ) : messages.length ? (
             messages.map((item) => <TeamBubble copy={copy} key={item.id} locale={locale} item={item} />)
           ) : (
             <p className="rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm leading-7 text-slate-300">{copy.teamChat.empty}</p>
           )}
           {isSending ? <TeamTyping /> : null}
+          {refreshError ? <p className="rounded border border-amber-300/30 bg-amber-950/35 px-3 py-2 text-sm text-amber-100" role="status">{refreshError}</p> : null}
           <div ref={logEndRef} />
         </div>
 
         <form className="border-t border-white/10 bg-black/35 px-5 py-5" onSubmit={submit}>
-          {error ? <p className="mb-3 rounded border border-red-300/30 bg-red-950/45 px-3 py-2 text-sm text-red-100">{error}</p> : null}
+          {sendError ? <p className="mb-3 rounded border border-red-300/30 bg-red-950/45 px-3 py-2 text-sm text-red-100" role="alert">{sendError}</p> : null}
           <div className="flex min-w-0 items-end gap-3">
             <div className="min-w-0 flex-1 [&_label]:sr-only">
               <Textarea

@@ -24,12 +24,14 @@ const errorCodeCopy: Record<string, string> = {
 export class AdminApiError extends Error {
   readonly requestId?: string;
   readonly code?: string;
+  readonly status?: number;
 
-  constructor(message: string, options: { requestId?: string; code?: string } = {}) {
+  constructor(message: string, options: { requestId?: string; code?: string; status?: number } = {}) {
     super(message);
     this.name = "AdminApiError";
     this.requestId = options.requestId;
     this.code = options.code;
+    this.status = options.status;
   }
 }
 
@@ -40,14 +42,14 @@ export async function readAdminApiResponse<T>(response: Response) {
   }
 
   const code = payload.error?.code;
-  const requestId = payload.error?.requestId ?? payload.requestId ?? response.headers.get("x-request-id") ?? undefined;
+  const requestId = payload.error?.requestId ?? payload.requestId ?? response.headers?.get?.("x-request-id") ?? undefined;
   const localized = payload.error?.message
     ? localizeApiMessage(payload.error.message, "ar")
     : code && errorCodeCopy[code]
       ? errorCodeCopy[code]
       : "تعذر تنفيذ الإجراء الآن.";
   const safeMessage = /^[\u0600-\u06ff]/.test(localized) ? localized : (code && errorCodeCopy[code]) || "تعذر تنفيذ الإجراء الآن.";
-  throw new AdminApiError(requestId ? `${safeMessage} (مرجع الطلب: ${requestId})` : safeMessage, { requestId, code });
+  throw new AdminApiError(requestId ? `${safeMessage} (مرجع الطلب: ${requestId})` : safeMessage, { requestId, code, status: response.status });
 }
 
 export async function readAdminApiErrorMessage(response: Response, fallback = "تعذر تنفيذ الإجراء الآن.") {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Badge, Button, MaterialSymbol, StateBlock, buttonClasses } from "@/components/ui";
 import {
   Popover,
@@ -9,14 +9,14 @@ import {
   PopoverTrigger
 } from "@/components/animate-ui/components/base/popover";
 import { formatDateTime } from "@/lib/legal-format";
+import { useSafePolling } from "@/lib/use-safe-polling";
+import { readAdminApiResponse } from "@/features/admin/shared/admin-api-error";
 import { plan35NotificationUiCopy as copy, plan36ConsultationOutcomeCopy } from "@/lib/ui-copy";
 import type {
   GenericNotificationCenterItem,
   NotificationCenterItem,
   NotificationCenterSnapshot
 } from "@/server/admin/notification-service";
-
-type SnapshotResponse = { data?: NotificationCenterSnapshot };
 
 function NotificationItemView({
   item,
@@ -95,15 +95,28 @@ function NotificationList({
   );
 }
 
-function useNotificationRead(initialSnapshot: NotificationCenterSnapshot) {
+export function useNotificationRead(initialSnapshot: NotificationCenterSnapshot) {
   const [items, setItems] = useState(initialSnapshot.items);
   const [attentionCount, setAttentionCount] = useState(initialSnapshot.attentionCount);
   const [genericUnreadCount, setGenericUnreadCount] = useState(initialSnapshot.genericUnreadCount);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [retryItem, setRetryItem] = useState<GenericNotificationCenterItem | null>(null);
+  const mutationVersion = useRef(0);
+  const mutationPending = useRef(false);
+
+  const applySnapshotIfCurrent = useCallback((snapshot: NotificationCenterSnapshot, versionAtStart: number) => {
+    if (mutationPending.current || versionAtStart !== mutationVersion.current) return false;
+    setItems(snapshot.items);
+    setAttentionCount(snapshot.attentionCount);
+    setGenericUnreadCount(snapshot.genericUnreadCount);
+    return true;
+  }, []);
 
   async function markRead(item: GenericNotificationCenterItem) {
+    if (mutationPending.current) return;
+    mutationVersion.current += 1;
+    mutationPending.current = true;
     setBusyId(item.id);
     setFeedback(null);
     setRetryItem(null);
@@ -126,6 +139,8 @@ function useNotificationRead(initialSnapshot: NotificationCenterSnapshot) {
       setFeedback(copy.markReadFailed);
       setRetryItem(item);
     } finally {
+      mutationPending.current = false;
+      mutationVersion.current += 1;
       setBusyId(null);
     }
   }
@@ -140,7 +155,10 @@ function useNotificationRead(initialSnapshot: NotificationCenterSnapshot) {
     busyId,
     feedback,
     retryItem,
-    markRead
+    markRead,
+    mutationVersion,
+    mutationPending,
+    applySnapshotIfCurrent
   };
 }
 
@@ -153,53 +171,29 @@ export function AdminNotificationPopover({
 }) {
   const state = useNotificationRead(initialSnapshot);
   const [loadFailed, setLoadFailed] = useState(initialLoadFailed);
-  const {
-    setItems,
-    setAttentionCount,
-    setGenericUnreadCount
-  } = state;
-
-  const reloadPreview = useCallback(async () => {
-    try {
-      const response = await fetch("/api/admin/notifications?limit=5", { headers: { Accept: "application/json" } });
-      if (!response.ok) {
-        setLoadFailed(true);
-        return;
-      }
-      const body = (await response.json().catch(() => ({}))) as SnapshotResponse;
-      if (!body.data) {
-        setLoadFailed(true);
-        return;
-      }
-      setItems(body.data.items);
-      setAttentionCount(body.data.attentionCount);
-      setGenericUnreadCount(body.data.genericUnreadCount);
-      setLoadFailed(false);
-    } catch {
-      setLoadFailed(true);
-    }
-  }, [setAttentionCount, setGenericUnreadCount, setItems]);
-
-  useEffect(() => {
-    function refreshWhenVisible() {
-      if (document.visibilityState === "visible") {
-        void reloadPreview();
-      }
-    }
-
-    const timer = window.setInterval(refreshWhenVisible, 30_000);
-    document.addEventListener("visibilitychange", refreshWhenVisible);
-    return () => {
-      window.clearInterval(timer);
-      document.removeEventListener("visibilitychange", refreshWhenVisible);
-    };
-  }, [reloadPreview]);
+  const { pollNow } = useSafePolling({
+    intervalMs: 30_000,
+    maxBackoffMs: 60_000,
+    isPaused: () => state.mutationPending.current,
+    poll: async (signal) => {
+      const versionAtStart = state.mutationVersion.current;
+      const response = await fetch("/api/admin/notifications?limit=5", {
+        headers: { Accept: "application/json" },
+        signal
+      });
+      const snapshot = await readAdminApiResponse<NotificationCenterSnapshot>(response);
+      if (!signal.aborted) state.applySnapshotIfCurrent(snapshot, versionAtStart);
+    },
+    onSuccess: () => setLoadFailed(false),
+    onError: () => setLoadFailed(true),
+    onTerminal: () => setLoadFailed(true)
+  });
 
   return (
     <Popover
       onOpenChange={(open) => {
         if (open && document.visibilityState === "visible") {
-          void reloadPreview();
+          pollNow();
         }
       }}
     >
@@ -229,7 +223,7 @@ export function AdminNotificationPopover({
         <div className="max-h-[28rem] overflow-y-auto pe-1">
           {loadFailed ? (
             <StateBlock
-              action={<Button onClick={reloadPreview} type="button" variant="secondary">{copy.retry}</Button>}
+              action={<Button onClick={pollNow} type="button" variant="secondary">{copy.retry}</Button>}
               description={copy.loadPreviewFailed}
               title={copy.loadPreviewFailed}
               tone="error"
@@ -270,18 +264,14 @@ export function AdminNotificationCenter({ initialSnapshot }: { initialSnapshot: 
         setLoadError(true);
         return;
       }
-      const body = (await response.json().catch(() => ({}))) as SnapshotResponse;
-      if (!body.data) {
-        setLoadError(true);
-        return;
-      }
+      const snapshot = await readAdminApiResponse<NotificationCenterSnapshot>(response);
       state.setItems((current) => {
         const seen = new Set(current.map((item) => `${item.kind}:${item.id}`));
-        return [...current, ...body.data!.items.filter((item) => !seen.has(`${item.kind}:${item.id}`))];
+        return [...current, ...snapshot.items.filter((item) => !seen.has(`${item.kind}:${item.id}`))];
       });
-      state.setAttentionCount(body.data.attentionCount);
-      state.setGenericUnreadCount(body.data.genericUnreadCount);
-      setNextCursor(body.data.nextCursor);
+      state.setAttentionCount(snapshot.attentionCount);
+      state.setGenericUnreadCount(snapshot.genericUnreadCount);
+      setNextCursor(snapshot.nextCursor);
     } catch {
       setLoadError(true);
     } finally {
