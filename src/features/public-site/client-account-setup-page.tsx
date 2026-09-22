@@ -89,6 +89,7 @@ export async function ClientAccountSetupPage({
                 <ClientAccountSetupForm
                   copy={copy}
                   initialEmail={context.client.email}
+                  locale={locale}
                   token={context.token}
                 />
               </div>

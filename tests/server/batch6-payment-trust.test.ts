@@ -182,6 +182,12 @@ describe.skipIf(!enabled)("batch6 disposable payment database trust",()=>{
     expect([row.status,row.transactions[0].status,row.failureCode]).toEqual(["CANCELLED","CANCELLED","PAYMENT_REVERSAL_REVIEW_REQUIRED"]);
     await expect(getPublicConsultationPaymentReceipt({attemptId:a.id,token})).rejects.toMatchObject({status:404});
   });
+  it("never exposes a legacy internal meeting through a signed public receipt",async()=>{
+    const a=await fixture(),body=callback(a.id);await bind(a,body);await deliver(body);const paid=await state(a.id);
+    const token=createPaymentReceiptToken({attemptId:a.id,paymentId:paid.payment!.id});
+    await prisma.appointment.update({where:{id:a.appointmentId},data:{type:"INTERNAL_MEETING"}});
+    await expect(getPublicConsultationPaymentReceipt({attemptId:a.id,token})).rejects.toMatchObject({status:404,code:"NOT_FOUND"});
+  });
   it("client, staff and report distinguish a reversal review from historical gross collections",async()=>{
     const a=await fixture(),body=callback(a.id);await bind(a,body);await deliver(body);
     const staff={id:randomUUID(),roleName:"Office Admin",clientId:null,permissions:["finance.read.any","report.read.any"]};
@@ -196,8 +202,13 @@ describe.skipIf(!enabled)("batch6 disposable payment database trust",()=>{
     const a=await fixture(),b=await fixture();const body=callback(a.id);await bind(a,body);await deliver(body);
     const token=createPaymentStatusToken({attemptId:a.id});
     expect((await getPublicPaymentAttemptStatus({attemptId:a.id,token})).access.verified).toBe(true);
-    expect((await getPublicPaymentAttemptStatus({attemptId:b.id,token})).access.verified).toBe(false);
-    const expiredToken=createPaymentStatusToken({attemptId:a.id,issuedAt:new Date(Date.now()-86400000)});expect((await getPublicPaymentAttemptStatus({attemptId:a.id,token:expiredToken})).access.verified).toBe(false);
+    await prisma.paymentAttempt.update({where:{id:b.id},data:{expiresAt:new Date(Date.now()-1000)}});
+    await expect(getPublicPaymentAttemptStatus({attemptId:b.id,token})).rejects.toMatchObject({status:404});
+    await expect(getPublicPaymentAttemptStatus({attemptId:b.id})).rejects.toMatchObject({status:404});
+    const expiredToken=createPaymentStatusToken({attemptId:b.id,issuedAt:new Date(Date.now()-86400000)});
+    await expect(getPublicPaymentAttemptStatus({attemptId:b.id,token:expiredToken})).rejects.toMatchObject({status:404});
+    expect((await prisma.paymentAttempt.findUniqueOrThrow({where:{id:b.id}})).status).toBe("PENDING");
+    expect((await prisma.appointment.findUniqueOrThrow({where:{id:b.appointmentId}})).status).toBe("RESERVED");
     const event=await prisma.paymentWebhookEvent.findFirstOrThrow({where:{attemptId:a.id}});
     await expect(replayAdminPaymentWebhookEvent({actor:{id:randomUUID(),roleName:"Client",clientId:a.clientId,permissions:[]},eventId:event.id})).rejects.toMatchObject({status:403});
     expect((await prisma.paymentWebhookEvent.findUniqueOrThrow({where:{id:event.id}})).replayCount).toBe(0);

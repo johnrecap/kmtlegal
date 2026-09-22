@@ -68,7 +68,7 @@ test.describe("isolated sensitive form hydration", () => {
     await page.locator('input[name="email"]').fill(email);
     await page.locator('input[name="password"]').fill("SetupFixture!2026");
     await page.locator('input[name="confirmPassword"]').fill("SetupFixture!2026");
-    const responsePromise = page.waitForResponse(response => response.url().endsWith("/api/public/client-account/setup"));
+    const responsePromise = page.waitForResponse(response => new URL(response.url()).pathname === "/api/public/client-account/setup");
     await page.locator('button[type="submit"]').click();
     const response = await responsePromise;
     expect(response.request().method()).toBe("POST");

@@ -27,8 +27,8 @@ export type HostedCheckoutInput = {
   };
   request?: Request;
   provider?: PaymentProviderName;
-  statusToken?: string | null;
-  locale?: "ar" | "en" | null;
+  statusToken: string;
+  locale: "ar" | "en";
   expiresAt?: Date;
 };
 

@@ -24,13 +24,14 @@ const LOCAL_STATUS_SIGNING_SECRET = "local-dev-only-payment-status-secret-do-not
 
 export type PaymentReceiptView = Awaited<ReturnType<typeof getPublicConsultationPaymentReceipt>>;
 
-export function publicPaymentReceiptUrl(input: { attemptId: string; paymentId: string }) {
+export function publicPaymentReceiptUrl(input: { attemptId: string; paymentId: string; locale?: "ar" | "en" }) {
   const params = new URLSearchParams({
     attemptId: input.attemptId,
     token: createPaymentReceiptToken(input)
   });
 
-  return `/payment/consultation/receipt?${params.toString()}`;
+  const path = input.locale === "ar" ? "/ar/payment/consultation/receipt" : "/payment/consultation/receipt";
+  return `${path}?${params.toString()}`;
 }
 
 export function createPaymentReceiptToken(
@@ -147,8 +148,8 @@ export async function getPublicConsultationPaymentReceipt(input: { attemptId: st
     },
     include: {
       client: { select: { fullName: true } },
-      appointment: { select: { id: true, title: true, startsAt: true, endsAt: true, mode: true, status: true } },
-      consultationRequest: { select: { id: true, serviceCategory: true, preferredMode: true } },
+      appointment: { select: { id: true, title: true, startsAt: true, endsAt: true, mode: true, status: true, type: true } },
+      consultationRequest: { select: { id: true, serviceCategory: true, preferredMode: true, locale: true } },
       paymentAttempt: {
         select: {
           id: true,
@@ -163,11 +164,12 @@ export async function getPublicConsultationPaymentReceipt(input: { attemptId: st
     }
   });
 
-  if (!payment || !payment.paymentAttempt) {
+  if (!payment || !payment.paymentAttempt || payment.appointment?.type === "INTERNAL_MEETING") {
     throw new ApiError(404, "NOT_FOUND", "Payment receipt was not found.");
   }
 
   return {
+    locale: payment.consultationRequest?.locale === "ar" ? "ar" as const : "en" as const,
     id: payment.id,
     invoiceNumber: payment.invoiceNumber,
     receiptNumber: payment.receiptNumber,

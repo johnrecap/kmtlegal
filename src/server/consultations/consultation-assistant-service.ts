@@ -8,7 +8,7 @@ import {
   assertNoAppointmentConflict,
   runAppointmentConflictTransaction
 } from "@/server/appointments/appointment-conflict-service";
-import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
+import { appendAuditLog, appendAuditLogBestEffort } from "@/server/audit/audit-service";
 import { getIpAddress } from "@/server/auth/session-store";
 import type { Principal } from "@/server/auth/policy";
 import { prisma } from "@/server/db/prisma";
@@ -40,6 +40,7 @@ import {
 } from "./consultation-availability-service";
 import { getPublicConsultationBookingMode, getConsultationBookingMode } from "./consultation-booking-settings";
 import { paymentApiSourceMessages } from "@/lib/ui-copy";
+import { publicBookingConsentCopy } from "@/content/public-booking-consent";
 import { addCairoDays, cairoDateString, cairoWeekday } from "./consultation-date-utils";
 import { publicConsultationReference } from "./consultation-service";
 
@@ -142,6 +143,7 @@ export const publicConsultationCheckoutSchema = publicConsultationAssistantSchem
     consent: true
   })
   .extend({
+      consent: z.literal(true),
       confirmPayment: z.literal(true),
       expectedPrice: z.object({
         amount: z.string().regex(/^\d+(\.\d{1,2})?$/), currency: z.string().min(3).max(3),
@@ -293,6 +295,9 @@ async function handlePublicBookingConversation(input: {
   const missingFields = requiredBookingFields({ ...input.body, ...draft, startsAt: selectedSlot });
 
   if (input.body.confirmBooking || (input.body.intent === "book_consultation_appointment" && input.body.consent === true && selectedSlot)) {
+    if (input.body.consent !== true) {
+      throw new ApiError(400, "VALIDATION_ERROR", consentRequiredMessage(input.body.locale));
+    }
     const confirmMissing = requiredBookingFields({ ...input.body, ...draft, startsAt: selectedSlot });
     if (confirmMissing.length) {
       return respond({
@@ -323,7 +328,7 @@ async function handlePublicBookingConversation(input: {
       ...draft,
       serviceCategory: assistantServiceCategory(draft.serviceCategory),
       startsAt: selectedSlot,
-      consent: true
+      consent: input.body.consent
     };
     try {
       if (bookingMode === "AI_CHAT_FREE") {
@@ -1735,7 +1740,7 @@ export async function createPublicConsultationCheckout(input: {
     ...draft,
     serviceCategory: assistantServiceCategory(draft.serviceCategory || body.serviceCategory),
     startsAt: body.selectedSlot || draft.startsAt,
-    consent: true
+    consent: body.consent
   };
   const missing = requiredBookingFields(checkoutBody);
   if (missing.length) {
@@ -1824,6 +1829,16 @@ export async function createPublicConsultationCheckout(input: {
           status: "RESERVED",
           notes: "Reserved pending trusted payment webhook confirmation."
         }
+      });
+
+      await appendPublicBookingConsentAudit({
+        client: tx,
+        consultationId: consultation.id,
+        clientId: client.id,
+        appointmentId: appointment.id,
+        locale: body.locale,
+        request: input.request,
+        requestId: input.requestId
       });
 
       const attempt = await createConsultationPaymentAttempt({
@@ -1979,6 +1994,16 @@ async function createFreeConsultationBooking(input: {
           status: "SCHEDULED",
           notes: "Confirmed from public assistant without payment because booking fee is disabled."
         }
+      });
+
+      await appendPublicBookingConsentAudit({
+        client: tx,
+        consultationId: consultation.id,
+        clientId: client.id,
+        appointmentId: appointment.id,
+        locale: body.locale,
+        request: input.request,
+        requestId: input.requestId
       });
 
       await createConsultationReviewNotifications({
@@ -2397,6 +2422,42 @@ function matchesVerifiedContact(
 function appointmentTitle(locale: "ar" | "en", consultationId: string) {
   const reference = publicConsultationReference(consultationId);
   return locale === "ar" ? `موعد استشارة ${reference}` : `Consultation appointment ${reference}`;
+}
+
+function consentRequiredMessage(locale: "ar" | "en") {
+  return locale === "ar"
+    ? "الموافقة مطلوبة قبل حجز موعد الاستشارة."
+    : "Consent is required before booking a consultation appointment.";
+}
+
+async function appendPublicBookingConsentAudit(input: {
+  client: Prisma.TransactionClient;
+  consultationId: string;
+  clientId: string;
+  appointmentId: string;
+  locale: "ar" | "en";
+  request: Request;
+  requestId: string;
+}) {
+  await appendAuditLog({
+    client: input.client,
+    actorId: null,
+    action: "consultation.public_consent_recorded",
+    resourceType: "ConsultationRequest",
+    resourceId: input.consultationId,
+    clientId: input.clientId,
+    appointmentId: input.appointmentId,
+    metadata: {
+      version: publicBookingConsentCopy.version,
+      locale: input.locale,
+      text: publicBookingConsentCopy[input.locale],
+      source: "public-booking",
+      scope: "privacy-and-booking",
+      accepted: true
+    },
+    request: input.request,
+    requestId: input.requestId
+  });
 }
 
 function bookedMessage(locale: "ar" | "en", body?: PublicConsultationAssistantInput) {

@@ -36,7 +36,7 @@ test.describe("batch4 isolated booking", () => {
     const draft=draftFor();const body={locale:"en",message:"Confirm",draft,selectedSlot:slots[0].startsAt};
     const review=await assistant(request,baseURL!,body);expect(review.data.readyToConfirm).toBe(true);
     expect(await prisma.consultationRequest.count({where:{phone:draft.phone}})).toBe(0);
-    const results=await Promise.all([1,2].map(()=>assistant(request,baseURL!,{...body,confirmBooking:true})));
+    const results=await Promise.all([1,2].map(()=>assistant(request,baseURL!,{...body,confirmBooking:true,consent:true})));
     expect(results.filter(r=>r.data?.reference)).toHaveLength(1);
     expect(await prisma.consultationRequest.count({where:{phone:draft.phone}})).toBe(1);
     const record=await prisma.consultationRequest.findFirstOrThrow({where:{phone:draft.phone},include:{appointments:true}});
@@ -54,7 +54,7 @@ test.describe("batch4 isolated booking", () => {
 
   test("staff reschedule enforces authorization and conflicts and releases the old slot",async({request,baseURL})=>{
     const slots=await slotsFor(request,dateAfter(8));
-    const booked=await assistant(request,baseURL!,{locale:"en",message:"Confirm",draft:draftFor(),selectedSlot:slots[0].startsAt,confirmBooking:true});
+    const booked=await assistant(request,baseURL!,{locale:"en",message:"Confirm",draft:draftFor(),selectedSlot:slots[0].startsAt,confirmBooking:true,consent:true});
     const appointment=await prisma.appointment.findUniqueOrThrow({where:{id:booked.data.appointment.id}});
     const url=`/api/admin/calendar/${appointment.id}/reschedule`;const data={startsAt:slots[1].startsAt,durationMinutes:15,mode:"ONLINE",reason:"Disposable reschedule"};
     expect((await request.post(url,{headers:{Origin:baseURL!},data})).status()).toBe(401);
@@ -62,17 +62,17 @@ test.describe("batch4 isolated booking", () => {
     await login(request,"marketing@kmt.local",baseURL!);expect((await request.post(url,{headers:{Origin:baseURL!},data})).status()).toBe(403);
     await login(request,"office.admin@kmt.local",baseURL!);expect((await request.post(url,{headers:{Origin:baseURL!},data})).status()).toBe(200);
     const available=await slotsFor(request,dateAfter(8));expect(available.some(s=>s.startsAt===slots[0].startsAt)).toBe(true);expect(available.some(s=>s.startsAt===slots[1].startsAt)).toBe(false);
-    await assistant(request,baseURL!,{locale:"en",message:"Confirm",draft:draftFor(),selectedSlot:slots[2].startsAt,confirmBooking:true});
+    await assistant(request,baseURL!,{locale:"en",message:"Confirm",draft:draftFor(),selectedSlot:slots[2].startsAt,confirmBooking:true,consent:true});
     expect((await request.post(url,{headers:{Origin:baseURL!},data:{...data,startsAt:slots[2].startsAt}})).status()).toBe(409);
   });
 
   test("reschedule racing a public confirmation never creates overlapping active appointments",async({request,baseURL})=>{
     const slots=await slotsFor(request,dateAfter(10));
-    const first=await assistant(request,baseURL!,{locale:"en",message:"Confirm",draft:draftFor(),selectedSlot:slots[0].startsAt,confirmBooking:true});
+    const first=await assistant(request,baseURL!,{locale:"en",message:"Confirm",draft:draftFor(),selectedSlot:slots[0].startsAt,confirmBooking:true,consent:true});
     await login(request,"office.admin@kmt.local",baseURL!);
     const [move,book]=await Promise.all([
       request.post(`/api/admin/calendar/${first.data.appointment.id}/reschedule`,{headers:{Origin:baseURL!},data:{startsAt:slots[1].startsAt,durationMinutes:15,mode:"ONLINE"}}),
-      assistant(request,baseURL!,{locale:"en",message:"Confirm",draft:draftFor(),selectedSlot:slots[1].startsAt,confirmBooking:true})
+      assistant(request,baseURL!,{locale:"en",message:"Confirm",draft:draftFor(),selectedSlot:slots[1].startsAt,confirmBooking:true,consent:true})
     ]);
     expect(Number(move.status()===200)+Number(Boolean(book.data?.reference))).toBe(1);
     expect(await prisma.appointment.count({where:{type:"CONSULTATION",status:{in:["RESERVED","SCHEDULED","RESCHEDULED"]},startsAt:new Date(slots[1].startsAt)}})).toBe(1);
@@ -80,7 +80,7 @@ test.describe("batch4 isolated booking", () => {
 
   test("future cancellation through reject enforces roles and version, closes the record and releases the slot",async({request,baseURL})=>{
     const date=dateAfter(12);const slots=await slotsFor(request,date);
-    const result=await assistant(request,baseURL!,{locale:"en",message:"Confirm",draft:draftFor(),selectedSlot:slots[0].startsAt,confirmBooking:true});
+    const result=await assistant(request,baseURL!,{locale:"en",message:"Confirm",draft:draftFor(),selectedSlot:slots[0].startsAt,confirmBooking:true,consent:true});
     const appointment=await prisma.appointment.findUniqueOrThrow({where:{id:result.data.appointment.id}});
     const url=`/api/admin/consultations/${appointment.consultationRequestId}/reject`;
     const data={expectedOutcomeVersion:0,reasonCode:"CANCELLED_BY_CLIENT"};
@@ -95,7 +95,7 @@ test.describe("batch4 isolated booking", () => {
     expect((await slotsFor(request,date)).some(slot=>slot.startsAt===slots[0].startsAt)).toBe(true);
     expect((await request.post(url,{headers:{Origin:baseURL!},data:{...data,expectedOutcomeVersion:1}})).status()).toBe(409);
     expect((await request.post(`/api/admin/calendar/${appointment.id}/reschedule`,{headers:{Origin:baseURL!},data:{startsAt:slots[1].startsAt,durationMinutes:15,mode:"ONLINE"}})).status()).toBe(409);
-    const replacement=await assistant(request,baseURL!,{locale:"en",message:"Confirm",draft:draftFor(),selectedSlot:slots[0].startsAt,confirmBooking:true});expect(replacement.data.reference).toBeTruthy();
+    const replacement=await assistant(request,baseURL!,{locale:"en",message:"Confirm",draft:draftFor(),selectedSlot:slots[0].startsAt,confirmBooking:true,consent:true});expect(replacement.data.reference).toBeTruthy();
   });
 
   test("bilingual invalid chat dates recover without poisoned drafts; date-only and time-only preferences work",async({request,baseURL})=>{
@@ -127,14 +127,15 @@ test.describe("batch4 isolated booking", () => {
     const reviewPromise=page.waitForResponse(r=>new URL(r.url()).pathname==="/api/public/consultations/assistant");
     await page.getByTestId("booking-slot-chip").first().click();const review=await(await reviewPromise).json();expect(review.data.readyToConfirm).toBe(true);
     expect(await prisma.consultationRequest.count({where:{phone:browserContact}})).toBe(0);
-    await assistant(page.request,baseURL!,{locale:"en",message:"Confirm",draft:draftFor(),selectedSlot:selected,confirmBooking:true});
+    await assistant(page.request,baseURL!,{locale:"en",message:"Confirm",draft:draftFor(),selectedSlot:selected,confirmBooking:true,consent:true});
     const lossPromise=page.waitForResponse(r=>new URL(r.url()).pathname==="/api/public/consultations/assistant");
+    await page.getByTestId("booking-consent").check();
     await page.getByTestId("booking-confirm-booking").click();const loss=await(await lossPromise).json();
     expect(loss.data.reference).toBeUndefined();expect(loss.data.draft.phone).toBe(browserContact);expect(loss.data.draft.startsAt).toBe("");expect(loss.data.availableSlots.length).toBeGreaterThan(0);
     const nextReview=page.waitForResponse(r=>new URL(r.url()).pathname==="/api/public/consultations/assistant");await page.getByTestId("booking-slot-chip").first().click();await nextReview;
-    const donePromise=page.waitForResponse(r=>new URL(r.url()).pathname==="/api/public/consultations/assistant");await page.getByTestId("booking-confirm-booking").click();const done=await(await donePromise).json();expect(done.data.reference).toBeTruthy();
+    const donePromise=page.waitForResponse(r=>new URL(r.url()).pathname==="/api/public/consultations/assistant");await page.getByTestId("booking-consent").check();await page.getByTestId("booking-confirm-booking").click();const done=await(await donePromise).json();expect(done.data.reference).toBeTruthy();
     expect(await prisma.consultationRequest.count({where:{phone:browserContact}})).toBe(1);
-    await assistant(page.request,baseURL!,{locale:"en",message:"Confirm",draft:loss.data.draft,selectedSlot:done.data.appointment.startsAt,confirmBooking:true});
+    await assistant(page.request,baseURL!,{locale:"en",message:"Confirm",draft:loss.data.draft,selectedSlot:done.data.appointment.startsAt,confirmBooking:true,consent:true});
     expect(await prisma.consultationRequest.count({where:{phone:browserContact}})).toBe(1);
     const saved=await prisma.consultationRequest.findFirstOrThrow({where:{phone:browserContact},include:{appointments:true}});
     expect(saved.clientId).toBe(browserClientId);expect(saved.appointments).toHaveLength(1);const bookedAppointment=saved.appointments[0];expect(bookedAppointment.clientId).toBe(browserClientId);
@@ -145,4 +146,3 @@ test.describe("batch4 isolated booking", () => {
 async function login(request:APIRequestContext,email:string,origin:string){expect((await request.post("/api/auth/login",{headers:{Origin:origin},data:{email,password:"KmtLocalDev!2026"}})).status()).toBe(200);}
 async function assistant(request:APIRequestContext,origin:string,data:unknown){const response=await request.post("/api/public/consultations/assistant",{headers:{Origin:origin},data});expect([200,409]).toContain(response.status());return await response.json();}
 async function slotsFor(request:APIRequestContext,date:string):Promise<Array<{startsAt:string;endsAt:string}>>{const response=await request.get(`/api/public/consultations/slots?date=${date}&limit=50`);expect(response.status()).toBe(200);return(await response.json()).data.slots;}
-

@@ -128,4 +128,17 @@ describe("client account setup contract", () => {
     expect(assistantService.match(/locale: body\.locale/g)?.length ?? 0).toBeGreaterThanOrEqual(3);
     expect(paymentService).toContain("attempt.consultationRequest.locale");
   });
+
+  it("propagates the public page locale to localized setup validation", () => {
+    const form = readFileSync(join(process.cwd(), "src/features/public-site/client-account-setup-form.tsx"), "utf8");
+    const page = readFileSync(join(process.cwd(), "src/features/public-site/client-account-setup-page.tsx"), "utf8");
+    const route = readFileSync(join(process.cwd(), "src/app/api/public/client-account/setup/route.ts"), "utf8");
+
+    expect(page).toContain("locale={locale}");
+    expect(form).toContain("/api/public/client-account/setup?locale=${locale}");
+    expect(route).toContain("localeFromSearchParams");
+    expect(route).toContain("locale === \"ar\"");
+    expect(route).toContain("locale });");
+    expect(route).not.toContain('locale: "ar"');
+  });
 });

@@ -74,7 +74,8 @@ export type PaymentReturnUrlOptions = {
 };
 
 export function paymentReturnUrl(attemptId: string, request?: Request, options: PaymentReturnUrlOptions = {}) {
-  const url = new URL(`${publicAppUrl(request)}/payment/consultation/return`);
+  const path = options.locale === "ar" ? "/ar/payment/consultation/return" : "/payment/consultation/return";
+  const url = new URL(`${publicAppUrl(request)}${path}`);
   url.searchParams.set("attemptId", attemptId);
   if (options.token) {
     url.searchParams.set("token", options.token);

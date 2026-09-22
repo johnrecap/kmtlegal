@@ -632,12 +632,33 @@ describe("public consultation contract", () => {
     expect(checkout.draft?.preferredMode).toBe("ONLINE");
     expect(() =>
       publicConsultationCheckoutSchema.parse({
+        locale: "en",
+        message: "Pay booking fee",
+        consent: false,
+        confirmPayment: true,
+        expectedPrice: {amount:"750",currency:"EGP",pricingRuleId:"11111111-1111-4111-8111-111111111111",priceVersion:1,serviceCategory:"corporate-business-services",mode:"ONLINE"}
+      })
+    ).toThrow();
+    expect(() =>
+      publicConsultationCheckoutSchema.parse({
         locale: "ar",
         message: "دفع",
         consent: true,
         confirmPayment: false
       })
     ).toThrow();
+  });
+
+  it("writes public consent through the booking transaction client", () => {
+    const source = readFileSync(join(process.cwd(), "src/server/consultations/consultation-assistant-service.ts"), "utf8");
+    const helperStart = source.indexOf("async function appendPublicBookingConsentAudit");
+    const helper = source.slice(helperStart, source.indexOf("function bookedMessage", helperStart));
+    expect(helper).toContain("client: Prisma.TransactionClient");
+    expect(helper).toContain("client: input.client");
+    expect(helper).toContain("version: publicBookingConsentCopy.version");
+    expect(helper).toContain("locale: input.locale");
+    expect(helper).toContain("text: publicBookingConsentCopy[input.locale]");
+    expect(source.match(/await appendPublicBookingConsentAudit\(/g)).toHaveLength(2);
   });
 
   it("builds a useful office brief for public AI chat bookings", () => {
@@ -686,6 +707,7 @@ describe("public consultation contract", () => {
         locale: "en",
         message: "Book appointment",
         confirmBooking: true,
+        consent: true,
         selectedSlot: "2026-07-05T10:00:00.000Z",
         draft: {
           fullName: "Book consultation",
@@ -709,6 +731,7 @@ describe("public consultation contract", () => {
         locale: "en",
         message: "Book appointment",
         confirmBooking: true,
+        consent: true,
         selectedSlot: "2026-07-05T10:00:00.000Z",
         draft: {
           fullName: "01063887871",
@@ -743,6 +766,7 @@ describe("public consultation contract", () => {
         locale: "en",
         message: "Book appointment",
         confirmBooking: true,
+        consent: true,
         selectedSlot: "2020-01-01T10:00:00.000Z",
         draft: {
           fullName: "Khaled Ahmed",

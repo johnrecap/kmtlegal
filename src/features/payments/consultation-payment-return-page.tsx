@@ -5,24 +5,25 @@ import { MaterialSymbol } from "@/components/ui";
 import { getPublicContent, navForPath, type PublicContent } from "@/content/public-content";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/legal-format";
+import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 import { PaymentStatusPoller } from "@/features/public-site/payment-status-poller";
 import { getPublicPaymentAttemptStatus } from "@/server/payments/payment-service";
 
-export const dynamic = "force-dynamic";
-
-type PaymentReturnPageProps = {
-  searchParams?: Promise<{
-    attemptId?: string;
-    token?: string;
-    locale?: string;
-  }>;
+export type PaymentReturnSearchParams = {
+  attemptId?: string;
+  token?: string;
+  locale?: string;
 };
 
-export default async function ConsultationPaymentReturnPage({ searchParams }: PaymentReturnPageProps) {
-  const params = await searchParams;
+export async function ConsultationPaymentReturnPage({
+  locale,
+  params
+}: {
+  locale: PublicLocale;
+  params?: PaymentReturnSearchParams;
+}) {
   const attemptId = params?.attemptId ?? "";
   const token = params?.token ?? "";
-  const locale = params?.locale === "en" ? "en" : "ar";
   const content = getPublicContent(locale);
   const paymentReturnCopy = content.paymentReturn;
   const result = attemptId ? await getPaymentStatus(attemptId, token) : null;
@@ -35,10 +36,13 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
       .filter((entry): entry is [string, string] => typeof entry[1] === "string" && entry[1] !== "")
       .map(([key, value]) => [key, key === "locale" ? (locale === "ar" ? "en" : "ar") : value])
   );
-  const languageHref = `/payment/consultation/return?${languageSearchParams.toString()}`;
+  const targetLocale = locale === "ar" ? "en" : "ar";
+  const languagePath = targetLocale === "ar" ? "/ar/payment/consultation/return" : "/payment/consultation/return";
+  const languageHref = `${languagePath}?${languageSearchParams.toString()}`;
+  const currentPath = locale === "ar" ? "/ar/payment/consultation/return" : "/payment/consultation/return";
 
   return (
-    <PublicShell currentPath="/payment/consultation/return" languageHref={languageHref} locale={locale} navItems={navForPath("/", locale)}>
+    <PublicShell currentPath={currentPath} languageHref={languageHref} locale={locale} navItems={navForPath("/", locale)}>
       <section className="mx-auto min-h-[68vh] max-w-[940px] px-4 py-16 sm:px-6 lg:px-10" dir={locale === "ar" ? "rtl" : "ltr"}>
         <div className="rounded-[1.75rem] border border-kmt-gold/30 bg-[#100d08] p-6 sm:p-8">
           <div className="flex items-start gap-4">
@@ -54,13 +58,7 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
 
           {result ? (
             <div className="mt-8 space-y-5">
-              {isPaid ? <PaidConfirmation copy={paymentReturnCopy} result={result} /> : null}
-
-              {!result.access.verified ? (
-                <p className="rounded-2xl border border-amber-300/25 bg-amber-950/20 px-4 py-3 text-sm leading-7 text-amber-50/82">
-                  {paymentReturnCopy.safeLinkNotice}
-                </p>
-              ) : null}
+              {isPaid ? <PaidConfirmation copy={paymentReturnCopy} locale={locale} result={result} /> : null}
 
               {isPending ? (
                 <PaymentStatusPoller
@@ -71,17 +69,18 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
                   labels={{
                     pending: paymentReturnCopy.pending,
                     countdown: paymentReturnCopy.countdown,
-                    expired: paymentReturnCopy.expired
+                    expired: paymentReturnCopy.expired,
+                    unavailable: paymentReturnCopy.unavailable
                   }}
                 />
               ) : null}
 
               <dl className="grid gap-3 text-sm text-amber-50/86 sm:grid-cols-2">
                 <StatusItem label={paymentReturnCopy.labels.attemptId} value={result.id} dir="ltr" />
-                <StatusItem label={paymentReturnCopy.labels.status} value={result.requiresFinancialReview ? tone.title : result.status} />
-                <StatusItem label={paymentReturnCopy.labels.amount} value={formatMoney(result.amount, result.currency)} />
-                <StatusItem label={paymentReturnCopy.labels.appointment} value={formatPaymentDate(result.appointment.startsAt, locale)} />
-                {result.payment ? <StatusItem label={paymentReturnCopy.labels.invoiceNumber} value={result.payment.invoiceNumber ?? "N/A"} dir="ltr" /> : null}
+                <StatusItem label={paymentReturnCopy.labels.status} value={tone.title} />
+                <StatusItem label={paymentReturnCopy.labels.amount} value={formatMoney(result.amount, result.currency, locale)} />
+                {result.appointment ? <StatusItem label={paymentReturnCopy.labels.appointment} value={formatPaymentDate(result.appointment.startsAt, locale)} /> : null}
+                {result.payment ? <StatusItem label={paymentReturnCopy.labels.invoiceNumber} value={result.payment.invoiceNumber ?? paymentReturnCopy.labels.unavailable} dir="ltr" /> : null}
                 <StatusItem label={paymentReturnCopy.labels.temporaryHoldExpiresAt} value={formatPaymentDate(result.expiresAt, locale)} />
               </dl>
             </div>
@@ -117,6 +116,18 @@ export default async function ConsultationPaymentReturnPage({ searchParams }: Pa
               <MaterialSymbol name="event_available" />
               {paymentReturnCopy.actions.newBooking}
             </Link> : null}
+            {!result ? (
+              <>
+                <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 px-5 text-sm font-semibold text-amber-50 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold" href={localizedPublicHref("/contact", locale)}>
+                  <MaterialSymbol name="support_agent" />
+                  {paymentReturnCopy.actions.contact}
+                </Link>
+                <Link className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 px-5 text-sm font-semibold text-amber-50 transition-colors hover:border-kmt-gold/60 hover:text-kmt-gold" href={`/login?next=/client/payments&locale=${locale}`}>
+                  <MaterialSymbol name="account_circle" />
+                  {paymentReturnCopy.actions.login}
+                </Link>
+              </>
+            ) : null}
           </div>
         </div>
       </section>
@@ -138,7 +149,7 @@ function resumeBookingHref(
   locale: "ar" | "en"
 ) {
   const basePath = locale === "ar" ? "/ar/book-consultation" : "/book-consultation";
-  if (!result?.access.verified || !token || !["FAILED", "EXPIRED", "CANCELLED"].includes(result.status)) {
+  if (!result || !token || !["FAILED", "EXPIRED", "CANCELLED"].includes(result.status)) {
     return basePath;
   }
 
@@ -152,9 +163,11 @@ function resumeBookingHref(
 
 function PaidConfirmation({
   copy,
+  locale,
   result
 }: {
   copy: PublicContent["paymentReturn"];
+  locale: PublicLocale;
   result: NonNullable<Awaited<ReturnType<typeof getPaymentStatus>>>;
 }) {
   if (!result.payment) {
@@ -177,7 +190,7 @@ function PaidConfirmation({
       <dl className="mt-5 grid gap-3 sm:grid-cols-2">
         {result.client ? <StatusItem label={copy.labels.clientName} value={result.client.fullName} /> : null}
         {result.client ? <StatusItem label={copy.labels.phone} value={result.client.phone} dir="ltr" /> : null}
-        <StatusItem label={copy.labels.paidAmount} value={formatMoney(result.payment.amount, result.payment.currency)} />
+        <StatusItem label={copy.labels.paidAmount} value={formatMoney(result.payment.amount, result.payment.currency, locale)} />
         <StatusItem label={copy.labels.receiptNumber} value={result.payment.receiptNumber ?? copy.labels.unavailable} dir="ltr" />
       </dl>
     </section>

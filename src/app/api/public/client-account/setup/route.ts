@@ -5,14 +5,20 @@ import { getIpAddress } from "@/server/auth/session-store";
 import { errorToResponse, getRequestId } from "@/server/http/errors";
 import { enforceRateLimit, rateLimiters } from "@/server/rate-limit/memory-rate-limit";
 import { parseJsonRequest } from "@/server/validation/schemas";
+import { localeFromSearchParams } from "@/lib/public-locale";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   const requestId = getRequestId(request);
+  const locale = localeFromSearchParams(new URL(request.url).searchParams);
 
   try {
-    const body = await parseJsonRequest(request, publicClientAccountSetupSchema, "Client account setup payload is invalid.");
+    const body = await parseJsonRequest(
+      request,
+      publicClientAccountSetupSchema,
+      locale === "ar" ? "بيانات إعداد حساب العميل غير صالحة." : "Client account setup payload is invalid."
+    );
     await enforceRateLimit(rateLimiters.login, `${body.email}:${getIpAddress(request) ?? "unknown"}`);
 
     const result = await completePublicClientAccountSetup({
@@ -39,6 +45,6 @@ export async function POST(request: Request) {
     setSessionCookie(response, result.token);
     return response;
   } catch (error) {
-    return errorToResponse(error, requestId, { routeGroup: "public-client-account-setup", method: "POST", locale: "ar" });
+    return errorToResponse(error, requestId, { routeGroup: "public-client-account-setup", method: "POST", locale });
   }
 }

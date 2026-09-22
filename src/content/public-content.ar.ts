@@ -1,4 +1,5 @@
 import { publicLegalServicesAr as legalServices, publicServiceCategoriesAr as serviceCategories } from "./public-services";
+import { publicBookingConsentCopy } from "./public-booking-consent";
 
 const practiceAreaMatrix = legalServices.map((service) => ({
   key: service.areaKey,
@@ -473,7 +474,7 @@ export const publicContentAr = {
     nextStepsAfterBooking: "ما الذي يحدث بعد ذلك: سيراجع الفريق الطلب، ثم يتواصل معك لتأكيد الموعد أو طلب أي بيانات ناقصة.",
     preferredSlot: "الموعد المفضل",
     preferredSlotHint: "اختياري. مواعيد المكتب تخضع لمراجعة الفريق.",
-    consent: "أوافق على استخدام البيانات لمراجعة الطلب والتواصل معي، وأفهم أن هذا المساعد لا يقدم استشارة قانونية.",
+    consent: publicBookingConsentCopy.ar,
     successTitle: "تم حفظ الطلب",
     reference: "رقم المرجع",
     inquiryResult: "بيانات الحجز المتحقق منها",
@@ -498,6 +499,7 @@ export const publicContentAr = {
     pending: "لم نستلم تأكيد الدفع بعد.",
     countdown: "تتحقق الصفحة تلقائيا طالما حجز الموعد المؤقت ما زال ساريا.",
     expired: "انتهت المهلة",
+    unavailable: "لم يعد رابط حالة الدفع الآمن متاحًا. سجّل الدخول أو تواصل مع المكتب للمساعدة.",
     eyebrow: "حالة دفع حجز الاستشارة",
     missingStatusTitle: "رابط الدفع غير مكتمل",
     missingStatusDescription: "ارجع إلى صفحة الحجز وابدأ المحاولة مرة أخرى.",
@@ -519,7 +521,9 @@ export const publicContentAr = {
       receipt: "عرض / طباعة الفاتورة",
       accountSetup: "إنشاء الحساب والدخول",
       accountLogin: "تسجيل الدخول",
-      newBooking: "حجز موعد جديد"
+      newBooking: "حجز موعد جديد",
+      contact: "التواصل مع المكتب",
+      login: "تسجيل الدخول"
     },
     paidConfirmation: {
       title: "تم تأكيد الدفع والموعد",
@@ -547,6 +551,39 @@ export const publicContentAr = {
         title: "تعذر قراءة حالة الدفع",
         description: "تحقق من الرابط أو ابدأ محاولة حجز جديدة."
       }
+    }
+  },
+  paymentReceipt: {
+    back: "فتح مدفوعات العميل",
+    print: "طباعة / حفظ PDF",
+    sublabel: "فاتورة حجز استشارة",
+    officeName: "KMT Legal Office",
+    title: "فاتورة وإيصال دفع",
+    description: "رسوم حجز استشارة قانونية مؤكدة من بوابة الدفع",
+    invoiceNumber: "رقم الفاتورة",
+    receiptNumber: "رقم الإيصال",
+    paymentStatus: "حالة الدفع",
+    paid: "مدفوع",
+    unavailable: "غير متاح",
+    clientDetails: "بيانات العميل",
+    clientName: "اسم العميل",
+    paymentDetails: "بيانات الدفع",
+    paidAmount: "المبلغ المدفوع",
+    paidAt: "تاريخ الدفع",
+    provider: "بوابة الدفع",
+    providerReference: "رقم معاملة المزود",
+    consultationDetails: "تفاصيل الاستشارة",
+    serviceCategory: "مجال الاستشارة",
+    consultationMode: "طريقة الاستشارة",
+    appointment: "الموعد",
+    bookingReference: "مرجع الحجز",
+    totalPaid: "الإجمالي المدفوع",
+    confirmed: "مؤكد عبر بوابة الدفع",
+    note: "هذه الفاتورة تخص رسوم حجز الاستشارة فقط. يتم تأكيد الموعد بعد وصول إشعار دفع موثوق من بوابة الدفع وربطه برقم الفاتورة أعلاه.",
+    modeLabels: {
+      PHONE: "هاتفية",
+      ONLINE: "أونلاين",
+      OFFICE: "بالمكتب"
     }
   },
   clientAccountSetup: {

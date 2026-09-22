@@ -190,6 +190,15 @@ describe("booking chat stage composition (source contract)", () => {
     expect(chatSource).toContain('<SlotChoicePanel key="slot-choice"');
   });
 
+  it("requires fresh explicit consent at confirmation and checkout", () => {
+    expect(chatSource).toContain('data-testid="booking-consent"');
+    expect(chatSource).toContain("if (!consentAccepted)");
+    expect(chatSource).toContain("consent: options.confirmBooking ? consentAccepted : undefined");
+    expect(chatSource).toContain("consent: consentAccepted");
+    expect(chatSource).toContain("setConsentAccepted(false)");
+    expect(chatSource).toContain("copy.requiredConsent");
+  });
+
   it("holds the compact density targets", () => {
     // Shell + viewport: content-driven height (compact on first load),
     // capped so long conversations scroll internally, never the page.

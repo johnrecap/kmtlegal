@@ -201,7 +201,7 @@ export async function createConsultationPaymentAttempt(input: CreateConsultation
     request: input.request,
     statusToken: createPaymentStatusToken({ attemptId: attempt.id }),
     expiresAt: attempt.expiresAt,
-    locale: input.locale
+    locale: input.locale === "ar" ? "ar" : "en"
   });
 
   const updated = await input.tx.paymentAttempt.update({
@@ -249,14 +249,21 @@ export async function createConsultationPaymentAttempt(input: CreateConsultation
 }
 
 export async function getPublicPaymentAttemptStatus(input: { attemptId: string; token?: string | null }) {
-  const attemptId = parseWithSchema(uuidSchema, input.attemptId, "Payment attempt id is invalid.");
+  const verified = input.token
+    ? verifyPaymentStatusToken({ attemptId: input.attemptId, token: input.token })
+    : null;
+  if (!verified) {
+    throw new ApiError(404, "NOT_FOUND", "Payment status link was not found.");
+  }
+
+  const attemptId = verified.attemptId;
   await expireOpenConsultationPaymentAttempts(new Date(), { attemptId });
 
   const attempt = await prisma.paymentAttempt.findUnique({
     where: { id: attemptId },
     include: {
       client: { select: { id: true, fullName: true, phone: true, email: true, userId: true } },
-      appointment: { select: { id: true, title: true, startsAt: true, status: true } },
+      appointment: { select: { id: true, title: true, startsAt: true, status: true, type: true } },
       consultationRequest: { select: { id: true, status: true, summary: true, urgency: true, preferredMode: true, serviceCategory: true, city: true, locale: true } },
       payment: {
         select: {
@@ -274,11 +281,10 @@ export async function getPublicPaymentAttemptStatus(input: { attemptId: string; 
   });
 
   if (!attempt) {
-    throw new ApiError(404, "NOT_FOUND", "Payment attempt was not found.");
+    throw new ApiError(404, "NOT_FOUND", "Payment status link was not found.");
   }
 
-  const includeSensitive = Boolean(input.token && verifyPaymentStatusToken({ attemptId, token: input.token }));
-  return paymentAttemptDto(attempt, { includeSensitive });
+  return paymentAttemptDto(attempt);
 }
 
 export async function handlePaymentWebhook(input: { request: Request; rawBody: string; requestId: string; provider: PaymentProviderName }) {
@@ -1160,7 +1166,7 @@ function paymentAttemptDto(
   attempt: Prisma.PaymentAttemptGetPayload<{
     include: {
       client: { select: { id: true; fullName: true; phone: true; email: true; userId: true } };
-      appointment: { select: { id: true; title: true; startsAt: true; status: true } };
+      appointment: { select: { id: true; title: true; startsAt: true; status: true; type: true } };
       consultationRequest: { select: { id: true; status: true; summary: true; urgency: true; preferredMode: true; serviceCategory: true; city: true; locale: true } };
       payment: {
         select: {
@@ -1175,10 +1181,8 @@ function paymentAttemptDto(
         };
       };
     };
-  }>,
-  options: { includeSensitive?: boolean } = {}
+  }>
 ) {
-  const includeSensitive = options.includeSensitive === true;
   const requiresFinancialReview = paymentRequiresReview(attempt);
   return {
     id: attempt.id,
@@ -1188,18 +1192,20 @@ function paymentAttemptDto(
     requiresOrderVerification: paymentNeedsOrderVerification(attempt),
     amount: attempt.amount.toString(),
     currency: attempt.currency,
-    access: { verified: includeSensitive },
-    checkoutUrl: includeSensitive && !requiresFinancialReview ? attempt.checkoutUrl : null,
+    access: { verified: true },
+    checkoutUrl: !requiresFinancialReview ? attempt.checkoutUrl : null,
     expiresAt: attempt.expiresAt.toISOString(),
-    appointment: {
-      id: attempt.appointment.id,
-      title: attempt.appointment.title,
-      startsAt: attempt.appointment.startsAt.toISOString(),
-      status: attempt.appointment.status
-    },
-    consultation: publicPaymentAttemptConsultationDto(attempt.consultationRequest, includeSensitive),
+    appointment: attempt.appointment.type === "INTERNAL_MEETING"
+      ? null
+      : {
+          id: attempt.appointment.id,
+          title: attempt.appointment.title,
+          startsAt: attempt.appointment.startsAt.toISOString(),
+          status: attempt.appointment.status
+        },
+    consultation: publicPaymentAttemptConsultationDto(attempt.consultationRequest, true),
     resumeDraft:
-      includeSensitive && !requiresFinancialReview && !attempt.payment && ["FAILED", "EXPIRED", "CANCELLED"].includes(attempt.status)
+      !requiresFinancialReview && !attempt.payment && ["FAILED", "EXPIRED", "CANCELLED"].includes(attempt.status)
         ? {
             fullName: attempt.client.fullName,
             phone: attempt.client.phone,
@@ -1220,14 +1226,14 @@ function paymentAttemptDto(
           }
         : null,
     client:
-      includeSensitive && attempt.payment && attempt.status === "PAID"
+      attempt.payment && attempt.status === "PAID"
         ? {
             fullName: attempt.client.fullName,
             phone: attempt.client.phone
           }
         : null,
     clientAccountSetup:
-      includeSensitive && !requiresFinancialReview && attempt.payment && attempt.status === "PAID" && attempt.payment.status === "PAID"
+      !requiresFinancialReview && attempt.payment && attempt.status === "PAID" && attempt.payment.status === "PAID"
         ? publicClientAccountSetupTarget({
             client: attempt.client,
             consultationId: attempt.consultationRequest.id,
@@ -1236,17 +1242,21 @@ function paymentAttemptDto(
         : null,
     payment: attempt.payment
       ? {
-          id: includeSensitive ? attempt.payment.id : null,
-          invoiceNumber: includeSensitive ? attempt.payment.invoiceNumber : null,
-          receiptNumber: includeSensitive ? attempt.payment.receiptNumber : null,
+          id: attempt.payment.id,
+          invoiceNumber: attempt.payment.invoiceNumber,
+          receiptNumber: attempt.payment.receiptNumber,
           amount: attempt.payment.amount.toString(),
           currency: attempt.payment.currency,
           status: attempt.payment.status,
           paymentMethod: attempt.payment.paymentMethod,
           paidAt: attempt.payment.paidAt?.toISOString() ?? null,
           receiptUrl:
-            includeSensitive && !requiresFinancialReview && attempt.status === "PAID" && attempt.payment.status === "PAID"
-              ? publicPaymentReceiptUrl({ attemptId: attempt.id, paymentId: attempt.payment.id })
+            !requiresFinancialReview && attempt.status === "PAID" && attempt.payment.status === "PAID"
+              ? publicPaymentReceiptUrl({
+                  attemptId: attempt.id,
+                  paymentId: attempt.payment.id,
+                  locale: attempt.consultationRequest.locale === "ar" ? "ar" : "en"
+                })
               : null
         }
       : null

@@ -12,13 +12,15 @@ type PaymentStatusPollerProps = {
     pending: string;
     countdown: string;
     expired: string;
+    unavailable: string;
   };
 };
 
 export function PaymentStatusPoller({ attemptId, token, expiresAt, initialStatus, labels }: PaymentStatusPollerProps) {
   const [status, setStatus] = useState(initialStatus);
   const [now, setNow] = useState(() => Date.now());
-  const shouldPoll = status === "CREATED" || status === "PENDING";
+  const [linkUnavailable, setLinkUnavailable] = useState(false);
+  const shouldPoll = !linkUnavailable && (status === "CREATED" || status === "PENDING");
 
   const statusUrl = useMemo(() => {
     const params = new URLSearchParams({ attemptId });
@@ -46,6 +48,13 @@ export function PaymentStatusPoller({ attemptId, token, expiresAt, initialStatus
     const poll = async () => {
       try {
         const response = await fetch(statusUrl, { cache: "no-store" });
+        if (response.status === 404) {
+          if (!stopped) {
+            setLinkUnavailable(true);
+            window.location.reload();
+          }
+          return;
+        }
         const body = (await response.json().catch(() => null)) as { data?: { status?: string } } | null;
         const nextStatus = body?.data?.status;
         if (!stopped && nextStatus && nextStatus !== status) {
@@ -64,6 +73,14 @@ export function PaymentStatusPoller({ attemptId, token, expiresAt, initialStatus
       window.clearInterval(interval);
     };
   }, [shouldPoll, status, statusUrl]);
+
+  if (linkUnavailable) {
+    return (
+      <div className="rounded-2xl border border-red-300/25 bg-red-950/30 px-4 py-3 text-sm leading-7 text-red-100" role="status">
+        {labels.unavailable}
+      </div>
+    );
+  }
 
   if (!shouldPoll) {
     return null;

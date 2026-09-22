@@ -98,6 +98,19 @@ describe.skipIf(!enabled)("batch 2 isolated PostgreSQL behavior", () => {
     const results = await Promise.all([`${phonePrefix}31`, `${phonePrefix}32`].map(phone => book(phone, slots[0].startsAt)));
     expect(results.filter(result => result.reference), JSON.stringify(results)).toHaveLength(1);
     expect(await prisma.appointment.count({ where: { startsAt: new Date(slots[0].startsAt), type: "CONSULTATION", status: "SCHEDULED" } })).toBe(1);
+    const consultation = await prisma.consultationRequest.findFirstOrThrow({
+      where: { phone: { in: [`${phonePrefix}31`, `${phonePrefix}32`] }, status: "SCHEDULED" }
+    });
+    const consentAudit = await prisma.auditLog.findFirstOrThrow({
+      where: { action: "consultation.public_consent_recorded", resourceId: consultation.id }
+    });
+    expect(consentAudit.clientId).toBe(consultation.clientId);
+    expect(consentAudit.metadata).toMatchObject({
+      version: "public-booking-consent-v1",
+      locale: "en",
+      source: "public-booking",
+      accepted: true
+    });
   }, 20_000);
 
   it("does not duplicate a contact when two confirmations target different slots", async () => {

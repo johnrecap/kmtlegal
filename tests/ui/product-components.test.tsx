@@ -512,12 +512,13 @@ describe("product UI primitives", () => {
   });
 
   it("keeps public payment return text localized through content files", () => {
-    const returnPageSource = readFileSync(join(process.cwd(), "src/app/(public-ar)/payment/consultation/return/page.tsx"), "utf8");
+    const returnPageSource = readFileSync(join(process.cwd(), "src/features/payments/consultation-payment-return-page.tsx"), "utf8");
     const publicContentEn = readFileSync(join(process.cwd(), "src/content/public-content.en.ts"), "utf8");
     const publicContentAr = readFileSync(join(process.cwd(), "src/content/public-content.ar.ts"), "utf8");
 
     expect(returnPageSource).toContain("paymentReturnCopy.eyebrow");
     expect(returnPageSource).toContain("copy.statusTones");
+    expect(returnPageSource).toContain("label={paymentReturnCopy.labels.status} value={tone.title}");
     expect(returnPageSource).toContain("formatPaymentDate(result.appointment.startsAt, locale)");
     expect(returnPageSource).not.toContain("formatCairoDate");
     expect(publicContentEn).toContain("Payment confirmed");

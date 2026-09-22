@@ -196,6 +196,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   const [readyToConfirm, setReadyToConfirm] = useState(false);
   const [readyToCheckout, setReadyToCheckout] = useState(false);
   const [paymentReview, setPaymentReview] = useState<PaymentReview | null>(null);
+  const [consentAccepted, setConsentAccepted] = useState(false);
+  const [showConsentError, setShowConsentError] = useState(false);
   const [freeTextTurnsAfterLanguage, setFreeTextTurnsAfterLanguage] = useState(0);
   const failureCount = useRef(0);
   const contactOfferShown = useRef(false);
@@ -359,6 +361,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       setReadyToConfirm(false);
       setReadyToCheckout(false);
       setPaymentReview(null);
+      setConsentAccepted(false);
+      setShowConsentError(false);
       setActionStep(null);
       setMessages([
         { id: `assistant-greeting-${restoredLocale}`, role: "assistant", text: restoredCopy.greeting },
@@ -468,6 +472,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     setReadyToConfirm(false);
     setReadyToCheckout(false);
     setPaymentReview(null);
+    setConsentAccepted(false);
+    setShowConsentError(false);
     setSelectedSlot("");
     setFreeTextTurnsAfterLanguage(0);
     setLatestResult(null);
@@ -518,6 +524,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     setReadyToConfirm(false);
     setReadyToCheckout(false);
     setPaymentReview(null);
+    setConsentAccepted(false);
+    setShowConsentError(false);
     append("user", copy.inquire);
     append("assistant", copy.inquiryPrompt);
   }
@@ -532,6 +540,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     setReadyToConfirm(false);
     setReadyToCheckout(false);
     setPaymentReview(null);
+    setConsentAccepted(false);
+    setShowConsentError(false);
     setLatestResult(null);
     setFreeMessage("");
     setFreeTextTurnsAfterLanguage(0);
@@ -629,6 +639,10 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     setReadyToConfirm(false);
     setReadyToCheckout(false);
     setPaymentReview(null);
+    if (!options.confirmBooking) {
+      setConsentAccepted(false);
+      setShowConsentError(false);
+    }
 
     const categoryChanged = options.event === "select_category" && options.draftPatch?.serviceCategory !== undefined;
     const nextDraft = normalizeDraft({ ...draft, ...options.draftPatch, ...(categoryChanged ? { startsAt: "" } : {}) });
@@ -659,7 +673,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
           event: options.event ?? "message",
           draft: nextDraft,
           selectedSlot: nextSlot,
-          confirmBooking: options.confirmBooking
+          confirmBooking: options.confirmBooking,
+          consent: options.confirmBooking ? consentAccepted : undefined
         })
       });
       const body = (await response.json().catch(() => ({}))) as AssistantApiBody;
@@ -724,6 +739,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         setReadyToConfirm(false);
         setReadyToCheckout(false);
         setPaymentReview(null);
+        setConsentAccepted(false);
+        setShowConsentError(false);
         setActionStep(null);
         setDraft({ ...initialDraft, serviceCategory: initialServiceCategory });
       }
@@ -763,6 +780,10 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
   function confirmBooking() {
     if (!selectedSlot || isBusy) return;
+    if (!consentAccepted) {
+      setShowConsentError(true);
+      return;
+    }
     void sendBookingMessage(copy.submitBooking, {
       userText: copy.submitBooking,
       flow: "booking",
@@ -773,6 +794,10 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
   async function payBooking() {
     if (!selectedSlot || !paymentReview || isBusy) return;
+    if (!consentAccepted) {
+      setShowConsentError(true);
+      return;
+    }
     setIsBusy(true);
     append("user", copy.payBooking);
     const checkoutDraft = normalizeDraft({ ...draft, startsAt: selectedSlot });
@@ -786,7 +811,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
           message: copy.payBooking,
           draft: checkoutDraft,
           selectedSlot,
-          consent: true,
+          consent: consentAccepted,
           expectedPrice: paymentReview,
           confirmPayment: true
         })
@@ -794,6 +819,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       const body = (await response.json().catch(() => ({}))) as AssistantApiBody;
       if (!response.ok) {
         trackClientAnalyticsEvent("booking.submit_failed", { locale: activeLocale, status: response.status, step: "checkout" });
+        setConsentAccepted(false);
+        setShowConsentError(false);
         appendRecoverableError(errorMessage(body, copy));
         if (response.status === 409) {
           setReadyToCheckout(false);
@@ -806,6 +833,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
 
       const attempt = body.data?.paymentAttempt;
       if (!attempt?.checkoutUrl) {
+        setConsentAccepted(false);
+        setShowConsentError(false);
         appendRecoverableError(copy.fallbackError);
         return;
       }
@@ -824,6 +853,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
       setPaymentReview(null);
     } catch {
       trackClientAnalyticsEvent("booking.submit_failed", { locale: activeLocale, status: "network", step: "checkout" });
+      setConsentAccepted(false);
+      setShowConsentError(false);
       appendRecoverableError(copy.fallbackError);
     } finally {
       setIsBusy(false);
@@ -834,6 +865,8 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     setReadyToConfirm(false);
     setReadyToCheckout(false);
     setPaymentReview(null);
+    setConsentAccepted(false);
+    setShowConsentError(false);
     setSelectedSlot("");
     setDraft((current) => ({ ...current, startsAt: "" }));
     setSlotWindow(null);
@@ -925,15 +958,27 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
             ) : null}
             {availableSlots.length ? <SlotChoicePanel key="slot-choice" locale={activeLocale} slotWindow={slotWindow ?? undefined} slots={availableSlots} onChoose={chooseSlot} /> : null}
             {readyToConfirm ? (
-              <div key="confirm-row" className="flex flex-wrap justify-end gap-2">
-                <Button className={cn(publicMotionButton, publicMotionCta, "rounded-full")} data-testid="booking-confirm-booking" loading={isBusy} type="button" onClick={confirmBooking}>
-                  <MaterialSymbol name="check_circle" />
-                  {copy.submitBooking}
-                </Button>
-                <Button className={chipButtonClasses} disabled={isBusy} type="button" variant="secondary" onClick={editDetails}>
-                  <MaterialSymbol name="edit" />
-                  {copy.back}
-                </Button>
+              <div key="confirm-row" className="ms-auto max-w-[36rem] space-y-3">
+                <ConsentControl
+                  checked={consentAccepted}
+                  copy={copy}
+                  error={showConsentError}
+                  disabled={isBusy}
+                  onChange={(checked) => {
+                    setConsentAccepted(checked);
+                    if (checked) setShowConsentError(false);
+                  }}
+                />
+                <div className="flex flex-wrap justify-end gap-2">
+                  <Button className={cn(publicMotionButton, publicMotionCta, "rounded-full")} data-testid="booking-confirm-booking" loading={isBusy} type="button" onClick={confirmBooking}>
+                    <MaterialSymbol name="check_circle" />
+                    {copy.submitBooking}
+                  </Button>
+                  <Button className={chipButtonClasses} disabled={isBusy} type="button" variant="secondary" onClick={editDetails}>
+                    <MaterialSymbol name="edit" />
+                    {copy.back}
+                  </Button>
+                </div>
               </div>
             ) : null}
             {readyToCheckout && paymentReview ? (
@@ -945,6 +990,12 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
                 paymentReview={paymentReview}
                 selectedSlot={selectedSlot}
                 isBusy={isBusy}
+                consentAccepted={consentAccepted}
+                consentError={showConsentError}
+                onConsentChange={(checked) => {
+                  setConsentAccepted(checked);
+                  if (checked) setShowConsentError(false);
+                }}
                 onBack={editDetails}
                 onPay={payBooking}
               />
@@ -1227,7 +1278,10 @@ function PaymentReviewPanel({
   locale,
   paymentReview,
   selectedSlot,
+  consentAccepted,
+  consentError,
   isBusy,
+  onConsentChange,
   onBack,
   onPay
 }: {
@@ -1236,7 +1290,10 @@ function PaymentReviewPanel({
   locale: PublicLocale;
   paymentReview: PaymentReview;
   selectedSlot: string;
+  consentAccepted: boolean;
+  consentError: boolean;
   isBusy: boolean;
+  onConsentChange: (checked: boolean) => void;
   onBack: () => void;
   onPay: () => void;
 }) {
@@ -1264,6 +1321,13 @@ function PaymentReviewPanel({
         <PaymentReviewItem icon="video_chat" label={copy.preferredSlot} value={`${modeLabel(paymentReview.mode, locale)} - ${formatPublicDate(selectedSlot, locale)}`} />
         <PaymentReviewItem icon="receipt_long" label={copy.bookingFee} value={amount} />
       </dl>
+      <ConsentControl
+        checked={consentAccepted}
+        copy={copy}
+        disabled={isBusy}
+        error={consentError}
+        onChange={onConsentChange}
+      />
       <div className="mt-4 flex flex-wrap justify-end gap-2">
         <Button className={cn(publicMotionButton, publicMotionCta, "rounded-full")} data-testid="booking-pay-booking" loading={isBusy} type="button" onClick={onPay}>
           <MaterialSymbol name="lock" />
@@ -1274,6 +1338,48 @@ function PaymentReviewPanel({
           {copy.back}
         </Button>
       </div>
+    </div>
+  );
+}
+
+function ConsentControl({
+  checked,
+  copy,
+  disabled = false,
+  error,
+  onChange
+}: {
+  checked: boolean;
+  copy: BookingChatCopy;
+  disabled?: boolean;
+  error: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  const inputId = "booking-consent";
+  const errorId = "booking-consent-error";
+
+  return (
+    <div className="mt-4 rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-log)] px-4 py-3">
+      <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-[var(--kmt-assistant-text)]" htmlFor={inputId}>
+        <input
+          aria-describedby={error ? errorId : undefined}
+          aria-invalid={error || undefined}
+          checked={checked}
+          className="mt-1 h-4 w-4 shrink-0 accent-[var(--kmt-public-gold)]"
+          data-testid="booking-consent"
+          disabled={disabled}
+          id={inputId}
+          required
+          type="checkbox"
+          onChange={(event) => onChange(event.target.checked)}
+        />
+        <span>{copy.consent}</span>
+      </label>
+      {error ? (
+        <p className="mt-2 text-sm text-red-300" id={errorId} role="alert">
+          {copy.requiredConsent}
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { publicLegalServicesEn as legalServices, publicServiceCategoriesEn as serviceCategories } from "./public-services";
+import { publicBookingConsentCopy } from "./public-booking-consent";
 
 const practiceAreaMatrix = legalServices.map((service) => ({
   key: service.areaKey,
@@ -485,7 +486,7 @@ export const publicContentEn = {
     nextStepsAfterBooking: "What happens next: the team reviews the request, then contacts you to confirm the appointment or request missing details.",
     preferredSlot: "Preferred appointment time",
     preferredSlotHint: "Optional. Office booking slots are reviewed by the team.",
-    consent: "I agree to use this data to review the request and contact me. I understand this assistant does not provide legal advice.",
+    consent: publicBookingConsentCopy.en,
     successTitle: "Request saved",
     reference: "Reference",
     inquiryResult: "Verified booking details",
@@ -510,6 +511,7 @@ export const publicContentEn = {
     pending: "We have not received trusted payment confirmation yet.",
     countdown: "This page checks automatically while the temporary slot hold is active.",
     expired: "Expired",
+    unavailable: "This secure payment-status link is no longer available. Sign in or contact the office for help.",
     eyebrow: "Consultation booking payment status",
     missingStatusTitle: "Payment link is incomplete",
     missingStatusDescription: "Return to the booking page and start a new attempt.",
@@ -531,7 +533,9 @@ export const publicContentEn = {
       receipt: "View / print invoice",
       accountSetup: "Create account and sign in",
       accountLogin: "Sign in",
-      newBooking: "Book a new appointment"
+      newBooking: "Book a new appointment",
+      contact: "Contact the office",
+      login: "Sign in"
     },
     paidConfirmation: {
       title: "Payment and appointment confirmed",
@@ -559,6 +563,39 @@ export const publicContentEn = {
         title: "Payment status could not be read",
         description: "Check the link or start a new booking attempt."
       }
+    }
+  },
+  paymentReceipt: {
+    back: "Open client payments",
+    print: "Print / save PDF",
+    sublabel: "Consultation booking invoice",
+    officeName: "KMT Legal Office",
+    title: "Payment invoice and receipt",
+    description: "Fee for a legal consultation booking confirmed by the payment provider",
+    invoiceNumber: "Invoice number",
+    receiptNumber: "Receipt number",
+    paymentStatus: "Payment status",
+    paid: "Paid",
+    unavailable: "Unavailable",
+    clientDetails: "Client details",
+    clientName: "Client name",
+    paymentDetails: "Payment details",
+    paidAmount: "Amount paid",
+    paidAt: "Payment date",
+    provider: "Payment provider",
+    providerReference: "Provider transaction reference",
+    consultationDetails: "Consultation details",
+    serviceCategory: "Consultation area",
+    consultationMode: "Consultation method",
+    appointment: "Appointment",
+    bookingReference: "Booking reference",
+    totalPaid: "Total paid",
+    confirmed: "Confirmed by the payment provider",
+    note: "This invoice covers the consultation booking fee only. The appointment is confirmed after a trusted payment notification is received and matched to the invoice above.",
+    modeLabels: {
+      PHONE: "Phone",
+      ONLINE: "Online",
+      OFFICE: "Office"
     }
   },
   clientAccountSetup: {

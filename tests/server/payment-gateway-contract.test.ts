@@ -8,6 +8,7 @@ import {
   paymentProvider,
   paymentProviderReadiness,
   paymentReservationMinutes,
+  paymentReturnUrl,
   requireVerifiedWebhookSignature
 } from "@/server/payments/payment-config";
 import { createHostedCheckout, verifyWebhookSignature } from "@/server/payments/payment-provider";
@@ -25,7 +26,6 @@ import {
   paidAttemptWebhookConfirmationBlocker,
   paidWebhookPayloadProblem,
   paymentWebhookMoneyComparison,
-  publicPaymentAttemptConsultationDto,
   safeWebhookPayloadSnapshot
 } from "@/server/payments/payment-service";
 import { adminConsultationPricingRuleWriteSchema, consultationPriceDto } from "@/server/payments/pricing-service";
@@ -153,6 +153,7 @@ describe("payment gateway contract", () => {
       expect(url).toContain("/payment/consultation/receipt?");
       expect(url).toContain(`attemptId=${attemptId}`);
       expect(new URL(`https://kmt.test${url}`).searchParams.get("token")).toBeTruthy();
+      expect(publicPaymentReceiptUrl({ attemptId, paymentId, locale: "ar" })).toContain("/ar/payment/consultation/receipt?");
     } finally {
       vi.unstubAllEnvs();
     }
@@ -169,31 +170,30 @@ describe("payment gateway contract", () => {
     expect(verifyPaymentStatusToken({ attemptId, token, now: new Date("2026-07-07T00:30:00.000Z") }, env)).toBeNull();
     expect(verifyPaymentStatusToken({ attemptId: "33333333-3333-4333-8333-333333333333", token }, env)).toBeNull();
     expect(verifyPaymentStatusToken({ attemptId, token: `${token}tampered` }, env)).toBeNull();
+
+    const returnUrl = new URL(paymentReturnUrl(attemptId, new Request("https://kmt.test/booking"), { token, locale: "ar" }));
+    expect(returnUrl.pathname).toBe("/ar/payment/consultation/return");
+    expect(returnUrl.searchParams.get("attemptId")).toBe(attemptId);
+    expect(returnUrl.searchParams.get("token")).toBe(token);
+    expect(returnUrl.searchParams.get("locale")).toBe("ar");
   });
 
-  it("keeps tokenless public payment status free of consultation details", () => {
-    const consultation = {
-      id: "44444444-4444-4444-8444-444444444444",
-      status: "PAYMENT_PENDING",
-      summary: "Sensitive legal dispute summary",
-      urgency: "URGENT",
-      preferredMode: "ONLINE",
-      serviceCategory: "claims-collections",
-      city: "Cairo"
-    };
+  it("gates public payment status before database expiry and excludes internal meetings", () => {
+    const source = readFileSync(join(process.cwd(), "src/server/payments/payment-service.ts"), "utf8");
+    const statusStart = source.indexOf("export async function getPublicPaymentAttemptStatus");
+    const statusEnd = source.indexOf("export async function handlePaymentWebhook", statusStart);
+    const statusSource = source.slice(statusStart, statusEnd);
 
-    const safe = publicPaymentAttemptConsultationDto(consultation, false);
-    expect(safe).toEqual({
-      id: consultation.id,
-      status: consultation.status
-    });
-    expect(JSON.stringify(safe)).not.toContain("Sensitive legal dispute summary");
-    expect(JSON.stringify(safe)).not.toContain("Cairo");
+    expect(statusSource.indexOf("verifyPaymentStatusToken")).toBeGreaterThanOrEqual(0);
+    expect(statusSource.indexOf("verifyPaymentStatusToken")).toBeLessThan(statusSource.indexOf("expireOpenConsultationPaymentAttempts"));
+    expect(statusSource.indexOf("verifyPaymentStatusToken")).toBeLessThan(statusSource.indexOf("prisma.paymentAttempt.findUnique"));
+    expect(statusSource).toContain("appointment: { select:");
 
-    expect(publicPaymentAttemptConsultationDto(consultation, true)).toMatchObject({
-      summary: consultation.summary,
-      city: consultation.city
-    });
+    const dtoStart = source.indexOf("function paymentAttemptDto");
+    const dtoSource = source.slice(dtoStart, source.indexOf("function parseWebhookJson", dtoStart));
+    expect(dtoSource).toContain('attempt.appointment.type === "INTERNAL_MEETING"');
+    expect(dtoSource).toContain("appointment: attempt.appointment.type");
+    expect(dtoSource).toContain("consultation: publicPaymentAttemptConsultationDto");
   });
 
   it("blocks paid webhook confirmation when amount or currency does not match the attempt", () => {
@@ -309,7 +309,9 @@ describe("payment gateway contract", () => {
           email: "client@example.com",
           phone: "+201000000000"
         },
-        request: new Request("https://kmt.test/booking")
+        request: new Request("https://kmt.test/booking"),
+        statusToken: "signed-status-token",
+        locale: "en"
       });
 
       expect(result.provider).toBe("paymob");
@@ -336,8 +338,10 @@ describe("payment gateway contract", () => {
         currency: "EGP",
         payment_methods: [123, 456],
         notification_url: "https://kmt.test/api/webhooks/paymob",
-        redirection_url: "https://kmt.test/payment/consultation/return?attemptId=11111111-1111-4111-8111-111111111111"
+        redirection_url: expect.stringContaining("https://kmt.test/payment/consultation/return?attemptId=11111111-1111-4111-8111-111111111111")
       });
+      expect(new URL(payload.redirection_url).searchParams.get("token")).toBe("signed-status-token");
+      expect(new URL(payload.redirection_url).searchParams.get("locale")).toBe("en");
       expect(payload.extras).toMatchObject({ attemptId: "11111111-1111-4111-8111-111111111111" });
     } finally {
       vi.unstubAllGlobals();

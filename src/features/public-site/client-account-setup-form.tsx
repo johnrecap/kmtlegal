@@ -7,6 +7,7 @@ import { useHydrated } from "@/lib/use-hydrated";
 import { cn } from "@/lib/cn";
 import { MaterialSymbol } from "@/components/ui";
 import { Button as StatefulButton } from "@/components/ui/stateful-button";
+import type { PublicLocale } from "@/lib/public-locale";
 import { publicMotionButton, publicMotionControl } from "./public-motion";
 
 type ClientAccountSetupCopy = PublicContent["clientAccountSetup"];
@@ -15,6 +16,7 @@ type ClientAccountSetupFormProps = {
   token: string;
   initialEmail?: string | null;
   copy: ClientAccountSetupCopy;
+  locale: PublicLocale;
 };
 
 type FieldErrors = {
@@ -38,7 +40,7 @@ const inputClasses = cn(
   "w-full rounded-xl border border-kmt-gold/25 bg-black/35 px-3 py-3 text-base text-white placeholder:text-amber-100/45 outline-none transition-colors focus:border-kmt-gold focus:ring-2 focus:ring-kmt-gold/25 disabled:border-white/10 disabled:bg-black/45 disabled:text-stone-400"
 );
 
-export function ClientAccountSetupForm({ token, initialEmail, copy }: ClientAccountSetupFormProps) {
+export function ClientAccountSetupForm({ token, initialEmail, copy, locale }: ClientAccountSetupFormProps) {
   const router = useRouter();
   const isHydrated = useHydrated();
   const [email, setEmail] = useState(initialEmail ?? "");
@@ -62,7 +64,7 @@ export function ClientAccountSetupForm({ token, initialEmail, copy }: ClientAcco
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/public/client-account/setup", {
+      const response = await fetch(`/api/public/client-account/setup?locale=${locale}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
