@@ -331,7 +331,7 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
             <CardContent>
               <p className="whitespace-pre-wrap text-sm leading-7 text-foreground">{consultation.summary}</p>
               {consultation.opposingPartyName ? (
-                <p className="mt-4 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                <p className="mt-4 rounded border border-warning-border bg-warning-surface px-3 py-2 text-sm text-warning-strong">
                   الطرف المقابل: {consultation.opposingPartyName}
                 </p>
               ) : null}

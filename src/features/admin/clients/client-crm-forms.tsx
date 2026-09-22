@@ -70,8 +70,7 @@ type ActionMessage = {
 const statusOptions = [
   { value: "LEAD", label: "عميل محتمل" },
   { value: "ACTIVE", label: "نشط" },
-  { value: "INACTIVE", label: "غير نشط" },
-  { value: "ARCHIVED", label: "مؤرشف" }
+  { value: "INACTIVE", label: "غير نشط" }
 ];
 
 async function readMessage(response: Response) {
@@ -205,8 +204,9 @@ export function ClientActionPanel({
     type: "multiple",
     defaultValue: ["edit", "assign", "account", "archive"]
   });
+  const isArchived = client.status === "ARCHIVED";
 
-  if (!canManage) {
+  if (!canManage && !canManageAccount) {
     return (
       <StateBlock
         tone="permission"
@@ -260,7 +260,7 @@ export function ClientActionPanel({
   function archiveClient(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    send(`/api/admin/clients/${client.id}/archive`, "POST", { reason: formData.get("reason") }, "تمت أرشفة العميل.");
+    send(`/api/admin/clients/${client.id}/archive`, "POST", { reason: formData.get("reason"), confirmArchive: true }, "تمت أرشفة العميل.");
   }
 
   function createClientAccount(event: FormEvent<HTMLFormElement>) {
@@ -292,11 +292,10 @@ export function ClientActionPanel({
     );
   }
 
-  const isArchived = client.status === "ARCHIVED";
-
   return (
     <div className="space-y-4">
       <Accordion type="multiple" value={groups.value} onValueChange={groups.onValueChange}>
+        {canManage && !isArchived ? <>
         <AccordionItem value="edit" data-form-group="edit" className="rounded-lg border border-border bg-surface px-4">
           <AccordionTrigger className="hover:no-underline">
             <span className="flex flex-1 flex-col gap-1 text-start">
@@ -367,6 +366,7 @@ export function ClientActionPanel({
           </AccordionContent>
         </AccordionItem>
 
+        </> : null}
       {canManageAccount ? (
         <AccordionItem value="account" data-form-group="account" className="rounded-lg border border-border bg-surface px-4">
           <AccordionTrigger className="hover:no-underline">
@@ -429,7 +429,7 @@ export function ClientActionPanel({
         </AccordionItem>
       ) : null}
 
-      <AccordionItem value="archive" data-form-group="archive" className="rounded-lg border border-kmt-danger-border bg-kmt-danger-surface px-4">
+      {canManage ? <AccordionItem value="archive" data-form-group="archive" className="rounded-lg border border-kmt-danger-border bg-kmt-danger-surface px-4">
         <AccordionTrigger className="hover:no-underline">
           <span className="flex flex-1 flex-col gap-1 text-start">
             <span className="text-base font-semibold text-foreground">أرشفة العميل</span>
@@ -458,7 +458,7 @@ export function ClientActionPanel({
             }}
           />
         </AccordionContent>
-      </AccordionItem>
+      </AccordionItem> : null}
       </Accordion>
 
       <ActionFeedback message={message} />

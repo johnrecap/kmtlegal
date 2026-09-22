@@ -66,7 +66,10 @@ function calendarHref(filters: {
   status?: string;
   mode?: string;
   lawyerId?: string;
+  clientId?: string;
+  caseId?: string;
   display?: string;
+  anchor?: string;
   page?: string;
   pageSize?: string;
 }) {
@@ -88,7 +91,13 @@ function offsetDateInput(value: string, days: number) {
 function cairoWeekRange(reference: string) {
   const date = new Date(`${reference}T12:00:00.000Z`);
   const start = offsetDateInput(reference, -date.getUTCDay());
-  return { from: start, to: offsetDateInput(start, 6) };
+  return { from: start, to: offsetDateInput(start, 7) };
+}
+
+function displayRange(display: string, anchor: string, agendaRange: { from: string; to: string }) {
+  if (display === "day") return { from: anchor, to: offsetDateInput(anchor, 1) };
+  if (display === "week") return cairoWeekRange(anchor);
+  return agendaRange;
 }
 
 function groupAppointmentsByDay(appointments: CalendarAppointment[]) {
@@ -114,12 +123,12 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
   const query = flattenSearchParams((await searchParams) ?? {});
   const display = ["agenda", "week", "day"].includes(query.display) ? query.display : "agenda";
   const today = formatCairoDateInput(new Date());
+  const anchor = /^\d{4}-\d{2}-\d{2}$/.test(query.anchor ?? "") ? query.anchor! : query.from || today;
   if (display === "day" && !query.from && !query.to) {
-    query.from = today;
-    query.to = today;
+    Object.assign(query, displayRange(display, anchor, { from: anchor, to: offsetDateInput(anchor, 30) }));
   }
   if (display === "week" && !query.from && !query.to) {
-    Object.assign(query, cairoWeekRange(today));
+    Object.assign(query, displayRange(display, anchor, { from: anchor, to: offsetDateInput(anchor, 30) }));
   }
   if (display !== "agenda" && !query.pageSize) query.pageSize = "80";
   let result: Awaited<ReturnType<typeof listAdminCalendarAppointments>>;
@@ -149,7 +158,10 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
     status: result.filters.status,
     mode: result.filters.mode,
     lawyerId: result.filters.lawyerId,
+    clientId: result.filters.clientId,
+    caseId: result.filters.caseId,
     display,
+    anchor,
     pageSize: String(result.pageSize)
   };
 
@@ -167,11 +179,11 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
         <div className="space-y-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <nav aria-label="طريقة عرض التقويم" className="flex rounded-lg border border-border bg-surface p-1">
-              <Link aria-current={display === "agenda" ? "page" : undefined} className={buttonClasses({ variant: display === "agenda" ? "primary" : "ghost", size: "sm" })} href={calendarHref({ display: "agenda", from: formatCairoDateInput(result.from), to: formatCairoDateInput(result.to) })}>الأجندة</Link>
-              <Link aria-current={display === "week" ? "page" : undefined} className={buttonClasses({ variant: display === "week" ? "primary" : "ghost", size: "sm" })} href={calendarHref({ display: "week", ...cairoWeekRange(today), pageSize: "80" })}>الأسبوع</Link>
-              <Link aria-current={display === "day" ? "page" : undefined} className={buttonClasses({ variant: display === "day" ? "primary" : "ghost", size: "sm" })} href={calendarHref({ display: "day", from: today, to: today, pageSize: "80" })}>اليوم</Link>
+              <Link aria-current={display === "agenda" ? "page" : undefined} className={buttonClasses({ variant: display === "agenda" ? "primary" : "ghost", size: "sm" })} href={calendarHref({ ...pageFilters, display: "agenda", page: "1", ...displayRange("agenda", anchor, pageFilters) })}>الأجندة</Link>
+              <Link aria-current={display === "week" ? "page" : undefined} className={buttonClasses({ variant: display === "week" ? "primary" : "ghost", size: "sm" })} href={calendarHref({ ...pageFilters, display: "week", page: "1", ...displayRange("week", anchor, pageFilters) })}>الأسبوع</Link>
+              <Link aria-current={display === "day" ? "page" : undefined} className={buttonClasses({ variant: display === "day" ? "primary" : "ghost", size: "sm" })} href={calendarHref({ ...pageFilters, display: "day", page: "1", ...displayRange("day", anchor, pageFilters) })}>اليوم</Link>
             </nav>
-            <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={calendarHref({ display: "day", from: today, to: today, pageSize: "80" })}>اذهب إلى اليوم</Link>
+            <Link className={buttonClasses({ variant: "secondary", size: "sm" })} href={calendarHref({ ...pageFilters, page: "1", anchor: today, ...displayRange(display, today, display === "agenda" ? { from: today, to: offsetDateInput(today, 30) } : pageFilters) })}>اذهب إلى اليوم</Link>
           </div>
           <div className="flex flex-wrap items-start gap-3">
           <form action="/admin/calendar" className="min-w-0 flex-1" method="get">
@@ -190,6 +202,8 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
               </span>
               <input type="hidden" name="mode" value={result.filters.mode ?? ""} />
               <input type="hidden" name="lawyerId" value={result.filters.lawyerId ?? ""} />
+              <input type="hidden" name="clientId" value={result.filters.clientId ?? ""} />
+              <input type="hidden" name="caseId" value={result.filters.caseId ?? ""} />
               <input type="hidden" name="display" value={display} />
               <span className="hidden lg:contents">
               <Button type="submit" variant="secondary">
@@ -204,6 +218,8 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
               <input type="hidden" name="to" value={formatCairoDateInput(result.to)} />
               <input type="hidden" name="status" value={result.filters.status ?? ""} />
               <input type="hidden" name="display" value={display} />
+              <input type="hidden" name="clientId" value={result.filters.clientId ?? ""} />
+              <input type="hidden" name="caseId" value={result.filters.caseId ?? ""} />
               <Select className="w-full" defaultValue={result.filters.mode ?? ""} label="الطريقة" name="mode">
                 <option value="">كل الطرق</option>
                 {appointmentModeOptions.map((mode) => (
@@ -230,6 +246,8 @@ export default async function AdminCalendarPage({ searchParams }: { searchParams
           <MobileFiltersSheet description="صفِّ مواعيد التقويم حسب الفترة والحالة." title="فلاتر التقويم" triggerLabel="الفلاتر">
             <form action="/admin/calendar" className="space-y-3" method="get">
               <input type="hidden" name="display" value={display} />
+              <input type="hidden" name="clientId" value={result.filters.clientId ?? ""} />
+              <input type="hidden" name="caseId" value={result.filters.caseId ?? ""} />
               <TextInput className="w-full" defaultValue={formatCairoDateInput(result.from)} label="من" name="from" type="date" />
               <TextInput className="w-full" defaultValue={formatCairoDateInput(result.to)} label="إلى" name="to" type="date" />
               <Select className="w-full" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">

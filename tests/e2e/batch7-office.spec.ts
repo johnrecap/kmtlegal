@@ -135,7 +135,7 @@ test.describe("batch7 isolated office network",()=>{
   });
 
   test("archival preserves historical access but blocks new manual cases for archived clients",async()=>{
-    expect((await post(actors[0].api,`/api/admin/clients/${clients[0].id}/archive`,{reason:"Synthetic archive"})).status()).toBe(200);
+    expect((await post(actors[0].api,`/api/admin/clients/${clients[0].id}/archive`,{reason:"Synthetic archive",confirmArchive:true})).status()).toBe(200);
     try {expect((await post(actors[0].api,"/api/admin/cases",manualBody())).status()).toBe(400);expect((await actors[3].api.get(`/client/cases/${cases[0].id}`)).status()).toBe(200);} finally {await prisma.client.update({where:{id:clients[0].id},data:{status:"ACTIVE"}});}
     expect((await post(actors[0].api,`/api/admin/cases/${cases[0].id}/status`,{status:"ARCHIVED",confirmStatusChange:true})).status()).toBe(200);
     expect((await actors[1].api.get(`/api/admin/cases/${cases[0].id}`)).status()).toBe(200);

@@ -15,6 +15,8 @@ import {
 } from "@/server/admin/client-crm-service";
 import { ROLES, type Principal } from "@/server/auth/policy";
 import { ApiError } from "@/server/http/errors";
+import { adminCaseListQuerySchema, adminCalendarQuerySchema, calendarWindow } from "@/server/admin/case-operations-service";
+import { adminConsultationListQuerySchema } from "@/server/admin/consultation-review-service";
 
 const officeAdmin: Principal = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -100,6 +102,24 @@ describe("admin client CRM contract", () => {
     expect(payload.email).toBe("");
     expect(payload.status).toBe("LEAD");
     expect(() => adminClientWriteSchema.parse({ fullName: "أ", phone: "1", status: "DELETED" })).toThrow();
+    expect(() => adminClientWriteSchema.parse({ ...payload, status: "ARCHIVED" })).toThrow();
+  });
+
+  it("accepts client-scoped related-list filters while retaining the calendar's exclusive Cairo end boundary", () => {
+    const clientId = "77777777-7777-4777-8777-777777777777";
+    const caseId = "88888888-8888-4888-8888-888888888888";
+    expect(adminCaseListQuerySchema.parse({ clientId }).clientId).toBe(clientId);
+    expect(adminConsultationListQuerySchema.parse({ clientId }).clientId).toBe(clientId);
+    const calendarQuery = adminCalendarQuerySchema.parse({
+      clientId,
+      caseId,
+      anchor: "2026-09-22",
+      from: "2026-09-22",
+      to: "2026-09-23"
+    });
+    expect(calendarQuery.clientId).toBe(clientId);
+    expect(calendarQuery.caseId).toBe(caseId);
+    expect(calendarWindow(calendarQuery).to.getTime()).toBeGreaterThan(calendarWindow(calendarQuery).from.getTime());
   });
 
   it("validates assignment and archive action payloads", () => {
@@ -107,7 +127,8 @@ describe("admin client CRM contract", () => {
     expect(
       assignClientSchema.parse({ assignedLawyerId: "44444444-4444-4444-8444-444444444444" }).assignedLawyerId
     ).toBe("44444444-4444-4444-8444-444444444444");
-    expect(archiveClientSchema.parse({ reason: "duplicate record" }).reason).toBe("duplicate record");
+    expect(archiveClientSchema.parse({ reason: "duplicate record", confirmArchive: true }).reason).toBe("duplicate record");
+    expect(() => archiveClientSchema.parse({ reason: "duplicate record" })).toThrow();
   });
 
   it("validates client portal account payloads separately from staff user creation", () => {

@@ -36,13 +36,13 @@ export function AdminCommandCenter({
 
   return (
     <div className="min-w-0 space-y-8" data-testid="admin-command-center">
-      <header className="rounded-xl border border-kmt-navy/10 bg-surface-strong px-5 py-6 text-white sm:px-7">
+      <header className="rounded-xl border border-border bg-surface-strong px-5 py-6 text-surface-strong-foreground sm:px-7">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
             <p className="text-sm font-semibold text-primary">{plan35DashboardUiCopy.eyebrow}</p>
             <h2 className="mt-2 text-2xl font-semibold sm:text-3xl">{plan35DashboardUiCopy.title}</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-white/80">{plan35DashboardUiCopy.description}</p>
-            <p className="mt-4 text-xs text-white/70">
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-surface-strong-foreground/80">{plan35DashboardUiCopy.description}</p>
+            <p className="mt-4 text-xs text-surface-strong-foreground/70">
               {plan35DashboardUiCopy.generatedAt}:{" "}
               <time data-visual-dynamic dateTime={snapshot.generatedAt}>{formatDateTime(snapshot.generatedAt)}</time>
             </p>
@@ -54,7 +54,7 @@ export function AdminCommandCenter({
                   className={buttonClasses({
                     variant: index === 0 ? "primary" : "secondary",
                     size: "sm",
-                    className: index === 0 ? undefined : "border-white text-white hover:bg-surface hover:text-primary"
+                    className: index === 0 ? undefined : "border-surface-strong-foreground/60 bg-transparent text-surface-strong-foreground hover:bg-surface hover:text-foreground"
                   })}
                   data-primary={index === 0 || undefined}
                   href={action.href}

@@ -1,6 +1,10 @@
 import { paymentRequiresReview, paymentNeedsOrderVerification } from "@/lib/legal-finance";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ApiError } from "@/server/http/errors";
+import { repairCopy } from "@/features/admin/shared/repair-copy";
+import { FinanceRecordSelect } from "@/features/admin/finance/finance-record-select";
 import { paymentReviewCopy } from "@/lib/ui-copy";
 import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
@@ -138,12 +142,8 @@ function paymentIssueText(code?: string | null) {
   return paymentIssueLabels[code] ?? `تحتاج مراجعة: ${code}`;
 }
 
-function summaryAmount(amount: number, currency?: string) {
-  if (currency) {
-    return formatMoney(amount, currency);
-  }
-
-  return `${new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 2 }).format(amount)} مجموع خام`;
+function summaryAmount(summary: Awaited<ReturnType<typeof listAdminPayments>>["summary"], field: "totalAmount" | "paidAmount" | "openAmount" | "overdueAmount") {
+  return summary.byCurrency.map(group => formatMoney(group[field], group.currency)).join(" · ") || repairCopy.noAmounts;
 }
 
 function columns(query: Record<string, string>): Array<DataTableColumn<PaymentRow>> {
@@ -212,7 +212,7 @@ function columns(query: Record<string, string>): Array<DataTableColumn<PaymentRo
       header: "",
       render: (row) => (
         <Link className="text-sm font-semibold text-primary hover:underline" href={editHref(row.id, query)}>
-          تعديل
+          {row.canUpdate ? "تعديل" : repairCopy.readonly}
         </Link>
       )
     }
@@ -242,7 +242,7 @@ function PaymentMobileCard({ row, query }: { row: PaymentRow; query: Record<stri
       ]}
       action={
         <Link className={buttonClasses({ variant: "secondary", size: "sm", className: "min-h-11 w-full" })} href={editHref(row.id, query)}>
-          تعديل
+          {row.canUpdate ? "تعديل" : repairCopy.readonly}
         </Link>
       }
     />
@@ -394,7 +394,7 @@ function PaymentGatewayOperationsPanel({
                   </p>
                   <p className="mt-1 truncate text-xs text-muted-foreground">{attempt.providerSessionId || attempt.id}</p>
                   {paymentIssueText(attempt.failureCode) ? (
-                    <div className="mt-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900" role="status">
+                    <div className="mt-3 rounded border border-warning-border bg-warning-surface px-3 py-2 text-xs leading-5 text-warning-strong" role="status">
                       {paymentIssueText(attempt.failureCode)}
                     </div>
                   ) : null}
@@ -554,7 +554,7 @@ function PaymentGatewayOperationsPanel({
                     </details>
                     <p className="mt-1 text-xs text-muted-foreground">{formatDateTime(event.receivedAt)}</p>
                     {paymentIssueText(event.errorCode || (event.signatureStatus === "INVALID" ? "INVALID_SIGNATURE" : null)) ? (
-                      <div className="mt-3 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-5 text-amber-900" role="status">
+                      <div className="mt-3 rounded border border-warning-border bg-warning-surface px-3 py-2 text-xs leading-5 text-warning-strong" role="status">
                         {paymentIssueText(event.errorCode || (event.signatureStatus === "INVALID" ? "INVALID_SIGNATURE" : null))}
                       </div>
                     ) : null}
@@ -613,17 +613,17 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
     })
   ]);
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
-  const selectedCurrency = result.filters.currency || undefined;
   const editPaymentId = query.editPaymentId;
   const editPricingRuleId = query.editPricingRuleId;
   let editPayment: PaymentDetail | null = null;
   const selectedPricingRule = pricingRules.find((rule) => rule.id === editPricingRuleId) ?? null;
 
-  if (editPaymentId && options.canManage) {
+  if (editPaymentId) {
     try {
       editPayment = await getAdminPaymentDetail({ actor: guard.context.principal, paymentId: editPaymentId });
-    } catch {
-      editPayment = null;
+    } catch (error) {
+      if (error instanceof ApiError && [400, 404].includes(error.status)) notFound();
+      throw error;
     }
   }
   const activeTab: FinanceTab = financeTabValues.includes(query.tab as FinanceTab)
@@ -652,19 +652,15 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
           <MetricCard
             label="إجمالي الفواتير"
             value={String(result.summary.invoiceCount)}
-            meta={summaryAmount(result.summary.totalAmount, selectedCurrency)}
+            meta={summaryAmount(result.summary, "totalAmount")}
           />
-          <MetricCard label="المدفوع" value={String(result.summary.paidCount)} meta={summaryAmount(result.summary.paidAmount, selectedCurrency)} />
-          <MetricCard label="المفتوح" value={String(result.summary.openCount)} meta={summaryAmount(result.summary.openAmount, selectedCurrency)} />
-          <MetricCard label="المتأخر" value={String(result.summary.overdueCount)} meta={summaryAmount(result.summary.overdueAmount, selectedCurrency)} />
+          <MetricCard label="المدفوع" value={String(result.summary.paidCount)} meta={summaryAmount(result.summary, "paidAmount")} />
+          <MetricCard label="المفتوح" value={String(result.summary.openCount)} meta={summaryAmount(result.summary, "openAmount")} />
+          <MetricCard label="المتأخر" value={String(result.summary.overdueCount)} meta={summaryAmount(result.summary, "overdueAmount")} />
         </div>
 
           <p className="text-sm text-muted-foreground">{paymentReviewCopy.ar.totals} {paymentReviewCopy.ar.count}: {result.summary.reviewCount}. {paymentReviewCopy.ar.unallocated}: {result.summary.unallocatedReviewCount}</p>
-          {!selectedCurrency ? (
-          <div className="rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
-            الأرقام المجمعة المعروضة هنا مجموع خام عبر العملات. استخدم فلتر العملة للحصول على قراءة مالية دقيقة.
-          </div>
-        ) : null}
+          <p className="text-sm text-muted-foreground">{repairCopy.separateCurrencies}</p>
 
         <AdminTabs
           active={activeTab}
@@ -719,22 +715,8 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
                 <input type="hidden" name="q" value={result.filters.q ?? ""} />
                 <input type="hidden" name="status" value={result.filters.status ?? ""} />
                 <input type="hidden" name="currency" value={result.filters.currency ?? ""} />
-                <Select className="w-full" defaultValue={result.filters.clientId ?? ""} label="العميل" name="clientId">
-                  <option value="">كل العملاء</option>
-                  {options.clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.fullName}
-                    </option>
-                  ))}
-                </Select>
-                <Select className="w-full" defaultValue={result.filters.caseId ?? ""} label="القضية" name="caseId">
-                  <option value="">كل القضايا</option>
-                  {options.cases.map((legalCase) => (
-                    <option key={legalCase.id} value={legalCase.id}>
-                      {legalCase.internalFileNumber} - {legalCase.title}
-                    </option>
-                  ))}
-                </Select>
+                <FinanceRecordSelect entity="clients" label="العميل" name="clientId" defaultValue={result.filters.clientId ?? ""} emptyLabel="كل العملاء" initialOptions={options.clients.map(client => ({ id: client.id, label: client.fullName }))} />
+                <FinanceRecordSelect entity="cases" label="القضية" name="caseId" defaultValue={result.filters.caseId ?? ""} emptyLabel="كل القضايا" initialOptions={options.cases.map(legalCase => ({ id: legalCase.id, label: `${legalCase.internalFileNumber} — ${legalCase.title}` }))} />
                 <TextInput className="w-full" defaultValue={result.filters.dateFrom ?? ""} label="من" name="dateFrom" type="date" />
                 <TextInput className="w-full" defaultValue={result.filters.dateTo ?? ""} label="إلى" name="dateTo" type="date" />
                 <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
@@ -773,22 +755,8 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
                     </option>
                   ))}
                 </Select>
-                <Select className="w-full" defaultValue={result.filters.clientId ?? ""} label="العميل" name="clientId">
-                  <option value="">كل العملاء</option>
-                  {options.clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.fullName}
-                    </option>
-                  ))}
-                </Select>
-                <Select className="w-full" defaultValue={result.filters.caseId ?? ""} label="القضية" name="caseId">
-                  <option value="">كل القضايا</option>
-                  {options.cases.map((legalCase) => (
-                    <option key={legalCase.id} value={legalCase.id}>
-                      {legalCase.internalFileNumber} - {legalCase.title}
-                    </option>
-                  ))}
-                </Select>
+                <FinanceRecordSelect entity="clients" label="العميل" name="clientId" defaultValue={result.filters.clientId ?? ""} emptyLabel="كل العملاء" initialOptions={options.clients.map(client => ({ id: client.id, label: client.fullName }))} />
+                <FinanceRecordSelect entity="cases" label="القضية" name="caseId" defaultValue={result.filters.caseId ?? ""} emptyLabel="كل القضايا" initialOptions={options.cases.map(legalCase => ({ id: legalCase.id, label: `${legalCase.internalFileNumber} — ${legalCase.title}` }))} />
                 <TextInput className="w-full" defaultValue={result.filters.dateFrom ?? ""} label="من" name="dateFrom" type="date" />
                 <TextInput className="w-full" defaultValue={result.filters.dateTo ?? ""} label="إلى" name="dateTo" type="date" />
                 <Select className="w-full" defaultValue={result.filters.sortBy} label="الترتيب" name="sortBy">
@@ -837,14 +805,17 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
             <CardHeader>
               <CardTitle>{editPayment ? "تعديل فاتورة" : "فاتورة يدوية جديدة"}</CardTitle>
               <CardDescription>
-                سجلات مالية يدوية للمتابعة الداخلية. لا توجد بوابة دفع أو ضرائب أو بنود تفصيلية في هذه المرحلة.
+                {repairCopy.invoiceEditorDescription}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {options.canManage ? (
+              {editPayment && !editPayment.canUpdate ? (
+                <StateBlock title={editPayment.invoiceNumber} description={`${editPayment.paymentAttemptId ? repairCopy.gatewayReadonlyDetail : repairCopy.readonlyDetail} ${formatMoney(editPayment.amount.toString(), editPayment.currency)}`} />
+              ) : options.canManage ? (
                 <PaymentForm
-                  cases={options.cases}
-                  clients={options.clients}
+                  key={editPayment?.id ?? "create"}
+                  cases={editPayment?.case ? [{ ...editPayment.case, clientId: editPayment.clientId }, ...options.cases.filter(row => row.id !== editPayment.caseId)] : options.cases}
+                  clients={editPayment ? [editPayment.client, ...options.clients.filter(row => row.id !== editPayment.clientId)] : options.clients}
                   mode={editPayment ? "edit" : "create"}
                   payment={editPayment ? paymentFormValue(editPayment) : undefined}
                 />

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AdminAccessProvider } from "@/features/admin/shell/admin-access-context";
+import { FormDraftProvider } from "@/features/admin/shared/form-draft-provider";
 import { AdminPersistentShell } from "@/features/admin/shell/admin-persistent-shell";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { adminRoleScopeLabel, plan35AdminShellCopy, roleDisplayLabel } from "@/lib/ui-copy";
@@ -22,7 +23,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <AdminAccessProvider snapshot={snapshot}>
       <AdminPersistentShell notificationBell={<AdminNotificationBell principal={guard.context.principal} />}>
-        {children}
+        <FormDraftProvider key={guard.context.principal.id}>{children}</FormDraftProvider>
       </AdminPersistentShell>
     </AdminAccessProvider>
   );

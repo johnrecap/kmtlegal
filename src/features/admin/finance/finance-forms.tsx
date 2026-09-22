@@ -9,6 +9,9 @@ import { currencyValues, paymentStatusValues } from "@/lib/legal-finance";
 import { labelFrom, paymentStatusLabels } from "@/lib/legal-format";
 import { paymentGatewayUiCopy } from "@/lib/ui-copy";
 import { readAdminApiErrorMessage } from "@/features/admin/shared/admin-api-error";
+import { useFormDraft } from "@/features/admin/shared/form-draft-provider";
+import { repairCopy } from "@/features/admin/shared/repair-copy";
+import { FinanceRecordSelect } from "./finance-record-select";
 
 type ClientOption = {
   id: string;
@@ -182,6 +185,7 @@ export function PaymentForm({
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const isEdit = mode === "edit" && payment?.id;
+  const draft = useFormDraft(`finance:${payment?.id ?? "create"}`);
 
   if (clients.length === 0) {
     return <StateBlock title="لا توجد ملفات عملاء" description="إضافة فاتورة يدوية تحتاج ملف عميل نشط داخل CRM." />;
@@ -209,6 +213,7 @@ export function PaymentForm({
         form.reset();
       }
 
+      draft.clear();
       setMessage({ tone: "success", text: isEdit ? "تم حفظ الفاتورة." : "تم إنشاء الفاتورة." });
       router.refresh();
     } catch {
@@ -219,7 +224,9 @@ export function PaymentForm({
   }
 
   return (
-    <form className="grid gap-4" onSubmit={submit}>
+    <form ref={draft.formRef} className="grid gap-4" onChangeCapture={draft.capture} onSubmit={submit}>
+      {draft.restored ? <InlineFeedback title={repairCopy.restored} tone="warning" /> : null}
+      {draft.dirty ? <Button type="button" variant="ghost" onClick={draft.discard}>{repairCopy.discard}</Button> : null}
       {isEdit ? (
         <TextInput
           defaultValue={payment?.invoiceNumber ?? ""}
@@ -241,22 +248,8 @@ export function PaymentForm({
         </div>
       )}
       <div className="grid gap-4 sm:grid-cols-2">
-        <Select defaultValue={payment?.clientId ?? ""} disabled={isBusy} idPrefix={`payment-${payment?.id ?? "create"}`} label="العميل" name="clientId" required>
-          <option value="">اختر العميل</option>
-          {clients.map((client) => (
-            <option key={client.id} value={client.id}>
-              {client.fullName}
-            </option>
-          ))}
-        </Select>
-        <Select defaultValue={payment?.caseId ?? ""} disabled={isBusy} idPrefix={`payment-${payment?.id ?? "create"}`} label="القضية" name="caseId">
-          <option value="">بدون قضية</option>
-          {cases.map((legalCase) => (
-            <option key={legalCase.id} value={legalCase.id}>
-              {legalCase.internalFileNumber} - {legalCase.title} ({legalCase.client?.fullName ?? "عميل"})
-            </option>
-          ))}
-        </Select>
+        <FinanceRecordSelect entity="clients" defaultValue={payment?.clientId ?? ""} disabled={isBusy} label="العميل" name="clientId" required initialOptions={clients.map(client => ({ id: client.id, label: client.fullName }))} />
+        <FinanceRecordSelect entity="cases" clientId={payment?.clientId ?? ""} defaultValue={payment?.caseId ?? ""} disabled={isBusy} label="القضية" name="caseId" initialOptions={cases.filter(legalCase => !payment?.clientId || legalCase.clientId === payment.clientId).map(legalCase => ({ id: legalCase.id, label: `${legalCase.internalFileNumber} — ${legalCase.title}` }))} />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <TextInput

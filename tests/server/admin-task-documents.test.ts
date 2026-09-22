@@ -13,10 +13,15 @@ import {
   canManageAdminTask,
   canReadAdminTask,
   documentScopeWhereForPrincipal,
+  getAdminDocumentOptions,
+  getAdminTaskOptions,
+  getCaseTaskDocumentTabs,
+  listAdminDocuments,
   listAdminTasks,
   taskScopeWhereForPrincipal
 } from "@/server/admin/task-document-service";
 import { ROLES, type Principal } from "@/server/auth/policy";
+import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
 
 const officeAdmin: Principal = {
@@ -104,6 +109,29 @@ describe("admin task and document management contract", () => {
     expect(canManageAdminDocuments(officeAdmin)).toBe(true);
     expect(canManageAdminDocuments(assignedLawyer)).toBe(false);
     expect(canManageAdminDocuments(marketing)).toBe(false);
+  });
+
+  it("retains an owner-client filter inside the assigned-document scope across pages", async () => {
+    const ownerClientId = "55555555-5555-4555-8555-555555555555";
+    const documentFindMany = vi.spyOn(prisma.document, "findMany").mockResolvedValue([] as never);
+    const documentCount = vi.spyOn(prisma.document, "count").mockResolvedValue(0);
+
+    await listAdminDocuments({
+      actor: assignedLawyer,
+      query: { ownerClientId, page: 2, pageSize: 20 }
+    });
+
+    const scopedOwnerWhere = {
+      AND: expect.arrayContaining([
+        documentScopeWhereForPrincipal(assignedLawyer),
+        { ownerClientId }
+      ])
+    };
+    expect(documentFindMany).toHaveBeenCalledWith(expect.objectContaining({ where: scopedOwnerWhere, skip: 20, take: 20 }));
+    expect(documentCount).toHaveBeenCalledWith({ where: scopedOwnerWhere });
+
+    documentFindMany.mockRestore();
+    documentCount.mockRestore();
   });
 
   it("validates task and document list/write contracts", () => {
@@ -209,5 +237,98 @@ describe("admin task and document management contract", () => {
     expect(result.items[0]?.canUpdate).toBe(false);
     expect(result.access.canCreate).toBe(false);
     expect(count).toHaveBeenCalledTimes(1 + adminTaskStatusValues.length);
+  });
+
+  it("keeps task-only results independent from case read access and limits a filtered board to its selected lane", async () => {
+    const taskOnlyActor: Principal = {
+      id: assignedLawyer.id,
+      roleName: ROLES.lawyer,
+      permissions: ["task.read.assigned"]
+    };
+    const task = {
+      id: "66666666-6666-4666-8666-666666666666",
+      title: "مهمة مستقلة عن قراءة القضية",
+      description: null,
+      status: "NEW",
+      priority: "NORMAL",
+      assignedToId: taskOnlyActor.id,
+      caseId: "77777777-7777-4777-8777-777777777777",
+      dueDate: null,
+      createdById: officeAdmin.id,
+      createdAt: new Date("2026-09-02T08:00:00.000Z"),
+      updatedAt: new Date("2026-09-02T08:00:00.000Z"),
+      assignedTo: { id: taskOnlyActor.id, name: "محامٍ للقراءة", email: "reader@example.test" },
+      createdBy: { id: officeAdmin.id, name: "مدير المكتب" },
+      case: { id: "77777777-7777-4777-8777-777777777777", internalFileNumber: "SECRET-7", title: "قضية غير مرئية", assignedLawyerId: otherLawyer.id }
+    };
+    const findMany = vi.fn().mockResolvedValue([task]);
+    const count = vi.fn().mockResolvedValue(1);
+
+    const result = await listAdminTasks({
+      actor: taskOnlyActor,
+      query: { display: "board", status: "NEW", pageSize: 12 },
+      client: { task: { count, findMany } } as never
+    });
+
+    expect(result.items[0]?.case).toBeNull();
+    expect(result.boardColumns?.map((column) => column.status)).toEqual(["NEW"]);
+    expect(result.boardColumns?.[0]?.items[0]?.case).toBeNull();
+    expect(findMany.mock.calls[0]?.[0].orderBy).toEqual([
+      { dueDate: "asc" }, { priority: "desc" }, { createdAt: "desc" }, { id: "asc" }
+    ]);
+  });
+
+  it("does not query case options for independent task or document readers", async () => {
+    const taskOnlyActor: Principal = {
+      id: assignedLawyer.id,
+      roleName: ROLES.lawyer,
+      permissions: ["task.read.assigned"]
+    };
+    const documentOnlyActor: Principal = {
+      id: assignedLawyer.id,
+      roleName: ROLES.lawyer,
+      permissions: ["document.read.assigned"]
+    };
+    const userFindMany = vi.spyOn(prisma.user, "findMany").mockResolvedValue([] as never);
+    const caseFindMany = vi.spyOn(prisma.legalCase, "findMany").mockResolvedValue([] as never);
+
+    await expect(getAdminTaskOptions(taskOnlyActor)).resolves.toEqual({ assignees: [], cases: [] });
+    await expect(getAdminDocumentOptions(documentOnlyActor)).resolves.toEqual({ cases: [], clients: [], canManage: false });
+    expect(caseFindMany).not.toHaveBeenCalled();
+
+    userFindMany.mockRestore();
+    caseFindMany.mockRestore();
+  });
+
+  it("queries only permitted case-tab sections", async () => {
+    const actor: Principal = {
+      id: assignedLawyer.id,
+      roleName: ROLES.lawyer,
+      permissions: ["case.read.assigned", "task.read.assigned"]
+    };
+    const caseFindFirst = vi.spyOn(prisma.legalCase, "findFirst").mockResolvedValue({
+      id: "88888888-8888-4888-8888-888888888888",
+      clientId: "99999999-9999-4999-8999-999999999999",
+      assignedLawyerId: actor.id,
+      internalFileNumber: "CASE-8",
+      title: "قضية مسموح بها",
+      deletedAt: null
+    } as never);
+    const taskFindMany = vi.spyOn(prisma.task, "findMany").mockResolvedValue([] as never);
+    const documentFindMany = vi.spyOn(prisma.document, "findMany").mockResolvedValue([] as never);
+    const userFindMany = vi.spyOn(prisma.user, "findMany").mockResolvedValue([] as never);
+    const caseFindMany = vi.spyOn(prisma.legalCase, "findMany").mockResolvedValue([] as never);
+
+    const result = await getCaseTaskDocumentTabs({ actor, caseId: "88888888-8888-4888-8888-888888888888" });
+
+    expect(result.access).toMatchObject({ canReadTasks: true, canReadDocuments: false });
+    expect(taskFindMany).toHaveBeenCalledTimes(1);
+    expect(documentFindMany).not.toHaveBeenCalled();
+
+    caseFindFirst.mockRestore();
+    taskFindMany.mockRestore();
+    documentFindMany.mockRestore();
+    userFindMany.mockRestore();
+    caseFindMany.mockRestore();
   });
 });

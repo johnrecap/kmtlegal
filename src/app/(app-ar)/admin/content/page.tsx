@@ -328,20 +328,20 @@ function EditorPanelForms(props: EditorPanelProps) {
   } = props;
   if (activeTab === "case-studies" || editCaseStudy) {
     return canCaseStudyCreate ? (
-      <CaseStudyForm canApprove={canCaseStudyApprove} idPrefix={idPrefix} study={editCaseStudy ? caseStudyFormValue(editCaseStudy) : undefined} />
+      <CaseStudyForm key={editCaseStudy?.id ?? "create"} canApprove={canCaseStudyApprove} idPrefix={idPrefix} study={editCaseStudy ? caseStudyFormValue(editCaseStudy) : undefined} />
     ) : (
       <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.caseStudyCreate} />
     );
   }
   if (activeTab === "social" || editSocialDraft) {
     return canSocialCreate ? (
-      <SocialDraftForm canApprove={canSocialApprove} draft={editSocialDraft ? socialDraftFormValue(editSocialDraft) : undefined} idPrefix={idPrefix} />
+      <SocialDraftForm key={editSocialDraft?.id ?? "create"} canApprove={canSocialApprove} draft={editSocialDraft ? socialDraftFormValue(editSocialDraft) : undefined} idPrefix={idPrefix} />
     ) : (
       <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.socialDraftCreate} />
     );
   }
   return canArticleCreate ? (
-    <ArticleForm article={editArticle ? articleFormValue(editArticle) : undefined} canApprove={canArticleApprove} idPrefix={idPrefix} />
+    <ArticleForm key={editArticle?.id ?? "create"} article={editArticle ? articleFormValue(editArticle) : undefined} canApprove={canArticleApprove} idPrefix={idPrefix} />
   ) : (
     <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.articleCreate} />
   );

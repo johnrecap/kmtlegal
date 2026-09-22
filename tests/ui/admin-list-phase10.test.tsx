@@ -27,17 +27,17 @@ const listFiles = [
 
 const expectedFilterNames: Record<(typeof listFiles)[number], string[]> = {
   "src/app/(app-ar)/admin/cases/page.tsx": [
-    "assignedLawyerId", "caseType", "priority", "q", "sortBy", "sortDirection", "status"
+    "assignedLawyerId", "caseType", "clientId", "priority", "q", "sortBy", "sortDirection", "status"
   ],
   "src/app/(app-ar)/admin/clients/page.tsx": [
     "assignedLawyerId", "q", "sortBy", "sortDirection", "source", "status"
   ],
   "src/app/(app-ar)/admin/consultations/page.tsx": [
-    "assigned", "q", "review", "status", "view"
+    "assigned", "clientId", "q", "review", "status", "view"
   ],
   "src/app/(app-ar)/admin/users/page.tsx": ["q", "roleId", "sortBy", "sortDirection", "status"],
   "src/app/(app-ar)/admin/messages/page.tsx": ["assignedToId", "q", "status"],
-  "src/app/(app-ar)/admin/calendar/page.tsx": ["display", "from", "lawyerId", "mode", "status", "to"],
+  "src/app/(app-ar)/admin/calendar/page.tsx": ["caseId", "clientId", "display", "from", "lawyerId", "mode", "status", "to"],
   "src/app/(app-ar)/admin/tasks/page.tsx": [
     "assignedToId", "display", "priority", "q", "sortBy", "sortDirection", "status", "view"
   ],

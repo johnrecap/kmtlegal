@@ -96,6 +96,7 @@ function listHref(
     status?: string;
     assigned?: string;
     review?: string;
+    clientId?: string;
     pageSize?: number;
   },
   page: number
@@ -115,6 +116,9 @@ function listHref(
   }
   if (filters.review) {
     params.set("review", filters.review);
+  }
+  if (filters.clientId) {
+    params.set("clientId", filters.clientId);
   }
   if (filters.pageSize) {
     params.set("pageSize", String(filters.pageSize));
@@ -325,6 +329,7 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
             </span>
             <input type="hidden" name="assigned" value={result.filters.assigned ?? ""} />
             <input type="hidden" name="review" value={result.filters.review ?? ""} />
+            <input type="hidden" name="clientId" value={result.filters.clientId ?? ""} />
             <span className="hidden lg:contents">
             <Button type="submit" variant="secondary">
               تطبيق
@@ -337,6 +342,7 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
             <input name="view" type="hidden" value={result.filters.view} />
             <input type="hidden" name="q" value={result.filters.q ?? ""} />
             <input type="hidden" name="status" value={result.filters.status ?? ""} />
+            <input type="hidden" name="clientId" value={result.filters.clientId ?? ""} />
             <Select className="w-full" defaultValue={result.filters.assigned ?? ""} label="التعيين" name="assigned">
               <option value="">كل الطلبات</option>
               <option value="unassigned">يحتاج تعيين محامي</option>
@@ -354,6 +360,7 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
         <MobileFiltersSheet description="ابحث وصفِّ طلبات الاستشارة." title="فلاتر الاستشارات" triggerLabel="الفلاتر">
           <form action="/admin/consultations" className="space-y-3" method="get">
             <input name="view" type="hidden" value={result.filters.view} />
+            <input type="hidden" name="clientId" value={result.filters.clientId ?? ""} />
             <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.consultations.search} className="w-full" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث بالاسم أو الهاتف أو نص طلب العميل" />
             <Select className="w-full" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
               <option value="">كل الحالات</option>
@@ -381,10 +388,10 @@ export default async function AdminConsultationsPage({ searchParams }: { searchP
 
         <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
           <div className="flex flex-wrap gap-2">
-            <Link className={buttonClasses({ variant: result.filters.view === operationalActionView && result.filters.assigned === "unassigned" ? "primary" : "secondary", size: "sm" })} href={listHref({ view: operationalActionView, assigned: "unassigned" }, 1)}>
+            <Link className={buttonClasses({ variant: result.filters.view === operationalActionView && result.filters.assigned === "unassigned" ? "primary" : "secondary", size: "sm" })} href={listHref({ view: operationalActionView, assigned: "unassigned", clientId: result.filters.clientId }, 1)}>
               {result.unassignedTotal} يحتاج تعيين محامي
             </Link>
-            <Link className={buttonClasses({ variant: result.filters.view === operationalActionView && result.filters.review === "unreviewed" ? "primary" : "secondary", size: "sm" })} href={listHref({ view: operationalActionView, review: "unreviewed" }, 1)}>
+            <Link className={buttonClasses({ variant: result.filters.view === operationalActionView && result.filters.review === "unreviewed" ? "primary" : "secondary", size: "sm" })} href={listHref({ view: operationalActionView, review: "unreviewed", clientId: result.filters.clientId }, 1)}>
               {result.unreviewedTotal} يحتاج مراجعة السكرتيرة
             </Link>
           </div>

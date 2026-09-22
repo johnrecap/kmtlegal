@@ -48,6 +48,7 @@ export const adminConsultationListQuerySchema = z.object({
   status: consultationStatusSchema.optional().or(z.literal("")),
   assigned: z.enum(["", "assigned", "unassigned"]).default(""),
   review: z.enum(["", "unreviewed"]).default(""),
+  clientId: uuidSchema.optional().or(z.literal("")),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(50).default(20)
 }).superRefine((value, context) => {
@@ -202,6 +203,7 @@ function listBaseWhere(
       status ? { status } : {},
       assigned === "assigned" ? { assignedLawyerId: { not: null } } : {},
       assigned === "unassigned" ? { assignedLawyerId: null } : {},
+      filters.clientId ? { clientId: filters.clientId } : {},
       options.includeReview !== false && review === "unreviewed"
         ? { status: "SCHEDULED", secretaryReviewedAt: null }
         : {},

@@ -7,7 +7,7 @@ import { ApiError } from "@/server/http/errors";
 import { toPagination } from "@/server/http/pagination";
 import { documentCategorySchema, documentVisibilitySchema, canReadDocument } from "@/server/storage/document-service";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
-import { caseScopeWhereForPrincipal, dateFromActionInput } from "./case-operations-service";
+import { canListAdminCases, canReadAdminCase, caseScopeWhereForPrincipal, dateFromActionInput } from "./case-operations-service";
 
 export const adminTaskStatusValues = ["NEW", "IN_PROGRESS", "REVIEW", "COMPLETED", "OVERDUE", "ARCHIVED"] as const;
 const taskStatusSchema = z.enum(adminTaskStatusValues);
@@ -172,18 +172,32 @@ function normalizeDocumentListQuery(input: unknown) {
 
 function taskOrderBy(filters: AdminTaskListQuery): Prisma.TaskOrderByWithRelationInput[] {
   if (filters.sortBy === "dueDate") {
-    return [{ dueDate: filters.sortDirection }, { priority: "desc" }, { createdAt: "desc" }];
+    return [{ dueDate: filters.sortDirection }, { priority: "desc" }, { createdAt: "desc" }, { id: "asc" }];
   }
 
-  return [{ [filters.sortBy]: filters.sortDirection }, { createdAt: "desc" }];
+  return filters.sortBy === "createdAt"
+    ? [{ createdAt: filters.sortDirection }, { id: "asc" }]
+    : [{ [filters.sortBy]: filters.sortDirection }, { createdAt: "desc" }, { id: "asc" }];
 }
 
 function taskListWhere(actor: Principal, filters: AdminTaskListQuery): Prisma.TaskWhereInput {
   const scope = taskScopeWhereForPrincipal(actor);
   const search = filters.q?.trim();
   const now = new Date();
+  const canReadCases = canListAdminCases(actor);
   const assignedToId =
     filters.assignedToId && hasPermission(actor, "task.manage.any") ? filters.assignedToId : undefined;
+  const searchTerms: Prisma.TaskWhereInput[] = [
+    { title: { contains: search, mode: "insensitive" } },
+    { description: { contains: search, mode: "insensitive" } },
+    { assignedTo: { name: { contains: search, mode: "insensitive" } } }
+  ];
+  if (canReadCases) {
+    searchTerms.push(
+      { case: { title: { contains: search, mode: "insensitive" } } },
+      { case: { internalFileNumber: { contains: search, mode: "insensitive" } } }
+    );
+  }
 
   return {
     AND: [
@@ -191,18 +205,12 @@ function taskListWhere(actor: Principal, filters: AdminTaskListQuery): Prisma.Ta
       filters.status ? { status: filters.status } : {},
       filters.priority ? { priority: filters.priority } : {},
       assignedToId ? { assignedToId } : {},
-      filters.caseId ? { caseId: filters.caseId } : {},
+      filters.caseId && canReadCases ? { caseId: filters.caseId } : {},
       filters.view === "mine" ? { assignedToId: actor.id } : {},
       filters.view === "overdue" ? { dueDate: { lt: now }, status: { notIn: ["COMPLETED", "ARCHIVED"] } } : {},
       search
         ? {
-            OR: [
-              { title: { contains: search, mode: "insensitive" } },
-              { description: { contains: search, mode: "insensitive" } },
-              { assignedTo: { name: { contains: search, mode: "insensitive" } } },
-              { case: { title: { contains: search, mode: "insensitive" } } },
-              { case: { internalFileNumber: { contains: search, mode: "insensitive" } } }
-            ]
+            OR: searchTerms
           }
         : {}
     ]
@@ -216,8 +224,7 @@ function documentOrderBy(filters: AdminDocumentListQuery): Prisma.DocumentOrderB
 function documentListWhere(actor: Principal, filters: AdminDocumentListQuery): Prisma.DocumentWhereInput {
   const scope = documentScopeWhereForPrincipal(actor);
   const search = filters.q?.trim();
-  const ownerClientId =
-    filters.ownerClientId && hasPermission(actor, "document.manage.any") ? filters.ownerClientId : undefined;
+  const ownerClientId = filters.ownerClientId || undefined;
 
   return {
     AND: [
@@ -364,15 +371,19 @@ export async function listAdminTasks(input: { actor: Principal; query: unknown; 
     (typeof adminTaskStatusValues)[number],
     number
   >;
-  const decorateTask = <T extends TaskPermissionProbe>(task: T) => ({
-    ...task,
-    canUpdate: canManageAdminTask(input.actor, task)
-  });
+  const decorateTask = <T extends TaskPermissionProbe>(task: T) => {
+    const canReadCase = task.case ? canReadAdminCase(input.actor, task.case) : true;
+    return {
+      ...task,
+      case: canReadCase ? task.case : null,
+      canUpdate: canManageAdminTask(input.actor, task)
+    };
+  };
   const items = pageItems.map(decorateTask);
   const boardColumns =
     filters.display === "board"
       ? await Promise.all(
-          adminTaskStatusValues.map(async (status) => ({
+          adminTaskStatusValues.filter((status) => !filters.status || status === filters.status).map(async (status) => ({
             status,
             total: statusTotals[status],
             items: (
@@ -543,17 +554,19 @@ export async function getAdminTaskOptions(actor: Principal) {
           where: { id: actor.id, status: "ACTIVE" },
           select: { id: true, name: true, email: true }
         }),
-    prisma.legalCase.findMany({
-      where: caseScopeWhereForPrincipal(actor),
-      select: {
-        id: true,
-        internalFileNumber: true,
-        title: true,
-        client: { select: { id: true, fullName: true } }
-      },
-      orderBy: [{ updatedAt: "desc" }],
-      take: 100
-    })
+    canListAdminCases(actor)
+      ? prisma.legalCase.findMany({
+          where: caseScopeWhereForPrincipal(actor),
+          select: {
+            id: true,
+            internalFileNumber: true,
+            title: true,
+            client: { select: { id: true, fullName: true } }
+          },
+          orderBy: [{ updatedAt: "desc" }],
+          take: 100
+        })
+      : []
   ]);
 
   return { assignees, cases };
@@ -584,17 +597,19 @@ export async function listAdminDocuments(input: { actor: Principal; query: unkno
 
 export async function getAdminDocumentOptions(actor: Principal) {
   const [cases, clients] = await Promise.all([
-    prisma.legalCase.findMany({
-      where: caseScopeWhereForPrincipal(actor),
-      select: {
-        id: true,
-        internalFileNumber: true,
-        title: true,
-        client: { select: { id: true, fullName: true } }
-      },
-      orderBy: [{ updatedAt: "desc" }],
-      take: 100
-    }),
+    canListAdminCases(actor)
+      ? prisma.legalCase.findMany({
+          where: caseScopeWhereForPrincipal(actor),
+          select: {
+            id: true,
+            internalFileNumber: true,
+            title: true,
+            client: { select: { id: true, fullName: true } }
+          },
+          orderBy: [{ updatedAt: "desc" }],
+          take: 100
+        })
+      : [],
     hasPermission(actor, "document.manage.any")
       ? prisma.client.findMany({
           where: { deletedAt: null },
@@ -722,8 +737,11 @@ export async function getCaseTaskDocumentTabs(input: { actor: Principal; caseId:
   const caseId = parseWithSchema(uuidSchema, input.caseId, "Case id is invalid.");
   const legalCase = await assertCaseVisible(input.actor, caseId);
 
+  const canReadTasks = canListAdminTasks(input.actor);
+  const canReadDocuments = canListAdminDocuments(input.actor);
   const [tasks, documents, options] = await Promise.all([
-    prisma.task.findMany({
+    canReadTasks
+      ? prisma.task.findMany({
       where: {
         AND: [taskScopeWhereForPrincipal(input.actor), { caseId }]
       },
@@ -732,9 +750,11 @@ export async function getCaseTaskDocumentTabs(input: { actor: Principal; caseId:
         createdBy: { select: { id: true, name: true } },
         case: { select: { id: true, internalFileNumber: true, title: true, assignedLawyerId: true } }
       },
-      orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }]
-    }),
-    prisma.document.findMany({
+          orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }, { id: "asc" }]
+        })
+      : [],
+    canReadDocuments
+      ? prisma.document.findMany({
       where: {
         AND: [documentScopeWhereForPrincipal(input.actor), { caseId }]
       },
@@ -743,9 +763,10 @@ export async function getCaseTaskDocumentTabs(input: { actor: Principal; caseId:
         case: { select: { id: true, internalFileNumber: true, title: true, assignedLawyerId: true } },
         uploadedBy: { select: { id: true, name: true, email: true } }
       },
-      orderBy: { createdAt: "desc" }
-    }),
-    getAdminTaskOptions(input.actor)
+          orderBy: [{ createdAt: "desc" }, { id: "asc" }]
+        })
+      : [],
+    canReadTasks ? getAdminTaskOptions(input.actor) : Promise.resolve({ assignees: [], cases: [] })
   ]);
 
   return {
@@ -755,10 +776,15 @@ export async function getCaseTaskDocumentTabs(input: { actor: Principal; caseId:
       internalFileNumber: legalCase.internalFileNumber,
       title: legalCase.title
     },
-    tasks,
+    tasks: tasks.map((task) => ({
+      ...task,
+      canUpdate: canManageAdminTask(input.actor, task)
+    })),
     documents,
     options,
     access: {
+      canReadTasks,
+      canReadDocuments,
       canCreateTask: canCreateAdminTask(input.actor),
       canManageDocuments: canManageAdminDocuments(input.actor)
     }

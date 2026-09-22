@@ -42,6 +42,7 @@ export const adminCaseListQuerySchema = z.object({
   priority: casePrioritySchema.optional().or(z.literal("")),
   caseType: z.string().trim().max(80).optional().or(z.literal("")),
   assignedLawyerId: uuidSchema.optional().or(z.literal("")),
+  clientId: uuidSchema.optional().or(z.literal("")),
   sortBy: caseSortBySchema.default("updatedAt"),
   sortDirection: z.enum(["asc", "desc"]).default("desc"),
   page: z.coerce.number().int().min(1).default(1),
@@ -51,9 +52,12 @@ export const adminCaseListQuerySchema = z.object({
 export const adminCalendarQuerySchema = z.object({
   from: optionalDateStringSchema,
   to: optionalDateStringSchema,
+  anchor: optionalDateStringSchema,
   status: appointmentStatusSchema.optional().or(z.literal("")),
   mode: appointmentModeSchema.optional().or(z.literal("")),
   lawyerId: uuidSchema.optional().or(z.literal("")),
+  clientId: uuidSchema.optional().or(z.literal("")),
+  caseId: uuidSchema.optional().or(z.literal("")),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(50)
 });
@@ -195,6 +199,7 @@ function caseListWhere(actor: Principal, filters: AdminCaseListQuery): Prisma.Le
       filters.priority ? { priority: filters.priority } : {},
       filters.caseType ? { caseType: filters.caseType } : {},
       assignedLawyerId ? { assignedLawyerId } : {},
+      filters.clientId ? { clientId: filters.clientId } : {},
       search
         ? {
             OR: [
@@ -259,7 +264,9 @@ function calendarWhere(actor: Principal, filters: AdminCalendarQuery): Prisma.Ap
       { startsAt: { gte: window.from, lt: window.to } },
       filters.status ? { status: filters.status } : {},
       filters.mode ? { mode: filters.mode } : {},
-      lawyerId ? { lawyerId } : {}
+      lawyerId ? { lawyerId } : {},
+      filters.clientId ? { clientId: filters.clientId } : {},
+      filters.caseId ? { caseId: filters.caseId } : {}
     ]
   };
 }

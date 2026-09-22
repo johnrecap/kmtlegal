@@ -56,6 +56,7 @@ function listHref(filters: {
   priority?: string;
   caseType?: string;
   assignedLawyerId?: string;
+  clientId?: string;
   sortBy?: string;
   sortDirection?: string;
   pageSize?: number;
@@ -240,6 +241,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams?: 
               </span>
               <input type="hidden" name="caseType" value={result.filters.caseType ?? ""} />
               <input type="hidden" name="assignedLawyerId" value={result.filters.assignedLawyerId ?? ""} />
+              <input type="hidden" name="clientId" value={result.filters.clientId ?? ""} />
               <input type="hidden" name="sortBy" value={result.filters.sortBy} />
               <input type="hidden" name="sortDirection" value={result.filters.sortDirection} />
               <span className="hidden lg:contents">
@@ -254,6 +256,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams?: 
               <input type="hidden" name="q" value={result.filters.q ?? ""} />
               <input type="hidden" name="status" value={result.filters.status ?? ""} />
               <input type="hidden" name="priority" value={result.filters.priority ?? ""} />
+              <input type="hidden" name="clientId" value={result.filters.clientId ?? ""} />
               <Select className="w-full" defaultValue={result.filters.caseType ?? ""} label="نوع القضية" name="caseType">
                 <option value="">كل الأنواع</option>
                 {options.caseTypes.map((caseType) => (
@@ -291,6 +294,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams?: 
           </MoreFiltersPopover>
           <MobileFiltersSheet description="ابحث وصفِّ قائمة القضايا." title="فلاتر القضايا" triggerLabel="الفلاتر">
             <form action="/admin/cases" className="space-y-3" method="get">
+              <input type="hidden" name="clientId" value={result.filters.clientId ?? ""} />
               <SearchInput ariaLabel={plan35AdminListAccessibilityCopy.cases.search} className="w-full" defaultValue={result.filters.q ?? ""} name="q" placeholder="ابحث برقم الملف أو العميل أو نوع القضية" />
               <Select className="w-full" defaultValue={result.filters.status ?? ""} label="الحالة" name="status">
                 <option value="">كل الحالات</option>

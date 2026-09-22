@@ -13,7 +13,7 @@ import { consultationScopeWhereForPrincipal } from "./consultation-review-servic
 import { canListAdminDocuments, documentScopeWhereForPrincipal } from "./task-document-service";
 
 const clientStatusSchema = z.enum(["LEAD", "ACTIVE", "INACTIVE", "ARCHIVED", "DELETED"]);
-const editableClientStatusSchema = z.enum(["LEAD", "ACTIVE", "INACTIVE", "ARCHIVED"]);
+const editableClientStatusSchema = z.enum(["LEAD", "ACTIVE", "INACTIVE"]);
 const clientSortBySchema = z.enum(["createdAt", "updatedAt", "fullName", "status"]);
 
 export const adminClientListQuerySchema = z.object({
@@ -42,7 +42,8 @@ export const assignClientSchema = z.object({
 });
 
 export const archiveClientSchema = z.object({
-  reason: z.string().trim().max(500).optional().or(z.literal(""))
+  reason: z.string().trim().max(500).optional().or(z.literal("")),
+  confirmArchive: z.literal(true)
 });
 
 export const clientAccountCreateSchema = z.object({
@@ -213,6 +214,7 @@ export async function getAdminClientDetail(input: { actor: Principal; clientId: 
   }
 
   const related = clientRelationFilters(input.actor);
+  const now = new Date();
 
   const client = await prisma.client.findUnique({
     where: { id: clientId },
@@ -248,7 +250,7 @@ export async function getAdminClientDetail(input: { actor: Principal; clientId: 
         }
       },
       appointments: {
-        where: related.appointments,
+        where: { AND: [related.appointments, { startsAt: { gte: now } }] },
         orderBy: { startsAt: "asc" },
         take: 8,
         select: {
@@ -262,6 +264,20 @@ export async function getAdminClientDetail(input: { actor: Principal; clientId: 
           case: { select: { id: true, internalFileNumber: true, title: true } }
         }
       },
+      documents: {
+        where: related.documents,
+        orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+        take: 8,
+        select: {
+          id: true,
+          fileName: true,
+          fileSize: true,
+          category: true,
+          status: true,
+          createdAt: true,
+          case: { select: { id: true, internalFileNumber: true } }
+        }
+      },
       _count: {
         select: clientRelationCounts(related)
       }
@@ -272,7 +288,23 @@ export async function getAdminClientDetail(input: { actor: Principal; clientId: 
     throw new ApiError(404, "NOT_FOUND", "Client was not found.");
   }
 
-  return client;
+  const appointmentHistory = await prisma.appointment.findMany({
+    where: { AND: [related.appointments, { clientId }, { startsAt: { lt: now } }] },
+    orderBy: { startsAt: "desc" },
+    take: 8,
+    select: {
+      id: true,
+      title: true,
+      type: true,
+      mode: true,
+      startsAt: true,
+      status: true,
+      lawyer: { select: { id: true, name: true } },
+      case: { select: { id: true, internalFileNumber: true, title: true } }
+    }
+  });
+
+  return { ...client, appointmentHistory };
 }
 
 export async function listAssignableClientLawyers() {

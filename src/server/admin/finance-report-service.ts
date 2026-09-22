@@ -254,13 +254,13 @@ function andPaymentWhere(base: Prisma.PaymentWhereInput, extra: Prisma.PaymentWh
 
 async function paymentSummary(where: Prisma.PaymentWhereInput) {
   const now = new Date();
-  const openWhere = andPaymentWhere(where, { status: { notIn: ["PAID", "CANCELLED"] } });
+  const openWhere = andPaymentWhere(where, { status: { in: ["ISSUED", "PENDING", "OVERDUE"] } });
   const overdueWhere = andPaymentWhere(where, {
     OR: [
       { status: "OVERDUE" },
       {
         dueDate: { lt: now },
-        status: { notIn: ["PAID", "CANCELLED"] }
+        status: { in: ["ISSUED", "PENDING", "OVERDUE"] }
       }
     ]
   });
@@ -475,7 +475,7 @@ export async function listAdminPayments(input: { actor: Principal; query: unknow
   const pagination = toPagination(filters);
   const where = paymentListWhere(filters);
 
-  const [items, total, summary] = await Promise.all([
+  const [items, total, summary, byCurrency] = await Promise.all([
     prisma.payment.findMany({
       where,
       include: {
@@ -489,10 +489,33 @@ export async function listAdminPayments(input: { actor: Principal; query: unknow
       take: pagination.take
     }),
     prisma.payment.count({ where }),
-    paymentSummary(where)
+    paymentSummary(where),
+    paymentCurrencySummary(where)
   ]);
 
-  return { items, total, summary, filters, page: pagination.page, pageSize: pagination.pageSize };
+  return { items: items.map(payment => ({ ...payment, canUpdate: canUpdateAdminPayment(input.actor, payment) })), total, summary: { ...summary, byCurrency }, filters, page: pagination.page, pageSize: pagination.pageSize };
+}
+
+export function canUpdateAdminPayment(actor: Principal, payment: { paymentAttemptId: string | null }) {
+  return canManageAdminFinance(actor) && !payment.paymentAttemptId;
+}
+
+async function paymentCurrencySummary(where: Prisma.PaymentWhereInput) {
+  const now = new Date();
+  const scopes: Prisma.PaymentWhereInput[] = [
+    where,
+    andPaymentWhere(where, { status: "PAID" }),
+    andPaymentWhere(where, { status: { in: ["ISSUED", "PENDING", "OVERDUE"] } }),
+    andPaymentWhere(where, { OR: [{ status: "OVERDUE" }, { status: { in: ["ISSUED", "PENDING"] }, dueDate: { lt: now } }] })
+  ];
+  const groups = await Promise.all(scopes.map(scope => prisma.payment.groupBy({ by: ["currency"], where: scope, _sum: { amount: true } })));
+  return groups[0].map(group => ({
+    currency: group.currency,
+    totalAmount: group._sum.amount?.toString() ?? "0",
+    paidAmount: groups[1].find(row => row.currency === group.currency)?._sum.amount?.toString() ?? "0",
+    openAmount: groups[2].find(row => row.currency === group.currency)?._sum.amount?.toString() ?? "0",
+    overdueAmount: groups[3].find(row => row.currency === group.currency)?._sum.amount?.toString() ?? "0"
+  }));
 }
 
 export async function exportAdminPaymentsCsv(input: { actor: Principal; query: unknown }) {
@@ -563,7 +586,7 @@ export async function getAdminPaymentDetail(input: { actor: Principal; paymentId
     throw new ApiError(404, "NOT_FOUND", "Payment was not found.");
   }
 
-  return payment;
+  return { ...payment, canUpdate: canUpdateAdminPayment(input.actor, payment) };
 }
 
 export async function createAdminPayment(input: { actor: Principal; body: unknown; request?: Request }) {
@@ -689,7 +712,7 @@ export async function getAdminFinanceOptions(actor: Principal) {
       where: { deletedAt: null },
       select: { id: true, fullName: true, phone: true },
       orderBy: { fullName: "asc" },
-      take: 150
+      take: 20
     }),
     prisma.legalCase.findMany({
       where: { deletedAt: null },
@@ -701,7 +724,7 @@ export async function getAdminFinanceOptions(actor: Principal) {
         client: { select: { id: true, fullName: true } }
       },
       orderBy: [{ updatedAt: "desc" }],
-      take: 150
+      take: 20
     })
   ]);
 

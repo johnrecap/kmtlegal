@@ -36,6 +36,7 @@ import {
   TaskCreateForm,
   TaskUpdateForm
 } from "@/features/admin/task-documents/task-document-forms";
+import { taskRepairCopy } from "@/features/admin/task-documents/task-repair-copy";
 import { getAdminCaseDetail, listAssignableCaseLawyers } from "@/server/admin/case-operations-service";
 import { getAdminDocumentOptions, getCaseTaskDocumentTabs } from "@/server/admin/task-document-service";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
@@ -314,6 +315,10 @@ function AppointmentsTab({ legalCase }: { legalCase: CaseDetail }) {
 }
 
 function TasksTab({ data }: { data: CaseTaskDocumentTabs }) {
+  if (!data.access.canReadTasks) {
+    return <StateBlock tone="permission" title={taskRepairCopy.noTaskAccessTitle} description={taskRepairCopy.noTaskAccessDescription} />;
+  }
+
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
       <Card>
@@ -341,31 +346,33 @@ function TasksTab({ data }: { data: CaseTaskDocumentTabs }) {
                     </div>
                   </div>
                   {task.description ? <p className="mt-3 text-sm leading-7 text-muted-foreground">{task.description}</p> : null}
-                  <Accordion type="single" collapsible className="mt-3">
-                    <AccordionItem value={`edit-${task.id}`}>
-                      <AccordionTrigger className="text-sm font-semibold text-primary">
-                        تعديل المهمة
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <TaskUpdateForm
-                          assignees={data.options.assignees}
-                          cases={data.options.cases}
-                          task={{
-                            id: task.id,
-                            updatedAt: task.updatedAt,
-                            title: task.title,
-                            description: task.description,
-                            status: task.status,
-                            priority: task.priority,
-                            assignedToId: task.assignedToId,
-                            caseId: task.caseId,
-                            case: task.case,
-                            dueDate: task.dueDate
-                          }}
-                        />
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
+                  {task.canUpdate ? (
+                    <Accordion type="single" collapsible className="mt-3">
+                      <AccordionItem value={`edit-${task.id}`}>
+                        <AccordionTrigger className="text-sm font-semibold text-primary">
+                          تعديل المهمة
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <TaskUpdateForm
+                            assignees={data.options.assignees}
+                            cases={data.options.cases}
+                            task={{
+                              id: task.id,
+                              updatedAt: task.updatedAt,
+                              title: task.title,
+                              description: task.description,
+                              status: task.status,
+                              priority: task.priority,
+                              assignedToId: task.assignedToId,
+                              caseId: task.caseId,
+                              case: task.case,
+                              dueDate: task.dueDate
+                            }}
+                          />
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  ) : <p className="mt-3 text-sm font-semibold text-muted-foreground">{taskRepairCopy.readOnly}</p>}
                 </article>
               ))}
             </div>
@@ -392,7 +399,11 @@ function TasksTab({ data }: { data: CaseTaskDocumentTabs }) {
   );
 }
 
-function DocumentsTab({ data, documentOptions }: { data: CaseTaskDocumentTabs; documentOptions: DocumentOptions }) {
+function DocumentsTab({ data, documentOptions }: { data: CaseTaskDocumentTabs; documentOptions: DocumentOptions | null }) {
+  if (!data.access.canReadDocuments || !documentOptions) {
+    return <StateBlock tone="permission" title={taskRepairCopy.noDocumentAccessTitle} description={taskRepairCopy.noDocumentAccessDescription} />;
+  }
+
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_24rem]">
       <Card>
@@ -499,10 +510,10 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
   if (tab === "tasks" || tab === "documents") {
     try {
       if (tab === "documents") {
-        [taskDocumentData, documentOptions] = await Promise.all([
-          getCaseTaskDocumentTabs({ actor: guard.context.principal, caseId }),
-          getAdminDocumentOptions(guard.context.principal)
-        ]);
+        taskDocumentData = await getCaseTaskDocumentTabs({ actor: guard.context.principal, caseId });
+        documentOptions = taskDocumentData.access.canReadDocuments
+          ? await getAdminDocumentOptions(guard.context.principal)
+          : null;
       } else {
         taskDocumentData = await getCaseTaskDocumentTabs({ actor: guard.context.principal, caseId });
       }
@@ -571,7 +582,7 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
           {tab === "sessions" ? <SessionsTab legalCase={legalCase} /> : null}
           {tab === "appointments" ? <AppointmentsTab legalCase={legalCase} /> : null}
           {tab === "tasks" && taskDocumentData ? <TasksTab data={taskDocumentData} /> : null}
-          {tab === "documents" && taskDocumentData && documentOptions ? (
+          {tab === "documents" && taskDocumentData ? (
             <DocumentsTab data={taskDocumentData} documentOptions={documentOptions} />
           ) : null}
         </div>

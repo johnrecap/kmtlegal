@@ -23,6 +23,7 @@ import {
 import { buttonClasses } from "@/components/ui/button";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { TaskCreateForm, TaskUpdateForm } from "@/features/admin/task-documents/task-document-forms";
+import { TaskBoard, TaskCard, TaskUpdateSheet, type TaskBoardOptions, type TaskBoardTask } from "@/features/admin/task-documents/task-board";
 import { formatDate, labelFrom, taskPriorityLabels, taskStatusLabels } from "@/lib/legal-format";
 import { plan35AdminListAccessibilityCopy } from "@/lib/ui-copy";
 import {
@@ -85,21 +86,6 @@ function tasksHref(filters: TaskHrefFilters, overrides: Record<string, string | 
   return `/admin/tasks?${params.toString()}`;
 }
 
-function taskFormValue(task: TaskRow) {
-  return {
-    id: task.id,
-    updatedAt: task.updatedAt,
-    title: task.title,
-    description: task.description,
-    status: task.status,
-    priority: task.priority,
-    assignedToId: task.assignedToId,
-    caseId: task.caseId,
-    case: task.case,
-    dueDate: task.dueDate
-  };
-}
-
 function CreateTaskSheet({ options }: { options: TaskOptions }) {
   return (
     <Sheet>
@@ -117,54 +103,7 @@ function CreateTaskSheet({ options }: { options: TaskOptions }) {
   );
 }
 
-function TaskUpdateSheet({ task, options }: { task: TaskRow; options: TaskOptions }) {
-  if (!task.canUpdate) {
-    return <span className="text-xs font-semibold text-muted-foreground">قراءة فقط</span>;
-  }
-
-  return (
-    <Sheet>
-      <SheetTrigger className={buttonClasses({ variant: "secondary", size: "sm" })}>تعديل</SheetTrigger>
-      <SheetContent aria-label={`تعديل المهمة ${task.title}`} className="overflow-y-auto" side="right">
-        <SheetHeader>
-          <SheetTitle>تعديل المهمة</SheetTitle>
-          <SheetDescription>{task.title}</SheetDescription>
-        </SheetHeader>
-        <TaskUpdateForm assignees={options.assignees} cases={options.cases} task={taskFormValue(task)} />
-      </SheetContent>
-    </Sheet>
-  );
-}
-
-function TaskCard({ task, options }: { task: TaskRow; options: TaskOptions }) {
-  return (
-    <article className="rounded-lg border border-border bg-surface p-4" data-task-id={task.id}>
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="min-w-0">
-          <h3 className="font-semibold leading-6 text-foreground">{task.title}</h3>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {task.assignedTo.name} · {formatDate(task.dueDate)}
-          </p>
-        </div>
-        <Badge tone={priorityTone(task.priority)}>{labelFrom(taskPriorityLabels, task.priority)}</Badge>
-      </div>
-      {task.description ? <p className="mt-2 text-sm leading-6 text-muted-foreground">{task.description}</p> : null}
-      {task.case ? (
-        <Link className="mt-2 block text-sm font-semibold text-primary hover:underline" href={`/admin/cases/${task.case.id}`}>
-          <bdi>{task.case.internalFileNumber}</bdi> - {task.case.title}
-        </Link>
-      ) : (
-        <p className="mt-2 text-sm text-muted-foreground">بدون قضية مرتبطة</p>
-      )}
-      <div className="mt-4 flex items-center justify-between gap-2">
-        <Badge tone={statusTone(task.status)}>{labelFrom(taskStatusLabels, task.status)}</Badge>
-        <TaskUpdateSheet options={options} task={task} />
-      </div>
-    </article>
-  );
-}
-
-function taskColumns(options: TaskOptions): Array<DataTableColumn<TaskRow>> {
+function taskColumns(options: TaskBoardOptions): Array<DataTableColumn<TaskBoardTask>> {
   return [
     {
       key: "task",
@@ -315,20 +254,12 @@ export default async function AdminTasksPage({ searchParams }: { searchParams?: 
 
         {display === "board" ? (
           result.boardColumns?.some((column) => column.items.length) ? (
-            <div className="grid gap-4 xl:grid-cols-3 2xl:grid-cols-6">
-              {result.boardColumns.map((column) => (
-                <section key={column.status} className="min-w-0 rounded-lg border border-border bg-surface-muted p-3" aria-labelledby={`tasks-${column.status}`}>
-                  <div className="mb-3 flex items-center justify-between gap-2">
-                    <h2 id={`tasks-${column.status}`} className="text-sm font-semibold text-foreground">{labelFrom(taskStatusLabels, column.status)}</h2>
-                    <Badge tone={statusTone(column.status)}>{column.items.length} من {column.total}</Badge>
-                  </div>
-                  <div className="space-y-3">
-                    {column.items.length ? column.items.map((task) => <TaskCard key={task.id} options={options} task={task} />) : <p className="text-sm leading-6 text-muted-foreground">لا توجد مهام هنا.</p>}
-                  </div>
-                  {column.total > column.items.length ? <Link className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-primary hover:underline" href={tasksHref(result.filters, { display: "list", status: column.status, page: 1 })}>عرض بقية المهام</Link> : null}
-                </section>
-              ))}
-            </div>
+            <TaskBoard
+              key={JSON.stringify(result.filters)}
+              filters={result.filters}
+              initialColumns={result.boardColumns}
+              options={options}
+            />
           ) : <StateBlock title="لا توجد مهام" description="غيّر الفلاتر أو أنشئ مهمة جديدة مرتبطة بقضية داخل نطاقك." />
         ) : (
           <>

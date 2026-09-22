@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
+import { useFormDraft } from "@/features/admin/shared/form-draft-provider";
+import { repairCopy } from "@/features/admin/shared/repair-copy";
 import { InlineFeedback, Select, TextInput, Textarea } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
 import { Button as StatefulButton } from "@/components/ui/stateful-button";
@@ -67,42 +69,16 @@ async function readMessage(response: Response) {
   return readAdminApiErrorMessage(response);
 }
 
-function useUnsavedFormGuard() {
-  const [dirty, setDirty] = useState(false);
-  const dirtyRef = useRef(false);
-  const markDirty = useCallback(() => {
-    dirtyRef.current = true;
-    setDirty(true);
-  }, []);
-  const markSaved = useCallback(() => {
-    dirtyRef.current = false;
-    setDirty(false);
-  }, []);
+function useUnsavedFormGuard(key: string) {
+  const draft = useFormDraft(key);
+  return { ...draft, markDirty: draft.capture, markSaved: draft.clear };
+}
 
-  useEffect(() => {
-    const beforeUnload = (event: BeforeUnloadEvent) => {
-      if (!dirtyRef.current) return;
-      event.preventDefault();
-      event.returnValue = "";
-    };
-    const guardLink = (event: MouseEvent) => {
-      if (!dirtyRef.current) return;
-      const target = event.target instanceof Element ? event.target.closest("a[href]") : null;
-      if (!target) return;
-      if (!window.confirm("لديك تعديلات غير محفوظة. هل تريد مغادرة المحرر وفقد هذه التعديلات؟")) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    };
-    window.addEventListener("beforeunload", beforeUnload);
-    document.addEventListener("click", guardLink, true);
-    return () => {
-      window.removeEventListener("beforeunload", beforeUnload);
-      document.removeEventListener("click", guardLink, true);
-    };
-  }, []);
-
-  return { dirty, markDirty, markSaved };
+function DraftFeedback({ draft }: { draft: ReturnType<typeof useUnsavedFormGuard> }) {
+  return <>
+    {draft.restored ? <InlineFeedback title={repairCopy.restored} tone="warning" /> : null}
+    {draft.dirty ? <button className={buttonClasses({ variant: "ghost", size: "sm" })} type="button" onClick={draft.discard}>{repairCopy.discard}</button> : null}
+  </>;
 }
 
 function textValue(formData: FormData, key: string) {
@@ -194,7 +170,7 @@ export function ArticleForm({ article, canApprove, idPrefix }: { article?: Artic
   const isEdit = Boolean(article?.id);
   const isProtected = isEdit && !canApprove && article?.status === "PUBLISHED";
   const prefix = idPrefix ?? `article-${article?.id ?? "create"}`;
-  const unsaved = useUnsavedFormGuard();
+  const unsaved = useUnsavedFormGuard(`article:${article?.id ?? "create"}:${article?.locale ?? "en"}`);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -237,7 +213,8 @@ export function ArticleForm({ article, canApprove, idPrefix }: { article?: Artic
   }
 
   return (
-    <form aria-busy={isBusy} className="grid gap-4" onChangeCapture={unsaved.markDirty} onSubmit={submit}>
+    <form ref={unsaved.formRef} aria-busy={isBusy} className="grid gap-4" onChangeCapture={unsaved.markDirty} onSubmit={submit}>
+      <DraftFeedback draft={unsaved} />
       {isProtected ? <InlineFeedback title={contentLifecycleUiCopy.protectedEdit(labelFrom(articleStatusLabels, article?.status ?? "PUBLISHED"))} tone="warning" /> : null}
       {unsaved.dirty ? <InlineFeedback title="لديك تعديلات غير محفوظة." tone="warning" /> : null}
       <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected || !isHydrated}>
@@ -285,7 +262,7 @@ export function CaseStudyForm({ study, canApprove, idPrefix }: { study?: CaseStu
   const isEdit = Boolean(study?.id);
   const isProtected = isEdit && !canApprove && ["APPROVED", "PUBLISHED"].includes(study?.status ?? "");
   const prefix = idPrefix ?? `case-study-${study?.id ?? "create"}`;
-  const unsaved = useUnsavedFormGuard();
+  const unsaved = useUnsavedFormGuard(`case-study:${study?.id ?? "create"}:${study?.locale ?? "en"}`);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -331,7 +308,8 @@ export function CaseStudyForm({ study, canApprove, idPrefix }: { study?: CaseStu
   }
 
   return (
-    <form aria-busy={isBusy} className="grid gap-4" onChangeCapture={unsaved.markDirty} onSubmit={submit}>
+    <form ref={unsaved.formRef} aria-busy={isBusy} className="grid gap-4" onChangeCapture={unsaved.markDirty} onSubmit={submit}>
+      <DraftFeedback draft={unsaved} />
       {isProtected ? <InlineFeedback title={contentLifecycleUiCopy.protectedEdit(labelFrom(caseStudyStatusLabels, study?.status ?? "PUBLISHED"))} tone="warning" /> : null}
       {unsaved.dirty ? <InlineFeedback title="لديك تعديلات غير محفوظة." tone="warning" /> : null}
       <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected || !isHydrated}>
@@ -382,7 +360,7 @@ export function SocialDraftForm({ draft, canApprove, idPrefix }: { draft?: Socia
   const isEdit = Boolean(draft?.id);
   const isProtected = isEdit && !canApprove && ["APPROVED", "SCHEDULED", "PUBLISHED"].includes(draft?.status ?? "");
   const prefix = idPrefix ?? `social-draft-${draft?.id ?? "create"}`;
-  const unsaved = useUnsavedFormGuard();
+  const unsaved = useUnsavedFormGuard(`social:${draft?.id ?? "create"}`);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -424,7 +402,8 @@ export function SocialDraftForm({ draft, canApprove, idPrefix }: { draft?: Socia
   }
 
   return (
-    <form aria-busy={isBusy} className="grid gap-4" onChangeCapture={unsaved.markDirty} onSubmit={submit}>
+    <form ref={unsaved.formRef} aria-busy={isBusy} className="grid gap-4" onChangeCapture={unsaved.markDirty} onSubmit={submit}>
+      <DraftFeedback draft={unsaved} />
       {isProtected ? <InlineFeedback title={contentLifecycleUiCopy.protectedEdit(labelFrom(socialDraftStatusLabels, draft?.status ?? "PUBLISHED"))} tone="warning" /> : null}
       {unsaved.dirty ? <InlineFeedback title="لديك تعديلات غير محفوظة." tone="warning" /> : null}
       <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected || !isHydrated}>
@@ -470,7 +449,7 @@ export function AiSocialDraftForm({ idPrefix }: { idPrefix?: string }) {
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
   const prefix = idPrefix ?? "ai-social-draft";
-  const unsaved = useUnsavedFormGuard();
+  const unsaved = useUnsavedFormGuard("social-ai:create");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -506,7 +485,8 @@ export function AiSocialDraftForm({ idPrefix }: { idPrefix?: string }) {
   }
 
   return (
-    <form className="grid gap-4" onChangeCapture={unsaved.markDirty} onSubmit={submit}>
+    <form ref={unsaved.formRef} className="grid gap-4" onChangeCapture={unsaved.markDirty} onSubmit={submit}>
+      <DraftFeedback draft={unsaved} />
       {unsaved.dirty ? <InlineFeedback title="لديك تعديلات غير محفوظة." tone="warning" /> : null}
       <TextInput disabled={isBusy} idPrefix={prefix} label="عنوان المسودة" name="title" required />
       <div className="grid gap-4 sm:grid-cols-2">

@@ -4,12 +4,16 @@ import { DashboardShell } from "@/components/layout";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
 import { Badge, ButtonLink, Card, CardContent, CardDescription, CardHeader, CardTitle, MetricCard, StateBlock } from "@/components/ui";
 import { ClientActionPanel } from "@/features/admin/clients/client-crm-forms";
+import { clientRepairCopy } from "@/features/admin/clients/client-repair-copy";
 import {
   appointmentStatusLabels,
   appointmentTypeLabels,
   caseStatusLabels,
   clientStatusLabels,
   consultationStatusLabels,
+  documentCategoryLabels,
+  documentStatusLabels,
+  formatBytes,
   formatDateTime,
   labelFrom,
   modeLabels,
@@ -133,6 +137,9 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
                     {manualCaseCopy.createForClient}
                   </ButtonLink>
                 ) : null}
+                <ButtonLink href={`/admin/cases?clientId=${client.id}`} size="sm" variant="secondary">
+                  {clientRepairCopy.viewAll}
+                </ButtonLink>
               </div>
             </CardHeader>
             <CardContent>
@@ -159,7 +166,45 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
           <div className="grid min-w-0 gap-5 xl:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>الاستشارات</CardTitle>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <CardTitle>{clientRepairCopy.documents}</CardTitle>
+                    <CardDescription>{clientRepairCopy.documentPreview(client.documents.length, client._count.documents)}</CardDescription>
+                  </div>
+                  <ButtonLink href={`/admin/documents?ownerClientId=${client.id}`} size="sm" variant="secondary">
+                    {clientRepairCopy.viewAll}
+                  </ButtonLink>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {client.documents.length ? (
+                  <div className="space-y-3">
+                    {client.documents.map((document) => (
+                      <Link key={document.id} className="block rounded border border-border p-3 hover:bg-surface-muted" href={`/api/files/${document.id}/download`}>
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="break-words font-semibold text-primary">{document.fileName}</p>
+                          <Badge tone={document.status === "ACCEPTED" ? "active" : document.status === "REJECTED" ? "danger" : "pending"}>{labelFrom(documentStatusLabels, document.status)}</Badge>
+                        </div>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {formatBytes(document.fileSize)} · {labelFrom(documentCategoryLabels, document.category)}{document.case ? ` · ${document.case.internalFileNumber}` : ""}
+                        </p>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <StateBlock title={clientRepairCopy.noDocumentsTitle} description={clientRepairCopy.noDocuments} />
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <CardTitle>الاستشارات</CardTitle>
+                  <ButtonLink href={`/admin/consultations?clientId=${client.id}`} size="sm" variant="secondary">
+                    {clientRepairCopy.viewAll}
+                  </ButtonLink>
+                </div>
               </CardHeader>
               <CardContent>
                 {client.consultationRequests.length ? (
@@ -186,7 +231,12 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle>المواعيد</CardTitle>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <CardTitle>{clientRepairCopy.upcomingAppointments}</CardTitle>
+                  <ButtonLink href={`/admin/calendar?clientId=${client.id}`} size="sm" variant="secondary">
+                    {clientRepairCopy.viewAll}
+                  </ButtonLink>
+                </div>
               </CardHeader>
               <CardContent>
                 {client.appointments.length ? (
@@ -204,7 +254,32 @@ export default async function AdminClientDetailPage({ params }: PageProps) {
                     ))}
                   </div>
                 ) : (
-                  <StateBlock title="لا توجد مواعيد" description="المواعيد المرتبطة بهذا العميل ستظهر هنا." />
+                  <StateBlock title="لا توجد مواعيد" description={clientRepairCopy.noUpcomingAppointments} />
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{clientRepairCopy.appointmentHistory}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {client.appointmentHistory.length ? (
+                  <div className="space-y-3">
+                    {client.appointmentHistory.map((appointment) => (
+                      <div key={appointment.id} className="rounded border border-border p-3">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="font-semibold text-foreground">{appointment.title}</p>
+                          <Badge tone={appointment.status === "COMPLETED" ? "active" : "closed"}>{labelFrom(appointmentStatusLabels, appointment.status)}</Badge>
+                        </div>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {formatDateTime(appointment.startsAt)} · {labelFrom(appointmentTypeLabels, appointment.type)} · {labelFrom(modeLabels, appointment.mode)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <StateBlock title="لا توجد مواعيد سابقة" description={clientRepairCopy.noAppointmentHistory} />
                 )}
               </CardContent>
             </Card>
