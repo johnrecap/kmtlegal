@@ -5,7 +5,7 @@ import {
   ClientSiteShell,
   clientPortalSecondaryActionClass
 } from "@/components/layout";
-import { Badge, ButtonLink } from "@/components/ui";
+import { Badge, ButtonLink, StateBlock } from "@/components/ui";
 import { ClientMobileAccordion } from "@/features/client/client-mobile-accordion";
 import {
   CaseAppointmentsGroup,
@@ -16,6 +16,7 @@ import {
 import { formatDateTime } from "@/lib/legal-format";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
 import { getPortalCaseDetail } from "@/server/portal/client-portal-service";
+import { ApiError } from "@/server/http/errors";
 import { clientNavForPath } from "../../client-navigation";
 import { getClientContent, normalizeClientLocale } from "@/content/client-content";
 import { clientPageMetadata } from "@/server/auth/client-page-metadata";
@@ -41,7 +42,33 @@ export default async function ClientCaseDetailPage({ params }: PageProps) {
     return <PermissionBlocked description={guard.description} locale={locale} title={guard.title} />;
   }
 
-  const legalCase = await getPortalCaseDetail(guard.context.principal, caseId);
+  let legalCase: Awaited<ReturnType<typeof getPortalCaseDetail>>;
+  try {
+    legalCase = await getPortalCaseDetail(guard.context.principal, caseId);
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 400 || error.status === 404)) {
+      return (
+        <ClientSiteShell
+          locale={locale}
+          navItems={clientNavForPath("/client/cases", locale)}
+          title={copy.cases.notFoundTitle}
+          userLabel={guard.context.user.name}
+        >
+          <StateBlock
+            action={
+              <ButtonLink className={clientPortalSecondaryActionClass} href="/client/cases" size="sm" variant="secondary">
+                {copy.cases.notFoundAction}
+              </ButtonLink>
+            }
+            description={copy.cases.notFoundDescription}
+            title={copy.cases.notFoundTitle}
+            tone="warning"
+          />
+        </ClientSiteShell>
+      );
+    }
+    throw error;
+  }
 
   return (
     <ClientSiteShell

@@ -27,14 +27,18 @@ export function generateMetadata() {
   return clientPageMetadata("homeTitle");
 }
 
-function openBalance(payments: Awaited<ReturnType<typeof getPortalDashboard>>["payments"]) {
-  return payments
-    .filter((payment) => payment.status !== "PAID" && payment.status !== "CANCELLED")
-    .reduce((total, payment) => total + Number(payment.amount.toString()), 0);
-}
-
 type DashboardAppointment = Awaited<ReturnType<typeof getPortalDashboard>>["appointments"][number];
 type PortalDashboard = Awaited<ReturnType<typeof getPortalDashboard>>;
+
+function formatDueBalances(dashboard: PortalDashboard, locale: ClientLocale) {
+  if (!dashboard.dueBalances.length) {
+    return formatMoney(0, "EGP", locale);
+  }
+
+  return dashboard.dueBalances
+    .map((balance) => formatMoney(balance.amount.toString(), balance.currency, locale))
+    .join(" · ");
+}
 
 function dashboardAppointmentStatus(
   appointment: DashboardAppointment,
@@ -53,12 +57,11 @@ function dashboardAppointmentTone(appointment: DashboardAppointment) {
 
 function nextPortalStep(
   dashboard: PortalDashboard,
-  balance: number,
   copy: ClientContent,
   locale: ClientLocale
 ) {
-  const duePayment = dashboard.payments.find((payment) => payment.status !== "PAID" && payment.status !== "CANCELLED");
-  if (duePayment && balance > 0) {
+  const duePayment = dashboard.nextDuePayment;
+  if (duePayment) {
     return {
       icon: "payments",
       title: copy.dashboard.dueTitle,
@@ -107,8 +110,8 @@ export default async function ClientHomePage() {
   }
 
   const dashboard = await getPortalDashboard(guard.context.principal);
-  const balance = openBalance(dashboard.payments);
-  const nextStep = nextPortalStep(dashboard, balance, copy, locale);
+  const nextStep = nextPortalStep(dashboard, copy, locale);
+  const dueBalanceLabel = formatDueBalances(dashboard, locale);
 
   return (
     <ClientSiteShell
@@ -119,10 +122,10 @@ export default async function ClientHomePage() {
     >
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-4">
-          <ClientPortalMetric icon="gavel" label={copy.dashboard.cases} value={String(dashboard.cases.length)} meta={copy.dashboard.casesMeta} />
-          <ClientPortalMetric icon="event" label={copy.dashboard.upcoming} value={String(dashboard.appointments.length)} meta={copy.dashboard.upcomingMeta} />
+          <ClientPortalMetric icon="gavel" label={copy.dashboard.cases} value={String(dashboard.casesCount)} meta={copy.dashboard.casesMeta} />
+          <ClientPortalMetric icon="event" label={copy.dashboard.upcoming} value={String(dashboard.appointmentsCount)} meta={copy.dashboard.upcomingMeta} />
           <ClientPortalMetric icon="folder" label={copy.dashboard.files} value={String(dashboard.documentsCount)} meta={copy.dashboard.filesMeta} />
-          <ClientPortalMetric icon="payments" label={copy.dashboard.dues} tone={balance > 0 ? "due" : "default"} value={formatMoney(balance, "EGP", locale)} meta={copy.dashboard.duesMeta} />
+          <ClientPortalMetric icon="payments" label={copy.dashboard.dues} tone={dashboard.dueBalances.length ? "due" : "default"} value={dueBalanceLabel} meta={copy.dashboard.duesMeta} />
         </div>
 
         <ClientPortalPanel

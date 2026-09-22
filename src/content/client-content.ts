@@ -113,6 +113,9 @@ const ar = {
   cases: {
     title: "قضاياي",
     empty: "لا توجد قضايا مرتبطة بحسابك حتى الآن.",
+    notFoundTitle: "القضية غير متاحة",
+    notFoundDescription: "تعذر العثور على هذه القضية ضمن القضايا المرتبطة بحسابك. يمكنك الرجوع إلى قائمة قضاياك والمحاولة من هناك.",
+    notFoundAction: "الرجوع إلى قضاياي",
     detailsResponsibleLawyer: "المحامي المسؤول",
     professionalEmail: "البريد المهني",
     fileCreated: "تاريخ إنشاء الملف",
@@ -232,6 +235,7 @@ const ar = {
     requestError: "تعذر تنفيذ الطلب الآن.",
     refreshError: "تعذر تحديث محادثة الفريق الآن.",
     networkError: "لا يمكن الوصول إلى الخادم الآن.",
+    retry: "إعادة المحاولة",
     privacy: "لا تشارك مستندات حساسة هنا إلا إذا طلب الفريق ذلك من خلال قناة آمنة.",
     you: "أنت",
     team: "الفريق"
@@ -244,6 +248,7 @@ const ar = {
   },
   errors: {
     fallback: "تعذر تنفيذ الطلب الآن. حاول مرة أخرى.",
+    AUTH_REQUIRED: "انتهت جلسة الدخول. سجل الدخول مرة أخرى.",
     UNAUTHENTICATED: "انتهت جلسة الدخول. سجل الدخول مرة أخرى.",
     PERMISSION_DENIED: "لا تملك صلاحية تنفيذ هذا الإجراء.",
     NOT_FOUND: "لم يتم العثور على البيانات المطلوبة.",
@@ -437,6 +442,9 @@ const en = {
   cases: {
     title: "My cases",
     empty: "No cases are linked to your account yet.",
+    notFoundTitle: "Case unavailable",
+    notFoundDescription: "This case could not be found among the cases linked to your account. Return to your case list and try from there.",
+    notFoundAction: "Back to my cases",
     detailsResponsibleLawyer: "Responsible lawyer",
     professionalEmail: "Professional email",
     fileCreated: "File created",
@@ -556,6 +564,7 @@ const en = {
     requestError: "The request could not be completed.",
     refreshError: "The team conversation could not be refreshed.",
     networkError: "The server cannot be reached right now.",
+    retry: "Try again",
     privacy: "Do not share sensitive documents here unless the team requests them through a secure channel.",
     you: "You",
     team: "Team"
@@ -568,6 +577,7 @@ const en = {
   },
   errors: {
     fallback: "The request could not be completed. Please try again.",
+    AUTH_REQUIRED: "Your session ended. Sign in again.",
     UNAUTHENTICATED: "Your session ended. Sign in again.",
     PERMISSION_DENIED: "You do not have permission to complete this action.",
     NOT_FOUND: "The requested information was not found.",

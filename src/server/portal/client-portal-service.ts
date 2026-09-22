@@ -6,6 +6,12 @@ import { ApiError } from "@/server/http/errors";
 import { canonicalPhone } from "@/server/phone/phone-normalization";
 import { parseWithSchema, uuidSchema, emailSchema } from "@/server/validation/schemas";
 import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
+import {
+  PORTAL_DUE_PAYMENT_STATUSES,
+  PORTAL_HIDDEN_APPOINTMENT_TYPES,
+  PORTAL_VISIBLE_PAYMENT_STATUSES,
+  isPortalVisiblePaymentStatus
+} from "@/lib/portal-visibility";
 
 export const portalProfileUpdateSchema = z.object({
   fullName: z.string().trim().min(2).max(120),
@@ -50,7 +56,26 @@ export function ownVisiblePortalAppointmentWhere(actor: Principal): Prisma.Appoi
 
   return {
     clientId,
+    ...portalVisibleAppointmentWhere(),
     OR: [{ caseId: null }, { case: { deletedAt: null } }]
+  };
+}
+
+export function portalVisibleAppointmentWhere(): Prisma.AppointmentWhereInput {
+  return { type: { notIn: [...PORTAL_HIDDEN_APPOINTMENT_TYPES] } };
+}
+
+export function portalVisiblePaymentWhere(clientId: string): Prisma.PaymentWhereInput {
+  return {
+    clientId,
+    status: { in: [...PORTAL_VISIBLE_PAYMENT_STATUSES] }
+  };
+}
+
+export function portalDuePaymentWhere(clientId: string): Prisma.PaymentWhereInput {
+  return {
+    clientId,
+    status: { in: [...PORTAL_DUE_PAYMENT_STATUSES] }
   };
 }
 
@@ -64,7 +89,25 @@ export function clientVisibleDocumentWhere(clientId: string): Prisma.DocumentWhe
 
 export async function getPortalDashboard(actor: Principal) {
   const clientId = assertClientPortalAccess(actor);
-  const [client, cases, appointments, documentsCount, payments] = await Promise.all([
+  const caseWhere = ownCaseWhere(actor);
+  const appointmentWhere: Prisma.AppointmentWhereInput = {
+    AND: [
+      ownVisiblePortalAppointmentWhere(actor),
+      { startsAt: { gte: new Date() } },
+      { status: { in: ["SCHEDULED", "RESCHEDULED"] } }
+    ]
+  };
+  const [
+    client,
+    cases,
+    casesCount,
+    appointments,
+    appointmentsCount,
+    documentsCount,
+    payments,
+    dueBalances,
+    nextDuePayment
+  ] = await Promise.all([
     prisma.client.findUnique({
       where: { id: clientId },
       include: {
@@ -72,21 +115,16 @@ export async function getPortalDashboard(actor: Principal) {
       }
     }),
     prisma.legalCase.findMany({
-      where: ownCaseWhere(actor),
+      where: caseWhere,
       orderBy: [{ nextSessionAt: "asc" }, { createdAt: "desc" }],
       take: 5,
       include: {
         assignedLawyer: { select: { id: true, name: true } }
       }
     }),
+    prisma.legalCase.count({ where: caseWhere }),
     prisma.appointment.findMany({
-      where: {
-        AND: [
-          ownVisiblePortalAppointmentWhere(actor),
-          { startsAt: { gte: new Date() } },
-          { status: { in: ["SCHEDULED", "RESCHEDULED"] } }
-        ]
-      },
+      where: appointmentWhere,
       include: {
         consultationRequest: { select: { id: true, status: true, assignedLawyerId: true } },
         lawyer: { select: { id: true, name: true } },
@@ -95,13 +133,24 @@ export async function getPortalDashboard(actor: Principal) {
       orderBy: { startsAt: "asc" },
       take: 5
     }),
+    prisma.appointment.count({ where: appointmentWhere }),
     prisma.document.count({
       where: clientVisibleDocumentWhere(clientId)
     }),
     prisma.payment.findMany({
-      where: { clientId },
+      where: portalVisiblePaymentWhere(clientId),
       orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }],
       take: 5
+    }),
+    prisma.payment.groupBy({
+      by: ["currency"],
+      where: portalDuePaymentWhere(clientId),
+      _sum: { amount: true },
+      orderBy: { currency: "asc" }
+    }),
+    prisma.payment.findFirst({
+      where: portalDuePaymentWhere(clientId),
+      orderBy: [{ dueDate: "asc" }, { issueDate: "asc" }, { createdAt: "asc" }]
     })
   ]);
 
@@ -112,9 +161,16 @@ export async function getPortalDashboard(actor: Principal) {
   return {
     client,
     cases,
+    casesCount,
     appointments,
+    appointmentsCount,
     documentsCount,
-    payments
+    payments,
+    dueBalances: dueBalances.map((balance) => ({
+      currency: balance.currency,
+      amount: balance._sum.amount ?? new Prisma.Decimal(0)
+    })),
+    nextDuePayment
   };
 }
 
@@ -146,6 +202,7 @@ export async function getPortalCaseDetail(actor: Principal, caseIdInput: string)
         }
       },
       appointments: {
+        where: portalVisibleAppointmentWhere(),
         orderBy: { startsAt: "asc" }
       },
       documents: {
@@ -153,6 +210,7 @@ export async function getPortalCaseDetail(actor: Principal, caseIdInput: string)
         orderBy: { createdAt: "desc" }
       },
       payments: {
+        where: { status: { in: [...PORTAL_VISIBLE_PAYMENT_STATUSES] } },
         orderBy: { issueDate: "desc" }
       }
     }
@@ -191,7 +249,7 @@ export async function listPortalAppointments(actor: Principal) {
 export async function listPortalPayments(actor: Principal) {
   const clientId = assertClientPortalAccess(actor);
   return prisma.payment.findMany({
-    where: { clientId },
+    where: portalVisiblePaymentWhere(clientId),
     include: {
       case: { select: { id: true, title: true, internalFileNumber: true } },
       paymentAttempt: { select: { id: true, provider: true, providerOrderId: true, status: true, failureCode: true, checkoutUrl: true, expiresAt: true, providerPaymentId: true } }
@@ -200,10 +258,25 @@ export async function listPortalPayments(actor: Principal) {
   });
 }
 
+export async function getPortalDueBalances(actor: Principal) {
+  const clientId = assertClientPortalAccess(actor);
+  const balances = await prisma.payment.groupBy({
+    by: ["currency"],
+    where: portalDuePaymentWhere(clientId),
+    _sum: { amount: true },
+    orderBy: { currency: "asc" }
+  });
+
+  return balances.map((balance) => ({
+    currency: balance.currency,
+    amount: balance._sum.amount ?? new Prisma.Decimal(0)
+  }));
+}
+
 export async function listPortalPaymentAttempts(actor: Principal) {
   const clientId = assertClientPortalAccess(actor);
-  return prisma.paymentAttempt.findMany({
-    where: { clientId },
+  const attempts = await prisma.paymentAttempt.findMany({
+    where: { clientId, appointment: ownVisiblePortalAppointmentWhere(actor) },
     include: {
       appointment: { select: { id: true, title: true, startsAt: true, status: true } },
       payment: { select: { id: true, invoiceNumber: true, status: true, paidAt: true } }
@@ -211,6 +284,13 @@ export async function listPortalPaymentAttempts(actor: Principal) {
     orderBy: [{ createdAt: "desc" }],
     take: 20
   });
+
+  return attempts.map((attempt) => ({
+    ...attempt,
+    payment: attempt.payment && isPortalVisiblePaymentStatus(attempt.payment.status)
+      ? attempt.payment
+      : null
+  }));
 }
 
 export async function getPortalProfile(actor: Principal) {

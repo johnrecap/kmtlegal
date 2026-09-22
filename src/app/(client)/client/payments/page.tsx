@@ -6,9 +6,10 @@ import { Badge, DataTable, type DataTableColumn } from "@/components/ui";
 import { MobileCard } from "@/features/client/payment-mobile-card";
 import { buttonClasses } from "@/components/ui/button";
 import { formatDateTime, formatMoney } from "@/lib/legal-format";
+import { isPortalDuePaymentStatus } from "@/lib/portal-visibility";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
 import { publicPaymentReceiptUrl } from "@/server/payments/payment-receipt-service";
-import { listPortalPaymentAttempts, listPortalPayments } from "@/server/portal/client-portal-service";
+import { getPortalDueBalances, listPortalPaymentAttempts, listPortalPayments } from "@/server/portal/client-portal-service";
 import { clientNavForPath } from "../client-navigation";
 import { getClientContent, normalizeClientLocale, type ClientContent, type ClientLocale } from "@/content/client-content";
 import { clientPageMetadata } from "@/server/auth/client-page-metadata";
@@ -23,7 +24,19 @@ type PaymentRow = Awaited<ReturnType<typeof listPortalPayments>>[number];
 type PaymentAttemptRow = Awaited<ReturnType<typeof listPortalPaymentAttempts>>[number];
 
 function isDue(payment: PaymentRow) {
-  return payment.status !== "PAID" && payment.status !== "CANCELLED";
+  return isPortalDuePaymentStatus(payment.status);
+}
+
+type DueBalance = Awaited<ReturnType<typeof getPortalDueBalances>>[number];
+
+function formatDueBalances(balances: DueBalance[], locale: ClientLocale) {
+  if (!balances.length) {
+    return formatMoney(0, "EGP", locale);
+  }
+
+  return balances
+    .map((balance) => formatMoney(balance.amount.toString(), balance.currency, locale))
+    .join(" · ");
 }
 
 function statusTone(status: string) {
@@ -142,20 +155,20 @@ export default async function ClientPaymentsPage() {
     return <PermissionBlocked description={guard.description} locale={locale} title={guard.title} />;
   }
 
-  const [payments, paymentAttempts] = await Promise.all([
+  const [payments, paymentAttempts, dueBalances] = await Promise.all([
     listPortalPayments(guard.context.principal),
-    listPortalPaymentAttempts(guard.context.principal)
+    listPortalPaymentAttempts(guard.context.principal),
+    getPortalDueBalances(guard.context.principal)
   ]);
   const activeGatewayAttempts = paymentAttempts.filter((attempt) => attempt.status !== "PAID" || !attempt.payment);
   const duePayments = payments.filter(isDue);
-  const dueBalance = duePayments.reduce((total, payment) => total + Number(payment.amount.toString()), 0);
 
   return (
     <ClientSiteShell locale={locale} navItems={clientNavForPath("/client/payments", locale)} title={copy.payments.title} userLabel={guard.context.user.name}>
       <div className="space-y-5">
         <div className="grid gap-4 sm:grid-cols-3">
           <ClientPortalMetric icon="pending_actions" label={copy.payments.openDues} tone={duePayments.length ? "due" : "default"} value={String(duePayments.length)} meta={copy.payments.openDuesMeta} />
-          <ClientPortalMetric icon="account_balance_wallet" label={copy.payments.dueTotal} tone={dueBalance > 0 ? "due" : "default"} value={formatMoney(dueBalance, "EGP", locale)} meta={copy.payments.dueTotalMeta} />
+          <ClientPortalMetric icon="account_balance_wallet" label={copy.payments.dueTotal} tone={dueBalances.length ? "due" : "default"} value={formatDueBalances(dueBalances, locale)} meta={copy.payments.dueTotalMeta} />
           <ClientPortalMetric icon="receipt_long" label={copy.payments.records} value={String(payments.length)} meta={copy.payments.allRecordsMeta} />
         </div>
         {payments.some(row => paymentRequiresReview(row.paymentAttempt)) ? <p className="text-sm text-kmt-muted">{paymentReviewCopy[locale].totals}</p> : null}
