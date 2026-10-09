@@ -202,13 +202,14 @@ describe("booking chat stage composition (source contract)", () => {
   it("holds the compact density targets", () => {
     // Shell + viewport: content-driven height (compact on first load),
     // capped so long conversations scroll internally, never the page.
-    expect(chatSource).toContain("max-h-[min(72vh,38rem)]");
-    expect(chatSource).toContain("max-sm:max-h-[min(84svh,38rem)]");
+    expect(chatSource).toContain("max-h-[min(72dvh,38rem)]");
+    expect(chatSource).toContain("var(--booking-viewport-height,100dvh)");
     expect(chatSource).not.toContain("min-h-[30rem]");
-    // Composer pill 48–52px: 40px input/send + 8px vertical + border.
+    // The input retains its base class; public CSS and the send control
+    // enforce 44px touch targets and 16px input text on mobile.
     expect(chatSource).toContain("min-h-10 w-full");
-    expect(chatSource).toContain("h-10 w-10 shrink-0");
-    expect(chatSource).toContain("!min-h-0");
+    expect(chatSource).toContain("h-11 w-11 shrink-0");
+    expect(chatSource).toContain("!min-h-11");
     // Logical 16px text inset shared by input and placeholder.
     expect(chatSource).toContain("pe-1.5 ps-4");
     expect(chatSource).toContain("pe-20 ps-4");

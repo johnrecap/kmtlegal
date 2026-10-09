@@ -1,5 +1,6 @@
 "use client";
 
+import { publicOfficeProfile } from "@/content/public-office-profile";
 import { MotionConfig } from "motion/react";
 import { MaterialSymbol } from "@/components/ui";
 import { FloatingDock, type FloatingDockItem } from "@/components/ui/floating-dock";
@@ -8,15 +9,15 @@ import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 
 /**
  * Public floating dock: exactly two actions — Consultation (existing
- * localized route, same page, no modal) and WhatsApp (configured URL or
- * the contact page fallback, new tab + noopener). Rendered by PublicShell
+ * localized route, same page, no modal) and WhatsApp (owner-approved shared
+ * contact URL, new tab + noopener). Rendered by PublicShell
  * on every public route EXCEPT the consultation route itself (the shell
  * hides it there so the fixed overlay can never cover the assistant
  * composer); Admin/Client Portal (separate layouts) never get it.
  */
 export function PublicFloatingDock({ locale = "en" }: { locale?: PublicLocale }) {
   const content = getPublicContent(locale);
-  const whatsappHref = process.env.NEXT_PUBLIC_KMT_WHATSAPP_URL || localizedPublicHref("/contact", locale);
+  const whatsappHref = publicOfficeProfile.whatsappHref;
   const items: FloatingDockItem[] = [
     {
       title: content.shared.bookConsultation,

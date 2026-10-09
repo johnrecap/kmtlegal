@@ -216,8 +216,8 @@ export function HeroParallaxLayers({
           </svg>
         </div>
 
-        <div className="relative mx-auto grid max-w-[1200px] items-center gap-12 px-4 pb-16 pt-14 sm:px-6 md:pb-24 md:pt-20 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14 lg:px-10 lg:pt-24">
-          <div className="flex flex-col">
+        <div className="relative mx-auto grid max-w-[1200px] items-center gap-8 px-4 pb-12 pt-8 sm:gap-12 sm:px-6 md:pb-20 md:pt-14 lg:grid-cols-[1.02fr_0.98fr] lg:gap-14 lg:px-10 lg:pt-20">
+          <div className="flex min-w-0 flex-col">
             <div data-hero="eyebrow" className="kmt-hero-enter order-1" style={{ animationDelay: "0ms" }}>
               <p className="inline-flex items-center gap-2 rounded-full border border-kmt-gold/40 bg-kmt-gold/10 px-4 py-1.5 text-sm font-semibold text-[var(--kmt-public-text)]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[var(--kmt-public-gold)]" aria-hidden="true" />
@@ -234,7 +234,7 @@ export function HeroParallaxLayers({
               aria-label={title}
               delay={0.09}
               duration={0.6}
-              className="kmt-text-animate order-2 mt-6 max-w-xl text-[2.75rem] font-semibold leading-[1.08] text-[var(--kmt-public-text)] drop-shadow-[var(--kmt-public-text-shadow)] md:text-6xl xl:text-7xl"
+              className={cn("kmt-text-animate order-2 mt-5 max-w-xl text-balance font-semibold text-[var(--kmt-public-text)] drop-shadow-[var(--kmt-public-text-shadow)]", locale === "ar" ? "text-4xl leading-[1.45] md:text-5xl xl:text-6xl" : "text-[2.5rem] leading-[1.15] md:text-5xl xl:text-6xl")}
             >
               {title}
             </TextAnimate>

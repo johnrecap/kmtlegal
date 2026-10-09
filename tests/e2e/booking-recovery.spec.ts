@@ -33,7 +33,7 @@ if (width === 390) {
       await page.goto(`${bookingPath}?resumeAttemptId=test-resume&token=test-token`);
       const log = page.getByTestId("booking-chat-log");
       await expect(log).toContainText(copy.fallbackError);
-      await expect(log.getByRole("link", { name: copy.whatsappFallbackLabel })).toHaveAttribute("href", locale === "ar" ? "/ar/contact" : "/contact");
+      await expect(log.getByRole("link", { name: copy.whatsappFallbackLabel })).toHaveAttribute("href", "https://wa.me/201117416666");
       expect(errors).toEqual([]);
       if (failure === "http") await page.screenshot({ path: testInfo.outputPath(`resume-error-${locale}.png`), fullPage: true });
     });
@@ -120,6 +120,7 @@ test("does not report a payment page ready when checkout returns no payment atte
   await page.getByTestId(`booking-language-${locale}`).click();
   await page.getByTestId("booking-quick-book").click();
   await page.getByTestId("booking-matter-chip").nth(1).click();
+  await page.getByTestId("booking-consent").check();
   await page.getByTestId("booking-pay-booking").click();
   await expect(page.getByTestId("booking-chat-log")).toContainText(copy.fallbackError);
   await expect(page.getByTestId("booking-chat-log")).not.toContainText(copy.checkoutCreated);

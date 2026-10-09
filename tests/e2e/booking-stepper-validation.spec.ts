@@ -160,7 +160,9 @@ test.describe("consultation booking chat", () => {
         await expect(page.getByTestId("booking-stage-tabs")).toHaveCount(0);
         await expect(shell.locator('[role="tablist"]')).toHaveCount(0);
         for (const label of journey.labels) {
-          await expect(shell.getByText(label, { exact: true })).toHaveCount(0);
+          // Informational transcript text may mention appointments; it is not a step control.
+          await expect(shell.getByRole("button", { name: label, exact: true })).toHaveCount(0);
+          await expect(shell.getByRole("tab", { name: label, exact: true })).toHaveCount(0);
         }
       };
 
@@ -197,6 +199,7 @@ test.describe("consultation booking chat", () => {
       await assertNoStepper();
 
       // Confirmation + after-submit.
+      await page.getByTestId("booking-consent").first().check();
       await page.getByTestId("booking-confirm-booking").click();
       await expect(page.getByText("CONS-STEP-99", { exact: false }).first()).toBeVisible();
       await assertNoStepper();

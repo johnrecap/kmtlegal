@@ -401,7 +401,11 @@ describe("product UI primitives", () => {
     expect(publicChatSource).toContain("activeLocale");
     expect(publicChatSource).toContain("logScrollRef");
     expect(publicChatSource).toContain("kmt-chat-scrollbar");
-    expect(publicChatSource).not.toContain("scrollIntoView");
+    // Viewport resize may reveal the focused input above a software keyboard;
+    // incoming conversation turns must still scroll the log only.
+    expect(publicChatSource).toContain('viewport.addEventListener("resize", resize)');
+    expect(publicChatSource).toContain("input instanceof HTMLInputElement && shell.contains(input)");
+    expect(publicChatSource).not.toContain("logScrollRef.current.scrollIntoView");
     expect(globalStyles).toContain(".kmt-chat-scrollbar::-webkit-scrollbar-track");
     expect(globalStyles).toContain("scrollbar-color: rgb(199 154 82 / 72%) transparent");
     expect(globalStyles).toContain(".kmt-chat-scrollbar::-webkit-scrollbar-button");

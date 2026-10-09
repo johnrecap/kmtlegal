@@ -1,0 +1,38 @@
+
+Running 26 tests using 2 workers
+
+
+
+
+
+(node:19872) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:26588) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › ar light 360: public layout, contacts and SEO
+[2/26] [chromium] › tests\e2e\public-phase-one.spec.ts:10:7 › ar: menu, touch targets and enlarged text
+[3/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › ar light 390: public layout, contacts and SEO
+[4/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › ar light 768: public layout, contacts and SEO
+[5/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › ar light 1024: public layout, contacts and SEO
+[6/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › ar light 1440: public layout, contacts and SEO
+[7/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › ar dark 360: public layout, contacts and SEO
+[8/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › ar dark 390: public layout, contacts and SEO
+[9/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › ar dark 768: public layout, contacts and SEO
+[10/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › ar dark 1024: public layout, contacts and SEO
+[11/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › ar dark 1440: public layout, contacts and SEO
+[12/26] [chromium] › tests\e2e\public-phase-one.spec.ts:91:7 › ar: contact rejection preserves draft and retry succeeds
+[13/26] [chromium] › tests\e2e\public-phase-one.spec.ts:117:7 › ar: mobile keyboard viewport, navigation and utility pages
+[14/26] [chromium] › tests\e2e\public-phase-one.spec.ts:10:7 › en: menu, touch targets and enlarged text
+[15/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › en light 360: public layout, contacts and SEO
+[16/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › en light 390: public layout, contacts and SEO
+[17/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › en light 768: public layout, contacts and SEO
+[18/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › en light 1024: public layout, contacts and SEO
+[19/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › en light 1440: public layout, contacts and SEO
+[20/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › en dark 360: public layout, contacts and SEO
+[21/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › en dark 390: public layout, contacts and SEO
+[22/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › en dark 768: public layout, contacts and SEO
+[23/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › en dark 1024: public layout, contacts and SEO
+[24/26] [chromium] › tests\e2e\public-phase-one.spec.ts:50:9 › en dark 1440: public layout, contacts and SEO
+[25/26] [chromium] › tests\e2e\public-phase-one.spec.ts:91:7 › en: contact rejection preserves draft and retry succeeds
+[26/26] [chromium] › tests\e2e\public-phase-one.spec.ts:117:7 › en: mobile keyboard viewport, navigation and utility pages
+  26 passed (3.9m)

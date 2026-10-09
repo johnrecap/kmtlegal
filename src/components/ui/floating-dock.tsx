@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils";
  *
  * Real component architecture, kept intact: desktop magnification dock
  * (mouseX motion value → distance transform → springed icon containers
- * with hover tooltips) + mobile expanding menu. KMT adaptations
+ * with hover tooltips) + always-visible mobile actions (owner phase-one requirement). KMT adaptations
  * (behavior contract preserved, styling owned by caller/theme):
  * - `motion/react` instead of framer-motion (same API; matches repo stack).
  * - No Tabler dependency: `icon` is caller-provided ReactNode (KMT uses
@@ -67,47 +67,15 @@ function FloatingDockMobile({
   className?: string;
   menuLabel: string;
 }) {
-  const [open, setOpen] = useState(false);
   return (
-    <div className={cn("relative block md:hidden", className)} data-testid="public-floating-dock-mobile">
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            layoutId="public-dock-nav"
-            className="absolute inset-x-0 bottom-full mb-2 flex flex-col items-center gap-2"
-          >
-            {items.map((item, idx) => (
-              <motion.div
-                key={item.title}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{
-                  opacity: 0,
-                  y: 10,
-                  transition: { delay: idx * 0.05 },
-                }}
-                transition={{ delay: (items.length - 1 - idx) * 0.05 }}
-              >
-                <DockAction
-                  item={item}
-                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] text-[var(--kmt-assistant-text)]"
-                  iconClassName="h-5 w-5"
-                />
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-        aria-label={menuLabel}
-        className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-bubble)] text-[var(--kmt-public-gold)]"
-      >
-        <MaterialSymbol className="text-xl" name={open ? "close" : "add"} />
-      </button>
-    </div>
+    <nav aria-label={menuLabel} className={cn("flex max-w-[calc(100vw-2rem)] items-stretch gap-2 rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-shell)] p-2 shadow-lg md:hidden", className)} data-testid="public-floating-dock-mobile">
+      {items.map((item) => (
+        <DockAction key={item.title} item={item} className="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 text-[var(--kmt-assistant-text)] hover:bg-[var(--kmt-public-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-kmt-gold">
+          <span className="shrink-0 text-[var(--kmt-public-gold)]" aria-hidden="true">{item.icon}</span>
+          <span className="text-xs font-semibold leading-5">{item.title}</span>
+        </DockAction>
+      ))}
+    </nav>
   );
 }
 
@@ -150,8 +118,8 @@ function IconContainer({
     return val - bounds.x - bounds.width / 2;
   });
 
-  const widthTransform = useTransform(distance, [-150, 0, 150], [40, 80, 40]);
-  const heightTransform = useTransform(distance, [-150, 0, 150], [40, 80, 40]);
+  const widthTransform = useTransform(distance, [-150, 0, 150], [44, 80, 44]);
+  const heightTransform = useTransform(distance, [-150, 0, 150], [44, 80, 44]);
   const widthTransformIcon = useTransform(distance, [-150, 0, 150], [20, 40, 20]);
   const heightTransformIcon = useTransform(
     distance,

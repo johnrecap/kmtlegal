@@ -1,3 +1,4 @@
+import { getPublicContent } from "@/content/public-content";
 import { redirect } from "next/navigation";
 import {
   ConsultationPaymentReturnPage,
@@ -5,6 +6,11 @@ import {
 } from "@/features/payments/consultation-payment-return-page";
 
 export const dynamic = "force-dynamic";
+export const metadata = {
+  title: getPublicContent("en").paymentReturn.eyebrow + " | KMT Legal",
+  description: getPublicContent("en").paymentReturn.safeLinkNotice,
+  robots: { index: false, follow: false }
+};
 
 export default async function PaymentReturnRoute({
   searchParams

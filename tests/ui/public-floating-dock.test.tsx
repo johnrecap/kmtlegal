@@ -8,7 +8,7 @@ const shellSource = readFileSync(join(process.cwd(), "src/components/layout/publ
 
 describe("public floating dock (source contract)", () => {
   it("vendors the real Aceternity Floating Dock architecture", () => {
-    // Desktop magnification + mobile expanding menu, same mechanism.
+    // Desktop magnification retained; mobile actions are now always visible.
     expect(dockSource).toContain("useMotionValue");
     expect(dockSource).toContain("useSpring");
     expect(dockSource).toContain("useTransform");
@@ -31,7 +31,8 @@ describe("public floating dock (source contract)", () => {
     expect(wrapperSource).toContain("content.shared.bookConsultation");
     expect(wrapperSource).toContain("content.contactPage.whatsappLabel");
     expect(wrapperSource).toContain('localizedPublicHref("/book-consultation", locale)');
-    expect(wrapperSource).toContain("NEXT_PUBLIC_KMT_WHATSAPP_URL");
+    expect(wrapperSource).toContain("publicOfficeProfile.whatsappHref");
+    expect(wrapperSource).not.toContain("NEXT_PUBLIC_KMT_WHATSAPP_URL");
     expect(wrapperSource).toContain("external: true");
     // No AI/third action, no duplicate consultation modal.
     expect(wrapperSource).not.toContain("<Dialog");

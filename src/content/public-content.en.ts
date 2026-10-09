@@ -1,3 +1,4 @@
+import { publicOfficeProfile } from "./public-office-profile";
 import { publicLegalServicesEn as legalServices, publicServiceCategoriesEn as serviceCategories } from "./public-services";
 import { publicBookingConsentCopy } from "./public-booking-consent";
 
@@ -158,23 +159,23 @@ const officeHours = "Sunday - Thursday, 9:00 AM - 6:00 PM";
 
 const branches = [
   {
-    name: "Cairo Office",
-    address: "New Cairo, Cairo, Egypt",
+    name: "New Administrative Capital Office",
+    address: publicOfficeProfile.address.en,
     hours: officeHours,
-    email: "contact@kmtlegal.com"
+    email: publicOfficeProfile.email
   },
   {
     name: "Remote Meetings",
     address: "Online meetings by video or phone call, arranged after request review.",
     hours: officeHours,
-    email: "booking@kmtlegal.com"
+    email: publicOfficeProfile.email
   }
 ] as const;
 
 const contactChannels = {
-  phoneDisplay: "",
-  phoneHref: "",
-  whatsappHref: ""
+  phoneDisplay: publicOfficeProfile.phoneDisplay,
+  phoneHref: publicOfficeProfile.phoneHref,
+  whatsappHref: publicOfficeProfile.whatsappHref
 } as const;
 
 const footerContent = {
@@ -182,8 +183,8 @@ const footerContent = {
   practiceLinks: practiceAreaMatrix.map((area) => ({ label: area.title, href: area.href })),
   offices: branches.map((branch) => ({ name: branch.name, address: branch.address })),
   contact: {
-    email: "contact@kmtlegal.com",
-    phone: "By confirmed appointment",
+    email: publicOfficeProfile.email,
+    phone: publicOfficeProfile.phoneDisplay,
     bookingHref: "/book-consultation",
     note: "Consultation requests begin with a structured form and do not create final legal advice."
   },
@@ -219,8 +220,9 @@ export const publicContentEn = {
     clientLoginCta: "Client Login",
     mainNavLabel: "Main navigation",
     compactNavLabel: "Compact navigation",
+    closeNavigation: "Close navigation",
     footerCtaTitle: "Ready to discuss a legal matter?",
-    footerCtaDescription: "Send a structured request so the office can review the matter before confirming the suitable contact or appointment path.",
+    footerCtaDescription: "Tell us what legal support you need, or book a consultation with our team.",
     confidentiality: "Data confidentiality",
     humanReview: "Human review",
     practiceLinksLabel: "Service links",
@@ -248,12 +250,12 @@ export const publicContentEn = {
     insightsEmptyCta: "Browse articles"
   },
   home: {
-    metadataTitle: "KMT Legal | Structured Legal Support for Business and Private Matters",
-    metadataDescription: "Structured legal consultation, corporate, contract, real estate, dispute, and booking support from KMT Legal.",
+    metadataTitle: "KMT Legal | WHERE LAW MEETS BUSINESS",
+    metadataDescription: "KMT Legal in the New Administrative Capital, Egypt. Legal consultations, corporate and contract services, real estate review, and debt claims. Contact us or book a consultation.",
     heroEyebrow: "Services",
-    heroTitle: "Structured Legal Support for Business and Private Matters",
+    heroTitle: "WHERE LAW MEETS BUSINESS",
     heroDescription:
-      "Submit your matter through a clear intake process. The office reviews the facts and documents before confirming the suitable next step.",
+      "Legal services for businesses and individuals. Our team reviews the facts and documents to help you understand your options and the next steps.",
     heroPickerLabel: "Choose the matter closest to your request",
     heroDocketTitle: "Request draft",
     heroDocketMatter: "Matter",
@@ -284,7 +286,7 @@ export const publicContentEn = {
     industriesDescription: "We help clients make clearer decisions through document review, risk assessment, and practical next steps.",
     teamEyebrow: "Team",
     teamTitle: "A practical specialist legal team",
-    teamDescription: "Explore available expertise paths for booking or initial review.",
+    teamDescription: "Explore the team’s experience and practice areas before requesting a consultation.",
     insightsEyebrow: "Insights",
     insightsTitle: "Legal Awareness Without Promises",
     insightsDescription: "Published administrative content only appears when it is approved and available in the current language.",
@@ -302,11 +304,11 @@ export const publicContentEn = {
     metadataTitle: "Legal Services | KMT Legal",
     metadataDescription: "KMT Legal services in legal consultation, companies, contracts, real estate, claims, and collections.",
     heroEyebrow: "Services",
-    heroTitle: "Find the Closest Service Path",
+    heroTitle: "Find the Right Legal Service",
     heroDescription: "Start from the matter type or search for the service closest to your need, then submit a structured request for office review.",
     sectionEyebrow: "Services",
-    sectionTitle: "Find the Closest Service Path",
-    sectionDescription: "Use the service names and matter areas to reach the right path, then start a structured consultation request.",
+    sectionTitle: "Find the Right Legal Service",
+    sectionDescription: "Search by service or area of law, explore the details, and request a consultation.",
     searchLabel: "Search by service or matter",
     emptyTitle: "No matching services",
     servicesCountLabel: "services"
@@ -314,7 +316,7 @@ export const publicContentEn = {
   serviceDetail: {
     includedTitle: "Services included",
     documentsTitle: "Documents That Help Review",
-    outcomesTitle: "Expected Outputs",
+    outcomesTitle: "What to Expect",
     backToServices: "Back to Services",
     breadcrumbAriaLabel: "Breadcrumb",
     breadcrumbServices: "Services"
@@ -340,7 +342,7 @@ export const publicContentEn = {
     experienceTitle: "Experience",
     educationTitle: "Education",
     admissionsTitle: "Admissions",
-    bookingNotice: "The lawyer and appointment are confirmed after request review. Booking does not mean final acceptance of the file.",
+    bookingNotice: "The appropriate lawyer is assigned after the request is reviewed. Booking a consultation does not mean the office has accepted the case.",
     relationshipNotice: "Team profiles are for specialty overview only and do not create a lawyer-client relationship before office acceptance.",
     requestConsultation: "Request Consultation",
     breadcrumbTeam: "Team"
@@ -388,35 +390,35 @@ export const publicContentEn = {
   },
   contactPage: {
     metadataTitle: "Contact KMT Legal",
-    metadataDescription: "KMT Legal contact details, offices, and general contact form.",
+    metadataDescription: `Contact KMT Legal in the New Administrative Capital by phone or WhatsApp on ${publicOfficeProfile.phoneDisplay}, or email ${publicOfficeProfile.email}.`,
     heroEyebrow: "Contact",
     heroTitle: "Contact the Office",
     heroDescription: "Send a general message, or request a consultation if the matter needs structured legal review.",
     sectionEyebrow: "Contact",
-    sectionTitle: "Contact the Office",
-    sectionDescription: "Use the contact form for general questions. For legal consultations, use the structured booking form.",
+    sectionTitle: "Send Us a Message",
+    sectionDescription: "Use this form for general questions. If you need legal advice, book a consultation.",
     locationsEyebrow: "Locations",
-    whatsappLabel: "Chat on WhatsApp",
+    whatsappLabel: "WhatsApp",
     whatsappNote: "Fastest way to reach the office for scheduling and general questions."
   },
   bookingPage: {
     metadataTitle: "Request an Initial Consultation | KMT Legal",
-    metadataDescription: "Request an initial consultation through a focused intake assistant with office review and no legal advice from AI.",
+    metadataDescription: "Book a KMT Legal consultation, choose an available appointment, or check an existing booking reference. The assistant helps with booking and does not provide legal advice.",
     heroEyebrow: "Consultation Request",
     heroTitle: "Request an Initial Consultation",
     heroDescription: "The intake assistant collects the details needed for office review. It does not provide legal advice before the team contacts you.",
-    manualHeroDescription: "Use the booking chat to provide the required details, then the appointment is confirmed without a booking fee.",
+    manualHeroDescription: "Complete your details and choose an available time in the booking chat to confirm your consultation without a booking fee.",
     sectionEyebrow: "Consultation Request",
     sectionTitle: "Start with the Consultation Assistant",
     sectionDescription: "Use one clear conversation to request a consultation or check a previous reference. Do not send documents now.",
-    manualSectionTitle: "Book Through Chat Without A Fee",
-    manualSectionDescription: "The chat collects the name, phone, request text, and appointment time, then shows a reference for secretary review and assignment.",
+    manualSectionTitle: "Book Without a Booking Fee",
+    manualSectionDescription: "Enter your name, phone number, and a summary of your request, then choose a time. Once confirmed, you will receive a reference to follow your booking.",
     afterSubmitTitle: "What happens after submission?",
     afterSubmitSteps: [
-      "The request is saved as a new review item.",
-      "The assistant prepares an initial summary that still needs lawyer review.",
-      "The team contacts you to confirm suitability and timing.",
-      "If accepted, the file may later become a client and case inside the admin system."
+      "Your request status and reference appear when booking is complete.",
+      "A summary of your request is prepared for the office team to review.",
+      "If a booking fee applies, the appointment is confirmed only after payment confirmation.",
+      "Booking a consultation does not mean the office has accepted the case."
     ],
     requestedLawyer: "Requested lawyer"
   },
@@ -479,11 +481,11 @@ export const publicContentEn = {
     progressPayment: "Payment",
     resumePaymentDraft: "We restored your previous details. You can choose a new time or edit the request without starting over.",
     whatsappFallback: "The request could not be completed more than once. You can contact the office directly and we will help with booking.",
-    whatsappFallbackLabel: "Contact the office",
+    whatsappFallbackLabel: "Contact us on WhatsApp",
     categorySuggestionTitle: "Suggested consultation area",
     keepCategory: "Keep this area",
     useSuggestedCategory: "Use suggested area",
-    nextStepsAfterBooking: "What happens next: the team reviews the request, then contacts you to confirm the appointment or request missing details.",
+    nextStepsAfterBooking: "Keep your reference to follow your booking. The team will review your request and contact you if further information is needed.",
     preferredSlot: "Preferred appointment time",
     preferredSlotHint: "Optional. Office booking slots are reviewed by the team.",
     consent: publicBookingConsentCopy.en,
@@ -502,7 +504,7 @@ export const publicContentEn = {
     trustTitle: "Next steps",
     trustItems: [
       { icon: "verified_user", label: "Human review", description: "The office reviews the request." },
-      { icon: "event_available", label: "Timing", description: "The team confirms suitability and time." },
+      { icon: "event_available", label: "Appointment", description: "Choose a time and follow its confirmation status." },
       { icon: "lock", label: "Limited data", description: "Do not send documents here." }
     ]
   },
@@ -633,26 +635,25 @@ export const publicContentEn = {
     title: "Privacy Policy and Applicant Notice",
     description: "A clear account of the information KMT Legal receives, why it is used, who may access it, and how to exercise your privacy rights.",
     lastUpdatedLabel: "Last updated",
-    lastUpdated: "2026-07-10",
+    lastUpdated: "2026-10-09",
     summaryTitle: "Key information",
     contentsLabel: "On this page",
     summaryItems: [
       { label: "Responsible entity", value: "KMT Legal" },
       { label: "Who this covers", value: "Website visitors, clients, consultation requesters, and job applicants" },
-      { label: "Recruitment contact", value: "careers@kmtlegal.com" },
-      { label: "General privacy contact", value: "contact@kmtlegal.com" }
+      { label: "Recruitment contact", value: publicOfficeProfile.email },
+      { label: "General privacy contact", value: publicOfficeProfile.email }
     ],
     sections: [
       {
         id: "who-we-are",
         title: "1. Who is responsible for your data",
         paragraphs: [
-          "KMT Legal is responsible for deciding how personal data covered by this notice is used. Recruitment questions and applicant privacy requests can be sent to the careers address below. General website and client privacy questions can be sent to the general contact address."
+          "KMT Legal is responsible for deciding how personal data covered by this notice is used. Recruitment questions, applicant privacy requests, and general website and client privacy questions can be sent to the contact address below."
         ],
         bullets: [],
         links: [
-          { label: "careers@kmtlegal.com", href: "mailto:careers@kmtlegal.com" },
-          { label: "contact@kmtlegal.com", href: "mailto:contact@kmtlegal.com" }
+          { label: publicOfficeProfile.email, href: publicOfficeProfile.emailHref }
         ]
       },
       {
@@ -755,7 +756,7 @@ export const publicContentEn = {
         ],
         bullets: [],
         links: [
-          { label: "Applicant privacy request", href: "mailto:careers@kmtlegal.com?subject=Applicant%20privacy%20request" },
+          { label: "Applicant privacy request", href: publicOfficeProfile.applicantPrivacyHref },
           { label: "Personal Data Protection Center", href: "https://pdpc.gov.eg" }
         ]
       },

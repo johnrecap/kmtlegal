@@ -1,0 +1,135 @@
+{
+  "date": "2026-10-09",
+  "baseline": "e716e7e6b597d7d2b684f2368a8888cc6c59b283",
+  "scope": "Public website and booking phase one; direct implementation without subagents",
+  "overall": "INCOMPLETE_OWNER_INPUTS",
+  "checks": {
+    "build": {
+      "status": "VERIFIED",
+      "staticPages": 39,
+      "log": "build.log"
+    },
+    "typecheck": "VERIFIED",
+    "lint": "VERIFIED",
+    "browser": {
+      "status": "VERIFIED",
+      "publicTests": 26,
+      "routeCombinations": 280,
+      "locales": [
+        "ar",
+        "en"
+      ],
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "widths": [
+        360,
+        390,
+        768,
+        1024,
+        1440
+      ],
+      "bookingDistinctScenarios": 38,
+      "bookingEvidence": "37 passing scenarios in initial-browser-with-resolved-failures.log plus corrected stepper rerun; no app booking logic changed",
+      "runtime": "Optimized Next build, APP_ENV=local, NODE_ENV=test, DATABASE_URL empty, mock write endpoints"
+    },
+    "unit": {
+      "status": "NOT_VERIFIED_FULL_SUITE",
+      "passed": 731,
+      "skipped": 55,
+      "failedAssertions": 0,
+      "failedSuites": 1,
+      "reason": "Git Bash missing for postgres-backup-tool-resolution.test.ts"
+    },
+    "finalUi": {
+      "status": "VERIFIED",
+      "passed": 202,
+      "failed": 0
+    },
+    "links": {
+      "status": "VERIFIED",
+      "routes": 28,
+      "failures": 0,
+      "evidence": "crawl-results.json"
+    },
+    "secrets": {
+      "changedSource": "VERIFIED using original scanner on exported changed files",
+      "wholeWorkspace": "Existing ignored .env setting reported; not staged"
+    }
+  },
+  "notVerified": [
+    "Physical iOS/Android keyboards",
+    "Native WhatsApp application handoff",
+    "SMTP delivery",
+    "Live payment/database integration",
+    "Production deployment"
+  ],
+  "blockedOwnerInputs": [
+    "Detailed address and map pin",
+    "Official team data and portraits",
+    "Genuine office images",
+    "Official social URLs"
+  ],
+  "semanticEvidence": "docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md (2026-10-09 section); visual review is separate from automated checks and owner acceptance",
+  "sourceHashes": {
+    "playwright.config.ts": "daf86de10331d215401f7f5266308945981060d05a158a6fd6c20366465a5502",
+    "src/app/(public-ar)/ar/client-account/setup/page.tsx": "ba1b0a9b4f4d7021945c431aa391f86c83c70f457b23e4e2a931df3b865dce83",
+    "src/app/(public-ar)/ar/payment/consultation/receipt/page.tsx": "c3a36b963bd5181d3806e2882906c5ff6c211effe0be5903020ce3fcaf1061b5",
+    "src/app/(public-ar)/ar/payment/consultation/return/page.tsx": "01f3b7e79129aef179bbd18f235b4b68230e74527b5c22aaab1898d9e9be610b",
+    "src/app/(public-en)/client-account/setup/page.tsx": "d68dbe2bd01c129d30e65d095c00fa693221bb1954f08d9f889b26a3ad12c215",
+    "src/app/(public-en)/payment/consultation/receipt/page.tsx": "62929b5b4320e45cc59097ae890303b7457b551d9245ae0862a4448128496272",
+    "src/app/(public-en)/payment/consultation/return/page.tsx": "85fe0b233fb81e6993f14b6ca3d5853fa0e89e0fef2a87233a46dc28724ac31e",
+    "src/app/globals.css": "adb3431ea7b5d0b94be25a5dc085b9c09c5ff2d672084fe800e8e0b1e5cd0676",
+    "src/components/brand/kmt-brand-logo.tsx": "d21d9b38dbe958661951f2728dc4ee0de90c26a8490ef48baee56f3038fdc056",
+    "src/components/layout/public-floating-dock.tsx": "a0f8137c48073f7c6c28244ca6f9a3ae52cdd3377b9670f8ba87e47ea8dfe010",
+    "src/components/layout/public-header.tsx": "710ff9b8d7ca6a6558d8d570ac67508f365173cb417047dce19355c3539e3fd6",
+    "src/components/layout/public-shell.tsx": "d917e932c53f81963860f59c76c7c4f5e57958c09996bed4e12be4082f9f466a",
+    "src/components/motion-ui/hero-parallax-layers.tsx": "e10bd30968ae6df5b4fda8c9aab6754a0e4e4768f71c0de495f2b2a28a20ae12",
+    "src/components/ui/floating-dock.tsx": "a6843df4e04796c0c03a3d1b9f30086ab4705a6c4a80898a4aa9e0e727f6ad36",
+    "src/content/booking-assistant-copy.ts": "7c5ded4e849a1482971577671362ce384ef45fce226acf379586f3601c2f435e",
+    "src/content/public-content.ar.ts": "c195407685c71f58221880548abb9916978ef6780f69ca49fcbad927ef8f3061",
+    "src/content/public-content.en.ts": "1b691494a240cd78e670ef5079db38ca675b07c53f595902b58532c23d25c6b5",
+    "src/content/public-services.ts": "d21cc76f09a72f8f80a4c967b50b6ae47307fe0988c25d28ae61fdfcb9cd3764",
+    "src/features/public-site/consultation-booking-chat.tsx": "f822a43ae2bf0862570735f7a6195dc1eb45696d1a8cf0000a8fcc8d9c858a92",
+    "src/features/public-site/contact-form.tsx": "f3e90fbbb1dadc7f8e148cca2d13c42efd235af0526c6cc2fbfab65e1a6eb54c",
+    "src/features/public-site/public-pages.tsx": "944a6b880ece6733c1fe81615b490fa947e7071740e6ea723f7fc44620ba3cac",
+    "tests/e2e/booking-recovery.spec.ts": "bd6082b4dec83d51589abff435968fde8ea9df780a6d6933082c3c33848c4791",
+    "tests/e2e/booking-stepper-validation.spec.ts": "c2eb2c0390db86bc8d36acbd727d64943af61b7403eefb44d93d85f8ffbc0420",
+    "tests/e2e/mvp-smoke.spec.ts": "b7d8677342d0d2c8ad7a34d7f15e6e753bb2c97904a1cc9d1fe20de84485758d",
+    "tests/ui/booking-assistant-stage.test.tsx": "91a89450594cac921ad4201f2d3008ac01eac92f555f2ce248860b3ba70d89cd",
+    "tests/ui/product-components.test.tsx": "7eb4eb953bf8261124bdc97b5453793df4cc296c0acffe24d485dd3854d61069",
+    "tests/ui/public-floating-dock.test.tsx": "59370b9c9528bf9723d769c82b8051215f5acc78f6b03ddc0598d13e229705ef",
+    "tests/ui/public-footer-theme.test.tsx": "f5ff9e8fc77a90b069060b7778e4429e6d46718a9f3fcda8fd20ed00518fe48f",
+    "tests/ui/public-pages.test.tsx": "5125d7d58d708d8093723462a6f637adc70b53576b927e19bc583a1426ab94b9",
+    "src/content/public-office-profile.ts": "0f2ba291eb1dfbf6182f6f962fae2f829f084c3d8cecbed76d939af7dcace0dd",
+    "tests/e2e/public-phase-one.spec.ts": "934a281b26bd4c2954af194b0ded2353feac5a20164b94ec44cc6eb9e0dc1453"
+  },
+  "imageHashes": {
+    "after-contact-ar-dark-1440.png": "718b65ced2c58eb26a10fd6b0af17a82efb8894395ab86021b5f0695066727f8",
+    "after-contact-ar-dark-390.png": "f52fc9f0ba564403b34339b07a4bd8b8c75cee218cdd48efe622d76e4e9beb25",
+    "after-contact-ar-light-1440.png": "73f2551d806a530b98e8ee62d876167b4c481bac5de0a23895d889e0be90dd53",
+    "after-contact-ar-light-390.png": "834cb7ba6053bab937d14537869601bd2719275b91f5af3280d63442d294b4ba",
+    "after-contact-en-dark-1440.png": "52c684964bdfe044c9b57abe7e5140a04e824cf0bad97e0fc5fb4f9acec39ddc",
+    "after-contact-en-dark-390.png": "bb632218a89415ad27ece13ce5f67e89fc83749a7b90e955a50c5ded3a272948",
+    "after-contact-en-light-1440.png": "df8ccb55858730f4587541eb8d4063f9a481e92c21dfe8fded8e0baf451e3648",
+    "after-contact-en-light-390.png": "161b743c7405e6922ad4490d9aefd1fbdfa1324a182852ab25fec1e1e968d608",
+    "after-full-contact-ar-dark-390.png": "d10a097615df0095a834dc15ac01e53ea81e09ca5a32fc0a0a3fa155aa50daeb",
+    "after-full-home-ar-dark-390.png": "3fd6b8a8501768e5ebe3905cc3009c9ffb6a123e5fba39ba78ee9679b4a6cf59",
+    "after-home-ar-dark-1440.png": "b1372963744d1099b7873c4cd6431bf817c9989adb920b2f8a9a5f801bd852f4",
+    "after-home-ar-dark-390.png": "e852355beb791bcd26ce43e1559794b0d87e3d062c4a14a4d7331c8cde5dadd6",
+    "after-home-ar-light-1440.png": "55ba3c4df41bd18f1b90cde5ef4a044df83c0ae84aab08abc5aaf8b81d83fde6",
+    "after-home-ar-light-390.png": "84613aa8767ebf6cf3ace5b907d0848a513ff3deb4fef0b8f3a27a23b1725f0b",
+    "after-home-en-dark-1440.png": "76cecd3edca41b3ce0dd78e4f18bb3023243dbbee993aecbb01cd4eca00df315",
+    "after-home-en-dark-390.png": "500fcf9197f3af7989f8453bdfcd00211cd19e1f3eb4cb171f946dee4d336b26",
+    "after-home-en-light-1440.png": "b129c0c0f47a1b3a7b591802fa3133de0b653f0d067fe59e9dd969362eb60fd3",
+    "after-home-en-light-390.png": "25de2fb42d56ba4853b9814cf4fe86d7f494808d6da53378f40c0619a3b13cc5",
+    "after-menu-ar-dark.png": "6b6ee130264cc913a143e8fc1ce0e227774fcf8e1ef563e3d2247194108c11db",
+    "after-menu-ar-light.png": "851a9e0527a4f9f153db0bfe40b32746b2afb8570193d418360e5adb8862431a",
+    "after-menu-en-dark.png": "3715a2852b65e2f4e415f8634e88f791f6f00189df2466683f5628fb3d14a31c",
+    "after-menu-en-light.png": "bb124a247430bfcf0b401a622ac1707a98880c22ed6ba3ecae623bb30aeefd23",
+    "before-contact-ar.png": "b4bed84fc557a4ad69efd850786670df8ea26985553ad87dcf8c11d6fe2a0be8",
+    "before-home-ar.png": "5d6ac8c7663125ad26469d2a81a127e92b6f9b46356751eea95bf1c588f00c32"
+  },
+  "logFormatting": "Trailing whitespace and trailing blank lines normalized; test outcomes unchanged"
+}

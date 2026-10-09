@@ -126,6 +126,7 @@ export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
         />
         <TextInput
           autoComplete="email"
+          dir="ltr"
           disabled={fieldsDisabled}
           error={fieldErrors.email}
           label={copy.email}
@@ -166,7 +167,7 @@ export function ContactForm({ locale = "en" }: { locale?: PublicLocale }) {
         />
       </div>
       <div className="mt-4">
-        <label className="flex items-start gap-3 text-sm leading-7 text-foreground" htmlFor={consentInputId}>
+        <label className="flex min-h-11 cursor-pointer items-start gap-3 py-2 text-sm leading-7 text-foreground" htmlFor={consentInputId}>
           <input
             aria-describedby={fieldErrors.consent ? consentErrorId : undefined}
             aria-invalid={fieldErrors.consent ? true : undefined}

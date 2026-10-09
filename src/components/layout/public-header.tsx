@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { MotionConfig } from "motion/react";
+import { X } from "lucide-react";
 import { KmtBrandLogo } from "@/components/brand";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/animate-ui/components/radix/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/animate-ui/components/radix/tooltip";
@@ -140,7 +141,7 @@ export function PublicHeader({
       <TooltipTrigger asChild>
         <a
           aria-label={shell.languageSwitchLabel}
-          className={cn("inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--kmt-public-line)] text-xs font-semibold text-[var(--kmt-public-muted)] transition-colors duration-kmt-fast ease-kmt-out hover:border-[var(--kmt-public-gold)] hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none sm:h-10 sm:w-auto sm:px-3", publicMotionButton, publicMotionCta)}
+          className={cn("inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--kmt-public-line)] text-xs font-semibold text-[var(--kmt-public-muted)] transition-colors duration-kmt-fast ease-kmt-out hover:border-[var(--kmt-public-gold)] hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none sm:h-11 sm:w-auto sm:px-3", publicMotionButton, publicMotionCta)}
           data-testid="public-language-switch"
           href={languageHref}
           hrefLang={locale === "ar" ? "en" : "ar"}
@@ -174,7 +175,7 @@ export function PublicHeader({
         <NavBody visible={glassed} className="px-4 sm:px-6">
           {/* Logo size stays constant across scroll states so the sticky
               header height never shifts on the TOP→SCROLLED transition. */}
-          <KmtBrandLogo href={localizedPublicHref("/", locale)} size="md" surface="theme" variant="lockup" />
+          <KmtBrandLogo href={localizedPublicHref("/", locale)} size="md" surface="theme" variant="public" />
           <nav aria-label={shell.mainNavLabel} className="flex min-w-0 flex-1 items-stretch justify-center self-stretch">
             <Menu setActive={setServicesActive} className="min-w-0 flex-1 items-center gap-0.5 space-x-0 self-stretch px-0 py-0">
               {navItems.map((item) =>
@@ -282,8 +283,8 @@ export function PublicHeader({
 
         {/* Mobile: Aceternity MobileNav bar + Animate UI Sheet drawer. */}
         <MobileNav visible={scrolled} className="px-4">
-          <MobileNavHeader className="w-full">
-            <div className="flex items-center gap-1">
+          <MobileNavHeader className="h-auto min-h-16 w-full flex-wrap gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-1">
               <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                 <SheetTrigger asChild>
                   <button
@@ -292,7 +293,7 @@ export function PublicHeader({
                     aria-label={shell.compactNavLabel}
                     className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--kmt-public-line)] text-[var(--kmt-public-muted)] transition-colors duration-kmt-fast ease-kmt-out hover:border-[var(--kmt-public-gold)] hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none lg:hidden"
                   >
-                    <MaterialSymbol className="text-2xl" name={mobileOpen ? "close" : "menu"} />
+                    {mobileOpen ? <X aria-hidden="true" size={24} /> : <MaterialSymbol className="text-2xl" name="menu" />}
                   </button>
                 </SheetTrigger>
                 <SheetContent
@@ -302,6 +303,12 @@ export function PublicHeader({
                 >
                   <SheetTitle className="sr-only">{shell.mainNavLabel}</SheetTitle>
                   <nav aria-label={shell.mainNavLabel} className="flex h-full flex-col gap-1 overflow-y-auto px-4 py-5 sm:px-6">
+                    <div className="mb-4 flex items-center justify-between gap-2">
+                      <KmtBrandLogo href={localizedPublicHref("/", locale)} size="sm" variant="public" />
+                      <button type="button" aria-label={shell.closeNavigation} onClick={closeMobile} className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-[var(--kmt-public-line)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring">
+                        <X aria-hidden="true" size={20} />
+                      </button>
+                    </div>
                     <div onClick={closeMobile}>
                       <ConsultationLink className="w-full" label={shell.consultationCta} locale={locale} />
                     </div>
@@ -442,15 +449,17 @@ export function PublicHeader({
                         </li>
                       ) : null}
                     </ul>
+                    <Link className="mt-4 flex min-h-11 items-center gap-2 rounded-lg border border-[var(--kmt-public-line)] px-3" href={`/login?next=/client&locale=${locale}`} onClick={closeMobile}>
+                      <MaterialSymbol name="account_circle" />{shell.clientLoginCta}
+                    </Link>
                   </nav>
                 </SheetContent>
               </Sheet>
-              <KmtBrandLogo href={localizedPublicHref("/", locale)} size="md" surface="theme" variant="lockup" />
+              <KmtBrandLogo href={localizedPublicHref("/", locale)} size="md" surface="theme" variant="public" />
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               {languageAction}
               {themeAction}
-              <ClientLoginLink label={shell.clientLoginCta} locale={locale} />
             </div>
           </MobileNavHeader>
         </MobileNav>

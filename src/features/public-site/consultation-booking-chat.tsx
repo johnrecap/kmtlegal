@@ -1,7 +1,8 @@
 "use client";
 
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { publicOfficeProfile } from "@/content/public-office-profile";
 import { MotionConfig } from "motion/react";
 import { KmtBrandLogo } from "@/components/brand";
 import { Button, MaterialSymbol } from "@/components/ui";
@@ -149,7 +150,7 @@ const assistantShellClasses = cn(
 
 const chipButtonClasses = cn(
   publicMotionButton,
-  "min-h-10 rounded-full border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-chip)] px-4 text-sm text-[var(--kmt-assistant-text)] hover:border-kmt-gold/60 hover:bg-kmt-gold hover:text-[#120d07]"
+  "min-h-11 whitespace-normal rounded-full border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-chip)] px-4 py-2 text-sm text-[var(--kmt-assistant-text)] hover:border-kmt-gold/60 hover:bg-kmt-gold hover:text-[#120d07]"
 );
 
 const initialDraft: BookingDraft = {
@@ -177,6 +178,25 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
   const content = getPublicContent(activeLocale);
   const copy = content.bookingChat;
   const logScrollRef = useRef<HTMLDivElement | null>(null);
+  const chatShellRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    let frame = 0;
+    const resize = () => {
+      const shell = chatShellRef.current;
+      if (!shell) return;
+      shell.style.setProperty("--booking-viewport-height", `${viewport.height}px`);
+      const input = document.activeElement;
+      if (input instanceof HTMLInputElement && shell.contains(input)) {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => input.scrollIntoView({ block: "nearest" }));
+      }
+    };
+    resize();
+    viewport.addEventListener("resize", resize);
+    return () => { viewport.removeEventListener("resize", resize); cancelAnimationFrame(frame); };
+  }, []);
   const [isHydrated, setIsHydrated] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     const initialCopy = getPublicContent(locale).bookingChat;
@@ -377,7 +397,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         role: "assistant",
         text: restoredCopy.fallbackError,
         tone: "error",
-        actionHref: restoredLocale === "ar" ? "/ar/contact" : "/contact",
+        actionHref: publicOfficeProfile.whatsappHref,
         actionLabel: restoredCopy.whatsappFallbackLabel
       }]);
     });
@@ -431,7 +451,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
     if (failureCount.current >= 2 && !contactOfferShown.current) {
       contactOfferShown.current = true;
       append("assistant", copy.whatsappFallback, "default", {
-        actionHref: process.env.NEXT_PUBLIC_KMT_WHATSAPP_URL || "/contact",
+        actionHref: publicOfficeProfile.whatsappHref,
         actionLabel: copy.whatsappFallbackLabel
       });
     }
@@ -900,7 +920,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
         must never move the page itself — growth below the fold is absorbed
         by the log scroll, never by page scroll.
       */}
-      <div className="relative z-10 flex max-h-[min(72vh,38rem)] min-w-0 flex-col max-sm:max-h-[min(84svh,38rem)]" data-testid="booking-chat-shell">
+      <div ref={chatShellRef} className="relative z-10 flex max-h-[min(72dvh,38rem)] min-w-0 flex-col max-sm:max-h-[min(38rem,calc(var(--booking-viewport-height,100dvh)-2rem))]" data-testid="booking-chat-shell">
         {/*
           Simplified header: mark + name + live status + one-line scope.
           Trust content moved into the conversation as the what-next info
@@ -916,7 +936,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
                 <span className="h-2 w-2 shrink-0 rounded-full bg-current" aria-hidden="true" />
                 {copy.onlineNow}
               </p>
-              <p className="mt-1 truncate text-xs leading-5 text-[var(--kmt-assistant-muted)]">{copy.scope}</p>
+              <p className="mt-1 text-xs leading-5 text-[var(--kmt-assistant-muted)]">{copy.scope}</p>
             </div>
           </div>
 
@@ -1053,7 +1073,7 @@ export function ConsultationBookingChat({ initialService, locale = "en" }: { ini
             trailing={
               <Button
                 aria-label={copy.send}
-                className={cn(publicMotionButton, publicMotionCta, "h-10 w-10 shrink-0 rounded-full !min-h-0 !px-0")}
+                className={cn(publicMotionButton, publicMotionCta, "h-11 w-11 shrink-0 rounded-full !min-h-11 !px-0")}
                 disabled={!chatLocale || isBusy || !freeMessage.trim()}
                 type="submit"
               >
@@ -1260,7 +1280,7 @@ function SlotChoicePanel({
           </div>
           <div className="flex flex-wrap gap-2">
             {group.slots.map((slot) => (
-              <Button key={slot.id} className={cn(chipButtonClasses, "!min-h-10 !px-3")} data-testid="booking-slot-chip" type="button" variant="secondary" onClick={() => onChoose(slot)}>
+              <Button key={slot.id} className={cn(chipButtonClasses, "!min-h-11 !px-3")} data-testid="booking-slot-chip" type="button" variant="secondary" onClick={() => onChoose(slot)}>
                 <MaterialSymbol name="schedule" />
                 {formatPublicTime(slot.startsAt, locale)}
               </Button>
@@ -1355,12 +1375,12 @@ function ConsentControl({
   error: boolean;
   onChange: (checked: boolean) => void;
 }) {
-  const inputId = "booking-consent";
-  const errorId = "booking-consent-error";
+  const inputId = useId();
+  const errorId = `${inputId}-error`;
 
   return (
     <div className="mt-4 rounded-2xl border border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-log)] px-4 py-3">
-      <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-[var(--kmt-assistant-text)]" htmlFor={inputId}>
+      <label className="flex min-h-11 cursor-pointer items-start gap-3 text-sm leading-6 text-[var(--kmt-assistant-text)]" htmlFor={inputId}>
         <input
           aria-describedby={error ? errorId : undefined}
           aria-invalid={error || undefined}

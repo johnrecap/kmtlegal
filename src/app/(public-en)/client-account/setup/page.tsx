@@ -3,7 +3,9 @@ import { ClientAccountSetupPage } from "@/features/public-site/client-account-se
 
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: getPublicContent("en").clientAccountSetup.metadataTitle
+  title: getPublicContent("en").clientAccountSetup.metadataTitle,
+  description: getPublicContent("en").clientAccountSetup.description,
+  robots: { index: false, follow: false }
 };
 
 export default function EnglishClientAccountSetupPage({

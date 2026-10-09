@@ -1,0 +1,3159 @@
+{
+  "success": false,
+  "passed": 731,
+  "failedAssertions": 0,
+  "failedSuites": 1,
+  "skipped": 55,
+  "suiteErrors": [
+    {
+      "name": "server/postgres-backup-tool-resolution.test.ts",
+      "message": "Git Bash is required for PostgreSQL backup resolver tests."
+    }
+  ],
+  "tests": [
+    {
+      "name": "batch10 real PostgreSQL conversation write lock rejects client, staff, and continue writes that lose the real lock race without a message or success audit",
+      "status": "skipped"
+    },
+    {
+      "name": "batch10 real PostgreSQL conversation write lock reproduces the unlocked first-message decision, then serializes two real first requests into one thread",
+      "status": "skipped"
+    },
+    {
+      "name": "batch10 real PostgreSQL conversation write lock does not block another client's first conversation while this client's row is locked",
+      "status": "skipped"
+    },
+    {
+      "name": "batch10 real PostgreSQL conversation write lock rejects a missing client scope without creating a conversation",
+      "status": "skipped"
+    },
+    {
+      "name": "batch10 real PostgreSQL conversation write lock allows a reply that obtains the write lock before a later close, then leaves the thread closed",
+      "status": "skipped"
+    },
+    {
+      "name": "batch10 real PostgreSQL conversation write lock keeps owner and staff access separate for synthetic principals",
+      "status": "skipped"
+    },
+    {
+      "name": "batch10 real PostgreSQL conversation write lock enforces unauthenticated and owner-only detail/reply routes with synthetic active sessions",
+      "status": "skipped"
+    },
+    {
+      "name": "batch12 live admin authorization and password concurrency rejects account creation when the actor loses live authority while the real hash is paused",
+      "status": "skipped"
+    },
+    {
+      "name": "batch12 live admin authorization and password concurrency rejects password reset when the actor session is revoked while the real hash is paused",
+      "status": "skipped"
+    },
+    {
+      "name": "batch12 live admin authorization and password concurrency rechecks the destination role after hashing before creating an account",
+      "status": "skipped"
+    },
+    {
+      "name": "batch12 live admin authorization and password concurrency allows live exact Super Admin writes and denies a delegated user with matching permission keys",
+      "status": "skipped"
+    },
+    {
+      "name": "batch12 live admin authorization and password concurrency rejects a password reset when the target changes after the form version was observed",
+      "status": "skipped"
+    },
+    {
+      "name": "batch12 live admin authorization and password concurrency allows only one password reset for one observed target version",
+      "status": "skipped"
+    },
+    {
+      "name": "batch12 live admin authorization and password concurrency preserves self-session exclusion and revokeSessions=false for an already inactive target",
+      "status": "skipped"
+    },
+    {
+      "name": "batch13 office profile consistency and live authorization lists an absent office profile with defaults and a null version",
+      "status": "skipped"
+    },
+    {
+      "name": "batch13 office profile consistency and live authorization allows exactly one first create and audits only the winner",
+      "status": "skipped"
+    },
+    {
+      "name": "batch13 office profile consistency and live authorization allows one same-version update and keeps the value, actor, version, and audit aligned with its response",
+      "status": "skipped"
+    },
+    {
+      "name": "batch13 office profile consistency and live authorization rejects stale and null claims on an existing row, then accepts the returned current version",
+      "status": "skipped"
+    },
+    {
+      "name": "batch13 office profile consistency and live authorization advances the version even when the supplied clock equals or trails the observed version",
+      "status": "skipped"
+    },
+    {
+      "name": "batch13 office profile consistency and live authorization requires an explicit valid version without changing data",
+      "status": "skipped"
+    },
+    {
+      "name": "batch13 office profile consistency and live authorization preserves guest denial, default Office Admin denial, and delegated Office Admin access",
+      "status": "skipped"
+    },
+    {
+      "name": "batch13 office profile consistency and live authorization rejects a write when the actual session is revoked after the route captured its real auth snapshot",
+      "status": "skipped"
+    },
+    {
+      "name": "batch13 office profile consistency and live authorization rejects a write when delegated permission is removed after the route captured its real auth snapshot",
+      "status": "skipped"
+    },
+    {
+      "name": "batch13 office profile consistency and live authorization preserves the email, storage, and staff-2FA setting contracts",
+      "status": "skipped"
+    },
+    {
+      "name": "batch14 protected content lifecycle baseline requires approval for every protected source state across all content types",
+      "status": "skipped"
+    },
+    {
+      "name": "batch14 protected content lifecycle baseline preserves guest denial, creator draft edits, and approver updates",
+      "status": "skipped"
+    },
+    {
+      "name": "batch14 protected content lifecycle baseline requires both the matching type approval and the existing create permission",
+      "status": "skipped"
+    },
+    {
+      "name": "batch14 protected content lifecycle baseline preserves creator rework from rejected and archived source states",
+      "status": "skipped"
+    },
+    {
+      "name": "batch14 protected content lifecycle baseline denies protected targets from ordinary drafts without partial writes",
+      "status": "skipped"
+    },
+    {
+      "name": "batch14 protected content lifecycle baseline waits for a real row lock, observes the committed promotion, and denies the creator",
+      "status": "skipped"
+    },
+    {
+      "name": "batch14 protected content lifecycle baseline keeps each concurrent writer response and audit attached to its locked before snapshot",
+      "status": "skipped"
+    },
+    {
+      "name": "FIX-23 rollback-only PostgreSQL acceptance isolates clients, counts complete results, groups currencies and paginates beyond preview limits",
+      "status": "skipped"
+    },
+    {
+      "name": "client localization contract normalizes unsupported and existing-account locales to Arabic",
+      "status": "passed"
+    },
+    {
+      "name": "client localization contract keeps Arabic and English catalogs structurally identical",
+      "status": "passed"
+    },
+    {
+      "name": "client localization contract formats dates, date-times, and money in the selected language",
+      "status": "passed"
+    },
+    {
+      "name": "client localization contract maps stable client error codes without exposing internal messages",
+      "status": "passed"
+    },
+    {
+      "name": "client localization contract keeps visible client copy out of route and interactive component source",
+      "status": "passed"
+    },
+    {
+      "name": "normalizeText folds Arabic letter variants so casual typing still matches content",
+      "status": "passed"
+    },
+    {
+      "name": "normalizeText strips Arabic diacritics and Latin accents",
+      "status": "passed"
+    },
+    {
+      "name": "normalizeText strips tatweel and zero-width direction marks",
+      "status": "passed"
+    },
+    {
+      "name": "normalizeText lowercases Latin text and collapses whitespace",
+      "status": "passed"
+    },
+    {
+      "name": "paired backup/restore orchestration (MOCKED exec, real temp fs) publishes a complete verified set and preserves previous backups",
+      "status": "passed"
+    },
+    {
+      "name": "paired backup/restore orchestration (MOCKED exec, real temp fs) fails the run on database-dump failure without publishing",
+      "status": "passed"
+    },
+    {
+      "name": "paired backup/restore orchestration (MOCKED exec, real temp fs) fails the run on uploads-archive failure without publishing",
+      "status": "passed"
+    },
+    {
+      "name": "paired backup/restore orchestration (MOCKED exec, real temp fs) refuses unsafe or overlapping destinations",
+      "status": "passed"
+    },
+    {
+      "name": "paired backup/restore orchestration (MOCKED exec, real temp fs) rejects incomplete sets and corrupted checksums on restore",
+      "status": "passed"
+    },
+    {
+      "name": "paired backup/restore orchestration (MOCKED exec, real temp fs) dry-run inspects without writing and refuses traversal listings",
+      "status": "passed"
+    },
+    {
+      "name": "paired backup/restore orchestration (MOCKED exec, real temp fs) apply requires confirmation, separate empty targets, and verifies files",
+      "status": "passed"
+    },
+    {
+      "name": "paired backup/restore orchestration (MOCKED exec, real temp fs) refuses non-empty restore databases",
+      "status": "passed"
+    },
+    {
+      "name": "paired backup/restore orchestration (MOCKED exec, real temp fs) redacts credentials and validates archive entries",
+      "status": "passed"
+    },
+    {
+      "name": "paired backup/restore orchestration (MOCKED exec, real temp fs) maintenance-window capture records two quiet readings and verifiedConsistent",
+      "status": "passed"
+    },
+    {
+      "name": "paired backup/restore orchestration (MOCKED exec, real temp fs) maintenance-window without a pause record refuses verified-consistent completion",
+      "status": "passed"
+    },
+    {
+      "name": "paired backup/restore orchestration (MOCKED exec, real temp fs) active writers fail the quiet capture instead of claiming consistency",
+      "status": "passed"
+    },
+    {
+      "name": "paired backup/restore orchestration (MOCKED exec, real temp fs) require-consistent fails a live capture instead of labeling it verified",
+      "status": "passed"
+    },
+    {
+      "name": "paired backup/restore orchestration (MOCKED exec, real temp fs) restore document check fails on a required missing file and passes extras separately",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared admin accessibility contracts keeps repeated names stable while DOM relationships remain unique",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared admin accessibility contracts applies explicit and prefixed IDs across controls and preserves caller ARIA references",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared admin accessibility contracts gives tables captions and column scopes, including empty state naming",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared admin accessibility contracts names filter and search regions distinctly",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared admin accessibility contracts uses assertive alerts for errors and polite statuses otherwise",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared admin accessibility contracts projects state colors from one token source without raw feedback utilities",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared admin accessibility contracts announces loading skeletons and respects reduced motion",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-aware command center renders priority work before metrics and makes the first permitted action primary",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-aware command center renders every metric as a semantic drill-down link with timeframe and scope copy",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-aware command center keeps an unavailable section recoverable while leaving ready sections usable",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-aware command center omits forbidden widgets and client search rather than rendering permission placeholders",
+      "status": "passed"
+    },
+    {
+      "name": "admin contact message inbox UI renders a responsive, named queue with mixed-direction safe contact details",
+      "status": "passed"
+    },
+    {
+      "name": "admin contact message inbox UI exposes native keyboard actions only to managers and keeps feedback announced",
+      "status": "passed"
+    },
+    {
+      "name": "admin contact message inbox UI renders an explicit empty state without losing filters",
+      "status": "passed"
+    },
+    {
+      "name": "admin content lifecycle forms shows actual protected states and disables every edit control for a creator",
+      "status": "passed"
+    },
+    {
+      "name": "admin content lifecycle forms keeps rejected and archived records editable but requires an allowed target for creator rework",
+      "status": "passed"
+    },
+    {
+      "name": "admin content lifecycle forms captures the form across await, resets only after create success, and blocks duplicate submission",
+      "status": "passed"
+    },
+    {
+      "name": "admin content lifecycle forms resets case-study and social forms only after their create handlers succeed",
+      "status": "passed"
+    },
+    {
+      "name": "admin content lifecycle forms preserves typed values after rejected submissions in all three forms",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 11 admin detail/form migration contracts leaves zero native details/summary on migrated detail/form surfaces",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 11 admin detail/form migration contracts gates every migrated destructive action behind an AdminDialog confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 11 admin detail/form migration contracts uses StatefulButton for genuine async form submits with preserved feedback",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 11 admin detail/form migration contracts consumes the single owner-approved File Upload file for admin document intake",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 11 admin detail/form migration contracts opens the accordion group holding the first invalid field on submit",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 10 admin list migration contracts leaves zero hand-rolled prev/next pagination on migrated list surfaces",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 10 admin list migration contracts preserves the exact GET filter parameter names per list surface",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 10 admin list migration contracts routes consultations, content, and finance section navigation through AdminTabs with preserved param hrefs",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 10 admin list migration contracts keeps destructive list actions in their current presentation (no dead menu items, no placeholders)",
+      "status": "passed"
+    },
+    {
+      "name": "admin manual case form UI renders unique labelled controls, Arabic validation copy, and canonical party choices",
+      "status": "passed"
+    },
+    {
+      "name": "admin manual case form UI keeps submit, success, conflict, and explicit new-token retry states recoverable",
+      "status": "passed"
+    },
+    {
+      "name": "admin manual case form UI uses native keyboard form controls and hides reassignment from assigned-only editors",
+      "status": "passed"
+    },
+    {
+      "name": "admin row-action Menu contract renders only the labelled trigger while closed (panel is lazy)",
+      "status": "passed"
+    },
+    {
+      "name": "admin row-action Menu contract keeps the panel lazy and the locked Menu wiring in source",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification bell and center UI renders the bell trigger with a truthful attention count while closed (panel is lazy)",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification bell and center UI renders generic and consultation items under one truthful attention count",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification bell and center UI keeps mark-read, retry, and live count updates accessible",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification bell and center UI loads center pages by opaque cursor and removes load-more when exhausted",
+      "status": "passed"
+    },
+    {
+      "name": "office profile setting form sends the initial version and advances to the returned version across a server rerender",
+      "status": "passed"
+    },
+    {
+      "name": "office profile setting form retains the draft and requires an explicit reload after a conflict",
+      "status": "passed"
+    },
+    {
+      "name": "office profile setting form retains entered values after a network failure",
+      "status": "passed"
+    },
+    {
+      "name": "office profile setting form allows only one request for rapid duplicate submissions",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission form keeps every canonical permission on a localized group and display label",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission form renders grouped Arabic labels with native, uniquely-labelled controls",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission form shows protected and inactive roles as read-only without implying wildcard rows are editable",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission form preserves dirty state and provides explicit stale-conflict recovery",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission form keeps keyboard behavior native and save state explicit",
+      "status": "passed"
+    },
+    {
+      "name": "admin storage runtime diagnostic renders an Arabic read-only readiness summary without an editable path or save action",
+      "status": "passed"
+    },
+    {
+      "name": "admin storage runtime diagnostic shows actionable degraded and unavailable recovery without exposing implementation details",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 admin UI/RTL convergence renders repeated task and document forms with deterministic unique control IDs",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 admin UI/RTL convergence retains a case-tab document upload default that is outside the option cap",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 admin UI/RTL convergence adopts prefixed field relationships and semantic feedback in every migrated form file",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 admin UI/RTL convergence names every migrated table and keeps an explicit mobile record alternative",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 admin UI/RTL convergence gives every migrated filter and search landmark a purpose-specific Arabic name",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 admin UI/RTL convergence keeps admin surfaces on semantic neutral tokens in both themes",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 admin UI/RTL convergence mounts one persistent admin shell and renders page state inside its content frame",
+      "status": "passed"
+    },
+    {
+      "name": "admin user password form preserves the draft and requires explicit reload after a stale conflict",
+      "status": "passed"
+    },
+    {
+      "name": "admin user password form uses the safe version returned by a successful reset for the next submission",
+      "status": "passed"
+    },
+    {
+      "name": "vendored Animate UI accordion matches the official radix accordion source shape",
+      "status": "passed"
+    },
+    {
+      "name": "vendored Animate UI accordion toggles content on trigger click with aria-expanded",
+      "status": "passed"
+    },
+    {
+      "name": "vendored Animate UI accordion moves with keyboard: Enter opens, Tab reaches content links",
+      "status": "passed"
+    },
+    {
+      "name": "vendored animate-ui primitives SplittingText words mode keeps every word in the server-rendered markup",
+      "status": "passed"
+    },
+    {
+      "name": "vendored animate-ui primitives SplittingText lines mode keeps full lines for Arabic-safe rendering",
+      "status": "passed"
+    },
+    {
+      "name": "vendored animate-ui primitives CountingNumber renders the final number when initiallyStable (no-JS safe)",
+      "status": "passed"
+    },
+    {
+      "name": "vendored animate-ui primitives Tilt and TiltContent render children with 3D perspective styles",
+      "status": "passed"
+    },
+    {
+      "name": "vendored animate-ui primitives RippleButton renders children and the ripples slot",
+      "status": "passed"
+    },
+    {
+      "name": "booking assistant stage primitives vanish input stays controlled with a real named input and composer hook",
+      "status": "passed"
+    },
+    {
+      "name": "booking assistant stage primitives vanish input shows the pending placeholder and static copy when disabled",
+      "status": "passed"
+    },
+    {
+      "name": "booking assistant stage primitives animated list reveals progressively in motion, statically under reduced motion",
+      "status": "passed"
+    },
+    {
+      "name": "booking assistant stage primitives animated list source keeps the real sequenced mechanism without scroll listeners",
+      "status": "passed"
+    },
+    {
+      "name": "booking assistant stage primitives tabs navigator renders disabled stage triggers with an animated indicator",
+      "status": "passed"
+    },
+    {
+      "name": "booking assistant stage primitives tabs indicator measurement is direction-agnostic (RTL-safe rect math)",
+      "status": "passed"
+    },
+    {
+      "name": "booking assistant stage primitives SSR-renders tabs + vanish input markup without client effects",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) uses the real stage components on the hero object",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) never renders a booking stepper at any lifecycle point",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) renders the whole conversation through the real animated list",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) requires fresh explicit consent at confirmation and checkout",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) holds the compact density targets",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) guides the journey inside one console: intent, matter, info cards, new request",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) preserves every booking flow test hook and rule",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) keeps assistant bubbles theme-safe with no hard-coded dark surfaces",
+      "status": "passed"
+    },
+    {
+      "name": "consultation assistant theme tokens (source contract) defines every assistant surface for light and dark",
+      "status": "passed"
+    },
+    {
+      "name": "consultation assistant copy (source contract) carries the guided-flow keys in both locales",
+      "status": "passed"
+    },
+    {
+      "name": "booking page zones (source contract) composes one centered assistant console with no external flow UI",
+      "status": "passed"
+    },
+    {
+      "name": "booking page zones (source contract) removed the migrated external panels instead of leaving dead files",
+      "status": "passed"
+    },
+    {
+      "name": "booking page zones (source contract) keeps the flow header compact with no duplicated progress legend",
+      "status": "passed"
+    },
+    {
+      "name": "CapabilityGlowGate renders the static panel disarmed on first paint (SSR-safe)",
+      "status": "passed"
+    },
+    {
+      "name": "CapabilityGlowGate arms the glow when the card nears the viewport on fine pointers",
+      "status": "passed"
+    },
+    {
+      "name": "CapabilityGlowGate stays disarmed on coarse pointers and under reduced motion",
+      "status": "passed"
+    },
+    {
+      "name": "public contact form recovery retains values and supports retry after a rejected en request",
+      "status": "passed"
+    },
+    {
+      "name": "public contact form recovery retains values and supports retry after a rejected ar request",
+      "status": "passed"
+    },
+    {
+      "name": "public contact form recovery does not send a duplicate request while the first request is pending",
+      "status": "passed"
+    },
+    {
+      "name": "public contact form recovery maps server validation details to localized field errors (en)",
+      "status": "passed"
+    },
+    {
+      "name": "public contact form recovery maps server validation details to localized field errors (ar)",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency keeps an admin reply when an older in-flight poll resolves afterward",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency keeps an admin PATCH result when an older GET resolves afterward",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency does not overlap an admin POST with a PATCH",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency applies a slow poll when no write supersedes it, then allows the next poll",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency keeps touched management fields, syncs untouched fields, and rebases only after review latest",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency keeps the client draft on 409 and rejects an old poll after a successful reply",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency keeps a newer client draft typed while an earlier reply is pending",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency reloads the current locale after a first reply completes in an older locale context",
+      "status": "passed"
+    },
+    {
+      "name": "kmt design system lab renders the lab toolbar, required sections, and internal-only provenance labels",
+      "status": "passed"
+    },
+    {
+      "name": "FIX16 task board pagination loads a single lane through the existing list API and deduplicates its next page",
+      "status": "passed"
+    },
+    {
+      "name": "KmtGoldUnderline renders rule variants with distinct fixed widths in the gold token",
+      "status": "passed"
+    },
+    {
+      "name": "KmtGoldUnderline honors an explicit pixel width override",
+      "status": "passed"
+    },
+    {
+      "name": "KmtGoldUnderline paints the final line in SSR HTML (no-JS safe), then grows on view",
+      "status": "passed"
+    },
+    {
+      "name": "KmtGoldUnderline keeps the line statically visible under reduced motion",
+      "status": "passed"
+    },
+    {
+      "name": "KmtGoldUnderline renders the inline text variant around the phrase",
+      "status": "passed"
+    },
+    {
+      "name": "KmtGoldUnderline centers the rule when aligned center",
+      "status": "passed"
+    },
+    {
+      "name": "KmtGoldUnderline defines the scaleX growth with RTL origin in the stylesheet",
+      "status": "passed"
+    },
+    {
+      "name": "PublicSection accent renders no underline by default (existing sections byte-identical)",
+      "status": "passed"
+    },
+    {
+      "name": "PublicSection accent renders a centered section accent on demand",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline wraps the real Magic UI Highlighter with action=underline and KMT gold defaults",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline maps emphasis to thin editorial stroke widths (never marker-like)",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline lets explicit strokeWidth/duration override the emphasis defaults",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline renders the underline immediately under prefers-reduced-motion (kept, not removed)",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline SSR-renders the phrase text with a stable KMT hook attribute",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline splits EN and AR sentences on the highlight phrase, passing copy through untouched",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline renders plain text unchanged when the highlight phrase is absent",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline keeps the real Highlighter as the single effect owner (no local imitation, no scroll listeners)",
+      "status": "passed"
+    },
+    {
+      "name": "notification mutation consistency does not let a GET started before mark-read restore stale unread state",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders the mobile navigation menu icon instead of the unknown-icon fallback",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders button states and accessible text",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders form field labels and validation wiring",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders selects with reserved arrow spacing for RTL fields",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders client portal selects as dark custom listboxes with stable form values",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders native date and time inputs with picker spacing in RTL layouts",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders semantic status badges",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders empty table state",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders optional mobile cards while keeping the desktop table",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders mobile data record cards with labels, badges, and action areas",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders recoverable state blocks",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders distinct dashboard navigation routes",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives filters the admin workspace before rendering desktop and mobile navigation",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps only safe navigation and user labels in the persisted admin access context",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives preserves authorized navigation across admin loading, error, and not-found boundaries",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives uses an Animate Sheet mobile nav with focus trap, close on navigation, and RTL side",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders the client portal shell with the public dark visual language and no card motion",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders the client shell and account forms from the English catalog",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders login and assistant entry states in both supported languages",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps the canonical client files page wired to the upload form",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives uses scoped consultation booking surfaces without transcript persistence",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders Tabs as a pressed button group, not incomplete ARIA tabs",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps targeted admin content labels localized",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps admin consultation AI summaries useful for old public chat bookings",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps the finance submit form reference stable across async requests",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps admin finance wired as the payment operations center",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps public payment return text localized through content files",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps the admin audit log page on client-friendly DTO fields",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps admin-user pages on the purpose-built safe DTO contract",
+      "status": "passed"
+    },
+    {
+      "name": "public articles UI renders the list with the nav-aligned title, gold category chip, and read-time meta",
+      "status": "passed"
+    },
+    {
+      "name": "public articles UI renders detail with h1, breadcrumbs, byline, time, rich-text body, warning disclaimer, and related cards",
+      "status": "passed"
+    },
+    {
+      "name": "public articles UI renders the Arabic detail with RTL breadcrumbs, Arabic byline, and localized date",
+      "status": "passed"
+    },
+    {
+      "name": "public case studies UI renders the list with a distinct hero image and category + year meta instead of repeated Anonymous",
+      "status": "passed"
+    },
+    {
+      "name": "public case studies UI renders detail with h1, breadcrumbs, numbered reveal blocks, warning-token disclaimer, and alternate link",
+      "status": "passed"
+    },
+    {
+      "name": "public case studies UI renders the Arabic detail with RTL breadcrumbs and localized year",
+      "status": "passed"
+    },
+    {
+      "name": "public floating dock (source contract) vendors the real Aceternity Floating Dock architecture",
+      "status": "passed"
+    },
+    {
+      "name": "public floating dock (source contract) supports external actions with a safe new-tab contract",
+      "status": "passed"
+    },
+    {
+      "name": "public floating dock (source contract) exposes exactly two public actions and nothing else",
+      "status": "passed"
+    },
+    {
+      "name": "public floating dock (source contract) renders once in the public shell with a click-through overlay",
+      "status": "passed"
+    },
+    {
+      "name": "public floating dock (source contract) steps aside on the consultation route so it never covers the composer",
+      "status": "passed"
+    },
+    {
+      "name": "public floating dock (source contract) never renders inside admin or client portal layouts",
+      "status": "passed"
+    },
+    {
+      "name": "public floating dock (source contract) carries the mobile menu label in both locales",
+      "status": "passed"
+    },
+    {
+      "name": "public footer theme renders the footer body on the theme-aware canvas, not forced black",
+      "status": "passed"
+    },
+    {
+      "name": "public footer theme wraps the footer logo in a dark brand plaque",
+      "status": "passed"
+    },
+    {
+      "name": "public footer theme keeps the plaque in Arabic RTL shells",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders public shell navigation with English default labels and active page",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders Arabic public shell with explicit RTL direction",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders the English applicant privacy notice with semantic structure and verified links",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders the Arabic applicant privacy notice in structural RTL",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders the English terms page with h1, sticky TOC, last-updated time, and anchored sections",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders the Arabic terms page in structural RTL with matching section anchors",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders the privacy TOC as a tokenized nav without hardcoded slate or white classes",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI keeps the Arabic homepage CTA and section eyebrows clean",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders cinematic hero and trust strip without relying on cards inside hero",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders compact public heroes for inner pages",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders service detail with h1, breadcrumbs, and structured data",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders team detail with h1, breadcrumbs, credentials, and warning-token notice",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders dark public section and detail CTA APIs",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI keeps product font loading local and blocks fallback font flashes",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI keeps PLAN-31 motion contract free of removed thread utilities",
+      "status": "passed"
+    },
+    {
+      "name": "FIX23 calendar navigation contracts preserves permission-scoped filters and uses the selected date for day/week links",
+      "status": "passed"
+    },
+    {
+      "name": "FIX23 calendar navigation contracts moves the agenda anchor and range only when Today is clicked",
+      "status": "passed"
+    },
+    {
+      "name": "FIX11 client action authority renders portal-account management without exposing CRM update, assignment, or archive actions",
+      "status": "passed"
+    },
+    {
+      "name": "finance searchable controlled selection scopes case search to the chosen client and does not silently clear an unavailable association",
+      "status": "passed"
+    },
+    {
+      "name": "finance searchable controlled selection restores an off-page draft selection without reverting its association",
+      "status": "passed"
+    },
+    {
+      "name": "session-only record draft recovery isolates records and restores edits after back/forward remount",
+      "status": "passed"
+    },
+    {
+      "name": "session-only record draft recovery never restores another account's session drafts",
+      "status": "passed"
+    },
+    {
+      "name": "session-only record draft recovery clears saved drafts and warns before a real page unload",
+      "status": "passed"
+    },
+    {
+      "name": "session-only record draft recovery allows cancelling navigation without losing the draft",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared UI consumer disposition classifies every source consumer and leaves no silent or blocked impact",
+      "status": "passed"
+    },
+    {
+      "name": "StickyScroll key ownership keys every sticky-panel child with stable semantic ids",
+      "status": "passed"
+    },
+    {
+      "name": "StickyScroll key ownership renders the active visual content identically",
+      "status": "passed"
+    },
+    {
+      "name": "TrustStrip renders the doubled loop with screen-reader label and hidden motion copy",
+      "status": "passed"
+    },
+    {
+      "name": "TrustStrip does not use Marquee reverse (RTL direction is keyframe-driven)",
+      "status": "passed"
+    },
+    {
+      "name": "TrustStrip defines mirrored RTL marquee keyframes scoped to the trust strip",
+      "status": "passed"
+    },
+    {
+      "name": "staff two-factor form presentation (TASK 04) renders the verification shell without external assets",
+      "status": "passed"
+    },
+    {
+      "name": "staff two-factor form presentation (TASK 04) keeps the code field paste-friendly with leading zeros and kit submission",
+      "status": "passed"
+    },
+    {
+      "name": "useSafePolling does not overlap requests and aborts the in-flight request on unmount",
+      "status": "passed"
+    },
+    {
+      "name": "useSafePolling backs off to the configured cap after repeated failures",
+      "status": "passed"
+    },
+    {
+      "name": "useSafePolling stops permanently after an authorization response",
+      "status": "passed"
+    },
+    {
+      "name": "useSafePolling pauses while hidden and resumes immediately when visible",
+      "status": "passed"
+    },
+    {
+      "name": "useSafePolling remembers an immediate resume requested before an aborted poll settles",
+      "status": "passed"
+    },
+    {
+      "name": "admin cases contract scopes case reads by any or assigned-case permission",
+      "status": "passed"
+    },
+    {
+      "name": "admin cases contract allows admin-any and only assigned lawyers to read/update/manage sessions",
+      "status": "passed"
+    },
+    {
+      "name": "admin cases contract keeps calendar reschedule permission tied to admin-any or assigned case sessions",
+      "status": "passed"
+    },
+    {
+      "name": "admin cases contract shares one calendar visibility scope with dashboard and list consumers",
+      "status": "passed"
+    },
+    {
+      "name": "admin cases contract keeps create and reschedule checks, mutable rereads, writes, and audits in the transaction",
+      "status": "passed"
+    },
+    {
+      "name": "admin cases contract validates list, calendar, status, session, and appointment payloads",
+      "status": "passed"
+    },
+    {
+      "name": "admin cases contract normalizes appointment end dates and rejects invalid action dates",
+      "status": "passed"
+    },
+    {
+      "name": "admin client creation contract (TASK 01) lets Office Admin create a client with normalized data and audit",
+      "status": "passed"
+    },
+    {
+      "name": "admin client creation contract (TASK 01) lets Secretary create a client (existing business rule preserved)",
+      "status": "passed"
+    },
+    {
+      "name": "admin client creation contract (TASK 01) rejects Lawyer with 403 without touching the database",
+      "status": "passed"
+    },
+    {
+      "name": "admin client creation contract (TASK 01) rejects invalid input without touching the database",
+      "status": "passed"
+    },
+    {
+      "name": "admin client creation contract (TASK 01) rejects an unknown assigned lawyer without creating",
+      "status": "passed"
+    },
+    {
+      "name": "admin client creation contract (TASK 01) keeps the shared write schema strict (no invented required fields)",
+      "status": "passed"
+    },
+    {
+      "name": "admin client CRM contract scopes CRM reads by any or assigned-client permission",
+      "status": "passed"
+    },
+    {
+      "name": "admin client CRM contract separates CRM read and write capabilities",
+      "status": "passed"
+    },
+    {
+      "name": "admin client CRM contract checks single-client read ownership before rendering detail",
+      "status": "passed"
+    },
+    {
+      "name": "admin client CRM contract validates CRM list filters and write payloads",
+      "status": "passed"
+    },
+    {
+      "name": "admin client CRM contract accepts client-scoped related-list filters while retaining the calendar's exclusive Cairo end boundary",
+      "status": "passed"
+    },
+    {
+      "name": "admin client CRM contract validates assignment and archive action payloads",
+      "status": "passed"
+    },
+    {
+      "name": "admin client CRM contract validates client portal account payloads separately from staff user creation",
+      "status": "passed"
+    },
+    {
+      "name": "admin client CRM contract allows CRM profile creation only for unlinked Client role accounts",
+      "status": "passed"
+    },
+    {
+      "name": "admin consultation review contract scopes consultation lists by review permission",
+      "status": "passed"
+    },
+    {
+      "name": "admin consultation review contract allows any-review staff and only the assigned lawyer to review",
+      "status": "passed"
+    },
+    {
+      "name": "admin consultation review contract normalizes urgency into case priority and appointment end times",
+      "status": "passed"
+    },
+    {
+      "name": "admin consultation review contract creates deterministic internal file numbers from consultation ids",
+      "status": "passed"
+    },
+    {
+      "name": "admin consultation review contract validates conversion payloads with optional appointment data",
+      "status": "passed"
+    },
+    {
+      "name": "admin consultation review contract supports secretary review filters and notes",
+      "status": "passed"
+    },
+    {
+      "name": "admin consultation review contract scopes secretary review notifications to scheduled unreviewed consultations",
+      "status": "passed"
+    },
+    {
+      "name": "admin contact message contract keeps contact message reads and status changes behind explicit permissions",
+      "status": "passed"
+    },
+    {
+      "name": "admin contact message contract validates bounded list filters and status updates",
+      "status": "passed"
+    },
+    {
+      "name": "admin contact message contract uses an explicit minimized queue projection",
+      "status": "passed"
+    },
+    {
+      "name": "admin contact message contract enforces allowed transitions, same-state idempotency, and exactly one direct audit",
+      "status": "passed"
+    },
+    {
+      "name": "admin contact message contract makes concurrent identical targets idempotent and different targets conflict",
+      "status": "passed"
+    },
+    {
+      "name": "admin contact message contract rolls back the claimed transition when the direct audit insert fails",
+      "status": "passed"
+    },
+    {
+      "name": "admin content and social hub contract separates content creation permissions from approval permissions",
+      "status": "passed"
+    },
+    {
+      "name": "admin content and social hub contract blocks marketing users from publishing or approving content directly",
+      "status": "passed"
+    },
+    {
+      "name": "admin content and social hub contract validates article payloads and rejects non-contract fields",
+      "status": "passed"
+    },
+    {
+      "name": "admin content and social hub contract requires case study anonymization before approval or publishing",
+      "status": "passed"
+    },
+    {
+      "name": "admin content and social hub contract validates social drafts, scheduling, and AI draft inputs",
+      "status": "passed"
+    },
+    {
+      "name": "admin dashboard canonical scope contract reuses destination visibility builders including case-inherited task and appointment scope",
+      "status": "passed"
+    },
+    {
+      "name": "admin dashboard canonical scope contract returns null only for workstreams the principal cannot read",
+      "status": "passed"
+    },
+    {
+      "name": "admin dashboard canonical scope contract uses explicit minimized selections instead of serializing Prisma records",
+      "status": "passed"
+    },
+    {
+      "name": "admin dashboard canonical scope contract emits the exact ordered metric, section, and route-registry action inventories",
+      "status": "passed"
+    },
+    {
+      "name": "admin dashboard canonical scope contract uses Cairo midnight boundaries and exact destination-equivalent hrefs",
+      "status": "passed"
+    },
+    {
+      "name": "admin dashboard canonical scope contract uses bounded purpose-built queues, exact tie-breakers, and only the documented item/activity unions",
+      "status": "passed"
+    },
+    {
+      "name": "admin dashboard canonical scope contract isolates one loader failure into ready/unavailable unions without exposing the error",
+      "status": "passed"
+    },
+    {
+      "name": "admin dashboard canonical scope contract omits unauthorized capabilities instead of emitting placeholder entries",
+      "status": "passed"
+    },
+    {
+      "name": "admin dashboard canonical scope contract uses canonical role-scoped outcome predicates for the three actionable consultation cards",
+      "status": "passed"
+    },
+    {
+      "name": "admin dashboard canonical scope contract loads contact and notification counts only inside each principal's permission scope",
+      "status": "passed"
+    },
+    {
+      "name": "admin finance and reports contract keeps finance management, finance read, and reports behind separate permissions",
+      "status": "passed"
+    },
+    {
+      "name": "admin finance and reports contract validates invoice fields and rejects non-MVP accounting fields",
+      "status": "passed"
+    },
+    {
+      "name": "admin finance and reports contract separates manual finance payments from gateway-managed payment methods",
+      "status": "passed"
+    },
+    {
+      "name": "admin finance and reports contract keeps paid manual receipt numbers globally guarded and secretary permissions unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "admin finance and reports contract formats generated invoice numbers from the issue-date year",
+      "status": "passed"
+    },
+    {
+      "name": "admin finance and reports contract bounds finance list and report filters",
+      "status": "passed"
+    },
+    {
+      "name": "admin finance and reports contract normalizes report date ranges and rejects inverted ranges",
+      "status": "passed"
+    },
+    {
+      "name": "admin governance contract keeps users, settings, and audit governance behind explicit permissions",
+      "status": "passed"
+    },
+    {
+      "name": "admin governance contract validates user list filters and role assignment payloads",
+      "status": "passed"
+    },
+    {
+      "name": "admin governance contract maps list and detail rows to purpose-built DTOs with no credential or token material",
+      "status": "passed"
+    },
+    {
+      "name": "admin governance contract enforces delegated permission ceilings for both current and next roles",
+      "status": "passed"
+    },
+    {
+      "name": "admin governance contract updates a scoped delegated target with optimistic concurrency, revocation, and audit",
+      "status": "passed"
+    },
+    {
+      "name": "admin governance contract denies protected targets and cross-ceiling assignments for delegated managers",
+      "status": "passed"
+    },
+    {
+      "name": "admin governance contract rejects stale writes and concurrent policy changes without partial effects",
+      "status": "passed"
+    },
+    {
+      "name": "admin governance contract protects the final active exact Super Admin and rolls back on audit failure",
+      "status": "passed"
+    },
+    {
+      "name": "admin governance contract keeps environment-owned storage outside the editable setting allowlist",
+      "status": "passed"
+    },
+    {
+      "name": "admin governance contract returns the exact settings wrapper without any legacy storage row fields",
+      "status": "passed"
+    },
+    {
+      "name": "admin governance contract rejects every legacy storage-policy mutation before database access",
+      "status": "passed"
+    },
+    {
+      "name": "admin governance contract validates audit log search and bounded pagination",
+      "status": "passed"
+    },
+    {
+      "name": "admin governance contract maps raw audit rows to client-friendly audit DTOs",
+      "status": "passed"
+    },
+    {
+      "name": "admin manual case contract uses strict canonical enums, approved edit fields, and stable payload hashing",
+      "status": "passed"
+    },
+    {
+      "name": "admin manual case contract requires create permission plus an active client and eligible active lawyer",
+      "status": "passed"
+    },
+    {
+      "name": "admin manual case contract creates case, parties, and one redacted hash-bound audit then replays only the same actor and body",
+      "status": "passed"
+    },
+    {
+      "name": "admin manual case contract does not treat different request tokens as fuzzy duplicates",
+      "status": "passed"
+    },
+    {
+      "name": "admin manual case contract maps file-reference collision and rolls back create when direct audit insertion fails",
+      "status": "passed"
+    },
+    {
+      "name": "admin manual case contract updates only approved fields with optimistic scope and a redaction-safe audit",
+      "status": "passed"
+    },
+    {
+      "name": "admin manual case contract lets the assigned lawyer edit core data but never transfer, and rejects stale versions",
+      "status": "passed"
+    },
+    {
+      "name": "admin manual case contract rolls back an optimistic edit when the direct audit insertion fails",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification center contract validates mutually exclusive preview and center pagination modes",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification center contract computes complete-set counts and deduplicates a counterpart beyond the preview boundary",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification center contract keeps opaque cursor pagination stable across both projected sources",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification center contract rejects unsafe stored URLs and revalidates route plus dynamic object scope",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification center contract requires notification.read.self and keeps generic reads owner-only, idempotent, and separate from consultation review",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification center contract creates review notifications only for active recipients who can both receive and review",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification center contract creates privacy-safe contact alerts only for active recipients who can read messages and notifications",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification center contract skips contact notification writes when no active recipient has both required permissions",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission governance requires an exact Super Admin even when a delegate holds both governance keys",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission governance accepts only strict, unique canonical permission keys and an observed version",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission governance returns the canonical grouped catalog and protected/inactive read-only role state",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission governance atomically replaces assignments, advances the version, and records a redacted audit",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission governance allows an intentionally empty editable role and keeps it empty",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission governance rejects protected, inactive, and stale role writes without mutation",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission governance rolls back the version and assignments when the audit write fails",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission governance rejects a missing active exact-Super path inside the transaction",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 canonical admin route policy keeps one final nineteen-route by five-role fixture",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 canonical admin route policy registers the nineteen executable destinations",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 canonical admin route policy has no undiscoverable destination after governance activation",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 canonical admin route policy keeps route presentation metadata inside typed copy and group catalogs",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 canonical admin route policy resolves exact routes before the longest eligible child prefix",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 canonical admin route policy inherits list capability for every implemented detail and content child",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 canonical admin route policy uses the same matcher for current-route state and direct authorization",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 canonical admin route policy filters discovery with the same five-role capability matrix",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 canonical admin route policy keeps every implemented page on the same registry-aware direct guard",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 canonical admin route policy matches the implemented default-role matrix",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 canonical admin route policy enforces all-permission and exact-role constraints independently",
+      "status": "passed"
+    },
+    {
+      "name": "admin task and document management contract scopes task lists to any-task permission or assigned lawyer ownership",
+      "status": "passed"
+    },
+    {
+      "name": "admin task and document management contract allows task create/read/manage only inside the actor task scope",
+      "status": "passed"
+    },
+    {
+      "name": "admin task and document management contract scopes document lists to document managers or assigned lawyers",
+      "status": "passed"
+    },
+    {
+      "name": "admin task and document management contract keeps document mutation restricted to document managers",
+      "status": "passed"
+    },
+    {
+      "name": "admin task and document management contract retains an owner-client filter inside the assigned-document scope across pages",
+      "status": "passed"
+    },
+    {
+      "name": "admin task and document management contract validates task and document list/write contracts",
+      "status": "passed"
+    },
+    {
+      "name": "admin task and document management contract calculates status totals outside pagination and exposes read-only task actions",
+      "status": "passed"
+    },
+    {
+      "name": "admin task and document management contract keeps task-only results independent from case read access and limits a filtered board to its selected lane",
+      "status": "passed"
+    },
+    {
+      "name": "admin task and document management contract does not query case options for independent task or document readers",
+      "status": "passed"
+    },
+    {
+      "name": "admin task and document management contract queries only permitted case-tab sections",
+      "status": "passed"
+    },
+    {
+      "name": "AI Provider Gateway defaults OpenRouter to Gemini 2.5 Flash with the server-side OpenRouter base URL",
+      "status": "passed"
+    },
+    {
+      "name": "AI Provider Gateway keeps structured outputs off unless the server explicitly enables JSON Schema",
+      "status": "passed"
+    },
+    {
+      "name": "AI Provider Gateway normalizes deterministic mock provider output and requires review",
+      "status": "passed"
+    },
+    {
+      "name": "AI Provider Gateway rejects schema-invalid output",
+      "status": "passed"
+    },
+    {
+      "name": "AI Provider Gateway supports the consultation assistant task through the gateway",
+      "status": "passed"
+    },
+    {
+      "name": "AI Provider Gateway supports structured booking intake extraction through the gateway",
+      "status": "passed"
+    },
+    {
+      "name": "AI Provider Gateway provides review-gated copy and rejects final legal-advice phrasing",
+      "status": "passed"
+    },
+    {
+      "name": "AI Provider Gateway accepts a negated review disclaimer but rejects a guarantee in the same note",
+      "status": "passed"
+    },
+    {
+      "name": "AI Provider Gateway allows quoted intake source text but rejects generated advice in a booking clarification",
+      "status": "passed"
+    },
+    {
+      "name": "AI Provider Gateway keeps provider-specific OpenAI-compatible calls behind an adapter",
+      "status": "passed"
+    },
+    {
+      "name": "AI Provider Gateway uses the existing Zod schema only when structured output capability is configured",
+      "status": "passed"
+    },
+    {
+      "name": "AI Provider Gateway logs malformed provider output as schema diagnostics without raw input or output",
+      "status": "passed"
+    },
+    {
+      "name": "AI Provider Gateway normalizes provider timeouts",
+      "status": "passed"
+    },
+    {
+      "name": "privacy-safe analytics and observability contract accepts only allowlisted client analytics events",
+      "status": "passed"
+    },
+    {
+      "name": "privacy-safe analytics and observability contract rejects PII, legal summaries, document content, and unknown properties",
+      "status": "passed"
+    },
+    {
+      "name": "privacy-safe analytics and observability contract builds storage-ready events without raw actor ids",
+      "status": "passed"
+    },
+    {
+      "name": "privacy-safe analytics and observability contract normalizes safe file telemetry dimensions",
+      "status": "passed"
+    },
+    {
+      "name": "privacy-safe analytics and observability contract hashes actors deterministically and logs with redaction",
+      "status": "passed"
+    },
+    {
+      "name": "privacy-safe analytics and observability contract allowlists the exactly-once paid-booking reconciliation event metadata",
+      "status": "passed"
+    },
+    {
+      "name": "appointment conflict service uses half-open intervals so touching boundaries pass and real overlaps block",
+      "status": "passed"
+    },
+    {
+      "name": "appointment conflict service builds one active lawyer scope with public-reservation symmetry and self exclusion",
+      "status": "passed"
+    },
+    {
+      "name": "appointment conflict service keeps public consultation reservations office-wide while allowing different assigned lawyers",
+      "status": "passed"
+    },
+    {
+      "name": "appointment conflict service returns the stable appointment conflict without leaking the conflicting record",
+      "status": "passed"
+    },
+    {
+      "name": "appointment conflict service retries only database-create callbacks and bounds exhausted serialization conflicts",
+      "status": "passed"
+    },
+    {
+      "name": "appointment conflict service never replays existing-update-single-attempt callbacks",
+      "status": "passed"
+    },
+    {
+      "name": "appointment conflict service never replays external-side-effect-single-attempt callbacks",
+      "status": "passed"
+    },
+    {
+      "name": "appointment conflict service lets state-only transactions map a serialization race without replaying the callback",
+      "status": "passed"
+    },
+    {
+      "name": "appointment conflict service propagates non-serialization failures without retrying or masking rollback errors",
+      "status": "passed"
+    },
+    {
+      "name": "Arabic dispatcher preservation keeps every accepted route reachable through the actual dispatcher",
+      "status": "passed"
+    },
+    {
+      "name": "Arabic dispatcher preservation detects removal of a routing branch from an in-memory sample",
+      "status": "passed"
+    },
+    {
+      "name": "manual case audit request identity preserves a validated SHA-256 containing a phone-like numeric run",
+      "status": "passed"
+    },
+    {
+      "name": "manual case audit request identity keeps sensitive metadata redacted and rejects non-hash request identities",
+      "status": "passed"
+    },
+    {
+      "name": "auth audit contract keeps staff 2FA reset behind permission and audit logging",
+      "status": "passed"
+    },
+    {
+      "name": "auth password helpers treats malformed session cookies as unauthenticated instead of throwing",
+      "status": "passed"
+    },
+    {
+      "name": "auth password helpers hashes and verifies passwords without plaintext storage",
+      "status": "passed"
+    },
+    {
+      "name": "auth role and permission policy requires 2FA for staff roles only",
+      "status": "passed"
+    },
+    {
+      "name": "auth role and permission policy resolves role permissions and super admin wildcard",
+      "status": "passed"
+    },
+    {
+      "name": "auth role and permission policy preserves an explicitly empty persisted permission set",
+      "status": "passed"
+    },
+    {
+      "name": "auth role and permission policy rejects inactive, deleted, or inactive-role principals at login and session resolution",
+      "status": "passed"
+    },
+    {
+      "name": "staff 2FA helpers keeps staff 2FA disabled by default for the installer release",
+      "status": "passed"
+    },
+    {
+      "name": "staff 2FA helpers retains the dormant TOTP mode for the future Staff 2FA rework",
+      "status": "passed"
+    },
+    {
+      "name": "staff 2FA helpers does not require 2FA for client sessions",
+      "status": "passed"
+    },
+    {
+      "name": "staff 2FA helpers keeps staff reset permission restricted to super admin",
+      "status": "passed"
+    },
+    {
+      "name": "staff 2FA helpers expires email OTP challenges after the configured window",
+      "status": "passed"
+    },
+    {
+      "name": "staff 2FA helpers generates RFC-compatible TOTP codes",
+      "status": "passed"
+    },
+    {
+      "name": "staff 2FA helpers hashes email OTPs without storing the raw OTP",
+      "status": "passed"
+    },
+    {
+      "name": "staff 2FA helpers locks session-level 2FA attempts after the configured threshold",
+      "status": "passed"
+    },
+    {
+      "name": "auth route protection contract keeps client and staff redirects inside their own surfaces",
+      "status": "passed"
+    },
+    {
+      "name": "auth route protection contract rejects unsafe next paths",
+      "status": "passed"
+    },
+    {
+      "name": "auth route protection contract detects protected app prefixes for middleware",
+      "status": "passed"
+    },
+    {
+      "name": "auth route protection contract builds an internal login redirect URL for protected paths",
+      "status": "passed"
+    },
+    {
+      "name": "auth route protection contract matches role policy staff roles",
+      "status": "passed"
+    },
+    {
+      "name": "auth route protection contract extracts opaque session tokens from cookie headers",
+      "status": "passed"
+    },
+    {
+      "name": "batch 2 isolated PostgreSQL behavior reruns the seed without duplicate localized content or operational rows",
+      "status": "skipped"
+    },
+    {
+      "name": "batch 2 isolated PostgreSQL behavior resolves live permissions and rejects suspended, inactive-role, expired and revoked sessions",
+      "status": "skipped"
+    },
+    {
+      "name": "batch 2 isolated PostgreSQL behavior isolates case details and private document bytes across clients and visibility",
+      "status": "skipped"
+    },
+    {
+      "name": "batch 2 isolated PostgreSQL behavior commits only one actual free booking when two contacts race for one slot",
+      "status": "skipped"
+    },
+    {
+      "name": "batch 2 isolated PostgreSQL behavior does not duplicate a contact when two confirmations target different slots",
+      "status": "skipped"
+    },
+    {
+      "name": "batch 2 source-confirmed regressions lets a malformed-cookie logout finish without touching a database",
+      "status": "passed"
+    },
+    {
+      "name": "batch 2 source-confirmed regressions offers 10:00 Cairo at the correct instant on 2026-01-12",
+      "status": "passed"
+    },
+    {
+      "name": "batch 2 source-confirmed regressions offers 10:00 Cairo at the correct instant on 2026-07-13",
+      "status": "passed"
+    },
+    {
+      "name": "batch 2 source-confirmed regressions skips the nonexistent Cairo spring-forward hour rather than shifting it",
+      "status": "passed"
+    },
+    {
+      "name": "batch 2 source-confirmed regressions offers the first repeated fall-back hour once with real duration, lead time and conflicts",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions does not retain impossible chat date: Book on 2026-13-01",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions does not retain impossible chat date: موعد يوم ٢٠٢٦-٠٢-٣١",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions preserves trimmed and empty availability draft fields",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions confirms a date-filtered slot beyond the first 500 without expanding the list cap",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions rejects impossible public date 2026-13-01 with 400",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions rejects impossible public date 2026-02-31 with 400",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions rejects impossible public date 2025-02-29 with 400",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions rejects impossible public time fromTime=25:90 with 400",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions rejects impossible public time fromTime=24:00 with 400",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions rejects impossible public time toTime=24:01 with 400",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions rejects impossible public time toTime=12:60 with 400",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions rejects invalid working-day start 25:90",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions rejects invalid working-day start 24:00",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions rejects invalid working-day start 12:60",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions rejects invalid working-day end 25:90",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions rejects invalid working-day end 24:01",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions rejects invalid working-day end 12:60",
+      "status": "passed"
+    },
+    {
+      "name": "batch4 availability regressions keeps midnight start and 24:00 end including valid leap day",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) collects multiple fields en My name is Mona Adel, phone +201000001234, email mona@example.test, city Cairo, contract review online tomorrow afternoon",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) collects multiple fields ar انا اسمي منى عادل، تليفوني +201000001234، البريد mona@example.test، مدينة القاهرة، مراجعة عقد شركة اونلاين بكرة بعد الظهر",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) collects multiple fields ar اسمي منى عادل، الهاتف +201000001234، البريد mona@example.test، مدينة القاهرة، أريد مراجعة عقد شركة أونلاين غدا بعد الظهر",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) applies explicit correction en My name is Salma Hassan",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) applies explicit correction ar اسمي سلمى حسن",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) applies explicit correction en My phone is +201000009876",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) applies explicit correction ar رقمي +201000009876",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) applies explicit correction en My email is salma@example.test",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) applies explicit correction ar بريدي salma@example.test",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) invalidates an old slot for tomorrow afternoon",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) invalidates an old slot for مواعيد تانية",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) invalidates an old slot for another time",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) reselects after service/mode change Change to a real estate consultation",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) reselects after service/mode change عايز استشارة عقارية",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) reselects after service/mode change Change to an office visit",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) keeps matter date out of appointment preference: The contract was signed on 2025-02-20 and needs document review.",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) keeps matter date out of appointment preference: العقد اتوقع يوم 2025-02-20 وعايز مراجعة بنود العقد",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) asks for a missing phone before scheduling",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) does not promise a legal result: Will I win the case?",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) does not promise a legal result: هل أكسب القضية؟",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) keeps a complete draft when switching request locale",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) resolves authoritative price and slot after changed terms and explicit fresh confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) does not invent a service, fee or confirmation for What is the weather?",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) does not invent a service, fee or confirmation for عايز وصفة أكل",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) does not invent a service, fee or confirmation for Can you arrange a spaceship license?",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) mixed correction and appointment invalidates the old slot: My email is new@example.test, appointment tomorrow afternoon",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) mixed correction and appointment invalidates the old slot: بريدي new@example.test، وعايز ميعاد للمقابلة بكرة بعد الظهر عشان يناسب التزاماتي في بقية اليوم",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) Arabic-number contact label does not override online mode",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) retains a natural Egyptian appointment date",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) does not replace an existing name from a statement: I am available tomorrow afternoon",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 conversation scenario matrix (mock provider, service boundary) does not replace an existing name from a statement: I am looking for an online appointment",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 provider adapter/gateway failure boundaries (fetch stub, no network) preserves intake after http503",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 provider adapter/gateway failure boundaries (fetch stub, no network) preserves intake after http429",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 provider adapter/gateway failure boundaries (fetch stub, no network) preserves intake after malformed-json",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 provider adapter/gateway failure boundaries (fetch stub, no network) preserves intake after invalid-shape",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 provider adapter/gateway failure boundaries (fetch stub, no network) aborts a slow provider at the configured timeout and preserves the draft",
+      "status": "passed"
+    },
+    {
+      "name": "batch5 provider adapter/gateway failure boundaries (fetch stub, no network) does not trust a high-confidence impossible calendar preference",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 canonical signature boundary PayTabs D with sale means FAILED",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 canonical signature boundary PayTabs E with sale means FAILED",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 canonical signature boundary PayTabs H with sale means PENDING",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 canonical signature boundary PayTabs P with refund means PENDING",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 canonical signature boundary PayTabs V with sale means CANCELLED",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 canonical signature boundary PayTabs X with sale means EXPIRED",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 canonical signature boundary PayTabs A with sale means PAID",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 canonical signature boundary PayTabs A with capture means PAID",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 canonical signature boundary PayTabs A with auth means PENDING",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 canonical signature boundary PayTabs A with refund means REFUNDED",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 canonical signature boundary PayTabs A with void means CANCELLED",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 canonical signature boundary PayTabs A with  means PENDING",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 canonical signature boundary stored internal DISPUTED is distinct from PayTabs decline D",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 canonical signature boundary does not derive paid status from an unsigned status override",
+      "status": "passed"
+    },
+    {
+      "name": "batch6 disposable payment database trust rejects an unsigned attempt substitution without consuming the legitimate callback",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust unsigned paid override cannot collect money or poison a subsequent signed success",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust bad signatures and unknown signed orders do not consume genuine events",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust legacy unbound attempts stay unconfirmed until independently verified order binding",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust concurrent canonical callbacks create one collection and preserve paid state after pending or failure",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust an authorization remains pending until a signed capture",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust rejects mismatched amount without collecting",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust rejects mismatched currency without collecting",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust rejects mismatched provider without collecting",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust expiry rechecks a stale selection after a trusted payment wins",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust expiry or cancellation releases an unpaid reservation and late success cannot rebook",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust a second distinct trusted collection requires review without another invoice or appointment",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust refund signal requires review, preserves historical collection and revokes an issued receipt",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust a trusted void after collection revokes the receipt while late failure does not",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust never exposes a legacy internal meeting through a signed public receipt",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust client, staff and report distinguish a reversal review from historical gross collections",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust status tokens are attempt-bound and unprivileged replay cannot mutate an event",
+      "status": "skipped"
+    },
+    {
+      "name": "batch6 disposable payment database trust PayTabs decline is failure, signed void needs review, and changed event payload cannot replace the original",
+      "status": "skipped"
+    },
+    {
+      "name": "incremental booking intake recovery keeps an Arabic matter, then name and phone, when the provider is unavailable",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery starts without calling a model or treating an action label as a fact (ar)",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery starts without calling a model or treating an action label as a fact (en)",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery replaces a stale category-label summary with the actual matter",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery accepts an Arabic name without inventing a city from part of that name",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery handles a clear contact label without the model: رقمي ٠١٠٠٠٠٠٩٩٩٩",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery handles a clear contact label without the model: My phone is +201000009999",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery handles a clear contact label without the model: بريدي test@example.test",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery does not label a short matter description as a name",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery exposes a no-progress degradation while asking only for the missing field",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery preserves intake and offers the next booking step after a direct legal question",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery accepts a booking description asking a lawyer to interpret a contract",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery ignores a low-confidence legal flag and never displays model-written advice",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery does not present invented model facts or advice as client intake",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery does not let a legal flag on a matter description discard new facts",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery a category decision clears stale selected slots and never books implicitly",
+      "status": "passed"
+    },
+    {
+      "name": "incremental booking intake recovery validates structured category values on the server",
+      "status": "passed"
+    },
+    {
+      "name": "client account setup contract signs successful-consultation setup links with expiry and tamper protection",
+      "status": "passed"
+    },
+    {
+      "name": "client account setup contract builds a setup URL for new clients and a login URL for existing client accounts",
+      "status": "passed"
+    },
+    {
+      "name": "client account setup contract requires a valid email and matching strong password before public account creation",
+      "status": "passed"
+    },
+    {
+      "name": "client account setup contract persists the trusted booking locale for delayed payment setup with a safe historical default",
+      "status": "passed"
+    },
+    {
+      "name": "client account setup contract propagates the public page locale to localized setup validation",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract validates the booking payload shape",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract rejects short summaries and missing consent",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract creates a non-sensitive public reference from the database id",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract validates public assistant booking and inquiry payloads",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract restricts assistant AI output to approved actions",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract infers real KMT service categories from booking chat language",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract uses AI intake extraction without letting AI control payment confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract shows the minimum request-description length in booking assistant copy",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract rejects generic booking summaries from AI or stale drafts",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract keeps short availability replies out of the AI extractor",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract parses relative appointment dates before AI without confusing day-after-tomorrow with tomorrow",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract asks a specific clarification for ambiguous next-week availability instead of guessing a date",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract keeps same-day weekday requests on today and shows nearest alternatives when today has no slots",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract uses the shared appointment transaction modes without replaying paid provider calls",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract rereads assignment and conversion state inside the transaction and writes required audits there",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract creates secretary review notifications only after free chat booking confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract extracts natural-language booking intake with structured AI output",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract does not trust low-confidence AI extraction",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract does not accept generic AI booking text as the client request summary",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract keeps the client's complaint text as the booking summary without requiring service category",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract shows client email, initial area, and real request summary in booking confirmation review",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract falls back safely when booking AI extraction is unavailable",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract guards AI chat and paid checkout entry points by booking mode",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract validates public checkout as a separate payment confirmation contract",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract writes public consent through the booking transaction client",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract builds a useful office brief for public AI chat bookings",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract does not treat booking quick actions as the client name",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract recovers expired booking slots before confirming an appointment",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract canonicalizes phone numbers for duplicate and rate-limit checks",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract classifies client organizer messages without allowing legal advice",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract generates public consultation slots from secretary availability and skips booked times",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract filters public consultation slots by requested day and time window",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract allows secretaries with appointment management permission to manage consultation availability",
+      "status": "passed"
+    },
+    {
+      "name": "public consultation contract supports the unassigned consultation queue filter for admins",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 connected-surface characterization moves the synthetic review queue onto the canonical pending outcome",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 connected-surface characterization wires shareable outcome views and counts into the consultation list",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 connected-surface characterization uses canonical outcome scopes in dashboard, calendar, and notifications",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 connected-surface characterization removes obsolete roadmap ids from runtime admin UI only",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 connected-surface characterization keeps validation and unknown categorized reasons in safe Arabic UI copy",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 connected-surface characterization orders deployment safely and verifies both PM2 processes beyond one cycle",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome contract accepts exactly the eight shareable outcome views",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome contract requires the intersection of consultation and appointment permissions",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome contract validates final outcome and optimistic version payloads",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome contract requires every field needed for audited future rescheduling",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome contract validates the atomic initial-scheduling payload",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome contract guards legacy actions without allowing a missed request to bypass reopen",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome contract accepts a categorized, versioned rejection while preserving the legacy body",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome contract returns the documented nested secretary-review projection without internal notes",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome contract exposes the three stable lifecycle errors",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 historical reconciliation policy maps terminal appointment COMPLETED to SUCCESSFUL",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 historical reconciliation policy maps terminal appointment NO_SHOW to NO_SHOW",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 historical reconciliation policy maps terminal appointment CANCELLED to CANCELLED",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 historical reconciliation policy prioritizes rejected consultations as cancelled",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 historical reconciliation policy uses the ended assignment-review rule for historical active bookings",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 historical reconciliation policy leaves future and already reconciled records unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 historical reconciliation policy reports a missing primary without guessing from follow-up data",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 historical reconciliation policy reconciles legacy converted and rejected requests without inventing a primary appointment",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 historical reconciliation policy transitions legacy CONVERTED no-primary data once with one audit",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 historical reconciliation policy transitions legacy REJECTED no-primary data once with one audit",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 historical reconciliation policy starts with a privacy-safe structured counter shape",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 historical reconciliation policy is idempotent across repeated worker cycles and creates one audit only",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 historical reconciliation policy uses one notification identity across repeated overdue-unbooked cycles",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 historical reconciliation policy counts a lost race without writing audit or notifications",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome domain keeps a booking pending before endsAt and classifies at the exact boundary",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome domain uses AND for missed and OR for awaiting result",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome domain selects the oldest non-case consultation appointment deterministically",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome domain maps final outcomes to terminal appointment statuses",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome domain builds mutually exclusive current and overdue-unbooked predicates from one asOf",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 outcome domain uses the exact 72-hour boundary for operational timing without changing outcome",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 atomic outcome writes updates the outcome, primary appointment, notification, and audit in one transaction",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 atomic outcome writes rolls back the dependent writes when the optimistic update loses a race",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-36 atomic outcome writes reopens only the primary booking and preserves the missed event through a new audit",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-37 atomic initial scheduling creates the client, primary appointment, assignment, review, audit, and notification atomically",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-37 atomic initial scheduling rejects a stale schedule before creating a client or appointment",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-37 atomic initial scheduling rejects a non-future schedule before opening a transaction",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-37 atomic initial scheduling rechecks that the slot is still future when the transaction begins",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-37 atomic initial scheduling rejects scheduling when a primary appointment already exists",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-37 atomic initial scheduling returns the stable conflict error for a lawyer overlap",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-37 atomic initial scheduling returns the stable conflict error for a client overlap",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-37 atomic initial scheduling denies Lawyer and Marketing Staff even when permission keys are supplied",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-37 converted legacy outcome allows a manual final result only for the reconciled converted record without a fake appointment",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-37 overdue-unbooked characterization defines a distinct exact-72-hour view instead of treating every pending request as current",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-37 overdue-unbooked characterization returns one asOf snapshot and operational timing from the consultation list",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-37 overdue-unbooked characterization provides the atomic initial schedule route and service",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-37 overdue-unbooked characterization reconciles converted and rejected missing-primary records and deduplicates overdue alerts",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-37 overdue-unbooked characterization connects the new queue to dashboard and Arabic operational UI copy",
+      "status": "passed"
+    },
+    {
+      "name": "public contact message service validates public contact payloads and creates a non-sensitive reference",
+      "status": "passed"
+    },
+    {
+      "name": "public contact message service persists the message and keeps raw contact content out of audit metadata",
+      "status": "passed"
+    },
+    {
+      "name": "public contact message service keeps a saved message successful when alert creation fails",
+      "status": "passed"
+    },
+    {
+      "name": "server contract foundation returns the shared error response shape with requestId and details",
+      "status": "passed"
+    },
+    {
+      "name": "server contract foundation maps schema failures to ApiError details",
+      "status": "passed"
+    },
+    {
+      "name": "server contract foundation normalizes pagination limits",
+      "status": "passed"
+    },
+    {
+      "name": "server contract foundation redacts sensitive audit metadata recursively",
+      "status": "passed"
+    },
+    {
+      "name": "server contract foundation enforces rate limit buckets",
+      "status": "passed"
+    },
+    {
+      "name": "server contract foundation prunes expired rate limit buckets",
+      "status": "passed"
+    },
+    {
+      "name": "server contract foundation localizes user-facing API and product labels while preserving technical values",
+      "status": "passed"
+    },
+    {
+      "name": "conversation management optimistic concurrency makes the management write conditional on the submitted thread version",
+      "status": "passed"
+    },
+    {
+      "name": "conversation management optimistic concurrency maps a lost update race to conflict and does not emit a success audit",
+      "status": "passed"
+    },
+    {
+      "name": "conversation service contracts allows only a client principal with own conversation permissions to use client chat",
+      "status": "passed"
+    },
+    {
+      "name": "conversation service contracts separates admin read, reply, assign, and manage permissions",
+      "status": "passed"
+    },
+    {
+      "name": "conversation service contracts validates bounded human-message payloads and admin filters",
+      "status": "passed"
+    },
+    {
+      "name": "email service abstraction keeps SMTP disabled in this release and returns safe delivery metadata",
+      "status": "passed"
+    },
+    {
+      "name": "email service abstraction does not enable SMTP runtime even if SMTP_ENABLED is set before the future activation plan",
+      "status": "passed"
+    },
+    {
+      "name": "email service abstraction renders supported future email templates without sending mail",
+      "status": "passed"
+    },
+    {
+      "name": "health route returns service unavailable with no-store caching when readiness is blocked",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-25 installer contract keeps the installer behind an explicit setup token and env flag",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-25 installer contract bootstraps first Super Admin without any TOTP fields",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-25 installer contract does not expose TOTP setup in the install wizard",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-26 panel-aware installer contract accepts only supported hosting modes and defaults to terminal VPS",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-26 panel-aware installer contract checks cPanel hard requirements before bootstrap",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-26 panel-aware installer contract keeps panel-assisted install script free of root-only service commands",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-26 panel-aware installer contract purges aaPanel proxy cache and retries public build verification on stale HTML",
+      "status": "passed"
+    },
+    {
+      "name": "legal date formatting pins shared server and client formatting to Africa/Cairo",
+      "status": "passed"
+    },
+    {
+      "name": "legal date formatting derives date-input and midnight boundaries from Cairo rather than UTC",
+      "status": "passed"
+    },
+    {
+      "name": "legal date formatting rejects impossible Cairo calendar inputs",
+      "status": "passed"
+    },
+    {
+      "name": "legal date formatting never exposes an unknown consultation category slug",
+      "status": "passed"
+    },
+    {
+      "name": "ClamAV upload scanning parses clean and infected scan responses",
+      "status": "passed"
+    },
+    {
+      "name": "ClamAV upload scanning requires scanning by default in production and permits explicit local disablement",
+      "status": "passed"
+    },
+    {
+      "name": "ClamAV upload scanning rejects an EICAR response over the ClamAV INSTREAM protocol",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract keeps payment provider config bounded and production signatures required",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract blocks activating Paymob until required server-side env is configured",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract keeps PayTabs unavailable for new attempts unless its explicit standby flag is enabled",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract reads stored payment gateway settings with env fallback",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract bounds consultation booking mode settings to paid or free AI chat",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract verifies webhook HMAC signatures with constant-time hex comparison",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract signs public payment receipt links and rejects tampered tokens",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract signs public payment status links and rejects attempt id tampering",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract gates public payment status before database expiry and excludes internal meetings",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract blocks paid webhook confirmation when amount or currency does not match the attempt",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract compares client-requested money with provider webhook money for finance review",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract keeps webhook events immutable and blocks transaction relinking across attempts",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract stores only a redacted webhook payload snapshot for payment audit trails",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract expires only the requested public payment status attempt and batches global expiry",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract creates a Paymob hosted checkout intention without exposing secrets",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract rejects undocumented raw-body Paymob signatures",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract maps provider statuses into the internal payment attempt states",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract blocks late paid webhooks from confirming expired or released appointments",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract keeps already-paid attempts from being downgraded by later non-paid webhooks",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract creates secretary review notifications only after paid webhook confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "payment gateway contract validates admin consultation pricing rules and price snapshots",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-34 decomposition characterization preserves Cairo date and grouped slot behavior",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-34 decomposition characterization preserves finance query links and webhook redaction",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 affected contract inventory parses one unique affected method/path row with no remaining planned operation",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 affected contract inventory matches current and planned operations to handlers in both directions",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 affected contract inventory matches the platform OpenAPI operation, authorization, error, and consumer map bidirectionally",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 affected contract inventory keeps every contract permission in the canonical catalog",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 affected contract inventory matches the executable registry to implemented contract rows bidirectionally",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 affected contract inventory keeps canonical authentication and PLAN-35 conflict codes",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 affected contract inventory catalogs PLAN-35 mutations and strips sensitive metadata before storage",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 stable API errors and Arabic recovery copy keeps APPOINTMENT_CONFLICT machine-readable and user-safe",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 stable API errors and Arabic recovery copy keeps CASE_REFERENCE_CONFLICT machine-readable and user-safe",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 stable API errors and Arabic recovery copy keeps SETTING_READ_ONLY machine-readable and user-safe",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 stable API errors and Arabic recovery copy keeps case-reference recovery explicit and preserves entered values",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 release evidence truth derives Local-Verified only and never promotes blocked or skipped gates",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 release evidence truth keeps DB, authenticated-browser, and live acceptance tasks open",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 release evidence truth keeps every roll-up document at the same highest evidenced state",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 release evidence truth keeps PLAN-35 browser and DB specs in the standard QA harness without treating collection as acceptance",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 release evidence truth requires exact live document outcomes instead of accepting any response below 500",
+      "status": "passed"
+    },
+    {
+      "name": "client portal access contract requires client self permission and a linked client profile",
+      "status": "passed"
+    },
+    {
+      "name": "client portal access contract returns a recoverable portal guard issue for unlinked client accounts",
+      "status": "passed"
+    },
+    {
+      "name": "client portal access contract builds ownership filters for client profile and cases",
+      "status": "passed"
+    },
+    {
+      "name": "client portal access contract restricts portal document listings to client-visible owned or case documents",
+      "status": "passed"
+    },
+    {
+      "name": "client portal access contract validates editable profile fields only",
+      "status": "passed"
+    },
+    {
+      "name": "client portal access contract accepts only Arabic or English as a self-owned client preference",
+      "status": "passed"
+    },
+    {
+      "name": "client portal access contract rejects preference changes outside an active linked client profile",
+      "status": "passed"
+    },
+    {
+      "name": "client portal visibility and aggregate contracts centralizes portal-only appointment and payment visibility",
+      "status": "passed"
+    },
+    {
+      "name": "client portal visibility and aggregate contracts keeps five-row previews separate from full counts and currency aggregates",
+      "status": "passed"
+    },
+    {
+      "name": "client portal visibility and aggregate contracts never returns draft invoices in the portal payment list",
+      "status": "passed"
+    },
+    {
+      "name": "client portal visibility and aggregate contracts keeps booking attempts visible while stripping a linked draft invoice",
+      "status": "passed"
+    },
+    {
+      "name": "hidden public content APIs closure (TASK 02) articles list returns 404 without content or service reads",
+      "status": "passed"
+    },
+    {
+      "name": "hidden public content APIs closure (TASK 02) article detail returns 404 for a known published slug without service reads",
+      "status": "passed"
+    },
+    {
+      "name": "hidden public content APIs closure (TASK 02) case studies list returns 404 without content or service reads",
+      "status": "passed"
+    },
+    {
+      "name": "hidden public content APIs closure (TASK 02) case study detail returns 404 for a known published slug without service reads",
+      "status": "passed"
+    },
+    {
+      "name": "public content contracts provides public routes with stable slugs",
+      "status": "passed"
+    },
+    {
+      "name": "public content contracts marks active navigation without duplicating destinations",
+      "status": "passed"
+    },
+    {
+      "name": "public content contracts keeps English primary content and Arabic optional content on the same slugs",
+      "status": "passed"
+    },
+    {
+      "name": "public content contracts covers the dark luxury practice-area matrix with stable service links",
+      "status": "passed"
+    },
+    {
+      "name": "public content contracts keeps old service links available as aliases without showing old services publicly",
+      "status": "passed"
+    },
+    {
+      "name": "public content contracts keeps public content free of obvious private document or case identifiers",
+      "status": "passed"
+    },
+    {
+      "name": "public content contracts requires public case studies to carry disclaimers",
+      "status": "passed"
+    },
+    {
+      "name": "public content contracts keeps representative and footer content privacy-safe",
+      "status": "passed"
+    },
+    {
+      "name": "public localization contract keeps public English default, Arabic under /ar, and protected routes Arabic",
+      "status": "passed"
+    },
+    {
+      "name": "public localization contract localizes public links without translating slugs",
+      "status": "passed"
+    },
+    {
+      "name": "public localization contract documents Article and CaseStudy locale-aware slug uniqueness in Prisma",
+      "status": "passed"
+    },
+    {
+      "name": "runtime readiness contract reports database connection failure as blocking readiness checks",
+      "status": "passed"
+    },
+    {
+      "name": "runtime readiness contract blocks installer preflight when required seed rows are missing",
+      "status": "passed"
+    },
+    {
+      "name": "runtime readiness contract requires first admin, installer completion, and installer lock for production app readiness",
+      "status": "passed"
+    },
+    {
+      "name": "runtime readiness contract rejects placeholder production database URLs",
+      "status": "passed"
+    },
+    {
+      "name": "finance repair contracts never offers manual mutation of gateway invoices",
+      "status": "passed"
+    },
+    {
+      "name": "finance repair contracts paginates beyond 150 with finance rights alone and includes the selected record",
+      "status": "passed"
+    },
+    {
+      "name": "finance repair contracts rejects unauthorized lookups before any database query",
+      "status": "passed"
+    },
+    {
+      "name": "finance repair contracts returns decimal currency totals independently of pagination",
+      "status": "passed"
+    },
+    {
+      "name": "route manifest contract documents the implemented MVP API route families",
+      "status": "passed"
+    },
+    {
+      "name": "route manifest contract does not keep retired runtime route families or mask unknown admin paths",
+      "status": "passed"
+    },
+    {
+      "name": "route manifest contract keeps manual case create and core edit methods aligned with the permission contract",
+      "status": "passed"
+    },
+    {
+      "name": "route manifest contract keeps every implemented PLAN-35 method, permission, stable error, and consumer documented",
+      "status": "passed"
+    },
+    {
+      "name": "security, privacy, upload, and observability hardening publishes global browser security headers",
+      "status": "passed"
+    },
+    {
+      "name": "security, privacy, upload, and observability hardening allows Cloudflare analytics endpoints in production CSP",
+      "status": "passed"
+    },
+    {
+      "name": "security, privacy, upload, and observability hardening adds only the configured Sentry ingest origin to connect-src",
+      "status": "passed"
+    },
+    {
+      "name": "security, privacy, upload, and observability hardening rejects cross-origin state-changing API requests",
+      "status": "passed"
+    },
+    {
+      "name": "security, privacy, upload, and observability hardening bypasses browser origin checks only for trusted payment webhook POST routes",
+      "status": "passed"
+    },
+    {
+      "name": "security, privacy, upload, and observability hardening redacts secrets, emails, phone numbers, and sensitive keys from logs",
+      "status": "passed"
+    },
+    {
+      "name": "security, privacy, upload, and observability hardening flags production environment misconfiguration before VPS release",
+      "status": "passed"
+    },
+    {
+      "name": "security, privacy, upload, and observability hardening uses X-Real-IP in production and ignores client-controlled X-Forwarded-For",
+      "status": "passed"
+    },
+    {
+      "name": "security, privacy, upload, and observability hardening keeps sensitive auth routes and 2FA reset contract hardened",
+      "status": "passed"
+    },
+    {
+      "name": "security, privacy, upload, and observability hardening keeps admin finance export and webhook replay behind authenticated finance services",
+      "status": "passed"
+    },
+    {
+      "name": "security, privacy, upload, and observability hardening keeps payment maintenance failures observable without sending stack traces",
+      "status": "passed"
+    },
+    {
+      "name": "security, privacy, upload, and observability hardening runs payment predeploy checks before production migrations",
+      "status": "passed"
+    },
+    {
+      "name": "security, privacy, upload, and observability hardening does not fall back to a dev database URL at production runtime",
+      "status": "passed"
+    },
+    {
+      "name": "database seed contract uses rerunnable write patterns for demo records",
+      "status": "passed"
+    },
+    {
+      "name": "database seed contract keeps seed data fake and readable in Arabic",
+      "status": "passed"
+    },
+    {
+      "name": "database seed contract keeps production bootstrap separate from local demo data",
+      "status": "passed"
+    },
+    {
+      "name": "database seed contract catalogs case creation and own-notification defaults for the intended staff roles",
+      "status": "passed"
+    },
+    {
+      "name": "database seed contract snapshots existing assignments before PLAN-35 grants and marks only an initialized database",
+      "status": "passed"
+    },
+    {
+      "name": "database seed contract installs defaults only before the durable RBAC bootstrap marker exists",
+      "status": "passed"
+    },
+    {
+      "name": "database seed contract does not restore removed assignments or reactivate roles on a marked repeat seed",
+      "status": "passed"
+    },
+    {
+      "name": "Sentry event privacy removes user identity, request bodies, headers, cookies, and query strings",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) keeps TOTP verification deterministic-safe: window edges and malformed codes",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) gates TOTP by staff role and mode, leaving Client login unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) denies pending sessions a finalized context",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) returns two_factor_required for staff and authenticated for Client",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) starts enrollment with a sealed secret and never audits the plaintext",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) refuses enrollment when a factor is already enabled",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) confirms enrollment with a valid code and finalizes the session atomically",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) rejects an invalid enrollment code and records the attempt",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) rejects enrollment confirmation once the session is already ACTIVE (replay)",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) rejects TOTP verification on a non-pending session (replay)",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) reports enrollment status without secrets",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) restricts staff 2FA reset to Super Admin and audits without secrets",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) keeps the TOTP route contract rate-limited, mode-gated, and secret-free",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) enforces reset authority in the existing service contract",
+      "status": "passed"
+    },
+    {
+      "name": "staff TOTP flow (TASK 04) encodes authenticator secrets without leaking structure",
+      "status": "passed"
+    },
+    {
+      "name": "document storage and upload contract accepts allowed PDF uploads under 5MB after MIME, extension, and magic-byte validation",
+      "status": "passed"
+    },
+    {
+      "name": "document storage and upload contract rejects oversized, unsupported, and content-mismatched uploads",
+      "status": "passed"
+    },
+    {
+      "name": "document storage and upload contract rejects oversized multipart requests before reading form data",
+      "status": "passed"
+    },
+    {
+      "name": "document storage and upload contract generates opaque document keys and rejects path traversal",
+      "status": "passed"
+    },
+    {
+      "name": "document storage and upload contract rejects private storage roots inside public directories",
+      "status": "passed"
+    },
+    {
+      "name": "document storage and upload contract sets attachment download headers with no-store and nosniff",
+      "status": "passed"
+    },
+    {
+      "name": "document storage and upload contract enforces document ownership and assigned lawyer read checks",
+      "status": "passed"
+    },
+    {
+      "name": "document storage and upload contract derives an exact redacted configured diagnostic from the effective environment policy",
+      "status": "passed"
+    },
+    {
+      "name": "document storage and upload contract distinguishes invalid, unwritable, disabled, and unreachable runtime states",
+      "status": "passed"
+    },
+    {
+      "name": "document storage and upload contract does not overstate a production-disabled scanner",
+      "status": "passed"
+    }
+  ]
+}

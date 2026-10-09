@@ -1,3 +1,4 @@
+import { getPublicContent } from "@/content/public-content";
 import { notFound, redirect } from "next/navigation";
 import {
   ConsultationPaymentReceiptPage,
@@ -6,6 +7,11 @@ import {
 } from "@/features/payments/consultation-payment-receipt-page";
 
 export const dynamic = "force-dynamic";
+export const metadata = {
+  title: getPublicContent("en").paymentReceipt.title + " | KMT Legal",
+  description: getPublicContent("en").paymentReceipt.description,
+  robots: { index: false, follow: false }
+};
 
 export default async function PaymentReceiptRoute({
   searchParams

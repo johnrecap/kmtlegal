@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-type KmtBrandLogoVariant = "mark" | "lockup" | "full";
+type KmtBrandLogoVariant = "mark" | "lockup" | "full" | "public";
 type KmtBrandLogoSurface = "dark" | "light" | "theme";
 type KmtBrandLogoSize = "sm" | "md" | "lg";
 type KmtBrandLogoShape = "rounded" | "circle";
@@ -47,7 +47,15 @@ export function KmtBrandLogo({
   label?: string;
 }) {
   const content =
-    variant === "full" ? (
+    variant === "public" ? (
+      <span className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-kmt-gold/30 bg-black px-2.5 py-2" dir="ltr">
+        <BrandMark alt="" imageClassName={imageClassName} shape={shape} size={size === "lg" ? "md" : "sm"} surface="dark" />
+        <span className="flex flex-col items-center font-label-sm leading-none" aria-label={label}>
+          <span className={cn("font-bold tracking-[0.08em] text-white", size === "lg" ? "text-4xl" : "text-2xl sm:text-3xl")}>KMT</span>
+          <span className="mt-1 text-[11px] font-semibold tracking-[0.28em] text-kmt-gold">LEGAL</span>
+        </span>
+      </span>
+    ) : variant === "full" ? (
       <img
         alt={label}
         className={cn("block max-w-full object-contain", fullSizeClasses[size], imageClassName)}

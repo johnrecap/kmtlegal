@@ -1,0 +1,525 @@
+
+Running 64 tests using 2 workers
+
+
+
+(node:3384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+(node:16028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/64] [chromium] › tests\e2e\booking-recovery.spec.ts:4:5 › malformed session cookies return unauthorized from the real auth endpoint
+[2/64] [chromium] › tests\e2e\booking-stepper-validation.spec.ts:5:7 › consultation booking chat › sends legal-boundary requests to the server and retains the Arabic intake
+[3/64] [chromium] › tests\e2e\booking-recovery.spec.ts:24:9 › ar at 390px › reports payment resume http failure with a contact action
+[4/64] [chromium] › tests\e2e\booking-recovery.spec.ts:24:9 › ar at 390px › reports payment resume json failure with a contact action
+[5/64] [chromium] › tests\e2e\booking-recovery.spec.ts:24:9 › ar at 390px › reports payment resume shape failure with a contact action
+[6/64] [chromium] › tests\e2e\booking-recovery.spec.ts:24:9 › ar at 390px › reports payment resume missing-draft failure with a contact action
+[7/64] [chromium] › tests\e2e\booking-stepper-validation.spec.ts:51:7 › consultation booking chat › guides matter selection inside the conversation
+[8/64] [chromium] › tests\e2e\booking-recovery.spec.ts:42:7 › ar at 390px › accepts intentionally withheld drafts without reporting a retrieval error
+[9/64] [chromium] › tests\e2e\booking-stepper-validation.spec.ts:84:7 › consultation booking chat › shows the public floating dock with consultation + WhatsApp only
+[10/64] [chromium] › tests\e2e\booking-recovery.spec.ts:59:7 › ar at 390px › restores a verified failed attempt and clears its old appointment
+[11/64] [chromium] › tests\e2e\booking-stepper-validation.spec.ts:101:7 › consultation booking chat › never renders a booking stepper in any assistant state
+[12/64] [chromium] › tests\e2e\booking-recovery.spec.ts:78:5 › ar at 390px › clears an invalidated appointment instead of resending it
+[13/64] [chromium] › tests\e2e\booking-recovery.spec.ts:102:5 › ar at 390px › reports a failed payment-resume request without an unhandled error
+[14/64] [chromium] › tests\e2e\booking-recovery.spec.ts:112:5 › ar at 390px › does not report a payment page ready when checkout returns no payment attempt
+[15/64] [chromium] › tests\e2e\booking-recovery.spec.ts:24:9 › en at 390px › reports payment resume http failure with a contact action
+[16/64] [chromium] › tests\e2e\booking-recovery.spec.ts:24:9 › en at 390px › reports payment resume json failure with a contact action
+[17/64] [chromium] › tests\e2e\booking-recovery.spec.ts:24:9 › en at 390px › reports payment resume shape failure with a contact action
+[18/64] [chromium] › tests\e2e\booking-recovery.spec.ts:24:9 › en at 390px › reports payment resume missing-draft failure with a contact action
+[19/64] [chromium] › tests\e2e\booking-recovery.spec.ts:42:7 › en at 390px › accepts intentionally withheld drafts without reporting a retrieval error
+[20/64] [chromium] › tests\e2e\booking-recovery.spec.ts:59:7 › en at 390px › restores a verified failed attempt and clears its old appointment
+[21/64] [chromium] › tests\e2e\booking-recovery.spec.ts:78:5 › en at 390px › clears an invalidated appointment instead of resending it
+[22/64] [chromium] › tests\e2e\booking-recovery.spec.ts:102:5 › en at 390px › reports a failed payment-resume request without an unhandled error
+[23/64] [chromium] › tests\e2e\booking-recovery.spec.ts:112:5 › en at 390px › does not report a payment page ready when checkout returns no payment attempt
+[24/64] [chromium] › tests\e2e\booking-recovery.spec.ts:78:5 › ar at 768px › clears an invalidated appointment instead of resending it
+[25/64] [chromium] › tests\e2e\booking-recovery.spec.ts:102:5 › ar at 768px › reports a failed payment-resume request without an unhandled error
+[26/64] [chromium] › tests\e2e\booking-recovery.spec.ts:112:5 › ar at 768px › does not report a payment page ready when checkout returns no payment attempt
+[27/64] [chromium] › tests\e2e\booking-recovery.spec.ts:78:5 › en at 768px › clears an invalidated appointment instead of resending it
+[28/64] [chromium] › tests\e2e\booking-recovery.spec.ts:102:5 › en at 768px › reports a failed payment-resume request without an unhandled error
+[29/64] [chromium] › tests\e2e\booking-recovery.spec.ts:112:5 › en at 768px › does not report a payment page ready when checkout returns no payment attempt
+[30/64] [chromium] › tests\e2e\booking-recovery.spec.ts:78:5 › ar at 1440px › clears an invalidated appointment instead of resending it
+[31/64] [chromium] › tests\e2e\booking-recovery.spec.ts:102:5 › ar at 1440px › reports a failed payment-resume request without an unhandled error
+[32/64] [chromium] › tests\e2e\booking-recovery.spec.ts:112:5 › ar at 1440px › does not report a payment page ready when checkout returns no payment attempt
+[33/64] [chromium] › tests\e2e\booking-recovery.spec.ts:78:5 › en at 1440px › clears an invalidated appointment instead of resending it
+[34/64] [chromium] › tests\e2e\booking-recovery.spec.ts:102:5 › en at 1440px › reports a failed payment-resume request without an unhandled error
+[35/64] [chromium] › tests\e2e\booking-recovery.spec.ts:112:5 › en at 1440px › does not report a payment page ready when checkout returns no payment attempt
+[36/64] [chromium] › tests\e2e\public-phase-one.spec.ts:10:7 › ar: menu, touch targets and enlarged text
+  1) [chromium] › tests\e2e\booking-stepper-validation.spec.ts:101:7 › consultation booking chat › never renders a booking stepper in any assistant state
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByTestId('booking-chat-shell').getByText('الموعد', { exact: true })
+    Expected: 0
+    Received: 1
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveCount" with timeout 10000ms
+      - waiting for getByTestId('booking-chat-shell').getByText('الموعد', { exact: true })
+        23 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      161 |         await expect(shell.locator('[role="tablist"]')).toHaveCount(0);
+      162 |         for (const label of journey.labels) {
+    > 163 |           await expect(shell.getByText(label, { exact: true })).toHaveCount(0);
+          |                                                                 ^
+      164 |         }
+      165 |       };
+      166 |
+        at assertNoStepper (C:\Users\UTD\Documents\Codex\RecoveredProjects\local-0efe82359eea107367d678c3c6ae29f0\kmt legal office\tests\e2e\booking-stepper-validation.spec.ts:163:65)
+        at C:\Users\UTD\Documents\Codex\RecoveredProjects\local-0efe82359eea107367d678c3c6ae29f0\kmt legal office\tests\e2e\booking-stepper-validation.spec.ts:190:7
+
+    Error Context: .playwright\phase1-optimized\booking-stepper-validation-ac1ee-pper-in-any-assistant-state-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\phase1-optimized\booking-stepper-validation-ac1ee-pper-in-any-assistant-state-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\phase1-optimized\booking-stepper-validation-ac1ee-pper-in-any-assistant-state-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+(node:9456) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[37/64] [chromium] › tests\e2e\booking-stepper-validation.spec.ts:214:7 › consultation booking chat › hides intent actions when the server starts collecting intake
+[38/64] [chromium] › tests\e2e\booking-stepper-validation.spec.ts:238:7 › consultation booking chat › shows localized payment review labels instead of service slugs
+[39/64] [chromium] › tests\e2e\booking-stepper-validation.spec.ts:278:7 › consultation booking chat › keeps contract-check wording inside booking instead of reference inquiry
+[40/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › ar light 360: public layout, contacts and SEO
+[41/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › ar light 390: public layout, contacts and SEO
+[42/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › ar light 768: public layout, contacts and SEO
+[43/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › ar light 1024: public layout, contacts and SEO
+[44/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › ar light 1440: public layout, contacts and SEO
+[45/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › ar dark 360: public layout, contacts and SEO
+[46/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › ar dark 390: public layout, contacts and SEO
+[47/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › ar dark 768: public layout, contacts and SEO
+[48/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › ar dark 1024: public layout, contacts and SEO
+[49/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › ar dark 1440: public layout, contacts and SEO
+[50/64] [chromium] › tests\e2e\public-phase-one.spec.ts:86:7 › ar: contact rejection preserves draft and retry succeeds
+[51/64] [chromium] › tests\e2e\public-phase-one.spec.ts:112:7 › ar: mobile keyboard viewport, navigation and utility pages
+[52/64] [chromium] › tests\e2e\public-phase-one.spec.ts:10:7 › en: menu, touch targets and enlarged text
+[53/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 360: public layout, contacts and SEO
+  2) [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 360: public layout, contacts and SEO
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('link[rel="canonical"]')
+    Expected: "http://127.0.0.1:3129/"
+    Received: "http://127.0.0.1:3129"
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 10000ms
+      - waiting for locator('link[rel="canonical"]')
+        23 × locator resolved to <link rel="canonical" href="http://127.0.0.1:3129"/>
+           - unexpected value "http://127.0.0.1:3129"
+
+
+      59 |         await expect(page.locator("h1"), path).toHaveCount(1);
+      60 |         await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /\S.{20,}/);
+    > 61 |         await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new URL(local(path), info.project.use.baseURL).href);
+         |                                                             ^
+      62 |         await expect(page.locator('link[rel="alternate"][hreflang="ar"]')).toHaveCount(1);
+      63 |         await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveCount(1);
+      64 |         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), path).toBe(true);
+        at C:\Users\UTD\Documents\Codex\RecoveredProjects\local-0efe82359eea107367d678c3c6ae29f0\kmt legal office\tests\e2e\public-phase-one.spec.ts:61:61
+
+    Error Context: .playwright\phase1-optimized\public-phase-one-en-light-360-public-layout-contacts-and-SEO-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\phase1-optimized\public-phase-one-en-light-360-public-layout-contacts-and-SEO-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\phase1-optimized\public-phase-one-en-light-360-public-layout-contacts-and-SEO-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:15340) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[54/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 390: public layout, contacts and SEO
+  3) [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 390: public layout, contacts and SEO
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('link[rel="canonical"]')
+    Expected: "http://127.0.0.1:3129/"
+    Received: "http://127.0.0.1:3129"
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 10000ms
+      - waiting for locator('link[rel="canonical"]')
+        23 × locator resolved to <link rel="canonical" href="http://127.0.0.1:3129"/>
+           - unexpected value "http://127.0.0.1:3129"
+
+
+      59 |         await expect(page.locator("h1"), path).toHaveCount(1);
+      60 |         await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /\S.{20,}/);
+    > 61 |         await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new URL(local(path), info.project.use.baseURL).href);
+         |                                                             ^
+      62 |         await expect(page.locator('link[rel="alternate"][hreflang="ar"]')).toHaveCount(1);
+      63 |         await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveCount(1);
+      64 |         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), path).toBe(true);
+        at C:\Users\UTD\Documents\Codex\RecoveredProjects\local-0efe82359eea107367d678c3c6ae29f0\kmt legal office\tests\e2e\public-phase-one.spec.ts:61:61
+
+    Error Context: .playwright\phase1-optimized\public-phase-one-en-light-390-public-layout-contacts-and-SEO-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\phase1-optimized\public-phase-one-en-light-390-public-layout-contacts-and-SEO-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\phase1-optimized\public-phase-one-en-light-390-public-layout-contacts-and-SEO-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+(node:13916) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[55/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 768: public layout, contacts and SEO
+[56/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 1024: public layout, contacts and SEO
+  4) [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 768: public layout, contacts and SEO
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('link[rel="canonical"]')
+    Expected: "http://127.0.0.1:3129/"
+    Received: "http://127.0.0.1:3129"
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 10000ms
+      - waiting for locator('link[rel="canonical"]')
+        23 × locator resolved to <link rel="canonical" href="http://127.0.0.1:3129"/>
+           - unexpected value "http://127.0.0.1:3129"
+
+
+      59 |         await expect(page.locator("h1"), path).toHaveCount(1);
+      60 |         await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /\S.{20,}/);
+    > 61 |         await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new URL(local(path), info.project.use.baseURL).href);
+         |                                                             ^
+      62 |         await expect(page.locator('link[rel="alternate"][hreflang="ar"]')).toHaveCount(1);
+      63 |         await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveCount(1);
+      64 |         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), path).toBe(true);
+        at C:\Users\UTD\Documents\Codex\RecoveredProjects\local-0efe82359eea107367d678c3c6ae29f0\kmt legal office\tests\e2e\public-phase-one.spec.ts:61:61
+
+    Error Context: .playwright\phase1-optimized\public-phase-one-en-light-768-public-layout-contacts-and-SEO-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\phase1-optimized\public-phase-one-en-light-768-public-layout-contacts-and-SEO-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\phase1-optimized\public-phase-one-en-light-768-public-layout-contacts-and-SEO-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:24460) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[57/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 1440: public layout, contacts and SEO
+  5) [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 1024: public layout, contacts and SEO
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('link[rel="canonical"]')
+    Expected: "http://127.0.0.1:3129/"
+    Received: "http://127.0.0.1:3129"
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 10000ms
+      - waiting for locator('link[rel="canonical"]')
+        23 × locator resolved to <link rel="canonical" href="http://127.0.0.1:3129"/>
+           - unexpected value "http://127.0.0.1:3129"
+
+
+      59 |         await expect(page.locator("h1"), path).toHaveCount(1);
+      60 |         await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /\S.{20,}/);
+    > 61 |         await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new URL(local(path), info.project.use.baseURL).href);
+         |                                                             ^
+      62 |         await expect(page.locator('link[rel="alternate"][hreflang="ar"]')).toHaveCount(1);
+      63 |         await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveCount(1);
+      64 |         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), path).toBe(true);
+        at C:\Users\UTD\Documents\Codex\RecoveredProjects\local-0efe82359eea107367d678c3c6ae29f0\kmt legal office\tests\e2e\public-phase-one.spec.ts:61:61
+
+    Error Context: .playwright\phase1-optimized\public-phase-one-en-light--a9773-lic-layout-contacts-and-SEO-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\phase1-optimized\public-phase-one-en-light--a9773-lic-layout-contacts-and-SEO-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\phase1-optimized\public-phase-one-en-light--a9773-lic-layout-contacts-and-SEO-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:13012) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[58/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 360: public layout, contacts and SEO
+  6) [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 1440: public layout, contacts and SEO
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('link[rel="canonical"]')
+    Expected: "http://127.0.0.1:3129/"
+    Received: "http://127.0.0.1:3129"
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 10000ms
+      - waiting for locator('link[rel="canonical"]')
+        23 × locator resolved to <link rel="canonical" href="http://127.0.0.1:3129"/>
+           - unexpected value "http://127.0.0.1:3129"
+
+
+      59 |         await expect(page.locator("h1"), path).toHaveCount(1);
+      60 |         await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /\S.{20,}/);
+    > 61 |         await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new URL(local(path), info.project.use.baseURL).href);
+         |                                                             ^
+      62 |         await expect(page.locator('link[rel="alternate"][hreflang="ar"]')).toHaveCount(1);
+      63 |         await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveCount(1);
+      64 |         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), path).toBe(true);
+        at C:\Users\UTD\Documents\Codex\RecoveredProjects\local-0efe82359eea107367d678c3c6ae29f0\kmt legal office\tests\e2e\public-phase-one.spec.ts:61:61
+
+    Error Context: .playwright\phase1-optimized\public-phase-one-en-light--9cc4d-lic-layout-contacts-and-SEO-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\phase1-optimized\public-phase-one-en-light--9cc4d-lic-layout-contacts-and-SEO-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\phase1-optimized\public-phase-one-en-light--9cc4d-lic-layout-contacts-and-SEO-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:3064) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[59/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 390: public layout, contacts and SEO
+  7) [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 360: public layout, contacts and SEO
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('link[rel="canonical"]')
+    Expected: "http://127.0.0.1:3129/"
+    Received: "http://127.0.0.1:3129"
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 10000ms
+      - waiting for locator('link[rel="canonical"]')
+        23 × locator resolved to <link rel="canonical" href="http://127.0.0.1:3129"/>
+           - unexpected value "http://127.0.0.1:3129"
+
+
+      59 |         await expect(page.locator("h1"), path).toHaveCount(1);
+      60 |         await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /\S.{20,}/);
+    > 61 |         await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new URL(local(path), info.project.use.baseURL).href);
+         |                                                             ^
+      62 |         await expect(page.locator('link[rel="alternate"][hreflang="ar"]')).toHaveCount(1);
+      63 |         await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveCount(1);
+      64 |         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), path).toBe(true);
+        at C:\Users\UTD\Documents\Codex\RecoveredProjects\local-0efe82359eea107367d678c3c6ae29f0\kmt legal office\tests\e2e\public-phase-one.spec.ts:61:61
+
+    Error Context: .playwright\phase1-optimized\public-phase-one-en-dark-360-public-layout-contacts-and-SEO-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\phase1-optimized\public-phase-one-en-dark-360-public-layout-contacts-and-SEO-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\phase1-optimized\public-phase-one-en-dark-360-public-layout-contacts-and-SEO-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+(node:22492) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[60/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 768: public layout, contacts and SEO
+  8) [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 390: public layout, contacts and SEO
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('link[rel="canonical"]')
+    Expected: "http://127.0.0.1:3129/"
+    Received: "http://127.0.0.1:3129"
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 10000ms
+      - waiting for locator('link[rel="canonical"]')
+        23 × locator resolved to <link rel="canonical" href="http://127.0.0.1:3129"/>
+           - unexpected value "http://127.0.0.1:3129"
+
+
+      59 |         await expect(page.locator("h1"), path).toHaveCount(1);
+      60 |         await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /\S.{20,}/);
+    > 61 |         await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", new URL(local(path), info.project.use.baseURL).href);
+         |                                                             ^
+      62 |         await expect(page.locator('link[rel="alternate"][hreflang="ar"]')).toHaveCount(1);
+      63 |         await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveCount(1);
+      64 |         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), path).toBe(true);
+        at C:\Users\UTD\Documents\Codex\RecoveredProjects\local-0efe82359eea107367d678c3c6ae29f0\kmt legal office\tests\e2e\public-phase-one.spec.ts:61:61
+
+    Error Context: .playwright\phase1-optimized\public-phase-one-en-dark-390-public-layout-contacts-and-SEO-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\phase1-optimized\public-phase-one-en-dark-390-public-layout-contacts-and-SEO-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\phase1-optimized\public-phase-one-en-dark-390-public-layout-contacts-and-SEO-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:27176) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[61/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 1024: public layout, contacts and SEO
+  9) [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 768: public layout, contacts and SEO
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('link[rel="canonical"]')
+    Expected: "http://127.0.0.1:3129/"
+    Received: "http://127.0.0.1:3129"
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 10000ms
+      - waiting for locator('link[rel="canonical"]')
+        23 × locator resolved to <link rel="canonical" href="http://127.0.0.1:3129"/>
+           - unexpected value "http://127.0.0.1:3129"
+
+
+      59 |         await expect(page.locator("h1"), path).toHaveCount(1);
+      60 |         await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /\S.{20,}/);
+    > 61 |         // Next may serialize the origin without a trailing slash in an optimized build.
+         |                                                             ^
+      62 |         const canonical = await page.locator('link[rel="canonical"]').getAttribute("href");
+      63 |         expect(new URL(canonical!).href).toBe(new URL(local(path), info.project.use.baseURL).href);
+      64 |         await expect(page.locator('link[rel="alternate"][hreflang="ar"]')).toHaveCount(1);
+        at C:\Users\UTD\Documents\Codex\RecoveredProjects\local-0efe82359eea107367d678c3c6ae29f0\kmt legal office\tests\e2e\public-phase-one.spec.ts:61:61
+
+    Error Context: .playwright\phase1-optimized\public-phase-one-en-dark-768-public-layout-contacts-and-SEO-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\phase1-optimized\public-phase-one-en-dark-768-public-layout-contacts-and-SEO-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\phase1-optimized\public-phase-one-en-dark-768-public-layout-contacts-and-SEO-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:9108) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[62/64] [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 1440: public layout, contacts and SEO
+  10) [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 1024: public layout, contacts and SEO
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('link[rel="canonical"]')
+    Expected: "http://127.0.0.1:3129/"
+    Received: "http://127.0.0.1:3129"
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 10000ms
+      - waiting for locator('link[rel="canonical"]')
+        23 × locator resolved to <link rel="canonical" href="http://127.0.0.1:3129"/>
+           - unexpected value "http://127.0.0.1:3129"
+
+
+      59 |         await expect(page.locator("h1"), path).toHaveCount(1);
+      60 |         await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /\S.{20,}/);
+    > 61 |         // Next may serialize the origin without a trailing slash in an optimized build.
+         |                                                             ^
+      62 |         const canonical = await page.locator('link[rel="canonical"]').getAttribute("href");
+      63 |         expect(new URL(canonical!).href).toBe(new URL(local(path), info.project.use.baseURL).href);
+      64 |         await expect(page.locator('link[rel="alternate"][hreflang="ar"]')).toHaveCount(1);
+        at C:\Users\UTD\Documents\Codex\RecoveredProjects\local-0efe82359eea107367d678c3c6ae29f0\kmt legal office\tests\e2e\public-phase-one.spec.ts:61:61
+
+    Error Context: .playwright\phase1-optimized\public-phase-one-en-dark-1024-public-layout-contacts-and-SEO-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\phase1-optimized\public-phase-one-en-dark-1024-public-layout-contacts-and-SEO-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\phase1-optimized\public-phase-one-en-dark-1024-public-layout-contacts-and-SEO-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:24572) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[63/64] [chromium] › tests\e2e\public-phase-one.spec.ts:86:7 › en: contact rejection preserves draft and retry succeeds
+[64/64] [chromium] › tests\e2e\public-phase-one.spec.ts:112:7 › en: mobile keyboard viewport, navigation and utility pages
+  11) [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 1440: public layout, contacts and SEO
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('link[rel="canonical"]')
+    Expected: "http://127.0.0.1:3129/"
+    Received: "http://127.0.0.1:3129"
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 10000ms
+      - waiting for locator('link[rel="canonical"]')
+        23 × locator resolved to <link rel="canonical" href="http://127.0.0.1:3129"/>
+           - unexpected value "http://127.0.0.1:3129"
+
+
+      59 |         await expect(page.locator("h1"), path).toHaveCount(1);
+      60 |         await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /\S.{20,}/);
+    > 61 |         // Next may serialize the origin without a trailing slash in an optimized build.
+         |                                                             ^
+      62 |         const canonical = await page.locator('link[rel="canonical"]').getAttribute("href");
+      63 |         expect(new URL(canonical!).href).toBe(new URL(local(path), info.project.use.baseURL).href);
+      64 |         await expect(page.locator('link[rel="alternate"][hreflang="ar"]')).toHaveCount(1);
+        at C:\Users\UTD\Documents\Codex\RecoveredProjects\local-0efe82359eea107367d678c3c6ae29f0\kmt legal office\tests\e2e\public-phase-one.spec.ts:61:61
+
+    Error Context: .playwright\phase1-optimized\public-phase-one-en-dark-1440-public-layout-contacts-and-SEO-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\phase1-optimized\public-phase-one-en-dark-1440-public-layout-contacts-and-SEO-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\phase1-optimized\public-phase-one-en-dark-1440-public-layout-contacts-and-SEO-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  11 failed
+    [chromium] › tests\e2e\booking-stepper-validation.spec.ts:101:7 › consultation booking chat › never renders a booking stepper in any assistant state
+    [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 360: public layout, contacts and SEO
+    [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 390: public layout, contacts and SEO
+    [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 768: public layout, contacts and SEO
+    [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 1024: public layout, contacts and SEO
+    [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en light 1440: public layout, contacts and SEO
+    [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 360: public layout, contacts and SEO
+    [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 390: public layout, contacts and SEO
+    [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 768: public layout, contacts and SEO
+    [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 1024: public layout, contacts and SEO
+    [chromium] › tests\e2e\public-phase-one.spec.ts:47:9 › en dark 1440: public layout, contacts and SEO
+  53 passed (5.9m)

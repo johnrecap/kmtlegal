@@ -31,7 +31,7 @@ describe("public footer theme", () => {
       </PublicShell>
     );
 
-    expect(html).toContain("/brand/kmt-logo-full.webp");
+    expect(html).toContain(">LEGAL</span>");
     expect(html).toContain("rounded-[10px]");
     expect(html).toContain("border-kmt-gold/30");
     expect(html).toContain("bg-black");
@@ -44,7 +44,7 @@ describe("public footer theme", () => {
       </PublicShell>
     );
 
-    expect(html).toContain("/brand/kmt-logo-full.webp");
+    expect(html).toContain(">LEGAL</span>");
     expect(html).toContain("rounded-[10px]");
     expect(html).not.toContain("bg-[var(--kmt-black-0)]");
   });

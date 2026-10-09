@@ -66,6 +66,7 @@ export function publicPageMetadata(
   availableLocales: readonly PublicLocale[] = ["en", "ar"]
 ): Metadata {
   return {
+    metadataBase: new URL(process.env.APP_ORIGIN || "https://kmtlegal.org"),
     title,
     description,
     alternates: {

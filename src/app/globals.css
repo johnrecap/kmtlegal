@@ -1091,3 +1091,16 @@ html[dir="rtl"] .kmt-trust-marquee .animate-marquee {
 .kmt-trust-marquee:focus-within .animate-marquee {
   animation-play-state: paused;
 }
+
+/* Public-only form ergonomics: legible text without mobile Safari focus zoom,
+   and space to scroll focused controls clear of the fixed contact dock. */
+[data-testid="public-shell"] :is(input:not([type="checkbox"]), select, textarea) {
+  font-size: 1rem;
+  scroll-margin-block: 7rem;
+}
+[data-testid="public-shell"] :is(input:not([type="checkbox"]), select) {
+  min-height: 2.75rem;
+}
+[data-testid="public-shell"] :is(button, a):focus-visible {
+  outline-offset: 3px;
+}

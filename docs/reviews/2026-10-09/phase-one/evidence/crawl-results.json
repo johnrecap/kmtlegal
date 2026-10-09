@@ -1,0 +1,117 @@
+{
+  "pages": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/ar",
+      "status": 200
+    },
+    {
+      "path": "/services",
+      "status": 200
+    },
+    {
+      "path": "/team",
+      "status": 200
+    },
+    {
+      "path": "/contact",
+      "status": 200
+    },
+    {
+      "path": "/book-consultation",
+      "status": 200
+    },
+    {
+      "path": "/services/legal-consultation",
+      "status": 200
+    },
+    {
+      "path": "/services/corporate-business-services",
+      "status": 200
+    },
+    {
+      "path": "/services/real-estate-legal-support",
+      "status": 200
+    },
+    {
+      "path": "/services/claims-collections",
+      "status": 200
+    },
+    {
+      "path": "/team/maryam-khaled",
+      "status": 200
+    },
+    {
+      "path": "/team/karim-adel",
+      "status": 200
+    },
+    {
+      "path": "/team/nadine-samy",
+      "status": 200
+    },
+    {
+      "path": "/privacy",
+      "status": 200
+    },
+    {
+      "path": "/terms",
+      "status": 200
+    },
+    {
+      "path": "/ar/services",
+      "status": 200
+    },
+    {
+      "path": "/ar/team",
+      "status": 200
+    },
+    {
+      "path": "/ar/contact",
+      "status": 200
+    },
+    {
+      "path": "/ar/book-consultation",
+      "status": 200
+    },
+    {
+      "path": "/ar/services/legal-consultation",
+      "status": 200
+    },
+    {
+      "path": "/ar/services/corporate-business-services",
+      "status": 200
+    },
+    {
+      "path": "/ar/services/real-estate-legal-support",
+      "status": 200
+    },
+    {
+      "path": "/ar/services/claims-collections",
+      "status": 200
+    },
+    {
+      "path": "/ar/team/maryam-khaled",
+      "status": 200
+    },
+    {
+      "path": "/ar/team/karim-adel",
+      "status": 200
+    },
+    {
+      "path": "/ar/team/nadine-samy",
+      "status": 200
+    },
+    {
+      "path": "/ar/privacy",
+      "status": 200
+    },
+    {
+      "path": "/ar/terms",
+      "status": 200
+    }
+  ],
+  "failures": []
+}

@@ -1,0 +1,816 @@
+{
+  "success": true,
+  "passed": 202,
+  "failed": 0,
+  "skipped": 0,
+  "tests": [
+    {
+      "name": "PLAN-35 shared admin accessibility contracts keeps repeated names stable while DOM relationships remain unique",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared admin accessibility contracts applies explicit and prefixed IDs across controls and preserves caller ARIA references",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared admin accessibility contracts gives tables captions and column scopes, including empty state naming",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared admin accessibility contracts names filter and search regions distinctly",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared admin accessibility contracts uses assertive alerts for errors and polite statuses otherwise",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared admin accessibility contracts projects state colors from one token source without raw feedback utilities",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared admin accessibility contracts announces loading skeletons and respects reduced motion",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-aware command center renders priority work before metrics and makes the first permitted action primary",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-aware command center renders every metric as a semantic drill-down link with timeframe and scope copy",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-aware command center keeps an unavailable section recoverable while leaving ready sections usable",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-aware command center omits forbidden widgets and client search rather than rendering permission placeholders",
+      "status": "passed"
+    },
+    {
+      "name": "admin contact message inbox UI renders a responsive, named queue with mixed-direction safe contact details",
+      "status": "passed"
+    },
+    {
+      "name": "admin contact message inbox UI exposes native keyboard actions only to managers and keeps feedback announced",
+      "status": "passed"
+    },
+    {
+      "name": "admin contact message inbox UI renders an explicit empty state without losing filters",
+      "status": "passed"
+    },
+    {
+      "name": "admin content lifecycle forms shows actual protected states and disables every edit control for a creator",
+      "status": "passed"
+    },
+    {
+      "name": "admin content lifecycle forms keeps rejected and archived records editable but requires an allowed target for creator rework",
+      "status": "passed"
+    },
+    {
+      "name": "admin content lifecycle forms captures the form across await, resets only after create success, and blocks duplicate submission",
+      "status": "passed"
+    },
+    {
+      "name": "admin content lifecycle forms resets case-study and social forms only after their create handlers succeed",
+      "status": "passed"
+    },
+    {
+      "name": "admin content lifecycle forms preserves typed values after rejected submissions in all three forms",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 11 admin detail/form migration contracts leaves zero native details/summary on migrated detail/form surfaces",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 11 admin detail/form migration contracts gates every migrated destructive action behind an AdminDialog confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 11 admin detail/form migration contracts uses StatefulButton for genuine async form submits with preserved feedback",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 11 admin detail/form migration contracts consumes the single owner-approved File Upload file for admin document intake",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 11 admin detail/form migration contracts opens the accordion group holding the first invalid field on submit",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 10 admin list migration contracts leaves zero hand-rolled prev/next pagination on migrated list surfaces",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 10 admin list migration contracts preserves the exact GET filter parameter names per list surface",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 10 admin list migration contracts routes consultations, content, and finance section navigation through AdminTabs with preserved param hrefs",
+      "status": "passed"
+    },
+    {
+      "name": "Phase 10 admin list migration contracts keeps destructive list actions in their current presentation (no dead menu items, no placeholders)",
+      "status": "passed"
+    },
+    {
+      "name": "admin manual case form UI renders unique labelled controls, Arabic validation copy, and canonical party choices",
+      "status": "passed"
+    },
+    {
+      "name": "admin manual case form UI keeps submit, success, conflict, and explicit new-token retry states recoverable",
+      "status": "passed"
+    },
+    {
+      "name": "admin manual case form UI uses native keyboard form controls and hides reassignment from assigned-only editors",
+      "status": "passed"
+    },
+    {
+      "name": "admin row-action Menu contract renders only the labelled trigger while closed (panel is lazy)",
+      "status": "passed"
+    },
+    {
+      "name": "admin row-action Menu contract keeps the panel lazy and the locked Menu wiring in source",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification bell and center UI renders the bell trigger with a truthful attention count while closed (panel is lazy)",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification bell and center UI renders generic and consultation items under one truthful attention count",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification bell and center UI keeps mark-read, retry, and live count updates accessible",
+      "status": "passed"
+    },
+    {
+      "name": "admin notification bell and center UI loads center pages by opaque cursor and removes load-more when exhausted",
+      "status": "passed"
+    },
+    {
+      "name": "office profile setting form sends the initial version and advances to the returned version across a server rerender",
+      "status": "passed"
+    },
+    {
+      "name": "office profile setting form retains the draft and requires an explicit reload after a conflict",
+      "status": "passed"
+    },
+    {
+      "name": "office profile setting form retains entered values after a network failure",
+      "status": "passed"
+    },
+    {
+      "name": "office profile setting form allows only one request for rapid duplicate submissions",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission form keeps every canonical permission on a localized group and display label",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission form renders grouped Arabic labels with native, uniquely-labelled controls",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission form shows protected and inactive roles as read-only without implying wildcard rows are editable",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission form preserves dirty state and provides explicit stale-conflict recovery",
+      "status": "passed"
+    },
+    {
+      "name": "admin role-permission form keeps keyboard behavior native and save state explicit",
+      "status": "passed"
+    },
+    {
+      "name": "admin storage runtime diagnostic renders an Arabic read-only readiness summary without an editable path or save action",
+      "status": "passed"
+    },
+    {
+      "name": "admin storage runtime diagnostic shows actionable degraded and unavailable recovery without exposing implementation details",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 admin UI/RTL convergence renders repeated task and document forms with deterministic unique control IDs",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 admin UI/RTL convergence retains a case-tab document upload default that is outside the option cap",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 admin UI/RTL convergence adopts prefixed field relationships and semantic feedback in every migrated form file",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 admin UI/RTL convergence names every migrated table and keeps an explicit mobile record alternative",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 admin UI/RTL convergence gives every migrated filter and search landmark a purpose-specific Arabic name",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 admin UI/RTL convergence keeps admin surfaces on semantic neutral tokens in both themes",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 admin UI/RTL convergence mounts one persistent admin shell and renders page state inside its content frame",
+      "status": "passed"
+    },
+    {
+      "name": "admin user password form preserves the draft and requires explicit reload after a stale conflict",
+      "status": "passed"
+    },
+    {
+      "name": "admin user password form uses the safe version returned by a successful reset for the next submission",
+      "status": "passed"
+    },
+    {
+      "name": "vendored Animate UI accordion matches the official radix accordion source shape",
+      "status": "passed"
+    },
+    {
+      "name": "vendored Animate UI accordion toggles content on trigger click with aria-expanded",
+      "status": "passed"
+    },
+    {
+      "name": "vendored Animate UI accordion moves with keyboard: Enter opens, Tab reaches content links",
+      "status": "passed"
+    },
+    {
+      "name": "vendored animate-ui primitives SplittingText words mode keeps every word in the server-rendered markup",
+      "status": "passed"
+    },
+    {
+      "name": "vendored animate-ui primitives SplittingText lines mode keeps full lines for Arabic-safe rendering",
+      "status": "passed"
+    },
+    {
+      "name": "vendored animate-ui primitives CountingNumber renders the final number when initiallyStable (no-JS safe)",
+      "status": "passed"
+    },
+    {
+      "name": "vendored animate-ui primitives Tilt and TiltContent render children with 3D perspective styles",
+      "status": "passed"
+    },
+    {
+      "name": "vendored animate-ui primitives RippleButton renders children and the ripples slot",
+      "status": "passed"
+    },
+    {
+      "name": "booking assistant stage primitives vanish input stays controlled with a real named input and composer hook",
+      "status": "passed"
+    },
+    {
+      "name": "booking assistant stage primitives vanish input shows the pending placeholder and static copy when disabled",
+      "status": "passed"
+    },
+    {
+      "name": "booking assistant stage primitives animated list reveals progressively in motion, statically under reduced motion",
+      "status": "passed"
+    },
+    {
+      "name": "booking assistant stage primitives animated list source keeps the real sequenced mechanism without scroll listeners",
+      "status": "passed"
+    },
+    {
+      "name": "booking assistant stage primitives tabs navigator renders disabled stage triggers with an animated indicator",
+      "status": "passed"
+    },
+    {
+      "name": "booking assistant stage primitives tabs indicator measurement is direction-agnostic (RTL-safe rect math)",
+      "status": "passed"
+    },
+    {
+      "name": "booking assistant stage primitives SSR-renders tabs + vanish input markup without client effects",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) uses the real stage components on the hero object",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) never renders a booking stepper at any lifecycle point",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) renders the whole conversation through the real animated list",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) requires fresh explicit consent at confirmation and checkout",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) holds the compact density targets",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) guides the journey inside one console: intent, matter, info cards, new request",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) preserves every booking flow test hook and rule",
+      "status": "passed"
+    },
+    {
+      "name": "booking chat stage composition (source contract) keeps assistant bubbles theme-safe with no hard-coded dark surfaces",
+      "status": "passed"
+    },
+    {
+      "name": "consultation assistant theme tokens (source contract) defines every assistant surface for light and dark",
+      "status": "passed"
+    },
+    {
+      "name": "consultation assistant copy (source contract) carries the guided-flow keys in both locales",
+      "status": "passed"
+    },
+    {
+      "name": "booking page zones (source contract) composes one centered assistant console with no external flow UI",
+      "status": "passed"
+    },
+    {
+      "name": "booking page zones (source contract) removed the migrated external panels instead of leaving dead files",
+      "status": "passed"
+    },
+    {
+      "name": "booking page zones (source contract) keeps the flow header compact with no duplicated progress legend",
+      "status": "passed"
+    },
+    {
+      "name": "CapabilityGlowGate renders the static panel disarmed on first paint (SSR-safe)",
+      "status": "passed"
+    },
+    {
+      "name": "CapabilityGlowGate arms the glow when the card nears the viewport on fine pointers",
+      "status": "passed"
+    },
+    {
+      "name": "CapabilityGlowGate stays disarmed on coarse pointers and under reduced motion",
+      "status": "passed"
+    },
+    {
+      "name": "public contact form recovery retains values and supports retry after a rejected en request",
+      "status": "passed"
+    },
+    {
+      "name": "public contact form recovery retains values and supports retry after a rejected ar request",
+      "status": "passed"
+    },
+    {
+      "name": "public contact form recovery does not send a duplicate request while the first request is pending",
+      "status": "passed"
+    },
+    {
+      "name": "public contact form recovery maps server validation details to localized field errors (en)",
+      "status": "passed"
+    },
+    {
+      "name": "public contact form recovery maps server validation details to localized field errors (ar)",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency keeps an admin reply when an older in-flight poll resolves afterward",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency keeps an admin PATCH result when an older GET resolves afterward",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency does not overlap an admin POST with a PATCH",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency applies a slow poll when no write supersedes it, then allows the next poll",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency keeps touched management fields, syncs untouched fields, and rebases only after review latest",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency keeps the client draft on 409 and rejects an old poll after a successful reply",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency keeps a newer client draft typed while an earlier reply is pending",
+      "status": "passed"
+    },
+    {
+      "name": "conversation poll consistency reloads the current locale after a first reply completes in an older locale context",
+      "status": "passed"
+    },
+    {
+      "name": "FIX16 task board pagination loads a single lane through the existing list API and deduplicates its next page",
+      "status": "passed"
+    },
+    {
+      "name": "KmtGoldUnderline renders rule variants with distinct fixed widths in the gold token",
+      "status": "passed"
+    },
+    {
+      "name": "KmtGoldUnderline honors an explicit pixel width override",
+      "status": "passed"
+    },
+    {
+      "name": "KmtGoldUnderline paints the final line in SSR HTML (no-JS safe), then grows on view",
+      "status": "passed"
+    },
+    {
+      "name": "KmtGoldUnderline keeps the line statically visible under reduced motion",
+      "status": "passed"
+    },
+    {
+      "name": "KmtGoldUnderline renders the inline text variant around the phrase",
+      "status": "passed"
+    },
+    {
+      "name": "KmtGoldUnderline centers the rule when aligned center",
+      "status": "passed"
+    },
+    {
+      "name": "KmtGoldUnderline defines the scaleX growth with RTL origin in the stylesheet",
+      "status": "passed"
+    },
+    {
+      "name": "PublicSection accent renders no underline by default (existing sections byte-identical)",
+      "status": "passed"
+    },
+    {
+      "name": "PublicSection accent renders a centered section accent on demand",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline wraps the real Magic UI Highlighter with action=underline and KMT gold defaults",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline maps emphasis to thin editorial stroke widths (never marker-like)",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline lets explicit strokeWidth/duration override the emphasis defaults",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline renders the underline immediately under prefers-reduced-motion (kept, not removed)",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline SSR-renders the phrase text with a stable KMT hook attribute",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline splits EN and AR sentences on the highlight phrase, passing copy through untouched",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline renders plain text unchanged when the highlight phrase is absent",
+      "status": "passed"
+    },
+    {
+      "name": "KmtTextUnderline keeps the real Highlighter as the single effect owner (no local imitation, no scroll listeners)",
+      "status": "passed"
+    },
+    {
+      "name": "notification mutation consistency does not let a GET started before mark-read restore stale unread state",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders the mobile navigation menu icon instead of the unknown-icon fallback",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders button states and accessible text",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders form field labels and validation wiring",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders selects with reserved arrow spacing for RTL fields",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders client portal selects as dark custom listboxes with stable form values",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders native date and time inputs with picker spacing in RTL layouts",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders semantic status badges",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders empty table state",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders optional mobile cards while keeping the desktop table",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders mobile data record cards with labels, badges, and action areas",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders recoverable state blocks",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders distinct dashboard navigation routes",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives filters the admin workspace before rendering desktop and mobile navigation",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps only safe navigation and user labels in the persisted admin access context",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives preserves authorized navigation across admin loading, error, and not-found boundaries",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives uses an Animate Sheet mobile nav with focus trap, close on navigation, and RTL side",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders the client portal shell with the public dark visual language and no card motion",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders the client shell and account forms from the English catalog",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders login and assistant entry states in both supported languages",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps the canonical client files page wired to the upload form",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives uses scoped consultation booking surfaces without transcript persistence",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives renders Tabs as a pressed button group, not incomplete ARIA tabs",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps targeted admin content labels localized",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps admin consultation AI summaries useful for old public chat bookings",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps the finance submit form reference stable across async requests",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps admin finance wired as the payment operations center",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps public payment return text localized through content files",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps the admin audit log page on client-friendly DTO fields",
+      "status": "passed"
+    },
+    {
+      "name": "product UI primitives keeps admin-user pages on the purpose-built safe DTO contract",
+      "status": "passed"
+    },
+    {
+      "name": "public articles UI renders the list with the nav-aligned title, gold category chip, and read-time meta",
+      "status": "passed"
+    },
+    {
+      "name": "public articles UI renders detail with h1, breadcrumbs, byline, time, rich-text body, warning disclaimer, and related cards",
+      "status": "passed"
+    },
+    {
+      "name": "public articles UI renders the Arabic detail with RTL breadcrumbs, Arabic byline, and localized date",
+      "status": "passed"
+    },
+    {
+      "name": "public case studies UI renders the list with a distinct hero image and category + year meta instead of repeated Anonymous",
+      "status": "passed"
+    },
+    {
+      "name": "public case studies UI renders detail with h1, breadcrumbs, numbered reveal blocks, warning-token disclaimer, and alternate link",
+      "status": "passed"
+    },
+    {
+      "name": "public case studies UI renders the Arabic detail with RTL breadcrumbs and localized year",
+      "status": "passed"
+    },
+    {
+      "name": "public floating dock (source contract) vendors the real Aceternity Floating Dock architecture",
+      "status": "passed"
+    },
+    {
+      "name": "public floating dock (source contract) supports external actions with a safe new-tab contract",
+      "status": "passed"
+    },
+    {
+      "name": "public floating dock (source contract) exposes exactly two public actions and nothing else",
+      "status": "passed"
+    },
+    {
+      "name": "public floating dock (source contract) renders once in the public shell with a click-through overlay",
+      "status": "passed"
+    },
+    {
+      "name": "public floating dock (source contract) steps aside on the consultation route so it never covers the composer",
+      "status": "passed"
+    },
+    {
+      "name": "public floating dock (source contract) never renders inside admin or client portal layouts",
+      "status": "passed"
+    },
+    {
+      "name": "public floating dock (source contract) carries the mobile menu label in both locales",
+      "status": "passed"
+    },
+    {
+      "name": "public footer theme renders the footer body on the theme-aware canvas, not forced black",
+      "status": "passed"
+    },
+    {
+      "name": "public footer theme wraps the footer logo in a dark brand plaque",
+      "status": "passed"
+    },
+    {
+      "name": "public footer theme keeps the plaque in Arabic RTL shells",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders public shell navigation with English default labels and active page",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders Arabic public shell with explicit RTL direction",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders the English applicant privacy notice with semantic structure and verified links",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders the Arabic applicant privacy notice in structural RTL",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders the English terms page with h1, sticky TOC, last-updated time, and anchored sections",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders the Arabic terms page in structural RTL with matching section anchors",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders the privacy TOC as a tokenized nav without hardcoded slate or white classes",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI keeps the Arabic homepage CTA and section eyebrows clean",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders cinematic hero and trust strip without relying on cards inside hero",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders compact public heroes for inner pages",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders service detail with h1, breadcrumbs, and structured data",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders team detail with h1, breadcrumbs, credentials, and warning-token notice",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI renders dark public section and detail CTA APIs",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI keeps product font loading local and blocks fallback font flashes",
+      "status": "passed"
+    },
+    {
+      "name": "public website UI keeps PLAN-31 motion contract free of removed thread utilities",
+      "status": "passed"
+    },
+    {
+      "name": "FIX23 calendar navigation contracts preserves permission-scoped filters and uses the selected date for day/week links",
+      "status": "passed"
+    },
+    {
+      "name": "FIX23 calendar navigation contracts moves the agenda anchor and range only when Today is clicked",
+      "status": "passed"
+    },
+    {
+      "name": "FIX11 client action authority renders portal-account management without exposing CRM update, assignment, or archive actions",
+      "status": "passed"
+    },
+    {
+      "name": "finance searchable controlled selection scopes case search to the chosen client and does not silently clear an unavailable association",
+      "status": "passed"
+    },
+    {
+      "name": "finance searchable controlled selection restores an off-page draft selection without reverting its association",
+      "status": "passed"
+    },
+    {
+      "name": "session-only record draft recovery isolates records and restores edits after back/forward remount",
+      "status": "passed"
+    },
+    {
+      "name": "session-only record draft recovery never restores another account's session drafts",
+      "status": "passed"
+    },
+    {
+      "name": "session-only record draft recovery clears saved drafts and warns before a real page unload",
+      "status": "passed"
+    },
+    {
+      "name": "session-only record draft recovery allows cancelling navigation without losing the draft",
+      "status": "passed"
+    },
+    {
+      "name": "PLAN-35 shared UI consumer disposition classifies every source consumer and leaves no silent or blocked impact",
+      "status": "passed"
+    },
+    {
+      "name": "StickyScroll key ownership keys every sticky-panel child with stable semantic ids",
+      "status": "passed"
+    },
+    {
+      "name": "StickyScroll key ownership renders the active visual content identically",
+      "status": "passed"
+    },
+    {
+      "name": "TrustStrip renders the doubled loop with screen-reader label and hidden motion copy",
+      "status": "passed"
+    },
+    {
+      "name": "TrustStrip does not use Marquee reverse (RTL direction is keyframe-driven)",
+      "status": "passed"
+    },
+    {
+      "name": "TrustStrip defines mirrored RTL marquee keyframes scoped to the trust strip",
+      "status": "passed"
+    },
+    {
+      "name": "staff two-factor form presentation (TASK 04) renders the verification shell without external assets",
+      "status": "passed"
+    },
+    {
+      "name": "staff two-factor form presentation (TASK 04) keeps the code field paste-friendly with leading zeros and kit submission",
+      "status": "passed"
+    },
+    {
+      "name": "useSafePolling does not overlap requests and aborts the in-flight request on unmount",
+      "status": "passed"
+    },
+    {
+      "name": "useSafePolling backs off to the configured cap after repeated failures",
+      "status": "passed"
+    },
+    {
+      "name": "useSafePolling stops permanently after an authorization response",
+      "status": "passed"
+    },
+    {
+      "name": "useSafePolling pauses while hidden and resumes immediately when visible",
+      "status": "passed"
+    },
+    {
+      "name": "useSafePolling remembers an immediate resume requested before an aborted poll settles",
+      "status": "passed"
+    }
+  ]
+}

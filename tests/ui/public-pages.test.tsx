@@ -37,7 +37,8 @@ describe("public website UI", () => {
     expect(html).toContain("event_available");
     expect(html).toContain("account_circle");
     expect(html).toContain("/brand/kmt-logo-mark.webp");
-    expect(html).toContain("/brand/kmt-logo-full.webp");
+    expect(html).toContain(">KMT</span>");
+    expect(html).toContain(">LEGAL</span>");
     // Active desktop nav uses gold text + the sliding layout indicator
     // (mobile active pills live inside the closed sheet portal).
     expect(html).toContain("text-[var(--kmt-public-gold)]");
@@ -70,10 +71,10 @@ describe("public website UI", () => {
     expect(html).toContain("data-testid=\"privacy-policy\"");
     expect(html).toContain("<h1");
     expect(html).toContain("Privacy Policy and Applicant Notice</h1>");
-    expect(html).toContain("dateTime=\"2026-07-10\"");
+    expect(html).toContain("dateTime=\"2026-10-09\"");
     expect(html).toContain("href=\"#data-we-collect\"");
     expect(html).toContain("id=\"data-we-collect\"");
-    expect(html).toContain("mailto:careers@kmtlegal.com");
+    expect(html).toContain("mailto:contact@kmtlegal.org");
     expect(html).toContain("https://www.facebook.com/privacy/policy/");
     expect(html).toContain("https://pdpc.gov.eg");
     expect(html).not.toMatch(/TODO|placeholder/i);
@@ -88,7 +89,7 @@ describe("public website UI", () => {
     expect(html).toContain("lang=\"ar\"");
     expect(html).toContain("سياسة الخصوصية وبيانات المتقدمين للوظائف</h1>");
     expect(html).toContain("إمكانية العمل حضوريًا في العاصمة الإدارية الجديدة");
-    expect(html).toContain("careers@kmtlegal.com");
+    expect(html).toContain("contact@kmtlegal.org");
     expect(html).toContain("سياسة خصوصية Meta");
   });
 
@@ -106,7 +107,9 @@ describe("public website UI", () => {
     expect(html).toContain("scroll-mt-28");
     expect(html).toContain("lg:sticky");
     expect(html).toContain("max-w-[65ch]");
-    expect(html).not.toContain("text-white");
+    // The owner-approved public logo is white on its black backing. Policy
+    // prose remains theme-aware; inspect the policy body, not the shared logo.
+    expect(html.slice(html.indexOf('<main'), html.indexOf('</main>'))).not.toContain("text-white");
     expect(html).not.toContain("text-slate-300");
     expect(metadata.alternates?.canonical).toBe("/terms");
     expect(metadata.alternates?.languages).toEqual({ en: "/terms", ar: "/ar/terms", "x-default": "/terms" });

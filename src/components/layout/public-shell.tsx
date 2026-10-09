@@ -6,6 +6,7 @@ import { KmtGoldUnderline } from "@/components/ui/kmt-gold-underline";
 import { KmtUnderlinedText } from "@/components/ui/kmt-text-underline";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { ShimmerCtaLink } from "@/components/ui/shimmer-cta-link";
+import { publicOfficeProfile } from "@/content/public-office-profile";
 import { getPublicContent } from "@/content/public-content";
 import { publicMotionIcon, publicMotionIconHalo, publicMotionTextLink } from "@/features/public-site/public-motion";
 import { cn } from "@/lib/cn";
@@ -67,12 +68,12 @@ export function PublicShell({
       {/* Footer body rides the theme-aware public canvas: deep black in dark
           (#050505, identical to the previous forced value), warm paper in
           light. No forced-dark surfaces here. */}
-      <footer className="border-t border-kmt-gold/25 bg-[var(--kmt-public-canvas)] text-[var(--kmt-public-muted)]">
+      <footer className={cn("border-t border-kmt-gold/25 bg-[var(--kmt-public-canvas)] text-[var(--kmt-public-muted)]", !hideDock && "pb-[calc(6rem+env(safe-area-inset-bottom))]")}>
         <section className="border-b border-[var(--kmt-public-line)]">
           <div className="mx-auto max-w-[1200px] px-4 py-14 sm:px-6 lg:px-10 lg:py-20">
             <div className="relative grid gap-8 overflow-hidden rounded-2xl border border-kmt-gold/25 bg-[var(--kmt-public-surface-muted)] p-8 text-center sm:p-12 lg:grid-cols-1 lg:items-center">
               <BorderBeam size={110} duration={8} colorFrom="#eac987" colorTo="#a87830" borderWidth={1} />
-              <div className="mx-auto max-w-2xl">
+              <div className="mx-auto min-w-0 max-w-full break-words [&_.inline-block]:max-w-full">
                 <KmtGoldUnderline variant="short" align="center" />
                 <h2 className="mt-6 text-3xl font-semibold leading-tight text-[var(--kmt-public-text)] md:text-4xl">
                   <KmtUnderlinedText
@@ -82,11 +83,11 @@ export function PublicShell({
                 </h2>
                 <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-[var(--kmt-public-muted)] md:text-base md:leading-8">{shell.footerCtaDescription}</p>
               </div>
-              <div className="flex justify-center">
+              <div className="flex min-w-0 justify-center">
                 <ShimmerCtaLink
                   borderRadius="8px"
                   shimmerDuration="3.4s"
-                  className="min-h-12 w-full px-6 text-base font-semibold text-primary-foreground sm:w-auto sm:min-w-72"
+                  className="min-h-12 w-full whitespace-normal px-6 text-base font-semibold text-primary-foreground sm:w-auto sm:min-w-72"
                   href={localizedPublicHref("/book-consultation", locale)}
                 >
                   <span className="relative z-10 inline-flex items-center gap-2">
@@ -110,7 +111,7 @@ export function PublicShell({
                 className="max-w-[15rem]"
                 href={localizedPublicHref("/", locale)}
                 size="sm"
-                variant="full"
+                variant="public"
               />
             </span>
             <p className="mt-6 max-w-xs leading-7 text-[var(--kmt-public-muted)]">{content.footerContent.brandSummary}</p>
@@ -155,11 +156,11 @@ export function PublicShell({
             <ul className="mt-4 space-y-3">
               <li className="flex gap-2">
                 <MaterialSymbol className={cn("mt-0.5 text-[var(--kmt-public-gold)]", publicMotionIcon, publicMotionIconHalo)} name="mail" />
-                <span dir="ltr">contact@kmtlegal.com</span>
+                <a className="inline-flex min-h-11 min-w-0 items-center break-all hover:underline" dir="ltr" href={publicOfficeProfile.emailHref}>{publicOfficeProfile.email}</a>
               </li>
               <li className="flex gap-2">
                 <MaterialSymbol className={cn("mt-0.5 text-[var(--kmt-public-gold)]", publicMotionIcon, publicMotionIconHalo)} name="call" />
-                <span>{content.footerContent.contact.phone}</span>
+                <a className="inline-flex min-h-11 items-center hover:underline" dir="ltr" href={publicOfficeProfile.phoneHref}>{publicOfficeProfile.phoneDisplay}</a>
               </li>
               <li className="flex gap-2">
                 <MaterialSymbol className={cn("mt-0.5 text-[var(--kmt-public-gold)]", publicMotionIcon, publicMotionIconHalo)} name="schedule" />

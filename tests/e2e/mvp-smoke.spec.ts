@@ -171,7 +171,7 @@ test.describe("MVP smoke without database", () => {
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.getByRole("heading", { level: 1, name: "سياسة الخصوصية وبيانات المتقدمين للوظائف" })).toBeVisible();
     await expect(page.getByTestId("privacy-policy")).toBeVisible();
-    await expect(page.getByRole("link", { name: "careers@kmtlegal.com" }).first()).toHaveAttribute("href", "mailto:careers@kmtlegal.com");
+    await expect(page.getByRole("link", { name: "contact@kmtlegal.org" }).first()).toHaveAttribute("href", "mailto:contact@kmtlegal.org");
     await expect(page.getByRole("link", { name: "سياسة خصوصية Meta" })).toHaveAttribute("href", "https://www.facebook.com/privacy/policy/");
 
     const firstSectionLink = page.locator('a[href="#who-we-are"]').first();

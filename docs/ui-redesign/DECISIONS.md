@@ -1,5 +1,11 @@
 # DECISIONS (Owner-Locked Rulings)
 
+## 2026-10-09 — Owner-approved phase-one public amendments
+
+The explicit implementation plan updates two earlier public presentation rulings: use the existing brand component with white KMT above smaller gold LEGAL and the existing image mark on dark backing; expose consultation and WhatsApp directly on mobile instead of the expanding plus menu. Exactly two dock actions remain, and the booking page still hides the dock. Shared office data is owner-approved in `src/content/public-office-profile.ts`.
+
+Other component-family decisions, page section order, hidden Insights/case-study content and retired runtime routes remain in force. No new library or admin/client redesign is authorized. Missing official location, team verification, office photos and social URLs remain open in the implementation status register. Browser checks and editorial judgment do not constitute owner acceptance of those facts.
+
 > These rulings are fixed. Implementation phases obey them verbatim.
 > Component selection is OWNER-LOCKED; the model never picks substitutes.
 

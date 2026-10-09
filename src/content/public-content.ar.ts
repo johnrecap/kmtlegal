@@ -1,3 +1,4 @@
+import { publicOfficeProfile } from "./public-office-profile";
 import { publicLegalServicesAr as legalServices, publicServiceCategoriesAr as serviceCategories } from "./public-services";
 import { publicBookingConsentCopy } from "./public-booking-consent";
 
@@ -156,14 +157,14 @@ const publicIndustries = [
 const officeHours = "الأحد - الخميس، 9:00 ص - 6:00 م";
 
 const branches = [
-  { name: "مكتب القاهرة", address: "القاهرة الجديدة، القاهرة، مصر", hours: officeHours, email: "contact@kmtlegal.com" },
-  { name: "اجتماعات عن بعد", address: "اجتماعات أونلاين بمكالمة فيديو أو هاتف، تُرتب بعد مراجعة الطلب.", hours: officeHours, email: "booking@kmtlegal.com" }
+  { name: "مكتب العاصمة الإدارية", address: publicOfficeProfile.address.ar, hours: officeHours, email: publicOfficeProfile.email },
+  { name: "اجتماعات عن بعد", address: "اجتماعات عن بُعد بمكالمة فيديو أو هاتف، تُرتب بعد مراجعة الطلب.", hours: officeHours, email: publicOfficeProfile.email }
 ] as const;
 
 const contactChannels = {
-  phoneDisplay: "",
-  phoneHref: "",
-  whatsappHref: ""
+  phoneDisplay: publicOfficeProfile.phoneDisplay,
+  phoneHref: publicOfficeProfile.phoneHref,
+  whatsappHref: publicOfficeProfile.whatsappHref
 } as const;
 
 const footerContent = {
@@ -171,8 +172,8 @@ const footerContent = {
   practiceLinks: practiceAreaMatrix.map((area) => ({ label: area.title, href: area.href })),
   offices: branches.map((branch) => ({ name: branch.name, address: branch.address })),
   contact: {
-    email: "contact@kmtlegal.com",
-    phone: "بموعد مؤكد مسبقًا",
+    email: publicOfficeProfile.email,
+    phone: publicOfficeProfile.phoneDisplay,
     bookingHref: "/book-consultation",
     note: "طلبات الاستشارة تبدأ من نموذج منظم ولا تمثل استشارة قانونية نهائية."
   },
@@ -208,8 +209,9 @@ export const publicContentAr = {
     clientLoginCta: "دخول العميل",
     mainNavLabel: "التنقل الرئيسي",
     compactNavLabel: "التنقل المختصر",
+    closeNavigation: "إغلاق القائمة",
     footerCtaTitle: "هل تريد مناقشة مسألة قانونية؟",
-    footerCtaDescription: "أرسل طلبًا منظمًا، وسيراجع المكتب البيانات قبل تأكيد طريقة التواصل أو الموعد.",
+    footerCtaDescription: "أخبرنا باحتياجك القانوني، أو احجز موعدًا للاستشارة مع فريق المكتب.",
     confidentiality: "سرية البيانات",
     humanReview: "مراجعة بشرية",
     practiceLinksLabel: "روابط الخدمات",
@@ -222,26 +224,26 @@ export const publicContentAr = {
     privacy: "سياسة الخصوصية",
     terms: "الشروط",
     languageSwitchLabel: "English",
-    themeToggleLabel: "تبديل بين الوضع الليلي والنهاري",
+    themeToggleLabel: "التبديل بين الوضع الفاتح والداكن",
     dockMenuLabel: "إجراءات سريعة"
   },
   shared: {
     bookConsultation: "طلب استشارة",
     browsePracticeAreas: "تصفح الخدمات",
     viewDetails: "عرض التفاصيل",
-    clearFilters: "مسح الفلاتر",
-    noLegalAdvice: "هذا المحتوى للتوعية العامة ولا يغني عن مراجعة محام بناء على الوقائع والمستندات.",
+    clearFilters: "إلغاء التصفية",
+    noLegalAdvice: "هذا المحتوى للتوعية العامة ولا يغني عن مراجعة محامٍ بناءً على الوقائع والمستندات.",
     notFound: "لم يتم العثور على العنصر المطلوب.",
     insightsEmptyTitle: "المقالات القانونية العملية قيد الإعداد",
     insightsEmptyDescription: "ستظهر هنا مقالات وملاحظات قضايا مجهولة الهوية من المكتب فور نشرها.",
     insightsEmptyCta: "تصفح المقالات"
   },
   home: {
-    metadataTitle: "KMT Legal | دعم قانوني منظم للشركات والأفراد",
-    metadataDescription: "موقع KMT Legal للاستشارات القانونية المنظمة وخدمات الشركات والعقود والعقارات والمنازعات وحجز الاستشارات بأمان.",
+    metadataTitle: "KMT Legal | حيث يلتقي القانون بالأعمال",
+    metadataDescription: "KMT Legal في العاصمة الإدارية الجديدة: استشارات قانونية وخدمات الشركات والعقود والعقارات والمطالبات المالية. تواصل معنا أو احجز استشارة.",
     heroEyebrow: "الخدمات",
-    heroTitle: "دعم قانوني منظم للشركات والأفراد",
-    heroDescription: "ابدأ طلبك من خلال نموذج واضح؛ يراجع المكتب الوقائع والمستندات قبل تحديد المسار المناسب والخطوة التالية.",
+    heroTitle: "حيث يلتقي القانون بالأعمال",
+    heroDescription: "خدمات قانونية للشركات والأفراد. نراجع الوقائع والمستندات لنساعدك على فهم الخيارات والخطوات المناسبة لطلبك.",
     heroPickerLabel: "اختر الموضوع الأقرب لطلبك",
     heroDocketTitle: "مسودة الطلب",
     heroDocketMatter: "الموضوع",
@@ -272,13 +274,13 @@ export const publicContentAr = {
     industriesDescription: "نساعد العملاء على اتخاذ قرارات أوضح من خلال مراجعة المستندات وتقييم المخاطر وتحديد الخطوات العملية.",
     teamEyebrow: "الفريق",
     teamTitle: "فريق قانوني بتخصصات عملية",
-    teamDescription: "تعرف على مسارات الخبرة المتاحة للحجز أو المراجعة الأولية.",
+    teamDescription: "تعرّف على تخصصات الفريق وخبراته قبل طلب الاستشارة.",
     insightsEyebrow: "رؤى قانونية",
     insightsTitle: "توعية قانونية بدون وعود",
     insightsDescription: "محتوى منشور من النظام الإداري فقط، ولا يظهر كرابط تفصيلي ثابت إذا لم يكن منشورا في اللغة الحالية.",
     caseStudyAnonymous: "دراسة حالة مجهولة",
     finalCtaTitle: "هل تريد مناقشة مسألة قانونية؟",
-    finalCtaDescription: "أرسل طلبًا منظمًا، وسيراجع المكتب البيانات قبل تأكيد طريقة التواصل أو الموعد.",
+    finalCtaDescription: "أخبرنا باحتياجك القانوني، أو احجز موعدًا للاستشارة مع فريق المكتب.",
     approachSteps: [
       { number: "01", title: "استقبال الطلب", summary: "نستقبل الوقائع وبيانات التواصل والسؤال الأساسي في نموذج منظم.", icon: "groups" },
       { number: "02", title: "مراجعة أولية", summary: "يراجع المكتب الطلب ويحدد المستندات أو التوضيحات المطلوبة.", icon: "strategy" },
@@ -290,19 +292,19 @@ export const publicContentAr = {
     metadataTitle: "الخدمات القانونية | KMT Legal",
     metadataDescription: "خدمات KMT Legal في الاستشارات حسب المجال والشركات والعقود والعقارات والمطالبات المالية والتسويات.",
     heroEyebrow: "الخدمات",
-    heroTitle: "اختر مسار الخدمة الأقرب لطلبك",
+    heroTitle: "اختر الخدمة المناسبة لطلبك",
     heroDescription: "ابدأ من نوع الطلب أو ابحث عن الخدمة الأقرب لاحتياجك، ثم أرسل طلب استشارة منظمًا لمراجعة المكتب.",
     sectionEyebrow: "الخدمات",
-    sectionTitle: "اختر مسار الخدمة الأقرب لطلبك",
-    sectionDescription: "استخدم أسماء الخدمات ومجالات الطلب للوصول للمسار المناسب، ثم ابدأ طلب استشارة منظمًا.",
+    sectionTitle: "اختر الخدمة المناسبة لطلبك",
+    sectionDescription: "ابحث باسم الخدمة أو مجالها، ثم اطّلع على التفاصيل واحجز استشارة.",
     searchLabel: "ابحث باسم الخدمة أو نوع الطلب",
     emptyTitle: "لا توجد خدمات مطابقة",
     servicesCountLabel: "خدمات"
   },
   serviceDetail: {
-    includedTitle: "الخدمات المتضمنة",
+    includedTitle: "ما تشمله الخدمة",
     documentsTitle: "مستندات تساعد على المراجعة",
-    outcomesTitle: "مخرجات متوقعة",
+    outcomesTitle: "ما يمكنك توقعه",
     backToServices: "العودة للخدمات",
     breadcrumbAriaLabel: "مسار التنقل",
     breadcrumbServices: "الخدمات"
@@ -314,7 +316,7 @@ export const publicContentAr = {
     heroTitle: "فريق قانوني بتخصصات محددة",
     heroDescription: "راجع الاختصاصات قبل الحجز حتى يصل طلبك للمحامي الأنسب من البداية.",
     sectionEyebrow: "الفريق",
-    sectionTitle: "اختصاصات واضحة قبل الحجز",
+    sectionTitle: "تعرّف على تخصصات الفريق",
     sectionDescription: "اختر محاميًا بحسب مجال الطلب أو راجع كل التخصصات المتاحة.",
     searchLabel: "ابحث في الفريق",
     emptyTitle: "لا توجد ملفات مطابقة",
@@ -328,7 +330,7 @@ export const publicContentAr = {
     experienceTitle: "الخبرة",
     educationTitle: "التعليم",
     admissionsTitle: "القيد المهني",
-    bookingNotice: "يتم تأكيد المحامي والموعد بعد مراجعة الطلب، ولا يمثل الحجز قبولا نهائيا للملف.",
+    bookingNotice: "يُحدَّد المحامي المناسب بعد مراجعة الطلب. حجز موعد الاستشارة لا يعني قبول المكتب للملف.",
     relationshipNotice: "بيانات الفريق هنا للتعريف بالتخصصات فقط، ولا تنشئ علاقة محاماة قبل قبول المكتب للملف.",
     requestConsultation: "طلب استشارة",
     breadcrumbTeam: "الفريق"
@@ -350,7 +352,7 @@ export const publicContentAr = {
     bylineBy: "بقلم",
     defaultAuthor: "مكتب KMT Legal",
     relatedTitle: "قراءات ذات صلة",
-    disclaimer: "هذا المقال للتوعية العامة ولا يغني عن مراجعة محام بناء على الوقائع والمستندات.",
+    disclaimer: "هذا المقال للتوعية العامة ولا يغني عن مراجعة محامٍ بناءً على الوقائع والمستندات.",
     backToArticles: "العودة للمقالات"
   },
   caseStudiesPage: {
@@ -376,47 +378,47 @@ export const publicContentAr = {
   },
   contactPage: {
     metadataTitle: "تواصل مع KMT Legal",
-    metadataDescription: "بيانات التواصل وفروع KMT Legal ونموذج تواصل عام.",
+    metadataDescription: `تواصل مع KMT Legal في العاصمة الإدارية الجديدة عبر الهاتف أو واتساب على ${publicOfficeProfile.phoneDisplay}، أو أرسل رسالة إلى ${publicOfficeProfile.email}.`,
     heroEyebrow: "تواصل",
     heroTitle: "تواصل مع المكتب",
     heroDescription: "أرسل رسالة عامة، أو اطلب استشارة إذا كان الموضوع يحتاج مراجعة قانونية منظمة.",
     sectionEyebrow: "تواصل",
-    sectionTitle: "تواصل مع المكتب",
-    sectionDescription: "استخدم نموذج التواصل للأسئلة العامة. للاستشارات القانونية، استخدم نموذج الحجز المنظم.",
+    sectionTitle: "أرسل رسالتك",
+    sectionDescription: "للأسئلة العامة، اكتب رسالتك هنا. إذا كنت تحتاج إلى استشارة قانونية، انتقل إلى حجز الاستشارة.",
     locationsEyebrow: "المواقع",
-    whatsappLabel: "محادثة عبر واتساب",
+    whatsappLabel: "واتساب",
     whatsappNote: "أسرع طريقة للتواصل مع المكتب لتحديد المواعيد والأسئلة العامة."
   },
   bookingPage: {
     metadataTitle: "طلب استشارة أولية | KMT Legal",
-    metadataDescription: "طلب استشارة أولية من خلال مساعد استقبال واضح مع مراجعة من المكتب وبدون رأي قانوني من الذكاء الاصطناعي.",
+    metadataDescription: "احجز استشارة مع KMT Legal واختر من المواعيد المتاحة، أو تابع حجزًا سابقًا برقم المرجع. المساعد مخصص للحجز ولا يقدم رأيًا قانونيًا.",
     heroEyebrow: "طلب استشارة",
     heroTitle: "اطلب استشارة أولية",
     heroDescription: "مساعد الاستقبال يجمع البيانات اللازمة لمراجعة المكتب، ولا يقدم استشارة قانونية قبل تواصل الفريق.",
-    manualHeroDescription: "اكتب طلبك في شات الحجز، وسيتم تأكيد الموعد بدون رسوم حجز عند اكتمال البيانات الأساسية.",
+    manualHeroDescription: "أكمل بياناتك واختر موعدًا متاحًا في محادثة الحجز لتأكيد الاستشارة دون رسوم حجز.",
     sectionEyebrow: "طلب استشارة",
     sectionTitle: "ابدأ مع مساعد طلب الاستشارة",
     sectionDescription: "استخدم محادثة واضحة لطلب استشارة أو الاستعلام عن رقم مرجع سابق. لا ترسل مستندات الآن.",
-    manualSectionTitle: "احجز من خلال الشات بدون رسوم",
-    manualSectionDescription: "الشات يجمع الاسم والهاتف ونص المشكلة والموعد، ثم يظهر رقم مرجع للسكرتيرة لمراجعة الطلب وتوزيعه.",
+    manualSectionTitle: "احجز استشارتك دون رسوم حجز",
+    manualSectionDescription: "أدخل اسمك ورقم هاتفك وملخص طلبك، ثم اختر موعدًا. بعد التأكيد، يظهر رقم مرجع لمتابعة الحجز.",
     afterSubmitTitle: "ما الذي يحدث بعد الإرسال؟",
     afterSubmitSteps: [
-      "يتم حفظ الطلب كطلب جديد للمراجعة.",
-      "يجهز المساعد ملخصا مبدئيا يحتاج مراجعة محام.",
-      "يتواصل الفريق لتأكيد الملاءمة والموعد.",
-      "عند قبول الملف، يتم تحويله لاحقا إلى عميل وقضية داخل لوحة الإدارة."
+      "تظهر حالة الطلب ورقم المرجع بعد إتمام الحجز.",
+      "يُجهَّز ملخص لطلبك ليراجعه فريق المكتب.",
+      "إذا كان الحجز يتطلب دفعًا، لا يتأكد الموعد إلا بعد تأكيد الدفع.",
+      "حجز الاستشارة لا يعني قبول المكتب لتولي القضية."
     ],
     requestedLawyer: "المحامي المطلوب"
   },
   bookingChat: {
     heroTitle: "اطلب استشارة أولية",
-    heroDescription: "مساعد استقبال واضح يجمع البيانات التي يحتاجها المكتب للمراجعة. لا يقدم أي رأي قانوني.",
+    heroDescription: "يساعدك المساعد على حجز استشارة ومتابعة حجزك. يراجع فريق المكتب تفاصيل طلبك ويقدم المشورة القانونية.",
     sectionTitle: "ابدأ مع مساعد طلب الاستشارة",
     sectionDescription: "استخدم المحادثة لطلب استشارة أو الاستعلام عن رقم مرجع سابق. يراجع الفريق كل طلب قبل تأكيد الخطوة التالية.",
     title: "مساعد طلب الاستشارة",
     assistantName: "مساعد طلب الاستشارة",
     status: "حجز فقط",
-    scope: "حجز استشارات واستعلام عن مرجع. بدون رأي قانوني.",
+    scope: "لحجز الاستشارات ومتابعتها، وليس لتقديم رأي قانوني.",
     onlineNow: "المساعد جاهز",
     humanReviewOnly: "مراجعة بشرية فقط",
     noLegalAdvice: "بدون رأي قانوني",
@@ -430,20 +432,20 @@ export const publicContentAr = {
     intentPrompt: "كيف يمكننا مساعدتك اليوم؟",
     matterPrompt: "اختر مجال الاستشارة للمتابعة.",
     book: "حجز استشارة",
-    inquire: "استعلام عن مرجع",
+    inquire: "متابعة حجز",
     corporateLaw: "الشركات والعقود التجارية",
     litigation: "المطالبات المالية والتسويات",
     messageLabel: "الرسالة",
-    messagePlaceholder: "اكتب طلب حجز أو سؤال عن رقم مرجع",
-    languagePendingPlaceholder: "اختر العربية أو English للبدء",
+    messagePlaceholder: "اكتب طلبك أو رقم مرجع الحجز",
+    languagePendingPlaceholder: "اختر اللغة للبدء",
     send: "إرسال",
     contactTitle: "بيانات التواصل",
     contactPrompt: "أضف بيانات التواصل حتى يستطيع الفريق تحديد صاحب الطلب.",
     detailsTitle: "تفاصيل الطلب",
     detailsPrompt: "أضف مجال الاستشارة وملخصًا قصيرًا لمراجعة الفريق.",
     reviewTitle: "مراجعة وإرسال",
-    reviewPrompt: "راجع البيانات، وافق على الاستخدام، ثم أرسل الطلب.",
-    inquiryTitle: "الاستعلام عن مرجع",
+    reviewPrompt: "راجع بياناتك ووافق على شروط استخدام البيانات قبل المتابعة.",
+    inquiryTitle: "متابعة الحجز",
     inquiryPrompt: "أضف رقم المرجع والهاتف أو البريد المستخدم في الطلب.",
     legalRefusal: "لا أستطيع تقديم رأي قانوني أو تفسير مستندات أو توقع نتيجة هنا. أستطيع حجز استشارة ليراجع فريق المكتب طلبك.",
     scopeReply: "أستطيع مساعدتك في حجز استشارة أو الاستعلام عن رقم مرجع فقط.",
@@ -467,11 +469,11 @@ export const publicContentAr = {
     progressPayment: "الدفع",
     resumePaymentDraft: "استعدنا بياناتك السابقة. يمكنك اختيار موعد جديد أو تعديل البيانات بدون البدء من الصفر.",
     whatsappFallback: "تعذر إكمال الطلب أكثر من مرة. يمكنك التواصل مع المكتب مباشرة وسنساعدك في الحجز.",
-    whatsappFallbackLabel: "التواصل مع المكتب",
+    whatsappFallbackLabel: "التواصل عبر واتساب",
     categorySuggestionTitle: "مجال استشارة مقترح",
     keepCategory: "الاحتفاظ بهذا المجال",
     useSuggestedCategory: "استخدام المجال المقترح",
-    nextStepsAfterBooking: "ما الذي يحدث بعد ذلك: سيراجع الفريق الطلب، ثم يتواصل معك لتأكيد الموعد أو طلب أي بيانات ناقصة.",
+    nextStepsAfterBooking: "احتفظ برقم المرجع لمتابعة حجزك. سيراجع الفريق تفاصيل الطلب ويتواصل معك عند الحاجة إلى معلومات إضافية.",
     preferredSlot: "الموعد المفضل",
     preferredSlotHint: "اختياري. مواعيد المكتب تخضع لمراجعة الفريق.",
     consent: publicBookingConsentCopy.ar,
@@ -481,7 +483,7 @@ export const publicContentAr = {
     noSlot: "بدون موعد محدد",
     requiredContact: "الاسم والهاتف مطلوبان قبل المتابعة.",
     requiredDetails: "اكتب ملخصًا واضحًا للطلب لا يقل عن 20 حرفًا.",
-    requiredConsent: "الموافقة مطلوبة قبل إرسال الطلب.",
+    requiredConsent: "وافق على شروط استخدام البيانات قبل إرسال الطلب.",
     fallbackError: "تعذر تنفيذ الطلب. راجع البيانات وحاول مرة أخرى.",
     languageTransferTooLarge: "بياناتك ما زالت هنا. اختصر الرسالة غير المرسلة قبل تغيير اللغة.",
     requestId: "رقم الطلب",
@@ -490,14 +492,14 @@ export const publicContentAr = {
     trustTitle: "الخطوات التالية",
     trustItems: [
       { icon: "verified_user", label: "مراجعة بشرية", description: "يراجع المكتب الطلب." },
-      { icon: "event_available", label: "تأكيد الموعد", description: "يؤكد الفريق الملاءمة والوقت." },
+      { icon: "event_available", label: "الموعد", description: "اختر موعدًا وتابع حالة تأكيده." },
       { icon: "lock", label: "بيانات محدودة", description: "لا ترسل مستندات هنا." }
     ]
   },
   paymentReturn: {
     safeLinkNotice: "هذا الرابط يعرض حالة دفع عامة آمنة فقط. بيانات العميل وروابط الحساب تظهر فقط من رابط الرجوع الآمن القادم من بوابة الدفع.",
     pending: "لم نستلم تأكيد الدفع بعد.",
-    countdown: "تتحقق الصفحة تلقائيا طالما حجز الموعد المؤقت ما زال ساريا.",
+    countdown: "تتحقق الصفحة تلقائيًا طالما حجز الموعد المؤقت ما زال ساريًا.",
     expired: "انتهت المهلة",
     unavailable: "لم يعد رابط حالة الدفع الآمن متاحًا. سجّل الدخول أو تواصل مع المكتب للمساعدة.",
     eyebrow: "حالة دفع حجز الاستشارة",
@@ -527,7 +529,7 @@ export const publicContentAr = {
     },
     paidConfirmation: {
       title: "تم تأكيد الدفع والموعد",
-      description: "تم إصدار فاتورة الدفع تلقائيا وربطها بحجز الاستشارة.",
+      description: "تم إصدار فاتورة الدفع تلقائيًا وربطها بحجز الاستشارة.",
       badge: "مدفوع"
     },
     statusTones: {
@@ -582,7 +584,7 @@ export const publicContentAr = {
     note: "هذه الفاتورة تخص رسوم حجز الاستشارة فقط. يتم تأكيد الموعد بعد وصول إشعار دفع موثوق من بوابة الدفع وربطه برقم الفاتورة أعلاه.",
     modeLabels: {
       PHONE: "هاتفية",
-      ONLINE: "أونلاين",
+      ONLINE: "عن بُعد",
       OFFICE: "بالمكتب"
     }
   },
@@ -621,26 +623,25 @@ export const publicContentAr = {
     title: "سياسة الخصوصية وبيانات المتقدمين للوظائف",
     description: "بيان واضح للبيانات التي تستقبلها KMT Legal، وأسباب استخدامها، ومن يمكنه الوصول إليها، وكيفية ممارسة حقوق الخصوصية.",
     lastUpdatedLabel: "آخر تحديث",
-    lastUpdated: "2026-07-10",
+    lastUpdated: "2026-10-09",
     summaryTitle: "معلومات أساسية",
     contentsLabel: "محتويات الصفحة",
     summaryItems: [
       { label: "الجهة المسؤولة", value: "KMT Legal" },
       { label: "نطاق السياسة", value: "زوار الموقع والعملاء وطالبو الاستشارات والمتقدمون للوظائف" },
-      { label: "تواصل التوظيف", value: "careers@kmtlegal.com" },
-      { label: "تواصل الخصوصية العام", value: "contact@kmtlegal.com" }
+      { label: "التواصل بشأن التوظيف", value: publicOfficeProfile.email },
+      { label: "استفسارات الخصوصية", value: publicOfficeProfile.email }
     ],
     sections: [
       {
         id: "who-we-are",
         title: "1. الجهة المسؤولة عن البيانات",
         paragraphs: [
-          "تتولى KMT Legal تحديد كيفية استخدام البيانات الشخصية المشمولة بهذا الإشعار. يمكن إرسال استفسارات التوظيف وطلبات الخصوصية المتعلقة بالمتقدمين إلى بريد الوظائف أدناه، وإرسال استفسارات الموقع والعملاء العامة إلى بريد التواصل العام."
+          "تتولى KMT Legal تحديد كيفية استخدام البيانات الشخصية المشمولة بهذا الإشعار. يمكن إرسال استفسارات التوظيف وطلبات الخصوصية واستفسارات الموقع والعملاء إلى بريد التواصل أدناه."
         ],
         bullets: [],
         links: [
-          { label: "careers@kmtlegal.com", href: "mailto:careers@kmtlegal.com" },
-          { label: "contact@kmtlegal.com", href: "mailto:contact@kmtlegal.com" }
+          { label: publicOfficeProfile.email, href: publicOfficeProfile.emailHref }
         ]
       },
       {
@@ -743,7 +744,7 @@ export const publicContentAr = {
         ],
         bullets: [],
         links: [
-          { label: "إرسال طلب خصوصية للمتقدمين", href: "mailto:careers@kmtlegal.com?subject=Applicant%20privacy%20request" },
+          { label: "إرسال طلب خصوصية للمتقدمين", href: publicOfficeProfile.applicantPrivacyHref },
           { label: "مركز حماية البيانات الشخصية", href: "https://pdpc.gov.eg" }
         ]
       },
@@ -829,7 +830,7 @@ export const publicContentAr = {
     defaultSearchLabel: "ابحث",
     placeholder: "اكتب كلمة بحث",
     all: "الكل",
-    emptyDescription: "لا توجد نتائج ضمن البحث أو التصنيف الحالي. امسح الفلاتر للعودة إلى كل العناصر."
+    emptyDescription: "لا توجد نتائج تطابق بحثك. غيّر كلمة البحث أو ألغِ التصفية لعرض جميع النتائج."
   },
   contactForm: {
     fullName: "الاسم الكامل",
@@ -871,7 +872,7 @@ export const publicContentAr = {
       "claims-collections": "المطالبات المالية والتسويات"
     },
     urgencyLabels: { LOW: "منخفضة", NORMAL: "عادية", HIGH: "مرتفعة", URGENT: "عاجلة" },
-    preferredModeLabels: { PHONE: "هاتف", ONLINE: "أونلاين", OFFICE: "في المكتب" },
+    preferredModeLabels: { PHONE: "هاتف", ONLINE: "عن بُعد", OFFICE: "في المكتب" },
     summaryHintShort: "اكتب {count} حرفًا إضافيًا على الأقل. اذكر الواقعة الأساسية والتاريخ أو المطلوب من المكتب بدون إرفاق مستندات.",
     summaryHintReady: "الملخص كافٍ للانتقال. لا ترسل مستندات أو بيانات شديدة الحساسية في هذه المرحلة.",
     reviewLabels: { name: "الاسم", phone: "الهاتف", category: "المجال", urgency: "درجة الاستعجال", mode: "طريقة التواصل", summary: "الملخص" },
@@ -891,9 +892,9 @@ export const publicContentAr = {
     manualReviewSaved: "تم حفظ الطلب للمراجعة المكتبية. سيتواصل المكتب معك بعد مراجعة البيانات وتحديد الخطوة المناسبة.",
     validation: {
       fullName: "اكتب الاسم الكامل حتى نعرف صاحب الطلب.",
-      phone: "اكتب رقم هاتف صحيح للتواصل معك.",
+      phone: "اكتب رقم هاتف صحيحًا للتواصل معك.",
       email: "اكتب بريدًا إلكترونيًا صحيحًا أو اترك الحقل فارغًا.",
-      summary: "الملخص قصير. اكتب {min} حرفًا على الأقل حتى يقدر الفريق مراجعة الطلب.",
+      summary: "الملخص قصير. اكتب {min} حرفًا على الأقل حتى يتمكن الفريق من مراجعة الطلب.",
       consent: "يجب الموافقة على استخدام البيانات قبل إرسال الطلب."
     },
     fallbackError: "تعذر إرسال طلب الاستشارة. راجع البيانات وحاول مرة أخرى.",
