@@ -1,0 +1,42 @@
+{
+  "baseline": "d889915",
+  "scope": "Owner-approved phase-two implementation; no subagents; Careers/contact form/notifications/applicant policy excluded",
+  "mechanical": {
+    "typecheck": "VERIFIED",
+    "lint": "VERIFIED",
+    "optimizedBuild": "VERIFIED",
+    "fullUnitLane": "NOT_VERIFIED: 740 passed; 55 skipped; missing Git Bash suite initialization",
+    "affectedFinalAssertions": 47,
+    "browserLanes": {
+      "publicMatrix": 28,
+      "focused": 18,
+      "finalServiceTemplates": 2,
+      "unavailable": 2
+    },
+    "publicMatrixCombinations": 380
+  },
+  "semantic": {
+    "status": "REVIEWED separately from mechanical checks",
+    "officialContentApproval": "BLOCKED: firm statements and team inputs not provided",
+    "baselineAllPages": "NOT_VERIFIED: before images limited to home; full current matrix checked"
+  },
+  "integration": {
+    "fixture": "PGlite memory-only, 18 existing migrations, synthetic data",
+    "productionDeployment": "NOT_VERIFIED",
+    "liveCdn": "NOT_VERIFIED",
+    "nativePostgres": "NOT_VERIFIED",
+    "nativeKeyboard": "NOT_VERIFIED"
+  },
+  "secrets": {
+    "wholeWorkspace": "Existing ignored .env pattern flagged; no value included",
+    "deliverables": "VERIFIED by unchanged repository scanner"
+  },
+  "evidence": [
+    "browser-summary.json",
+    "phase-two-unit-final.json",
+    "phase-two-affected-final.json",
+    "phase-two-build-final.log",
+    "performance-comparison.json",
+    "source-hashes.json"
+  ]
+}

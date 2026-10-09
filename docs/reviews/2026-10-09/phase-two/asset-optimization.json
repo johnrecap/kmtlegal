@@ -1,0 +1,126 @@
+{
+  "originalsPreserved": true,
+  "note": "Inherited design imagery, not verified office/team photography. Original metadata/provenance remains in original files.",
+  "records": [
+    {
+      "source": "/stitch-assets/ff4ca4cf707aef0c.png",
+      "destination": "/site-assets/ff4ca4cf707aef0c-4ac7a89587.webp",
+      "sourceHash": "4a9af16c611ebabd5b8f3aeab7de21deaec6f56767cbdeecc6dbd42bbe1a51e6",
+      "outputHash": "4ac7a8958722642f080ff829f9dee79ab1b67e4931c63d1ecdad6891a52407e9",
+      "beforeBytes": 390688,
+      "afterBytes": 23740,
+      "width": 512,
+      "height": 512,
+      "mode": "aspect-preserving resize and WebP compression; no enlargement",
+      "verifiedOfficeOrTeamPhoto": false
+    },
+    {
+      "source": "/stitch-assets/b25c75c2e3f319cd.png",
+      "destination": "/site-assets/b25c75c2e3f319cd-93e2fa6c51.webp",
+      "sourceHash": "154cd09de8b0dfbc39dfb48bd25441f39d3b7f76684a53f23d9862863e509525",
+      "outputHash": "93e2fa6c5197720ad1860a260ac448b4865cadebc92f42420a4806cad06f82f9",
+      "beforeBytes": 373382,
+      "afterBytes": 18614,
+      "width": 512,
+      "height": 512,
+      "mode": "aspect-preserving resize and WebP compression; no enlargement",
+      "verifiedOfficeOrTeamPhoto": false
+    },
+    {
+      "source": "/stitch-assets/b7457fddf1203399.png",
+      "destination": "/site-assets/b7457fddf1203399-686355f246.webp",
+      "sourceHash": "b50fb5d4c5586edafd50849c535e91c64e9457541cafa9768a206b78bb2a3b52",
+      "outputHash": "686355f24674a617ac5f6531832778a455e997fb29b177ebb751fa527f2031b9",
+      "beforeBytes": 393385,
+      "afterBytes": 20546,
+      "width": 512,
+      "height": 512,
+      "mode": "aspect-preserving resize and WebP compression; no enlargement",
+      "verifiedOfficeOrTeamPhoto": false
+    },
+    {
+      "source": "/stitch-assets/b392b48a7cb6b561.png",
+      "destination": "/site-assets/b392b48a7cb6b561-9c0dd010dc.webp",
+      "sourceHash": "65ebb9730029c07a1ca498e4ff05af4aa9c1388b59badadc8ceee83aa742f759",
+      "outputHash": "9c0dd010dcb477b88ec34cfe82badfd22b25e954cc6b49a7084ab0bdf85435e7",
+      "beforeBytes": 301707,
+      "afterBytes": 10408,
+      "width": 512,
+      "height": 512,
+      "mode": "aspect-preserving resize and WebP compression; no enlargement",
+      "verifiedOfficeOrTeamPhoto": false
+    },
+    {
+      "source": "/stitch-assets/2484f68d86633ca8.png",
+      "destination": "/site-assets/2484f68d86633ca8-a3542ac22c.webp",
+      "sourceHash": "6848a8cc1c792ef62d7f34f10af02cfff83caff0f5f1005e48fbd3edc1f19c70",
+      "outputHash": "a3542ac22cfb4dd573433271b8f53da34ebadf6d917bf7d38048653824655b8a",
+      "beforeBytes": 317612,
+      "afterBytes": 12350,
+      "width": 512,
+      "height": 512,
+      "mode": "aspect-preserving resize and WebP compression; no enlargement",
+      "verifiedOfficeOrTeamPhoto": false
+    },
+    {
+      "source": "/stitch-assets/b8b47a1dd8d5ce08.png",
+      "destination": "/site-assets/b8b47a1dd8d5ce08-4332ade87c.webp",
+      "sourceHash": "4718a213536232908466f6bef3e306cb5e7b61eac7927849d5824814ae3125b3",
+      "outputHash": "4332ade87c9a40d8388f7094690cd051be2daec9a6fd1d77fb37c149eb2656ae",
+      "beforeBytes": 316048,
+      "afterBytes": 12658,
+      "width": 512,
+      "height": 512,
+      "mode": "aspect-preserving resize and WebP compression; no enlargement",
+      "verifiedOfficeOrTeamPhoto": false
+    },
+    {
+      "source": "/stitch-assets/bd64f8e89da8f4f6.png",
+      "destination": "/site-assets/bd64f8e89da8f4f6-4d00cc5621.webp",
+      "sourceHash": "1972ee46c0f8410c9b7e381b0c25dc71d50350136c40578bfb4192cda2e1f3c0",
+      "outputHash": "4d00cc56215f19aee238928afe0d329ff9e4b722cc2bc6a3d6035d71ea8ee7a8",
+      "beforeBytes": 388887,
+      "afterBytes": 24368,
+      "width": 512,
+      "height": 512,
+      "mode": "aspect-preserving resize and WebP compression; no enlargement",
+      "verifiedOfficeOrTeamPhoto": false
+    },
+    {
+      "source": "/stitch-assets/2c0d439a80ab607f.png",
+      "destination": "/site-assets/2c0d439a80ab607f-9dddafeec7.webp",
+      "sourceHash": "693d0305354f2515656b24dafc721b53044240028a79cedbbbeca0b7e2a1b6f0",
+      "outputHash": "9dddafeec705a4bd928c8fb254abf16fcf0040f6438a59963d3e2d33cae4f13b",
+      "beforeBytes": 326643,
+      "afterBytes": 18038,
+      "width": 512,
+      "height": 512,
+      "mode": "aspect-preserving resize and WebP compression; no enlargement",
+      "verifiedOfficeOrTeamPhoto": false
+    },
+    {
+      "source": "/stitch-assets/927e808522dfd86d.png",
+      "destination": "/site-assets/927e808522dfd86d-498191a3f4.webp",
+      "sourceHash": "8142a46b07819c0c972a3dc339616b0b3c3546e02e0bf4bfce2978d1fa30fe21",
+      "outputHash": "498191a3f499d9aa4767492c5c9e05f993cd3bdab8abfadb1041523ebf845421",
+      "beforeBytes": 288610,
+      "afterBytes": 10460,
+      "width": 512,
+      "height": 512,
+      "mode": "aspect-preserving resize and WebP compression; no enlargement",
+      "verifiedOfficeOrTeamPhoto": false
+    },
+    {
+      "source": "/stitch-assets/11c3bae2e63b7192.png",
+      "destination": "/site-assets/11c3bae2e63b7192-f780575d56.webp",
+      "sourceHash": "706133a5aa8db54b2dd0fdc146f597c209cbf8e9d74220e4e7cc10fd353c6c9b",
+      "outputHash": "f780575d56a4dfdf022c45128fc1cd6f9c0a84c44eafa3c10f558419b13ed173",
+      "beforeBytes": 335644,
+      "afterBytes": 15260,
+      "width": 512,
+      "height": 512,
+      "mode": "aspect-preserving resize and WebP compression; no enlargement",
+      "verifiedOfficeOrTeamPhoto": false
+    }
+  ]
+}

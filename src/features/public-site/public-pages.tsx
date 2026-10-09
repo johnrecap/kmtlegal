@@ -49,6 +49,9 @@ import {
 } from "@/features/public-site/public-components";
 import { ProcessSteps } from "@/features/public-site/process-steps";
 import { cn } from "@/lib/cn";
+import { publicSiteOrigin } from "@/lib/public-site-origin";
+import { publicExpansion, publicArticleCategory } from "@/content/public-expansion";
+import { OurFirmPageView, IndustriesPageView } from "./firm-industries-pages";
 import { alternatePublicLanguages, availableAlternatePublicLanguages, localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 import {
   listPublishedArticleCards,
@@ -66,9 +69,11 @@ export function publicPageMetadata(
   availableLocales: readonly PublicLocale[] = ["en", "ar"]
 ): Metadata {
   return {
-    metadataBase: new URL(process.env.APP_ORIGIN || "https://kmtlegal.org"),
+    metadataBase: new URL(publicSiteOrigin()),
     title,
     description,
+    openGraph: { title, description, url: localizedPublicHref(pathname, locale), locale: locale === "ar" ? "ar_EG" : "en_US", siteName: "KMT Legal", type: "website" },
+    twitter: { card: "summary", title, description },
     alternates: {
       canonical: localizedPublicHref(pathname, locale),
       languages: availableLocales.length === 2 ? alternatePublicLanguages(pathname) : availableAlternatePublicLanguages(pathname, availableLocales)
@@ -113,7 +118,8 @@ export function articlesMetadata(locale: PublicLocale) {
 
 export async function articleDetailMetadata(locale: PublicLocale, slug: string): Promise<Metadata> {
   const alternateLocale = locale === "ar" ? "en" : "ar";
-  const [article, alternateArticle] = await Promise.all([loadArticle(locale, slug), loadArticle(alternateLocale, slug)]);
+  const [article, alternateArticle] = await Promise.all([loadArticle(locale, slug).catch(() => undefined), loadArticle(alternateLocale, slug).catch(() => null)]);
+  if (article === undefined) return { ...publicPageMetadata(locale, `/articles/${slug}`, publicExpansion[locale].unavailableTitle, publicExpansion[locale].unavailableDescription, [locale]), robots: { index: false, follow: true } };
   if (!article) return {};
 
   return publicPageMetadata(
@@ -174,16 +180,17 @@ export function publicLawyerStaticParams(locale: PublicLocale) {
 
 export async function metadataForPublicPath(locale: PublicLocale, path: string[] = []): Promise<Metadata> {
   const [section, slug] = path;
+  const expansion = publicExpansion[locale];
+  if (path.length === 1 && section === "our-firm") return publicPageMetadata(locale, "/our-firm", `${expansion.firm} | KMT Legal`, expansion.firmDescription);
+  if (path.length === 1 && section === "industries") return publicPageMetadata(locale, "/industries", `${expansion.industries} | KMT Legal`, expansion.industriesDescription);
+  if (section === "articles" && path.length === 1) return articlesMetadata(locale);
+  if (section === "articles" && path.length === 2) return articleDetailMetadata(locale, slug);
   if (!section) return homeMetadata(locale);
   if (section === "services" && !slug) return servicesMetadata(locale);
   if (section === "services" && slug && path.length === 2) return serviceDetailMetadata(locale, slug);
   if (section === "team" && !slug) return teamMetadata(locale);
   if (section === "team" && slug && path.length === 2) return teamDetailMetadata(locale, slug);
-  // Phase 06 — Articles HIDE PUBLIC, Case Studies HIDE PUBLIC, Media DELETE:
-  // no public metadata is emitted for these sections in any locale. The
-  // emitter functions below stay defined (admin/backend untouched) but have
-  // no public call site; article/case-study detail views stay exported for
-  // the preserved management pipeline and its tests.
+  // Case studies and media remain unavailable to the public.
   if (section === "contact" && path.length === 1) return contactMetadata(locale);
   if (section === "book-consultation" && path.length === 1) return bookingMetadata(locale);
   if (section === "privacy" && path.length === 1) return privacyMetadata(locale);
@@ -193,13 +200,16 @@ export async function metadataForPublicPath(locale: PublicLocale, path: string[]
 
 export async function renderPublicPath(locale: PublicLocale, path: string[] = []) {
   const [section, slug] = path;
+  if (section === "our-firm" && path.length === 1) return <OurFirmPageView locale={locale} />;
+  if (section === "industries" && path.length === 1) return <IndustriesPageView locale={locale} />;
+  if (section === "articles" && path.length === 1) return <ArticlesPageView locale={locale} />;
+  if (section === "articles" && path.length === 2) return <ArticleDetailPageView locale={locale} slug={slug} />;
   if (!section) return <HomePageView locale={locale} />;
   if (section === "services" && !slug) return <ServicesPageView locale={locale} />;
   if (section === "services" && slug && path.length === 2) return <ServiceDetailPageView locale={locale} slug={slug} />;
   if (section === "team" && !slug) return <TeamPageView locale={locale} />;
   if (section === "team" && slug && path.length === 2) return <TeamDetailPageView locale={locale} slug={slug} />;
-  // Phase 06 — deferred sections fall through to notFound() below: no public
-  // rendering path remains for articles / case-studies / media in any locale.
+  // Case studies and media remain unavailable to the public.
   if (section === "contact" && path.length === 1) return <ContactPageView locale={locale} />;
   if (section === "book-consultation" && path.length === 1) return <BookConsultationPageView locale={locale} />;
   if (section === "privacy" && path.length === 1) return <PrivacyPageView locale={locale} />;
@@ -220,7 +230,7 @@ export function HomePageView({ locale }: { locale: PublicLocale }) {
         title={copy.heroTitle}
         description={copy.heroDescription}
         descriptionHighlight={locale === "ar" ? "الوقائع والمستندات" : "reviews the facts and documents"}
-        image="/stitch-assets/b392b48a7cb6b561.png"
+        image="/site-assets/b392b48a7cb6b561-9c0dd010dc.webp"
         imagePosition="object-[center_55%]"
         pickerLabel={copy.heroPickerLabel}
         matters={content.practiceAreaMatrix.slice(0, 6)}
@@ -237,6 +247,13 @@ export function HomePageView({ locale }: { locale: PublicLocale }) {
         locale={locale}
       />
       <TrustStrip items={copy.trustItems} />
+      <PublicSection eyebrow="KMT Legal" title={publicExpansion[locale].overviewTitle} description={publicExpansion[locale].overviewDescription}>
+        <div className="flex flex-wrap gap-3">
+          <ButtonLink href={localizedPublicHref("/our-firm", locale)} variant="secondary">{publicExpansion[locale].firmLink}</ButtonLink>
+          <ButtonLink href={localizedPublicHref("/industries", locale)} variant="secondary">{publicExpansion[locale].industriesLink}</ButtonLink>
+          <ButtonLink href={localizedPublicHref("/articles", locale)} variant="secondary">{publicExpansion[locale].insightsLink}</ButtonLink>
+        </div>
+      </PublicSection>
 
       <PublicSection align="center" accent="section" eyebrow={copy.practiceEyebrow} title={copy.practiceTitle} description={copy.practiceDescription} descriptionHighlight={locale === "ar" ? "طلب استشارة منظمًا" : "structured consultation request"} descriptionEmphasis="subtle">
         <CapabilityRows
@@ -263,7 +280,7 @@ export function HomePageView({ locale }: { locale: PublicLocale }) {
               description: focusService.subServices.join(" · "),
               content: (
                 <div className="relative h-full min-h-[320px] w-full">
-                  <Image alt="" className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src="/stitch-assets/2484f68d86633ca8.png" unoptimized />
+                  <Image alt="" className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src="/site-assets/2484f68d86633ca8-a3542ac22c.webp" unoptimized />
                   <div className="absolute inset-0 bg-gradient-to-t from-[rgb(var(--kmt-public-scrim)/0.55)] via-transparent to-transparent" aria-hidden="true" />
                 </div>
               )
@@ -273,7 +290,7 @@ export function HomePageView({ locale }: { locale: PublicLocale }) {
               description: focusService.requiredDocuments.join(" · "),
               content: (
                 <div className="relative h-full min-h-[320px] w-full">
-                  <Image alt="" className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src="/stitch-assets/2484f68d86633ca8.png" unoptimized />
+                  <Image alt="" className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src="/site-assets/2484f68d86633ca8-a3542ac22c.webp" unoptimized />
                   <div className="absolute inset-0 bg-gradient-to-t from-[rgb(var(--kmt-public-scrim)/0.55)] via-transparent to-transparent" aria-hidden="true" />
                 </div>
               )
@@ -283,7 +300,7 @@ export function HomePageView({ locale }: { locale: PublicLocale }) {
               description: focusService.outcomes.join(" · "),
               content: (
                 <div className="relative h-full min-h-[320px] w-full">
-                  <Image alt="" className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src="/stitch-assets/2484f68d86633ca8.png" unoptimized />
+                  <Image alt="" className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src="/site-assets/2484f68d86633ca8-a3542ac22c.webp" unoptimized />
                   <div className="absolute inset-0 bg-gradient-to-t from-[rgb(var(--kmt-public-scrim)/0.55)] via-transparent to-transparent" aria-hidden="true" />
                 </div>
               )
@@ -327,7 +344,7 @@ export function ServicesPageView({ locale }: { locale: PublicLocale }) {
 
   return (
     <PublicShell currentPath={localizedPublicHref("/services", locale)} locale={locale} navItems={navForPath("/services", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/b8b47a1dd8d5ce08.png" imagePosition="object-[center_62%]" size="compact" texture="dots" title={copy.heroTitle} description={copy.heroDescription} />
+      <PageHero eyebrow={copy.heroEyebrow} image="/site-assets/b8b47a1dd8d5ce08-4332ade87c.webp" imagePosition="object-[center_62%]" size="compact" texture="dots" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <DirectoryFilter
           emptyTitle={copy.emptyTitle}
@@ -337,8 +354,8 @@ export function ServicesPageView({ locale }: { locale: PublicLocale }) {
             title: service.title,
             description: service.description,
             href: `/services/${service.slug}`,
-            category: service.category,
-            categoryLabel: content.serviceCategories[service.category as keyof typeof content.serviceCategories] ?? service.category,
+            category: service.areaKey,
+            categoryLabel: service.title,
             chips: service.subServices,
             meta: `${service.subServices.length} ${copy.servicesCountLabel}`,
             searchText: service.subServices.join(" ")
@@ -366,10 +383,9 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
   if (!service) notFound();
   const copy = content.serviceDetail;
   const currentSlug = canonicalPublicServiceSlug(slug);
-  const categoryLabel = content.serviceCategories[service.category as keyof typeof content.serviceCategories] ?? service.category;
+  const categoryLabel = content.servicesPage.heroTitle;
   const breadcrumbItems = [
     { label: copy.breadcrumbServices, href: localizedPublicHref("/services", locale) },
-    { label: categoryLabel },
     { label: service.title }
   ];
   const breadcrumbJsonLd = {
@@ -377,8 +393,7 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: copy.breadcrumbServices, item: localizedPublicHref("/services", locale) },
-      { "@type": "ListItem", position: 2, name: categoryLabel },
-      { "@type": "ListItem", position: 3, name: service.title }
+      { "@type": "ListItem", position: 2, name: service.title }
     ]
   };
 
@@ -386,7 +401,7 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
     <PublicShell currentPath={localizedPublicHref(`/services/${currentSlug}`, locale)} locale={locale} navItems={navForPath("/services", locale)}>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }}
       />
       <PublicSection
         breadcrumbs={<PublicBreadcrumbs ariaLabel={copy.breadcrumbAriaLabel} items={breadcrumbItems} />}
@@ -399,6 +414,14 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
           <article className={cn(publicPanel, "p-6")}>
             <MaterialSymbol className={cn("text-4xl", publicGoldText)} name={service.icon} />
             <p className={cn("mt-5 leading-8", publicMutedText)}>{service.content}</p>
+            {"audience" in service ? <section className="mt-8 border-t border-[var(--kmt-public-line)] pt-6">
+              <h2 className="text-2xl font-semibold">{publicExpansion[locale].audience}</h2>
+              <ul className={cn("mt-4 list-disc space-y-2 ps-5 leading-8", publicMutedText)}>{service.audience.map(item => <li key={item}>{item}</li>)}</ul>
+            </section> : null}
+            {"steps" in service ? <section className="mt-8 border-t border-[var(--kmt-public-line)] pt-6">
+              <h2 className="text-2xl font-semibold">{publicExpansion[locale].steps}</h2>
+              <ol className={cn("mt-4 list-decimal space-y-2 ps-5 leading-8", publicMutedText)}>{service.steps.map(item => <li key={item}>{item}</li>)}</ol>
+            </section> : null}
             {/*
               Desktop dossier: static secondary sections (unchanged).
               Mobile: the same sections collapse into the Accordion below —
@@ -489,7 +512,7 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
               {copy.backToServices}
             </ButtonLink>
           </article>
-          <DetailCta locale={locale} serviceTitle={service.title} />
+          <DetailCta locale={locale} serviceTitle={service.slug} />
         </div>
         <nav aria-label={copy.breadcrumbServices} className="mt-10 hidden lg:block">
           <h2 className="text-2xl font-semibold text-[var(--kmt-public-text)]">{copy.breadcrumbServices}</h2>
@@ -555,7 +578,7 @@ export function TeamPageView({ locale }: { locale: PublicLocale }) {
 
   return (
     <PublicShell currentPath={localizedPublicHref("/team", locale)} locale={locale} navItems={navForPath("/team", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/bd64f8e89da8f4f6.png" imagePosition="object-[center_38%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
+      <PageHero eyebrow={copy.heroEyebrow} image="/site-assets/bd64f8e89da8f4f6-4d00cc5621.webp" imagePosition="object-[center_38%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <DirectoryFilter
           cardVariant="focus"
@@ -602,7 +625,7 @@ export function TeamDetailPageView({ locale, slug }: { locale: PublicLocale; slu
     <PublicShell currentPath={localizedPublicHref(`/team/${lawyer.slug}`, locale)} locale={locale} navItems={navForPath("/team", locale)}>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }}
       />
       <PublicSection
         breadcrumbs={<PublicBreadcrumbs ariaLabel={content.serviceDetail.breadcrumbAriaLabel} items={breadcrumbItems} />}
@@ -612,7 +635,7 @@ export function TeamDetailPageView({ locale, slug }: { locale: PublicLocale; slu
         description={lawyer.bio}
       >
         <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
-          <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-lg border border-[var(--kmt-public-line)]">
+          <div className="group relative mx-auto aspect-[4/5] w-full max-w-[360px] overflow-hidden rounded-lg border border-[var(--kmt-public-line)] lg:sticky lg:top-24 lg:self-start">
             <Image alt={lawyer.name} className={publicPhotoTreatment} fill sizes="(min-width: 1024px) 360px, 100vw" src={lawyer.image} />
           </div>
           <div className={cn(publicPanel, "p-6")}>
@@ -745,13 +768,13 @@ export function TeamDetailPageView({ locale, slug }: { locale: PublicLocale; slu
 export async function ArticlesPageView({ locale }: { locale: PublicLocale }) {
   const content = getPublicContent(locale);
   const copy = content.articlesPage;
-  const articles = await loadArticles(locale);
+  const articles = await loadArticles(locale).catch(() => null);
 
   return (
     <PublicShell currentPath={localizedPublicHref("/articles", locale)} locale={locale} navItems={navForPath("/articles", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/2c0d439a80ab607f.png" imagePosition="object-[center_50%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
+      <PageHero eyebrow={copy.heroEyebrow} image="/site-assets/2c0d439a80ab607f-9dddafeec7.webp" imagePosition="object-[center_50%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
-        <DirectoryFilter
+        {articles === null ? <ArticleUnavailableNotice locale={locale} /> : <DirectoryFilter
           emptyTitle={copy.emptyTitle}
           locale={locale}
           items={articles.map((article) => ({
@@ -759,11 +782,11 @@ export async function ArticlesPageView({ locale }: { locale: PublicLocale }) {
             description: article.excerpt,
             href: `/articles/${article.slug}`,
             category: article.category,
-            categoryLabel: article.category,
-            meta: article.readTime
+            categoryLabel: publicArticleCategory(article.category, locale),
+            meta: [article.publishedAt ? formatPublicPolicyDate(article.publishedAt, locale) : "", article.author, article.readTime].filter(Boolean).join(" · ")
           }))}
           searchLabel={copy.searchLabel}
-        />
+        />}
       </PublicSection>
     </PublicShell>
   );
@@ -773,10 +796,11 @@ export async function ArticleDetailPageView({ locale, slug }: { locale: PublicLo
   const content = getPublicContent(locale);
   const alternateLocale = locale === "ar" ? "en" : "ar";
   const [article, alternateArticle, articleCards] = await Promise.all([
-    loadArticle(locale, slug),
-    loadArticle(alternateLocale, slug),
-    loadArticles(locale)
+    loadArticle(locale, slug).catch(() => undefined),
+    loadArticle(alternateLocale, slug).catch(() => null),
+    loadArticles(locale).catch(() => [])
   ]);
+  if (article === undefined) return <PublicShell locale={locale} currentPath={localizedPublicHref(`/articles/${slug}`, locale)} languageHref={null} navItems={navForPath("/articles", locale)}><PublicSection headingLevel="h1" title={publicExpansion[locale].unavailableTitle} description={publicExpansion[locale].unavailableDescription}><ArticleUnavailableNotice locale={locale} slug={slug} /></PublicSection></PublicShell>;
   if (!article) notFound();
   const copy = content.articleDetail;
   const authorName = article.author ?? copy.defaultAuthor;
@@ -785,7 +809,7 @@ export async function ArticleDetailPageView({ locale, slug }: { locale: PublicLo
     .slice(0, 3);
   const breadcrumbItems = [
     { label: copy.breadcrumbArticles, href: localizedPublicHref("/articles", locale) },
-    { label: article.category },
+    { label: publicArticleCategory(article.category, locale) },
     { label: article.title }
   ];
   const breadcrumbJsonLd = {
@@ -793,7 +817,7 @@ export async function ArticleDetailPageView({ locale, slug }: { locale: PublicLo
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: copy.breadcrumbArticles, item: localizedPublicHref("/articles", locale) },
-      { "@type": "ListItem", position: 2, name: article.category },
+      { "@type": "ListItem", position: 2, name: publicArticleCategory(article.category, locale) },
       { "@type": "ListItem", position: 3, name: article.title }
     ]
   };
@@ -808,7 +832,7 @@ export async function ArticleDetailPageView({ locale, slug }: { locale: PublicLo
       <ReadingProgress />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }}
       />
       <PublicSection
         breadcrumbs={<PublicBreadcrumbs ariaLabel={content.serviceDetail.breadcrumbAriaLabel} items={breadcrumbItems} />}
@@ -820,7 +844,7 @@ export async function ArticleDetailPageView({ locale, slug }: { locale: PublicLo
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <article className={cn(publicPanel, "p-6")}>
             <div className="flex flex-wrap gap-2">
-              <Badge className={publicGoldChip}>{article.category}</Badge>
+              <Badge className={publicGoldChip}>{publicArticleCategory(article.category, locale)}</Badge>
               {article.publishedAt ? (
                 <Badge className={publicNeutralChip}>
                   <time dateTime={article.publishedAt}>
@@ -872,7 +896,7 @@ export async function CaseStudiesPageView({ locale }: { locale: PublicLocale }) 
 
   return (
     <PublicShell currentPath={localizedPublicHref("/case-studies", locale)} locale={locale} navItems={navForPath("/case-studies", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/927e808522dfd86d.png" imagePosition="object-[center_50%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
+      <PageHero eyebrow={copy.heroEyebrow} image="/site-assets/927e808522dfd86d-498191a3f4.webp" imagePosition="object-[center_50%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <DirectoryFilter
           emptyTitle={copy.emptyTitle}
@@ -926,7 +950,7 @@ export async function CaseStudyDetailPageView({ locale, slug }: { locale: Public
     >
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }}
       />
       <PublicSection
         breadcrumbs={<PublicBreadcrumbs ariaLabel={content.serviceDetail.breadcrumbAriaLabel} items={breadcrumbItems} />}
@@ -1018,7 +1042,7 @@ export function ContactPageView({ locale }: { locale: PublicLocale }) {
 
   return (
     <PublicShell currentPath={localizedPublicHref("/contact", locale)} locale={locale} navItems={navForPath("/contact", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/stitch-assets/11c3bae2e63b7192.png" imagePosition="object-[center_48%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
+      <PageHero eyebrow={copy.heroEyebrow} image="/site-assets/11c3bae2e63b7192-f780575d56.webp" imagePosition="object-[center_48%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
           <ContactForm locale={locale} />
@@ -1255,27 +1279,23 @@ export function TermsPageView({ locale }: { locale: PublicLocale }) {
 }
 
 async function loadArticles(locale: PublicLocale) {
-  if (!shouldLoadDatabaseContent()) {
-    return [];
-  }
-
-  try {
-    return await listPublishedArticleCards(locale);
-  } catch {
-    return [];
-  }
+  noStore();
+  if (!shouldLoadDatabaseContent()) throw new Error("PUBLIC_CONTENT_UNAVAILABLE");
+  return listPublishedArticleCards(locale);
 }
 
 async function loadArticle(locale: PublicLocale, slug: string) {
-  if (!shouldLoadDatabaseContent()) {
-    return null;
-  }
+  noStore();
+  if (!shouldLoadDatabaseContent()) throw new Error("PUBLIC_CONTENT_UNAVAILABLE");
+  return getPublishedArticleBySlug(locale, slug);
+}
 
-  try {
-    return await getPublishedArticleBySlug(locale, slug);
-  } catch {
-    return null;
-  }
+function ArticleUnavailableNotice({ locale, slug }: { locale: PublicLocale; slug?: string }) {
+  const copy = publicExpansion[locale];
+  return <div role="status" className={cn(publicPanel, "p-6")}>
+    {!slug ? <><h2 className="text-xl font-semibold">{copy.unavailableTitle}</h2><p className={cn(publicMutedText, "mt-3 leading-8")}>{copy.unavailableDescription}</p></> : null}
+    <a className="mt-5 inline-flex min-h-11 items-center text-[var(--kmt-public-gold)] underline underline-offset-4" href={localizedPublicHref(`/articles${slug ? `/${encodeURIComponent(slug)}` : ""}`, locale)}>{copy.retry}</a>
+  </div>;
 }
 
 async function loadCaseStudies(locale: PublicLocale) {

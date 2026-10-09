@@ -13,7 +13,8 @@ export async function POST(request: Request) {
     await enforceRateLimit(rateLimiters.analytics, getIpAddress(request) ?? "unknown");
     const body = await request.json().catch(() => null);
     const event = parseClientAnalyticsEvent(body);
-    const context = await getAuthContextFromRequest(request).catch(() => null);
+    const isPublicMetric = event.name.startsWith("public.");
+    const context = isPublicMetric ? null : await getAuthContextFromRequest(request).catch(() => null);
 
     captureAnalyticsEventBestEffort({
       name: event.name,
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
       outcome: event.name.endsWith("_failed") ? "FAILURE" : "INFO",
       properties: event.properties,
       actor: context?.principal ?? null,
-      requestId
+      requestId: isPublicMetric ? null : requestId
     });
 
     return NextResponse.json({ data: { accepted: true }, requestId }, { status: 202, headers: { "Cache-Control": "no-store" } });

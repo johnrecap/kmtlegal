@@ -1,5 +1,25 @@
 # Server Commands
 
+## Public website phase two — 2026-10-09
+
+```bash
+cd /www/wwwroot/kmtlegal
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+The update script now expects `/our-firm`, `/industries`, `/articles`, their Arabic equivalents, `/robots.txt` and `/sitemap.xml` to respond successfully. Articles are no longer in retired-route probes; Case Studies and Media remain retired. Keep `APP_ORIGIN` set to the actual canonical HTTPS domain in the server environment: public metadata, robots and sitemap share that origin (fallback `https://kmtlegal.org`, never localhost by default).
+
+The generated Nginx cache policy now marks article routes, sitemap and private payment/account routes `no-store`. If Cloudflare's managed rules were previously applied, update them using the **actual** host/zone and the existing securely configured token, then purge stale article HTML (including earlier 404s):
+
+```bash
+node scripts/cloudflare-public-cache-rule.mjs --host=YOUR_ACTUAL_HOST --zone=YOUR_ZONE --dry-run
+node scripts/cloudflare-public-cache-rule.mjs --host=YOUR_ACTUAL_HOST --zone=YOUR_ZONE --apply
+```
+
+Do not copy the script's historical demo hostname as the production hostname. These commands require the existing Cloudflare permissions and are not run by the local implementation. Test publication and withdrawal on the actual deployed origin/CDN; a withdrawn article must stop appearing in the list, detail and sitemap. Normal Next data-cache invalidation remains in the existing CMS pipeline. No schema migration, demo-content publication, SMTP configuration, contact-form or notification change is part of phase two.
+
+Enable internal measurement only through the existing `ANALYTICS_ENABLED` setting. Check the new section at `/admin/reports` with `report.read.any`; use its date filters. Click totals do not represent received messages or unique people. Review pending official firm statements/team data and phase-one input blockers in the implementation register before declaring full content completion.
+
 ## PostgreSQL backup client compatibility
 
 The protected deploy command now queries the database server major version before backup and

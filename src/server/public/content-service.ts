@@ -9,7 +9,10 @@ export const PUBLIC_CASE_STUDY_DISCLAIMER = {
 function readTimeFor(content: string, locale: PublicLocale) {
   const words = content.trim().split(/\s+/).filter(Boolean).length;
   const minutes = Math.max(1, Math.ceil(words / 180));
-  return locale === "ar" ? `${minutes} دقائق` : `${minutes} min read`;
+  if (locale === "en") return `${minutes} min read`;
+  if (minutes === 1) return "دقيقة واحدة للقراءة";
+  if (minutes === 2) return "دقيقتان للقراءة";
+  return `${minutes.toLocaleString("ar-EG")} ${minutes <= 10 ? "دقائق" : "دقيقة"} للقراءة`;
 }
 
 async function publicPrisma() {
@@ -46,6 +49,8 @@ function articleCardDto(article: {
   locale: string;
   category: string;
   excerpt: string;
+  content: string;
+  author?: { name: string } | null;
   publishedAt: Date | null;
 }, locale: PublicLocale) {
   return {
@@ -55,7 +60,8 @@ function articleCardDto(article: {
     category: article.category,
     excerpt: article.excerpt,
     publishedAt: article.publishedAt?.toISOString().slice(0, 10) ?? "",
-    readTime: readTimeFor(article.excerpt, locale)
+    readTime: readTimeFor(article.content, locale),
+    author: article.author?.name ?? null
   };
 }
 
@@ -108,7 +114,7 @@ const listPublishedArticleCardsCached = unstable_cache(
   async (locale: PublicLocale) => {
     const prisma = await publicPrisma();
     const articles = await prisma.article.findMany({
-      where: { locale, status: "PUBLISHED", publishedAt: { not: null } },
+      where: { locale, status: "PUBLISHED", publishedAt: { not: null, lte: new Date() } },
       orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
       select: {
         title: true,
@@ -116,6 +122,8 @@ const listPublishedArticleCardsCached = unstable_cache(
         locale: true,
         category: true,
         excerpt: true,
+        content: true,
+        author: { select: { name: true } },
         publishedAt: true
       }
     });
@@ -130,7 +138,7 @@ const listPublishedArticlesCached = unstable_cache(
   async (locale: PublicLocale) => {
     const prisma = await publicPrisma();
     const articles = await prisma.article.findMany({
-      where: { locale, status: "PUBLISHED", publishedAt: { not: null } },
+      where: { locale, status: "PUBLISHED", publishedAt: { not: null, lte: new Date() } },
       orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
       select: {
         title: true,
@@ -154,7 +162,7 @@ const getPublishedArticleBySlugCached = unstable_cache(
   async (locale: PublicLocale, slug: string) => {
     const prisma = await publicPrisma();
     const article = await prisma.article.findFirst({
-      where: { locale, slug, status: "PUBLISHED", publishedAt: { not: null } },
+      where: { locale, slug, status: "PUBLISHED", publishedAt: { not: null, lte: new Date() } },
       select: {
         title: true,
         slug: true,

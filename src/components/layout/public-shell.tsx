@@ -13,6 +13,7 @@ import { cn } from "@/lib/cn";
 import { localizedPublicHref, publicLocaleDirection, publicLocalePrefix, stripPublicLocalePrefix, type PublicLocale } from "@/lib/public-locale";
 import { PublicHeader } from "./public-header";
 import { PublicFloatingDock } from "./public-floating-dock";
+import { PublicTelemetry } from "@/features/public-site/public-telemetry";
 
 export type PublicNavItem = {
   label: string;
@@ -63,6 +64,7 @@ export function PublicShell({
       dir={direction}
       lang={locale}
     >
+      <PublicTelemetry />
       <PublicHeader languageHref={languageHref} locale={locale} navItems={navItems} />
       <main className="bg-[var(--kmt-public-canvas)]">{children}</main>
       {/* Footer body rides the theme-aware public canvas: deep black in dark
@@ -124,7 +126,7 @@ export function PublicShell({
           <nav aria-label={shell.practiceLinksLabel}>
             <h2 className="font-semibold text-[var(--kmt-public-text)]">{shell.practiceLinksTitle}</h2>
             <ul className="mt-4 space-y-3">
-              {content.footerContent.practiceLinks.slice(0, 4).map((item) => (
+              {content.footerContent.practiceLinks.map((item) => (
                 <li key={item.href}>
                   <Link className={cn("inline-flex text-[var(--kmt-public-muted)] transition-colors hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold", publicMotionTextLink)} href={localizedPublicHref(item.href, locale)}>
                     {item.label}

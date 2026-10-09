@@ -1,5 +1,7 @@
 "use client";
 
+import { bookingCategoryForPublicService } from "@/content/public-content";
+
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { publicOfficeProfile } from "@/content/public-office-profile";
@@ -10,7 +12,7 @@ import { AnimatedList } from "@/components/ui/animated-list";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 import { usePrefersReducedMotion } from "@/lib/use-reduced-motion";
-import { findPublicService, getPublicContent, type PublicContent } from "@/content/public-content";
+import { getPublicContent, type PublicContent } from "@/content/public-content";
 import { trackClientAnalyticsEvent } from "@/lib/analytics-client";
 import { cn } from "@/lib/cn";
 import { useHydrated } from "@/lib/use-hydrated";
@@ -1113,7 +1115,7 @@ function hasBookingProgress(data: NonNullable<AssistantApiBody["data"]>, priorDr
 }
 
 function categoryLabel(content: PublicContent, category: string) {
-  return content.legalServices.find((service) => service.category === category)?.title ?? category;
+  return content.serviceCategories[category as keyof PublicContent["serviceCategories"]] ?? category;
 }
 
 function CategorySuggestionPanel({
@@ -1481,12 +1483,7 @@ function normalizeDraft(value: Partial<BookingDraft>): BookingDraft {
 }
 
 function categoryFromInitialService(initialService: string | undefined, locale: PublicLocale) {
-  if (!initialService) return "";
-  const content = getPublicContent(locale);
-  const service =
-    content.legalServices.find((item) => item.title === initialService || item.slug === initialService) ??
-    findPublicService(locale, initialService);
-  return service?.category ?? "";
+  return bookingCategoryForPublicService(initialService, locale);
 }
 
 function inquiryFromMessage(value: string) {

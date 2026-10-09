@@ -38,6 +38,7 @@ const articleFixture: ArticleDto = {
 };
 
 const cardFixture: ArticleCardDto = {
+  author: "Mariam Khalid",
   title: articleFixture.title,
   slug: articleFixture.slug,
   locale: "en",
@@ -48,6 +49,7 @@ const cardFixture: ArticleCardDto = {
 };
 
 const relatedFixture: ArticleCardDto = {
+  author: null,
   title: "Termination Clauses in Practice",
   slug: "termination-clauses",
   locale: "en",
@@ -63,16 +65,32 @@ describe("public articles UI", () => {
     vi.mocked(getPublishedArticleBySlug).mockResolvedValue(null);
   });
 
+  it("distinguishes an empty published collection from a failed database read", async () => {
+    const empty = renderToStaticMarkup(await ArticlesPageView({ locale: "en" }));
+    expect(empty).not.toContain("Articles are temporarily unavailable");
+    vi.mocked(listPublishedArticleCards).mockRejectedValue(new Error("database unavailable"));
+    const failed = renderToStaticMarkup(await ArticlesPageView({ locale: "en" }));
+    expect(failed).toContain("Articles are temporarily unavailable");
+    expect(failed).toContain("Try again");
+  });
+
+  it("escapes CMS titles inside structured data", async () => {
+    vi.mocked(getPublishedArticleBySlug).mockResolvedValue({ ...articleFixture, title: "</script><script>alert(1)</script>" });
+    const html = renderToStaticMarkup(await ArticleDetailPageView({ locale: "en", slug: articleFixture.slug }));
+    expect(html).not.toContain("<script>alert(1)</script>");
+    expect(html).toContain("\\u003c/script>");
+  });
+
   it("renders the list with the nav-aligned title, gold category chip, and read-time meta", async () => {
     vi.mocked(listPublishedArticleCards).mockResolvedValue([cardFixture, relatedFixture]);
     const html = renderToStaticMarkup(await ArticlesPageView({ locale: "en" }));
 
-    expect(html).toContain("%2Fstitch-assets%2F2c0d439a80ab607f.png");
+    expect(html).toContain("%2Fsite-assets%2F2c0d439a80ab607f-9dddafeec7.webp");
     expect(html).toContain("Insights</h1>");
     expect(html).not.toContain("Practical Legal Reading");
     expect(html).toContain("href=\"/articles/contract-risk-basics\"");
-    expect(html).toContain(">contracts</span>");
-    expect(html).toContain("<bdi>2 min read</bdi>");
+    expect(html).toContain(">Contracts</span>");
+    expect(html).toContain("2 min read</bdi>");
   });
 
   it("renders detail with h1, breadcrumbs, byline, time, rich-text body, warning disclaimer, and related cards", async () => {
@@ -88,7 +106,7 @@ describe("public articles UI", () => {
     expect(html).toContain('aria-current="page"');
     expect(html).toContain('"@type":"BreadcrumbList"');
     expect(html).toContain("\"name\":\"Insights\"");
-    expect(html).toContain("\"name\":\"contracts\"");
+    expect(html).toContain("\"name\":\"Contracts\"");
     expect(html).toContain("By <span");
     expect(html).toContain("Mariam Khalid</span>");
     expect(html).toContain("<time dateTime=\"2026-06-01\">");

@@ -1,0 +1,61 @@
+{
+  "conditions": "Optimized Next build, local Chrome, fresh context each run, 3 runs per route/viewport, dark mode, reduced motion, no throttling. Final after sample ran without concurrent test/typecheck workloads. Not field Core Web Vitals.",
+  "perf": [
+    {
+      "path": "/",
+      "width": 390,
+      "before": {
+        "lcpMs": 168,
+        "cls": 0.00045916043447293453,
+        "transferBytes": 764589
+      },
+      "after": {
+        "lcpMs": 156,
+        "cls": 0.00045916043447293453,
+        "transferBytes": 769186
+      }
+    },
+    {
+      "path": "/",
+      "width": 1440,
+      "before": {
+        "lcpMs": 168,
+        "cls": 0.00024942375779642487,
+        "transferBytes": 780225
+      },
+      "after": {
+        "lcpMs": 148,
+        "cls": 0.002533051282257373,
+        "transferBytes": 801282
+      }
+    },
+    {
+      "path": "/ar",
+      "width": 390,
+      "before": {
+        "lcpMs": 160,
+        "cls": 0.023909791666666666,
+        "transferBytes": 897725
+      },
+      "after": {
+        "lcpMs": 156,
+        "cls": 0.023909791666666666,
+        "transferBytes": 902360
+      }
+    },
+    {
+      "path": "/ar",
+      "width": 1440,
+      "before": {
+        "lcpMs": 156,
+        "cls": 0.040564042674039784,
+        "transferBytes": 913121
+      },
+      "after": {
+        "lcpMs": 160,
+        "cls": 0.04352497695901921,
+        "transferBytes": 934131
+      }
+    }
+  ]
+}

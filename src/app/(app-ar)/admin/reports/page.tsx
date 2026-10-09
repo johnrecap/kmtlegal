@@ -1,4 +1,5 @@
 import { paymentRequiresReview } from "@/lib/legal-finance";
+import { PublicTrafficSummary } from "@/features/admin/public-traffic-summary";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { paymentReviewCopy } from "@/lib/ui-copy";
@@ -240,6 +241,7 @@ export default async function AdminReportsPage({ searchParams }: { searchParams?
             </Button>
           </FilterBar>
         </form>
+        <PublicTrafficSummary actor={guard.context.principal} filters={report.filters} />
 
         {!selectedCurrency ? <InlineFeedback title="القيم المالية معروضة منفصلة حسب العملة؛ اختر عملة واحدة لإجراء مقارنة مالية مباشرة." tone="info" /> : null}
 

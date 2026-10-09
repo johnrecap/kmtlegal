@@ -25,7 +25,7 @@ const lawyers = [
     admissions: ["Egyptian Bar Association"],
     experience: "12+ years in corporate and contract practice",
     bookingEnabled: true,
-    image: "/stitch-assets/ff4ca4cf707aef0c.png"
+    image: "/site-assets/ff4ca4cf707aef0c-4ac7a89587.webp"
   },
   {
     name: "Karim Adel",
@@ -38,7 +38,7 @@ const lawyers = [
     admissions: ["Egyptian Bar Association"],
     experience: "10+ years in commercial dispute and recovery files",
     bookingEnabled: true,
-    image: "/stitch-assets/b25c75c2e3f319cd.png"
+    image: "/site-assets/b25c75c2e3f319cd-93e2fa6c51.webp"
   },
   {
     name: "Nadine Samy",
@@ -51,7 +51,7 @@ const lawyers = [
     admissions: ["Egyptian Bar Association"],
     experience: "8+ years in real estate and employment advisory",
     bookingEnabled: false,
-    image: "/stitch-assets/b7457fddf1203399.png"
+    image: "/site-assets/b7457fddf1203399-686355f246.webp"
   }
 ] as const;
 
@@ -196,13 +196,34 @@ const footerContent = {
 
 export const publicContentEn = {
   navItems: [
-    { label: "Home", href: "/" },
-    { label: "Services", href: "/services" },
-    { label: "Team", href: "/team" },
-    // Phase 02 (final Phase 01 rulings: Articles HIDE, Case Studies HIDE,
-    // Media DELETE) — deferred entries removed from public discovery.
-    // Routes stay live until Phase 06; backend/admin untouched.
-    { label: "Contact", href: "/contact" }
+    {
+      "label": "Home",
+      "href": "/"
+    },
+    {
+      "label": "Our Firm",
+      "href": "/our-firm"
+    },
+    {
+      "label": "Services",
+      "href": "/services"
+    },
+    {
+      "label": "Industries",
+      "href": "/industries"
+    },
+    {
+      "label": "Our Team",
+      "href": "/team"
+    },
+    {
+      "label": "Insights",
+      "href": "/articles"
+    },
+    {
+      "label": "Contact Us",
+      "href": "/contact"
+    }
   ],
   serviceCategories,
   legalServices,
@@ -262,7 +283,7 @@ export const publicContentEn = {
     heroDocketNext: "Next step",
     heroDocketEmpty: "Select a matter to preview your request draft.",
     heroStats: [
-      { value: 4, suffix: "", label: "Practice areas" },
+      { value: legalServices.length, suffix: "", label: "Practice areas" },
       { value: 3, suffix: "", label: "Office lawyers" },
       { value: 24, suffix: "h", label: "Response within one business day" }
     ],

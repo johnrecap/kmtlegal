@@ -54,6 +54,19 @@ export function canonicalPublicServiceSlug(slug: string) {
   return resolvePublicServiceSlug(slug);
 }
 
+/** Preserve saved links using old translated titles as well as stable public slugs. */
+export function bookingCategoryForPublicService(value: string | undefined, locale: PublicLocale) {
+  if (!value) return "";
+  for (const language of [locale, locale === "ar" ? "en" : "ar"] as const) {
+    const content = getPublicContent(language);
+    const service = content.legalServices.find(item => item.title === value) ?? findPublicService(language, value);
+    if (service) return service.category;
+    const legacyCategory = Object.entries(content.serviceCategories).find(([, title]) => title === value);
+    if (legacyCategory) return legacyCategory[0];
+  }
+  return "";
+}
+
 export function publicSearchText(value: unknown) {
   return JSON.stringify(value).toLowerCase();
 }

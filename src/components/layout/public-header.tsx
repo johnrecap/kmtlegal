@@ -172,10 +172,10 @@ export function PublicHeader({
     <MotionConfig reducedMotion="user">
       <header className={cn("sticky top-0 z-50 transition-transform duration-kmt-normal ease-kmt-out motion-reduce:transition-none", !concealed || servicesActive !== null || mobileOpen ? "translate-y-0" : "-translate-y-full")}>
         {/* Desktop: Aceternity Resizable Navbar shell + Navbar Menu flyout. */}
-        <NavBody visible={glassed} className="px-4 sm:px-6">
+        <NavBody visible={glassed} className="px-4 sm:px-6 lg:hidden xl:flex max-w-[1440px]">
           {/* Logo size stays constant across scroll states so the sticky
               header height never shifts on the TOP→SCROLLED transition. */}
-          <KmtBrandLogo href={localizedPublicHref("/", locale)} size="md" surface="theme" variant="public" />
+          <KmtBrandLogo className={navItems[0]?.active ? "kmt-logo-enter" : undefined} href={localizedPublicHref("/", locale)} size="md" surface="theme" variant="public" />
           <nav aria-label={shell.mainNavLabel} className="flex min-w-0 flex-1 items-stretch justify-center self-stretch">
             <Menu setActive={setServicesActive} className="min-w-0 flex-1 items-center gap-0.5 space-x-0 self-stretch px-0 py-0">
               {navItems.map((item) =>
@@ -282,7 +282,7 @@ export function PublicHeader({
         </NavBody>
 
         {/* Mobile: Aceternity MobileNav bar + Animate UI Sheet drawer. */}
-        <MobileNav visible={scrolled} className="px-4">
+        <MobileNav visible={scrolled} className="px-4 lg:flex xl:hidden">
           <MobileNavHeader className="h-auto min-h-16 w-full flex-wrap gap-2">
             <div className="flex min-w-0 flex-wrap items-center gap-1">
               <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -291,7 +291,7 @@ export function PublicHeader({
                     type="button"
                     aria-expanded={mobileOpen}
                     aria-label={shell.compactNavLabel}
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--kmt-public-line)] text-[var(--kmt-public-muted)] transition-colors duration-kmt-fast ease-kmt-out hover:border-[var(--kmt-public-gold)] hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none lg:hidden"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[var(--kmt-public-line)] text-[var(--kmt-public-muted)] transition-colors duration-kmt-fast ease-kmt-out hover:border-[var(--kmt-public-gold)] hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none xl:hidden"
                   >
                     {mobileOpen ? <X aria-hidden="true" size={24} /> : <MaterialSymbol className="text-2xl" name="menu" />}
                   </button>
@@ -314,7 +314,7 @@ export function PublicHeader({
                     </div>
                     <ul className="mt-3 space-y-1">
                       {navItems
-                        .filter((item) => !insightHrefs.includes(item.href))
+                        .filter((item) => item.href === "/articles" || !insightHrefs.includes(item.href))
                         .map((item) => {
                           if (item.href === "/services" && servicesItem) {
                             const expanded = openGroup === "services";
@@ -382,7 +382,7 @@ export function PublicHeader({
                             </li>
                           );
                         })}
-                      {articlesItem && insightChildren.length === 0 ? (
+                      {articlesItem && insightChildren.length > 0 ? (
                         <li key={articlesItem.href}>
                           <Link
                             aria-current={articlesItem.active ? "page" : undefined}
@@ -455,7 +455,7 @@ export function PublicHeader({
                   </nav>
                 </SheetContent>
               </Sheet>
-              <KmtBrandLogo href={localizedPublicHref("/", locale)} size="md" surface="theme" variant="public" />
+              <KmtBrandLogo className={navItems[0]?.active ? "kmt-logo-enter" : undefined} href={localizedPublicHref("/", locale)} size="md" surface="theme" variant="public" />
             </div>
             <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               {languageAction}

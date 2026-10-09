@@ -80,17 +80,23 @@ function buildRules({ host, edgeTtl }) {
     "/client",
     "/login",
     "/install",
+    "/payment",
+    "/ar/payment",
+    "/client-account",
+    "/ar/client-account",
+    "/articles",
+    "/ar/articles",
+    "/sitemap.xml",
   ];
 
   const publicPaths = [
     "/",
     "/ar",
     "/services",
-    "/practice-areas",
+    "/our-firm",
+    "/industries",
     "/team",
-    "/articles",
-    "/case-studies",
-    "/media",
+
     "/contact",
     "/book-consultation",
     "/privacy",

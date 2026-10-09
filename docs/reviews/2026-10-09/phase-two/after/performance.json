@@ -1,0 +1,125 @@
+{
+  "note": "Unthrottled local Chrome, fresh context each run; compare medians, not field Core Web Vitals.",
+  "results": [
+    {
+      "path": "/",
+      "width": 390,
+      "run": 1,
+      "lcp": 392,
+      "cls": 0.00045916043447293453,
+      "imageBytes": 12082,
+      "transferredBytes": 769186,
+      "overflow": false
+    },
+    {
+      "path": "/",
+      "width": 390,
+      "run": 2,
+      "lcp": 140,
+      "cls": 0.00045916043447293453,
+      "imageBytes": 12082,
+      "transferredBytes": 769186,
+      "overflow": false
+    },
+    {
+      "path": "/",
+      "width": 390,
+      "run": 3,
+      "lcp": 156,
+      "cls": 0.00045916043447293453,
+      "imageBytes": 12082,
+      "transferredBytes": 769186,
+      "overflow": false
+    },
+    {
+      "path": "/",
+      "width": 1440,
+      "run": 1,
+      "lcp": 192,
+      "cls": 0.002533051282257373,
+      "imageBytes": 12082,
+      "transferredBytes": 801282,
+      "overflow": false
+    },
+    {
+      "path": "/",
+      "width": 1440,
+      "run": 2,
+      "lcp": 148,
+      "cls": 0.002533051282257373,
+      "imageBytes": 12082,
+      "transferredBytes": 801282,
+      "overflow": false
+    },
+    {
+      "path": "/",
+      "width": 1440,
+      "run": 3,
+      "lcp": 144,
+      "cls": 0.002533051282257373,
+      "imageBytes": 12082,
+      "transferredBytes": 801282,
+      "overflow": false
+    },
+    {
+      "path": "/ar",
+      "width": 390,
+      "run": 1,
+      "lcp": 156,
+      "cls": 0.023458093542260208,
+      "imageBytes": 12082,
+      "transferredBytes": 902360,
+      "overflow": false
+    },
+    {
+      "path": "/ar",
+      "width": 390,
+      "run": 2,
+      "lcp": 148,
+      "cls": 0.023909791666666666,
+      "imageBytes": 12082,
+      "transferredBytes": 902360,
+      "overflow": false
+    },
+    {
+      "path": "/ar",
+      "width": 390,
+      "run": 3,
+      "lcp": 164,
+      "cls": 0.023909791666666666,
+      "imageBytes": 12082,
+      "transferredBytes": 902360,
+      "overflow": false
+    },
+    {
+      "path": "/ar",
+      "width": 1440,
+      "run": 1,
+      "lcp": 188,
+      "cls": 0.042743775996455444,
+      "imageBytes": 12082,
+      "transferredBytes": 934131,
+      "overflow": false
+    },
+    {
+      "path": "/ar",
+      "width": 1440,
+      "run": 2,
+      "lcp": 160,
+      "cls": 0.04352497695901921,
+      "imageBytes": 12082,
+      "transferredBytes": 934131,
+      "overflow": false
+    },
+    {
+      "path": "/ar",
+      "width": 1440,
+      "run": 3,
+      "lcp": 160,
+      "cls": 0.04352497695901921,
+      "imageBytes": 12082,
+      "transferredBytes": 934131,
+      "overflow": false
+    }
+  ]
+}

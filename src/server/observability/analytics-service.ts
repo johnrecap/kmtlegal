@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import type { Prisma } from "@prisma/client";
 import { z } from "zod";
+import { publicAnalyticsPages, publicAnalyticsServices } from "@/lib/public-analytics";
 import {
   analyticsEventNameValues,
   bookingStepValues,
@@ -30,7 +31,17 @@ const fileTypeSchema = z.enum([
   "unknown"
 ]);
 
+const publicContext = {
+  page: z.enum(publicAnalyticsPages),
+  locale: z.enum(["ar", "en"]),
+  service: z.enum(publicAnalyticsServices).optional()
+};
+const publicPlacement = z.enum(["header", "footer", "content", "dock"]);
+
 const analyticsPropertySchemas = {
+  "public.page_viewed": z.object(publicContext).strict(),
+  "public.contact_clicked": z.object({ ...publicContext, placement: publicPlacement, channel: z.enum(["phone", "email", "whatsapp"]) }).strict(),
+  "public.booking_clicked": z.object({ ...publicContext, placement: publicPlacement }).strict(),
   "booking.step_viewed": z
     .object({
       step: bookingStepSchema,
@@ -236,7 +247,7 @@ export function parseClientAnalyticsEvent(input: unknown) {
   return {
     name: body.name,
     source: body.source,
-    properties: body.properties
+    properties: sanitizeAnalyticsProperties(body.name, body.properties)
   };
 }
 

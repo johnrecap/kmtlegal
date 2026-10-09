@@ -1,0 +1,31 @@
+{
+  "passed": 32,
+  "failed": 0,
+  "pending": 0,
+  "files": [
+    {
+      "file": "tests/ui/booking-assistant-stage.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 20,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/public-content.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 8,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/public-phase-two.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    }
+  ]
+}

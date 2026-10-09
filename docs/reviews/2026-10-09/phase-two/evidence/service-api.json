@@ -1,0 +1,28 @@
+[
+  {
+    "locale": "ar",
+    "status": 200,
+    "services": [
+      "legal-consultation",
+      "company-formation",
+      "corporate-business-services",
+      "contracts",
+      "real-estate-legal-support",
+      "claims-collections"
+    ],
+    "internalCategories": 4
+  },
+  {
+    "locale": "en",
+    "status": 200,
+    "services": [
+      "legal-consultation",
+      "company-formation",
+      "corporate-business-services",
+      "contracts",
+      "real-estate-legal-support",
+      "claims-collections"
+    ],
+    "internalCategories": 4
+  }
+]

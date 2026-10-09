@@ -10,6 +10,9 @@ export const revalidate = 900;
 export function generateStaticParams() {
   const staticPages = [
     [],
+    ["our-firm"],
+    ["industries"],
+    ["articles"],
     ["services"],
     ["team"],
     ["contact"],

@@ -10,6 +10,8 @@ import { Marquee } from "@/components/ui/marquee";
 import { Reveal } from "@/components/motion-ui/reveal";
 import { ButtonLink, MaterialSymbol } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
+import { publicExpansion } from "@/content/public-expansion";
+import { publicOfficeProfile } from "@/content/public-office-profile";
 import { cn } from "@/lib/cn";
 import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 import {
@@ -244,12 +246,13 @@ export function DetailCta({ serviceTitle, locale = "en" }: { serviceTitle?: stri
     : localizedPublicHref("/book-consultation", locale);
 
   return (
-    <aside className={cn(publicPanel, "p-6 backdrop-blur-md lg:sticky lg:top-24 lg:self-start")}>
+      <aside className={cn(publicPanel, "min-w-0 p-6 backdrop-blur-md lg:sticky lg:top-24 lg:self-start")}>
       <h2 className="text-2xl font-semibold text-[var(--kmt-public-text)]">{content.bookingPage.sectionTitle}</h2>
       <p className={cn("mt-3 leading-7", publicMutedText)}>{content.bookingPage.sectionDescription}</p>
       <ButtonLink className={cn(publicMotionButton, publicMotionCta, "mt-5")} href={href} trailingIcon={<MaterialSymbol className={cn("text-base", publicMotionArrow, publicMotionArrowTrail)} name="arrow_forward" />}>
-        {content.shared.bookConsultation}
-      </ButtonLink>
+          {content.shared.bookConsultation}
+        </ButtonLink>
+        <ButtonLink className="mt-3 min-h-11 whitespace-normal" href={publicOfficeProfile.whatsappHref} variant="secondary">{publicExpansion[locale].whatsapp}</ButtonLink>
     </aside>
   );
 }
@@ -586,4 +589,3 @@ export function BookingFlowHeader({
     </section>
   );
 }
-

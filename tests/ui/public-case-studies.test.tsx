@@ -54,8 +54,8 @@ describe("public case studies UI", () => {
     vi.mocked(listPublishedCaseStudyCards).mockResolvedValue([cardFixture]);
     const html = renderToStaticMarkup(await CaseStudiesPageView({ locale: "en" }));
 
-    expect(html).toContain("%2Fstitch-assets%2F927e808522dfd86d.png");
-    expect(html).not.toContain("%2Fstitch-assets%2F2484f68d86633ca8.png");
+    expect(html).toContain("%2Fsite-assets%2F927e808522dfd86d-498191a3f4.webp");
+    expect(html).not.toContain("%2Fsite-assets%2F2484f68d86633ca8-a3542ac22c.webp");
     expect(html).toContain("Every published case study here is anonymized and simplified");
     expect(html).toContain("href=\"/case-studies/anonymous-commercial-dispute\"");
     expect(html).toContain(">commercial</span>");

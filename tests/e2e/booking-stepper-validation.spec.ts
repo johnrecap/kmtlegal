@@ -73,12 +73,12 @@ test.describe("consultation booking chat", () => {
 
     await page.getByTestId("booking-quick-book").click();
     const matter = page.getByTestId("booking-matter-chip");
-    await expect(matter).toHaveCount(4);
+    await expect(matter).toHaveCount(6);
 
     // Selection is recorded as a user message; options collapse.
     await matter.nth(1).click();
     await expect(matter).toHaveCount(0);
-    await expect(log).toContainText("الشركات والعقود التجارية");
+    await expect(log).toContainText("تأسيس الشركات");
   });
 
   test("shows the public floating dock with consultation + WhatsApp only", async ({ page }) => {

@@ -1,5 +1,13 @@
 # DECISIONS (Owner-Locked Rulings)
 
+## 2026-10-09 — Owner-approved public phase-two amendments
+
+The owner's explicit phase-two implementation plan supersedes the earlier **Articles HIDE PUBLIC** ruling: restore `/articles`, article details, Arabic equivalents, read APIs, published/due-only sitemap entries and public navigation through the existing CMS. Case Studies, Media and retired internal/clone routes remain closed. Do not auto-publish seeded/demo content. Homepage links to Firm, Industries and Insights are authorized; the old combined Articles/Case Studies ledger is not restored.
+
+Six public practice areas use stable service slugs; the four existing booking categories, prices and historical requests remain unchanged. Add Our Firm and Industries, reuse current components and white/gold branding, and allow a single 300ms reduced-motion-aware logo reveal. Add privacy-minimized first-party page/contact/booking-click measurement and an aggregate section in the existing permission-protected reports page.
+
+Careers, applications/CV uploads, applicant privacy/email, contact-form changes and message notifications are explicitly excluded. No subagents, Spec Kit, new UI/animation dependency or phase-three systems. Proposed firm vision/mission stay unpublished (`firmStatementsApproved = false`) until official approval; inherited team facts/photos remain unverified. Exact office location, genuine office photos and official social URLs remain pending from phase one. These later owner decisions govern conflicts with the historical notes below.
+
 ## 2026-10-09 — Owner-approved phase-one public amendments
 
 The explicit implementation plan updates two earlier public presentation rulings: use the existing brand component with white KMT above smaller gold LEGAL and the existing image mark on dark backing; expose consultation and WhatsApp directly on mobile instead of the expanding plus menu. Exactly two dock actions remain, and the booking page still hides the dock. Shared office data is owner-approved in `src/content/public-office-profile.ts`.

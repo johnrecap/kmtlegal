@@ -1,4 +1,7 @@
 export const analyticsEventNameValues = [
+  "public.page_viewed",
+  "public.contact_clicked",
+  "public.booking_clicked",
   "booking.step_viewed",
   "booking.submit_attempted",
   "booking.submit_failed",
@@ -14,6 +17,9 @@ export const analyticsEventNameValues = [
 ] as const;
 
 export const clientAnalyticsEventNameValues = [
+  "public.page_viewed",
+  "public.contact_clicked",
+  "public.booking_clicked",
   "booking.step_viewed",
   "booking.submit_attempted",
   "booking.submit_failed"

@@ -18,7 +18,9 @@ describe("public content contracts", () => {
   it("provides public routes with stable slugs", () => {
     expect(legalServices.map((service) => service.slug)).toEqual([
       "legal-consultation",
+      "company-formation",
       "corporate-business-services",
+      "contracts",
       "real-estate-legal-support",
       "claims-collections"
     ]);
@@ -49,7 +51,9 @@ describe("public content contracts", () => {
   it("covers the dark luxury practice-area matrix with stable service links", () => {
     expect(practiceAreaMatrix.map((area) => area.key)).toEqual([
       "legal-consultation",
+      "company-formation",
       "corporate-business-services",
+      "contracts",
       "real-estate-legal-support",
       "claims-collections"
     ]);
@@ -60,7 +64,7 @@ describe("public content contracts", () => {
   it("keeps old service links available as aliases without showing old services publicly", () => {
     expect(legalServices.map((service) => service.slug)).not.toContain("contract-drafting");
     expect(legalServices.map((service) => service.slug)).not.toContain("corporate-law");
-    expect(findPublicService("en", "contract-drafting")?.slug).toBe("corporate-business-services");
+    expect(findPublicService("en", "contract-drafting")?.slug).toBe("contracts");
     expect(findPublicService("en", "debt-recovery")?.slug).toBe("claims-collections");
   });
 

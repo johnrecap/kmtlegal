@@ -1,0 +1,304 @@
+{
+  "phase-two-layout-final": {
+    "stats": {
+      "startTime": "2026-10-09T14:05:03.819Z",
+      "duration": 378320.304,
+      "expected": 28,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "suites": [
+      {
+        "title": "public-phase-one.spec.ts",
+        "specs": [
+          {
+            "title": "ar: menu, touch targets and enlarged text",
+            "ok": true
+          },
+          {
+            "title": "ar light 360: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "ar light 390: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "ar light 768: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "ar light 1024: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "ar light 1440: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "ar dark 360: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "ar dark 390: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "ar dark 768: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "ar dark 1024: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "ar dark 1440: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "ar: contact rejection preserves draft and retry succeeds",
+            "ok": true
+          },
+          {
+            "title": "ar: mobile keyboard viewport, navigation and utility pages",
+            "ok": true
+          },
+          {
+            "title": "en: menu, touch targets and enlarged text",
+            "ok": true
+          },
+          {
+            "title": "en light 360: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "en light 390: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "en light 768: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "en light 1024: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "en light 1440: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "en dark 360: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "en dark 390: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "en dark 768: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "en dark 1024: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "en dark 1440: public layout, contacts and SEO",
+            "ok": true
+          },
+          {
+            "title": "en: contact rejection preserves draft and retry succeeds",
+            "ok": true
+          },
+          {
+            "title": "en: mobile keyboard viewport, navigation and utility pages",
+            "ok": true
+          }
+        ],
+        "suites": []
+      },
+      {
+        "title": "public-phase-two.spec.ts",
+        "specs": [
+          {
+            "title": "ar: representative formation slice",
+            "ok": true
+          },
+          {
+            "title": "en: representative formation slice",
+            "ok": true
+          }
+        ],
+        "suites": []
+      }
+    ]
+  },
+  "phase-two-focused-final": {
+    "stats": {
+      "startTime": "2026-10-09T14:19:59.720Z",
+      "duration": 109884.55099999999,
+      "expected": 18,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "suites": [
+      {
+        "title": "booking-stepper-validation.spec.ts",
+        "specs": [],
+        "suites": [
+          {
+            "title": "consultation booking chat",
+            "specs": [
+              {
+                "title": "sends legal-boundary requests to the server and retains the Arabic intake",
+                "ok": true
+              },
+              {
+                "title": "guides matter selection inside the conversation",
+                "ok": true
+              },
+              {
+                "title": "shows the public floating dock with consultation + WhatsApp only",
+                "ok": true
+              },
+              {
+                "title": "never renders a booking stepper in any assistant state",
+                "ok": true
+              },
+              {
+                "title": "hides intent actions when the server starts collecting intake",
+                "ok": true
+              },
+              {
+                "title": "shows localized payment review labels instead of service slugs",
+                "ok": true
+              },
+              {
+                "title": "keeps contract-check wording inside booking instead of reference inquiry",
+                "ok": true
+              }
+            ],
+            "suites": []
+          }
+        ]
+      },
+      {
+        "title": "public-phase-two-database.spec.ts",
+        "specs": [
+          {
+            "title": "published/due API content, private states and sitemap",
+            "ok": true
+          },
+          {
+            "title": "ar: article search, reading and responsive details",
+            "ok": true
+          },
+          {
+            "title": "en: article search, reading and responsive details",
+            "ok": true
+          },
+          {
+            "title": "CMS withdrawal and restoration invalidate public content",
+            "ok": true
+          },
+          {
+            "title": "telemetry persistence, privacy and authorized aggregate report",
+            "ok": true
+          }
+        ],
+        "suites": []
+      },
+      {
+        "title": "public-phase-two-followup.spec.ts",
+        "specs": [
+          {
+            "title": "ar: final home count, logo motion, header and layout",
+            "ok": true
+          },
+          {
+            "title": "ar: service slugs and legacy titles reach the existing booking category",
+            "ok": true
+          },
+          {
+            "title": "en: final home count, logo motion, header and layout",
+            "ok": true
+          },
+          {
+            "title": "en: service slugs and legacy titles reach the existing booking category",
+            "ok": true
+          }
+        ],
+        "suites": []
+      },
+      {
+        "title": "public-phase-two.spec.ts",
+        "specs": [
+          {
+            "title": "ar: representative formation slice",
+            "ok": true
+          },
+          {
+            "title": "en: representative formation slice",
+            "ok": true
+          }
+        ],
+        "suites": []
+      }
+    ]
+  },
+  "phase-two-services-final": {
+    "stats": {
+      "startTime": "2026-10-09T14:22:28.237Z",
+      "duration": 23036.034,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "suites": [
+      {
+        "title": "public-phase-two-followup.spec.ts",
+        "specs": [
+          {
+            "title": "ar: final service template at every required viewport",
+            "ok": true
+          },
+          {
+            "title": "en: final service template at every required viewport",
+            "ok": true
+          }
+        ],
+        "suites": []
+      }
+    ]
+  },
+  "phase-two-unavailable-final": {
+    "stats": {
+      "startTime": "2026-10-09T14:20:37.450Z",
+      "duration": 8343.986,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "suites": [
+      {
+        "title": "public-phase-two-unavailable.spec.ts",
+        "specs": [
+          {
+            "title": "ar: unavailable articles remain distinct from an empty list",
+            "ok": true
+          },
+          {
+            "title": "en: unavailable articles remain distinct from an empty list",
+            "ok": true
+          }
+        ],
+        "suites": []
+      }
+    ]
+  }
+}

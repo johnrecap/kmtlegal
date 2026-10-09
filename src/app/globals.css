@@ -1104,3 +1104,8 @@ html[dir="rtl"] .kmt-trust-marquee .animate-marquee {
 [data-testid="public-shell"] :is(button, a):focus-visible {
   outline-offset: 3px;
 }
+
+/* Homepage wordmark: a single, non-directional brand entrance. */
+@keyframes kmt-logo-enter { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.kmt-logo-enter { animation: kmt-logo-enter var(--kmt-duration-normal) var(--kmt-ease-out) both; }
+@media (prefers-reduced-motion: reduce) { .kmt-logo-enter { animation: none; } }

@@ -25,7 +25,7 @@ const lawyers = [
     admissions: ["نقابة المحامين المصرية"],
     experience: "أكثر من 12 عامًا في ممارسة أعمال الشركات والعقود",
     bookingEnabled: true,
-    image: "/stitch-assets/ff4ca4cf707aef0c.png"
+    image: "/site-assets/ff4ca4cf707aef0c-4ac7a89587.webp"
   },
   {
     name: "أ. كريم عادل",
@@ -38,7 +38,7 @@ const lawyers = [
     admissions: ["نقابة المحامين المصرية"],
     experience: "أكثر من 10 أعوام في ملفات المنازعات التجارية والتحصيل",
     bookingEnabled: true,
-    image: "/stitch-assets/b25c75c2e3f319cd.png"
+    image: "/site-assets/b25c75c2e3f319cd-93e2fa6c51.webp"
   },
   {
     name: "أ. نادين سامي",
@@ -51,7 +51,7 @@ const lawyers = [
     admissions: ["نقابة المحامين المصرية"],
     experience: "أكثر من 8 أعوام في الاستشارات العقارية وعقود العمل",
     bookingEnabled: false,
-    image: "/stitch-assets/b7457fddf1203399.png"
+    image: "/site-assets/b7457fddf1203399-686355f246.webp"
   }
 ] as const;
 
@@ -185,13 +185,34 @@ const footerContent = {
 
 export const publicContentAr = {
   navItems: [
-    { label: "الرئيسية", href: "/" },
-    { label: "الخدمات", href: "/services" },
-    { label: "الفريق", href: "/team" },
-    // Phase 02 (final Phase 01 rulings: Articles HIDE, Case Studies HIDE,
-    // Media DELETE) — deferred entries removed from public discovery.
-    // Routes stay live until Phase 06; backend/admin untouched.
-    { label: "تواصل", href: "/contact" }
+    {
+      "label": "الرئيسية",
+      "href": "/"
+    },
+    {
+      "label": "عن المكتب",
+      "href": "/our-firm"
+    },
+    {
+      "label": "الخدمات",
+      "href": "/services"
+    },
+    {
+      "label": "القطاعات",
+      "href": "/industries"
+    },
+    {
+      "label": "الفريق",
+      "href": "/team"
+    },
+    {
+      "label": "رؤى قانونية",
+      "href": "/articles"
+    },
+    {
+      "label": "تواصل معنا",
+      "href": "/contact"
+    }
   ],
   serviceCategories,
   legalServices,
@@ -250,7 +271,7 @@ export const publicContentAr = {
     heroDocketNext: "الخطوة التالية",
     heroDocketEmpty: "اختر موضوعًا لمعاينة مسودة طلبك.",
     heroStats: [
-      { value: 4, suffix: "", label: "مجالات ممارسة" },
+      { value: legalServices.length, suffix: "", label: "مجالات ممارسة" },
       { value: 3, suffix: "", label: "محامو المكتب" },
       { value: 24, suffix: "س", label: "رد خلال يوم عمل واحد" }
     ],
@@ -339,7 +360,7 @@ export const publicContentAr = {
     metadataTitle: "مقالات قانونية | KMT Legal",
     metadataDescription: "مقالات توعوية تساعدك على تجهيز الأسئلة والمستندات قبل مراجعة المحامي.",
     heroEyebrow: "المقالات",
-    heroTitle: "المقالات",
+    heroTitle: "رؤى قانونية",
     heroDescription: "مقالات توعوية تساعدك على تجهيز أسئلتك ومستنداتك قبل التواصل مع المكتب.",
     sectionEyebrow: "المقالات",
     sectionTitle: "المقالات",

@@ -1,0 +1,927 @@
+{
+  "passed": 740,
+  "failed": 0,
+  "pending": 55,
+  "files": [
+    {
+      "file": "tests/integration/batch10-conversation-postgres.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 0,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/integration/batch12-admin-governance-postgres.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 0,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/integration/batch13-office-profile-postgres.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 0,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/integration/batch14-content-lifecycle-postgres.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 0,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/integration/repair23-postgres.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 0,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/lib/client-localization.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 5,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/lib/normalize-text.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ops/paired-backup-restore.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 14,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/admin-accessibility.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/admin-command-center.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/admin-contact-message-inbox.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/admin-content-forms.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 5,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/admin-detail-phase11.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 5,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/admin-list-phase10.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/admin-manual-case-form.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/admin-menu.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 2,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/admin-notification-center.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/admin-office-profile-form.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/admin-role-permission-form.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 5,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/admin-storage-diagnostic.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 2,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/admin-ui-convergence.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/admin-user-password-form.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 2,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/animate-ui-accordion.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/animate-ui-primitives.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 5,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/booking-assistant-stage.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 20,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/capability-glow-gate.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/contact-form-recovery.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 5,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/conversation-poll-consistency.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 8,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/design-system-lab.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 1,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/fix-task-board.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 1,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/kmt-gold-underline.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 9,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/kmt-text-underline.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 8,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/notification-mutation-race.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 1,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/product-components.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 29,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/public-articles.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 5,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/public-case-studies.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/public-floating-dock.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/public-footer-theme.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/public-pages.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 15,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/repair-calendar-navigation.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 2,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/repair-client-actions.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 1,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/repair-finance-select.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 2,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/repair-form-drafts.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/shared-ui-consumer-disposition.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 1,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/sticky-scroll-keys.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 2,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/trust-strip.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/two-factor-form.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 2,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/ui/use-safe-polling.test.tsx",
+      "status": "passed",
+      "message": "",
+      "passed": 5,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/admin-cases.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/admin-client-create.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/admin-client-crm.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 8,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/admin-consultations.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/admin-contact-messages.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/admin-content-social.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 5,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/admin-dashboard.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 10,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/admin-finance-reports.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/admin-governance.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 13,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/admin-manual-cases.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 8,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/admin-notifications.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 8,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/admin-role-permissions.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 8,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/admin-route-policy.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 11,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/admin-task-documents.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 10,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/ai-gateway.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 13,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/analytics-observability.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/appointment-conflict-service.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 9,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/arabic-route-preservation.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 2,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/audit-request-hash.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 2,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/auth-audit-contract.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 1,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/auth-core.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 14,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/auth-routing.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/batch2-isolated-db.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 0,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/batch2-regressions.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 5,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/batch4-availability.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 18,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/batch5-conversation.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 31,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/batch5-provider-boundaries.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/batch6-payment-trust.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 14,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/booking-intake-recovery.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 17,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/client-account-setup.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 5,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/consultation-contract.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 34,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/consultation-outcome-characterization.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/consultation-outcome-contract.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 9,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/consultation-outcome-maintenance.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 14,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/consultation-outcome-service.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 6,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/consultation-outcome-transactions.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 12,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/consultation-overdue-unbooked-characterization.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 5,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/contact-message-service.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/contracts-core.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/conversation-management-conflict.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 2,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/conversation-service.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/email-service.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/health-route.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 1,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/installer-contract.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/legal-format.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/malware-scan.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/payment-gateway-contract.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 21,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/plan34-decomposition.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 2,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/plan35-contract-inventory.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/plan35-error-copy.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/plan35-release-evidence.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 5,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/portal-access.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/portal-visibility.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/postgres-backup-tool-resolution.test.ts",
+      "status": "failed",
+      "message": "Git Bash is required for PostgreSQL backup resolver tests.",
+      "passed": 0,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/public-content-closure.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/public-content.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 8,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/public-localization-contract.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/public-phase-two.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/public-traffic-report.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 3,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/readiness-contract.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/repair-finance.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/route-manifest-contract.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/security-hardening.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 13,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/seed-contract.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 7,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/sentry-privacy.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 1,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/staff-totp-flow.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 15,
+      "failed": 0,
+      "pending": 0
+    },
+    {
+      "file": "tests/server/storage-contract.test.ts",
+      "status": "passed",
+      "message": "",
+      "passed": 10,
+      "failed": 0,
+      "pending": 0
+    }
+  ]
+}

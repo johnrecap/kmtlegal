@@ -1,10 +1,17 @@
 import type { MetadataRoute } from "next";
 import { getPublicContent } from "@/content/public-content";
 import { availableAlternatePublicLanguages, localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
+import { listPublishedArticleCards } from "@/server/public/content-service";
+import { publicSiteOrigin } from "@/lib/public-site-origin";
+
+export const dynamic = "force-dynamic";
 
 const staticPublicPaths = [
   "/",
   "/services",
+  "/our-firm",
+  "/industries",
+  "/articles",
   "/team",
   "/contact",
   "/book-consultation",
@@ -53,12 +60,12 @@ function sitemapEntry(path: string, locale: PublicLocale, availableLocales: Publ
 }
 
 async function dbBackedContentPaths(): Promise<Array<{ path: string; locale: PublicLocale }>> {
-  // Phase 06 — Articles HIDE PUBLIC, Case Studies HIDE PUBLIC: no deferred
-  // slugs are emitted to the public sitemap in any locale. Backend models,
-  // APIs, and the publishing pipeline are untouched.
-  return [];
+  if (!process.env.DATABASE_URL) return [];
+  const rows = await Promise.all((["en", "ar"] as const).map(async locale =>
+    (await listPublishedArticleCards(locale)).map(article => ({ path: `/articles/${article.slug}`, locale }))));
+  return rows.flat();
 }
 
 function siteOrigin() {
-  return process.env.APP_ORIGIN || "http://localhost:3000";
+  return publicSiteOrigin();
 }

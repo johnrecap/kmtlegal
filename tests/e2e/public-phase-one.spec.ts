@@ -45,12 +45,13 @@ for (const locale of ["ar", "en"] as const) {
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
     }
   });
-  const paths = ["/", "/services", ...content.legalServices.map(s => `/services/${s.slug}`), "/team", ...content.lawyers.map(p => `/team/${p.slug}`), "/contact", "/book-consultation", "/privacy", "/terms"];
+  const paths = ["/", "/our-firm", "/industries", "/articles", "/services", ...content.legalServices.map(s => `/services/${s.slug}`), "/team", ...content.lawyers.map(p => `/team/${p.slug}`), "/contact", "/book-consultation", "/privacy", "/terms"];
   for (const theme of ["light", "dark"]) for (const width of [360, 390, 768, 1024, 1440]) {
     test(`${locale} ${theme} ${width}: public layout, contacts and SEO`, async ({ page }, info) => {
       test.setTimeout(240_000);
       await page.setViewportSize({ width, height: 900 });
       await page.emulateMedia({ reducedMotion: "reduce" });
+      await page.route("**/api/analytics/events", route => route.fulfill({ status: 202, json: { data: { accepted: true } } }));
       await page.addInitScript(value => localStorage.setItem("kmt-theme", value), theme);
       const errors: string[] = [];
       page.on("pageerror", e => errors.push(e.message));
