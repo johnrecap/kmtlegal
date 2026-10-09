@@ -125,10 +125,10 @@ export async function verifyRestoredDocuments({ targetDatabaseUrl, targetUploads
   await client.connect();
   let rows;
   try {
-    const result = await client.query('SELECT "fileKey" FROM "Document" WHERE "deletedAt" IS NULL');
+    const result = await client.query('SELECT "fileKey" FROM "documents" WHERE "deletedAt" IS NULL');
     rows = result.rows;
   } catch {
-    return { checked: false, note: "skipped-no-document-table" };
+    throwRestore("verify", "Cannot read restored documents; required document verification failed.");
   } finally {
     await client.end().catch(() => {});
   }

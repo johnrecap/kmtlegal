@@ -5,6 +5,7 @@ import { firmStatementsApproved, industryServiceSlugs, publicExpansion } from "@
 import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 import { PageHero, PublicSection, publicPanel, publicMutedText } from "./public-components";
 import { cn } from "@/lib/cn";
+import { BusinessDeskSection } from "./business-desk";
 
 export function OurFirmPageView({ locale }: { locale: PublicLocale }) {
   const copy = publicExpansion[locale];
@@ -50,5 +51,6 @@ export function IndustriesPageView({ locale }: { locale: PublicLocale }) {
         </article>)}
       </div>
     </PublicSection>
+    <BusinessDeskSection locale={locale} />
   </PublicShell>;
 }

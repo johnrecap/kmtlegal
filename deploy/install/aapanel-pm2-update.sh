@@ -73,6 +73,13 @@ set -a
 . "${ENV_FILE}"
 set +a
 
+# The same lock is held by the daily paired backup throughout its maintenance window.
+require_command flock
+OPERATIONS_LOCK="${KMT_OPERATIONS_LOCK:-/www/backup/kmtlegal-operations.lock}"
+mkdir -p "$(dirname "${OPERATIONS_LOCK}")"
+exec 9>"${OPERATIONS_LOCK}"
+flock -n 9 || fail "Another KMT deployment or backup is running"
+
 if [[ -z "${DATABASE_URL:-}" ]]; then
   fail "DATABASE_URL is missing after loading ${ENV_FILE}"
 fi
@@ -396,7 +403,7 @@ if ($request_method !~ ^(GET|HEAD)$) {
   set $kmt_cache_control "no-store";
 }
 
-if ($request_uri ~* "^/(api|admin|client|portal|login|install|articles|ar/articles|payment|ar/payment|client-account|ar/client-account|sitemap[.]xml)(/|[?]|$)") {
+if ($request_uri ~* "^/(api|admin|client|portal|login|install|account|articles|ar/articles|payment|ar/payment|client-account|ar/client-account|sitemap[.]xml)(/|[?]|$)") {
   set $kmt_cache_control "no-store";
 }
 

@@ -207,6 +207,22 @@ export async function assertPublicConsultationSlotAvailable(input: {
   return match;
 }
 
+/** Run inside the scheduling transaction so concurrent approvals cannot both consume office time. */
+export async function assertRequestedSlotAtApproval(input: {
+  client: Prisma.TransactionClient; startsAt: Date; endsAt: Date; mode: ConsultationMode; now: Date;
+}) {
+  const setting = await input.client.systemSetting.findUnique({ where: { key: CONSULTATION_AVAILABILITY_SETTING_KEY } });
+  const availability = normalizeAvailability(setting?.value);
+  const appointments = await input.client.appointment.findMany({ where: {
+    type: "CONSULTATION", status: { in: ["RESERVED", "SCHEDULED", "RESCHEDULED"] },
+    startsAt: { lt: input.endsAt }, endsAt: { gt: input.startsAt }
+  }, select: { startsAt: true, endsAt: true } });
+  const slots = generateConsultationSlots({ availability, appointments, mode: input.mode, now: input.now, date: cairoDateString(input.startsAt), limit: 100 });
+  if (!slots.some(slot => slot.startsAt === input.startsAt.toISOString() && slot.endsAt === input.endsAt.toISOString())) {
+    throw new ApiError(409, "APPOINTMENT_CONFLICT", "The requested time is unavailable. Ask the client to choose an alternative.");
+  }
+}
+
 export function generateConsultationSlots(input: {
   availability: ConsultationAvailability;
   appointments: ExistingAppointment[];

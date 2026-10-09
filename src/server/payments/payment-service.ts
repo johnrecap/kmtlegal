@@ -1,4 +1,5 @@
 import { createHash } from "crypto";
+import { recordTrustedInvoiceSettlement } from "./payment-ledger-service";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { paymentApiSourceMessages } from "@/lib/ui-copy";
@@ -823,6 +824,7 @@ async function applyWebhookPaymentState(input: {
         status: ["REFUNDED", "DISPUTED", "CANCELLED"].includes(transaction.status) ? transaction.status : input.payload.status,
         failureCode: "PAYMENT_REVERSAL_REVIEW_REQUIRED"
       } });
+      if (attempt.payment) await tx.payment.update({ where: { id: attempt.payment.id }, data: { ledgerReviewRequired: true } });
       return tx.paymentWebhookEvent.update({ where: { id: input.eventId }, data: {
         processingStatus: "FAILED", errorCode: "PAYMENT_REVERSAL_REVIEW_REQUIRED", processedAt: new Date()
       } });
@@ -979,6 +981,7 @@ async function confirmPaidAttempt(input: {
       providerPaymentId: input.transaction.providerTransactionId
     }
   });
+  await recordTrustedInvoiceSettlement(input.tx, payment);
 
   await input.tx.appointment.update({
     where: { id: input.attempt.appointmentId },

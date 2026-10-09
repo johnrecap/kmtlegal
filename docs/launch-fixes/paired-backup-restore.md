@@ -3,14 +3,16 @@
 One backup set = PostgreSQL custom-format dump + private-uploads archive +
 manifest + checksums, published atomically under `DATABASE_BACKUP_DIR/<setId>/`.
 
-## How backups get run (manual command — NOT wired into deploy)
+## How backups get run (phase-five daily wrapper; scheduler activation pending)
 
-This is a **manually invoked** paired-backup command. The deployment script
-does NOT call it: `deploy/install/aapanel-pm2-update.sh` still runs only its
-DB-only `create_verified_database_backup` (line ~783, called ~909). Before
-operational use, the owner must: pass the real restore drill (blockers A+B
-in EXECUTION.md), decide scheduling (cron/PM2/timer), and sign off — none
-of which is wired here. Do not claim deploy coverage of uploads.
+The underlying paired-backup command remains manually callable. Phase five adds
+`deploy/install/aapanel-daily-backup.sh` and `scripts/daily-paired-backup.mjs`,
+with the user-approved daily 03:00 Africa/Cairo maintenance window, deployment
+exclusion, protected recovery configuration and retention of 30 managed successful
+sets. aaPanel Cron setup and the native restore drill are NOT_VERIFIED; see
+`docs/SERVER_COMMANDS.md` for activation steps and the required current drill receipt.
+The deployment script itself still performs a DB-only pre-migration backup.
+Do not claim deploy coverage of uploads or that the daily job is already installed.
 
 ## Capture modes (different facts, reported separately)
 
@@ -35,9 +37,9 @@ node scripts/paired-backup.mjs --capture-mode=maintenance-window \
 
 ## Exact pause / verify / capture / resume (downtime window)
 
-Requires separate owner authorization (downtime). No in-app maintenance or
-drain mode exists — this is the missing operational prerequisite if a
-non-disruptive quiesce is ever required.
+The current phase-five request authorizes a short daily downtime window. The
+wrapper stops and restarts declared PM2 writers and checks application health.
+There is no non-disruptive quiesce mode; inventory all writers before activation.
 
 1. Pause: `pm2 stop kmtlegal kmtlegal-payment-maintenance` (existing process
    names from the deploy script). Drain: bounded wait, then verify no app
@@ -71,7 +73,8 @@ the manifest inventory. A required missing file or checksum mismatch FAILS
 verification (`verify` stage, counts + up to 5 sample fileKeys — uuid paths,
 safe), preserves the restored targets for diagnosis, and is never reported
 as success. Extra archived files are a separate `extra` finding, not a
-failure. Missing `Document` table → explicit `skipped-no-document-table`.
+failure. The actual Prisma-mapped table is `documents`. A missing table or failed
+query now FAILS verification; it is never silently reported as a skipped success.
 
 ## Verification / failure recovery
 
@@ -92,4 +95,13 @@ Env names only: `DATABASE_URL`, `DATABASE_BACKUP_DIR`, `UPLOADS_DIR`,
 `PAIRED_BACKUP_REQUIRE_CONSISTENT`, `PAIRED_RESTORE_DATABASE_URL`,
 `PAIRED_RESTORE_VERIFY_DOCUMENTS`. Storage: same-server dirs `0700`, files
 `0600` (Linux). Same-server backups are NOT protection against total
-server loss; no external destination configured (needs approval).
+server loss; external storage is deferred by the owner's current decision.
+
+Daily wrapper additions: `ENV_FILE`, `KMT_OPERATIONS_LOCK`,
+`DAILY_BACKUP_RESTORE_RECEIPT`, `KMT_ADDITIONAL_WRITER_APPS`, and existing PM2
+app/worker names. `recovery.env` is a checksummed mode-600 copy of the protected
+application configuration; it is not printed or automatically sourced during
+restore. Inspect and adapt it securely for the isolated target. Use the recorded
+app release and restore its required role grants. Keep credentials outside Git.
+Only a real isolated database/file restore plus successful owned download and
+cross-client denial can justify a drill receipt. Mocked ops tests do not.

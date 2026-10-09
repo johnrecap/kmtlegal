@@ -1,15 +1,18 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { ConsultationBookingChat } from "@/features/public-site/consultation-booking-chat";
+import { ConversationalBookingChat } from "@/features/public-site/conversational-booking-chat";
+import { findPublicService, getPublicContent } from "@/content/public-content";
 import { cn } from "@/lib/cn";
 import type { PublicLocale } from "@/lib/public-locale";
 
 export function ConsultationBookingChatFromQuery({ locale }: { locale: PublicLocale }) {
   const searchParams = useSearchParams();
-  const initialService = searchParams.get("service") ?? undefined;
+  const requestedService = searchParams.get("service") ?? "";
+  const initialService = findPublicService(locale, requestedService)?.slug ??
+    [...getPublicContent("ar").legalServices, ...getPublicContent("en").legalServices].find(service => service.title === requestedService)?.slug;
 
-  return <ConsultationBookingChat initialService={initialService} locale={locale} />;
+  return <ConversationalBookingChat initialService={initialService} locale={locale} />;
 }
 
 export function RequestedLawyerQueryNotice({

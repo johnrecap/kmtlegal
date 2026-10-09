@@ -86,7 +86,7 @@ function makeFakePg(emptyOrOpts: boolean | { empty?: boolean; writers?: number; 
         if (sql.includes("pg_stat_activity")) return { rows: [{ count: writers }] };
         if (sql.includes("pg_tables")) return { rows: [{ count: empty ? 0 : 3 }] };
         if (sql.includes("server_version")) return { rows: [{ server_version: "18.0-fake" }] };
-        if (sql.includes('"Document"')) {
+        if (sql.includes('"documents"')) {
           if (documents === null) throw new Error('relation "Document" does not exist');
           return { rows: documents };
         }
@@ -362,10 +362,9 @@ describe("paired backup/restore orchestration (MOCKED exec, real temp fs)", () =
     expect(ok.documentCheck).toMatchObject({ checked: true, required: 1 });
     expect((ok.documentCheck as { extra: string[] }).extra).toContain("hello.txt");
 
-    const skipped = await restorePairedBackupSet(
+    await expect(restorePairedBackupSet(
       { backupRoot, setId: "kmt-paired-testset", targetDatabaseUrl: targetUrl, targetUploads: path.join(root, "restored-docs-skip"), confirm: "kmt-paired-testset", verifyDocuments: true },
       { exec, pgModule: makeFakePg({ documents: null }) }
-    );
-    expect(skipped.documentCheck).toMatchObject({ checked: false });
+    )).rejects.toMatchObject({ stage: "verify" });
   });
 });

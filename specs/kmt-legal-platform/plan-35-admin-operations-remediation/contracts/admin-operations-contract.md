@@ -566,6 +566,7 @@ Changing a legacy database row must not change upload/download runtime behavior.
 
 | Route ID | Destination | Required capability (`OR` unless stated) | PLAN-35 state |
 |---|---|---|---|
+| `serviceRequests.list` | `/admin/service-requests` | `case.read.any`, `case.read.assigned` | Phase-five extension, 2026-10-09 |
 | `dashboard.home` | `/admin` | Any authenticated staff role | Existing route, new registry |
 | `consultations.availability` | `/admin/consultation-availability` | `appointment.manage.any`, `settings.manage.any` | Existing |
 | `consultations.list` | `/admin/consultations` | `consultation.review.any`, `consultation.review.assigned` | Existing |
@@ -626,6 +627,7 @@ object-detail probe added later, never for these list probes.
 
 | Route ID | Representative API probe |
 |---|---|
+| `serviceRequests.list` | `GET /api/service-requests` |
 | `dashboard.home` | `GET /api/admin/dashboard` |
 | `consultations.availability` | `GET /api/admin/consultation-availability` |
 | `consultations.list` | `GET /api/admin/consultations` |
@@ -659,6 +661,7 @@ scope. Custom governance changes may reduce editable roles later.
 
 | Route ID | Lawyer | Secretary | Office Admin | Marketing Staff | Super Admin |
 |---|---:|---:|---:|---:|---:|
+| `serviceRequests.list` | Y | Y | Y | — | Y |
 | `dashboard.home` | Y | Y | Y | Y | Y |
 | `consultations.availability` | — | Y | Y | — | Y |
 | `consultations.list` | Y | Y | Y | — | Y |

@@ -1,0 +1,40 @@
+export const conversationCopy = {
+  ar: {
+    newConversation: "بدء محادثة جديدة", closed: "أغلق المكتب هذه المحادثة. يمكنك بدء محادثة جديدة.",
+    guest: "زائر لم يتحقق من حسابه بعد", staff: "فريق المكتب", resume: "إعادة المحادثة للمساعد", takeOver: "استلام المحادثة", transcript: "سجل المحادثة",
+    legacy: "تم تحديث الحجز. افتح صفحة حجز الاستشارة لتجهيز طلب ينتظر اعتماد المكتب؛ لا يلزم الدفع داخل المحادثة.",
+    title: "مساعد KMT الذكي", introduction: "أخبرني بما تحتاج إليه، وسأساعدك في التعرف على خدمات المكتب وتجهيز طلبك. الاستشارة القانونية واعتماد الموعد من اختصاص المكتب.",
+    message: "رسالتك", send: "إرسال", waiting: "جارٍ تجهيز الرد…", retry: "إعادة المحاولة", unavailable: "تعذر إتمام الإجراء. بياناتك محفوظة؛ حاول مرة أخرى أو تواصل مع المكتب.",
+    review: "مراجعة طلب الاستشارة", reviewNote: "راجع البيانات قبل الإرسال. الموعد المطلوب لا يُحجز نهائيًا إلا بعد اعتماد الإدارة، والأتعاب تُحدد منفصلة.",
+    verify: "التحقق من البريد وإنشاء الحساب", email: "البريد الإلكتروني", emailSent: "إذا أمكن متابعة هذا الطلب، ستصلك رسالة بخطوة الوصول المناسبة. راجع بريدك، بما فيه مجلد الرسائل غير المرغوب فيها.",
+    signIn: "لدي حساب — تسجيل الدخول", attach: "ربط حسابي بهذه المحادثة", submit: "أؤكد البيانات وأرسل الطلب", submitted: "تم استلام طلبك وينتظر مراجعة الإدارة.",
+    requests: "طلباتي", handoff: "المحادثة بانتظار المكتب. يمكنك إضافة رسالة هنا، ولن يرد المساعد تلقائيًا أثناء متابعة الموظف.",
+    whatsapp: "التواصل عبر واتساب", password: "كلمة المرور الجديدة", confirmPassword: "تأكيد كلمة المرور", activate: "تأكيد البريد والمتابعة", verified: "تم التحقق من بريدك. يمكنك متابعة طلبك الآن.",
+    invalidToken: "رابط التحقق غير صالح أو منتهي. اطلب رسالة جديدة من صفحة الحجز.", back: "العودة إلى المحادثة", passwordMismatch: "كلمتا المرور غير متطابقتين.",
+    recover: "استعادة الدخول", consent: "راجعت البيانات وأوافق على إرسالها للمكتب لمتابعة طلبي.", needDetails: "أكمل الاسم والهاتف والبريد والخدمة وملخص الاحتياج وطريقة الاستشارة في المحادثة قبل الإرسال.",
+    loginRequired: "سجّل الدخول أو فعّل حسابك بالبريد أولًا.", changed: "تغيرت البيانات أو الموعد. راجع الملخص الحالي وحاول مرة أخرى.", emptyRequests: "لا توجد طلبات مسجلة حتى الآن.",
+    fields: { fullName: "الاسم", phone: "الهاتف", email: "البريد", city: "المدينة", service: "الخدمة", summary: "ملخص الاحتياج", preferredMode: "طريقة الاستشارة", requestedStartsAt: "الموعد المطلوب" },
+    modes: { PHONE: "هاتف", ONLINE: "عن بُعد", OFFICE: "في المكتب" },
+    statuses: { NEW: "بانتظار المراجعة", REVIEWING: "قيد المراجعة", PAYMENT_PENDING: "بانتظار تسوية الأتعاب", SCHEDULED: "الموعد معتمد", REJECTED: "لم يُقبل الطلب", CONVERTED: "تم فتح ملف" },
+    requested: "الموعد المطلوب", confirmed: "الموعد المعتمد", noTime: "يُنسّق مع المكتب", noConfirmation: "لم يُعتمد موعد بعد", nextStep: "تابع حالة طلبك هنا؛ سيتولى المكتب مراجعته."
+  },
+  en: {
+    newConversation: "Start a new conversation", closed: "The office closed this conversation. You can start a new one.",
+    guest: "Guest account not yet verified", staff: "Office team", resume: "Return conversation to AI", takeOver: "Take over conversation", transcript: "Conversation history",
+    legacy: "Booking has been updated. Open the consultation page to prepare a request for office approval. Payment is not required in chat.",
+    title: "KMT AI assistant", introduction: "Tell me what you need. I can explain the office's services and help prepare your request. Legal advice and appointment approval are handled by the office.",
+    message: "Your message", send: "Send", waiting: "Preparing a reply…", retry: "Try again", unavailable: "We could not complete this action. Your saved data is retained; try again or contact the office.",
+    review: "Review consultation request", reviewNote: "Check your details before submitting. Your requested time is confirmed only after office approval. Fees are handled separately.",
+    verify: "Verify email and create account", email: "Email address", emailSent: "If this request can proceed, an email will explain the appropriate access step. Check your inbox and spam folder.",
+    signIn: "Already have an account? Sign in", attach: "Link my account to this conversation", submit: "Confirm details and submit request", submitted: "Your request has been received and awaits office review.",
+    requests: "My requests", handoff: "This conversation is waiting for the office. You can add a message; the AI will not reply automatically while staff handles it.",
+    whatsapp: "Contact on WhatsApp", password: "New password", confirmPassword: "Confirm password", activate: "Verify email and continue", verified: "Your email is verified. You can continue your request now.",
+    invalidToken: "This verification link is invalid or expired. Request a new email from the booking page.", back: "Back to conversation", passwordMismatch: "Passwords do not match.",
+    recover: "Recover account access", consent: "I have reviewed these details and agree to send them to the office for my request.", needDetails: "Complete your name, phone, email, service, needs summary and consultation mode in the conversation before submitting.",
+    loginRequired: "Sign in or activate your account by email first.", changed: "The details or appointment changed. Review the current summary and try again.", emptyRequests: "You have no requests yet.",
+    fields: { fullName: "Name", phone: "Phone", email: "Email", city: "City", service: "Service", summary: "Needs summary", preferredMode: "Consultation mode", requestedStartsAt: "Requested time" },
+    modes: { PHONE: "Phone", ONLINE: "Online", OFFICE: "At the office" },
+    statuses: { NEW: "Awaiting review", REVIEWING: "Under review", PAYMENT_PENDING: "Awaiting fee settlement", SCHEDULED: "Appointment approved", REJECTED: "Request not accepted", CONVERTED: "File opened" },
+    requested: "Requested time", confirmed: "Approved time", noTime: "To be arranged with the office", noConfirmation: "No approved appointment yet", nextStep: "Follow your request here while the office reviews it."
+  }
+} as const;

@@ -25,6 +25,8 @@ function access(
 }
 
 export const FINAL_PLAN35_ADMIN_ROUTE_MATRIX: readonly Plan35AdminRouteFixture[] = [
+  // Phase-five extension of the existing registry, retaining the original nineteen routes.
+  { id: "serviceRequests.list", href: "/admin/service-requests", apiProbe: "/api/service-requests", state: "implemented", defaultAccess: access(true, true, true, false) },
   { id: "dashboard.home", href: "/admin", apiProbe: "/api/admin/dashboard", state: "implemented", defaultAccess: access(true, true, true, true) },
   { id: "consultations.availability", href: "/admin/consultation-availability", apiProbe: "/api/admin/consultation-availability", state: "implemented", defaultAccess: access(false, true, true, false) },
   { id: "consultations.list", href: "/admin/consultations", apiProbe: "/api/admin/consultations", state: "implemented", defaultAccess: access(true, true, true, false) },

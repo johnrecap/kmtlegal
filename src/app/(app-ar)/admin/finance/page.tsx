@@ -1,4 +1,6 @@
 import { paymentRequiresReview, paymentNeedsOrderVerification } from "@/lib/legal-finance";
+import { PaymentLedgerView } from "@/features/portal/payment-ledger-view";
+import { PaymentEntryForm } from "@/features/admin/finance/payment-entry-form";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -822,6 +824,13 @@ export default async function AdminFinancePage({ searchParams }: { searchParams?
               ) : (
                 <StateBlock tone="permission" {...plan35AdminRestrictedActionCopy.invoiceManage} />
               )}
+              {editPayment && <div className="mt-5">
+                <PaymentLedgerView invoice={editPayment} locale="ar" />
+                {options.canManage && !editPayment.paymentAttemptId && !editPayment.ledgerReviewRequired && editPayment.status !== "DRAFT" && <PaymentEntryForm
+                  key={editPayment.id} paymentId={editPayment.id} currency={editPayment.currency}
+                  entries={editPayment.entries.map(entry => ({ id: entry.id, kind: entry.kind, amount: entry.amount.toString(), receiptNumber: entry.receiptNumber, reversed: editPayment.entries.some(other => other.reversesEntryId === entry.id) }))}
+                />}
+              </div>}
             </CardContent>
           </Card>
         </div>

@@ -181,7 +181,7 @@ describe("document storage and upload contract", () => {
     })).resolves.toMatchObject({ status: "unavailable", scannerStatus: "unreachable" });
   });
 
-  it("does not overstate a production-disabled scanner", async () => {
+  it("requires scanning in production even when a disable flag was supplied", async () => {
     const diagnostic = await getStorageRuntimeDiagnostic({
       env: {
         NODE_ENV: "production",
@@ -195,6 +195,6 @@ describe("document storage and upload contract", () => {
       ping: vi.fn(async () => true)
     });
 
-    expect(diagnostic).toMatchObject({ status: "unavailable", scannerStatus: "disabled" });
+    expect(diagnostic).toMatchObject({ scannerMode: "required", scannerStatus: "reachable" });
   });
 });

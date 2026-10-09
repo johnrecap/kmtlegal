@@ -6,6 +6,7 @@ import { ApiError } from "@/server/http/errors";
 import { canonicalPhone } from "@/server/phone/phone-normalization";
 import { parseWithSchema, uuidSchema, emailSchema } from "@/server/validation/schemas";
 import { appendAuditLogBestEffort } from "@/server/audit/audit-service";
+import { aggregateInvoiceBalances, invoiceBalance } from "@/server/payments/payment-ledger-service";
 import {
   PORTAL_DUE_PAYMENT_STATUSES,
   PORTAL_HIDDEN_APPOINTMENT_TYPES,
@@ -142,14 +143,10 @@ export async function getPortalDashboard(actor: Principal) {
       orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }],
       take: 5
     }),
-    prisma.payment.groupBy({
-      by: ["currency"],
-      where: portalDuePaymentWhere(clientId),
-      _sum: { amount: true },
-      orderBy: { currency: "asc" }
-    }),
+    aggregateInvoiceBalances(portalDuePaymentWhere(clientId)),
     prisma.payment.findFirst({
       where: portalDuePaymentWhere(clientId),
+      include: { entries: { select: { amount: true } } },
       orderBy: [{ dueDate: "asc" }, { issueDate: "asc" }, { createdAt: "asc" }]
     })
   ]);
@@ -168,9 +165,9 @@ export async function getPortalDashboard(actor: Principal) {
     payments,
     dueBalances: dueBalances.map((balance) => ({
       currency: balance.currency,
-      amount: balance._sum.amount ?? new Prisma.Decimal(0)
+      amount: new Prisma.Decimal(balance.openAmount)
     })),
-    nextDuePayment
+    nextDuePayment: nextDuePayment ? { ...nextDuePayment, balance: invoiceBalance(nextDuePayment, nextDuePayment.entries) } : null
   };
 }
 
@@ -248,28 +245,26 @@ export async function listPortalAppointments(actor: Principal) {
 
 export async function listPortalPayments(actor: Principal) {
   const clientId = assertClientPortalAccess(actor);
-  return prisma.payment.findMany({
+  const payments = await prisma.payment.findMany({
     where: portalVisiblePaymentWhere(clientId),
     include: {
+      entries: { orderBy: [{ occurredAt: "asc" }, { id: "asc" }], select: { id: true, kind: true, amount: true, currency: true, method: true, receiptNumber: true, occurredAt: true, createdAt: true } },
+      documents: { where: { deletedAt: null, visibility: "CLIENT_VISIBLE" }, select: { id: true, fileName: true } },
       case: { select: { id: true, title: true, internalFileNumber: true } },
       paymentAttempt: { select: { id: true, provider: true, providerOrderId: true, status: true, failureCode: true, checkoutUrl: true, expiresAt: true, providerPaymentId: true } }
     },
     orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }]
   });
+  return payments.map(payment => ({ ...payment, balance: invoiceBalance(payment, payment.entries) }));
 }
 
 export async function getPortalDueBalances(actor: Principal) {
   const clientId = assertClientPortalAccess(actor);
-  const balances = await prisma.payment.groupBy({
-    by: ["currency"],
-    where: portalDuePaymentWhere(clientId),
-    _sum: { amount: true },
-    orderBy: { currency: "asc" }
-  });
+  const balances = await aggregateInvoiceBalances(portalDuePaymentWhere(clientId));
 
   return balances.map((balance) => ({
     currency: balance.currency,
-    amount: balance._sum.amount ?? new Prisma.Decimal(0)
+    amount: new Prisma.Decimal(balance.openAmount)
   }));
 }
 

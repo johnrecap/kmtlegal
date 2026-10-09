@@ -89,7 +89,7 @@ describe("admin task and document management contract", () => {
     expect(documentScopeWhereForPrincipal(officeAdmin)).toEqual({ deletedAt: null });
     expect(documentScopeWhereForPrincipal(assignedLawyer)).toEqual({
       deletedAt: null,
-      OR: [{ ownerClient: { assignedLawyerId: assignedLawyer.id } }, { case: { assignedLawyerId: assignedLawyer.id } }]
+      OR: [{ serviceRequest: { assignedLawyerId: assignedLawyer.id } }, { serviceRequestId: null, OR: [{ ownerClient: { assignedLawyerId: assignedLawyer.id } }, { case: { assignedLawyerId: assignedLawyer.id } }] }]
     });
 
     try {

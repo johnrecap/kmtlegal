@@ -1,0 +1,79 @@
+{
+  "syntheticOnly": true,
+  "optimizedLocalTestMode": true,
+  "current": {
+    "publicAndChat": {
+      "passed": 4,
+      "chatCombinations": 20,
+      "publicCombinations": 100,
+      "log": "browser-final.log"
+    },
+    "services": {
+      "passed": 2,
+      "portalCombinations": 80,
+      "adminMobileChecks": 2,
+      "log": "browser-services-current.log"
+    },
+    "healthAndLinks": {
+      "passed": 1,
+      "log": "browser-links-current.log"
+    }
+  },
+  "initialFailures": [
+    {
+      "test": "Arabic 40-visit portal batch",
+      "reason": "240s aggregate timeout; all cases retained with 480s limit; final pass"
+    },
+    {
+      "test": "Health Check selector",
+      "reason": "Exact label selector included nested option text; fixed to match rendered label; final pass"
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "admin-service-ar-390.png",
+      "sha256": "443da5ff623a23e773bcefb0ba8aa7f895f24aa72bfefb5d1507913b538bac83"
+    },
+    {
+      "name": "services-ar-detail-dark-390.png",
+      "sha256": "2438efb8439f6c079c8ee77969076c6f8e3d7a0a2961f3844c6bcb8b954cb7de"
+    },
+    {
+      "name": "services-en-detail-light-1440.png",
+      "sha256": "0945971a118139fb8b31b284d1f697caa802f1b4bb87de1d9e147e3461189475"
+    },
+    {
+      "name": "services-en-payments-light-390.png",
+      "sha256": "82091cb53ea984d1f2688cb47c2a44ef3d330b05da354c5a737c812faa6b61e0"
+    },
+    {
+      "name": "health-ar-390.png",
+      "sha256": "4272723dcba238a831ef75af9c42764f6ebf398ea87309f941b161d8d0a768f5"
+    },
+    {
+      "name": "health-en-390.png",
+      "sha256": "c28a8beea96e74df8785a19ca400220e7f9d61164404819cbac642e1463a5609"
+    },
+    {
+      "name": "business-ar-dark-390.png",
+      "sha256": "743bf236b09adfcd7afd4570caa789edb2f7d0643a1c8119b68a9a90514ac188"
+    },
+    {
+      "name": "ar-dark-390.png",
+      "sha256": "22e697f7baaccc80722801bd713456f3ee27e59f2f62dec2f38a5634224aeb0c"
+    },
+    {
+      "name": "en-light-1440.png",
+      "sha256": "1f1c57ce5d7c50d450edb3681e1e679c57f90928fd07d40b5ddccd1ffcdc2ca7"
+    }
+  ],
+  "notVerified": [
+    "physical-device keyboard",
+    "real AI conversational quality",
+    "real SMTP",
+    "real ClamAV",
+    "native PostgreSQL concurrent approval",
+    "native paired restore",
+    "complete before-image matrix"
+  ]
+}

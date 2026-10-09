@@ -82,6 +82,7 @@ function buildRules({ host, edgeTtl }) {
     "/install",
     "/payment",
     "/ar/payment",
+    "/account",
     "/client-account",
     "/ar/client-account",
     "/articles",

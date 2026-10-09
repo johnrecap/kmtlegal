@@ -1,25 +1,10 @@
-import { NextResponse } from "next/server";
-import {
-  createPublicConsultationCheckout,
-  publicConsultationCheckoutSchema
-} from "@/server/consultations/consultation-assistant-service";
-import { assertPaidChatBookingEnabled } from "@/server/consultations/consultation-booking-settings";
-import { errorToResponse, getRequestId } from "@/server/http/errors";
-import { parseJsonRequest } from "@/server/validation/schemas";
+import { conversationCopy } from "@/content/conversation-copy";
+import { getRequestId, jsonError } from "@/server/http/errors";
 
 export const dynamic = "force-dynamic";
-
+// No new paid booking before staff approval; existing attempts and webhooks are untouched.
 export async function POST(request: Request) {
-  const requestId = getRequestId(request);
-  let locale: "ar" | "en" | undefined;
-
-  try {
-    const body = await parseJsonRequest(request, publicConsultationCheckoutSchema, "Consultation checkout payload is invalid.");
-    locale = body.locale;
-    await assertPaidChatBookingEnabled();
-    const result = await createPublicConsultationCheckout({ body, request, requestId });
-    return NextResponse.json({ data: result, requestId }, { status: 201, headers: { "Cache-Control": "no-store" } });
-  } catch (error) {
-    return errorToResponse(error, requestId, { routeGroup: "public-consultation-checkout", method: "POST", locale });
-  }
+  const body = await request.json().catch(() => null);
+  const locale = body?.locale === "en" ? "en" : "ar";
+  return jsonError(410, "FEATURE_DISABLED", conversationCopy[locale].legacy, getRequestId(request), undefined, { locale });
 }

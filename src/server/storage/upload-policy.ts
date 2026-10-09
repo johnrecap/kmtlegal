@@ -1,4 +1,5 @@
 import { ApiError } from "@/server/http/errors";
+import { inflateRawSync } from "node:zlib";
 
 export const DEFAULT_MAX_UPLOAD_MB = 5;
 export const MULTIPART_CONTENT_LENGTH_OVERHEAD_BYTES = 512 * 1024;
@@ -39,11 +40,11 @@ export class UploadValidationError extends ApiError {
 
 export function getUploadPolicy(env: NodeJS.ProcessEnv = process.env): UploadPolicy {
   const maxUploadMb = Number.parseInt(env.MAX_UPLOAD_MB ?? String(DEFAULT_MAX_UPLOAD_MB), 10);
-  const maxBytes = (Number.isFinite(maxUploadMb) && maxUploadMb > 0 ? maxUploadMb : DEFAULT_MAX_UPLOAD_MB) * 1024 * 1024;
+  const maxBytes = (Number.isFinite(maxUploadMb) && maxUploadMb > 0 ? Math.min(maxUploadMb, DEFAULT_MAX_UPLOAD_MB) : DEFAULT_MAX_UPLOAD_MB) * 1024 * 1024;
   const allowedMimeTypes = (env.ALLOWED_UPLOAD_TYPES ?? DEFAULT_ALLOWED_UPLOAD_TYPES.join(","))
     .split(",")
     .map((entry) => entry.trim())
-    .filter(Boolean);
+    .filter(type => (DEFAULT_ALLOWED_UPLOAD_TYPES as readonly string[]).includes(type));
 
   return { maxBytes, allowedMimeTypes };
 }
@@ -116,8 +117,43 @@ export function hasExpectedMagicBytes(mimeType: string, bytes: Buffer) {
   }
 
   if (mimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-    return bytes.subarray(0, 2).toString("ascii") === "PK";
+    return isWordDocumentArchive(bytes);
   }
 
   return false;
+}
+
+// A ZIP signature alone also accepts arbitrary archives. Inspect bounded OOXML parts
+// without extracting paths to disk. ClamAV remains required independently.
+function isWordDocumentArchive(bytes: Buffer) {
+  try {
+    let end = -1;
+    for (let offset = bytes.length - 22; offset >= Math.max(0, bytes.length - 65557); offset--) {
+      if (bytes.readUInt32LE(offset) === 0x06054b50) { end = offset; break; }
+    }
+    if (end < 0 || bytes.readUInt16LE(end + 4) || bytes.readUInt16LE(end + 6)) return false;
+    const count = bytes.readUInt16LE(end + 10); let position = bytes.readUInt32LE(end + 16); let total = 0;
+    if (count < 2 || count > 2000 || position >= end) return false;
+    const parts = new Map<string, string>(); const names = new Set<string>();
+    for (let index = 0; index < count; index++) {
+      if (position + 46 > end || bytes.readUInt32LE(position) !== 0x02014b50) return false;
+      const flags = bytes.readUInt16LE(position + 8); const method = bytes.readUInt16LE(position + 10);
+      const compressed = bytes.readUInt32LE(position + 20); const size = bytes.readUInt32LE(position + 24);
+      const nameLength = bytes.readUInt16LE(position + 28); const extra = bytes.readUInt16LE(position + 30); const comment = bytes.readUInt16LE(position + 32);
+      const local = bytes.readUInt32LE(position + 42); const name = bytes.subarray(position + 46, position + 46 + nameLength).toString("utf8");
+      total += size;
+      if ((flags & 1) || ![0, 8].includes(method) || total > 50 * 1024 * 1024 || names.has(name) || name.startsWith("/") || name.includes("\\") || name.split("/").includes("..") || /vbaproject\.bin$/i.test(name)) return false;
+      names.add(name);
+      if (["[Content_Types].xml", "word/document.xml"].includes(name)) {
+        if (size > 8 * 1024 * 1024 || local + 30 > bytes.length || bytes.readUInt32LE(local) !== 0x04034b50) return false;
+        const begin = local + 30 + bytes.readUInt16LE(local + 26) + bytes.readUInt16LE(local + 28);
+        if (begin + compressed > bytes.length) return false;
+        const content = method === 0 ? bytes.subarray(begin, begin + compressed) : inflateRawSync(bytes.subarray(begin, begin + compressed), { maxOutputLength: 8 * 1024 * 1024 });
+        if (content.length !== size) return false;
+        parts.set(name, content.toString("utf8"));
+      }
+      position += 46 + nameLength + extra + comment;
+    }
+    return Boolean(parts.get("[Content_Types].xml")?.includes("application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml") && parts.get("word/document.xml")?.includes("wordprocessingml"));
+  } catch { return false; }
 }

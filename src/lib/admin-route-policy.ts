@@ -5,6 +5,7 @@ export const ADMIN_ROUTE_IDS = [
   "dashboard.home",
   "consultations.availability",
   "consultations.list",
+  "serviceRequests.list",
   "clients.list",
   "messages.list",
   "cases.list",
@@ -51,6 +52,7 @@ type AdminRouteDefinition = Omit<AdminRoutePolicy, "labelKey" | "staffFallback">
 };
 
 export const ADMIN_ROUTE_POLICIES: readonly AdminRoutePolicy[] = [
+  route({ id: "serviceRequests.list", href: "/admin/service-requests", activeMatch: "prefix", group: "matters-clients", icon: "description", requiredAnyPermissions: ["case.read.any", "case.read.assigned"] }),
   route({ id: "dashboard.home", href: "/admin", activeMatch: "exact", group: "workspace", icon: "dashboard", requiredAnyPermissions: [], staffFallback: true }),
   route({ id: "consultations.availability", href: "/admin/consultation-availability", activeMatch: "prefix", group: "schedule-communications", icon: "event_available", requiredAnyPermissions: ["appointment.manage.any", "settings.manage.any"] }),
   route({ id: "consultations.list", href: "/admin/consultations", activeMatch: "prefix", group: "schedule-communications", icon: "rate_review", requiredAnyPermissions: ["consultation.review.any", "consultation.review.assigned"] }),

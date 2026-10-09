@@ -1,5 +1,5 @@
 import { ClientSiteShell } from "@/components/layout";
-import { ClientAssistantPanel } from "@/features/client/client-assistant-panel";
+import { ClientConversationWorkspace } from "@/features/client/client-conversation-workspace";
 import { PermissionBlocked, requirePortalPage } from "@/server/auth/page-guards";
 import { clientNavForPath } from "../client-navigation";
 import { getClientContent, normalizeClientLocale } from "@/content/client-content";
@@ -21,7 +21,7 @@ export default async function ClientAssistantPage() {
 
   return (
     <ClientSiteShell locale={locale} navItems={clientNavForPath("/client/assistant", locale)} title={copy.assistant.pageTitle} userLabel={guard.context.user.name}>
-      <ClientAssistantPanel locale={locale} />
+      <ClientConversationWorkspace locale={locale} />
     </ClientSiteShell>
   );
 }

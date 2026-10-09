@@ -4,6 +4,7 @@ import { appendAuditLog } from "@/server/audit/audit-service";
 import { hasPermission, type Principal } from "@/server/auth/policy";
 import {
   CONSULTATION_BOOKING_SETTING_KEY,
+  CONSULTATION_REQUEST_POLICY,
   consultationBookingFlags,
   consultationBookingModeFromValue,
   consultationBookingModeInputSchema,
@@ -71,6 +72,7 @@ export async function getAdminPaymentGatewaySettings(input: { actor: Principal }
 
   return {
     activeProvider,
+    requestPolicy: CONSULTATION_REQUEST_POLICY,
     ...consultationBookingFlags(bookingMode),
     hasActivePricingRule,
     readyForPaidChat: providerReadinessDto(activeProvider).configured && hasActivePricingRule,

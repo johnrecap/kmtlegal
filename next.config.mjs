@@ -41,6 +41,10 @@ const nextConfig = {
         headers: [{ key: "Cache-Control", value: "no-store" }]
       },
       {
+        source: "/account/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store" }]
+      },
+      {
         source: "/login/:path*",
         headers: [{ key: "Cache-Control", value: "no-store" }]
       },

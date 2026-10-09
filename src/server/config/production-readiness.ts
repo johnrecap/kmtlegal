@@ -121,7 +121,7 @@ export function productionReadinessIssues(env: NodeJS.ProcessEnv = process.env) 
     issues.push({
       code: "SMTP_ENABLED_UNSUPPORTED",
       severity: "error",
-      message: "SMTP is documented as a future feature but must stay disabled in this release."
+      message: "General email notifications remain deferred. Enable account verification separately with CLIENT_ACCOUNT_EMAIL_ENABLED."
     });
   }
 
@@ -131,6 +131,10 @@ export function productionReadinessIssues(env: NodeJS.ProcessEnv = process.env) 
       severity: "error",
       message: "SMTP_USER and SMTP_PASSWORD must be configured together if SMTP credentials are staged for a later release."
     });
+  }
+
+  if (env.CLIENT_ACCOUNT_EMAIL_ENABLED === "true" && (!env.SMTP_HOST || !env.SMTP_FROM || !env.SMTP_PORT)) {
+    issues.push({ code: "ACCOUNT_EMAIL_CONFIGURATION_REQUIRED", severity: "error", message: "Account verification requires SMTP_HOST, SMTP_PORT and SMTP_FROM; supply credentials together when required by the server." });
   }
 
   if (env.KMT_DEMO_PASSWORD || env.KMT_DEMO_TOTP_SECRET) {

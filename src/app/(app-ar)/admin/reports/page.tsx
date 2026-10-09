@@ -1,4 +1,5 @@
 import { paymentRequiresReview } from "@/lib/legal-finance";
+import { paymentLedgerCopy } from "@/content/payment-ledger-copy";
 import { PublicTrafficSummary } from "@/features/admin/public-traffic-summary";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -70,8 +71,8 @@ function statusTone(status: string) {
   return "pending" as const;
 }
 
-function summaryAmount(amount: number, currency?: string) {
-  if (currency) {
+function summaryAmount(amount: number | null, currency?: string) {
+  if (currency && amount !== null) {
     return formatMoney(amount, currency);
   }
   return "اختر عملة لعرض القيمة";
@@ -252,7 +253,9 @@ export default async function AdminReportsPage({ searchParams }: { searchParams?
               {report.finance.byCurrency.map((item) => (
                 <Card key={item.currency} className="p-4">
                   <p className="text-sm font-semibold text-muted-foreground"><bdi>{item.currency}</bdi></p>
-                  <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{formatMoney(item.amount, item.currency)}</p>
+                    <p className="mt-2 text-xl font-semibold tabular-nums text-foreground">{formatMoney(item.amount, item.currency)}</p>
+                    <p className="mt-2 text-sm">{paymentLedgerCopy.ar.paid}: {formatMoney(item.paid, item.currency)}</p>
+                    <p className="text-sm">{paymentLedgerCopy.ar.remaining}: {formatMoney(item.remaining, item.currency)}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{item.count} فاتورة</p>
                 </Card>
               ))}

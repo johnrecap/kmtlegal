@@ -4,6 +4,9 @@ import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
 
 export const CONSULTATION_BOOKING_SETTING_KEY = "consultation.booking";
+// New intake policy is independent of the legacy paid/free compatibility setting.
+// These are the owner-approved modes; additional modes require a separately reviewed change.
+export const CONSULTATION_REQUEST_POLICY = Object.freeze({ approvalMode: "ADMIN_REVIEW", feeCollection: "AFTER_OFFICE_REVIEW" } as const);
 
 export const consultationBookingModeValues = ["AI_CHAT_PAID", "AI_CHAT_FREE"] as const;
 export const legacyConsultationBookingModeValues = ["PAID_CHAT", "MANUAL_REVIEW"] as const;

@@ -44,7 +44,7 @@ export function MobileCard({ row, copy, locale }: { row: PaymentRow; copy: Clien
   return (
     <div className={clientPortalRowClass}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-semibold text-[var(--kmt-client-text)]">{row.invoiceNumber}</p>
+        <p className="min-w-0 max-w-full break-all font-semibold text-[var(--kmt-client-text)]"><bdi>{row.invoiceNumber}</bdi></p>
         <Badge tone={paymentRequiresReview(row.paymentAttempt) ? "danger" : statusTone(row.status)}>{paymentRequiresReview(row.paymentAttempt) ? paymentReviewCopy[locale].review : copy.statuses.payment[row.status as keyof typeof copy.statuses.payment] ?? copy.common.unknown}</Badge>
       </div>
       <p className="mt-2 text-lg font-semibold text-[var(--kmt-client-text)]">{formatMoney(row.amount.toString(), row.currency, locale)}</p>

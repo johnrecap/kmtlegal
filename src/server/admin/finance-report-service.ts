@@ -8,6 +8,7 @@ import { toPagination } from "@/server/http/pagination";
 import { canonicalPhoneForSearch } from "@/server/phone/phone-normalization";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
 import { currencyValues, paymentStatusValues, financialReviewCodes } from "@/lib/legal-finance";
+import { recordTrustedInvoiceSettlement, invoiceBalance, aggregateInvoiceBalances } from "@/server/payments/payment-ledger-service";
 
 const paymentStatusSchema = z.enum(paymentStatusValues);
 const currencySchema = z.enum(currencyValues);
@@ -265,26 +266,27 @@ async function paymentSummary(where: Prisma.PaymentWhereInput) {
     ]
   });
 
-  const [all, paid, open, overdue, reviewCount, unallocatedReviewCount] = await Promise.all([
+  const [all, paid, open, overdue, reviewCount, unallocatedReviewCount, ledger] = await Promise.all([
     prisma.payment.aggregate({ where, _count: { _all: true }, _sum: { amount: true } }),
     prisma.payment.aggregate({ where: andPaymentWhere(where, { status: "PAID" }), _count: { _all: true }, _sum: { amount: true } }),
     prisma.payment.aggregate({ where: openWhere, _count: { _all: true }, _sum: { amount: true } }),
     prisma.payment.aggregate({ where: overdueWhere, _count: { _all: true }, _sum: { amount: true } }),
-    prisma.payment.count({where: andPaymentWhere(where, {paymentAttempt: {failureCode: {in:financialReviewCodes}}})}),
-    prisma.paymentAttempt.count({where:{payment:{is:null},failureCode:"PAYMENT_COLLECTION_REVIEW_REQUIRED"}})
+    prisma.payment.count({where: andPaymentWhere(where, { OR: [{ ledgerReviewRequired: true }, { paymentAttempt: {failureCode: {in:financialReviewCodes}} }] })}),
+    prisma.paymentAttempt.count({where:{payment:{is:null},failureCode:"PAYMENT_COLLECTION_REVIEW_REQUIRED"}}),
+    aggregateInvoiceBalances(where)
   ]);
 
   return {
     invoiceCount: all._count._all,
-    totalAmount: decimalToNumber(all._sum.amount),
+    totalAmount: ledger.length > 1 ? null : Number(ledger[0]?.totalAmount ?? 0),
     paidCount: paid._count._all,
-    paidAmount: decimalToNumber(paid._sum.amount),
+    paidAmount: ledger.length > 1 ? null : Number(ledger[0]?.paidAmount ?? 0),
     reviewCount,
     unallocatedReviewCount,
     openCount: open._count._all,
-    openAmount: decimalToNumber(open._sum.amount),
+    openAmount: ledger.length > 1 ? null : Number(ledger[0]?.openAmount ?? 0),
     overdueCount: overdue._count._all,
-    overdueAmount: decimalToNumber(overdue._sum.amount)
+    overdueAmount: ledger.length > 1 ? null : Number(ledger[0]?.overdueAmount ?? 0)
   };
 }
 
@@ -480,6 +482,7 @@ export async function listAdminPayments(input: { actor: Principal; query: unknow
       where,
       include: {
         paymentAttempt: {select: {status:true, failureCode:true}},
+        entries: true,
         client: { select: { id: true, fullName: true, phone: true, email: true } },
         case: { select: { id: true, internalFileNumber: true, title: true } },
         createdBy: { select: { id: true, name: true, email: true } }
@@ -493,29 +496,15 @@ export async function listAdminPayments(input: { actor: Principal; query: unknow
     paymentCurrencySummary(where)
   ]);
 
-  return { items: items.map(payment => ({ ...payment, canUpdate: canUpdateAdminPayment(input.actor, payment) })), total, summary: { ...summary, byCurrency }, filters, page: pagination.page, pageSize: pagination.pageSize };
+  return { items: items.map(payment => ({ ...payment, balance: invoiceBalance(payment, payment.entries), canUpdate: canUpdateAdminPayment(input.actor, payment) })), total, summary: { ...summary, byCurrency }, filters, page: pagination.page, pageSize: pagination.pageSize };
 }
 
-export function canUpdateAdminPayment(actor: Principal, payment: { paymentAttemptId: string | null }) {
-  return canManageAdminFinance(actor) && !payment.paymentAttemptId;
+export function canUpdateAdminPayment(actor: Principal, payment: { paymentAttemptId: string | null; entries?: unknown[]; ledgerReviewRequired?: boolean }) {
+  return canManageAdminFinance(actor) && !payment.paymentAttemptId && !payment.entries?.length && !payment.ledgerReviewRequired;
 }
 
 async function paymentCurrencySummary(where: Prisma.PaymentWhereInput) {
-  const now = new Date();
-  const scopes: Prisma.PaymentWhereInput[] = [
-    where,
-    andPaymentWhere(where, { status: "PAID" }),
-    andPaymentWhere(where, { status: { in: ["ISSUED", "PENDING", "OVERDUE"] } }),
-    andPaymentWhere(where, { OR: [{ status: "OVERDUE" }, { status: { in: ["ISSUED", "PENDING"] }, dueDate: { lt: now } }] })
-  ];
-  const groups = await Promise.all(scopes.map(scope => prisma.payment.groupBy({ by: ["currency"], where: scope, _sum: { amount: true } })));
-  return groups[0].map(group => ({
-    currency: group.currency,
-    totalAmount: group._sum.amount?.toString() ?? "0",
-    paidAmount: groups[1].find(row => row.currency === group.currency)?._sum.amount?.toString() ?? "0",
-    openAmount: groups[2].find(row => row.currency === group.currency)?._sum.amount?.toString() ?? "0",
-    overdueAmount: groups[3].find(row => row.currency === group.currency)?._sum.amount?.toString() ?? "0"
-  }));
+  return aggregateInvoiceBalances(where);
 }
 
 export async function exportAdminPaymentsCsv(input: { actor: Principal; query: unknown }) {
@@ -525,6 +514,7 @@ export async function exportAdminPaymentsCsv(input: { actor: Principal; query: u
   const items = await prisma.payment.findMany({
     where,
     include: {
+      entries: true,
       client: { select: { fullName: true } },
       case: { select: { internalFileNumber: true, title: true } }
     },
@@ -546,6 +536,7 @@ export async function exportAdminPaymentsCsv(input: { actor: Principal; query: u
       "receiptNumber",
       "paidAt",
       "createdAt"
+      , "netPaid", "remaining", "reviewRequired"
     ],
     ...items.map((payment) => [
       payment.invoiceNumber,
@@ -559,7 +550,7 @@ export async function exportAdminPaymentsCsv(input: { actor: Principal; query: u
       payment.paymentMethod ?? "",
       payment.receiptNumber ?? "",
       payment.paidAt?.toISOString() ?? "",
-      payment.createdAt.toISOString()
+      payment.createdAt.toISOString(), invoiceBalance(payment, payment.entries).paid.toString(), invoiceBalance(payment, payment.entries).remaining.toString(), String(invoiceBalance(payment, payment.entries).reviewRequired)
     ])
   ];
 
@@ -576,6 +567,8 @@ export async function getAdminPaymentDetail(input: { actor: Principal; paymentId
   const payment = await prisma.payment.findUnique({
     where: { id: paymentId },
     include: {
+      entries: { orderBy: [{ occurredAt: "asc" }, { id: "asc" }], include: { approvedBy: { select: { name: true } } } },
+      documents: { where: { deletedAt: null }, select: { id: true, fileName: true }, orderBy: { createdAt: "desc" } },
       client: { select: { id: true, fullName: true, phone: true, email: true } },
       case: { select: { id: true, internalFileNumber: true, title: true } },
       createdBy: { select: { id: true, name: true, email: true } }
@@ -586,7 +579,7 @@ export async function getAdminPaymentDetail(input: { actor: Principal; paymentId
     throw new ApiError(404, "NOT_FOUND", "Payment was not found.");
   }
 
-  return { ...payment, canUpdate: canUpdateAdminPayment(input.actor, payment) };
+  return { ...payment, balance: invoiceBalance(payment, payment.entries), canUpdate: canUpdateAdminPayment(input.actor, payment) };
 }
 
 export async function createAdminPayment(input: { actor: Principal; body: unknown; request?: Request }) {
@@ -601,7 +594,8 @@ export async function createAdminPayment(input: { actor: Principal; body: unknow
     const invoiceNumber = requestedInvoiceNumber || (await generateAdminInvoiceNumber(issueDate));
 
     try {
-      const payment = await prisma.payment.create({
+      const payment = await prisma.$transaction(async tx => {
+        const created = await tx.payment.create({
         data: {
           ...paymentMutationData(body, invoiceNumber, issueDate),
           createdById: input.actor.id
@@ -611,6 +605,10 @@ export async function createAdminPayment(input: { actor: Principal; body: unknow
           case: { select: { id: true, internalFileNumber: true, title: true } },
           createdBy: { select: { id: true, name: true, email: true } }
         }
+      });
+
+        if (created.status === "PAID") await recordTrustedInvoiceSettlement(tx, created);
+        return created;
       });
 
       await appendAuditLogBestEffort({
@@ -664,7 +662,11 @@ export async function updateAdminPayment(input: { actor: Principal; paymentId: s
   await assertManualPaymentDoesNotDuplicateGatewayOrReceipt(body, paymentId);
 
   try {
-    const payment = await prisma.payment.update({
+    const payment = await prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM payments WHERE id = ${paymentId}::uuid FOR UPDATE`;
+      const current = await tx.payment.findUniqueOrThrow({ where: { id: paymentId }, include: { _count: { select: { entries: true } } } });
+      if (current._count.entries || current.ledgerReviewRequired || current.paymentAttemptId) throw new ApiError(409, "CONFLICT", "Recorded payments are immutable. Use a ledger correction instead.");
+      const updated = await tx.payment.update({
       where: { id: paymentId },
       data: paymentMutationData(body, body.invoiceNumber || existing.invoiceNumber),
       include: {
@@ -672,6 +674,10 @@ export async function updateAdminPayment(input: { actor: Principal; paymentId: s
         case: { select: { id: true, internalFileNumber: true, title: true } },
         createdBy: { select: { id: true, name: true, email: true } }
       }
+    });
+
+      if (updated.status === "PAID") await recordTrustedInvoiceSettlement(tx, updated);
+      return updated;
     });
 
     await appendAuditLogBestEffort({
@@ -790,13 +796,7 @@ export async function getAdminReports(input: { actor: Principal; query: unknown 
       orderBy: [{ issueDate: "desc" }, { createdAt: "desc" }],
       take: 8
     }),
-    prisma.payment.groupBy({
-      by: ["currency"],
-      where: paymentWhere,
-      _count: { _all: true },
-      _sum: { amount: true },
-      orderBy: { currency: "asc" }
-    }),
+    aggregateInvoiceBalances(paymentWhere),
     previousPeriod ? paymentSummary(reportPaymentWhere(previousPeriod.filters)) : Promise.resolve(null)
   ]);
 
@@ -807,8 +807,11 @@ export async function getAdminReports(input: { actor: Principal; query: unknown 
       byStatus: paymentStatusGroups(paymentGroups),
       byCurrency: currencyGroups.map((group) => ({
         currency: group.currency,
-        count: group._count._all,
-        amount: Number(group._sum.amount ?? 0)
+        count: group.count,
+        amount: group.totalAmount,
+        paid: group.paidAmount,
+        remaining: group.openAmount,
+        overdue: group.overdueAmount
       }))
     },
     comparison: previousFinanceSummary && previousPeriod ? {

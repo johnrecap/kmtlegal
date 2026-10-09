@@ -3,10 +3,12 @@ import { safeLog } from "@/server/observability/safe-log";
 import { z } from "zod";
 import type { AIProviderAdapter, AIProviderName, AIProviderResult, AITask } from "../types";
 import type { AIProviderConfig } from "../config";
+import { requestConversation } from "./conversational";
 
 export function createOpenAICompatibleProvider(config: AIProviderConfig, name: AIProviderName): AIProviderAdapter {
   return {
     name,
+    chat: (input) => requestConversation(config, input),
     async generate(input): Promise<AIProviderResult> {
       if (!config.baseUrl) {
         throw new ApiError(500, "AI_PROVIDER_UNAVAILABLE", "AI provider base URL is not configured.");

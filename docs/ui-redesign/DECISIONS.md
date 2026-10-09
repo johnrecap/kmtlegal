@@ -1,5 +1,13 @@
 # DECISIONS (Owner-Locked Rulings)
 
+## 2026-10-09 — Owner-approved phase-five systems
+
+The later explicit phase-five implementation request authorizes rebuilding the conversational assistant, email-verified accounts, staff-approved appointments, private service requests, partial settlements and extension of the existing admin/portal. This supersedes the phase-two exclusion of advanced systems for this task. No subagents, Spec Kit, new UI/AI-agent libraries or broad admin redesign. Preserve the public white/gold identity and existing customer/history data.
+
+Appointment approval is always administrative; account activation and financial status are independent. Only verification/recovery emails are activated through a separate purpose gate; general notifications stay deferred. Contracts and Legal Health Check are office-performed, with quotes accepted by clients and private delivery; no autonomous legal report, final AI contract, compliance score or e-signature. Questionnaire publication requires actual office approval; tests do not grant it. Business Desk lives in company services; monthly scope/fees are discussed on the approved WhatsApp, without recurring billing.
+
+Daily local paired backups and a short 03:00 Africa/Cairo maintenance window are approved. External storage is deferred. Native restore/ClamAV/SMTP/model, actual aaPanel scheduling and production rollout remain operational verification tasks, not facts implied by local tests. The current status register owns outstanding acceptance evidence and prior company/team/location/photo/social inputs.
+
 ## 2026-10-09 — Owner-approved public phase-two amendments
 
 The owner's explicit phase-two implementation plan supersedes the earlier **Articles HIDE PUBLIC** ruling: restore `/articles`, article details, Arabic equivalents, read APIs, published/due-only sitemap entries and public navigation through the existing CMS. Case Studies, Media and retired internal/clone routes remain closed. Do not auto-publish seeded/demo content. Homepage links to Firm, Industries and Insights are authorized; the old combined Articles/Case Studies ledger is not restored.

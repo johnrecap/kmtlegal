@@ -1,4 +1,5 @@
 "use client";
+import { bookingPolicyCopy } from "@/content/booking-policy-copy";
 
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
@@ -319,6 +320,7 @@ export function PaymentForm({
 }
 
 export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGatewaySettingsValue }) {
+  const policyCopy = bookingPolicyCopy.ar;
   const router = useRouter();
   const [message, setMessage] = useState<ActionMessage | null>(null);
   const [isBusy, setIsBusy] = useState(false);
@@ -356,25 +358,24 @@ export function PaymentGatewaySettingsForm({ settings }: { settings: PaymentGate
 
   return (
     <form className="grid gap-4" onSubmit={submit}>
+      <section className="space-y-2 rounded border border-border bg-surface p-4"><h3 className="font-semibold">{policyCopy.title}</h3><p>{policyCopy.approval}</p><p>{policyCopy.fees}</p></section>
       <Select
         disabled={isBusy}
         idPrefix="payment-gateway-settings"
-        label="وضع استقبال طلب الاستشارة"
+        label={policyCopy.legacyLabel}
         name="bookingMode"
         value={bookingMode}
         onChange={(event) => setBookingMode(event.target.value as PaymentGatewaySettingsValue["bookingMode"])}
       >
-        <option value="AI_CHAT_PAID">شات AI + دفع رسوم الحجز</option>
-        <option value="AI_CHAT_FREE">شات AI بدون رسوم حجز</option>
+        <option value="AI_CHAT_PAID">{policyCopy.paid}</option>
+        <option value="AI_CHAT_FREE">{policyCopy.free}</option>
       </Select>
       <div className="rounded border border-border bg-surface px-3 py-2 text-sm leading-6">
         <p className="font-semibold text-foreground">
-          {bookingMode === "AI_CHAT_PAID" ? "الشات والدفع مفعلان للحجوزات الجديدة." : "الشات مفعل، وسيتم تأكيد الموعد من المحادثة بدون تحصيل رسوم حجز."}
+          {policyCopy.legacyHelp}
         </p>
         <p className="mt-1 text-xs text-muted-foreground">
-          {bookingMode === "AI_CHAT_PAID"
-            ? "يتطلب هذا الوضع بوابة دفع جاهزة وسعر استشارة نشط قبل الحفظ."
-            : "لا يشترط هذا الوضع وجود سعر استشارة أو إعدادات بوابة دفع، لكن نص طلب العميل سيظل ظاهرًا للسكرتيرة للمراجعة والتوزيع."}
+          {policyCopy.fees}
         </p>
       </div>
       <Select

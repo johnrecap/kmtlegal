@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import nodemailer from "nodemailer";
 import { ApiError } from "@/server/http/errors";
-import { getEmailMode, getSmtpConfig } from "./config";
+import { getAccountEmailMode, getEmailMode, getSmtpConfig } from "./config";
 import { emailRecipientSchema, renderEmailTemplate, type EmailTemplateKey } from "./templates";
 import { parseWithSchema } from "@/server/validation/schemas";
 
@@ -22,7 +22,7 @@ export async function sendTemplatedEmail(input: SendEmailInput): Promise<SendEma
   const recipient = parseWithSchema(emailRecipientSchema, input.to, "Email recipient is invalid.");
   const rendered = renderEmailTemplate(input.templateKey, input.data);
   const toEmailHash = hashEmailAddress(recipient.email);
-  const mode = getEmailMode();
+  const mode = input.templateKey === "client_account_access" ? getAccountEmailMode() : getEmailMode();
 
   if (mode === "disabled") {
     return {
@@ -45,6 +45,9 @@ export async function sendTemplatedEmail(input: SendEmailInput): Promise<SendEma
     host: config.host,
     port: config.port,
     secure: config.secure,
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 20_000,
     auth: config.user && config.password ? { user: config.user, pass: config.password } : undefined
   });
 

@@ -25,6 +25,11 @@ export function getEmailMode(): "disabled" | "dev" | "smtp" {
   return process.env.APP_ENV === "local" || process.env.NODE_ENV !== "production" ? "dev" : "smtp";
 }
 
+// Separate purpose gate: never enables consultation/staff/reminder notifications.
+export function getAccountEmailMode(): "disabled" | "smtp" {
+  return process.env.CLIENT_ACCOUNT_EMAIL_ENABLED === "true" ? "smtp" : "disabled";
+}
+
 export function isSmtpEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
   return SMTP_FEATURE_AVAILABLE && env.SMTP_ENABLED === "true";
 }

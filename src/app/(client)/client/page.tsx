@@ -65,7 +65,7 @@ function nextPortalStep(
     return {
       icon: "payments",
       title: copy.dashboard.dueTitle,
-      description: `${duePayment.invoiceNumber} · ${formatMoney(duePayment.amount.toString(), duePayment.currency, locale)}`,
+      description: `${duePayment.invoiceNumber} · ${formatMoney(duePayment.balance.remaining.toString(), duePayment.currency, locale)}`,
       href: "/client/payments",
       action: copy.dashboard.dueAction
     };

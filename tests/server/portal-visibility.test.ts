@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Principal } from "@/server/auth/policy";
+import { Prisma } from "@prisma/client";
 
 const databaseMocks = vi.hoisted(() => {
   return {
@@ -11,6 +12,7 @@ const databaseMocks = vi.hoisted(() => {
     documentCount: vi.fn(),
     paymentFindMany: vi.fn(),
     paymentGroupBy: vi.fn(),
+    paymentEntryGroupBy: vi.fn(),
     paymentFindFirst: vi.fn(),
     paymentAttemptFindMany: vi.fn()
   };
@@ -34,6 +36,7 @@ vi.mock("@/server/db/prisma", () => ({
       findFirst: databaseMocks.paymentFindFirst
     },
     paymentAttempt: { findMany: databaseMocks.paymentAttemptFindMany }
+    , paymentEntry: { groupBy: databaseMocks.paymentEntryGroupBy }
   }
 }));
 
@@ -71,13 +74,14 @@ describe("client portal visibility and aggregate contracts", () => {
     databaseMocks.documentCount.mockResolvedValue(4);
     databaseMocks.paymentFindMany.mockResolvedValue([]);
     databaseMocks.paymentGroupBy.mockResolvedValue([
-      { currency: "EGP", _sum: { amount: { toString: () => "1250.50" } } },
-      { currency: "USD", _sum: { amount: { toString: () => "20.00" } } }
+      { currency: "EGP", _sum: { amount: new Prisma.Decimal("1250.50") }, _count: { _all: 2 } },
+      { currency: "USD", _sum: { amount: new Prisma.Decimal("20.00") }, _count: { _all: 1 } }
     ]);
+    databaseMocks.paymentEntryGroupBy.mockResolvedValue([{ currency: "EGP", _sum: { amount: new Prisma.Decimal("250.50") } }]);
     databaseMocks.paymentFindFirst.mockResolvedValue({
       id: "payment-next",
       invoiceNumber: "INV-9",
-      amount: { toString: () => "20.00" },
+      amount: new Prisma.Decimal("20.00"), entries: [], ledgerReviewRequired: false,
       currency: "USD",
       status: "PENDING"
     });
@@ -114,8 +118,8 @@ describe("client portal visibility and aggregate contracts", () => {
     expect(result.casesCount).toBe(12);
     expect(result.appointmentsCount).toBe(8);
     expect(result.dueBalances.map((balance) => [balance.currency, balance.amount.toString()])).toEqual([
-      ["EGP", "1250.50"],
-      ["USD", "20.00"]
+      ["EGP", "1000"],
+      ["USD", "20"]
     ]);
     expect(result.nextDuePayment?.id).toBe("payment-next");
     expect(databaseMocks.caseFindMany).toHaveBeenCalledWith(expect.objectContaining({ take: 5 }));
@@ -134,12 +138,11 @@ describe("client portal visibility and aggregate contracts", () => {
       take: 5,
       where: portalVisiblePaymentWhere(clientPrincipal.clientId!)
     }));
-    expect(databaseMocks.paymentGroupBy).toHaveBeenCalledWith({
+    expect(databaseMocks.paymentGroupBy).toHaveBeenCalledWith(expect.objectContaining({
       by: ["currency"],
       where: portalDuePaymentWhere(clientPrincipal.clientId!),
-      _sum: { amount: true },
-      orderBy: { currency: "asc" }
-    });
+      _sum: { amount: true }
+    }));
     expect(databaseMocks.paymentFindFirst).toHaveBeenCalledWith(expect.objectContaining({
       where: portalDuePaymentWhere(clientPrincipal.clientId!)
     }));

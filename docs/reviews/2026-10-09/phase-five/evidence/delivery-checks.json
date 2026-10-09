@@ -1,0 +1,18 @@
+{
+  "diffCheck": {
+    "exitCode": 0
+  },
+  "sourceHashes": {
+    "checked": 119,
+    "stale": 0
+  },
+  "deliverySecretScan": {
+    "exitCode": 0,
+    "scanner": "scripts/security-secret-scan.mjs",
+    "method": "unchanged scanner on isolated copy of all changed/new deliverables"
+  },
+  "productionStatus": "NOT_VERIFIED",
+  "deploymentPerformed": false,
+  "cronActivated": false,
+  "authorQuestionnaireApproved": false
+}

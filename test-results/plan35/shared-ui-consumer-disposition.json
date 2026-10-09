@@ -22,13 +22,21 @@
   "consumers": [
     {
       "path": "src/features/admin/finance/finance-record-select.tsx",
-      "contracts": ["Button", "Select", "TextInput"],
+      "contracts": [
+        "Button",
+        "Select",
+        "TextInput"
+      ],
       "disposition": "migrated",
       "evidence": "tests/ui/repair-finance-select.test.tsx"
     },
     {
       "path": "src/features/admin/task-documents/task-board.tsx",
-      "contracts": ["Badge", "Button", "button"],
+      "contracts": [
+        "Badge",
+        "Button",
+        "button"
+      ],
       "disposition": "migrated",
       "evidence": "tests/ui/fix-task-board.test.tsx"
     },
@@ -742,6 +750,70 @@
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/product-components.test.tsx"
+    },
+    {
+      "path": "src/features/admin/finance/payment-entry-form.tsx",
+      "contracts": [
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/phase-five-components.test.tsx"
+    },
+    {
+      "path": "src/features/client/client-conversation-workspace.tsx",
+      "contracts": [
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/phase-five-components.test.tsx"
+    },
+    {
+      "path": "src/features/portal/request-alternative-time.tsx",
+      "contracts": [
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/phase-five-components.test.tsx"
+    },
+    {
+      "path": "src/features/portal/service-request-workspace.tsx",
+      "contracts": [
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/phase-five-components.test.tsx"
+    },
+    {
+      "path": "src/features/public-site/business-desk.tsx",
+      "contracts": [
+        "ButtonLink"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/phase-five-components.test.tsx"
+    },
+    {
+      "path": "src/features/public-site/client-email-verification.tsx",
+      "contracts": [
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/phase-five-components.test.tsx"
+    },
+    {
+      "path": "src/features/public-site/conversational-booking-chat.tsx",
+      "contracts": [
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/phase-five-components.test.tsx"
+    },
+    {
+      "path": "src/features/portal/payment-proof-form.tsx",
+      "contracts": [
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/phase-five-components.test.tsx"
     }
   ],
   "connectedSurfaces": [
@@ -754,5 +826,6 @@
       "disposition": "delegates notification behavior to the classified notification popover"
     }
   ],
-  "blocked": []
+  "blocked": [],
+  "phaseFiveReview": "2026-10-09: new consumers use existing component contracts; component smoke plus integrated browser evidence tracked in implementation status."
 }

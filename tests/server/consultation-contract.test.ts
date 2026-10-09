@@ -594,15 +594,17 @@ describe("public consultation contract", () => {
     });
   });
 
-  it("guards AI chat and paid checkout entry points by booking mode", () => {
+  it("retires old creation endpoints so they cannot bypass staff approval", () => {
     const assistantRoute = readFileSync(join(process.cwd(), "src/app/api/public/consultations/assistant/route.ts"), "utf8");
     const checkoutRoute = readFileSync(join(process.cwd(), "src/app/api/public/consultations/checkout/route.ts"), "utf8");
     const manualRoute = readFileSync(join(process.cwd(), "src/app/api/public/consultations/route.ts"), "utf8");
     const manualService = readFileSync(join(process.cwd(), "src/server/consultations/consultation-service.ts"), "utf8");
     const bookingSettings = readFileSync(join(process.cwd(), "src/server/consultations/consultation-booking-settings.ts"), "utf8");
 
-    expect(assistantRoute).toContain("assertAiChatBookingEnabled");
-    expect(checkoutRoute).toContain("assertPaidChatBookingEnabled");
+    expect(assistantRoute).toContain("410");
+    expect(checkoutRoute).toContain("410");
+    expect(assistantRoute).not.toContain("createPublic");
+    expect(checkoutRoute).not.toContain("createConsultation");
     expect(manualRoute).toContain("assertManualReviewBookingEnabled");
     expect(bookingSettings).toContain("Manual consultation form is disabled. Use the consultation assistant.");
     expect(manualRoute).toContain('organizerMode: "manual"');

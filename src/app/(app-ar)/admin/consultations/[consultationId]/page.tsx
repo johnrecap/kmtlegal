@@ -9,6 +9,7 @@ import { consultationOutcomeReasonLabel, plan36ConsultationOutcomeCopy, plan37Co
 import { getAdminConsultationDetail, listAssignableLawyers } from "@/server/admin/consultation-review-service";
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { publicConsultationReference } from "@/server/consultations/consultation-service";
+import { conversationCopy } from "@/content/conversation-copy";
 import { adminNavForPath } from "../../admin-navigation";
 
 export const dynamic = "force-dynamic";
@@ -291,7 +292,8 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
                 <DetailItem label="المدينة" value={consultation.city} />
                 <DetailItem label="تصنيف داخلي مبدئي" value={consultationServiceCategoryLabel(consultation.serviceCategory)} />
                 <DetailItem label="طريقة التواصل" value={labelFrom(modeLabels, consultation.preferredMode)} />
-                <DetailItem label="رقم المرجع" value={<span dir="ltr">{publicConsultationReference(consultation.id)}</span>} />
+                <DetailItem label="رقم المرجع" value={<span dir="ltr">{consultation.publicReference ?? publicConsultationReference(consultation.id)}</span>} />
+                {consultation.requestedStartsAt && <DetailItem label={conversationCopy.ar.requested} value={formatDateTime(consultation.requestedStartsAt)} />}
                 <DetailItem label={plan37ConsultationOverdueCopy.list.creationDate} value={formatDateTime(consultation.createdAt)} />
                 {consultation.operationalTiming.isOverdueUnbooked && consultation.operationalTiming.overdueAt ? (
                   <DetailItem

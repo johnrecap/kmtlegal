@@ -10,6 +10,7 @@ import { documentDownloadHeaders } from "./download-headers";
 import { assertMalwareScanSafe } from "./malware-scan";
 import { assertUploadAllowed } from "./upload-policy";
 import { deletePrivateFileBestEffort, readPrivateFile, savePrivateFile } from "./vps-storage";
+import { assertVerifiedServiceClient } from "@/server/services/service-request-service";
 
 export const documentCategorySchema = z.enum(["CONTRACT", "COURT_FILE", "IDENTITY", "EVIDENCE", "PAYMENT", "OTHER"]);
 export const documentVisibilitySchema = z.enum(["CLIENT_VISIBLE", "STAFF_ONLY", "INTERNAL_ONLY"]);
@@ -17,6 +18,9 @@ export const documentVisibilitySchema = z.enum(["CLIENT_VISIBLE", "STAFF_ONLY", 
 export const documentUploadFieldsSchema = z.object({
   ownerClientId: uuidSchema.optional(),
   caseId: uuidSchema.optional(),
+  serviceRequestId: uuidSchema.optional(),
+  paymentId: uuidSchema.optional(),
+  delivery: z.boolean().default(false),
   category: documentCategorySchema.default("OTHER"),
   visibility: documentVisibilitySchema.optional()
 });
@@ -38,14 +42,32 @@ export async function uploadDocument(input: {
   requestId?: string;
 }) {
   const fields = parseWithSchema(documentUploadFieldsSchema, input.fields, "Document upload fields are invalid.");
-  assertDocumentUploadPermission(input.actor, fields);
+  let paymentOwner: string | null = null;
+  if (fields.paymentId) {
+    if (fields.serviceRequestId || fields.caseId || fields.delivery) throw new ApiError(400, "VALIDATION_ERROR", "Payment evidence cannot be a delivery.");
+    const payment = await prisma.payment.findFirst({ where: { id: fields.paymentId, client: { deletedAt: null }, ...(hasPermission(input.actor, "document.manage.any") ? {} : { clientId: input.actor.clientId ?? "00000000-0000-0000-0000-000000000000", client: { userId: input.actor.id, deletedAt: null } }) } });
+    if (!payment || payment.status === "DRAFT" || (fields.ownerClientId && fields.ownerClientId !== payment.clientId)) throw new ApiError(404, "NOT_FOUND", "Payment not found.");
+    paymentOwner = payment.clientId;
+  }
+  let serviceTarget: { clientId: string; assignedLawyerId: string | null; status: string } | null = null;
+  if (fields.serviceRequestId) {
+    serviceTarget = await prisma.serviceRequest.findUnique({ where: { id: fields.serviceRequestId }, select: { clientId: true, assignedLawyerId: true, status: true } });
+    if (!serviceTarget || ["COMPLETED", "CANCELLED"].includes(serviceTarget.status)) throw new ApiError(404, "NOT_FOUND", "Request not found.");
+    const own = input.actor.roleName === "Client" && input.actor.clientId === serviceTarget.clientId;
+    if (own) await assertVerifiedServiceClient(input.actor);
+    const staff = hasPermission(input.actor, "document.manage.any") || (hasPermission(input.actor, "case.update.assigned") && serviceTarget.assignedLawyerId === input.actor.id);
+    if ((!own && !staff) || (fields.delivery && (!staff || serviceTarget.status !== "IN_PROGRESS")) || fields.caseId || (fields.ownerClientId && fields.ownerClientId !== serviceTarget.clientId)) throw new ApiError(403, "PERMISSION_DENIED", "Request upload is not allowed.");
+  } else {
+    assertDocumentUploadPermission(input.actor, fields);
+    if (fields.delivery) throw new ApiError(400, "VALIDATION_ERROR", "A delivery needs a service request.");
+  }
   assertUploadAllowed(input.file);
   await assertMalwareScanSafe(input.file.bytes);
 
-  const ownerClientId =
+  const ownerClientId = paymentOwner ?? serviceTarget?.clientId ?? (
     input.actor.clientId && hasPermission(input.actor, "document.upload.self") && !hasPermission(input.actor, "document.manage.any")
       ? input.actor.clientId
-      : fields.ownerClientId ?? null;
+      : fields.ownerClientId ?? null);
 
   await assertDocumentUploadTargets(input.actor, fields, ownerClientId);
 
@@ -56,20 +78,33 @@ export async function uploadDocument(input: {
 
   await savePrivateFile({ fileKey, bytes: input.file.bytes });
 
-  const document = await prisma.document
-    .create({
+  const document = await prisma.$transaction(async tx => {
+    let deliveryVersion: number | null = null;
+    if (fields.serviceRequestId) {
+      await tx.$queryRaw`SELECT "id" FROM "service_requests" WHERE "id" = ${fields.serviceRequestId}::uuid FOR UPDATE`;
+      const current = await tx.serviceRequest.findUniqueOrThrow({ where: { id: fields.serviceRequestId } });
+      if (["COMPLETED", "CANCELLED"].includes(current.status) || (fields.delivery && current.status !== "IN_PROGRESS")) throw new ApiError(409, "CONFLICT", "The request changed during upload.");
+      if (!hasPermission(input.actor, "document.manage.any") && input.actor.clientId !== current.clientId && !(hasPermission(input.actor, "case.update.assigned") && current.assignedLawyerId === input.actor.id)) throw new ApiError(403, "PERMISSION_DENIED", "Request assignment changed.");
+      if (fields.delivery) deliveryVersion = ((await tx.document.aggregate({ where: { serviceRequestId: current.id }, _max: { deliveryVersion: true } }))._max.deliveryVersion ?? 0) + 1;
+      await tx.serviceRequest.update({ where: { id: current.id }, data: { revision: { increment: 1 } } });
+    }
+    return tx.document.create({
       data: {
         ownerClientId,
         caseId: fields.caseId ?? null,
+        serviceRequestId: fields.serviceRequestId,
+        paymentId: fields.paymentId,
+        deliveryVersion,
         uploadedById: input.actor.id,
         fileName: input.file.fileName,
         fileKey,
         fileType: input.file.mimeType,
         fileSize: input.file.sizeBytes,
-        category: fields.category,
-        visibility: fields.visibility ?? (ownerClientId ? "CLIENT_VISIBLE" : "STAFF_ONLY")
+        category: fields.paymentId ? "PAYMENT" : fields.category,
+        visibility: fields.delivery ? "CLIENT_VISIBLE" : fields.visibility ?? (ownerClientId ? "CLIENT_VISIBLE" : "STAFF_ONLY")
       }
-    })
+    });
+  })
     .catch(async (error: unknown) => {
       await deletePrivateFileBestEffort({ fileKey, requestId: input.requestId });
       throw error;
@@ -171,6 +206,7 @@ export async function getAuthorizedDocumentDownload(input: { actor: Principal; d
   const document = await prisma.document.findUnique({
     where: { id: documentId },
     include: {
+      serviceRequest: { select: { assignedLawyerId: true, client: { select: { userId: true } } } },
       ownerClient: {
         select: {
           id: true,
@@ -233,6 +269,7 @@ export async function getAuthorizedDocumentDownload(input: { actor: Principal; d
 
 type ReadableDocument = {
   visibility: string;
+  serviceRequest?: { assignedLawyerId: string | null; client: { userId: string | null } } | null;
   ownerClient?: { userId?: string | null; assignedLawyerId?: string | null } | null;
   case?: {
     assignedLawyerId?: string | null;
@@ -253,6 +290,7 @@ export function canReadDocument(actor: Principal, document: ReadableDocument) {
   }
 
   if (hasPermission(actor, "document.read.assigned")) {
+    if (document.serviceRequest) return document.serviceRequest.assignedLawyerId === actor.id;
     return document.ownerClient?.assignedLawyerId === actor.id || document.case?.assignedLawyerId === actor.id;
   }
 

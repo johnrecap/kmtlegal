@@ -1,0 +1,237 @@
+{
+  "baseline": "fd70576",
+  "scope": "Local synthetic verification; real integrations and native PostgreSQL/restore remain NOT_VERIFIED",
+  "full": {
+    "passed": 782,
+    "failedAssertions": 0,
+    "optionalPending": 55,
+    "files": 121,
+    "failedSuites": [
+      {
+        "file": "postgres-backup-tool-resolution.test.ts",
+        "message": "Git Bash is required for PostgreSQL backup resolver tests."
+      }
+    ],
+    "status": "NOT_VERIFIED",
+    "pendingAssertions": []
+  },
+  "focused": {
+    "passed": 29,
+    "failed": 0,
+    "pending": 0,
+    "files": [
+      {
+        "file": "daily-paired-backup.test.ts",
+        "status": "passed",
+        "assertions": [
+          {
+            "name": "daily paired backup coordinator includes protected recovery configuration in verified checksums before marking daily success",
+            "status": "passed"
+          },
+          {
+            "name": "daily paired backup coordinator preflights without stopping writers or copying data",
+            "status": "passed"
+          },
+          {
+            "name": "daily paired backup coordinator restarts every stopped writer after capture failure and does not prune old snapshots",
+            "status": "passed"
+          },
+          {
+            "name": "daily paired backup coordinator requires a current restore drill before downtime",
+            "status": "passed"
+          },
+          {
+            "name": "daily paired backup coordinator retains the newest 30 managed successes and never deletes unmanaged or malformed sets",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "conversation-intake-db.test.ts",
+        "status": "passed",
+        "assertions": [
+          {
+            "name": "representative conversational intake against isolated SQL database saves a multi-field conversational draft and makes message retries idempotent",
+            "status": "passed"
+          },
+          {
+            "name": "representative conversational intake against isolated SQL database delivers a hashed, single-use mailbox challenge and creates a fresh client before approval",
+            "status": "passed"
+          },
+          {
+            "name": "representative conversational intake against isolated SQL database requires ownership and current summary, creates one pending request and no appointment or payment",
+            "status": "passed"
+          },
+          {
+            "name": "representative conversational intake against isolated SQL database preserves failed messages for retry without inventing a saved request",
+            "status": "passed"
+          },
+          {
+            "name": "representative conversational intake against isolated SQL database accepts an owned alternative as requested only and rejects stale updates",
+            "status": "passed"
+          },
+          {
+            "name": "representative conversational intake against isolated SQL database requires authorized staff approval and exposes only the owned request and confirmed appointment",
+            "status": "passed"
+          },
+          {
+            "name": "representative conversational intake against isolated SQL database does not invoke AI after staff takes ownership",
+            "status": "passed"
+          },
+          {
+            "name": "representative conversational intake against isolated SQL database hands off a guest to the existing inbox, delivers staff replies and requires staff permission to resume AI",
+            "status": "passed"
+          },
+          {
+            "name": "representative conversational intake against isolated SQL database tracks 3000 + 2000 against 10000, idempotency, refunds and immutable corrections in both financial views",
+            "status": "passed"
+          },
+          {
+            "name": "representative conversational intake against isolated SQL database isolates contract drafts, requires quote acceptance and protects internal notes and delivery",
+            "status": "passed"
+          },
+          {
+            "name": "representative conversational intake against isolated SQL database holds health intake until office approval and preserves the questionnaire version of a saved draft",
+            "status": "passed"
+          },
+          {
+            "name": "representative conversational intake against isolated SQL database expires verification links, invalidates failed deliveries and throttles resends",
+            "status": "passed"
+          },
+          {
+            "name": "representative conversational intake against isolated SQL database recovers an existing verified client without duplication and revokes existing sessions",
+            "status": "passed"
+          },
+          {
+            "name": "representative conversational intake against isolated SQL database returns generic access responses for unknown recovery, existing activation and staff identities",
+            "status": "passed"
+          },
+          {
+            "name": "representative conversational intake against isolated SQL database stores private transfer evidence without settling it and enforces download ownership",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "payment-ledger-migration.test.ts",
+        "status": "passed",
+        "assertions": [
+          {
+            "name": "backfills paid invoices once and quarantines zero amounts and duplicate legacy receipts",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "phase-five-errors.test.ts",
+        "status": "passed",
+        "assertions": [
+          {
+            "name": "phase-five localized errors ar: preserves status/code without reflecting private validation details",
+            "status": "passed"
+          },
+          {
+            "name": "phase-five localized errors en: preserves status/code without reflecting private validation details",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "word-upload-policy.test.ts",
+        "status": "passed",
+        "assertions": [
+          {
+            "name": "bounded Word archive inspection accepts a Word package, not an arbitrary ZIP renamed docx",
+            "status": "passed"
+          },
+          {
+            "name": "bounded Word archive inspection rejects traversal, macros, duplicate names, oversized expansion and truncated directory",
+            "status": "passed"
+          },
+          {
+            "name": "bounded Word archive inspection cannot widen the approved five-megabyte/type policy through environment settings",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "phase-five-components.test.tsx",
+        "status": "passed",
+        "assertions": [
+          {
+            "name": "phase-five shared component consumers ar: renders verified service states and branded company entries",
+            "status": "passed"
+          },
+          {
+            "name": "phase-five shared component consumers en: renders verified service states and branded company entries",
+            "status": "passed"
+          },
+          {
+            "name": "phase-five shared component consumers keeps passwords in the separate verification form and records manual ledger entries",
+            "status": "passed"
+          }
+        ]
+      }
+    ]
+  },
+  "backupRecheck": {
+    "passed": 5,
+    "failed": 0,
+    "pending": 0,
+    "files": [
+      {
+        "file": "daily-paired-backup.test.ts",
+        "status": "passed",
+        "assertions": [
+          {
+            "name": "daily paired backup coordinator includes protected recovery configuration in verified checksums before marking daily success",
+            "status": "passed"
+          },
+          {
+            "name": "daily paired backup coordinator preflights without stopping writers or copying data",
+            "status": "passed"
+          },
+          {
+            "name": "daily paired backup coordinator restarts every stopped writer after capture failure and does not prune old snapshots",
+            "status": "passed"
+          },
+          {
+            "name": "daily paired backup coordinator requires a current restore drill before downtime",
+            "status": "passed"
+          },
+          {
+            "name": "daily paired backup coordinator retains the newest 30 managed successes and never deletes unmanaged or malformed sets",
+            "status": "passed"
+          }
+        ]
+      }
+    ]
+  },
+  "checks": {
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc --noEmit",
+      "exitCode": 0
+    },
+    "lint": {
+      "command": "node node_modules/next/dist/bin/next lint",
+      "exitCode": 0
+    },
+    "build": {
+      "command": "node node_modules/next/dist/bin/next build",
+      "exitCode": 0
+    },
+    "fullUnit": {
+      "command": "node node_modules/vitest/vitest.mjs run --reporter=json",
+      "exitCode": 1,
+      "reason": "Git Bash unavailable for one suite; no assertion failures"
+    },
+    "focused": {
+      "command": "node node_modules/vitest/vitest.mjs run tests/server/conversation-intake-db.test.ts tests/server/payment-ledger-migration.test.ts tests/server/phase-five-errors.test.ts tests/ops/daily-paired-backup.test.ts tests/server/word-upload-policy.test.ts tests/ui/phase-five-components.test.tsx",
+      "exitCode": 0
+    },
+    "backupRecheck": {
+      "command": "node node_modules/vitest/vitest.mjs run tests/ops/daily-paired-backup.test.ts",
+      "exitCode": 0
+    }
+  }
+}

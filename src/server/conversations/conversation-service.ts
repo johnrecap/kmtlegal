@@ -8,6 +8,7 @@ import { toPagination } from "@/server/http/pagination";
 import { assertClientPortalAccess } from "@/server/portal/client-portal-service";
 import { enforceRateLimit, rateLimiters } from "@/server/rate-limit/memory-rate-limit";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
+import { conversationCopy } from "@/content/conversation-copy";
 
 export const conversationThreadStatusSchema = z.enum(["OPEN", "WAITING_STAFF", "WAITING_CLIENT", "CLOSED", "ARCHIVED"]);
 
@@ -32,11 +33,12 @@ export const adminConversationListQuerySchema = z.object({
 export const adminConversationUpdateSchema = z
   .object({
     status: conversationThreadStatusSchema.optional(),
+    assistantMode: z.enum(["AI", "HUMAN"]).optional(),
     assignedToId: uuidSchema.nullish().or(z.literal("")),
     updatedAt: z.string().datetime({ offset: true })
   })
   .strict()
-  .refine((value) => value.status !== undefined || value.assignedToId !== undefined, {
+  .refine((value) => value.status !== undefined || value.assignedToId !== undefined || value.assistantMode !== undefined, {
     message: "At least one conversation update field is required."
   });
 
@@ -46,6 +48,7 @@ const ACTIVE_THREAD_STATUSES = ["OPEN", "WAITING_STAFF", "WAITING_CLIENT"] as co
 const ASSIGNABLE_ROLE_NAMES = ["Secretary", "Office Admin", "Super Admin"] as const;
 
 const listThreadInclude = {
+  assistantSession: { select: { humanOwned: true } },
   client: { select: { id: true, fullName: true, phone: true, email: true } },
   assignedTo: { select: { id: true, name: true, email: true } },
   messages: {
@@ -62,6 +65,7 @@ const listThreadInclude = {
 } satisfies Prisma.ConversationThreadInclude;
 
 const detailThreadInclude = {
+  assistantSession: { select: { humanOwned: true } },
   client: { select: { id: true, fullName: true, phone: true, email: true } },
   assignedTo: { select: { id: true, name: true, email: true } },
   messages: {
@@ -161,11 +165,12 @@ function serializeThread(thread: ListThread | DetailThread) {
     id: thread.id,
     status: thread.status,
     subject: thread.subject,
+    assistantMode: thread.assistantSession ? (thread.assistantSession.humanOwned ? "HUMAN" as const : "AI" as const) : null,
     client: {
-      id: thread.client.id,
-      fullName: thread.client.fullName,
-      phone: thread.client.phone,
-      email: thread.client.email
+      id: thread.client?.id ?? "",
+      fullName: thread.client?.fullName ?? conversationCopy.ar.guest,
+      phone: thread.client?.phone ?? "",
+      email: thread.client?.email ?? null
     },
     assignedTo: thread.assignedTo ? { id: thread.assignedTo.id, name: thread.assignedTo.name, email: thread.assignedTo.email } : null,
     lastMessageAt: thread.lastMessageAt.toISOString(),
@@ -471,6 +476,7 @@ export async function replyAdminConversation(input: {
       where: { id: thread.id },
       data: {
         status: "WAITING_CLIENT",
+        ...(thread.assistantSession ? { assistantSession: { update: { humanOwned: true, revision: { increment: 1 } } } } : {}),
         lastMessageAt: message.createdAt,
         closedAt: null
       },
@@ -508,6 +514,7 @@ export async function updateAdminConversation(input: {
   if (body.status !== undefined) {
     assertAdminConversationManage(input.actor);
   }
+  if (body.assistantMode !== undefined) assertAdminConversationManage(input.actor);
 
   if (body.assignedToId) {
     const assignee = await prisma.user.findFirst({
@@ -530,6 +537,13 @@ export async function updateAdminConversation(input: {
   if (body.status !== undefined) {
     updateData.status = body.status;
     updateData.closedAt = body.status === "CLOSED" || body.status === "ARCHIVED" ? new Date() : null;
+  }
+  if (body.assistantMode !== undefined) {
+    if (!thread.assistantSession) throw new ApiError(400, "BAD_REQUEST", "This conversation has no AI session.");
+    updateData.assistantSession = { update: { humanOwned: body.assistantMode === "HUMAN", revision: { increment: 1 } } };
+  }
+  if (thread.assistantSession && (body.status === "CLOSED" || body.status === "ARCHIVED")) {
+    updateData.assistantSession = { update: { humanOwned: true, revision: { increment: 1 } } };
   }
 
   let updated: DetailThread;

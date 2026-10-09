@@ -1,0 +1,38 @@
+
+Running 1 test using 1 worker
+
+(node:14756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\phase-five-final-links.spec.ts:6:5 › approved synthetic Health Check saves uncertainty in both languages; queues and private cache headers (3.0m)
+
+
+  1) [chromium] › tests\e2e\phase-five-final-links.spec.ts:6:5 › approved synthetic Health Check saves uncertainty in both languages; queues and private cache headers
+
+    Test timeout of 180000ms exceeded.
+
+    Error: locator.selectOption: Test ended.
+    Call log:
+      - waiting for getByLabel('طلب خدمة جديد', { exact: true })
+
+
+      24 |     const client = await context.newPage();
+      25 |     await client.goto("/client/requests", { waitUntil: "networkidle" });
+    > 26 |     await client.getByLabel(copy.newRequest, { exact: true }).selectOption("HEALTH_CHECK");
+         |                                                               ^
+      27 |     await client.getByRole("button", { name: copy.create, exact: true }).click();
+      28 |     await expect(client).toHaveURL(/\/client\/requests\/services\//);
+      29 |     await client.getByLabel(copy.name, { exact: true }).fill(locale === "ar" ? "شركة تجريبية" : "Synthetic company");
+        at C:\Users\UTD\Documents\Codex\RecoveredProjects\local-0efe82359eea107367d678c3c6ae29f0\kmt legal office\tests\e2e\phase-five-final-links.spec.ts:26:63
+
+    Error Context: .playwright\test-results\phase-five-final-links-app-da14c-s-and-private-cache-headers-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\test-results\phase-five-final-links-app-da14c-s-and-private-cache-headers-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\test-results\phase-five-final-links-app-da14c-s-and-private-cache-headers-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\phase-five-final-links.spec.ts:6:5 › approved synthetic Health Check saves uncertainty in both languages; queues and private cache headers

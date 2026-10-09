@@ -52,6 +52,9 @@ export async function POST(request: Request) {
       fields: {
         ownerClientId: stringField(formData, "ownerClientId"),
         caseId: stringField(formData, "caseId"),
+        serviceRequestId: stringField(formData, "serviceRequestId"),
+        paymentId: stringField(formData, "paymentId"),
+        delivery: stringField(formData, "delivery") === "true",
         category: stringField(formData, "category") ?? "OTHER",
         visibility: stringField(formData, "visibility")
       },

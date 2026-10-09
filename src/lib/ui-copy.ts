@@ -54,6 +54,7 @@ export const plan35AdminRouteLabels = {
   "admin.routes.dashboard.home": "لوحة التحكم",
   "admin.routes.consultations.availability": "أوقات الاستشارات",
   "admin.routes.consultations.list": "طلبات الاستشارة",
+  "admin.routes.serviceRequests.list": "طلبات العقود والفحص القانوني",
   "admin.routes.clients.list": "العملاء",
   "admin.routes.messages.list": "محادثات العملاء",
   "admin.routes.cases.list": "القضايا",

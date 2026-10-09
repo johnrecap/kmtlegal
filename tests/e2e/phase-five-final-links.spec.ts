@@ -1,0 +1,52 @@
+import { expect, test } from "@playwright/test";
+import { readFileSync } from "node:fs";
+import { serviceRequestCopy } from "../../src/content/service-request-copy";
+
+test.skip(process.env.RUN_PHASE_FIVE_FIXTURES !== "true", "Requires the isolated synthetic fixture database.");
+test("approved synthetic Health Check saves uncertainty in both languages; queues and private cache headers", async ({ browser, baseURL }) => {
+  test.setTimeout(180_000);
+  if (new URL(baseURL!).hostname !== "127.0.0.1") throw new Error("Local fixture only.");
+  const { users } = JSON.parse(readFileSync(".playwright/phase-five/fixtures.json", "utf8"));
+  const staff = await browser.newContext({ baseURL, extraHTTPHeaders: { Origin: baseURL! } });
+  await staff.addCookies([{ name: "kmt_session", value: users.admin.token, url: baseURL! }]);
+  const page = await staff.newPage();
+  await page.goto("/admin/service-requests", { waitUntil: "networkidle" });
+  const ar = serviceRequestCopy.ar;
+  await page.getByLabel(`${ar.questionAr} 1`, { exact: true }).fill("سؤال تجريبي: هل المستند متاح؟");
+  await page.getByLabel(`${ar.questionEn} 1`, { exact: true }).fill("Synthetic question: is the document available?");
+  await page.getByLabel(ar.approve, { exact: true }).check();
+  await page.getByRole("button", { name: ar.publish, exact: true }).click();
+  await expect(page.getByRole("status")).toHaveText(ar.saved);
+  for (const locale of ["ar", "en"] as const) {
+    const copy = serviceRequestCopy[locale];
+    const context = await browser.newContext({ baseURL, viewport: { width: 390, height: 900 } });
+    await context.addCookies([{ name: "kmt_session", value: users[locale].token, url: baseURL! }]);
+    const client = await context.newPage();
+    await client.goto("/client/requests", { waitUntil: "networkidle" });
+    await client.getByLabel(copy.newRequest, { exact: false }).selectOption("HEALTH_CHECK");
+    await client.getByRole("button", { name: copy.create, exact: true }).click();
+    await expect(client).toHaveURL(/\/client\/requests\/services\//);
+    await client.getByLabel(copy.name, { exact: true }).fill(locale === "ar" ? "شركة تجريبية" : "Synthetic company");
+    await client.getByLabel(copy.purpose, { exact: true }).fill(locale === "ar" ? "مراجعة المستندات التجريبية بواسطة المكتب." : "Office review of synthetic company documents.");
+    const question = locale === "ar" ? "سؤال تجريبي: هل المستند متاح؟" : "Synthetic question: is the document available?";
+    await client.getByLabel(question, { exact: false }).selectOption("UNSURE");
+    await client.getByRole("button", { name: copy.save, exact: true }).click();
+    await expect(client.getByRole("button", { name: copy.submit, exact: true })).toBeEnabled();
+    await client.reload({ waitUntil: "networkidle" });
+    await expect(client.getByLabel(question, { exact: false })).toHaveValue("UNSURE");
+    await expect(client.getByText(copy.noAutomatedResult, { exact: true })).toBeVisible();
+    await client.evaluate(() => scrollTo(0, 0));
+    await client.screenshot({ path: `.playwright/phase-five/health-${locale}-390.png`, fullPage: true });
+    await client.getByRole("button", { name: copy.submit, exact: true }).click();
+    await expect(client.getByText(copy.statuses.RECEIVED, { exact: true })).toBeVisible();
+    await context.close();
+  }
+  await page.goto("/admin", { waitUntil: "networkidle" });
+  await expect(page.getByRole("link", { name: new RegExp(ar.awaitingOffice) })).toHaveAttribute("href", "/admin/service-requests?status=RECEIVED");
+  await page.getByRole("link", { name: new RegExp(ar.awaitingOffice) }).click();
+  await expect(page).toHaveURL(/status=RECEIVED/);
+  await expect(page.locator("main")).toContainText(ar.kinds.HEALTH_CHECK);
+  const verify = await page.request.get("/account/verify?locale=en");
+  expect(verify.headers()["cache-control"]).toContain("no-store");
+  await staff.close();
+});

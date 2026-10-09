@@ -44,6 +44,7 @@ export const primaryConsultationAppointmentSelect = Prisma.validator<Prisma.Appo
 
 export const adminConsultationListSelect = Prisma.validator<Prisma.ConsultationRequestSelect>()({
   id: true,
+  publicReference: true,
   fullName: true,
   phone: true,
   email: true,
@@ -73,6 +74,10 @@ export const adminConsultationListSelect = Prisma.validator<Prisma.ConsultationR
 
 export const adminConsultationDetailSelect = Prisma.validator<Prisma.ConsultationRequestSelect>()({
   id: true,
+  publicReference: true,
+  requestedStartsAt: true,
+  requestedEndsAt: true,
+  assistantSession: { select: { id: true, humanOwned: true } },
   clientId: true,
   client: { select: { id: true, fullName: true, phone: true, email: true } },
   fullName: true,
@@ -138,7 +143,7 @@ export function toAdminConsultationListItem(row: AdminConsultationListRow, asOf 
   const primaryAppointment = row.appointments[0] ?? null;
   return {
     id: row.id,
-    reference: consultationReference(row.id),
+    reference: row.publicReference ?? consultationReference(row.id),
     fullName: row.fullName,
     phone: row.phone,
     email: row.email,

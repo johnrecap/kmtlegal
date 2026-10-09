@@ -88,6 +88,7 @@ type TaskPermissionProbe = {
 
 type DocumentPermissionProbe = {
   visibility: string;
+  serviceRequest?: { assignedLawyerId: string | null; client: { userId: string | null } } | null;
   ownerClient?: { userId?: string | null; assignedLawyerId?: string | null } | null;
   case?: {
     assignedLawyerId?: string | null;
@@ -155,7 +156,7 @@ export function documentScopeWhereForPrincipal(actor: Principal): Prisma.Documen
   if (hasPermission(actor, "document.read.assigned")) {
     return {
       deletedAt: null,
-      OR: [{ ownerClient: { assignedLawyerId: actor.id } }, { case: { assignedLawyerId: actor.id } }]
+      OR: [{ serviceRequest: { assignedLawyerId: actor.id } }, { serviceRequestId: null, OR: [{ ownerClient: { assignedLawyerId: actor.id } }, { case: { assignedLawyerId: actor.id } }] }]
     };
   }
 
@@ -315,6 +316,7 @@ async function findDocumentForAction(actor: Principal, documentIdInput: string) 
   const document = await prisma.document.findUnique({
     where: { id: documentId },
     include: {
+      serviceRequest: { select: { assignedLawyerId: true, client: { select: { userId: true } } } },
       ownerClient: { select: { id: true, fullName: true, userId: true, assignedLawyerId: true } },
       case: {
         select: {

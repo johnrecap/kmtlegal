@@ -6,6 +6,68 @@ datasource db {
   provider = "postgresql"
 }
 
+// Guest capability is stored hashed. Identity is linked only by authenticated action or mailbox verification.
+model AssistantSession {
+  id                    String @id @default(uuid()) @db.Uuid
+  capabilityHash        String @unique
+  locale                String @default("ar")
+  clientId              String? @db.Uuid
+  client                Client? @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  consultationRequestId String? @unique @db.Uuid
+  consultationRequest   ConsultationRequest? @relation(fields: [consultationRequestId], references: [id], onDelete: Restrict)
+  conversationThreadId  String? @unique @db.Uuid
+  conversationThread    ConversationThread? @relation(fields: [conversationThreadId], references: [id], onDelete: Restrict)
+  draft                 Json @default("{}")
+  humanOwned            Boolean @default(false)
+  revision              Int @default(0)
+  leaseId               String? @db.Uuid
+  leaseExpiresAt        DateTime?
+  expiresAt             DateTime
+  turns                 AssistantTurn[]
+  verificationTokens    ClientVerificationToken[]
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([humanOwned, updatedAt])
+  @@index([expiresAt])
+  @@map("assistant_sessions")
+}
+
+model AssistantTurn {
+  id             String @id @default(uuid()) @db.Uuid
+  sessionId      String @db.Uuid
+  session        AssistantSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  messageId      String @db.Uuid
+  userText       String
+  protocol       Json @default("[]")
+  assistantText  String?
+  status         String @default("PENDING")
+  errorCode      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([sessionId, messageId])
+  @@index([sessionId, createdAt])
+  @@map("assistant_turns")
+}
+
+model ClientVerificationToken {
+  id          String @id @default(uuid()) @db.Uuid
+  sessionId   String @db.Uuid
+  session     AssistantSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  tokenHash   String @unique
+  email       String
+  purpose     String @default("ACTIVATE")
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([sessionId, createdAt])
+  @@index([expiresAt])
+  @@map("client_verification_tokens")
+}
+
 enum RoleStatus {
   ACTIVE
   DISABLED
@@ -340,6 +402,7 @@ model User {
   email                   String                    @unique
   phone                   String?
   passwordHash            String?
+  emailVerifiedAt         DateTime?
   roleId                  String                    @db.Uuid
   role                    Role                      @relation(fields: [roleId], references: [id])
   status                  UserStatus                @default(INVITED)
@@ -359,6 +422,10 @@ model User {
   createdTasks            Task[]                    @relation("TaskCreator")
   internalNotes           InternalNote[]            @relation("InternalNoteAuthor")
   createdPayments         Payment[]                 @relation("PaymentCreator")
+  approvedPaymentEntries  PaymentEntry[]
+  assignedServiceRequests ServiceRequest[] @relation("ServiceRequestLawyer")
+  serviceRequestEvents ServiceRequestEvent[] @relation("ServiceEventActor")
+  approvedQuestionnaires HealthQuestionnaire[] @relation("QuestionnaireApprover")
   updatedPricingRules     ConsultationPricingRule[] @relation("ConsultationPricingRuleUpdater")
   twoFactorCredential     StaffTwoFactorCredential?
   emailOtpChallenges      EmailOtpChallenge[]
@@ -427,6 +494,8 @@ model Client {
   payments             Payment[]
   paymentAttempts      PaymentAttempt[]
   conversationThreads  ConversationThread[]
+  assistantSessions    AssistantSession[]
+  serviceRequests      ServiceRequest[]
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   deletedAt            DateTime?
@@ -494,6 +563,10 @@ model ConsultationRequest {
   status            ConsultationStatus @default(NEW)
   aiClassification  Json?
   aiSummary         String?
+  requestedStartsAt DateTime?
+  requestedEndsAt   DateTime?
+  publicReference   String?            @unique
+  assistantSession  AssistantSession?
   assignedLawyerId  String?            @db.Uuid
   assignedLawyer    User?              @relation("AssignedLawyerConsultations", fields: [assignedLawyerId], references: [id], onDelete: SetNull)
   secretaryReviewedAt DateTime?
@@ -640,6 +713,11 @@ model Document {
   ownerClientId String?            @db.Uuid
   ownerClient   Client?            @relation(fields: [ownerClientId], references: [id], onDelete: SetNull)
   caseId        String?            @db.Uuid
+  serviceRequestId String?         @db.Uuid
+  serviceRequest ServiceRequest?   @relation(fields: [serviceRequestId], references: [id], onDelete: Restrict)
+  deliveryVersion Int?
+  paymentId String? @db.Uuid
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: Restrict)
   case          LegalCase?         @relation(fields: [caseId], references: [id], onDelete: SetNull)
   uploadedById  String             @db.Uuid
   uploadedBy    User               @relation("DocumentUploader", fields: [uploadedById], references: [id])
@@ -656,11 +734,76 @@ model Document {
 
   @@index([ownerClientId])
   @@index([caseId])
+  @@unique([serviceRequestId, deliveryVersion])
+  @@index([paymentId])
   @@index([uploadedById])
   @@index([status])
   @@index([category])
   @@index([createdAt])
   @@map("documents")
+}
+
+model ServiceRequest {
+  id String @id @default(uuid()) @db.Uuid
+  reference String @unique
+  clientId String @db.Uuid
+  client Client @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  assignedLawyerId String? @db.Uuid
+  assignedLawyer User? @relation("ServiceRequestLawyer", fields: [assignedLawyerId], references: [id], onDelete: Restrict)
+  paymentId String? @unique @db.Uuid
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  conversationThreadId String? @unique @db.Uuid
+  conversationThread ConversationThread? @relation(fields: [conversationThreadId], references: [id], onDelete: Restrict)
+  sourceRequestId String? @db.Uuid
+  sourceRequest ServiceRequest? @relation("ServiceFollowUps", fields: [sourceRequestId], references: [id], onDelete: Restrict)
+  followUps ServiceRequest[] @relation("ServiceFollowUps")
+  kind String
+  locale String
+  status String @default("DRAFT")
+  intake Json
+  questionnaireId String? @db.Uuid
+  questionnaire HealthQuestionnaire? @relation(fields: [questionnaireId], references: [id], onDelete: Restrict)
+  quote Json?
+  quoteVersion Int @default(0)
+  acceptedQuoteVersion Int?
+  revision Int @default(0)
+  idempotencyKey String
+  documents Document[]
+  events ServiceRequestEvent[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([clientId, idempotencyKey])
+  @@index([status, createdAt])
+  @@index([assignedLawyerId])
+  @@index([sourceRequestId])
+  @@map("service_requests")
+}
+
+model ServiceRequestEvent {
+  id String @id @default(uuid()) @db.Uuid
+  requestId String @db.Uuid
+  request ServiceRequest @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  actorId String @db.Uuid
+  actor User @relation("ServiceEventActor", fields: [actorId], references: [id], onDelete: Restrict)
+  action String
+  body String? @db.Text
+  internal Boolean @default(false)
+  createdAt DateTime @default(now())
+  @@index([requestId, createdAt])
+  @@map("service_request_events")
+}
+
+model HealthQuestionnaire {
+  id String @id @default(uuid()) @db.Uuid
+  version Int @unique
+  questions Json
+  approvedById String? @db.Uuid
+  approvedBy User? @relation("QuestionnaireApprover", fields: [approvedById], references: [id], onDelete: Restrict)
+  approvedAt DateTime?
+  published Boolean @default(false)
+  requests ServiceRequest[]
+  createdAt DateTime @default(now())
+  @@map("health_questionnaires")
 }
 
 model Task {
@@ -728,6 +871,10 @@ model Payment {
   receiptNumber         String?
   paidAt                DateTime?
   notes                 String?
+  ledgerReviewRequired  Boolean @default(false)
+  entries               PaymentEntry[]
+  serviceRequest        ServiceRequest?
+  documents             Document[]
   createdById           String?              @db.Uuid
   createdBy             User?                @relation("PaymentCreator", fields: [createdById], references: [id], onDelete: SetNull)
   createdAt             DateTime             @default(now())
@@ -742,6 +889,32 @@ model Payment {
   @@index([dueDate])
   @@index([createdAt])
   @@map("payments")
+}
+
+model PaymentEntry {
+  id                String @id @default(uuid()) @db.Uuid
+  paymentId         String @db.Uuid
+  payment           Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  kind              String
+  amount            Decimal @db.Decimal(12, 2)
+  currency          Currency
+  method            String
+  receiptNumber     String
+  occurredAt        DateTime
+  approvedById      String? @db.Uuid
+  approvedBy        User? @relation(fields: [approvedById], references: [id], onDelete: Restrict)
+  idempotencyKey    String
+  externalReference String? @unique
+  reversesEntryId   String? @unique @db.Uuid
+  reversesEntry     PaymentEntry? @relation("EntryReversal", fields: [reversesEntryId], references: [id], onDelete: Restrict)
+  reversal         PaymentEntry? @relation("EntryReversal")
+  reason            String?
+  createdAt         DateTime @default(now())
+
+  @@unique([paymentId, idempotencyKey])
+  @@index([paymentId, occurredAt])
+  @@index([approvedById])
+  @@map("payment_entries")
 }
 
 model ConsultationPricingRule {
@@ -1063,8 +1236,8 @@ model ContactMessage {
 
 model ConversationThread {
   id             String                   @id @default(uuid()) @db.Uuid
-  clientId       String                   @db.Uuid
-  client         Client                   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId       String?                  @db.Uuid
+  client         Client?                  @relation(fields: [clientId], references: [id], onDelete: Cascade)
   status         ConversationThreadStatus @default(OPEN)
   subject        String?
   assignedToId   String?                  @db.Uuid
@@ -1072,6 +1245,8 @@ model ConversationThread {
   lastMessageAt  DateTime                 @default(now())
   closedAt       DateTime?
   messages       ConversationMessage[]
+  assistantSession AssistantSession?
+  serviceRequest ServiceRequest?
   createdAt      DateTime                 @default(now())
   updatedAt      DateTime                 @updatedAt
 

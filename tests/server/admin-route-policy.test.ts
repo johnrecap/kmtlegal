@@ -61,17 +61,17 @@ const ADMIN_PAGE_FILES = [
 ] as const;
 
 describe("PLAN-35 canonical admin route policy", () => {
-  it("keeps one final nineteen-route by five-role fixture", () => {
-    expect(FINAL_PLAN35_ADMIN_ROUTE_MATRIX).toHaveLength(19);
-    expect(new Set(FINAL_PLAN35_ADMIN_ROUTE_MATRIX.map(({ id }) => id)).size).toBe(19);
+  it("keeps the original nineteen routes plus the phase-five request route across five roles", () => {
+    expect(FINAL_PLAN35_ADMIN_ROUTE_MATRIX).toHaveLength(20);
+    expect(new Set(FINAL_PLAN35_ADMIN_ROUTE_MATRIX.map(({ id }) => id)).size).toBe(20);
     for (const item of FINAL_PLAN35_ADMIN_ROUTE_MATRIX) {
       expect(Object.keys(item.defaultAccess).sort()).toEqual([...PLAN35_ROLE_KEYS].sort());
     }
   });
 
-  it("registers the nineteen executable destinations", () => {
+  it("registers all twenty executable destinations", () => {
     expect(ADMIN_ROUTE_POLICIES.map(({ id }) => id)).toEqual(PLAN35_IMPLEMENTED_ADMIN_ROUTES.map(({ id }) => id));
-    expect(PLAN35_IMPLEMENTED_ADMIN_ROUTES).toHaveLength(19);
+    expect(PLAN35_IMPLEMENTED_ADMIN_ROUTES).toHaveLength(20);
   });
 
   it("has no undiscoverable destination after governance activation", () => {

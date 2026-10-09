@@ -8,6 +8,7 @@ import { conversationStatusLabels, formatDateTime, labelFrom } from "@/lib/legal
 import { useSafePolling } from "@/lib/use-safe-polling";
 import { AdminApiError, readAdminApiResponse } from "@/features/admin/shared/admin-api-error";
 import { repairCopy } from "@/features/admin/shared/repair-copy";
+import { conversationCopy } from "@/content/conversation-copy";
 
 type ConversationMessage = {
   id: string;
@@ -18,6 +19,7 @@ type ConversationMessage = {
 };
 
 type ConversationThread = {
+  assistantMode?: "AI" | "HUMAN" | null;
   id: string;
   status: string;
   subject: string | null;
@@ -36,7 +38,7 @@ type ConversationAssignee = {
   role: { name: string };
 };
 
-type ThreadUpdate = { status?: string; assignedToId?: string | null };
+type ThreadUpdate = { status?: string; assignedToId?: string | null; assistantMode?: "AI" | "HUMAN" };
 
 function statusTone(status: string) {
   if (status === "WAITING_STAFF") return "pending" as const;
@@ -353,6 +355,9 @@ export function AdminMessageThreadPanel({
         <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
           <h3 className="text-base font-semibold text-foreground">إدارة المحادثة</h3>
           <div className="mt-4 space-y-4">
+            {thread.assistantMode && canManage && <Button type="button" variant="outline" disabled={isUpdating || isSending || managementDirty || thread.status === "CLOSED" || thread.status === "ARCHIVED"} onClick={() => void updateThread({ assistantMode: thread.assistantMode === "HUMAN" ? "AI" : "HUMAN" })}>
+              {thread.assistantMode === "HUMAN" ? conversationCopy.ar.resume : conversationCopy.ar.takeOver}
+            </Button>}
             <label className="block text-sm font-semibold text-muted-foreground">المسؤول
               <select className="mt-2 min-h-11 w-full rounded border border-input bg-surface px-3 text-foreground outline-none focus:border-primary" value={draftAssigneeId} disabled={!canAssign || isUpdating || isSending || isReviewingLatest} onChange={(event) => { beginManagementEdit("assignee"); setDraftAssigneeId(event.target.value); }}>
                 <option value="">غير معين</option>{assignees.map((assignee) => <option key={assignee.id} value={assignee.id}>{assignee.name} - {assignee.role.name}</option>)}

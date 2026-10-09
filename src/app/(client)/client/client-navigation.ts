@@ -1,10 +1,12 @@
 import type { DashboardNavItem } from "@/components/layout";
 import { getClientContent, type ClientLocale } from "@/content/client-content";
+import { conversationCopy } from "@/content/conversation-copy";
 
 export function clientNavForPath(pathname: string, locale: ClientLocale): DashboardNavItem[] {
   const copy = getClientContent(locale).nav;
   const clientNavItems: DashboardNavItem[] = [
     { label: copy.home, href: "/client", icon: "home" },
+    { label: conversationCopy[locale].requests, href: "/client/requests", icon: "receipt_long" },
     { label: copy.cases, href: "/client/cases", icon: "cases" },
     { label: copy.appointments, href: "/client/court-dates", icon: "event" },
     { label: copy.files, href: "/client/files", icon: "folder" },

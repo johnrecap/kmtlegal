@@ -1,4 +1,6 @@
 import { paymentRequiresReview, paymentNeedsOrderVerification } from "@/lib/legal-finance";
+import { PaymentLedgerView } from "@/features/portal/payment-ledger-view";
+import { PaymentProofForm } from "@/features/portal/payment-proof-form";
 import Link from "next/link";
 import { paymentReviewCopy } from "@/lib/ui-copy";
 import { ClientPortalMetric, ClientSiteShell, clientPortalRowClass, clientPortalSecondaryActionClass, clientPortalTableClass } from "@/components/layout";
@@ -68,7 +70,7 @@ function paymentColumns(copy: ClientContent, locale: ClientLocale): Array<DataTa
     header: copy.common.invoice,
     render: (row) => (
       <div>
-        <p className="font-semibold text-kmt-ink">{row.invoiceNumber}</p>
+        <p className="break-all font-semibold text-kmt-ink"><bdi>{row.invoiceNumber}</bdi></p>
         {row.receiptNumber ? <p className="mt-1 text-xs text-kmt-muted">{copy.common.receipt}: {row.receiptNumber}</p> : null}
       </div>
     )
@@ -173,6 +175,7 @@ export default async function ClientPaymentsPage() {
         </div>
         {payments.some(row => paymentRequiresReview(row.paymentAttempt)) ? <p className="text-sm text-kmt-muted">{paymentReviewCopy[locale].totals}</p> : null}
         <GatewayAttemptCards attempts={activeGatewayAttempts} copy={copy} locale={locale} />
+        <div className="grid min-w-0 gap-4 xl:grid-cols-2">{payments.map(payment => <div className="min-w-0 space-y-3" key={payment.id}><PaymentLedgerView invoice={payment} locale={locale} />{payment.status !== "CANCELLED" && <PaymentProofForm paymentId={payment.id} locale={locale} />}</div>)}</div>
         <DataTable
           className={clientPortalTableClass}
           columns={paymentColumns(copy, locale)}

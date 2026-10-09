@@ -1,5 +1,49 @@
 # Server Commands
 
+## Phase five — account, assistant, services, ledger and daily backup
+
+Update after testing all five additive migrations on a disposable copy and taking a paired DB/uploads backup. Existing client history is preserved; unresolved legacy invoice conflicts are marked for manual reconciliation.
+
+```bash
+cd /www/wwwroot/kmtlegal
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+The user authorized the maintenance window and this implementation; no additional conceptual approval is needed. Actual production access and operational receipts are not supplied by local tests. Keep the existing payment reconciliation/maintenance worker for historical transactions. Do not enable general notifications or modify the contact form as part of this update.
+
+Configure through the protected server environment, never Git or chat: `AI_PROVIDER`, `AI_BASE_URL` if needed, `AI_MODEL`, `AI_API_KEY`, existing timeout/token budgets; `CLIENT_ACCOUNT_EMAIL_ENABLED=true`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, and the provider's SMTP authentication/TLS settings. Keep `SMTP_ENABLED=false`: the account purpose gate enables only verification/recovery email. Select a provider/model that supports tool calling; the adapter uses the existing [OpenRouter tool protocol](https://openrouter.ai/docs/guides/features/tool-calling). No live model or mailbox test was possible in the local environment (credentials absent).
+
+The generated Nginx policy and Next headers now bypass caching for `/account/*`. Reapply the existing Cloudflare cache rules (commands below) if that integration is in use, then verify `Cache-Control: no-store` on the actual account-verification page.
+
+After restart, verify both languages: public chat → actual delivered mailbox link → password creation → own pending request → staff approval → own appointment. Check expiry, resend, recovery, two simultaneous appointment approvals and staff takeover. Account activation must not create an appointment. Test real ClamAV clean-file/EICAR/unavailable cases and cross-client downloads. Run contract quote/acceptance/delivery, Health Check approved questionnaire/report, and the 10,000/3,000/2,000 ledger example with designated test accounts. Delete test data through appropriate application workflows; never erase ledger history. Approve actual questionnaire/content in the office before publication.
+
+### Daily paired backup at 03:00 Cairo
+
+Use aaPanel **Cron → Add Task → Shell Script → Daily → 03:00**, execute as the same Unix user that owns the application's PM2 processes. This follows [aaPanel's Cron documentation](https://www.aapanel.com/docs/Function/Cron.html). Use a shell task for the paired PostgreSQL/private-uploads snapshot, not the site's files-only backup task.
+
+Before scheduling:
+
+1. Verify `timedatectl show --property=Timezone --value` returns `Africa/Cairo`. Use the IANA zone, not a fixed UTC offset, so Egypt's daylight-saving changes are handled. Check other server schedules before changing its timezone.
+2. In protected `.env.production.local`, set `DATABASE_BACKUP_DIR=/www/backup/kmtlegal`, `DAILY_BACKUP_RESTORE_RECEIPT=/www/backup/kmtlegal-restore-receipt.json`, and a matching PostgreSQL client directory through `POSTGRES_BACKUP_BIN_DIR`. `KMT_OPERATIONS_LOCK` defaults to `/www/backup/kmtlegal-operations.lock`; deploy and backup must use the same value. List any other PM2 writers in `KMT_ADDITIONAL_WRITER_APPS`, comma-separated. No unmanaged writer may run during capture.
+3. Verify the Cron user's Node/PM2/PostgreSQL/PATH and `PM2_HOME`; use the actual paths returned on your server. Run the non-disruptive preflight:
+
+```bash
+cd /www/wwwroot/kmtlegal
+bash deploy/install/aapanel-daily-backup.sh --preflight
+```
+
+4. Perform the isolated restore drill in the linked runbook. Only after it succeeds, write a mode-600 JSON receipt at `DAILY_BACKUP_RESTORE_RECEIPT` containing `restoreDrillVerified: true`, `clientAndDocumentCheckVerified: true`, and the actual ISO `verifiedAt` timestamp. Include the tested set ID, release and evidence paths for traceability. Do not create a success receipt merely to bypass the gate. Repeat at least every 30 days; the coordinator refuses downtime if the receipt is older than 31 days.
+5. Run one supervised backup, verify restart/health and the new set, then enable the Daily task with this script content:
+
+```bash
+cd /www/wwwroot/kmtlegal
+bash deploy/install/aapanel-daily-backup.sh
+```
+
+The wrapper locks against deployment, checks free space/tools, stops the declared PM2 writers, captures DB+uploads, includes `recovery.env` with mode 600/checksum, restarts services and checks health. SIGINT/SIGTERM and ordinary errors enter recovery; power loss/SIGKILL still require operator recovery. It retains the newest 30 successful managed daily sets only; failures never prune old sets or unrelated aaPanel backups. Daily status files are `daily-last-attempt.json` and `daily-last-success.json` under the backup root (time, bytes, duration, set ID, recovery result). Inspect aaPanel's Cron log and PM2 after failure. Local copies do not cover total server loss; off-server storage remains deferred.
+
+No daily job, production backup or restoration has been executed by this local delivery. The deployment script shares the lock but its existing automatic backup remains DB-only; the separate daily paired task covers private uploads.
+
 ## Public website phase two — 2026-10-09
 
 ```bash

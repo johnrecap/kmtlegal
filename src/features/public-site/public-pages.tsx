@@ -52,6 +52,7 @@ import { cn } from "@/lib/cn";
 import { publicSiteOrigin } from "@/lib/public-site-origin";
 import { publicExpansion, publicArticleCategory } from "@/content/public-expansion";
 import { OurFirmPageView, IndustriesPageView } from "./firm-industries-pages";
+import { BusinessDeskSection, ManagedServiceSection } from "./business-desk";
 import { alternatePublicLanguages, availableAlternatePublicLanguages, localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 import {
   listPublishedArticleCards,
@@ -59,7 +60,7 @@ import {
   getPublishedArticleBySlug,
   getPublishedCaseStudyBySlug
 } from "@/server/public/content-service";
-import { getPublicConsultationBookingMode } from "@/server/consultations/consultation-booking-settings";
+import { conversationCopy } from "@/content/conversation-copy";
 
 export function publicPageMetadata(
   locale: PublicLocale,
@@ -320,6 +321,7 @@ export function HomePageView({ locale }: { locale: PublicLocale }) {
       <PublicSection eyebrow={copy.industriesEyebrow} title={copy.industriesTitle} description={copy.industriesDescription}>
         <IndustryLedger industries={content.publicIndustries} />
       </PublicSection>
+      <BusinessDeskSection locale={locale} />
 
       <PublicSection surface="muted" accent="section" eyebrow={copy.teamEyebrow} title={copy.teamTitle} description={copy.teamDescription} descriptionHighlight={locale === "ar" ? "مسارات الخبرة" : "expertise paths"} descriptionEmphasis="subtle">
         <FocusCards
@@ -568,6 +570,9 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
           </AccordionItem>
         </Accordion>
       </PublicSection>
+      {service.slug === "contracts" && <ManagedServiceSection locale={locale} />}
+      {service.slug === "corporate-business-services" && <ManagedServiceSection locale={locale} health />}
+      {["contracts", "company-formation", "corporate-business-services"].includes(service.slug) && <BusinessDeskSection locale={locale} />}
     </PublicShell>
   );
 }
@@ -1086,23 +1091,16 @@ export async function BookConsultationPageView({ locale }: { locale: PublicLocal
   noStore();
   const content = getPublicContent(locale);
   const copy = content.bookingPage;
-  const chatCopy = content.bookingChat;
-  await getPublicConsultationBookingMode();
+  const chatCopy = conversationCopy[locale];
 
   return (
     <PublicShell currentPath={localizedPublicHref("/book-consultation", locale)} locale={locale} navItems={navForPath("/book-consultation", locale)}>
       <BookingFlowHeader
         eyebrow={copy.heroEyebrow}
-        title={chatCopy.heroTitle}
-        description={chatCopy.heroDescription}
+        title={chatCopy.title}
+        description={chatCopy.introduction}
         locale={locale}
       />
-      {/*
-        One centered assistant console (64rem ≈ 1024px workspace): compact
-        intro above, the Consultation Assistant, footer below. No side
-        panels, no external progress, no after-submit rail — everything
-        operational lives inside the assistant.
-      */}
       <div className="mx-auto w-full max-w-[56rem] px-4 py-8 sm:px-6 md:py-10 lg:px-8">
         <Suspense fallback={<div aria-hidden="true" className={cn(publicPanel, "min-h-[32rem] rounded-[1.75rem] border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-shell)]")} />}>
           <ConsultationBookingChatFromQuery locale={locale} />

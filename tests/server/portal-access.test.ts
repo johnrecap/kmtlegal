@@ -39,6 +39,7 @@ function authContextForPrincipal(principal: Principal): AuthContext {
       email: "portal@example.com",
       phone: null,
       passwordHash: "hash",
+      emailVerifiedAt: null,
       locale: "ar",
       status: "ACTIVE",
       roleId: "55555555-5555-4555-8555-555555555555",

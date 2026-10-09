@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ServiceRequestQueues } from "@/features/admin/dashboard/service-request-queues";
 import { DashboardShell } from "@/components/layout";
 import { AdminCommandCenter } from "@/features/admin/dashboard/admin-command-center";
 import { AdminNotificationBell } from "@/features/admin/notifications/admin-notification-bell";
@@ -35,6 +36,7 @@ export default async function AdminHomePage() {
       title={plan35DashboardUiCopy.shellTitle}
       userLabel={guard.context.user.name}
     >
+      <ServiceRequestQueues actor={guard.context.principal} />
       <AdminCommandCenter principal={guard.context.principal} snapshot={snapshot} />
     </DashboardShell>
   );

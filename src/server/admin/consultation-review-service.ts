@@ -17,6 +17,7 @@ import { toPagination } from "@/server/http/pagination";
 import { canonicalPhone } from "@/server/phone/phone-normalization";
 import { parseWithSchema, uuidSchema } from "@/server/validation/schemas";
 import { legalCaseReference } from "./legal-case-reference";
+import { assertRequestedSlotAtApproval } from "@/server/consultations/consultation-availability-service";
 import {
   syncConsultationOutcomeNotifications,
   unreviewedConsultationWhere
@@ -211,6 +212,7 @@ function listBaseWhere(
         ? {
             OR: [
               { fullName: { contains: search, mode: "insensitive" } },
+              { publicReference: { contains: search, mode: "insensitive" } },
               { phone: { contains: search, mode: "insensitive" } },
               { email: { contains: search, mode: "insensitive" } },
               { summary: { contains: search, mode: "insensitive" } },
@@ -398,7 +400,11 @@ export async function scheduleConsultation(input: {
           assignedLawyerId: true,
           secretaryReviewedAt: true,
           outcomeStatus: true,
-          outcomeVersion: true
+          outcomeVersion: true,
+          requestedStartsAt: true,
+          preferredMode: true,
+          requestedEndsAt: true,
+          assistantSession: { select: { id: true } }
         }
       });
       if (!consultation) {
@@ -421,6 +427,14 @@ export async function scheduleConsultation(input: {
         throw consultationStateChangedError();
       }
       await assertAssignableLawyer(body.assignedLawyerId, tx);
+
+      if (consultation.assistantSession) {
+          if (consultation.preferredMode !== body.mode || (consultation.requestedStartsAt &&
+            (consultation.requestedStartsAt.getTime() !== startsAt.getTime() || consultation.requestedEndsAt?.getTime() !== endsAt.getTime()))) {
+          throw new ApiError(409, "CONFLICT", "Ask the client to choose an alternative before changing their requested time.");
+        }
+        await assertRequestedSlotAtApproval({ client: tx, startsAt, endsAt, mode: body.mode, now: transactionNow });
+      }
 
       const client = consultation.clientId
         ? await tx.client.update({

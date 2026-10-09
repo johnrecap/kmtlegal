@@ -2,6 +2,7 @@ import { z } from "zod";
 import { parseWithSchema } from "@/server/validation/schemas";
 
 export type EmailTemplateKey =
+  | "client_account_access"
   | "consultation_confirmation"
   | "staff_notification"
   | "staff_2fa_email_otp"
@@ -14,6 +15,9 @@ export const emailRecipientSchema = z.object({
 });
 
 const templateSchemas = {
+  client_account_access: z.object({
+    url: z.string().url(), locale: z.enum(["ar", "en"]), purpose: z.enum(["ACTIVATE", "RECOVER", "LOGIN"])
+  }),
   consultation_confirmation: z.object({
     fullName: z.string().min(1),
     reference: z.string().min(1)
@@ -38,6 +42,16 @@ const templateSchemas = {
 
 export function renderEmailTemplate(templateKey: EmailTemplateKey, data: unknown) {
   switch (templateKey) {
+    case "client_account_access": {
+      const parsed = parseWithSchema(templateSchemas.client_account_access, data);
+      const ar = parsed.locale === "ar";
+      return {
+        subject: ar ? "الوصول الآمن إلى حسابك لدى KMT Legal" : "Secure access to your KMT Legal account",
+        text: parsed.purpose === "LOGIN"
+          ? (ar ? `لديك حساب بالفعل. سجّل الدخول للمتابعة: ${parsed.url}\nإذا لم تطلب ذلك، يمكنك تجاهل هذه الرسالة.` : `You already have an account. Sign in to continue: ${parsed.url}\nIf you did not request this, ignore this message.`)
+          : (ar ? `استخدم الرابط التالي للتحقق من بريدك وإعداد كلمة المرور. ينتهي خلال 30 دقيقة ويُستخدم مرة واحدة:\n${parsed.url}\nلا تشارك الرابط أو كلمة المرور في المحادثة. إذا لم تطلب ذلك، تجاهل هذه الرسالة.` : `Use this single-use link to verify your email and set your password. It expires in 30 minutes:\n${parsed.url}\nDo not share this link or your password in chat. If you did not request this, ignore this message.`)
+      };
+    }
     case "consultation_confirmation": {
       const parsed = parseWithSchema(templateSchemas.consultation_confirmation, data);
       return {

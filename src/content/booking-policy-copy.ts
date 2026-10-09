@@ -1,0 +1,8 @@
+export const bookingPolicyCopy = {
+  ar: { title: "اعتماد المواعيد والأتعاب", approval: "المواعيد الجديدة تعتمدها الإدارة فقط. إرسال الطلب أو تفعيل الحساب أو تسجيل دفعة لا يؤكد الموعد.", fees: "أتعاب الاستشارة تُحدد وتُتابع بصورة مستقلة بعد مراجعة المكتب؛ لا يُطلب دفع داخل المحادثة الجديدة.", legacyLabel: "إعداد التوافق لمسارات الدفع السابقة", paid: "السجلات السابقة: دفع إلكتروني", free: "السجلات السابقة: دون تحصيل إلكتروني", legacyHelp: "هذا الإعداد يحافظ على التوافق مع الحجوزات السابقة؛ لا يغيّر طريقة اعتماد الطلبات الجديدة." },
+  en: { title: "Appointment approval and fees", approval: "New appointments require staff approval. Submitting a request, activating an account or recording a payment does not confirm an appointment.", fees: "Consultation fees are agreed and tracked separately after office review; the new conversation does not require payment.", legacyLabel: "Compatibility setting for earlier payment flows", paid: "Earlier records: electronic payment", free: "Earlier records: no electronic collection", legacyHelp: "This preserves compatibility with earlier bookings; it does not change approval of new requests." }
+} as const;
+export const alternativeTimeCopy = {
+  ar: { title: "طلب موعد بديل", choose: "اختر الموعد المطلوب بتوقيت القاهرة", empty: "لا توجد مواعيد متاحة حاليًا. تواصل مع المكتب.", failed: "تعذر تحديث الموعد. حدّث الصفحة وأعد المحاولة.", saved: "تم حفظ الموعد المطلوب؛ يظل بانتظار اعتماد الإدارة." },
+  en: { title: "Request an alternative time", choose: "Choose a requested time in Cairo time", empty: "No times are currently available. Please contact the office.", failed: "The time could not be updated. Refresh and try again.", saved: "Your requested time was saved; staff approval is still required." }
+} as const;

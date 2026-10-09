@@ -3,12 +3,14 @@ import { ROLES, type Principal } from "@/server/auth/policy";
 import { canUpdateAdminPayment, listAdminPayments } from "@/server/admin/finance-report-service";
 import { listFinanceOptions } from "@/server/admin/finance-options-service";
 import { prisma } from "@/server/db/prisma";
+import { Prisma } from "@prisma/client";
 
 vi.mock("@/server/db/prisma", () => ({ prisma: {
   client: { findMany: vi.fn(), findFirst: vi.fn(), count: vi.fn() },
   legalCase: { findMany: vi.fn(), findFirst: vi.fn(), count: vi.fn() },
   payment: { findMany: vi.fn(), count: vi.fn(), aggregate: vi.fn(), groupBy: vi.fn() },
   paymentAttempt: { count: vi.fn() }
+  , paymentEntry: { groupBy: vi.fn() }
 } }));
 const actor: Principal = { id: "11111111-1111-4111-8111-111111111111", roleName: ROLES.officeAdmin, permissions: ["finance.read.any", "finance.manage.any"] };
 
@@ -40,14 +42,19 @@ describe("finance repair contracts", () => {
     vi.mocked(prisma.paymentAttempt.count).mockResolvedValue(0);
     vi.mocked(prisma.payment.aggregate).mockResolvedValue({ _count: { _all: 2 }, _sum: { amount: 110 } } as never);
     vi.mocked(prisma.payment.groupBy).mockResolvedValue([
-      { currency: "EGP", _sum: { amount: { toString: () => "100.01" } } },
-      { currency: "USD", _sum: { amount: { toString: () => "10.02" } } }
+      { currency: "EGP", _count: { _all: 1 }, _sum: { amount: new Prisma.Decimal("100.01") } },
+      { currency: "USD", _count: { _all: 1 }, _sum: { amount: new Prisma.Decimal("10.02") } }
+    ] as never);
+    vi.mocked(prisma.paymentEntry.groupBy).mockResolvedValue([
+      { currency: "EGP", _sum: { amount: new Prisma.Decimal("20") } },
+      { currency: "USD", _sum: { amount: new Prisma.Decimal("1") } }
     ] as never);
     const result = await listAdminPayments({ actor, query: { page: 2 } });
     expect(result.summary.byCurrency).toEqual([
-      { currency: "EGP", totalAmount: "100.01", paidAmount: "100.01", openAmount: "100.01", overdueAmount: "100.01" },
-      { currency: "USD", totalAmount: "10.02", paidAmount: "10.02", openAmount: "10.02", overdueAmount: "10.02" }
+      { currency: "EGP", count: 1, totalAmount: "100.01", paidAmount: "20", openAmount: "80.01", overdueAmount: "80.01" },
+      { currency: "USD", count: 1, totalAmount: "10.02", paidAmount: "1", openAmount: "9.02", overdueAmount: "9.02" }
     ]);
+    expect(result.summary.paidAmount).toBeNull();
     expect(prisma.payment.groupBy).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({ AND: expect.arrayContaining([{ status: { in: ["ISSUED", "PENDING", "OVERDUE"] } }]) }) }));
   });
 });
