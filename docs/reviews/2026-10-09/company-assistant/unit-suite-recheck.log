@@ -1,0 +1,37 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office
+
+ ❯ tests/server/postgres-backup-tool-resolution.test.ts (0 test)
+Not implemented: Window's scrollTo() method
+(node:22968) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/server/postgres-backup-tool-resolution.test.ts [ tests/server/postgres-backup-tool-resolution.test.ts ]
+Error: Git Bash is required for PostgreSQL backup resolver tests.
+ ❯ resolveBashPath tests/server/postgres-backup-tool-resolution.test.ts:46:11
+     44|   const candidate = candidates.find((value) => existsSync(value));
+     45|   if (!candidate) {
+     46|     throw new Error("Git Bash is required for PostgreSQL backup resolv…
+       |           ^
+     47|   }
+     48|   return candidate;
+ ❯ tests/server/postgres-backup-tool-resolution.test.ts:17:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 116 passed | 6 skipped (123)
+      Tests  796 passed | 55 skipped (851)
+   Start at  20:58:03
+   Duration  45.42s (transform 7.89s, setup 0ms, import 47.12s, tests 16.21s, environment 11.06s)

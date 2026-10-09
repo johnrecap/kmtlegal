@@ -1,3 +1,4 @@
+import { bookingAllowed } from "@/server/ai/company-conversation-policy";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
@@ -27,6 +28,7 @@ export async function submitConversationRequest(input: { token: string; actor: P
   if (session.consultationRequestId) return prisma.consultationRequest.findFirstOrThrow({
     where: { id: session.consultationRequestId, clientId: input.actor.clientId }, select: { publicReference: true, status: true }
   });
+  if (!bookingAllowed(session.dialogue)) throw new ApiError(403, "PERMISSION_DENIED", "Booking consent is required.");
   const draft = confirmedIntakeSchema.parse(session.draft);
   const slot = draft.requestedStartsAt ? await assertPublicConsultationSlotAvailable({ startsAt: new Date(draft.requestedStartsAt), mode: draft.preferredMode }) : null;
   return prisma.$transaction(async tx => {
@@ -36,6 +38,7 @@ export async function submitConversationRequest(input: { token: string; actor: P
       const existing = await tx.consultationRequest.findUniqueOrThrow({ where: { id: fresh.consultationRequestId }, select: { publicReference: true, status: true } });
       return existing;
     }
+    if (!bookingAllowed(fresh.dialogue)) throw new ApiError(403, "PERMISSION_DENIED", "Booking consent is required.");
     if (fresh.revision !== input.revision || fresh.leaseId || fresh.clientId !== input.actor.clientId) throw new ApiError(409, "CONFLICT", "The request changed. Review the latest summary before submitting.");
     const client = await tx.client.findFirst({ where: { id: input.actor.clientId!, userId: input.actor.id, deletedAt: null }, include: { user: true } });
     if (!client?.user || client.user.status !== "ACTIVE" || !client.user.emailVerifiedAt) throw new ApiError(401, "AUTH_REQUIRED", "A verified email account is required.");

@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-09",
+  "baseline": "ff2138e",
+  "scope": "Company-scoped assistant; no production deployment; no real customer data",
+  "sourceHashEncoding": "UTF-8 canonical LF",
+  "sourceHashes": {
+    "PROJECT_GUIDE.md": "ae4a5dfeb155d34b1c288557c7e1e1f9a8fa16372d2ad380243dc05ac92c357b",
+    "docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md": "fd94676de3387ae513d3ce9228931787428841a04be716db0a26dc52bbb3f8ad",
+    "docs/SERVER_COMMANDS.md": "80e5918bcc84d321a0a6495baddfd16115b3a91ed7c79b5db0ff63fb5af6cea9",
+    "docs/ui-redesign/DECISIONS.md": "3d5b6bc664be34d3a1a8793bc3acf3b326c875bdc135b1335339d88bb5cde8e5",
+    "prisma/schema.prisma": "b94bd1344b35f74963e0cc2429cf52cc6a1f40c7974f545c9bc96a9be33c9b34",
+    "src/app/api/public/assistant/conversation/route.ts": "ec89771fe1358dcd7c3482d30dbdcc862a6bdc12e47954ffa0472ba161d698b0",
+    "src/features/public-site/conversational-booking-chat.tsx": "940f04ce0bb21e63531ed86a3febe39a2ecafb18957b1450fb0728f1c45ff9d4",
+    "src/server/ai/conversation-gateway.ts": "9fd5efdb9be00f44a37e38105e5f9bb5653343e5ea4105a34a514fadff3f8194",
+    "src/server/consultations/conversation-contract.ts": "48eb081267b34295d697167f1d915d3e6f6314b0258206bc6ca9e7a4dbb49ec3",
+    "src/server/consultations/conversation-session-service.ts": "9caa5155dcfecacac5d95c34377e5d9996a91fe2ba5f7562dc1ec94afc79c50a",
+    "src/server/consultations/conversation-submission-service.ts": "8e72de6a751ef4709a5aff84776dcd805f9d54f910506f9c76711d09823ae835",
+    "src/server/portal/client-verification-service.ts": "b7e83afcb053788cc959fef02adc45d5766637c6942ed2d4dfe83b5fb62c6b3e",
+    "tests/e2e/conversational-intake.spec.ts": "7138fd18b7cc566908fc90196ff15589734088ca3ad015e4006bec7cef9c1363",
+    "tests/server/conversation-intake-db.test.ts": "322c1ea15e6b8e55a2e0c1b562491ea8a680d3e9678ea6b32fb131e98295fc4f",
+    "prisma/migrations/20261009240000_company_assistant_policy/migration.sql": "e10a25987b731edad6b2d723ff366e09a2680d43005d575fb7e1d0ec82b80bd2",
+    "src/content/assistant-approved-knowledge.ts": "6f619dd559db3d7335ea4adf2529cc35045493018c28ab6cc3c5a90e2c171fed",
+    "src/content/assistant-policy-copy.ts": "4b94c64e3a81f48a95218b40658f9ed5b02215cccc00e846225261a932ed3e2f",
+    "src/server/ai/company-conversation-policy.ts": "5ac18546d2bb389e89f17a07875491585bda37d9d43c192b52c65d2e1d59512b",
+    "src/server/consultations/assistant-knowledge.ts": "bbd00846309578886a67ee203cda78dd6b3f715bc21110094ab77b62e89209bd",
+    "tests/e2e/company-assistant-api.spec.ts": "e9833b9b25c05bae1ed5704b38193a317837825de5547012bb74d76bbd982f8a",
+    "tests/server/company-conversation-policy.test.ts": "d0ce135e4757461a299a3321d85cd49477c20adb6895856ab88d73c9c68305a1"
+  },
+  "checks": {
+    "typecheck": "PASS, exit 0",
+    "lint": "PASS; final build repeats lint/type validation",
+    "productionBuild": "PASS, build.log",
+    "focused": "48 passed in focused-recheck.log (42 assistant policy/gateway/SQL + 6 UI regression)",
+    "fullUnit": "796 passed, 55 skipped; one missing-Git-Bash suite initialization error. Not a complete PASS. See unit-suite-recheck.log",
+    "browser": "2 tests / 20 AR+EN x dark+light x 360,390,768,1024,1440 cases; browser.log",
+    "http": "1 actual-handler test passed on final rebuilt app using disposable SQL; http-recheck.log",
+    "migration": "All migrations executed by SQL fixture; additive dialogue default preserves drafts and starts inquiry",
+    "providerPresence": {
+      "configured": false,
+      "keyPresent": false,
+      "localEndpointConfigured": false
+    }
+  },
+  "semantic": {
+    "staticCopyAndVisual": "Reviewed AR mobile inquiry and EN desktop submitted screenshots; no initial email/intake panel; distinctions between unsent draft and submitted pending request retained",
+    "actualModelDialogue": "NOT_VERIFIED: no configured real provider/key; mocked classification is not semantic accuracy",
+    "officeLegalApproval": "NOT_VERIFIED: explanation allowlist empty; no new legal facts published",
+    "physicalSoftKeyboard": "NOT_VERIFIED: desktop responsive simulation only"
+  },
+  "intermediateFailures": [
+    "Initial full concurrent run: one UI timeout, two animation cleanup rejections; focused SQL timeout. Bounded rechecks passed without timeout changes.",
+    "First real HTTP run exposed booking quota consumption by reversible mode actions; fixed using existing conversation limiter, rebuilt and passed HTTP recheck."
+  ],
+  "operationalGaps": [
+    "Native PostgreSQL production migration/concurrency",
+    "Real AI Arabic/Egyptian/English dialogue evaluation",
+    "Existing SMTP/ClamAV/backup operational gates remain unchanged"
+  ]
+}

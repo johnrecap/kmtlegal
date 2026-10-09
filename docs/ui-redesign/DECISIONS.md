@@ -1,5 +1,11 @@
 # DECISIONS (Owner-Locked Rulings)
 
+## 2026-10-09 — Owner-approved company-scoped conversation
+
+The approved follow-up plan narrows the assistant to office services, booking, account help and own-request follow-up. Related explanations use only sourced approved office content; no general model knowledge or automatic article/client-document ingestion. Unrelated questions receive a short localized redirect, mixed questions address only the office portion, and greetings remain normal social turns. Replies should be concise and useful, with detail when needed.
+
+Collect contact information only after an explicit request or clear consent. Offer follow-up once after a useful relevant answer; ambiguity is not consent, rejection/withdrawal stops collection and retains the unsent draft. Account help is independently available on request. The sidebar starts hidden and follows persisted server state. Existing old drafts begin in inquiry; preserving history does not imply consent. Summary review and submission remain explicit, appointment approval stays administrative. Same provider/components/catalogs, no new libraries, subagents or Spec Kit. The status register separates deterministic tests from pending real-model conversational acceptance.
+
 ## 2026-10-09 — Owner-approved phase-five systems
 
 The later explicit phase-five implementation request authorizes rebuilding the conversational assistant, email-verified accounts, staff-approved appointments, private service requests, partial settlements and extension of the existing admin/portal. This supersedes the phase-two exclusion of advanced systems for this task. No subagents, Spec Kit, new UI/AI-agent libraries or broad admin redesign. Preserve the public white/gold identity and existing customer/history data.

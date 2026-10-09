@@ -1,0 +1,222 @@
+   ▲ Next.js 15.5.25
+   - Environments: .env
+   - Experiments (use with caution):
+     · sri
+     ✓ globalNotFound
+     · clientTraceMetadata
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 34.9s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/51) ...
+   Generating static pages (12/51)
+   Generating static pages (25/51)
+   Generating static pages (38/51)
+ ✓ Generating static pages (51/51)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                Size  First Load JS  Revalidate  Expire
+┌ ○ /                                                     188 B         511 kB         15m      1y
+├ ○ /_not-found                                           200 B         193 kB
+├ ○ /account/verify                                     4.91 kB         201 kB
+├ ƒ /admin                                                171 B         429 kB
+├ ƒ /admin/audit-log                                    5.36 kB         434 kB
+├ ƒ /admin/calendar                                     5.46 kB         439 kB
+├ ƒ /admin/cases                                          170 B         429 kB
+├ ƒ /admin/cases/[caseId]                                 360 B         452 kB
+├ ƒ /admin/cases/new                                    5.47 kB         443 kB
+├ ƒ /admin/clients                                        339 B         443 kB
+├ ƒ /admin/clients/[clientId]                             339 B         443 kB
+├ ƒ /admin/consultation-availability                    8.24 kB         442 kB
+├ ƒ /admin/consultations                                  171 B         429 kB
+├ ƒ /admin/consultations/[consultationId]               11.1 kB         445 kB
+├ ƒ /admin/contact-messages                             8.26 kB         437 kB
+├ ƒ /admin/content                                      11.5 kB         445 kB
+├ ƒ /admin/content/articles                             1.04 kB         219 kB
+├ ƒ /admin/content/case-studies                         1.04 kB         219 kB
+├ ƒ /admin/content/social                               1.04 kB         219 kB
+├ ƒ /admin/documents                                    2.36 kB         443 kB
+├ ƒ /admin/finance                                      14.8 kB         445 kB
+├ ƒ /admin/messages                                       171 B         429 kB
+├ ƒ /admin/messages/[threadId]                          12.3 kB         437 kB
+├ ƒ /admin/notifications                                4.79 kB         429 kB
+├ ƒ /admin/reports                                      7.12 kB         432 kB
+├ ƒ /admin/roles                                        8.31 kB         442 kB
+├ ƒ /admin/service-requests                               331 B         430 kB
+├ ƒ /admin/service-requests/[requestId]                   333 B         430 kB
+├ ƒ /admin/settings                                       344 B         445 kB
+├ ƒ /admin/tasks                                        2.46 kB         443 kB
+├ ƒ /admin/users                                          343 B         445 kB
+├ ƒ /admin/users/[userId]                                 340 B         445 kB
+├ ƒ /api/admin/audit-log                                  404 B         186 kB
+├ ƒ /api/admin/calendar                                   404 B         186 kB
+├ ƒ /api/admin/calendar/[appointmentId]/reschedule        404 B         186 kB
+├ ƒ /api/admin/cases                                      404 B         186 kB
+├ ƒ /api/admin/cases/[caseId]                             404 B         186 kB
+├ ƒ /api/admin/cases/[caseId]/sessions                    404 B         186 kB
+├ ƒ /api/admin/cases/[caseId]/status                      404 B         186 kB
+├ ƒ /api/admin/clients                                    404 B         186 kB
+├ ƒ /api/admin/clients/[clientId]                         404 B         186 kB
+├ ƒ /api/admin/clients/[clientId]/account                 404 B         186 kB
+├ ƒ /api/admin/clients/[clientId]/account/password        404 B         186 kB
+├ ƒ /api/admin/clients/[clientId]/archive                 404 B         186 kB
+├ ƒ /api/admin/clients/[clientId]/assign                  404 B         186 kB
+├ ƒ /api/admin/consultation-availability                  404 B         186 kB
+├ ƒ /api/admin/consultations                              404 B         186 kB
+├ ƒ /api/admin/consultations/[consultationId]             404 B         186 kB
+├ ƒ /api/admin/consultations/[consultationId]/assign      404 B         186 kB
+├ ƒ /api/admin/consultations/[consultationId]/convert     404 B         186 kB
+├ ƒ /api/admin/consultations/[consultationId]/outcome     404 B         186 kB
+├ ƒ /api/admin/consultations/[consultationId]/reject      404 B         186 kB
+├ ƒ /api/admin/consultations/[consultationId]/reopen      404 B         186 kB
+├ ƒ /api/admin/consultations/[consultationId]/review      404 B         186 kB
+├ ƒ /api/admin/consultations/[consultationId]/schedule    404 B         186 kB
+├ ƒ /api/admin/contact-messages                           404 B         186 kB
+├ ƒ /api/admin/contact-messages/[messageId]               404 B         186 kB
+├ ƒ /api/admin/content                                    404 B         186 kB
+├ ƒ /api/admin/content/articles                           404 B         186 kB
+├ ƒ /api/admin/content/articles/[articleId]               404 B         186 kB
+├ ƒ /api/admin/content/case-studies                       404 B         186 kB
+├ ƒ /api/admin/content/case-studies/[caseStudyId]         404 B         186 kB
+├ ƒ /api/admin/content/social-drafts                      404 B         186 kB
+├ ƒ /api/admin/content/social-drafts/[draftId]            404 B         186 kB
+├ ƒ /api/admin/content/social-drafts/ai                   404 B         186 kB
+├ ƒ /api/admin/dashboard                                  404 B         186 kB
+├ ƒ /api/admin/documents                                  404 B         186 kB
+├ ƒ /api/admin/documents/[documentId]                     404 B         186 kB
+├ ƒ /api/admin/documents/[documentId]/delete              404 B         186 kB
+├ ƒ /api/admin/finance                                    404 B         186 kB
+├ ƒ /api/admin/finance/[paymentId]                        404 B         186 kB
+├ ƒ /api/admin/finance/[paymentId]/entries                404 B         186 kB
+├ ƒ /api/admin/finance/export                             404 B         186 kB
+├ ƒ /api/admin/finance/options                            404 B         186 kB
+├ ƒ /api/admin/health-questionnaire                       404 B         186 kB
+├ ƒ /api/admin/messages                                   404 B         186 kB
+├ ƒ /api/admin/messages/[threadId]                        404 B         186 kB
+├ ƒ /api/admin/messages/[threadId]/messages               404 B         186 kB
+├ ƒ /api/admin/notifications                              404 B         186 kB
+├ ƒ /api/admin/notifications/[notificationId]/read        404 B         186 kB
+├ ƒ /api/admin/payments/attempts                          404 B         186 kB
+├ ƒ /api/admin/payments/pricing                           404 B         186 kB
+├ ƒ /api/admin/payments/pricing/[ruleId]                  404 B         186 kB
+├ ƒ /api/admin/payments/settings                          404 B         186 kB
+├ ƒ /api/admin/payments/webhooks                          404 B         186 kB
+├ ƒ /api/admin/payments/webhooks/[eventId]/replay         404 B         186 kB
+├ ƒ /api/admin/reports                                    404 B         186 kB
+├ ƒ /api/admin/roles                                      404 B         186 kB
+├ ƒ /api/admin/roles/[roleId]/permissions                 404 B         186 kB
+├ ƒ /api/admin/settings                                   404 B         186 kB
+├ ƒ /api/admin/settings/[key]                             404 B         186 kB
+├ ƒ /api/admin/tasks                                      404 B         186 kB
+├ ƒ /api/admin/tasks/[taskId]                             404 B         186 kB
+├ ƒ /api/admin/users                                      404 B         186 kB
+├ ƒ /api/admin/users/[userId]                             404 B         186 kB
+├ ƒ /api/admin/users/[userId]/2fa/reset                   404 B         186 kB
+├ ƒ /api/admin/users/[userId]/client-profile              404 B         186 kB
+├ ƒ /api/admin/users/[userId]/password                    404 B         186 kB
+├ ƒ /api/analytics/events                                 404 B         186 kB
+├ ƒ /api/auth/2fa/email/send                              404 B         186 kB
+├ ƒ /api/auth/2fa/email/verify                            404 B         186 kB
+├ ƒ /api/auth/2fa/totp/enroll                             404 B         186 kB
+├ ƒ /api/auth/2fa/totp/enroll/confirm                     404 B         186 kB
+├ ƒ /api/auth/2fa/totp/status                             404 B         186 kB
+├ ƒ /api/auth/2fa/totp/verify                             404 B         186 kB
+├ ƒ /api/auth/login                                       404 B         186 kB
+├ ƒ /api/auth/logout                                      404 B         186 kB
+├ ƒ /api/auth/me                                          404 B         186 kB
+├ ƒ /api/client/assistant                                 404 B         186 kB
+├ ƒ /api/client/messages                                  404 B         186 kB
+├ ƒ /api/client/messages/[threadId]                       404 B         186 kB
+├ ƒ /api/client/messages/[threadId]/messages              404 B         186 kB
+├ ƒ /api/client/preferences                               404 B         186 kB
+├ ƒ /api/client/profile                                   404 B         186 kB
+├ ƒ /api/client/requests/[requestId]/alternative          404 B         186 kB
+├ ƒ /api/files/[documentId]/download                      404 B         186 kB
+├ ƒ /api/files/upload                                     404 B         186 kB
+├ ƒ /api/health                                           404 B         186 kB
+├ ƒ /api/install/bootstrap-super-admin                    404 B         186 kB
+├ ƒ /api/install/finish                                   404 B         186 kB
+├ ƒ /api/install/preflight                                404 B         186 kB
+├ ƒ /api/install/status                                   404 B         186 kB
+├ ƒ /api/public/articles                                  404 B         186 kB
+├ ƒ /api/public/articles/[slug]                           404 B         186 kB
+├ ƒ /api/public/assistant/conversation                    404 B         186 kB
+├ ƒ /api/public/case-studies                              404 B         186 kB
+├ ƒ /api/public/case-studies/[slug]                       404 B         186 kB
+├ ƒ /api/public/client-account/setup                      404 B         186 kB
+├ ƒ /api/public/client-account/verify                     404 B         186 kB
+├ ƒ /api/public/consultations                             404 B         186 kB
+├ ƒ /api/public/consultations/assistant                   404 B         186 kB
+├ ƒ /api/public/consultations/checkout                    404 B         186 kB
+├ ƒ /api/public/consultations/slots                       404 B         186 kB
+├ ƒ /api/public/contact                                   404 B         186 kB
+├ ƒ /api/public/lawyers                                   404 B         186 kB
+├ ƒ /api/public/lawyers/[slug]                            404 B         186 kB
+├ ƒ /api/public/payments/status                           404 B         186 kB
+├ ƒ /api/public/services                                  404 B         186 kB
+├ ƒ /api/public/services/[slug]                           404 B         186 kB
+├ ƒ /api/service-requests                                 404 B         186 kB
+├ ƒ /api/service-requests/[requestId]                     404 B         186 kB
+├ ƒ /api/webhooks/paymob                                  404 B         186 kB
+├ ƒ /api/webhooks/paytabs                                 404 B         186 kB
+├ ● /ar/[[...path]]                                       188 B         511 kB         15m      1y
+├   ├ /ar                                                                              15m      1y
+├   ├ /ar/our-firm                                                                     15m      1y
+├   ├ /ar/industries                                                                   15m      1y
+├   └ [+15 more paths]
+├ ƒ /ar/book-consultation                                 188 B         511 kB
+├ ƒ /ar/client-account/setup                              164 B         351 kB
+├ ƒ /ar/payment/consultation/receipt                      420 B         205 kB
+├ ƒ /ar/payment/consultation/return                       156 B         336 kB
+├ ƒ /articles                                             188 B         511 kB
+├ ƒ /articles/[slug]                                      188 B         511 kB
+├ ƒ /book-consultation                                    188 B         511 kB
+├ ƒ /client                                               168 B         424 kB
+├ ƒ /client-account/setup                                 163 B         351 kB
+├ ƒ /client/assistant                                   5.76 kB         438 kB
+├ ƒ /client/cases                                         167 B         424 kB
+├ ƒ /client/cases/[caseId]                              5.69 kB         428 kB
+├ ƒ /client/court-dates                                   168 B         424 kB
+├ ƒ /client/files                                       4.87 kB         430 kB
+├ ƒ /client/payments                                    7.59 kB         430 kB
+├ ƒ /client/profile                                     2.45 kB         437 kB
+├ ƒ /client/requests                                    3.67 kB         433 kB
+├ ƒ /client/requests/services/[requestId]                 333 B         430 kB
+├ ○ /contact                                              188 B         511 kB
+├ ○ /industries                                           188 B         511 kB         15m      1y
+├ ƒ /install                                            5.86 kB         287 kB
+├ ƒ /login                                              5.12 kB         259 kB
+├ ƒ /login/2fa                                          5.75 kB         273 kB
+├ ○ /our-firm                                             188 B         511 kB         15m      1y
+├ ƒ /payment/consultation/receipt                         420 B         205 kB
+├ ƒ /payment/consultation/return                          156 B         336 kB
+├ ƒ /preview/components                                 16.1 kB         451 kB
+├ ƒ /preview/ui                                         6.86 kB         241 kB
+├ ○ /privacy                                              188 B         511 kB
+├ ○ /robots.txt                                           404 B         186 kB
+├ ○ /services                                             188 B         511 kB
+├ ● /services/[slug]                                      188 B         511 kB
+├   ├ /services/legal-consultation
+├   ├ /services/company-formation
+├   ├ /services/corporate-business-services
+├   └ [+3 more paths]
+├ ƒ /sitemap.xml                                          404 B         186 kB
+├ ○ /team                                                 187 B         511 kB
+├ ● /team/[slug]                                          188 B         511 kB
+├   ├ /team/maryam-khaled
+├   ├ /team/karim-adel
+├   └ /team/nadine-samy
+└ ○ /terms                                                188 B         511 kB
++ First Load JS shared by all                            186 kB
+  ├ chunks/4bd1b696-100b9d70ed4e49c1.js                 54.2 kB
+  ├ chunks/5857-afdeb31e7d004639.js                      128 kB
+  └ other shared chunks (total)                         3.67 kB
+
+
+ƒ Middleware                                             102 kB
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand

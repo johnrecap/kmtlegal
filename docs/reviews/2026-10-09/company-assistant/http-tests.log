@@ -1,0 +1,33 @@
+
+Running 1 test using 1 worker
+
+(node:12664) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\company-assistant-api.spec.ts:3:5 › synthetic SQL HTTP consent, recovery and missing-provider gates (465ms)
+
+
+  1) [chromium] › tests\e2e\company-assistant-api.spec.ts:3:5 › synthetic SQL HTTP consent, recovery and missing-provider gates
+
+    TypeError: Cannot read properties of undefined (reading 'dialogue')
+
+      18 |     expect((await booking.json()).data.dialogue.mode).toBe("BOOKING");
+      19 |     const back = await post({ action: "return_inquiry" });
+    > 20 |     expect((await back.json()).data.dialogue).toMatchObject({ mode: "INQUIRY", offerShown: true, consentAt: null });
+         |                                     ^
+      21 |     const unavailable = await post({ action: "message", locale: "en", messageId: crypto.randomUUID(), message: "What services does the office offer?" });
+      22 |     expect(unavailable.status()).toBe(503);
+      23 |     const restored = (await (await api.get(endpoint)).json()).data;
+        at C:\Users\UTD\Documents\Codex\RecoveredProjects\local-0efe82359eea107367d678c3c6ae29f0\kmt legal office\tests\e2e\company-assistant-api.spec.ts:20:37
+
+    Error Context: .playwright\test-results\company-assistant-api-synt-9af9a--and-missing-provider-gates-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .playwright\test-results\company-assistant-api-synt-9af9a--and-missing-provider-gates-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace .playwright\test-results\company-assistant-api-synt-9af9a--and-missing-provider-gates-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\company-assistant-api.spec.ts:3:5 › synthetic SQL HTTP consent, recovery and missing-provider gates

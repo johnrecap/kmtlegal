@@ -1,0 +1,244 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office
+
+ ❯ tests/server/postgres-backup-tool-resolution.test.ts (0 test)
+(node:11080) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's getContext() method: without installing the canvas npm package
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+stderr | tests/ui/admin-user-password-form.test.tsx > admin user password form > preserves the draft and requires explicit reload after a stale conflict
+Warning: Function components cannot be given refs. Attempts to access this ref will fail. Did you mean to use React.forwardRef()?
+
+Check the render method of `Primitive.div.Slot`.
+    at DialogOverlay (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/components/radix/dialog.tsx:41:26)
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-primitive/node_modules/@radix-ui/react-slot/dist/index.mjs:10:11
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-primitive/dist/index.mjs:31:13
+    at Portal (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-portal/dist/index.mjs:13:24)
+    at Presence (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-presence/dist/index.mjs:21:11)
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at DialogPortal (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-dialog/dist/index.mjs:92:11)
+    at PopChildMeasure (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs:13:1)
+    at PopChild (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs:44:21)
+    at PresenceChild (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/PresenceChild.mjs:10:26)
+    at AnimatePresence (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/index.mjs:44:28)
+    at DialogPortal (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/primitives/radix/dialog.tsx:64:21)
+    at DialogContent (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/components/radix/dialog.tsx:51:26)
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at Dialog (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-dialog/dist/index.mjs:28:5)
+    at Provider (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/lib/get-strict-context.tsx:9:22)
+    at Dialog (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/primitives/radix/dialog.tsx:28:74)
+    at Dialog
+    at AdminDialog (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/admin/admin-dialog.tsx:25:24)
+    at div
+    at CardContent (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/ui/card.tsx:53:24)
+    at div
+    at Card (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/ui/card.tsx:13:17)
+    at AdminUserPasswordForm (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/features/admin/governance/governance-forms.tsx:848:34)
+    at div
+    at div
+    at div
+    at MotionDOMComponent (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/motion/index.mjs:45:16)
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-primitive/node_modules/@radix-ui/react-slot/dist/index.mjs:10:11
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-primitive/dist/index.mjs:31:13
+    at CollapsibleContentImpl (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-collapsible/dist/index.mjs:88:11)
+    at Presence (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-presence/dist/index.mjs:21:11)
+    at CollapsibleContent (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-collapsible/dist/index.mjs:82:13)
+    at AccordionContent (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-accordion/dist/index.mjs:279:13)
+    at PopChildMeasure (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs:13:1)
+    at PopChild (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs:44:21)
+    at PresenceChild (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/PresenceChild.mjs:10:26)
+    at AnimatePresence (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/index.mjs:44:28)
+    at AccordionContent (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/primitives/radix/accordion.tsx:96:29)
+    at AccordionContent (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/components/radix/accordion.tsx:48:29)
+    at div
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-primitive/dist/index.mjs:31:13
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at Collapsible (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-collapsible/dist/index.mjs:22:7)
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at AccordionItem (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-accordion/dist/index.mjs:197:13)
+    at Provider (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/lib/get-strict-context.tsx:9:22)
+    at AccordionItem (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/primitives/radix/accordion.tsx:51:20)
+    at AccordionItem (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/components/radix/accordion.tsx:23:26)
+    at div
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-primitive/dist/index.mjs:31:13
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-collection/node_modules/@radix-ui/react-slot/dist/index.mjs:10:11
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-collection/dist/index.mjs:30:15
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at AccordionImpl (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-accordion/dist/index.mjs:105:13)
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at AccordionImplMultiple (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-accordion/dist/index.mjs:71:12)
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at CollectionProvider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-collection/dist/index.mjs:20:13)
+    at Accordion (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-accordion/dist/index.mjs:29:13)
+    at Provider (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/lib/get-strict-context.tsx:9:22)
+    at Accordion (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/primitives/radix/accordion.tsx:25:72)
+    at Accordion
+    at div
+    at AdminUserActionPanel (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/features/admin/governance/governance-forms.tsx:333:33)
+Warning: Function components cannot be given refs. Attempts to access this ref will fail. Did you mean to use React.forwardRef()?
+
+Check the render method of `Primitive.div.Slot`.
+    at DialogContent (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/primitives/radix/dialog.tsx:113:26)
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-primitive/node_modules/@radix-ui/react-slot/dist/index.mjs:10:11
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-primitive/dist/index.mjs:31:13
+    at Portal (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-portal/dist/index.mjs:13:24)
+    at Presence (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-presence/dist/index.mjs:21:11)
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at DialogPortal (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-dialog/dist/index.mjs:92:11)
+    at PopChildMeasure (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs:13:1)
+    at PopChild (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs:44:21)
+    at PresenceChild (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/PresenceChild.mjs:10:26)
+    at AnimatePresence (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/index.mjs:44:28)
+    at DialogPortal (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/primitives/radix/dialog.tsx:64:21)
+    at DialogContent (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/components/radix/dialog.tsx:51:26)
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at Dialog (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-dialog/dist/index.mjs:28:5)
+    at Provider (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/lib/get-strict-context.tsx:9:22)
+    at Dialog (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/primitives/radix/dialog.tsx:28:74)
+    at Dialog
+    at AdminDialog (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/admin/admin-dialog.tsx:25:24)
+    at div
+    at CardContent (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/ui/card.tsx:53:24)
+    at div
+    at Card (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/ui/card.tsx:13:17)
+    at AdminUserPasswordForm (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/features/admin/governance/governance-forms.tsx:848:34)
+    at div
+    at div
+    at div
+    at MotionDOMComponent (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/motion/index.mjs:45:16)
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-primitive/node_modules/@radix-ui/react-slot/dist/index.mjs:10:11
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-primitive/dist/index.mjs:31:13
+    at CollapsibleContentImpl (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-collapsible/dist/index.mjs:88:11)
+    at Presence (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-presence/dist/index.mjs:21:11)
+    at CollapsibleContent (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-collapsible/dist/index.mjs:82:13)
+    at AccordionContent (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-accordion/dist/index.mjs:279:13)
+    at PopChildMeasure (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs:13:1)
+    at PopChild (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/PopChild.mjs:44:21)
+    at PresenceChild (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/PresenceChild.mjs:10:26)
+    at AnimatePresence (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/framer-motion/dist/es/components/AnimatePresence/index.mjs:44:28)
+    at AccordionContent (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/primitives/radix/accordion.tsx:96:29)
+    at AccordionContent (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/components/radix/accordion.tsx:48:29)
+    at div
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-primitive/dist/index.mjs:31:13
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at Collapsible (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-collapsible/dist/index.mjs:22:7)
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at AccordionItem (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-accordion/dist/index.mjs:197:13)
+    at Provider (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/lib/get-strict-context.tsx:9:22)
+    at AccordionItem (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/primitives/radix/accordion.tsx:51:20)
+    at AccordionItem (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/components/radix/accordion.tsx:23:26)
+    at div
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-primitive/dist/index.mjs:31:13
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-collection/node_modules/@radix-ui/react-slot/dist/index.mjs:10:11
+    at file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-collection/dist/index.mjs:30:15
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at AccordionImpl (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-accordion/dist/index.mjs:105:13)
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at AccordionImplMultiple (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-accordion/dist/index.mjs:71:12)
+    at Provider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-context/dist/index.mjs:38:15)
+    at CollectionProvider (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-collection/dist/index.mjs:20:13)
+    at Accordion (file:///C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt%20legal%20office/node_modules/@radix-ui/react-accordion/dist/index.mjs:29:13)
+    at Provider (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/lib/get-strict-context.tsx:9:22)
+    at Accordion (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/components/animate-ui/primitives/radix/accordion.tsx:25:72)
+    at Accordion
+    at div
+    at AdminUserActionPanel (C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/src/features/admin/governance/governance-forms.tsx:333:33)
+
+ ❯ tests/ui/admin-user-password-form.test.tsx (2 tests | 1 failed) 8238ms
+     × preserves the draft and requires explicit reload after a stale conflict 5507ms
+Not implemented: Window's scrollTo() method
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/server/postgres-backup-tool-resolution.test.ts [ tests/server/postgres-backup-tool-resolution.test.ts ]
+Error: Git Bash is required for PostgreSQL backup resolver tests.
+ ❯ resolveBashPath tests/server/postgres-backup-tool-resolution.test.ts:46:11
+     44|   const candidate = candidates.find((value) => existsSync(value));
+     45|   if (!candidate) {
+     46|     throw new Error("Git Bash is required for PostgreSQL backup resolv…
+       |           ^
+     47|   }
+     48|   return candidate;
+ ❯ tests/server/postgres-backup-tool-resolution.test.ts:17:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/ui/admin-user-password-form.test.tsx > admin user password form > preserves the draft and requires explicit reload after a stale conflict
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/ui/admin-user-password-form.test.tsx:64:3
+     62|
+     63| describe("admin user password form", () => {
+     64|   it("preserves the draft and requires explicit reload after a stale c…
+       |   ^
+     65|     const password = "SyntheticPassword12!";
+     66|     const fetchMock = vi.fn<(input: RequestInfo | URL, init?: RequestI…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 2 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of null (reading 'querySelectorAll')
+ ❯ resolveElements ../kmt%20legal%20office/node_modules/motion-dom/dist/es/utils/resolve-elements.mjs:14:18
+ ❯ resolveSubjects ../kmt%20legal%20office/node_modules/framer-motion/dist/es/animation/animate/resolve-subjects.mjs:9:16
+ ❯ animateSubject ../kmt%20legal%20office/node_modules/framer-motion/dist/es/animation/animate/subject.mjs:26:26
+ ❯ scopedAnimate ../kmt%20legal%20office/node_modules/framer-motion/dist/es/animation/animate/index.mjs:39:26
+ ❯ animateSuccess src/components/ui/stateful-button.tsx:29:11
+     27|
+     28|   const animateSuccess = async () => {
+     29|     await animate(
+       |           ^
+     30|       ".loader",
+     31|       {
+ ❯ handleClick src/components/ui/stateful-button.tsx:69:11
+ ❯ runNextTicks node:internal/process/task_queues:65:5
+ ❯ processTimers node:internal/timers:568:9
+
+This error originated in "tests/ui/admin-office-profile-form.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "retains entered values after a network failure". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+
+⎯⎯⎯⎯ Unhandled Rejection ⎯⎯⎯⎯⎯
+TypeError: Cannot read properties of null (reading 'querySelectorAll')
+ ❯ resolveElements ../kmt%20legal%20office/node_modules/motion-dom/dist/es/utils/resolve-elements.mjs:14:18
+ ❯ resolveSubjects ../kmt%20legal%20office/node_modules/framer-motion/dist/es/animation/animate/resolve-subjects.mjs:9:16
+ ❯ animateSubject ../kmt%20legal%20office/node_modules/framer-motion/dist/es/animation/animate/subject.mjs:26:26
+ ❯ scopedAnimate ../kmt%20legal%20office/node_modules/framer-motion/dist/es/animation/animate/index.mjs:39:26
+ ❯ animateSuccess src/components/ui/stateful-button.tsx:29:11
+     27|
+     28|   const animateSuccess = async () => {
+     29|     await animate(
+       |           ^
+     30|       ".loader",
+     31|       {
+ ❯ handleClick src/components/ui/stateful-button.tsx:69:11
+
+This error originated in "tests/ui/admin-office-profile-form.test.tsx" test file. It doesn't mean the error was thrown inside the file itself, but while it was running.
+The latest test that might've caused the error is "allows only one request for rapid duplicate submissions". It might mean one of the following:
+- The error was thrown, while Vitest was running this test.
+- If the error occurred after the test had been completed, this was the last documented test before it was thrown.
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  2 failed | 115 passed | 6 skipped (123)
+      Tests  1 failed | 794 passed | 55 skipped (850)
+     Errors  2 errors
+   Start at  20:54:17
+   Duration  40.14s (transform 57.59s, setup 0ms, import 257.93s, tests 68.43s, environment 220.32s)

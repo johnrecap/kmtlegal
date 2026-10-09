@@ -19,6 +19,7 @@ export async function runConversationTurn(input: {
   requestId: string;
   assertActive: () => Promise<void>;
   provider?: AIProviderAdapter;
+  signal?: AbortSignal;
 }) {
   const config = getAIProviderConfig();
   const provider = input.provider ?? getAIProvider(config);
@@ -35,7 +36,7 @@ export async function runConversationTurn(input: {
   }));
   const messages = [...input.messages];
   const additions: AIChatMessage[] = [];
-  const signal = AbortSignal.timeout(config.timeoutMs);
+  const signal = input.signal ?? AbortSignal.timeout(config.timeoutMs);
   let toolCount = 0;
   const callIds = new Set<string>();
   // At most four provider calls and six server actions. No unbounded agent loop or automatic retry of mutations.

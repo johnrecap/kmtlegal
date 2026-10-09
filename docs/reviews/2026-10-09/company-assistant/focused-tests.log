@@ -1,0 +1,31 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office
+
+(node:9592) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ ❯ tests/server/conversation-intake-db.test.ts (17 tests | 1 failed) 10443ms
+     × isolates contract drafts, requires quote acceptance and protects internal notes and delivery 5011ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/server/conversation-intake-db.test.ts > representative conversational intake against isolated SQL database > isolates contract drafts, requires quote acceptance and protects internal notes and delivery
+Error: Test timed out in 5000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/server/conversation-intake-db.test.ts:288:3
+    286|   });
+    287|
+    288|   it("isolates contract drafts, requires quote acceptance and protects…
+       |   ^
+    289|     const admin = await fixture.db.user.findUniqueOrThrow({ where: { e…
+    290|     const staff = { id: admin.id, roleName: "Office Admin" };
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 41 passed (42)
+   Start at  20:55:21
+   Duration  12.38s (transform 824ms, setup 0ms, import 2.55s, tests 10.48s, environment 0ms)

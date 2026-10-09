@@ -5,13 +5,16 @@ import { shouldUseSecureCookie } from "@/server/auth/session";
 import { getRequestId, jsonOk, ApiError } from "@/server/http/errors";
 import { parseJsonRequest } from "@/server/validation/schemas";
 import { enforceRateLimit, rateLimiters } from "@/server/rate-limit/memory-rate-limit";
-import { ASSISTANT_COOKIE, assistantCapability, createAssistantSession, readAssistantSession, sendAssistantMessage } from "@/server/consultations/conversation-session-service";
+import { ASSISTANT_COOKIE, changeAssistantDialogue, assistantCapability, createAssistantSession, readAssistantSession, sendAssistantMessage } from "@/server/consultations/conversation-session-service";
 import { attachAuthenticatedClient, submitConversationRequest } from "@/server/consultations/conversation-submission-service";
 import { conversationMessageSchema, intakeDraftSchema } from "@/server/consultations/conversation-contract";
 import { startClientVerification, startVerificationSchema } from "@/server/portal/client-verification-service";
 
 export const dynamic = "force-dynamic";
 const actions = z.discriminatedUnion("action", [
+  z.strictObject({ action: z.literal("begin_booking") }),
+  z.strictObject({ action: z.literal("return_inquiry") }),
+  z.strictObject({ action: z.literal("account_access") }),
   z.strictObject({ action: z.literal("start"), locale: z.enum(["ar", "en"]), service: intakeDraftSchema.shape.service }),
   z.strictObject({ action: z.literal("restart"), locale: z.enum(["ar", "en"]), service: intakeDraftSchema.shape.service }),
   conversationMessageSchema.extend({ action: z.literal("message") }),
@@ -35,7 +38,10 @@ export async function POST(request: Request) {
   try {
     const body = await parseJsonRequest(request, actions);
     const auth = await getAuthContextFromRequest(request);
-    await enforceRateLimit(body.action === "message" ? rateLimiters.ai : rateLimiters.booking, `assistant-v2:${auth?.principal.id ?? getIpAddress(request) ?? "unknown"}`);
+    const modeAction = ["begin_booking", "return_inquiry", "account_access"].includes(body.action);
+    // Reversible mode changes must not consume the five-request booking quota.
+    const limiter = body.action === "message" ? rateLimiters.ai : modeAction ? rateLimiters.conversation : rateLimiters.booking;
+    await enforceRateLimit(limiter, `assistant-v2:${auth?.principal.id ?? getIpAddress(request) ?? "unknown"}`);
     let token = assistantCapability(request);
     if (body.action === "start" || body.action === "restart") {
       if (token && body.action === "start") {
@@ -48,6 +54,7 @@ export async function POST(request: Request) {
       return response;
     }
     if (!token) throw new ApiError(401, "AUTH_REQUIRED", "Authentication required.");
+    if (body.action === "begin_booking" || body.action === "return_inquiry" || body.action === "account_access") return jsonOk(await changeAssistantDialogue(token, body.action, auth?.principal));
     if (body.action === "message") return jsonOk(await sendAssistantMessage({ ...body, token, actor: auth?.principal, requestId }));
     if (body.action === "verify") {
       await enforceRateLimit(rateLimiters.login, `assistant-email:${body.email}`);

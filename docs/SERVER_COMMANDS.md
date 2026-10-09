@@ -1,5 +1,18 @@
 # Server Commands
 
+## Company-assistant scope and consent update — 2026-10-09
+
+The update script applies the extra additive migration `20261009240000_company_assistant_policy`. Test it on a disposable copy and take the existing paired backup before deploying. Old conversations and drafts remain, but old drafts do not grant booking consent. Existing unconsumed activation links require renewed booking consent before a new account can be created; existing sign-in/recovery remains available independently.
+
+```bash
+cd /www/wwwroot/kmtlegal
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+Use the already protected AI settings below. Each message has one shared deadline and at most six model calls including scope and output checks; ordinary answers typically use three calls. No local real provider was configured during verification. Before claiming production readiness, run real AR/Egyptian/EN conversations for office questions, unknown facts, mixed/off-topic requests, prompt injection, greetings, one offer, refusal, ambiguous/clear acceptance, corrections, withdrawal and human takeover. Verify no premature contact panel, draft write or submission. Check provider failure/retry and a rejected answer. Legal explanations beyond the existing sourced services remain unpublished until the office supplies approved text and references in `assistant-approved-knowledge.ts`.
+
+This update does not confirm appointments, alter fees, enable general notifications or schedule backups.
+
 ## Phase five — account, assistant, services, ledger and daily backup
 
 Update after testing all five additive migrations on a disposable copy and taking a paired DB/uploads backup. Existing client history is preserved; unresolved legacy invoice conflicts are marked for manual reconciliation.

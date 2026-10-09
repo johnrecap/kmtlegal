@@ -1,5 +1,30 @@
 # KMT Legal Implementation Status
 
+## 2026-10-09 — Company-scoped assistant (implemented; real-model acceptance pending)
+
+Authority: owner's approved company-assistant plan; baseline ff2138e. No subagents or new libraries. Existing earlier phase-five operational gaps remain open.
+
+| Requirement | Implementation / current evidence | State |
+| --- | --- | --- |
+| Approved knowledge and narrow company scope | Source-linked office contacts and six service descriptions/steps/documents; separate empty allowlist for office-approved legal explanations. No browsing, article sweep or client-file ingestion. | VERIFIED source/data tests; new legal explanation approval NOT_VERIFIED (none published) |
+| Contextual input policy / output review | Strict structured classification and independent grounded-reply review with same provider, shared deadline, max six calls. Off-topic/unclear replies are localized; generation/review rejection discards staged draft facts. | VERIFIED protocol/failure tests; real-model scope/grounding/Arabic quality NOT_VERIFIED |
+| Consent and one offer | Saved inquiry/booking/offer/consent/account-help state. Exact user evidence required for inferred intent; server tools and submission/activation check state. Refusal/withdrawal stops intake; explicit begin/return actions, one server-appended offer. | VERIFIED unit + isolated SQL; semantic consent classification by actual model NOT_VERIFIED |
+| Progressive UI / languages | Initial panel hidden; recovery independent of booking; summary/contact/activation deferred. Begin/back manage focus and preserve draft. Reused components/catalogs. | VERIFIED 20 AR/EN x theme x width browser combinations; physical mobile soft keyboard NOT_VERIFIED |
+| Compatibility / failure / security | Additive JSON migration keeps old history/drafts but defaults inquiry. Revision/lease CAS protects mode state; existing owned reads and human takeover preserved; delayed activation checks consent. Model outages do not submit. | VERIFIED isolated SQL and representative HTTP; native production migration/concurrency NOT_VERIFIED |
+| Acceptance and handoff | Representative 26-test policy/SQL gate before UI; types/lint/build, expanded SQL, browser and actual HTTP checks, updated guide/decisions/runbook. | Scoped receipts below; commit/push recorded in Git history; operational acceptance remains INCOMPLETE |
+
+Original-template checker is NOT_APPLICABLE: this is a software feature, not a template batch. Test success is not real-model semantic acceptance or office approval of legal explanations.
+
+Evidence: `docs/reviews/2026-10-09/company-assistant/`. The final verification manifest owns current source hashes and check receipts. Deterministic tests mock model decisions and SMTP, while SQL tests execute real Prisma operations on disposable memory-only PGlite; browser presentation uses intercepted API responses, and a separate local HTTP test exercises actual handlers/database without a model.
+
+- Typecheck, warning-free Lint and optimized build passed. Focused recheck: **48 tests passed**, including 42 policy/gateway/SQL assertions plus six UI regression assertions. Browser matrix: **2 tests covering 20 locale/theme/viewport combinations**, 360/390/768/1024/1440 widths, hidden initial fields, explicit consent, recovery, focus, withdrawal, preserved draft and reviewed submission.
+- Full suite recheck with two workers: **796 passed, 55 skipped, zero assertion failures**. One suite cannot initialize without Git Bash (`postgres-backup-tool-resolution.test.ts`); full-suite acceptance remains NOT_VERIFIED. Earlier concurrent run had a UI timeout and two animation cleanup rejections, and a focused run had a SQL-test timeout; bounded reruns passed these cases without product/test-timeout changes. Original reports are retained.
+- Actual HTTP testing found and fixed a quota conflict: reversible mode actions now use the existing 12/minute conversation limiter, preserving the five/ten-minute booking quota and separate email limits. The final real-handler HTTP scenario passed against the rebuilt app: anonymous rejection, initial inquiry, blocked premature activation, independent recovery access, explicit booking/withdrawal, absent-provider failure without submission and foreign-origin rejection. The full unit recheck preceded this small route correction; the final build/typecheck and real HTTP recheck cover it. HTTP receipts retain both runs.
+- Editorial/visual review: AR mobile inquiry and EN desktop submitted screenshots inspected directly; wording distinguishes inquiry, unsent draft, received request and staff approval, no initial contact collection or overflow in the tested matrix. Buttons retain existing white/gold theme; fixed reply catalogs cover AR/EN. These judgments concern static copy/presentation, not model-generated language quality.
+- Local configuration presence check: no real AI provider/key/local endpoint configured. Real AR/Egyptian/EN scope, mixed questions, naturalness, unknown facts, prompt-injection resistance and consent interpretation remain NOT_VERIFIED. Model self-review reduces risk but is not a guarantee. Configure securely and run the scenarios in `docs/SERVER_COMMANDS.md` before calling production dialogue accepted. No prices, final legal guidance or approved legal explanations were invented.
+- No fees, staff appointment approval, general notifications, external libraries, existing client history or production data changed. Earlier phase-five operational gates and pending office sources remain open. No production deployment performed.
+
+
 ## 2026-10-09 — Phase five (software implemented; operational acceptance remains incomplete)
 
 Authority: the owner's complete phase-five implementation plan, nine decisions and direct-work/no-subagents instruction. Baseline `fd70576`. No Spec Kit activation, new runtime dependencies, production database access, automatic general notifications or deployment. This is the current obligation register; earlier checkpoints are superseded by the evidence below.
