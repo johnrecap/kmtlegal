@@ -16,6 +16,9 @@ import { cn } from "@/lib/cn";
 import { consultationAvailabilityUiCopy as copy } from "@/lib/ui-copy";
 import type { ConsultationAvailability, ConsultationMode } from "@/server/consultations/consultation-availability-service";
 import { AdminApiError, readAdminApiResponse } from "@/features/admin/shared/admin-api-error";
+import { directBookingCopy } from "@/content/direct-booking-copy";
+
+const direct = directBookingCopy.ar;
 
 const modeOptions: Array<{ value: ConsultationMode; label: string }> = [
   { value: "ONLINE", label: copy.modes.ONLINE },
@@ -23,7 +26,7 @@ const modeOptions: Array<{ value: ConsultationMode; label: string }> = [
   { value: "OFFICE", label: copy.modes.OFFICE }
 ];
 
-export function ConsultationAvailabilityForm({ initialValue }: { initialValue: ConsultationAvailability }) {
+export function ConsultationAvailabilityForm({ initialValue, lawyers = [] }: { initialValue: ConsultationAvailability; lawyers?: Array<{ id: string; name: string }> }) {
   const router = useRouter();
   const [value, setValue] = useState<ConsultationAvailability>(initialValue);
   const [status, setStatus] = useState<{ tone: "idle" | "success" | "error"; message: string }>({ tone: "idle", message: "" });
@@ -83,6 +86,22 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
 
   return (
     <form className="space-y-5" onSubmit={submit}>
+      <Card><CardHeader><CardTitle>{direct.adminTitle}</CardTitle></CardHeader><CardContent className="space-y-4">
+        <p className="text-sm leading-7">{direct.adminNote}</p>
+        <label className="flex min-h-11 items-center gap-3"><input type="checkbox" checked={value.directBooking.published} onChange={e => setValue(v => ({ ...v, directBooking: { ...v.directBooking, published: e.target.checked } }))} />{direct.publish}</label>
+        {value.days.map(day => <fieldset key={day.weekday} className="rounded border border-border p-3"><legend className="px-2 text-sm">{copy.days[day.weekday]} — {direct.roster}</legend><div className="flex flex-wrap gap-3">
+          {lawyers.map(lawyer => <label key={lawyer.id} className="flex min-h-11 items-center gap-2"><input type="checkbox" checked={value.directBooking.roster.find(r => r.weekday === day.weekday)?.lawyerIds.includes(lawyer.id) ?? false} onChange={e => setValue(v => { const existing = v.directBooking.roster.find(r => r.weekday === day.weekday)?.lawyerIds ?? []; return { ...v, directBooking: { ...v.directBooking, roster: [...v.directBooking.roster.filter(r => r.weekday !== day.weekday), { weekday: day.weekday, lawyerIds: e.target.checked ? [...existing, lawyer.id] : existing.filter(id => id !== lawyer.id) }] } }; })} />{lawyer.name}</label>)}
+        </div></fieldset>)}
+        <h3 className="font-semibold">{direct.closures}</h3>
+        {value.directBooking.closures.map((closure, index) => <div key={index} className="grid gap-3 rounded border border-border p-3 sm:grid-cols-2">
+          <label>{direct.closureDate}<input required className="min-h-11 w-full rounded border border-border bg-surface p-2" type="date" value={closure.date} onChange={e => updateClosure(index, { date: e.target.value })} /></label>
+          <label>{direct.closureLawyer}<select className="min-h-11 w-full rounded border border-border bg-surface p-2" value={closure.lawyerId ?? ""} onChange={e => updateClosure(index, { lawyerId: e.target.value || null })}><option value="">{direct.allLawyers}</option>{lawyers.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}</select></label>
+          <label>{direct.closureStart}<input required className="min-h-11 w-full rounded border border-border bg-surface p-2" type="time" value={closure.start} onChange={e => updateClosure(index, { start: e.target.value })} /></label>
+          <label>{direct.closureEnd}<input required className="min-h-11 w-full rounded border border-border bg-surface p-2" type="time" value={closure.end} onChange={e => updateClosure(index, { end: e.target.value })} /></label>
+          <button type="button" className={buttonClasses({ variant: "outline" })} onClick={() => setValue(v => ({ ...v, directBooking: { ...v.directBooking, closures: v.directBooking.closures.filter((_, i) => i !== index) } }))}>{direct.remove}</button>
+        </div>)}
+        <button type="button" className={buttonClasses({ variant: "outline" })} onClick={() => setValue(v => ({ ...v, directBooking: { ...v.directBooking, closures: [...v.directBooking.closures, { date: "", start: "00:00", end: "23:59", lawyerId: null }] } }))}>{direct.addClosure}</button>
+      </CardContent></Card>
       <Card>
         <CardHeader>
           <CardTitle>{copy.rulesTitle}</CardTitle>
@@ -226,6 +245,10 @@ export function ConsultationAvailabilityForm({ initialValue }: { initialValue: C
 
   function updateNumber(key: "slotDurationMinutes" | "minLeadHours" | "bookingWindowDays", rawValue: string) {
     setValue((current) => ({ ...current, [key]: Number(rawValue) }));
+  }
+
+  function updateClosure(index: number, patch: Partial<ConsultationAvailability["directBooking"]["closures"][number]>) {
+    setValue(v => ({ ...v, directBooking: { ...v.directBooking, closures: v.directBooking.closures.map((c, i) => i === index ? { ...c, ...patch } : c) } }));
   }
 
   function updateDay(index: number, patch: Partial<ConsultationAvailability["days"][number]>) {

@@ -1,5 +1,27 @@
 # KMT Legal Implementation Status
 
+## 2026-10-09 — Published lawyer booking (implemented; operational acceptance pending)
+
+Authority: owner-approved direct booking plan; baseline 053f212. No subagents, Spec Kit or new libraries. The new preapproval rule applies only to bookings explicitly confirmed on an administration-published schedule; historical pending requests retain staff review.
+
+| Obligation | Current implementation and evidence | State |
+| --- | --- | --- |
+| Guest name/phone, PHONE/WHATSAPP, explicit review, optional account | SQL representative guest booking; real HTTP confirmation without email/account; UI consent gate; optional activation and safe authenticated attachment tests | VERIFIED locally |
+| Published daily roster, closures, live conflicts, capacity one | Default unpublished, active Lawyer roster validation, Cairo duration/lead/window, all-type lawyer conflicts, daily-load assignment, office conflict and Serializable transaction; closure/unpublication tests | VERIFIED source + isolated SQL; native PostgreSQL concurrency NOT_VERIFIED |
+| Handoff queue vs claim, language and company scope | Queued handoff preserves AI; actual takeover pauses it; direct controls remain; saved AR dialogue on EN page tested; import/export formation explicitly in scope; bounded failures logged without customer text | VERIFIED mocked policy/SQL/browser; real-provider dialogue NOT_VERIFIED |
+| Retry/edit/cancel, phone limit, identity isolation | Per-session action key/hash; duplicate payload rejection; same-phone future conflict; reschedule failure retains old appointment; cancellation; fresh guest lead; Arabic phone; only current booking transfers to verified account | VERIFIED isolated SQL and representative HTTP/browser; multi-connection native race NOT_VERIFIED |
+| Admin/lawyer/portal visibility | Assigned appointment and inbox with contact summary/channel; schedule editor; admin request source/channel and client confirmed/callback/cancelled messaging | VERIFIED real HTTP assigned-lawyer list, UI editor, SQL identity/portal reads and source review |
+| Mobile/RTL/states/accessibility | AR/EN × light/dark × 360/390/768/1024/1440; provider outage, lost-response retry, explicit consent, cancellation, focus; direct controls on human-owned conversation | Browser evidence below; physical soft keyboard and exhaustive assistive-technology testing NOT_VERIFIED |
+| Verification, docs, handoff | Current build/typecheck/lint and focused receipts; existing guide, decisions, runbook, consumer register updated | Receipts below; commit/push recorded in Git history |
+
+Original-template checker NOT_APPLICABLE (software feature, no template batch). No production data or settings were used. Additive migration preserves old approvals and human ownership. Office publication is still required after deployment; synthetic fixture publication does not approve the real office schedule. Guest capabilities retain the existing seven-day lifetime; later changes require office contact, with follow-up available in a linked account.
+
+Evidence: **docs/reviews/2026-10-09/direct-booking/**. The first representative gate passed 28 tests before UI expansion. Final focused recheck passed **78 tests**, covering actual Prisma SQL on disposable PGlite, policy/gateway/availability/conflict and shared-component contracts. Full suite recheck: **801 passed, 55 skipped, no assertion failures**, with one suite unable to initialize because Git Bash is absent. The full-suite gate is therefore NOT_VERIFIED; initial failure from the missing new UI-consumer registry entry was fixed and both reports retained. Final focused checks cover subsequent small integration corrections; the full suite is not claimed rerun after each of those corrections.
+
+Browser presentation tests intercept only their synthetic conversation responses; the separate API test uses actual handlers, migrations and synthetic SQL, including admin publication, guest confirmation/replay, assigned-lawyer access and cancellation. They do not establish native PostgreSQL concurrent isolation or actual model/mail operation. Earlier interrupted browser runs isolated an inaccessible select label; the label was fixed and complete browser reruns passed. Screenshots and semantic inspection are separate from automated assertions.
+
+Operational acceptance remains INCOMPLETE: native PostgreSQL concurrency/migration trial, configured real-model AR/Egyptian/EN review, target deployment and office schedule publication remain pending. Native PostgreSQL and Git Bash were checked and absent on this host; no real AI provider was configured for the local fixture. Earlier SMTP/ClamAV/restore/aaPanel scheduler gaps remain open and are not changed by this task.
+
 ## 2026-10-09 — Company-scoped assistant (implemented; real-model acceptance pending)
 
 Authority: owner's approved company-assistant plan; baseline ff2138e. No subagents or new libraries. Existing earlier phase-five operational gaps remain open.

@@ -814,6 +814,14 @@
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/phase-five-components.test.tsx"
+    },
+    {
+      "path": "src/features/public-site/direct-booking-panel.tsx",
+      "contracts": [
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/phase-five-components.test.tsx"
     }
   ],
   "connectedSurfaces": [

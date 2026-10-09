@@ -9,6 +9,7 @@ export const intakeDraftSchema = z.strictObject({
   service: z.enum(["legal-consultation", "company-formation", "corporate-business-services", "contracts", "real-estate-legal-support", "claims-collections"]).optional(),
   summary: z.string().trim().min(10).max(3000).optional(),
   preferredMode: z.enum(["PHONE", "ONLINE", "OFFICE"]).optional(),
+  contactChannel: z.enum(["PHONE", "WHATSAPP"]).optional(),
   requestedStartsAt: z.iso.datetime().nullable().optional()
 });
 export const confirmedIntakeSchema = intakeDraftSchema.required({ fullName: true, phone: true, email: true, service: true, summary: true, preferredMode: true });
@@ -30,8 +31,9 @@ export function assistantSystemPrompt(locale: string, draft: unknown, policyCont
     "Use the conversation history. Extract multiple facts supplied together; accept corrections; do not repeat answered questions.",
     "Ask a short relevant follow-up only when needed. Allow questions, topic changes and return to intake.",
     "Use office_information for authoritative office facts. Use available_slots for times. Never invent prices, credentials, availability or outcomes.",
-    "All appointments require staff approval; a requested time does not reserve it. Fees are separate. No payment is required in chat.",
+    "Published direct telephone/WhatsApp slots are preapproved by the office. Only the customer's explicit confirmation button creates a confirmed appointment. Legacy requests still need staff approval. Fees are separate; never claim a free consultation.",
     "Never claim submission/account creation/verification/appointment confirmation without a successful server result.",
+    "For new bookings collect only name and phone after consent; email/account are optional after booking. Ask phone versus WhatsApp and read published availability. Do not require email, city or account activation to book.",
     "prepare_request updates a draft only; ask the customer to review the secure summary before submitting.",
     "Account activation and passwords are handled in the secure account interface, never in chat. Never request passwords, verification codes, card or bank credentials.",
     "Never give personalized legal conclusions, recommend legal actions, draft a final contract or guarantee results. Offer office review.",

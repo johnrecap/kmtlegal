@@ -6,6 +6,8 @@ import { ConsultationAvailabilityForm } from "@/features/admin/consultations/con
 import { AdminPermissionBlocked as PermissionBlocked, requireAdminRoutePage } from "@/server/auth/page-guards";
 import { getAdminConsultationAvailability } from "@/server/consultations/consultation-availability-service";
 import { adminNavForPath } from "../admin-navigation";
+import { prisma } from "@/server/db/prisma";
+import { directBookingCopy } from "@/content/direct-booking-copy";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +23,7 @@ export default async function AdminConsultationAvailabilityPage() {
   }
 
   const result = await getAdminConsultationAvailability({ actor: guard.context.principal });
+  const lawyers = await prisma.user.findMany({ where: { status: "ACTIVE", deletedAt: null, role: { name: "Lawyer", status: "ACTIVE" } }, select: { id: true, name: true }, orderBy: { name: "asc" } });
 
   return (
     <DashboardShell
@@ -35,9 +38,9 @@ export default async function AdminConsultationAvailabilityPage() {
       <div className="space-y-5">
         <StateBlock
           title="هذه الأوقات هي التي تظهر داخل شات الحجز العام"
-          description="العميل يختار الموعد من داخل المحادثة فقط. عند اكتمال الحجز يصل الطلب إلى مراجعة الاستشارات بدون محام معين، ثم تعين السكرتيرة المحامي من شاشة الطلب."
+          description={directBookingCopy.ar.adminNote}
         />
-        <ConsultationAvailabilityForm initialValue={result.value} />
+        <ConsultationAvailabilityForm initialValue={result.value} lawyers={lawyers} />
       </div>
     </DashboardShell>
   );

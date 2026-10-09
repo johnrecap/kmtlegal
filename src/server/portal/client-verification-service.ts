@@ -21,7 +21,7 @@ export const completeVerificationSchema = z.strictObject({ token: z.string().reg
 
 export async function startClientVerification(input: { capability: string; email: string; purpose: "ACTIVATE" | "RECOVER"; actor?: Principal | null }) {
   const session = await ownAssistantSession(input.capability, input.actor);
-  if (input.purpose === "ACTIVATE" ? !bookingAllowed(session.dialogue) : !bookingAllowed(session.dialogue) && !readDialogue(session.dialogue).accountAccess) throw new ApiError(403, "PERMISSION_DENIED", "Account action must be requested.");
+  if (input.purpose === "ACTIVATE" ? !bookingAllowed(session.dialogue) && !session.consultationRequestId : !bookingAllowed(session.dialogue) && !readDialogue(session.dialogue).accountAccess) throw new ApiError(403, "PERMISSION_DENIED", "Account action must be requested.");
   if (getAccountEmailMode() !== "smtp") throw new ApiError(503, "EMAIL_DELIVERY_FAILED", "Account email delivery is unavailable.");
   const latest = await prisma.clientVerificationToken.findFirst({ where: { sessionId: session.id }, orderBy: { createdAt: "desc" } });
   if (latest && latest.createdAt.getTime() > Date.now() - 60_000) throw new ApiError(429, "RATE_LIMITED", "Please wait before requesting another email.");
@@ -34,7 +34,7 @@ export async function startClientVerification(input: { capability: string; email
     // Serialize resends on the conversation; only the newest challenge can remain usable.
     await tx.$queryRaw`SELECT id FROM assistant_sessions WHERE id = ${session.id}::uuid FOR UPDATE`;
     const current = await tx.assistantSession.findUniqueOrThrow({ where: { id: session.id } });
-    if (input.purpose === "ACTIVATE" ? !bookingAllowed(current.dialogue) : !bookingAllowed(current.dialogue) && !readDialogue(current.dialogue).accountAccess) throw new ApiError(403, "PERMISSION_DENIED", "Account action must be requested.");
+    if (input.purpose === "ACTIVATE" ? !bookingAllowed(current.dialogue) && !current.consultationRequestId : !bookingAllowed(current.dialogue) && !readDialogue(current.dialogue).accountAccess) throw new ApiError(403, "PERMISSION_DENIED", "Account action must be requested.");
     const recent = await tx.clientVerificationToken.findFirst({ where: { sessionId: session.id, createdAt: { gt: new Date(Date.now() - 60_000) } } });
     if (recent) throw new ApiError(429, "RATE_LIMITED", "Please wait before requesting another email.");
     await tx.clientVerificationToken.updateMany({ where: { sessionId: session.id, consumedAt: null }, data: { consumedAt: new Date() } });
@@ -86,7 +86,7 @@ export async function completeClientVerification(input: { token: string; passwor
       return existing.id;
     }
     if (challenge.purpose !== "ACTIVATE" || challenge.session.clientId) throw new ApiError(410, "TOKEN_EXPIRED", "Account verification link is invalid or expired.");
-    if (!bookingAllowed(challenge.session.dialogue)) throw new ApiError(403, "PERMISSION_DENIED", "Booking preparation has stopped.");
+    if (!bookingAllowed(challenge.session.dialogue) && !challenge.session.consultationRequestId) throw new ApiError(403, "PERMISSION_DENIED", "Booking preparation has stopped.");
     const draft = intakeDraftSchema.parse(challenge.session.draft);
     if (!draft.fullName || !draft.phone) throw new ApiError(400, "VALIDATION_ERROR", "Name and phone are required before account activation.");
     const role = await tx.role.findUnique({ where: { name: ROLES.client } });

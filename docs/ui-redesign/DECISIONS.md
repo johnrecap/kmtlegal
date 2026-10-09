@@ -1,5 +1,9 @@
 # DECISIONS (Owner-Locked Rulings)
 
+## 2026-10-09 — Owner-approved published lawyer appointments
+
+The latest explicit plan supersedes mandatory post-request office approval only for new bookings in an explicitly published lawyer schedule. Customer confirmation creates the appointment immediately, with name/phone and PHONE or WhatsApp; email/account are optional afterward. Publishing must never occur from default settings. One office consultation per interval, daily participating lawyers, closures and live conflict checks apply. Legacy requests, payments and claimed conversations remain unchanged. Queued handoff does not pause AI; actual staff ownership does. No subagents, new libraries, fee/free claims or general notifications. Protected guest edits/cancellation and isolated lead creation are authorized.
+
 ## 2026-10-09 — Owner-approved company-scoped conversation
 
 The approved follow-up plan narrows the assistant to office services, booking, account help and own-request follow-up. Related explanations use only sourced approved office content; no general model knowledge or automatic article/client-document ingestion. Unrelated questions receive a short localized redirect, mixed questions address only the office portion, and greetings remain normal social turns. Replies should be concise and useful, with detail when needed.

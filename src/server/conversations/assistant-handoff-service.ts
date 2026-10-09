@@ -30,6 +30,14 @@ export async function ensureAssistantHandoff(tx: Prisma.TransactionClient, sessi
 
 export async function bindAssistantThreadIdentity(tx: Prisma.TransactionClient, sessionId: string, clientId: string) {
   const session = await tx.assistantSession.findUniqueOrThrow({ where: { id: sessionId } });
+  if (session.consultationRequestId) {
+    const request = await tx.consultationRequest.findUniqueOrThrow({ where: { id: session.consultationRequestId }, include: { client: true } });
+    // Only this capability's new isolated lead can be attached. Never claim historical clients by contact details.
+    if (request.clientId !== clientId && request.confirmationSource !== "STAFF_APPROVAL" && request.client?.source === "assistant_guest_booking" && !request.client.userId) {
+      await tx.consultationRequest.update({ where: { id: request.id }, data: { clientId } });
+      await tx.appointment.updateMany({ where: { consultationRequestId: request.id, clientId: request.clientId! }, data: { clientId } });
+    }
+  }
   if (session.conversationThreadId) {
     await tx.conversationThread.update({ where: { id: session.conversationThreadId }, data: { clientId } });
   }

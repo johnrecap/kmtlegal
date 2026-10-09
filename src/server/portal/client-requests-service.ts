@@ -11,7 +11,7 @@ export async function listOwnConsultationRequests(actor: Principal) {
   const clientId = assertClientPortalAccess(actor);
   return prisma.consultationRequest.findMany({ where: { clientId, client: { userId: actor.id, deletedAt: null } },
     orderBy: { createdAt: "desc" }, take: 100,
-    select: { id: true, publicReference: true, status: true, serviceCategory: true, createdAt: true, requestedStartsAt: true, outcomeVersion: true, preferredMode: true,
+    select: { id: true, publicReference: true, status: true, confirmationSource: true, contactChannel: true, outcomeStatus: true, serviceCategory: true, createdAt: true, requestedStartsAt: true, outcomeVersion: true, preferredMode: true,
       appointments: { where: { status: { in: ["SCHEDULED", "RESCHEDULED"] } }, select: { startsAt: true, endsAt: true, mode: true }, orderBy: { startsAt: "asc" } }
     }
   });

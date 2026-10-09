@@ -1,8 +1,16 @@
 # KMT Legal Platform — Engineering Handoff
 
-**Last updated**: 2026-09-13
+Published lawyer booking (2026-10-09, supersedes the earlier approval rule for new published-slot bookings): visitors choose PHONE/WhatsApp, a published time, name and phone, then explicitly confirm. Email/account is optional afterward. The office must publish `consultation.availability.directBooking` with an active daily lawyer roster; default is unpublished. Closures, existing duration/lead/window and Africa/Cairo apply. Office consultation capacity remains one; selection uses available lawyers daily appointment count, then stable ID. Legacy pending requests retain staff review and fees/general notifications are unchanged.
 
-**Current delivery focus**: Batch 12 admin-account authorization and password-write concurrency
+Direct-booking implementation: `src/server/consultations/direct-booking-service.ts`, `src/features/public-site/direct-booking-panel.tsx`, and the existing conversation API. Additive migration `20261010010000_published_lawyer_booking` stores confirmation source/channel, queued handoff time and per-session action keys. Serializable conflict checks and phone/session locks protect new bookings; idempotency keys preserve retries after lost responses. Guests receive isolated leads without contact matching. Verified account attachment transfers only that session’s newly created lead booking. The protected guest capability lasts seven days; afterward use authenticated account access or contact the office. Calendar export contains the appointment time and a generic title.
+
+Handoff request queues the conversation; actual staff takeover pauses generation, while booking controls stay available. Persisted dialogue locale controls labels; explicit language switching is supported. Booking/rescheduling/cancellation use the same endpoint, with source/state/ownership guards. Requests without available times are saved as unconfirmed callbacks. Details and assigned inbox threads expose the channel to staff; no public reference grants access.
+
+Current verification and operational gaps: `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md`, direct-booking entry. Real-provider dialogue review, native PostgreSQL concurrency and production deployment are separate acceptance gates; PGlite and intercepted browser tests do not prove them.
+
+**Last updated**: 2026-10-09
+
+**Current delivery focus**: Published lawyer appointments and optional guest account follow-up
 
 **Primary setup guide**: `../PROJECT_GUIDE.md`
 
@@ -43,6 +51,8 @@ Do not recreate runtime Stitch clone pages or connect product code/dynamic data 
 not edit the exported Stitch source as part of ordinary product work.
 
 ## Recent Changes
+
+- 2026-10-09 — Published-roster guest appointments, optional account attachment, queue/claim separation, bilingual direct controls, admin roster/closure editor and focused SQL/API/browser coverage. Current receipts and gaps are in the implementation register.
 
 - 2026-09-21 - Repaired incremental public booking intake and AI-failure recovery.
   - The assistant retains accepted facts, asks for one missing field, handles known actions/contact replies without a model, and continues booking after a legal-advice boundary.

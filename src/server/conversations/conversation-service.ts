@@ -540,7 +540,7 @@ export async function updateAdminConversation(input: {
   }
   if (body.assistantMode !== undefined) {
     if (!thread.assistantSession) throw new ApiError(400, "BAD_REQUEST", "This conversation has no AI session.");
-    updateData.assistantSession = { update: { humanOwned: body.assistantMode === "HUMAN", revision: { increment: 1 } } };
+    updateData.assistantSession = { update: { humanOwned: body.assistantMode === "HUMAN", handoffRequestedAt: null, revision: { increment: 1 } } };
   }
   if (thread.assistantSession && (body.status === "CLOSED" || body.status === "ARCHIVED")) {
     updateData.assistantSession = { update: { humanOwned: true, revision: { increment: 1 } } };

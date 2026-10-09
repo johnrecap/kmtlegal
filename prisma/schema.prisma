@@ -20,6 +20,8 @@ model AssistantSession {
   draft                 Json @default("{}")
   dialogue              Json @default("{}")
   humanOwned            Boolean @default(false)
+  handoffRequestedAt    DateTime?
+  bookingActions        AssistantBookingAction[]
   revision              Int @default(0)
   leaseId               String? @db.Uuid
   leaseExpiresAt        DateTime?
@@ -33,6 +35,17 @@ model AssistantSession {
   @@index([humanOwned, updatedAt])
   @@index([expiresAt])
   @@map("assistant_sessions")
+}
+
+model AssistantBookingAction {
+  id          String @id @default(uuid()) @db.Uuid
+  sessionId   String @db.Uuid
+  session     AssistantSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  key         String @db.Uuid
+  requestHash String
+  createdAt   DateTime @default(now())
+  @@unique([sessionId, key])
+  @@map("assistant_booking_actions")
 }
 
 model AssistantTurn {
@@ -560,6 +573,8 @@ model ConsultationRequest {
   opposingPartyName String?
   urgency           Urgency            @default(NORMAL)
   preferredMode     ConsultationMode
+  confirmationSource String @default("STAFF_APPROVAL")
+  contactChannel     String @default("PHONE")
   locale            String             @default("ar")
   status            ConsultationStatus @default(NEW)
   aiClassification  Json?

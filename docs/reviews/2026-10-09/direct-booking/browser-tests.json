@@ -1,0 +1,263 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Users\\UTD\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "C:\\Users\\UTD\\Documents\\Codex\\RecoveredProjects\\local-0efe82359eea107367d678c3c6ae29f0\\kmt legal office\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "tests/e2e/conversational-intake.spec.ts",
+      "tests/e2e/direct-booking-api.spec.ts",
+      "--workers=1",
+      "--reporter=line,json"
+    ],
+    "configFile": "C:\\Users\\UTD\\Documents\\Codex\\RecoveredProjects\\local-0efe82359eea107367d678c3c6ae29f0\\kmt legal office\\playwright.config.ts",
+    "rootDir": "C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/.playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "conversational-intake.spec.ts",
+      "file": "conversational-intake.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ar: guest booking, optional account and responsive presentation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 28811,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T19:17:01.743Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eeb3bbbaab82bf43d979-a667766df0fd0fb3c24b",
+          "file": "conversational-intake.spec.ts",
+          "line": 7,
+          "column": 7
+        },
+        {
+          "title": "en: guest booking, optional account and responsive presentation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 27083,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T19:17:30.862Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eeb3bbbaab82bf43d979-c9014add80501cc0746c",
+          "file": "conversational-intake.spec.ts",
+          "line": 7,
+          "column": 7
+        },
+        {
+          "title": "saved Arabic dialogue on an English page keeps booking available during staff ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2023,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T19:17:57.968Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eeb3bbbaab82bf43d979-036b438ce29e65d6572d",
+          "file": "conversational-intake.spec.ts",
+          "line": 69,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "direct-booking-api.spec.ts",
+      "file": "direct-booking-api.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "synthetic HTTP: published roster, guest confirmation, lawyer access and cancellation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 628,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T19:18:00.440Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "158c2d6e4a93313cef0e-451d09ca8825e994ef6d",
+          "file": "direct-booking-api.spec.ts",
+          "line": 5,
+          "column": 5
+        },
+        {
+          "title": "published schedule editor is readable on mobile and desktop",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4172,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-09T19:18:01.093Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "158c2d6e4a93313cef0e-32f0617bdb66cdfb980c",
+          "file": "direct-booking-api.spec.ts",
+          "line": 34,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-09T19:17:00.980Z",
+    "duration": 64965.089,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

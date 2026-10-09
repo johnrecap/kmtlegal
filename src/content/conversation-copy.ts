@@ -2,8 +2,8 @@ export const conversationCopy = {
   ar: {
     newConversation: "بدء محادثة جديدة", closed: "أغلق المكتب هذه المحادثة. يمكنك بدء محادثة جديدة.",
     guest: "زائر لم يتحقق من حسابه بعد", staff: "فريق المكتب", resume: "إعادة المحادثة للمساعد", takeOver: "استلام المحادثة", transcript: "سجل المحادثة",
-    legacy: "تم تحديث الحجز. افتح صفحة حجز الاستشارة لتجهيز طلب ينتظر اعتماد المكتب؛ لا يلزم الدفع داخل المحادثة.",
-    title: "مساعد KMT الذكي", introduction: "أخبرني بما تحتاج إليه، وسأساعدك في التعرف على خدمات المكتب وتجهيز طلبك. الاستشارة القانونية واعتماد الموعد من اختصاص المكتب.",
+    legacy: "تم تحديث الحجز. افتح صفحة حجز الاستشارة للاختيار من المواعيد التي ينشرها المكتب؛ لا يلزم الدفع داخل المحادثة.",
+    title: "مساعد KMT الذكي", introduction: "أخبرني بما تحتاج إليه، وسأشرح خدمات المكتب وأساعدك في اختيار موعد منشور للتحدث مع محامٍ. الاستشارة القانونية يقدمها المكتب.",
     message: "رسالتك", send: "إرسال", waiting: "جارٍ تجهيز الرد…", retry: "إعادة المحاولة", unavailable: "تعذر إتمام الإجراء. بياناتك محفوظة؛ حاول مرة أخرى أو تواصل مع المكتب.",
     review: "مراجعة طلب الاستشارة", reviewNote: "راجع البيانات قبل الإرسال. الموعد المطلوب لا يُحجز نهائيًا إلا بعد اعتماد الإدارة، والأتعاب تُحدد منفصلة.",
     verify: "التحقق من البريد وإنشاء الحساب", email: "البريد الإلكتروني", emailSent: "إذا أمكن متابعة هذا الطلب، ستصلك رسالة بخطوة الوصول المناسبة. راجع بريدك، بما فيه مجلد الرسائل غير المرغوب فيها.",
@@ -21,8 +21,8 @@ export const conversationCopy = {
   en: {
     newConversation: "Start a new conversation", closed: "The office closed this conversation. You can start a new one.",
     guest: "Guest account not yet verified", staff: "Office team", resume: "Return conversation to AI", takeOver: "Take over conversation", transcript: "Conversation history",
-    legacy: "Booking has been updated. Open the consultation page to prepare a request for office approval. Payment is not required in chat.",
-    title: "KMT AI assistant", introduction: "Tell me what you need. I can explain the office's services and help prepare your request. Legal advice and appointment approval are handled by the office.",
+    legacy: "Booking has been updated. Open the consultation page to choose from the office’s published times. Payment is not required in chat.",
+    title: "KMT AI assistant", introduction: "Tell me what you need. I can explain the office’s services and help you choose a published time to speak with a lawyer. Legal advice is provided by the office.",
     message: "Your message", send: "Send", waiting: "Preparing a reply…", retry: "Try again", unavailable: "We could not complete this action. Your saved data is retained; try again or contact the office.",
     review: "Review consultation request", reviewNote: "Check your details before submitting. Your requested time is confirmed only after office approval. Fees are handled separately.",
     verify: "Verify email and create account", email: "Email address", emailSent: "If this request can proceed, an email will explain the appropriate access step. Check your inbox and spam folder.",

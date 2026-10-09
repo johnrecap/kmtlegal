@@ -1,0 +1,183 @@
+{
+  "baseline": "Owner screenshot and baseline 053f212: handoff stopped AI and English waiting text appeared in Arabic chat.",
+  "review": {
+    "score": 8,
+    "scope": "Manual review of representative Arabic mobile dark review, English desktop light confirmation, and settled admin mobile roster/hours; automated responsive overflow/focus checks cover twenty public combinations.",
+    "findings": "Existing black/gold/light tokens and components preserved. Clear chosen time, Cairo label, phone/channel, explicit consent and confirmation. RTL numbers isolated; controls stack without horizontal scrolling. Admin accordion initial animation was allowed to settle before capture; final hours/modes are visible. No new motion library.",
+    "limits": [
+      "Physical soft keyboard and exhaustive screen-reader/reduced-motion/manual review of every viewport not verified.",
+      "Real-model Arabic/Egyptian/English quality remains unverified; policy tests use controlled provider outputs."
+    ],
+    "criticalOpen": []
+  },
+  "screenshots": [
+    {
+      "name": "admin-1440.png",
+      "sha256": "6f6b8329a799090cd337868eaeb14cd6db535071a8c45988a11d3ff08739969a"
+    },
+    {
+      "name": "admin-390.png",
+      "sha256": "3329e9196a0b238bcce574cdf65dc825fcccea999cbe577b84be1ae92196a907"
+    },
+    {
+      "name": "ar-dark-1024-confirmed.png",
+      "sha256": "859bbef31d5865e535480933a87a9de3835e8d4885bc79f9909ebb0b1b399698"
+    },
+    {
+      "name": "ar-dark-1024-review.png",
+      "sha256": "a601d21957fbe674ab862022532eac349e7503986207e89538ef05bdd9b7348f"
+    },
+    {
+      "name": "ar-dark-1440-confirmed.png",
+      "sha256": "5e1f131b7d6cd39f0e711e029c60c6579ad4096c3bb12bac6da406d43bdc2cc4"
+    },
+    {
+      "name": "ar-dark-1440-review.png",
+      "sha256": "50f46dd4039f88e963fb3d0e45a69301be73075e4469753d7347a9c8711a7e22"
+    },
+    {
+      "name": "ar-dark-360-confirmed.png",
+      "sha256": "6415b8fa807494448e24bf837a32867f848182bc88abba21a56bb18d0819ae02"
+    },
+    {
+      "name": "ar-dark-360-review.png",
+      "sha256": "0a9a82e5b68f2f8f6f0383b4318f7fb2c4c1da6507592b468b6d514c6abbca85"
+    },
+    {
+      "name": "ar-dark-390-confirmed.png",
+      "sha256": "fd8cd7cb53dcd9a04331c7f60095d6183ead92de3c4d27eaebe7877e5b462432"
+    },
+    {
+      "name": "ar-dark-390-review.png",
+      "sha256": "6af263eddc65ac923f4cd3dd07294c5703bf2d881fcb27f84fa9f512d24c1056"
+    },
+    {
+      "name": "ar-dark-768-confirmed.png",
+      "sha256": "f8d7c4653e93e3a5fdc009c89ee571acc897d1de686b65d77aa956882194e562"
+    },
+    {
+      "name": "ar-dark-768-review.png",
+      "sha256": "5442154bbd99322c6bc8a98d95b105bc776b6e5b2f7e75e5bd79afa5e803f356"
+    },
+    {
+      "name": "ar-light-1024-confirmed.png",
+      "sha256": "61ceb0b4268869a80ba7e61ea9fcb78e48b48918ef289b7ccfeb53305153399a"
+    },
+    {
+      "name": "ar-light-1024-review.png",
+      "sha256": "564390a3ed78068a266a06ac61aae5427cf3d2e0d358a032def97fd638b772ab"
+    },
+    {
+      "name": "ar-light-1440-confirmed.png",
+      "sha256": "a0251304d04bbd016b4b0dac519484d0e83c70a5cc53c9cd1831c1328f0bd96e"
+    },
+    {
+      "name": "ar-light-1440-review.png",
+      "sha256": "90fd5645b6e0c8f572a3eb707562cc549d9239f6ee191180b53ff26a6dbe4900"
+    },
+    {
+      "name": "ar-light-360-confirmed.png",
+      "sha256": "c215ae25da214a6ddf2cdf36817dd93847b75e46350d5615af3eb54479226548"
+    },
+    {
+      "name": "ar-light-360-review.png",
+      "sha256": "be3ebe7d7a73dfb2a631668c2a294b5d804a9c0863955a6cc2534b02473207ec"
+    },
+    {
+      "name": "ar-light-390-confirmed.png",
+      "sha256": "4c1f5a37abf112778636254d137d76a9b99aba51f6c4ad4d68abba0c88b4bcd8"
+    },
+    {
+      "name": "ar-light-390-review.png",
+      "sha256": "54ed3a2e33da543a8d38507698c9d4a4c0c30d4f9c99c47b078560c7ddbfcffb"
+    },
+    {
+      "name": "ar-light-768-confirmed.png",
+      "sha256": "115b029075fe57fda7b9b105bd36fbaf5994799de7477251ed2a6131a3e8c5a8"
+    },
+    {
+      "name": "ar-light-768-review.png",
+      "sha256": "68569ea119995e25633fb9ef424f89b1ce42e07c43dc8a83466a69d0eafd65a0"
+    },
+    {
+      "name": "en-dark-1024-confirmed.png",
+      "sha256": "79ca4e988ded103488dc9e51531ba8f62d2f90cb6a2033208fce794cfa35fb45"
+    },
+    {
+      "name": "en-dark-1024-review.png",
+      "sha256": "198c39a51ca7b708c16751c46fe8a2f41a8eefd15695ead32d502e5609741a61"
+    },
+    {
+      "name": "en-dark-1440-confirmed.png",
+      "sha256": "9cd00bacb9a08c531b7ecb7f7081be798a6a5cb20a927b66edaeeb763ac73ab9"
+    },
+    {
+      "name": "en-dark-1440-review.png",
+      "sha256": "af413e67069c247b7d71d4c74dd56969392e1091a7bdbd9edcf16faa8288e9ed"
+    },
+    {
+      "name": "en-dark-360-confirmed.png",
+      "sha256": "832e3f22c31a0537174ef26804a37acd7264f9ab619c155daa6c438d39425e5a"
+    },
+    {
+      "name": "en-dark-360-review.png",
+      "sha256": "83a0991e1e841bc7702ba39a4620d29cce6e5f1299e64ff2b4b22412026f9f1d"
+    },
+    {
+      "name": "en-dark-390-confirmed.png",
+      "sha256": "5bd1dc88c170e1d7ef30ebe386de7cad4a61663968b924c7de058baec666ae24"
+    },
+    {
+      "name": "en-dark-390-review.png",
+      "sha256": "b4c702058e3411d3f175165ca13f9bc41550af21d87529131dc06bf60a1ea756"
+    },
+    {
+      "name": "en-dark-768-confirmed.png",
+      "sha256": "72dcc3ef0e19158c8df7b1b063d189418989811cb9f2c05b469942c8e4f190f5"
+    },
+    {
+      "name": "en-dark-768-review.png",
+      "sha256": "97d8dfdb096b5b648beb69cca6e2e58ab241185d5aacd5c13cc5d2d3700816ff"
+    },
+    {
+      "name": "en-light-1024-confirmed.png",
+      "sha256": "67d4592af2d0db2d456bf3fe40a63e3c7d2469bd2d4241c12840ab0bff670771"
+    },
+    {
+      "name": "en-light-1024-review.png",
+      "sha256": "c233e626e04c501ae46255616e4926af5442dad4893a0cc7bc649c763ebb8188"
+    },
+    {
+      "name": "en-light-1440-confirmed.png",
+      "sha256": "4424b3dd18b5277737b2699ebb04b1f34682ff4193e03e97fe78f675c94f3e59"
+    },
+    {
+      "name": "en-light-1440-review.png",
+      "sha256": "1037c94811af8876b8e76dee6446711a8e5683d2eb729b4a37e39e90763d8a50"
+    },
+    {
+      "name": "en-light-360-confirmed.png",
+      "sha256": "00eae15204d5a079f24f3fa21a2868bfa0815f4f945431e218d0824a0e6ae517"
+    },
+    {
+      "name": "en-light-360-review.png",
+      "sha256": "cfba21eb00a29be7884ce74c2cbe0a54f527877baf6ce8bf0fb8c53454698c07"
+    },
+    {
+      "name": "en-light-390-confirmed.png",
+      "sha256": "4fbb50864c7d6f9701ceeff92566bd91b358151e42476be4d59bbaf37c6501ef"
+    },
+    {
+      "name": "en-light-390-review.png",
+      "sha256": "84bf8cf672da163da64fca0bc6cda8136b4ee784a5b7c2b93dfccba672400165"
+    },
+    {
+      "name": "en-light-768-confirmed.png",
+      "sha256": "a842a5d92eb5e8dd093906ef671ec6475ada1de8f9952c96397198fcc57c9f7a"
+    },
+    {
+      "name": "en-light-768-review.png",
+      "sha256": "582d2c87bad35032a386b269457ae4152ead47c1f13117442cffd177c94eb97a"
+    }
+  ]
+}

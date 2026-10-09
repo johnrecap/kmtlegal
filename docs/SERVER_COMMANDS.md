@@ -1,5 +1,18 @@
 # Server Commands
 
+## Published lawyer booking — 2026-10-09
+
+Take the existing paired backup and test additive migration `20261010010000_published_lawyer_booking` on a disposable PostgreSQL copy before rollout. The current update script applies migrations; it does not publish the booking schedule.
+
+```bash
+cd /www/wwwroot/kmtlegal
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+In `/admin/consultation-availability`, select active lawyers per day, enable PHONE in weekly hours, set duration/lead/window and closures, then publish explicitly. Publication is advance office approval; default is unpublished. Confirm a synthetic guest PHONE/WhatsApp booking without email and verify the assigned lawyer’s consultation and inbox. Test a competing confirmation on native PostgreSQL before public launch. Disabling publication leaves existing bookings intact and accepts unconfirmed callback requests; no automatic conversion of legacy pending requests occurs.
+
+Confirm/cancel/reschedule actions are idempotent and session-protected. If the browser loses a response, retry the same action rather than starting another conversation. Keep the seven-day guest capability private; a reference alone is insufficient. Existing signed-in users can attach this new booking; historical clients are never matched by phone/email. Account verification still needs working SMTP, but booking does not. General notifications and fees remain separate. Review AR/Egyptian/EN conversation quality with the configured provider and physical mobile keyboard behavior before claiming live readiness.
+
 ## Company-assistant scope and consent update — 2026-10-09
 
 The update script applies the extra additive migration `20261009240000_company_assistant_policy`. Test it on a disposable copy and take the existing paired backup before deploying. Old conversations and drafts remain, but old drafts do not grant booking consent. Existing unconsumed activation links require renewed booking consent before a new account can be created; existing sign-in/recovery remains available independently.

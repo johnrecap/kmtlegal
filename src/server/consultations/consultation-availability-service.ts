@@ -46,6 +46,11 @@ export const consultationAvailabilityDaySchema = z
   });
 
 export const consultationAvailabilitySchema = z.object({
+  directBooking: z.object({
+    published: z.boolean().default(false),
+    roster: z.array(z.object({ weekday: z.number().int().min(0).max(6), lawyerIds: z.array(z.uuid()).max(100) })).max(7).default([]),
+    closures: z.array(z.object({ date: consultationSlotDateSchema, start: consultationStartTimeSchema, end: consultationEndTimeSchema, lawyerId: z.uuid().nullable().default(null) }).refine(v => v.end > v.start)).max(366).default([])
+  }).refine(v => new Set(v.roster.map(d => d.weekday)).size === v.roster.length).default({ published: false, roster: [], closures: [] }),
   timezone: z.literal(CONSULTATION_TIMEZONE).default(CONSULTATION_TIMEZONE),
   slotDurationMinutes: z.number().int().min(15).max(240).default(60),
   minLeadHours: z.number().int().min(0).max(168).default(4),
@@ -123,6 +128,14 @@ export async function updateAdminConsultationAvailability(input: {
 }) {
   assertCanManageAvailability(input.actor);
   const value = parseWithSchema(consultationAvailabilitySchema, input.body, "Consultation availability payload is invalid.");
+
+  const lawyerIds = [...new Set(value.directBooking.roster.flatMap(day => day.lawyerIds).concat(value.directBooking.closures.flatMap(c => c.lawyerId ? [c.lawyerId] : [])))];
+  if (lawyerIds.length && await prisma.user.count({ where: { id: { in: lawyerIds }, status: "ACTIVE", deletedAt: null, role: { name: "Lawyer", status: "ACTIVE" } } }) !== lawyerIds.length) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Roster requires active lawyers.");
+  }
+  if (value.directBooking.published && !value.days.some(d => d.enabled && d.modes.includes("PHONE") && value.directBooking.roster.some(r => r.weekday === d.weekday && r.lawyerIds.length))) {
+    throw new ApiError(400, "VALIDATION_ERROR", "Publishing requires telephone hours and a lawyer roster.");
+  }
 
   const updated = await prisma.systemSetting.upsert({
     where: { key: CONSULTATION_AVAILABILITY_SETTING_KEY },
@@ -354,7 +367,7 @@ function cairoDateTime(date: string, minutes: number) {
   return matches.length ? new Date(Math.min(...matches)) : null;
 }
 
-function cairoDateString(date: Date) {
+export function cairoDateString(date: Date) {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: CONSULTATION_TIMEZONE,
     year: "numeric",
@@ -371,7 +384,7 @@ function addCairoDays(date: string, offset: number) {
   return cairoDateString(base);
 }
 
-function cairoWeekday(date: string) {
+export function cairoWeekday(date: string) {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: CONSULTATION_TIMEZONE,
     weekday: "short"

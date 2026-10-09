@@ -1,3 +1,4 @@
+import { directBookingCopy } from "@/content/direct-booking-copy";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DashboardShell } from "@/components/layout";
@@ -291,7 +292,8 @@ export default async function AdminConsultationDetailPage({ params }: PageProps)
                 <DetailItem label="البريد الإلكتروني" value={consultation.email} />
                 <DetailItem label="المدينة" value={consultation.city} />
                 <DetailItem label="تصنيف داخلي مبدئي" value={consultationServiceCategoryLabel(consultation.serviceCategory)} />
-                <DetailItem label="طريقة التواصل" value={labelFrom(modeLabels, consultation.preferredMode)} />
+                <DetailItem label={directBookingCopy.ar.channel} value={consultation.contactChannel === "WHATSAPP" ? directBookingCopy.ar.whatsapp : labelFrom(modeLabels, consultation.preferredMode)} />
+                <DetailItem label={directBookingCopy.ar.source} value={directBookingCopy.ar.sources[consultation.confirmationSource as keyof typeof directBookingCopy.ar.sources]} />
                 <DetailItem label="رقم المرجع" value={<span dir="ltr">{consultation.publicReference ?? publicConsultationReference(consultation.id)}</span>} />
                 {consultation.requestedStartsAt && <DetailItem label={conversationCopy.ar.requested} value={formatDateTime(consultation.requestedStartsAt)} />}
                 <DetailItem label={plan37ConsultationOverdueCopy.list.creationDate} value={formatDateTime(consultation.createdAt)} />

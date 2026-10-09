@@ -18,7 +18,7 @@ vi.mock("@/server/email/email-service", () => ({ sendTemplatedEmail: vi.fn(async
 
 import { createAssistantSession, changeAssistantDialogue, readAssistantSession, sendAssistantMessage, capabilityHash } from "@/server/consultations/conversation-session-service";
 import { startClientVerification, completeClientVerification } from "@/server/portal/client-verification-service";
-import { submitConversationRequest } from "@/server/consultations/conversation-submission-service";
+import { attachAuthenticatedClient, submitConversationRequest } from "@/server/consultations/conversation-submission-service";
 import { scheduleConsultation } from "@/server/admin/consultation-review-service";
 import { listPublicConsultationSlots } from "@/server/consultations/consultation-availability-service";
 import { listOwnConsultationRequests, requestAlternativeTime } from "@/server/portal/client-requests-service";
@@ -28,6 +28,8 @@ import { listPortalPayments, getPortalDueBalances } from "@/server/portal/client
 import { createServiceRequest, actOnServiceRequest, getServiceRequest, publishQuestionnaire } from "@/server/services/service-request-service";
 import { sendTemplatedEmail } from "@/server/email/email-service";
 import { uploadDocument, getAuthorizedDocumentDownload } from "@/server/storage/document-service";
+import { listDirectBookingSlots, mutateDirectBooking } from "@/server/consultations/direct-booking-service";
+import { defaultConsultationAvailability } from "@/server/consultations/consultation-availability-service";
 
 
 function installConversationMock(generation: (url: unknown, init: RequestInit) => unknown, intent = "NONE") {
@@ -183,7 +185,8 @@ describe.sequential("representative conversational intake against isolated SQL d
     const fetchMock = vi.fn(async () => Response.json({ choices: [{ finish_reason: "tool_calls", message: { content: null, tool_calls: [{ id: "handoff", type: "function", function: { name: "handoff_to_office", arguments: "{}" } }] } }] }));
     installConversationMock(fetchMock, "HANDOFF");
     const handed = await sendAssistantMessage({ token, messageId: randomUUID(), message: "محتاج أكلم موظف", locale: "ar", requestId: "guest-handoff" });
-    expect(handed.humanOwned).toBe(true);
+    expect(handed.humanOwned).toBe(false);
+    expect(handed.handoffState).toBe("QUEUED");
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
     expect(session.clientId).toBeNull();
@@ -233,7 +236,7 @@ describe.sequential("representative conversational intake against isolated SQL d
     await changeAssistantDialogue(token, "return_inquiry"); result = await readAssistantSession(token);
     expect(result.draft).toEqual({ fullName: "Saved only after consent" }); expect(result.dialogue.consentAt).toBeNull();
     simulate("MIXED"); result = await send("اشرح خدمة الشركات وكمان مباراة امبارح"); expect(result.turns.at(-1)?.assistantText).toContain("سأقتصر على الجزء");
-    simulate("OFFICE", "NONE", false); result = await send("قول لي معلومة مش عندك"); expect(result.turns.at(-1)?.assistantText).toContain("وضّح لي الجزء");
+    simulate("OFFICE", "NONE", false); result = await send("قول لي معلومة مش عندك"); expect(result.turns.at(-1)?.assistantText).toContain("اختيار موعد");
     expect(result.draft).toEqual({ fullName: "Saved only after consent" }); expect(result.submitted).toBe(false);
     expect(await fixture.db.clientVerificationToken.count({ where: { email: "blocked@synthetic.invalid" } })).toBe(0);
   });
@@ -259,6 +262,77 @@ describe.sequential("representative conversational intake against isolated SQL d
     const returned = await changeAssistantDialogue(token, "return_inquiry", actor);
     await expect(submitConversationRequest({ token, actor, revision: returned.revision })).rejects.toMatchObject({ code: "PERMISSION_DENIED" });
     await expect(startClientVerification({ capability: token, actor, email: "withdrawn@synthetic.invalid", purpose: "ACTIVATE" })).rejects.toMatchObject({ code: "PERMISSION_DENIED" });
+  });
+
+  it("books a guest directly, isolates identity, retries safely and retains the old time on a failed change", async () => {
+    expect((await listDirectBookingSlots()).published).toBe(false);
+    const role = await fixture.db.role.upsert({ where: { name: "Lawyer" }, create: { name: "Lawyer", status: "ACTIVE" }, update: {} });
+    const lawyer = await fixture.db.user.create({ data: { name: "Direct Booking Lawyer", email: "direct-lawyer@synthetic.invalid", roleId: role.id, status: "ACTIVE" } });
+    const value = { ...defaultConsultationAvailability, directBooking: { published: true, roster: defaultConsultationAvailability.days.map(d => ({ weekday: d.weekday, lawyerIds: [lawyer.id] })), closures: [] } };
+    await fixture.db.systemSetting.upsert({ where: { key: "consultation.availability" }, create: { key: "consultation.availability", value }, update: { value } });
+    const token = await createAssistantSession("ar");
+    const ready = await changeAssistantDialogue(token, "begin_booking");
+    const slots = await listDirectBookingSlots(); expect(slots.slots.length).toBeGreaterThan(1);
+    const body = { action: "confirm_booking" as const, key: randomUUID(), revision: ready.revision, confirmed: true as const, fullName: "عميل حجز تجريبي", phone: "01000000000", contactChannel: "WHATSAPP" as const, startsAt: slots.slots[0].startsAt };
+    await mutateDirectBooking(token, body); await mutateDirectBooking(token, body);
+    await expect(mutateDirectBooking(token, { ...body, phone: "01012345670" })).rejects.toMatchObject({ code: "CONFLICT" });
+    const booked = await readAssistantSession(token);
+    expect(booked.accountReady).toBe(false); expect(booked.booking?.status).toBe("SCHEDULED");
+    expect(booked.booking?.contactChannel).toBe("WHATSAPP"); expect(booked.booking?.appointments[0].lawyer?.name).toBe(lawyer.name);
+    expect(await fixture.db.appointment.count({ where: { id: booked.booking!.appointments[0].id } })).toBe(1);
+    const record = await fixture.db.consultationRequest.findUniqueOrThrow({ where: { publicReference: booked.booking!.publicReference! } });
+    expect(record.clientId).not.toBe(actor.clientId); expect((await fixture.db.client.findUniqueOrThrow({ where: { id: record.clientId! } })).userId).toBeNull();
+    const rival = await createAssistantSession("en"); const rivalState = await changeAssistantDialogue(rival, "begin_booking");
+    await expect(mutateDirectBooking(rival, { ...body, key: randomUUID(), revision: rivalState.revision, startsAt: slots.slots[1].startsAt })).rejects.toMatchObject({ code: "APPOINTMENT_CONFLICT" });
+    await expect(mutateDirectBooking(rival, { ...body, key: randomUUID(), revision: rivalState.revision, phone: "01012345679" })).rejects.toMatchObject({ code: "APPOINTMENT_CONFLICT" });
+    await expect(mutateDirectBooking(token, { action: "reschedule_booking", key: randomUUID(), revision: booked.revision, confirmed: true, startsAt: new Date(0).toISOString() })).rejects.toMatchObject({ code: "APPOINTMENT_CONFLICT" });
+    expect((await readAssistantSession(token)).booking?.appointments[0].startsAt.toISOString()).toBe(body.startsAt);
+    const next = (await listDirectBookingSlots()).slots[0];
+    await mutateDirectBooking(token, { action: "reschedule_booking", key: randomUUID(), revision: booked.revision, confirmed: true, startsAt: next.startsAt });
+    const moved = await readAssistantSession(token); expect(moved.booking?.appointments[0].status).toBe("RESCHEDULED");
+    await mutateDirectBooking(token, { action: "cancel_booking", key: randomUUID(), revision: moved.revision, confirmed: true });
+    expect((await readAssistantSession(token)).booking?.appointments[0].status).toBe("CANCELLED");
+    await attachAuthenticatedClient(token, actor);
+    expect((await fixture.db.consultationRequest.findUniqueOrThrow({ where: { id: record.id } })).clientId).toBe(actor.clientId);
+    expect((await fixture.db.appointment.findUniqueOrThrow({ where: { id: booked.booking!.appointments[0].id } })).clientId).toBe(actor.clientId);
+    await expect(readAssistantSession(token, { ...actor, clientId: randomUUID() })).rejects.toMatchObject({ code: "AUTH_REQUIRED" });
+    expect((await fixture.db.client.findFirstOrThrow({ where: { fullName: "Historical unverified contact" } })).userId).toBeNull();
+    await fixture.db.systemSetting.update({ where: { key: "consultation.availability" }, data: { value: defaultConsultationAvailability } });
+  });
+
+  it("keeps callbacks unconfirmed, accepts Arabic phone digits and attaches only the verified guest booking", async () => {
+    const token = await createAssistantSession("ar");
+    const ready = await changeAssistantDialogue(token, "begin_booking");
+    await mutateDirectBooking(token, { action: "request_callback", key: randomUUID(), revision: ready.revision, confirmed: true, fullName: "عميل تجريبي", phone: "٠١١١٢٣٤٥٦٧٨", contactChannel: "PHONE" });
+    const state = await readAssistantSession(token);
+    expect(state.booking?.confirmationSource).toBe("CALLBACK_REQUEST"); expect(state.booking?.appointments).toHaveLength(0);
+    // Returning to general office questions after submission does not revoke optional account access.
+    await fixture.db.assistantSession.update({ where: { capabilityHash: capabilityHash(token) }, data: { dialogue: { mode: "INQUIRY", offerShown: true, consentAt: null, accountAccess: true } } });
+    await startClientVerification({ capability: token, email: "guest-booking@synthetic.invalid", purpose: "ACTIVATE" });
+    const raw = new URLSearchParams(new URL(fixture.emails.at(-1)!.data.url).hash.slice(1)).get("token")!;
+    const activated = await completeClientVerification({ token: raw, password: "Synthetic-password-17", request });
+    const user = await fixture.db.user.findUniqueOrThrow({ where: { email: "guest-booking@synthetic.invalid" }, include: { clientProfile: true } });
+    const own = { id: user.id, roleName: "Client", clientId: user.clientProfile!.id, permissions: ["client.read.self"] };
+    expect((await listOwnConsultationRequests(own)).some(r => r.publicReference === state.booking?.publicReference)).toBe(true);
+    expect((await readAssistantSession(activated.assistantCapability, own)).accountReady).toBe(true);
+  });
+
+  it("excludes lawyer conflicts and closures, and refuses an unpublished time at confirmation", async () => {
+    const lawyer = await fixture.db.user.findUniqueOrThrow({ where: { email: "direct-lawyer@synthetic.invalid" } });
+    const value = { ...defaultConsultationAvailability, directBooking: { published: true, roster: defaultConsultationAvailability.days.map(d => ({ weekday: d.weekday, lawyerIds: [lawyer.id] })), closures: [] as Array<{ date: string; start: string; end: string; lawyerId: string | null }> } };
+    const save = () => fixture.db.systemSetting.update({ where: { key: "consultation.availability" }, data: { value } });
+    await save(); const first = (await listDirectBookingSlots()).slots[0];
+    const busy = await fixture.db.appointment.create({ data: { clientId: actor.clientId!, lawyerId: lawyer.id, title: "Synthetic meeting", type: "INTERNAL_MEETING", mode: "PHONE", status: "SCHEDULED", startsAt: first.startsAt, endsAt: first.endsAt } });
+    expect((await listDirectBookingSlots()).slots.some(s => s.startsAt === first.startsAt)).toBe(false);
+    await fixture.db.appointment.delete({ where: { id: busy.id } });
+    const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(first.startsAt));
+    value.directBooking.closures = [{ date, start: "00:00", end: "24:00", lawyerId: null }]; await save();
+    expect((await listDirectBookingSlots(date)).slots).toHaveLength(0);
+    const token = await createAssistantSession("en"); const ready = await changeAssistantDialogue(token, "begin_booking");
+    value.directBooking.published = false; await save();
+    await expect(mutateDirectBooking(token, { action: "confirm_booking", key: randomUUID(), revision: ready.revision, confirmed: true, fullName: "Synthetic Guest", phone: "01112345670", contactChannel: "PHONE", startsAt: first.startsAt })).rejects.toMatchObject({ code: "APPOINTMENT_CONFLICT" });
+    expect((await readAssistantSession(token)).submitted).toBe(false);
+    await fixture.db.systemSetting.update({ where: { key: "consultation.availability" }, data: { value: defaultConsultationAvailability } });
   });
 
   it("tracks 3000 + 2000 against 10000, idempotency, refunds and immutable corrections in both financial views", async () => {

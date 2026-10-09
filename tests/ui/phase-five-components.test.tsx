@@ -10,8 +10,19 @@ import { RequestAlternativeTime } from "@/features/portal/request-alternative-ti
 import { PaymentEntryForm } from "@/features/admin/finance/payment-entry-form";
 import { PaymentProofForm } from "@/features/portal/payment-proof-form";
 import { serviceRequestCopy } from "@/content/service-request-copy";
+import { DirectBookingPanel } from "@/features/public-site/direct-booking-panel";
+import { directBookingCopy } from "@/content/direct-booking-copy";
 const request: ServiceRequestView = { id: "synthetic", reference: "CONTRACT-SYNTHETIC", kind: "CONTRACT_REVIEW", status: "DRAFT", revision: 0, quoteVersion: 0, paymentId: null, intake: { title: "Synthetic contract", purpose: "Synthetic review", language: "en", requestedDate: "", answers: {} }, quote: null, questionnaire: null, documents: [], events: [] };
 describe("phase-five shared component consumers", () => {
+  for (const locale of ["ar", "en"] as const) it(`${locale}: distinguishes unconfirmed callback from confirmed guest appointment`, () => {
+    const base = { confirmationSource: "CALLBACK_REQUEST", contactChannel: "WHATSAPP", publicReference: "CONS-SYNTHETIC", fullName: "Synthetic", phone: "01012345678", serviceCategory: "corporate", status: "NEW", appointments: [] };
+    const callback = renderToStaticMarkup(<DirectBookingPanel locale={locale} revision={1} draft={{}} booking={base} onRefresh={async () => {}} />);
+    expect(callback).toContain(directBookingCopy[locale].callbackDone);
+    expect(callback).not.toContain(directBookingCopy[locale].confirmed);
+    expect(callback).not.toContain('type="email"');
+    const confirmed = renderToStaticMarkup(<DirectBookingPanel locale={locale} revision={1} draft={{}} booking={{ ...base, confirmationSource: "PUBLISHED_SLOT", appointments: [{ id: "synthetic", startsAt: "2099-01-01T10:00:00Z", endsAt: "2099-01-01T11:00:00Z", status: "SCHEDULED", lawyer: { name: "Synthetic Lawyer" } }] }} onRefresh={async () => {}} />);
+    expect(confirmed).toContain(directBookingCopy[locale].confirmed); expect(confirmed).toContain(directBookingCopy[locale].cancel); expect(confirmed).toContain(directBookingCopy[locale].calendar);
+  });
   for (const locale of ["ar", "en"] as const) it(`${locale}: renders verified service states and branded company entries`, () => {
     const copy = serviceRequestCopy[locale];
     const draft = renderToStaticMarkup(<ServiceRequestWorkspace value={request} locale={locale} />);

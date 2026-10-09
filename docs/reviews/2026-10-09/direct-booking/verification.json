@@ -1,0 +1,168 @@
+{
+  "date": "2026-10-09",
+  "baseline": "053f212",
+  "scope": "Published lawyer booking; local implementation verified, operational acceptance incomplete",
+  "checks": {
+    "build": "PASS: final build.log (includes lint/type validation)",
+    "focused": {
+      "passed": 78,
+      "failed": 0
+    },
+    "browser": {
+      "startTime": "2026-10-09T19:17:00.980Z",
+      "duration": 64965.089,
+      "expected": 5,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "full": {
+      "passed": 801,
+      "failed": 0,
+      "skipped": 55,
+      "limitation": "One suite cannot initialize without Git Bash; no claim of full-suite PASS. Later integration corrections covered by focused recheck/build/browser."
+    },
+    "secretScan": {
+      "scope": "Changed/new non-evidence source/docs/tests",
+      "patterns": 4,
+      "hits": 0
+    }
+  },
+  "notVerified": [
+    "Native PostgreSQL concurrent booking and target migration",
+    "Configured real-provider AR/Egyptian/EN dialogue review",
+    "Production deployment and office schedule approval/publication",
+    "Physical mobile soft keyboard and exhaustive assistive technology",
+    "Earlier SMTP, ClamAV, daily restore/scheduler operating gates"
+  ],
+  "sourceHashes": [
+    {
+      "path": "PROJECT_GUIDE.md",
+      "sha256": "e18836327c95508d1f8e8760779451187f6b8ae3e5f20daa284086fc25f2222e"
+    },
+    {
+      "path": "docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md",
+      "sha256": "24011cb48382dcd3f527e6e984977446b8fbc76ea7255601e3a43df293c44c8d"
+    },
+    {
+      "path": "docs/PROJECT_GUIDE.md",
+      "sha256": "4b94305e4f21486543758419caa84d5a7b2f27e465d5fba2f9e74ea8d4912ff4"
+    },
+    {
+      "path": "docs/SERVER_COMMANDS.md",
+      "sha256": "cc4be08138d9af9850fa1fe8b91f9a138bc1403f6071cb08df6b59a8fa37ae81"
+    },
+    {
+      "path": "docs/ui-redesign/DECISIONS.md",
+      "sha256": "ded676091a4bd41c8babab85cf584ca973ef656dc26bbd97a1fc54f25c292bfe"
+    },
+    {
+      "path": "prisma/schema.prisma",
+      "sha256": "a46783ce84dd897196d89fb01226d2f12df18550dbd44ceae1edd9e1423347ae"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/consultation-availability/page.tsx",
+      "sha256": "52f6fabd721066ea0faa864153ea5d80fbe20506b1f4e080e23e9a0e3989c704"
+    },
+    {
+      "path": "src/app/(app-ar)/admin/consultations/[consultationId]/page.tsx",
+      "sha256": "a2a43686aded11e6bb0fe9c8edeb79c500521c45b81192cc8ff4caccda777e40"
+    },
+    {
+      "path": "src/app/(client)/client/requests/page.tsx",
+      "sha256": "1d76e061bb75065f9353420ad0e218aa21b99cbde256289baf69c868bf78061b"
+    },
+    {
+      "path": "src/app/api/public/assistant/conversation/route.ts",
+      "sha256": "ab975ea99c7faf74c661fd67f2ba88b964bc3992ff1de09616d48caf8bc1d933"
+    },
+    {
+      "path": "src/content/conversation-copy.ts",
+      "sha256": "4d7429eaa30c1fbf201529110c4e77cd0acdeab118e486ecd267859072960075"
+    },
+    {
+      "path": "src/features/admin/consultations/consultation-availability-form.tsx",
+      "sha256": "dd80fda3eea979d0e08925b01337a5c3f4b11df68315f775d7c92bdd6dc5e577"
+    },
+    {
+      "path": "src/features/public-site/conversational-booking-chat.tsx",
+      "sha256": "3754e46e2e89c7425ab3989943cfb0d51d56512504756d669410acb0659c471c"
+    },
+    {
+      "path": "src/server/admin/consultation-outcome-service.ts",
+      "sha256": "8a7bca5e7194588c2e0b6c0ea6d26ab19d67ed36fe986537fd3accc4073476ff"
+    },
+    {
+      "path": "src/server/ai/company-conversation-policy.ts",
+      "sha256": "43b36ca5a58c48a57d061bf2fd7cf72315005daf98214946a95c53962475f586"
+    },
+    {
+      "path": "src/server/consultations/assistant-knowledge.ts",
+      "sha256": "f415329e3af1985592477e64c0c5da9c9f1873ac98396b98bbe931ab5349dc89"
+    },
+    {
+      "path": "src/server/consultations/consultation-availability-service.ts",
+      "sha256": "3673170e17195a3deeddc7b0dac67a5a125b23ed12b0d67bc8fb68233fe6db92"
+    },
+    {
+      "path": "src/server/consultations/conversation-contract.ts",
+      "sha256": "d485b7945bbcbd59310a5529506f82df1451a13ed759a3ee6947dbbb2876bcc4"
+    },
+    {
+      "path": "src/server/consultations/conversation-session-service.ts",
+      "sha256": "ad1d13865e6a020f2b0d2d4b4908ed1e661295efc42b6d8e3484d9957040dc8b"
+    },
+    {
+      "path": "src/server/conversations/assistant-handoff-service.ts",
+      "sha256": "9dc7b98b63e1a8df9d1d2c8c99895d53e000269df97fa410dc0f99204780f3a7"
+    },
+    {
+      "path": "src/server/conversations/conversation-service.ts",
+      "sha256": "283df6fb510e5267088d0c09c7168a3b0856452775420fcecdc9a9ca86322f13"
+    },
+    {
+      "path": "src/server/portal/client-requests-service.ts",
+      "sha256": "81053e381c954b50fba5fd797a3085b6f2112cdde53ba67da65eef2298d66073"
+    },
+    {
+      "path": "src/server/portal/client-verification-service.ts",
+      "sha256": "981d597f98600c84193c82be0b7247bcacb8d3f1214a4f54244f884f1d376be8"
+    },
+    {
+      "path": "test-results/plan35/shared-ui-consumer-disposition.json",
+      "sha256": "504962459833844b58768ba3adc83248feda1d3d5ec6fcb03e19a6b07124ec3d"
+    },
+    {
+      "path": "tests/e2e/conversational-intake.spec.ts",
+      "sha256": "91aa002136e9c74c50f9d8b372995c9070fc8a3a364a4ead653092677b1628bc"
+    },
+    {
+      "path": "tests/server/conversation-intake-db.test.ts",
+      "sha256": "bb235cf3d573d0e3871df5cc79ae6b16a9ccaf71f9baa6d70e700fd67aa64463"
+    },
+    {
+      "path": "tests/ui/phase-five-components.test.tsx",
+      "sha256": "6602431edf203f4b2135a2b3f2985b018c65f6fe536d1004ab65a610e20ae810"
+    },
+    {
+      "path": "prisma/migrations/20261010010000_published_lawyer_booking/migration.sql",
+      "sha256": "ed4275a294ad676a5977773a3445bc72ac686ea967f5690eeab946351fd7847a"
+    },
+    {
+      "path": "src/content/direct-booking-copy.ts",
+      "sha256": "931685759d0e86587479425aec2ad9b3aeeb2eb43a7b16da48965500900eecef"
+    },
+    {
+      "path": "src/features/public-site/direct-booking-panel.tsx",
+      "sha256": "f6be3608271224d89e081b35a39e34d9707a9321320d545b0886cfc671a1900d"
+    },
+    {
+      "path": "src/server/consultations/direct-booking-service.ts",
+      "sha256": "6e48ba22aa72625c613f076deeb2edb389a2c58b0e76616164eb650210693f51"
+    },
+    {
+      "path": "tests/e2e/direct-booking-api.spec.ts",
+      "sha256": "319abf5c26e133fb9b65395dcae99a1b256a011ef8fe910734c4546771eacb30"
+    }
+  ]
+}
