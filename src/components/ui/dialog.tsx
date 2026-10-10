@@ -34,6 +34,7 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
     if (!dialog) return;
 
     if (open) {
+      const previousOverflow = document.body.style.overflow;
       restoreFocusRef.current = document.activeElement as HTMLElement | null;
       if (!dialog.open) {
         dialog.showModal();
@@ -46,13 +47,14 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
       dialog.addEventListener("cancel", handleCancel);
       return () => {
         dialog.removeEventListener("cancel", handleCancel);
+        document.body.style.overflow = previousOverflow;
+        restoreFocusRef.current?.focus?.();
       };
     }
 
     if (dialog.open) {
       dialog.close();
     }
-    document.body.style.overflow = "";
     restoreFocusRef.current?.focus?.();
     restoreFocusRef.current = null;
     return;

@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-10",
+  "baseline": "736bbb6",
+  "scope": "Booking popup and shared Dialog cleanup; no server contracts changed",
+  "checks": {
+    "typecheck": {
+      "command": "node node_modules/typescript/bin/tsc --noEmit",
+      "exitCode": 0
+    },
+    "lint": {
+      "command": "node node_modules/next/dist/bin/next lint",
+      "exitCode": 0
+    },
+    "focused": {
+      "files": [
+        "tests/ui/phase-five-components.test.tsx",
+        "tests/ui/product-components.test.tsx",
+        "tests/ui/shared-ui-consumer-disposition.test.ts"
+      ],
+      "passed": 35,
+      "failed": 0
+    },
+    "build": {
+      "exitCode": 0,
+      "evidence": "build.log"
+    },
+    "browser": {
+      "startTime": "2026-10-10T13:56:38.822Z",
+      "duration": 76008.363,
+      "expected": 6,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "sources": {
+    "src/components/ui/dialog.tsx": "4b443b941bb964147b5429bc2e7a4d7a2abe09177078730532d5ec539f997317",
+    "src/content/direct-booking-copy.ts": "7a077fbfffcf09a12d506e2d171874d0fbfa4b0f09f1dc735093a3e3c73c3d93",
+    "src/features/public-site/conversational-booking-chat.tsx": "ff0393a937348f2652375d085b077a5c15ece1cdf54304d318e6a9224c22e690",
+    "tests/e2e/conversational-intake.spec.ts": "a6876675405143f012644630f6eb2542176df9bbfccca9dc82f569419861f84a"
+  },
+  "notVerified": [
+    "Production deployment",
+    "Physical mobile keyboard and screen-reader session",
+    "Real-provider dialogue quality",
+    "Native PostgreSQL concurrency; existing operational gaps unchanged"
+  ]
+}

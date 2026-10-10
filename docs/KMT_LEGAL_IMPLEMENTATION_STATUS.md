@@ -564,6 +564,21 @@ Total plans: 40
 - Final local evidence passed: seven guarded PostgreSQL lifecycle cases plus five retained service contracts and five component tests (17/17 focused), an authenticated Chromium flow at 1440/390 with real `409`, refresh/reload persistence and warmed public endpoints, the 544-test full suite with 53 opt-in skips, typecheck, lint, secret scan, production build, and a stable 58-page inventory. See `docs/reviews/2026-09-13/batch14/BATCH-14.md`.
 - The earlier Batch 14 report-count finding is withdrawn: Batch 6 and the existing localized label intentionally make unallocated financial-review attempts global across all client/currency/date scopes. No finance or report behaviour changed.
 
+## Booking popup follow-up — 2026-10-10
+
+Authorized scope: replace the easily missed public booking aside with the existing native Dialog; no API, appointment policy, database or library changes. User requires direct work without subagents. Existing skills/handoff apply; original-template batch checks are not applicable to this focused UI patch.
+
+| Obligation/source | Action and verification | Evidence/status |
+| --- | --- | --- |
+| User: visible data entry | Open on server-confirmed booking entry; visible reopen action; test Arabic/English | VERIFIED: `docs/reviews/2026-10-10/booking-popup/browser-tests.json`, four tests passed |
+| Booking UX / error recovery | Keep mounted on dismissal; retain inputs and idempotent retry; explicit confirmation remains mandatory | VERIFIED: Escape/backdrop/footer dismissal, retained name/phone/channel, focus restoration, retry key reused; closing and further replies do not submit or reopen |
+| Localization / mobile accessibility | Catalog strings, RTL, modal focus, Escape, viewport bounds, light/dark | VERIFIED: Arabic 360 dark representative first; then AR/EN x light/dark x 360/390/768/1024/1440. Three screenshots reviewed separately in `docs/reviews/2026-10-10/booking-popup/screenshots/`. Physical soft keyboard and assistive-technology sessions NOT_VERIFIED |
+| Connected impact / delivery | Reuse Dialog and existing API; current type/lint/build/tests; update both guides and push | VERIFIED local checks: TypeScript, Lint, production build; 35 focused UI tests. Six final production-build browser/HTTP tests passed, including synthetic guest confirmation, lawyer list access and cancellation. Both guides updated. Evidence: `docs/reviews/2026-10-10/booking-popup/verification.json`, `production-tests.json`, `build.log`. Commit/push receipt belongs to final delivery. |
+
+Final browser run also covers a reduced-height 390x500 viewport with reduced motion. Backend checks used disposable PGlite synthetic data; they are not native PostgreSQL concurrency or production-server evidence. Semantic inspection found clear bilingual modal presentation, retained drafts and explicit submission without claiming that merely filling the form sends data. No author acceptance is inferred.
+
+Semantic and visual review are separate from mechanical test results. Prior real-provider, native PostgreSQL and production operational gaps remain open; this UI scope does not close them.
+
 ## Immediate Next Steps
 
 1. Start PostgreSQL with `docker compose up -d db`, or configure a real `DATABASE_URL`, then run `npm run qa:db`.

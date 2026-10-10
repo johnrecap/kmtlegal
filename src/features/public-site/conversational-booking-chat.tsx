@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
 import { conversationCopy } from "@/content/conversation-copy";
 import { assistantPolicyCopy } from "@/content/assistant-policy-copy";
 import { publicOfficeProfile } from "@/content/public-office-profile";
@@ -22,7 +23,8 @@ const endpoint = "/api/public/assistant/conversation";
 
 export function ConversationalBookingChat({ locale, initialService }: { locale: PublicLocale; initialService?: string }) {
 
-  const panelHeading = useRef<HTMLHeadingElement>(null);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const closePanel = useCallback(() => setPanelOpen(false), []);
   const messageInput = useRef<HTMLTextAreaElement>(null);
   const [state, setState] = useState<State | null>(null);
   const language = state?.locale ?? locale;
@@ -38,11 +40,15 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
   const interactive = !state?.closed && !state?.submitted;
   const showPanel = !!state?.submitted || (interactive && (booking || !!state?.dialogue?.accountAccess));
 
+  // Open on entry into a data-entry phase, not on polling or draft updates.
+  useEffect(() => { setPanelOpen(showPanel); }, [showPanel, booking]);
+
   async function changeMode(mode: "begin_booking" | "return_inquiry" | "account_access") {
     if (!state && !await action({ action: "start", locale, service: initialService })) return;
     if (await action({ action: mode })) {
       setNotice(mode === "begin_booking" ? policy.bookingStarted : mode === "return_inquiry" ? policy.returned : policy.accountOpened);
-      requestAnimationFrame(() => (mode === "return_inquiry" ? messageInput.current : panelHeading.current)?.focus());
+      setPanelOpen(mode !== "return_inquiry");
+      if (mode === "return_inquiry") requestAnimationFrame(() => messageInput.current?.focus());
     }
   }
 
@@ -94,7 +100,7 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
     if (await action({ action: "message", ...next, locale: language })) { setPendingMessage(null); setMessage(""); }
   }
 
-  return <section aria-label={copy.title} className={`mx-auto grid w-full min-w-0 max-w-5xl gap-6 text-[var(--kmt-public-text)] ${showPanel ? "lg:grid-cols-[minmax(0,1fr)_20rem]" : ""}`} dir={language === "ar" ? "rtl" : "ltr"}>
+  return <section aria-label={copy.title} className="mx-auto grid w-full min-w-0 max-w-5xl gap-6 text-[var(--kmt-public-text)]" dir={language === "ar" ? "rtl" : "ltr"}>
     <div className="min-w-0 space-y-4 rounded-xl border border-kmt-gold/25 p-4 sm:p-6">
       <h2 className="font-display text-xl">{copy.title}</h2>
       <p className="text-sm leading-7">{direct.intro}</p>
@@ -118,7 +124,8 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
         <Button disabled={busy || state?.closed || !message.trim()} type="submit">{busy ? copy.waiting : copy.send}</Button>
         {pendingMessage && !busy && <Button type="button" variant="outline" onClick={() => void send()}>{copy.retry}</Button>}
       </form>
-      {notice && <p role="status" className="break-words text-sm leading-7">{notice}</p>}
+      {notice && !panelOpen && <p role="status" className="break-words text-sm leading-7">{notice}</p>}
+      {showPanel && <Button className="h-auto min-h-11 whitespace-normal" type="button" onClick={() => setPanelOpen(true)}>{state?.submitted ? direct.openDetails : booking ? direct.openForm : policy.account}</Button>}
       {interactive && <div className="flex flex-wrap gap-2">
         <Button className="h-auto min-h-11 whitespace-normal" type="button" variant="outline" disabled={busy} onClick={() => void changeMode(booking ? "return_inquiry" : "begin_booking")}>{booking ? policy.back : policy.begin}</Button>
         {!booking && !state?.dialogue?.accountAccess && !state?.accountReady && <Button className="h-auto min-h-11 whitespace-normal" type="button" variant="ghost" disabled={busy} onClick={() => void changeMode("account_access")}>{policy.account}</Button>}
@@ -127,8 +134,12 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
       <a href={publicOfficeProfile.whatsappHref} className="inline-flex min-h-11 items-center underline">{copy.whatsapp}</a>
       {(state?.submitted || state?.closed) && <Button type="button" variant="outline" disabled={busy} onClick={() => { setPendingMessage(null); void action({ action: "restart", locale }); }}>{copy.newConversation}</Button>}
     </div>
-    {showPanel && <aside className="min-w-0 space-y-4 rounded-xl border border-kmt-gold/25 p-4">
-      <h2 ref={panelHeading} tabIndex={-1} className="font-display text-xl">{booking || state?.submitted ? copy.review : policy.account}</h2>
+    {showPanel && <Dialog open={panelOpen} onClose={closePanel} title={booking || state?.submitted ? copy.review : policy.account}
+      description={!state?.submitted && booking ? direct.formHelp : undefined}
+      className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-xl [&>div]:min-h-0 [&>div:first-child]:shrink-0 [&>div:last-child]:shrink-0"
+      footer={<Button className="h-auto min-h-11 whitespace-normal" type="button" variant="outline" onClick={closePanel}>{direct.closeForm}</Button>}>
+      <div className="min-w-0 space-y-4">
+      {notice && <p role="status" className="break-words text-sm leading-7">{notice}</p>}
       {state && ((booking && !state.submitted) || state.booking) && <DirectBookingPanel locale={language} revision={state.revision} draft={state.draft} booking={state.booking} onRefresh={async () => { const response = await fetch(endpoint, { cache: "no-store" }); if (!response.ok) throw new Error(); setState((await response.json()).data); }} />}
       {state?.submitted && !state.booking && <p role="status">{copy.submitted}</p>}
       {!state?.accountReady && !state?.closed && (state?.booking || state?.dialogue?.accountAccess) && <div className="space-y-3 border-t border-kmt-gold/20 pt-4">
@@ -140,6 +151,7 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
         <Button type="button" variant="outline" disabled={busy || !state} onClick={() => void action({ action: "attach" })}>{copy.attach}</Button>
       </div>}
       {state?.accountReady && <Link className="flex min-h-11 items-center underline" href="/client/requests">{copy.requests}</Link>}
-    </aside>}
+      </div>
+    </Dialog>}
   </section>;
 }
