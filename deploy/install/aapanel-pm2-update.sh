@@ -340,16 +340,16 @@ reload_nginx_after_cache_purge() {
   fi
 
   local nginx_bin=""
-  if command -v nginx >/dev/null 2>&1; then
-    nginx_bin="$(command -v nginx)"
-  elif [[ -x "/www/server/nginx/sbin/nginx" ]]; then
+  if [[ -x "/www/server/nginx/sbin/nginx" ]]; then
     nginx_bin="/www/server/nginx/sbin/nginx"
+  elif command -v nginx >/dev/null 2>&1; then
+    nginx_bin="$(command -v nginx)"
   else
     echo "Nginx was not found; cannot validate the public cache policy" >&2
     return 1
   fi
 
-  log "Validating and reloading Nginx public cache policy"
+  log "Validating and reloading Nginx public cache policy with ${nginx_bin}"
   "${nginx_bin}" -t && "${nginx_bin}" -s reload
 }
 

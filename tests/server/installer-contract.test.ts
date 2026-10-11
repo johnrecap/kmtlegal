@@ -112,6 +112,10 @@ describe("PLAN-26 panel-aware installer contract", () => {
     expect(source).toContain("proxy_cache_bypass $kmt_skip_proxy_cache;");
     expect(source).toContain("proxy_no_cache $kmt_skip_proxy_cache;");
     expect(source).toContain("kmt-html-no-store");
+    const nginxReload = source.slice(source.indexOf("reload_nginx_after_cache_purge()"), source.indexOf("public_cache_policy_include_path()"));
+    expect(nginxReload).toContain('[[ -x "/www/server/nginx/sbin/nginx" ]]');
+    expect(nginxReload).toContain("command -v nginx");
+    expect(nginxReload.indexOf('[[ -x "/www/server/nginx/sbin/nginx" ]]')).toBeLessThan(nginxReload.indexOf("command -v nginx"));
     expect(source).toContain("function sitemapPaths(xml)");
     expect(source).toContain("function extractRelease(html)");
     expect(source).toContain("const response = await fetch(url);");

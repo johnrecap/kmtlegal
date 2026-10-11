@@ -407,6 +407,16 @@ cd /www/wwwroot/kmtlegal
 bash deploy/install/aapanel-pm2-update.sh
 ```
 
+If the deploy script itself changed since the server's current checkout, pull it **before** launching it. A script already running continues with its loaded functions even after its own `git pull` updates the file:
+
+```bash
+cd /www/wwwroot/kmtlegal
+git pull --ff-only origin main
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+On the aaPanel target, the deploy selects `/www/server/nginx/sbin/nginx` before a different `nginx` found on `PATH`. It prints the selected executable, requires that executable's `-t` check to pass, and then reloads it. If validation or reload fails, deployment stops and restores the backed-up Nginx files. Do not treat a current `/api/health` release as a completed deployment until the ordinary public HTML routes and `Cache-Control: no-store` pass too.
+
 The update script loads `/www/wwwroot/kmtlegal/.env.production.local` before build, migrations, and PM2 restart. This is required so Prisma uses the production PostgreSQL database from `DATABASE_URL` instead of the local development default.
 
 The script:

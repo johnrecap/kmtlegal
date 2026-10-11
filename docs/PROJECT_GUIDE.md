@@ -14,9 +14,9 @@ Handoff request queues the conversation; actual staff takeover pauses generation
 
 Current verification and operational gaps: `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md`, direct-booking entry. Real-provider dialogue review, native PostgreSQL concurrency and production deployment are separate acceptance gates; PGlite and intercepted browser tests do not prove them.
 
-**Last updated**: 2026-10-09
+**Last updated**: 2026-10-11
 
-**Current delivery focus**: Published lawyer appointments and optional guest account follow-up
+**Current delivery focus**: Public HTML consistency and aaPanel cache-policy activation
 
 **Primary setup guide**: `../PROJECT_GUIDE.md`
 
@@ -57,6 +57,11 @@ Do not recreate runtime Stitch clone pages or connect product code/dynamic data 
 not edit the exported Stitch source as part of ordinary product work.
 
 ## Recent Changes
+
+- 2026-10-11 — Diagnosed stale public HTML after the application reached release `9361a3914dcb859edfa5b408c367fe07771f456e`.
+  - A live ordinary-request scan found 26 of 82 public entry paths without that release meta, including four pages with the former header. The prior deploy script validated the wrong Nginx executable and its reload failed; the aaPanel Nginx binary was confirmed running and passed `-t`.
+  - The deploy script now selects the aaPanel executable first. Pull the updated script before running it; its full public-route verification must pass before production acceptance. Evidence and remaining limits: `reviews/2026-10-11/public-site-repair/live-cache-diagnosis.md`.
+  - Focused installer contract tests passed 7/7, TypeScript and scoped ESLint passed, and `git diff --check` passed. Linux Bash execution and live aaPanel activation remain unverified from this Windows workspace.
 
 - 2026-10-09 — Published-roster guest appointments, optional account attachment, queue/claim separation, bilingual direct controls, admin roster/closure editor and focused SQL/API/browser coverage. Current receipts and gaps are in the implementation register.
 
@@ -321,6 +326,7 @@ evidence.
 
 ## Known Gaps And Next Work
 
+- Corrected aaPanel cache-policy activation is pending. The live health endpoint alone shows the new app release; canonical HTML still serves 26 stale routes and public cache headers on account/payment entry pages. The loaded Nginx cache zone and response headers must be verified after the corrected deploy; see `reviews/2026-10-11/public-site-repair/live-cache-diagnosis.md`.
 - Apply the PLAN-39 consultation-locale migration to disposable staging PostgreSQL, then run the
   authenticated client-language persistence suite with `PLAN39_ALLOW_DB_FIXTURES=true`.
 - Run the opt-in disposable contact-message browser scenario to prove inbox + bell arrival and the
@@ -344,6 +350,8 @@ After a reviewed push to `origin/main`, the default aaPanel/PM2 update is:
 cd /www/wwwroot/kmtlegal
 bash deploy/install/aapanel-pm2-update.sh
 ```
+
+When `aapanel-pm2-update.sh` changed in the new commit, run `git pull --ff-only origin main` before `bash deploy/install/aapanel-pm2-update.sh`; otherwise the already-running script retains its earlier functions. The script must validate and reload the active aaPanel Nginx binary and check ordinary public pages against the same release as PM2.
 
 The server must load its real production environment before migrations, build, and restart. See
 `SERVER_COMMANDS.md`, `INSTALL_AAPANEL.md`, and `RELEASE_QA_CHECKLIST.md`; never use the local
