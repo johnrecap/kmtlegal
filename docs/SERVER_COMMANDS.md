@@ -66,7 +66,9 @@ cd /www/wwwroot/kmtlegal
 bash deploy/install/aapanel-daily-backup.sh
 ```
 
-The wrapper locks against deployment, checks free space/tools, stops the declared PM2 writers, captures DB+uploads, includes `recovery.env` with mode 600/checksum, restarts services and checks health. SIGINT/SIGTERM and ordinary errors enter recovery; power loss/SIGKILL still require operator recovery. It retains the newest 30 successful managed daily sets only; failures never prune old sets or unrelated aaPanel backups. Daily status files are `daily-last-attempt.json` and `daily-last-success.json` under the backup root (time, bytes, duration, set ID, recovery result). Inspect aaPanel's Cron log and PM2 after failure. Local copies do not cover total server loss; off-server storage remains deferred.
+The wrapper locks against deployment, checks free space/tools, stops the declared PM2 writers, captures DB+uploads, includes `recovery.env` with mode 600/checksum, restarts services and checks health. SIGINT/SIGTERM and ordinary errors enter recovery; power loss/SIGKILL still require operator recovery. It retains the newest 15 successful managed daily sets only; failures never prune old sets or unrelated aaPanel backups. Daily status files are `daily-last-attempt.json` and `daily-last-success.json` under the backup root (time, bytes, duration, set ID, recovery result). Inspect aaPanel's Cron log and PM2 after failure. Local copies do not cover total server loss; off-server storage remains deferred.
+
+Retention was reduced from 30 to 15 by owner instruction on 2026-10-11. The first successful daily run after updating removes any older managed successes above that limit. This is a count, not a 15-day age cutoff, and it does not clean manual backups or incomplete attempts.
 
 No daily job, production backup or restoration has been executed by this local delivery. The deployment script shares the lock but its existing automatic backup remains DB-only; the separate daily paired task covers private uploads.
 

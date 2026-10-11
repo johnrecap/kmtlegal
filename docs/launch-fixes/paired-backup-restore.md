@@ -8,7 +8,7 @@ manifest + checksums, published atomically under `DATABASE_BACKUP_DIR/<setId>/`.
 The underlying paired-backup command remains manually callable. Phase five adds
 `deploy/install/aapanel-daily-backup.sh` and `scripts/daily-paired-backup.mjs`,
 with the user-approved daily 03:00 Africa/Cairo maintenance window, deployment
-exclusion, protected recovery configuration and retention of 30 managed successful
+exclusion, protected recovery configuration and retention of 15 managed successful
 sets. aaPanel Cron setup and the native restore drill are NOT_VERIFIED; see
 `docs/SERVER_COMMANDS.md` for activation steps and the required current drill receipt.
 The deployment script itself still performs a DB-only pre-migration backup.

@@ -12,7 +12,7 @@ const exec = promisify(execFile);
 const marker = "daily-managed.json";
 const safeSet = /^kmt-paired-\d{8}-\d{8}$/;
 const fail = (message) => { throw new Error(message); };
-export async function pruneDailySets(root, keep = 30) {
+export async function pruneDailySets(root, keep = 15) {
   if (!Number.isInteger(keep) || keep < 1) fail("Invalid retention count.");
   const base = await fs.realpath(root);
   const candidates = [];
@@ -113,7 +113,7 @@ export async function runDailyBackup({ env = process.env, preflight = false, run
     if (!failure && result) {
       await fs.writeFile(path.join(result.directory, marker), JSON.stringify({ format: "kmt-daily@1", setId: result.setId, completedAt: status.completedAt, verified: true }), { mode: 0o600 });
       await fs.writeFile(path.join(backupRoot, "daily-last-success.json"), JSON.stringify(status, null, 2), { mode: 0o600 });
-      await pruneDailySets(backupRoot, 30);
+      await pruneDailySets(backupRoot);
     }
   }
   if (failure) throw failure;
