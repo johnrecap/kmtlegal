@@ -1,3 +1,4 @@
+import { formationDraftSchema } from "@/lib/business-formation";
 import { randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
@@ -7,8 +8,9 @@ import { ApiError } from "@/server/http/errors";
 import { appendAuditLog } from "@/server/audit/audit-service";
 import { parseWithSchema } from "@/server/validation/schemas";
 
-export const serviceKindSchema = z.enum(["CONTRACT_DRAFT", "CONTRACT_REVIEW", "HEALTH_CHECK"]);
+export const serviceKindSchema = z.enum(["CONTRACT_DRAFT", "CONTRACT_REVIEW", "HEALTH_CHECK", "COMPANY_FORMATION"]);
 export const intakeSchema = z.object({
+  formation: formationDraftSchema.optional(),
   title: z.string().trim().max(180).default(""), purpose: z.string().trim().max(5000).default(""),
   language: z.enum(["ar", "en", "both"]).default("ar"), requestedDate: z.string().regex(/^$|^\d{4}-\d{2}-\d{2}$/).default(""),
   answers: z.record(z.string().max(60), z.enum(["YES", "NO", "UNSURE", "NOT_APPLICABLE"])).default({})
@@ -61,6 +63,7 @@ export async function publishQuestionnaire(actor: Principal, input: unknown) {
 export async function createServiceRequest(actor: Principal, input: unknown) {
   const client = await assertVerifiedServiceClient(actor);
   const body = parseWithSchema(createServiceRequestSchema, input);
+  if(body.kind==='COMPANY_FORMATION')throw new ApiError(400,'VALIDATION_ERROR','Start through the formation interview.');
   const existing = await prisma.serviceRequest.findUnique({ where: { clientId_idempotencyKey: { clientId: client.id, idempotencyKey: body.idempotencyKey } } });
   if (existing) { if (existing.kind !== body.kind || existing.locale !== body.locale || existing.sourceRequestId !== (body.sourceRequestId ?? null)) throw conflict(); return existing; }
   if (body.sourceRequestId && !await prisma.serviceRequest.count({ where: { id: body.sourceRequestId, clientId: client.id, kind: "HEALTH_CHECK", status: { in: ["READY", "COMPLETED"] } } })) throw new ApiError(404, "NOT_FOUND", "Request not found.");
@@ -121,6 +124,8 @@ export async function actOnServiceRequest(actor: Principal, id: string, input: u
         const allowed = new Set((row.questionnaire?.questions as Array<{ id: string }> ?? []).map(q => q.id));
         if (Object.keys(body.intake.answers).some(key => !allowed.has(key))) throw new ApiError(400, "VALIDATION_ERROR", "Unknown question.");
       } else if (Object.keys(body.intake.answers).length) throw new ApiError(400, "VALIDATION_ERROR", "Questionnaire answers are not applicable.");
+      if(row.kind!=='COMPANY_FORMATION' && body.intake.formation)throw new ApiError(400,'VALIDATION_ERROR','Formation data is not applicable.');
+      if(row.kind==='COMPANY_FORMATION' && JSON.stringify(body.intake.formation)!==JSON.stringify(intakeSchema.parse(row.intake).formation))throw new ApiError(400,'VALIDATION_ERROR','Use messages to clarify submitted formation facts.');
       data.intake = body.intake;
     } else if (body.action === "submit") {
       if (!own || !editable) throw denied();

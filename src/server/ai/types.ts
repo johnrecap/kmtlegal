@@ -6,6 +6,7 @@ export type AITask =
   | "booking_intake_extraction"
   | "consultation_classification"
   | "consultation_assistant"
+  | "formation_review"
   | "intake_summary"
   | "document_checklist_suggestion"
   | "anonymous_case_study_draft"

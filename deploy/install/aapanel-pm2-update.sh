@@ -28,7 +28,7 @@ PUBLIC_CACHE_POLICY_ENABLED="${PUBLIC_CACHE_POLICY_ENABLED:-true}"
 PUBLIC_CACHE_POLICY_INCLUDE="${PUBLIC_CACHE_POLICY_INCLUDE:-}"
 PUBLIC_NGINX_VHOST_FILES="${PUBLIC_NGINX_VHOST_FILES:-}"
 PUBLIC_CACHEABLE_VERIFY_PATHS="${PUBLIC_CACHEABLE_VERIFY_PATHS:-/ /services /team /book-consultation /ar /ar/services}"
-SENSITIVE_CACHE_VERIFY_PATHS="${SENSITIVE_CACHE_VERIFY_PATHS:-/api/health /api/auth/me /admin /client /login /install /articles /ar/articles /sitemap.xml}"
+SENSITIVE_CACHE_VERIFY_PATHS="${SENSITIVE_CACHE_VERIFY_PATHS:-/api/health /api/auth/me /admin /client /login /install /articles /ar/articles /legal-intelligence /ar/legal-intelligence /business-ai /ar/business-ai /sitemap.xml}"
 RETIRED_ROUTE_VERIFY_PATHS="${RETIRED_ROUTE_VERIFY_PATHS:-/portal /portal/cases /product-system /stitch-clone/home /case-studies /media /ar/case-studies /ar/media}"
 PRESERVED_ASSET_VERIFY_PATH="${PRESERVED_ASSET_VERIFY_PATH:-/stitch-assets/ff4ca4cf707aef0c.png}"
 NGINX_RELOAD_AFTER_CACHE_PURGE="${NGINX_RELOAD_AFTER_CACHE_PURGE:-true}"
@@ -403,7 +403,7 @@ if ($request_method !~ ^(GET|HEAD)$) {
   set $kmt_cache_control "no-store";
 }
 
-if ($request_uri ~* "^/(api|admin|client|portal|login|install|account|articles|ar/articles|payment|ar/payment|client-account|ar/client-account|sitemap[.]xml)(/|[?]|$)") {
+if ($request_uri ~* "^/(api|admin|client|portal|login|install|account|articles|ar/articles|legal-intelligence|ar/legal-intelligence|business-ai|ar/business-ai|payment|ar/payment|client-account|ar/client-account|sitemap[.]xml)(/|[?]|$)") {
   set $kmt_cache_control "no-store";
 }
 
@@ -544,7 +544,7 @@ const origin = process.env.APP_ORIGIN.replace(/\/+$/, "");
 const port = process.env.PORT || "3000";
 const paths = (process.env.PUBLIC_VERIFY_PATHS || "/ /services /our-firm /industries /articles /team /book-consultation /contact /ar /ar/services /ar/our-firm /ar/industries /ar/articles /robots.txt /sitemap.xml").split(/\s+/).filter(Boolean);
 const publicCacheablePaths = (process.env.PUBLIC_CACHEABLE_VERIFY_PATHS || "/").split(/\s+/).filter(Boolean);
-const sensitiveCachePaths = (process.env.SENSITIVE_CACHE_VERIFY_PATHS || "/api/health /admin /client /login /articles /ar/articles /sitemap.xml").split(/\s+/).filter(Boolean);
+const sensitiveCachePaths = (process.env.SENSITIVE_CACHE_VERIFY_PATHS || "/api/health /admin /client /login /articles /ar/articles /legal-intelligence /ar/legal-intelligence /business-ai /ar/business-ai /sitemap.xml").split(/\s+/).filter(Boolean);
 const retiredRoutePaths = (process.env.RETIRED_ROUTE_VERIFY_PATHS || "/portal /portal/cases /product-system /stitch-clone/home /case-studies /media /ar/case-studies /ar/media").split(/\s+/).filter(Boolean);
 const preservedAssetPath = process.env.PRESERVED_ASSET_VERIFY_PATH || "/stitch-assets/ff4ca4cf707aef0c.png";
 

@@ -1,4 +1,5 @@
 "use client";
+import { legalKnowledgeCopy } from "@/content/legal-knowledge-copy";
 
 import { useRouter } from "next/navigation";
 import { type FormEvent, useRef, useState } from "react";
@@ -28,6 +29,7 @@ type ActionMessage = {
 };
 
 type ArticleValue = {
+  contentType?: string;sourceTitle?:string|null;sourceUrl?:string|null;referenceNumber?:string|null;referenceYear?:number|null;referenceDate?:string|Date|null;reviewedAt?:string|Date|null;aiApproved?:boolean;
   id?: string;
   title?: string;
   slug?: string;
@@ -183,6 +185,7 @@ export function ArticleForm({ article, canApprove, idPrefix }: { article?: Artic
 
     try {
       const response = await sendJson(isEdit ? `/api/admin/content/articles/${article?.id}` : "/api/admin/content/articles", isEdit ? "PATCH" : "POST", {
+        contentType:textValue(formData,"contentType")||"ARTICLE",sourceTitle:textValue(formData,"sourceTitle"),sourceUrl:textValue(formData,"sourceUrl"),referenceNumber:textValue(formData,"referenceNumber"),referenceYear:textValue(formData,"referenceYear")?Number(textValue(formData,"referenceYear")):null,referenceDate:textValue(formData,"referenceDate"),reviewedAt:textValue(formData,"reviewedAt"),aiApproved:formData.get("aiApproved")==="on",
         title: textValue(formData, "title"),
         slug: textValue(formData, "slug"),
         locale: textValue(formData, "locale") || "en",
@@ -218,6 +221,14 @@ export function ArticleForm({ article, canApprove, idPrefix }: { article?: Artic
       {isProtected ? <InlineFeedback title={contentLifecycleUiCopy.protectedEdit(labelFrom(articleStatusLabels, article?.status ?? "PUBLISHED"))} tone="warning" /> : null}
       {unsaved.dirty ? <InlineFeedback title="لديك تعديلات غير محفوظة." tone="warning" /> : null}
       <fieldset className="grid gap-4 disabled:opacity-70" disabled={isProtected || !isHydrated}>
+      <Select defaultValue={article?.contentType??'ARTICLE'} disabled={isBusy} idPrefix={prefix} label={legalKnowledgeCopy.ar.type} name="contentType">{Object.entries(legalKnowledgeCopy.ar.types).map(([value,label])=><option key={value} value={value}>{label}</option>)}</Select>
+      <TextInput defaultValue={article?.sourceTitle??''} idPrefix={prefix} disabled={isBusy} label={legalKnowledgeCopy.ar.sourceTitle} name="sourceTitle"/>
+      <TextInput defaultValue={article?.sourceUrl??''} idPrefix={prefix} disabled={isBusy} label={legalKnowledgeCopy.ar.sourceUrl} name="sourceUrl" type="url"/>
+      <TextInput defaultValue={article?.referenceNumber??''} idPrefix={prefix} disabled={isBusy} label={legalKnowledgeCopy.ar.reference} name="referenceNumber"/>
+      <TextInput defaultValue={String(article?.referenceYear??'')} idPrefix={prefix} disabled={isBusy} label={legalKnowledgeCopy.ar.year} name="referenceYear" type="number"/>
+      <TextInput defaultValue={toDateInput(article?.referenceDate)} idPrefix={prefix} disabled={isBusy} label={legalKnowledgeCopy.ar.date} name="referenceDate" type="date"/>
+      <TextInput defaultValue={toDateInput(article?.reviewedAt)} idPrefix={prefix} disabled={isBusy} label={legalKnowledgeCopy.ar.reviewed} name="reviewedAt" type="date"/>
+      {canApprove&&<label className="flex gap-3"><input type="checkbox" name="aiApproved" defaultChecked={article?.aiApproved??false}/>{legalKnowledgeCopy.ar.ai}</label>}<p className="text-sm">{legalKnowledgeCopy.ar.approval}</p>
       <TextInput defaultValue={article?.title ?? ""} dir="auto" disabled={isBusy} idPrefix={prefix} label="عنوان المقال" name="title" required />
       <TextInput defaultValue={article?.slug ?? ""} disabled={isBusy} hint="صيغة lowercase-kebab-case مثل contract-risk-basics." idPrefix={prefix} label="معرّف الرابط (Slug)" name="slug" required />
       <div className="grid gap-4 sm:grid-cols-2">

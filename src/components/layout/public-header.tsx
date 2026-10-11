@@ -1,4 +1,5 @@
 "use client";
+import { navigationChildren } from "@/content/site-completion-copy";
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -7,14 +8,13 @@ import { X } from "lucide-react";
 import { KmtBrandLogo } from "@/components/brand";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/animate-ui/components/radix/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/animate-ui/components/radix/tooltip";
-import { RippleLink } from "@/components/animate-ui/ripple-link";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { MaterialSymbol } from "@/components/ui";
 import { ShimmerCtaLink } from "@/components/ui/shimmer-cta-link";
 import { Menu, MenuItem } from "@/components/ui/navbar-menu";
 import { MobileNav, MobileNavHeader, NavBody } from "@/components/ui/resizable-navbar";
 import { getPublicContent } from "@/content/public-content";
-import { publicMotionButton, publicMotionCta, publicMotionIcon, publicMotionIconHalo, publicMotionNavLink, publicMotionTextLink } from "@/features/public-site/public-motion";
+import { publicMotionButton, publicMotionCta, publicMotionIcon, publicMotionIconHalo, publicMotionNavLink } from "@/features/public-site/public-motion";
 import { cn } from "@/lib/cn";
 import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 import type { PublicNavItem } from "./public-shell";
@@ -91,19 +91,7 @@ export function PublicHeader({
   const [mobileOpen, setMobileOpen] = useState(false);
   const lastY = useRef(0);
 
-  const insightHrefs = ["/articles", "/case-studies", "/media"];
-  const insightItems = navItems.filter((item) => insightHrefs.includes(item.href));
-  const articlesItem = insightItems.find((item) => item.href === "/articles");
-  const insightChildren = insightItems.filter((item) => item !== articlesItem);
-  const insightsHref = articlesItem?.href ?? "/articles";
-  const servicesItem = navItems.find((item) => item.href === "/services");
-  const practiceLinks = content.footerContent.practiceLinks.slice(0, 6);
-  const insightsGroupLabel = content.home.insightsEyebrow;
-  const [openGroup, setOpenGroup] = useState<string | null>(() => {
-    if (servicesItem?.active) return "services";
-    if (insightItems.some((item) => item.active)) return "insights";
-    return null;
-  });
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
 
   const closeMobile = () => {
     setMobileOpen(false);
@@ -178,99 +166,7 @@ export function PublicHeader({
           <KmtBrandLogo className={navItems[0]?.active ? "kmt-logo-enter" : undefined} href={localizedPublicHref("/", locale)} size="md" surface="theme" variant="public" />
           <nav aria-label={shell.mainNavLabel} className="flex min-w-0 flex-1 items-stretch justify-center self-stretch">
             <Menu setActive={setServicesActive} className="min-w-0 flex-1 items-center gap-0.5 space-x-0 self-stretch px-0 py-0">
-              {navItems.map((item) =>
-                item.href === "/services" && servicesItem ? (
-                  <MenuItem
-                    key={item.href}
-                    item="services"
-                    href={localizedPublicHref(item.href, locale)}
-                    activeLink={item.active}
-                    ariaExpanded={servicesActive === "services"}
-                    triggerClassName={cn(
-                      navLinkClasses,
-                      publicMotionNavLink,
-                      item.active || servicesActive === "services" ? "text-[var(--kmt-public-gold)]" : "text-[var(--kmt-public-muted)] hover:text-[var(--kmt-public-gold)]"
-                    )}
-                    trigger={
-                      <>
-                        {item.label}
-                        <MaterialSymbol className={cn("text-lg transition-transform duration-kmt-normal ease-kmt-out motion-reduce:transition-none", servicesActive === "services" && "rotate-180")} name="expand_more" />
-                        {item.active ? (
-                          <span
-                            aria-hidden="true"
-                            className="kmt-nav-indicator absolute inset-x-3 bottom-2 h-0.5 rounded-full bg-[var(--kmt-public-gold)]"
-                          />
-                        ) : null}
-                      </>
-                    }
-                    active={servicesActive}
-                    setActive={setServicesActive}
-                  >
-                    <div className="w-[min(36rem,calc(100vw-3rem))]" onClick={() => setServicesActive(null)}>
-                      <nav aria-label={shell.practiceLinksLabel}>
-                        <ul className="grid gap-1 sm:grid-cols-2">
-                          {practiceLinks.map((link, index) => (
-                            <li key={link.href}>
-                              <Link
-                                className="group flex items-center gap-4 rounded-lg px-3 py-3 transition-colors duration-kmt-fast ease-kmt-out hover:bg-[var(--kmt-public-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none"
-                                href={localizedPublicHref(link.href, locale)}
-                              >
-                                <span className="text-xs font-semibold tabular-nums tracking-widest text-[var(--kmt-public-gold)] opacity-80" aria-hidden="true">
-                                  {String(index + 1).padStart(2, "0")}
-                                </span>
-                                <span className="text-sm font-semibold text-[var(--kmt-public-muted)] transition-colors group-hover:text-[var(--kmt-public-text)]">{link.label}</span>
-                                <MaterialSymbol className="ms-auto text-lg text-[var(--kmt-public-gold)] opacity-0 transition-all duration-200 group-hover:translate-x-1 group-hover:opacity-100 rtl:rotate-180 rtl:group-hover:-translate-x-1" name="arrow_forward" />
-                              </Link>
-                            </li>
-                          ))}
-                          <li className="sm:col-span-2">
-                            <Link
-                              className={cn("flex items-center gap-2 px-3 py-3 text-sm font-semibold text-[var(--kmt-public-gold)] transition-colors hover:text-[var(--kmt-public-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring", publicMotionTextLink)}
-                              href={localizedPublicHref("/services", locale)}
-                            >
-                              {shell.viewAllPracticeAreas}
-                            </Link>
-                          </li>
-                        </ul>
-                      </nav>
-                      <div className="mt-2 rounded-xl border border-kmt-gold/30 bg-kmt-gold/10 p-5">
-                        <p className="text-base font-semibold text-[var(--kmt-public-text)]">{content.bookingPage.sectionTitle}</p>
-                        <p className="mt-2 text-sm leading-7 text-[var(--kmt-public-muted)]">{content.bookingPage.sectionDescription}</p>
-                        <RippleLink
-                          className={cn(
-                            "mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 border border-primary bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors duration-kmt-fast ease-kmt-out hover:border-accent hover:bg-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring motion-reduce:transition-none",
-                            publicMotionButton,
-                            publicMotionCta
-                          )}
-                          href={localizedPublicHref("/book-consultation", locale)}
-                        >
-                          <span>{shell.consultationCta}</span>
-                          <MaterialSymbol className={cn("text-lg", publicMotionIcon, publicMotionIconHalo)} name="event_available" />
-                        </RippleLink>
-                      </div>
-                    </div>
-                  </MenuItem>
-                ) : (
-                  <Link
-                    key={item.href}
-                    aria-current={item.active ? "page" : undefined}
-                    className={cn(
-                      navLinkClasses,
-                      publicMotionNavLink,
-                      item.active ? "text-[var(--kmt-public-gold)]" : "text-[var(--kmt-public-muted)] hover:text-[var(--kmt-public-gold)]"
-                    )}
-                    href={localizedPublicHref(item.href, locale)}
-                  >
-                    {item.label}
-                    {item.active ? (
-                      <span
-                        aria-hidden="true"
-                        className="kmt-nav-indicator absolute inset-x-3 bottom-2 h-0.5 rounded-full bg-[var(--kmt-public-gold)]"
-                      />
-                    ) : null}
-                  </Link>
-                )
-              )}
+              {navItems.map(item => {const children=navigationChildren(locale,item.href);return children.length ? <MenuItem key={item.href} item={item.href} activeLink={item.active} active={servicesActive} setActive={setServicesActive} onToggle={()=>setServicesActive(servicesActive===item.href?null:item.href)} ariaExpanded={servicesActive===item.href} triggerClassName={cn(navLinkClasses,publicMotionNavLink,"min-h-11")} trigger={<>{item.label}<MaterialSymbol name="expand_more"/></>}><ul className="min-w-56 space-y-1">{children.map(child=><li key={child.href}><Link className="flex min-h-11 items-center rounded-lg px-3 text-sm hover:bg-[var(--kmt-public-hover)] focus-visible:outline" href={localizedPublicHref(child.href,locale)} onClick={()=>setServicesActive(null)}>{child.label}</Link></li>)}</ul></MenuItem>:<Link key={item.href} className={cn(navLinkClasses,publicMotionNavLink,"min-h-11")} href={localizedPublicHref(item.href,locale)} aria-current={item.active?'page':undefined}>{item.label}</Link>;})}
             </Menu>
           </nav>
           <div className="flex shrink-0 items-center gap-2">
@@ -313,141 +209,7 @@ export function PublicHeader({
                       <ConsultationLink className="w-full" label={shell.consultationCta} locale={locale} />
                     </div>
                     <ul className="mt-3 space-y-1">
-                      {navItems
-                        .filter((item) => item.href === "/articles" || !insightHrefs.includes(item.href))
-                        .map((item) => {
-                          if (item.href === "/services" && servicesItem) {
-                            const expanded = openGroup === "services";
-                            return (
-                              <li key={item.href}>
-                                <div
-                                  className={cn(
-                                    "flex min-h-12 items-center rounded-lg transition-colors duration-kmt-fast ease-kmt-out motion-reduce:transition-none",
-                                    item.active ? "bg-kmt-gold/15 text-[var(--kmt-public-text)]" : "text-[var(--kmt-public-muted)] hover:bg-[var(--kmt-public-hover)] hover:text-[var(--kmt-public-text)]"
-                                  )}
-                                >
-                                  <Link
-                                    aria-current={item.active ? "page" : undefined}
-                                    className="flex min-h-12 flex-1 items-center px-3 text-[15px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ring"
-                                    href={localizedPublicHref(item.href, locale)}
-                                    onClick={closeMobile}
-                                  >
-                                    {item.label}
-                                  </Link>
-                                  <button
-                                    type="button"
-                                    aria-expanded={expanded}
-                                    aria-label={item.label}
-                                    onClick={() => setOpenGroup(expanded ? null : "services")}
-                                    className="flex h-12 w-12 items-center justify-center rounded-lg text-[var(--kmt-public-muted)] transition-colors hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ring"
-                                  >
-                                    <MaterialSymbol className={cn("text-2xl transition-transform duration-kmt-normal ease-kmt-out motion-reduce:transition-none", expanded && "rotate-180")} name="expand_more" />
-                                  </button>
-                                </div>
-                                <div className={cn("grid transition-all duration-kmt-normal ease-kmt-out motion-reduce:transition-none", expanded ? "[grid-template-rows:1fr] opacity-100" : "[grid-template-rows:0fr] opacity-0")}>
-                                  <ul className="overflow-hidden">
-                                    <li className="ms-3 border-s border-[var(--kmt-public-line)] ps-2">
-                                      <ul className="space-y-1 py-1">
-                                        {practiceLinks.map((link) => (
-                                          <li key={link.href}>
-                                            <Link
-                                              className="flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-[var(--kmt-public-muted)] transition-colors duration-kmt-fast ease-kmt-out hover:bg-[var(--kmt-public-hover)] hover:text-[var(--kmt-public-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ring motion-reduce:transition-none"
-                                              href={localizedPublicHref(link.href, locale)}
-                                              onClick={closeMobile}
-                                            >
-                                              {link.label}
-                                            </Link>
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    </li>
-                                  </ul>
-                                </div>
-                              </li>
-                            );
-                          }
-                          return (
-                            <li key={item.href}>
-                              <Link
-                                aria-current={item.active ? "page" : undefined}
-                                className={cn(
-                                  "flex min-h-12 items-center rounded-lg px-3 text-[15px] font-semibold transition-colors duration-kmt-fast ease-kmt-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ring motion-reduce:transition-none",
-                                  item.active ? "bg-kmt-gold/15 text-[var(--kmt-public-text)]" : "text-[var(--kmt-public-muted)] hover:bg-[var(--kmt-public-hover)] hover:text-[var(--kmt-public-text)]"
-                                )}
-                                href={localizedPublicHref(item.href, locale)}
-                                onClick={closeMobile}
-                              >
-                                {item.label}
-                              </Link>
-                            </li>
-                          );
-                        })}
-                      {articlesItem && insightChildren.length > 0 ? (
-                        <li key={articlesItem.href}>
-                          <Link
-                            aria-current={articlesItem.active ? "page" : undefined}
-                            className={cn(
-                              "flex min-h-12 items-center rounded-lg px-3 text-[15px] font-semibold transition-colors duration-kmt-fast ease-kmt-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ring motion-reduce:transition-none",
-                              articlesItem.active ? "bg-kmt-gold/15 text-[var(--kmt-public-text)]" : "text-[var(--kmt-public-muted)] hover:bg-[var(--kmt-public-hover)] hover:text-[var(--kmt-public-text)]"
-                            )}
-                            href={localizedPublicHref(articlesItem.href, locale)}
-                            onClick={closeMobile}
-                          >
-                            {articlesItem.label}
-                          </Link>
-                        </li>
-                      ) : null}
-                      {insightChildren.length > 0 ? (
-                        <li>
-                          <div
-                            className={cn(
-                              "flex min-h-12 items-center rounded-lg transition-colors duration-kmt-fast ease-kmt-out motion-reduce:transition-none",
-                              insightItems.some((item) => item.active) ? "bg-kmt-gold/15 text-[var(--kmt-public-text)]" : "text-[var(--kmt-public-muted)] hover:bg-[var(--kmt-public-hover)] hover:text-[var(--kmt-public-text)]"
-                            )}
-                          >
-                            <Link
-                              aria-current={insightItems.some((item) => item.active) ? "page" : undefined}
-                              className="flex min-h-12 flex-1 items-center px-3 text-[15px] font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ring"
-                              href={localizedPublicHref(insightsHref, locale)}
-                              onClick={closeMobile}
-                            >
-                              {insightsGroupLabel}
-                            </Link>
-                            <button
-                              type="button"
-                              aria-expanded={openGroup === "insights"}
-                              aria-label={insightsGroupLabel}
-                              onClick={() => setOpenGroup(openGroup === "insights" ? null : "insights")}
-                              className="flex h-12 w-12 items-center justify-center rounded-lg text-[var(--kmt-public-muted)] transition-colors hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ring"
-                            >
-                              <MaterialSymbol className={cn("text-2xl transition-transform duration-kmt-normal ease-kmt-out motion-reduce:transition-none", openGroup === "insights" && "rotate-180")} name="expand_more" />
-                            </button>
-                          </div>
-                          <div className={cn("grid transition-all duration-kmt-normal ease-kmt-out motion-reduce:transition-none", openGroup === "insights" ? "[grid-template-rows:1fr] opacity-100" : "[grid-template-rows:0fr] opacity-0")}>
-                            <ul className="overflow-hidden">
-                              <li className="ms-3 border-s border-[var(--kmt-public-line)] ps-2">
-                                <ul className="space-y-1 py-1">
-                                  {insightChildren.map((item) => (
-                                    <li key={item.href}>
-                                      <Link
-                                        aria-current={item.active ? "page" : undefined}
-                                        className={cn(
-                                          "flex min-h-11 items-center rounded-lg px-3 text-sm font-medium transition-colors duration-kmt-fast ease-kmt-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ring motion-reduce:transition-none",
-                                          item.active ? "bg-kmt-gold/15 text-[var(--kmt-public-text)]" : "text-[var(--kmt-public-muted)] hover:bg-[var(--kmt-public-hover)] hover:text-[var(--kmt-public-text)]"
-                                        )}
-                                        href={localizedPublicHref(item.href, locale)}
-                                        onClick={closeMobile}
-                                      >
-                                        {item.label}
-                                      </Link>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </li>
-                            </ul>
-                          </div>
-                        </li>
-                      ) : null}
+                      {navItems.map(item=>{const children=navigationChildren(locale,item.href);return <li key={item.href}><div className="flex items-center"><Link className="flex min-h-12 flex-1 items-center px-3 font-semibold" href={localizedPublicHref(item.href,locale)} onClick={closeMobile}>{item.label}</Link>{children.length?<button type="button" className="h-12 w-12 focus-visible:outline" aria-label={item.label} aria-expanded={openGroup===item.href} onClick={()=>setOpenGroup(openGroup===item.href?null:item.href)}><MaterialSymbol name={openGroup===item.href?'expand_less':'expand_more'}/></button>:null}</div>{children.length&&openGroup===item.href?<ul className="ms-4 border-s border-[var(--kmt-public-line)] ps-3">{children.map(child=><li key={child.href}><Link className="flex min-h-11 items-center px-3 text-sm" href={localizedPublicHref(child.href,locale)} onClick={closeMobile}>{child.label}</Link></li>)}</ul>:null}</li>;})}
                     </ul>
                     <Link className="mt-4 flex min-h-11 items-center gap-2 rounded-lg border border-[var(--kmt-public-line)] px-3" href={`/login?next=/client&locale=${locale}`} onClick={closeMobile}>
                       <MaterialSymbol name="account_circle" />{shell.clientLoginCta}

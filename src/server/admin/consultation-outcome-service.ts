@@ -75,6 +75,7 @@ export const adminConsultationListSelect = Prisma.validator<Prisma.ConsultationR
 });
 
 export const adminConsultationDetailSelect = Prisma.validator<Prisma.ConsultationRequestSelect>()({
+  publicServiceSlug: true,
   id: true,
   publicReference: true,
   requestedStartsAt: true,

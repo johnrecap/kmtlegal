@@ -1,3 +1,4 @@
+import { publicServiceSlugs } from '@/content/public-service-registry';
 import { z } from "zod";
 import { emailSchema } from "@/server/validation/schemas";
 
@@ -6,7 +7,7 @@ export const intakeDraftSchema = z.strictObject({
   phone: z.string().trim().regex(/^\+?[\d ()-]{8,24}$/).optional(),
   email: emailSchema.optional(),
   city: z.string().trim().min(2).max(120).optional(),
-  service: z.enum(["legal-consultation", "company-formation", "corporate-business-services", "contracts", "real-estate-legal-support", "claims-collections"]).optional(),
+  service: z.enum(publicServiceSlugs).optional(),
   summary: z.string().trim().min(10).max(3000).optional(),
   preferredMode: z.enum(["PHONE", "ONLINE", "OFFICE"]).optional(),
   contactChannel: z.enum(["PHONE", "WHATSAPP"]).optional(),

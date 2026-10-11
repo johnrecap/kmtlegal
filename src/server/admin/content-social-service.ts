@@ -1,3 +1,4 @@
+import { referenceFields, referenceReady } from "@/lib/legal-reference";
 import { revalidateTag } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
@@ -35,6 +36,7 @@ export const adminContentHubQuerySchema = z.object({
 
 export const adminArticleWriteSchema = z
   .object({
+    ...referenceFields,
     title: z.string().trim().min(3).max(180),
     slug: slugSchema,
     locale: z.enum(["en", "ar"]).default("en"),
@@ -594,7 +596,11 @@ export async function getAdminSocialDraftDetail(input: { actor: Principal; draft
 
 function articleData(actor: Principal, body: AdminArticleWriteInput) {
   assertArticleStatusAllowed(actor, body.status);
+  if(body.aiApproved && !canApproveArticles(actor)) throw new ApiError(403,"PERMISSION_DENIED","Content approval permission required.");
+  if((body.status==='PUBLISHED' || body.aiApproved) && !referenceReady(body)) throw new ApiError(400,"VALIDATION_ERROR","Complete source and review metadata before publication.");
+  if(body.reviewedAt && new Date(body.reviewedAt)>new Date()) throw new ApiError(400,"VALIDATION_ERROR","Review date cannot be in the future.");
   return {
+    contentType:body.contentType,sourceTitle:body.sourceTitle||null,sourceUrl:body.sourceUrl||null,referenceNumber:body.referenceNumber||null,referenceYear:body.referenceYear,referenceDate:body.referenceDate?new Date(body.referenceDate):null,reviewedAt:body.reviewedAt?new Date(body.reviewedAt):null,reviewedById:body.reviewedAt&&canApproveArticles(actor)?actor.id:null,aiApproved:body.aiApproved&&body.status==='PUBLISHED',
     title: body.title,
     slug: body.slug,
     locale: body.locale,

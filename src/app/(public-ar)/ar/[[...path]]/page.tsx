@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { metadataForPublicPath, publicLawyerStaticParams, publicServiceStaticParams, renderPublicPath } from "@/features/public-site/public-pages";
 
 type ArabicPublicPageProps = {
+  searchParams:Promise<Record<string,string|string[]|undefined>>;
   params: Promise<{ path?: string[] }>;
 };
 
@@ -17,7 +18,14 @@ export function generateStaticParams() {
     ["team"],
     ["contact"],
     ["privacy"],
-    ["terms"]
+    ["terms"],
+    ["how-can-we-help"] ,
+    ["corporate-services"] ,
+    ["corporate-plans"] ,
+    ["innovation"] ,
+    ["legal-intelligence"] ,
+    ["careers"] ,
+    ["business-ai"]
   ];
 
   return [
@@ -32,7 +40,7 @@ export async function generateMetadata({ params }: ArabicPublicPageProps): Promi
   return metadataForPublicPath("ar", path ?? []);
 }
 
-export default async function ArabicPublicPage({ params }: ArabicPublicPageProps) {
+export default async function ArabicPublicPage({ params, searchParams }: ArabicPublicPageProps) {
   const { path } = await params;
-  return renderPublicPath("ar", path ?? []);
+  return renderPublicPath("ar", path ?? [],path?.[0] === "legal-intelligence" ? await searchParams : {});
 }

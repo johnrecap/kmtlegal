@@ -6,12 +6,14 @@ const { securityHeaders } = securityHeaderModule;
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async redirects() {return [{"source":"/about","destination":"/our-firm","permanent":true},{"source":"/insights","destination":"/articles","permanent":true},{"source":"/practice-areas","destination":"/services","permanent":true},{"source":"/ar/about","destination":"/ar/our-firm","permanent":true},{"source":"/ar/insights","destination":"/ar/articles","permanent":true},{"source":"/ar/practice-areas","destination":"/ar/services","permanent":true}];},
   experimental: {
     sri: { algorithm: "sha256" },
     globalNotFound: true
   },
   async headers() {
     return [
+      ...["/business-ai", "/ar/business-ai", "/legal-intelligence/:path*", "/ar/legal-intelligence/:path*"].map(source => ({source, headers: [{key: "Cache-Control", value: "no-store"}]})),
       {
         source: "/_next/static/:path*",
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }]

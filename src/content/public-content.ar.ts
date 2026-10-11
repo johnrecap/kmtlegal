@@ -1,3 +1,5 @@
+import { industryCatalog } from "./industry-catalog";
+import { publicNavigation } from "./site-completion-copy";
 import { publicOfficeProfile } from "./public-office-profile";
 import { publicLegalServicesAr as legalServices, publicServiceCategoriesAr as serviceCategories } from "./public-services";
 import { publicBookingConsentCopy } from "./public-booking-consent";
@@ -145,7 +147,7 @@ const representativeMatters = [
   }
 ] as const;
 
-const publicIndustries = [
+const legacyPublicIndustries = [
   { title: "الشركات العائلية والمتوسطة", summary: "حوكمة وعقود وشراكات وقرارات تساعد الإدارة على العمل بوثائق أوضح." },
   { title: "العقارات والتطوير", summary: "مراجعة مستندات ملكية وتعاقدات تطوير وإيجار ومشاركة قبل الالتزام." },
   { title: "التجارة والتوريد", summary: "عقود توريد وتحصيل ومديونيات ومنازعات تجارية مرتبطة بسلاسل البيع والشراء." },
@@ -184,44 +186,15 @@ const footerContent = {
 } as const;
 
 export const publicContentAr = {
-  navItems: [
-    {
-      "label": "الرئيسية",
-      "href": "/"
-    },
-    {
-      "label": "عن المكتب",
-      "href": "/our-firm"
-    },
-    {
-      "label": "الخدمات",
-      "href": "/services"
-    },
-    {
-      "label": "القطاعات",
-      "href": "/industries"
-    },
-    {
-      "label": "الفريق",
-      "href": "/team"
-    },
-    {
-      "label": "رؤى قانونية",
-      "href": "/articles"
-    },
-    {
-      "label": "تواصل معنا",
-      "href": "/contact"
-    }
-  ],
+  navItems: publicNavigation("ar"),
   serviceCategories,
   legalServices,
   practiceAreaMatrix,
-  lawyers,
+  lawyers: lawyers.filter(() => false),
   articles,
   caseStudies,
   representativeMatters,
-  publicIndustries,
+  publicIndustries: industryCatalog("ar"),
   branches,
   contactChannels,
   footerContent,
@@ -270,11 +243,7 @@ export const publicContentAr = {
     heroDocketMatter: "الموضوع",
     heroDocketNext: "الخطوة التالية",
     heroDocketEmpty: "اختر موضوعًا لمعاينة مسودة طلبك.",
-    heroStats: [
-      { value: legalServices.length, suffix: "", label: "مجالات ممارسة" },
-      { value: 3, suffix: "", label: "محامو المكتب" },
-      { value: 24, suffix: "س", label: "رد خلال يوم عمل واحد" }
-    ],
+    heroStats: [{value:18,suffix:"",label:"تخصصًا قانونيًا"},{value:3,suffix:"",label:"خدمات مباشرة"},{value:10,suffix:"",label:"قطاعات نخدمها"}],
     trustItems: [
       { icon: "verified_user", label: "مراجعة من المكتب قبل أي خطوة قانونية" },
       { icon: "lock", label: "التعامل مع بيانات العملاء بسرية" },
@@ -644,7 +613,7 @@ export const publicContentAr = {
     title: "سياسة الخصوصية وبيانات المتقدمين للوظائف",
     description: "بيان واضح للبيانات التي تستقبلها KMT Legal، وأسباب استخدامها، ومن يمكنه الوصول إليها، وكيفية ممارسة حقوق الخصوصية.",
     lastUpdatedLabel: "آخر تحديث",
-    lastUpdated: "2026-10-09",
+    lastUpdated: "2026-10-11",
     summaryTitle: "معلومات أساسية",
     contentsLabel: "محتويات الصفحة",
     summaryItems: [
@@ -654,6 +623,7 @@ export const publicContentAr = {
       { label: "استفسارات الخصوصية", value: publicOfficeProfile.email }
     ],
     sections: [
+      {"id":"formation-interview","title":"بيانات مقابلة تأسيس الشركات","paragraphs":["بعد موافقتك نحفظ نشاط المشروع وبيانات المؤسسين والملكية والإدارة والمقر والتوقيت. يمكن أن يعالج مزود الذكاء الاصطناعي معلومات المشروع لتحديد أسئلة الاستكمال؛ لا يختار الشكل القانوني ولا يقدم رأيًا نهائيًا.","تُحفظ المسودة في جلسة المتصفح لمدة صلاحية سبعة أيام. عند الإرسال الصريح من حساب موثّق تُربط بالطلب، ويُحتفظ بنسخ الملخص اللازمة لمتابعته. تقارير العميل منفصلة عن الملاحظات الداخلية. تواصل مع المكتب بشأن الوصول إلى البيانات أو تصحيحها أو طلب حذفها وفق متطلبات الاحتفاظ المطبقة."],"bullets":[],"links":[]},
       {
         id: "who-we-are",
         title: "1. الجهة المسؤولة عن البيانات",

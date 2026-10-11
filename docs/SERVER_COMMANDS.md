@@ -1,5 +1,18 @@
 # Server Commands
 
+## Content, formation and sourced knowledge — 2026-10-11
+
+Apply the three additive migrations beginning `20261011120000`, `20261011130000`, and `20261011140000` through the existing update script after the normal paired backup and a disposable native PostgreSQL upgrade trial. The local PGlite upgrade/backup test is not a production restore receipt. Existing request kinds and article records are preserved.
+
+```bash
+cd /www/wwwroot/kmtlegal
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+The update adds Nginx cache bypass checks for `/business-ai` and `/legal-intelligence` in both languages. If the Cloudflare cache rule is managed separately, regenerate/apply the existing rule with the same four bypass paths before exposing the library; no cloud account was changed locally. Private report APIs remain `no-store`.
+
+Verify saved formation intake, verified-account submission, private PDF access, staff assignment/information requests/fee proposals, and reference publication in staging. The existing AI gateway accepts the `formation_review` task; the provider only prioritizes bounded follow-up field keys. A deterministic summary remains available on provider failure. Legal-form comparison stays disabled until reviewed rules exist. Validate real provider output in Arabic, Egyptian Arabic and English, SMTP, file scanning, native database concurrency and server restoration separately. Do not seed the synthetic test references into production.
+
 ## Published lawyer booking — 2026-10-09
 
 Take the existing paired backup and test additive migration `20261010010000_published_lawyer_booking` on a disposable PostgreSQL copy before rollout. The current update script applies migrations; it does not publish the booking schedule.

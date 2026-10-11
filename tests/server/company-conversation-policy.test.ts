@@ -1,3 +1,4 @@
+import { publicServiceSlugs } from "@/content/public-service-registry";
 import { describe, expect, it, vi } from "vitest";
 import { applyAssessment, bookingAllowed, boundedConversationProvider, messageAssessmentSchema, policyDecision, readDialogue, type MessageAssessment } from "@/server/ai/company-conversation-policy";
 import { assistantKnowledge } from "@/server/consultations/assistant-knowledge";
@@ -31,7 +32,7 @@ describe("company assistant policy gates", () => {
   it("provides sourced service steps/documents and no unapproved legal explanation", () => {
     for (const locale of ["ar", "en"] as const) {
       const knowledge = assistantKnowledge(locale);
-      expect(knowledge.services).toHaveLength(6);
+      expect(knowledge.services).toHaveLength(publicServiceSlugs.length);
       expect(knowledge.services.every(s => s.source && s.steps.length && s.requiredDocuments.length)).toBe(true);
       expect(knowledge.legalExplanations).toEqual([]);
     }

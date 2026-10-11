@@ -120,6 +120,7 @@ export function PageHero({
   description,
   image,
   imagePosition = "object-center",
+  imageAlt = "",
   actions,
   size = "full",
   texture
@@ -128,6 +129,7 @@ export function PageHero({
   title: string;
   description: string;
   image: string;
+  imageAlt?: string;
   imagePosition?: string;
   actions?: ReactNode;
   size?: "full" | "compact";
@@ -143,8 +145,8 @@ export function PageHero({
   return (
     <section className={cn("relative isolate overflow-hidden bg-[var(--kmt-public-surface)] text-[var(--kmt-public-text)]", heroHeight)}>
       <Image
-        alt=""
-        aria-hidden="true"
+        alt={imageAlt}
+        aria-hidden={imageAlt ? undefined : true}
         className={cn("kmt-motion-hero-image object-cover", imageOpacity, imagePosition)}
         data-testid="public-page-hero-image"
         fetchPriority="high"

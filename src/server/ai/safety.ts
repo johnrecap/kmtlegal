@@ -59,6 +59,8 @@ function generatedTextForTask(task: AITask, output: unknown) {
       return stringsFrom(record.reasons, record.reviewNote);
     case "consultation_assistant":
       return stringsFrom(record.message, record.reviewNote);
+    case "formation_review":
+      return []; // Strict enum-only schema; no generated prose.
     case "intake_summary":
       return stringsFrom(record.summary, record.keyFacts, record.missingInfo, record.reviewNote);
     case "document_checklist_suggestion":

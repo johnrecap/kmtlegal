@@ -47,6 +47,7 @@ export async function submitConversationRequest(input: { token: string; actor: P
       id, publicReference: `CONS-${id.replaceAll("-", "").toUpperCase()}`,
       clientId: client.id, fullName: draft.fullName, phone: draft.phone,
       email: client.user.email, city: draft.city, summary: draft.summary,
+      publicServiceSlug:draft.service,
       serviceCategory: bookingCategoryForPublicService(draft.service, session.locale === "en" ? "en" : "ar") ?? draft.service,
       preferredMode: draft.preferredMode, locale: session.locale, status: "NEW",
       requestedStartsAt: slot ? new Date(slot.startsAt) : null, requestedEndsAt: slot ? new Date(slot.endsAt) : null

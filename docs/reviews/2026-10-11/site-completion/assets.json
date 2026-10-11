@@ -1,0 +1,145 @@
+[
+  {
+    "source": "public/brand/originals/kmt-official-logo.jpg",
+    "sourceSha256": "280d06c72fd158b36dcb35aa4f96c3473c9e62dffa4ed955240d7b63f05ffea9",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "output": "public/brand/kmt-official-logo-280d06c72f-64.webp",
+    "width": 64,
+    "bytes": 2090,
+    "mode": "aspect-preserving resize",
+    "ownerApproved": true
+  },
+  {
+    "source": "public/brand/originals/kmt-official-logo.jpg",
+    "sourceSha256": "280d06c72fd158b36dcb35aa4f96c3473c9e62dffa4ed955240d7b63f05ffea9",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "output": "public/brand/kmt-official-logo-280d06c72f-128.webp",
+    "width": 128,
+    "bytes": 5662,
+    "mode": "aspect-preserving resize",
+    "ownerApproved": true
+  },
+  {
+    "source": "public/brand/originals/kmt-official-logo.jpg",
+    "sourceSha256": "280d06c72fd158b36dcb35aa4f96c3473c9e62dffa4ed955240d7b63f05ffea9",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "output": "public/brand/kmt-official-logo-280d06c72f-256.webp",
+    "width": 256,
+    "bytes": 15756,
+    "mode": "aspect-preserving resize",
+    "ownerApproved": true
+  },
+  {
+    "source": "public/brand/originals/kmt-official-logo.jpg",
+    "sourceSha256": "280d06c72fd158b36dcb35aa4f96c3473c9e62dffa4ed955240d7b63f05ffea9",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "output": "public/brand/kmt-official-logo-280d06c72f-512.webp",
+    "width": 512,
+    "bytes": 42094,
+    "mode": "aspect-preserving resize",
+    "ownerApproved": true
+  },
+  {
+    "source": "public/site-assets/originals/office-executive.jpg",
+    "sourceSha256": "f98295c5dd31e667fcfc335052107d9b2414dd336ca0e1d4d851fd19319e8d28",
+    "sourceWidth": 1600,
+    "sourceHeight": 900,
+    "output": "public/site-assets/office-executive-f98295c5dd-480.webp",
+    "width": 480,
+    "bytes": 37878,
+    "mode": "aspect-preserving resize",
+    "ownerApproved": true
+  },
+  {
+    "source": "public/site-assets/originals/office-executive.jpg",
+    "sourceSha256": "f98295c5dd31e667fcfc335052107d9b2414dd336ca0e1d4d851fd19319e8d28",
+    "sourceWidth": 1600,
+    "sourceHeight": 900,
+    "output": "public/site-assets/office-executive-f98295c5dd-960.webp",
+    "width": 960,
+    "bytes": 126764,
+    "mode": "aspect-preserving resize",
+    "ownerApproved": true
+  },
+  {
+    "source": "public/site-assets/originals/office-executive.jpg",
+    "sourceSha256": "f98295c5dd31e667fcfc335052107d9b2414dd336ca0e1d4d851fd19319e8d28",
+    "sourceWidth": 1600,
+    "sourceHeight": 900,
+    "output": "public/site-assets/office-executive-f98295c5dd-1600.webp",
+    "width": 1600,
+    "bytes": 265690,
+    "mode": "aspect-preserving resize",
+    "ownerApproved": true
+  },
+  {
+    "source": "public/site-assets/originals/office-meeting.jpg",
+    "sourceSha256": "e13dc6b81d8350e42ae4da4071eba1726e3beb0e96ebfca675cef77cde83cfd4",
+    "sourceWidth": 1448,
+    "sourceHeight": 1086,
+    "output": "public/site-assets/office-meeting-e13dc6b81d-480.webp",
+    "width": 480,
+    "bytes": 42074,
+    "mode": "aspect-preserving resize",
+    "ownerApproved": true
+  },
+  {
+    "source": "public/site-assets/originals/office-meeting.jpg",
+    "sourceSha256": "e13dc6b81d8350e42ae4da4071eba1726e3beb0e96ebfca675cef77cde83cfd4",
+    "sourceWidth": 1448,
+    "sourceHeight": 1086,
+    "output": "public/site-assets/office-meeting-e13dc6b81d-960.webp",
+    "width": 960,
+    "bytes": 136530,
+    "mode": "aspect-preserving resize",
+    "ownerApproved": true
+  },
+  {
+    "source": "public/site-assets/originals/office-meeting.jpg",
+    "sourceSha256": "e13dc6b81d8350e42ae4da4071eba1726e3beb0e96ebfca675cef77cde83cfd4",
+    "sourceWidth": 1448,
+    "sourceHeight": 1086,
+    "output": "public/site-assets/office-meeting-e13dc6b81d-1448.webp",
+    "width": 1448,
+    "bytes": 255292,
+    "mode": "aspect-preserving resize",
+    "ownerApproved": true
+  },
+  {
+    "source": "public/site-assets/originals/office-reception.jpg",
+    "sourceSha256": "6c1fb74290422210f1e4dd7abf82734747e970c945a6396a5c93a822f23f711f",
+    "sourceWidth": 1448,
+    "sourceHeight": 1086,
+    "output": "public/site-assets/office-reception-6c1fb74290-480.webp",
+    "width": 480,
+    "bytes": 43596,
+    "mode": "aspect-preserving resize",
+    "ownerApproved": true
+  },
+  {
+    "source": "public/site-assets/originals/office-reception.jpg",
+    "sourceSha256": "6c1fb74290422210f1e4dd7abf82734747e970c945a6396a5c93a822f23f711f",
+    "sourceWidth": 1448,
+    "sourceHeight": 1086,
+    "output": "public/site-assets/office-reception-6c1fb74290-960.webp",
+    "width": 960,
+    "bytes": 148360,
+    "mode": "aspect-preserving resize",
+    "ownerApproved": true
+  },
+  {
+    "source": "public/site-assets/originals/office-reception.jpg",
+    "sourceSha256": "6c1fb74290422210f1e4dd7abf82734747e970c945a6396a5c93a822f23f711f",
+    "sourceWidth": 1448,
+    "sourceHeight": 1086,
+    "output": "public/site-assets/office-reception-6c1fb74290-1448.webp",
+    "width": 1448,
+    "bytes": 278406,
+    "mode": "aspect-preserving resize",
+    "ownerApproved": true
+  }
+]

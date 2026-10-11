@@ -4,5 +4,5 @@ export const publicTrafficCopy = {
   messages: "رسائل التواصل المسجلة", requests: "طلبات الاستشارة المسجلة", recordsNote: "الطلبات والرسائل أعداد مستقلة من السجلات الحالية؛ لا تعني نسب تحويل من المشاهدات أو الضغطات.",
   page: "الصفحة", locale: "اللغة", count: "المشاهدات", ar: "العربية", en: "الإنجليزية", empty: "لا توجد مشاهدات مسجلة لهذه الفترة.",
   unavailable: "تعذّر تحميل تقرير الزيارات. أعد تحميل الصفحة للمحاولة مجددًا.", disabled: "تسجيل أحداث القياس متوقف حاليًا. قد تتضمن النتائج سجلات سابقة.",
-  pages: { home: "الرئيسية", "our-firm": "عن المكتب", services: "الخدمات", service: "تفاصيل خدمة", industries: "القطاعات", team: "الفريق", lawyer: "صفحة عضو الفريق", articles: "رؤى قانونية", article: "مقال", contact: "تواصل معنا", "book-consultation": "طلب استشارة", privacy: "سياسة الخصوصية", terms: "الشروط" }
+  pages: { "how-can-we-help":"كيف نساعدك", "corporate-services":"خدمات الشركات", "corporate-plans":"باقات الشركات", innovation:"الابتكار", "legal-intelligence":"المعرفة القانونية",careers:"الوظائف","business-ai":"مساعد الشركات", home: "الرئيسية", "our-firm": "عن المكتب", services: "الخدمات", service: "تفاصيل خدمة", industries: "القطاعات", team: "الفريق", lawyer: "صفحة عضو الفريق", articles: "رؤى قانونية", article: "مقال", contact: "تواصل معنا", "book-consultation": "طلب استشارة", privacy: "سياسة الخصوصية", terms: "الشروط" }
 } as const;

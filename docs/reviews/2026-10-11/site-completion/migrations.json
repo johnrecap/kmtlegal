@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-10-11T15:09:28.843Z",
+  "engine": "PGlite disposable PostgreSQL engine",
+  "migrations": [
+    "20261011120000_legal_reference_metadata",
+    "20261011130000_formation_interviews",
+    "20261011140000_consultation_public_practice"
+  ],
+  "historicalThreeKindsPreserved": true,
+  "historicalArticlePreserved": true,
+  "articleDefaultsNotAiApproved": true,
+  "formationKindAccepted": true,
+  "unknownKindRejected": true,
+  "preUpgradeBackupRoundtrip": true,
+  "nativePostgresAndProductionRestore": "NOT_VERIFIED"
+}

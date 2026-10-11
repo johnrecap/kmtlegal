@@ -8,6 +8,7 @@ datasource db {
 
 // Guest capability is stored hashed. Identity is linked only by authenticated action or mailbox verification.
 model AssistantSession {
+  formation FormationInterview?
   id                    String @id @default(uuid()) @db.Uuid
   capabilityHash        String @unique
   locale                String @default("ar")
@@ -560,6 +561,7 @@ model LegalService {
 }
 
 model ConsultationRequest {
+  publicServiceSlug String?
   id                String             @id @default(uuid()) @db.Uuid
   clientId          String?            @db.Uuid
   client            Client?            @relation(fields: [clientId], references: [id], onDelete: SetNull)
@@ -760,6 +762,7 @@ model Document {
 }
 
 model ServiceRequest {
+  formation FormationInterview?
   id String @id @default(uuid()) @db.Uuid
   reference String @unique
   clientId String @db.Uuid
@@ -1132,6 +1135,16 @@ model AiProviderRun {
 }
 
 model Article {
+  contentType String @default("ARTICLE")
+  sourceTitle String?
+  sourceUrl String?
+  referenceNumber String?
+  referenceYear Int?
+  referenceDate DateTime?
+  reviewedAt DateTime?
+  reviewedById String? @db.Uuid
+  aiApproved Boolean @default(false)
+
   id          String        @id @default(uuid()) @db.Uuid
   title       String
   slug        String
@@ -1151,6 +1164,7 @@ model Article {
   @@index([status])
   @@index([category])
   @@index([publishedAt])
+  @@index([contentType, status, referenceYear])
   @@map("articles")
 }
 
@@ -1370,4 +1384,30 @@ model RateLimitCounter {
   @@id([scope, keyHash, windowStart])
   @@index([expiresAt])
   @@map("rate_limit_counters")
+}
+
+model FormationInterview {
+ id String @id @default(uuid()) @db.Uuid
+ sessionId String @unique @db.Uuid
+ session AssistantSession @relation(fields:[sessionId],references:[id],onDelete:Restrict)
+ serviceRequestId String? @unique @db.Uuid
+ serviceRequest ServiceRequest? @relation(fields:[serviceRequestId],references:[id],onDelete:Restrict)
+ locale String
+ consentAt DateTime
+ draft Json @default("{}")
+ revision Int @default(0)
+ reports FormationReport[]
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ @@map("formation_interviews")
+}
+model FormationReport {
+ id String @id @default(uuid()) @db.Uuid
+ interviewId String @db.Uuid
+ interview FormationInterview @relation(fields:[interviewId],references:[id],onDelete:Cascade)
+ version Int
+ snapshot Json
+ createdAt DateTime @default(now())
+ @@unique([interviewId,version])
+ @@map("formation_reports")
 }

@@ -1,3 +1,4 @@
+import { publicServiceSlugs } from '@/content/public-service-registry';
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { bookingCategoryForPublicService, getPublicContent, findPublicService } from "@/content/public-content";
 import { publicAnalyticsContext } from "@/lib/public-analytics";
@@ -7,8 +8,8 @@ import robots from "@/app/robots";
 
 afterEach(() => vi.unstubAllEnvs());
 describe("phase two service, telemetry and indexing contracts", () => {
-  it("keeps six bilingual public areas on four established booking categories", () => {
-    const expected = ["legal-consultation", "company-formation", "corporate-business-services", "contracts", "real-estate-legal-support", "claims-collections"];
+  it("keeps expanded bilingual public areas on four established booking categories", () => {
+    const expected = publicServiceSlugs;
     for (const locale of ["ar", "en"] as const) {
       const services = getPublicContent(locale).legalServices;
       expect(services.map(s => s.slug)).toEqual(expected);

@@ -33,6 +33,7 @@ export function canRoleOpenPath(roleName: string, path: string): boolean {
     return false;
   }
 
+  if (path === "/business-ai" || path === "/ar/business-ai") return true;
   if (path === "/" || path.startsWith("/login")) {
     return true;
   }

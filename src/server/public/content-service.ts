@@ -27,10 +27,12 @@ function articleDto(article: {
   category: string;
   excerpt: string;
   content: string;
+  sourceTitle?: string | null; sourceUrl?: string | null; reviewedAt?: Date | null;
   publishedAt: Date | null;
   author?: { name: string } | null;
 }, locale: PublicLocale) {
   return {
+    sourceTitle:article.sourceTitle??null,sourceUrl:article.sourceUrl??null,reviewedAt:article.reviewedAt?.toISOString().slice(0,10)??null,
     title: article.title,
     slug: article.slug,
     locale: article.locale,
@@ -51,9 +53,11 @@ function articleCardDto(article: {
   excerpt: string;
   content: string;
   author?: { name: string } | null;
+  sourceTitle?: string | null; sourceUrl?: string | null; reviewedAt?: Date | null;
   publishedAt: Date | null;
 }, locale: PublicLocale) {
   return {
+    sourceTitle:article.sourceTitle??null,sourceUrl:article.sourceUrl??null,reviewedAt:article.reviewedAt?.toISOString().slice(0,10)??null,
     title: article.title,
     slug: article.slug,
     locale: article.locale,
@@ -74,6 +78,7 @@ function caseStudyDto(study: {
   approach: string;
   generalOutcome: string;
   lessons: string;
+  sourceTitle?: string | null; sourceUrl?: string | null; reviewedAt?: Date | null;
   publishedAt: Date | null;
 }, locale: PublicLocale) {
   return {
@@ -97,6 +102,7 @@ function caseStudyCardDto(study: {
   locale: string;
   category: string;
   challenge: string;
+  sourceTitle?: string | null; sourceUrl?: string | null; reviewedAt?: Date | null;
   publishedAt: Date | null;
 }, locale: PublicLocale) {
   return {
@@ -114,9 +120,10 @@ const listPublishedArticleCardsCached = unstable_cache(
   async (locale: PublicLocale) => {
     const prisma = await publicPrisma();
     const articles = await prisma.article.findMany({
-      where: { locale, status: "PUBLISHED", publishedAt: { not: null, lte: new Date() } },
+      where: { contentType: "ARTICLE", locale, status: "PUBLISHED", publishedAt: { not: null, lte: new Date() } },
       orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
       select: {
+        sourceTitle:true,sourceUrl:true,reviewedAt:true,
         title: true,
         slug: true,
         locale: true,
@@ -138,9 +145,10 @@ const listPublishedArticlesCached = unstable_cache(
   async (locale: PublicLocale) => {
     const prisma = await publicPrisma();
     const articles = await prisma.article.findMany({
-      where: { locale, status: "PUBLISHED", publishedAt: { not: null, lte: new Date() } },
+      where: { contentType: "ARTICLE", locale, status: "PUBLISHED", publishedAt: { not: null, lte: new Date() } },
       orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],
       select: {
+        sourceTitle:true,sourceUrl:true,reviewedAt:true,
         title: true,
         slug: true,
         locale: true,
@@ -162,8 +170,9 @@ const getPublishedArticleBySlugCached = unstable_cache(
   async (locale: PublicLocale, slug: string) => {
     const prisma = await publicPrisma();
     const article = await prisma.article.findFirst({
-      where: { locale, slug, status: "PUBLISHED", publishedAt: { not: null, lte: new Date() } },
+      where: { contentType: "ARTICLE", locale, slug, status: "PUBLISHED", publishedAt: { not: null, lte: new Date() } },
       select: {
+        sourceTitle:true,sourceUrl:true,reviewedAt:true,
         title: true,
         slug: true,
         locale: true,

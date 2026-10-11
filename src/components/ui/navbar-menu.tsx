@@ -25,6 +25,7 @@ export const MenuItem = ({
   triggerClassName,
   ariaExpanded,
   trigger,
+  onToggle,
 }: {
   setActive: (item: string) => void;
   active: string | null;
@@ -40,13 +41,14 @@ export const MenuItem = ({
   ariaExpanded?: boolean;
   /** KMT adaptation: rich trigger content (label + icon + indicator). */
   trigger?: React.ReactNode;
+  onToggle?: () => void;
 }) => {
   const triggerClasses = `cursor-pointer text-[var(--kmt-public-muted)] hover:text-[var(--kmt-public-text)] hover:opacity-[0.9] ${triggerClassName ?? ""}`;
   const triggerContent = trigger ?? item;
   return (
     <div
-      onMouseEnter={() => setActive(item)}
-      onFocus={() => setActive(item)}
+      onMouseEnter={() => { if(!onToggle) setActive(item); }}
+      onFocus={() => { if(!onToggle) setActive(item); }}
       className="relative "
     >
       {href ? (
@@ -62,12 +64,13 @@ export const MenuItem = ({
           </motion.span>
         </Link>
       ) : (
-        <motion.p
+        <motion.button
+          type="button" aria-current={activeLink ? "page" : undefined} aria-expanded={ariaExpanded} aria-haspopup={children ? "true" : undefined} onClick={onToggle ?? (()=>setActive(item))}
           transition={{ duration: 0.3 }}
           className={triggerClasses}
         >
           {triggerContent}
-        </motion.p>
+        </motion.button>
       )}
       {active !== null && (
         <motion.div
@@ -113,7 +116,10 @@ export const Menu = ({
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setActive(null);
       }}
       onKeyDown={(event) => {
-        if (event.key === "Escape") setActive(null);
+        if (event.key === "Escape") {
+          event.currentTarget.querySelector<HTMLButtonElement>('button[aria-expanded="true"]')?.focus();
+          setActive(null);
+        }
       }}
       className={cn(
         "relative flex justify-center space-x-4 rounded-full border border-transparent bg-transparent px-8 py-6 shadow-none rtl:space-x-reverse",

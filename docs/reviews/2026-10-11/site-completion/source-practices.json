@@ -1,0 +1,184 @@
+[
+  {
+    "page": 7,
+    "englishServices": [
+      "FelonyCases",
+      "MisdemeanourCases",
+      "PublicProsecutionInvestigations",
+      "Financial&EconomicCrime",
+      "Cybercrime",
+      "JuvenileMatters",
+      "CriminalAppeals",
+      "EnforcementIssues"
+    ]
+  },
+  {
+    "page": 9,
+    "englishServices": [
+      "Contracts&Obligations",
+      "Rescission&Invalidity",
+      "CivilCompensation",
+      "TortLiability",
+      "Property&Possession",
+      "CivilDebtClaims",
+      "CivilLitigation&Appeals"
+    ]
+  },
+  {
+    "page": 11,
+    "englishServices": [
+      "Marriage&Divorce",
+      "Maintenance&FinancialRights",
+      "Custody&Visitation",
+      "ParentageMatters",
+      "Inheritance&Estates",
+      "NonMuslimPersonalStatus"
+    ]
+  },
+  {
+    "page": 13,
+    "englishServices": [
+      "CompanyFormation",
+      "CorporateGovernance",
+      "CommercialContracts",
+      "Mergers&Acquisitions",
+      "CorporateRestructuring",
+      "CommercialDisputes"
+    ]
+  },
+  {
+    "page": 15,
+    "englishServices": [
+      "Sale&Purchase",
+      "Registration&Title",
+      "SpecificPerformance",
+      "TenancyDisputes",
+      "RealEstateDevelopment",
+      "ConstructionContracts"
+    ]
+  },
+  {
+    "page": 17,
+    "englishServices": [
+      "ChallengestoAdministrativeDecisions",
+      "PublicEmploymentDisputes",
+      "GovernmentContracts",
+      "LicensingDisputes",
+      "PublicProcurement"
+    ]
+  },
+  {
+    "page": 19,
+    "englishServices": [
+      "FirstInstanceProceedings",
+      "Appeals",
+      "CassationAppeals",
+      "ReconsiderationRemedies",
+      "JudgmentEnforcement"
+    ]
+  },
+  {
+    "page": 21,
+    "englishServices": [
+      "EmploymentContracts",
+      "Termination&Dismissal",
+      "WorkplacePolicies",
+      "LabourDisputes",
+      "SocialInsurance"
+    ]
+  },
+  {
+    "page": 23,
+    "englishServices": [
+      "DomesticInvestment",
+      "ForeignInvestment",
+      "BusinessLicensing",
+      "JointVentures",
+      "LegalDueDiligence"
+    ]
+  },
+  {
+    "page": 25,
+    "englishServices": [
+      "TaxAssessments",
+      "TaxAppeals",
+      "VATMatters",
+      "CustomsDisputes"
+    ]
+  },
+  {
+    "page": 27,
+    "englishServices": [
+      "CreditFacilities",
+      "Security&Guarantees",
+      "BankingDisputes",
+      "TradeFinance"
+    ]
+  },
+  {
+    "page": 29,
+    "englishServices": [
+      "DomesticArbitration",
+      "InternationalArbitration",
+      "Mediation&Negotiation",
+      "AwardEnforcement"
+    ]
+  },
+  {
+    "page": 31,
+    "englishServices": [
+      "DemandNotices",
+      "DebtSettlements",
+      "PaymentOrders",
+      "Attachment&Enforcement",
+      "CommercialReceivables"
+    ]
+  },
+  {
+    "page": 33,
+    "englishServices": [
+      "Trademarks",
+      "Copyright",
+      "Patents",
+      "TechnologyContracts",
+      "DataProtection"
+    ]
+  },
+  {
+    "page": 35,
+    "englishServices": [
+      "RoadAccidents",
+      "MedicalLiability",
+      "DamageClaims",
+      "InsuranceDisputes"
+    ]
+  },
+  {
+    "page": 37,
+    "englishServices": [
+      "NationalityMatters",
+      "ResidencePermits",
+      "WorkPermits",
+      "CivilStatus"
+    ]
+  },
+  {
+    "page": 39,
+    "englishServices": [
+      "MaritimeTransport",
+      "AviationMatters",
+      "RoadTransport",
+      "Freight&Logistics"
+    ]
+  },
+  {
+    "page": 41,
+    "englishServices": [
+      "MilitaryJustice",
+      "SportsLaw",
+      "Environment&Energy",
+      "EducationLaw",
+      "HealthcareLaw"
+    ]
+  }
+]

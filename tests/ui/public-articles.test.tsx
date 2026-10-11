@@ -32,12 +32,14 @@ const articleFixture: ArticleDto = {
     "Penalty clauses deserve special attention before signing.",
     "- Cap your liability exposure explicitly\n- Align penalties with actual expected damages\n- Never rely on the contract price alone"
   ].join("\n\n"),
+  sourceTitle: null, sourceUrl: null, reviewedAt: null,
   author: "Mariam Khalid",
   publishedAt: "2026-06-01",
   readTime: "2 min read"
 };
 
 const cardFixture: ArticleCardDto = {
+  sourceTitle: null, sourceUrl: null, reviewedAt: null,
   author: "Mariam Khalid",
   title: articleFixture.title,
   slug: articleFixture.slug,
@@ -49,6 +51,7 @@ const cardFixture: ArticleCardDto = {
 };
 
 const relatedFixture: ArticleCardDto = {
+  sourceTitle: null, sourceUrl: null, reviewedAt: null,
   author: null,
   title: "Termination Clauses in Practice",
   slug: "termination-clauses",
@@ -132,6 +135,7 @@ describe("public articles UI", () => {
     vi.mocked(getPublishedArticleBySlug).mockResolvedValue({
       ...articleFixture,
       locale: "ar",
+      sourceTitle: null, sourceUrl: null, reviewedAt: null,
       author: null,
       readTime: "2 دقائق"
     });

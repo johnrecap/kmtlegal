@@ -252,6 +252,15 @@ function ContentMobileCard({ row, tab }: { row: ContentRow; tab: ContentTab }) {
 
 function articleFormValue(article: Awaited<ReturnType<typeof getAdminArticleDetail>>) {
   return {
+    locale: article.locale,
+    contentType: article.contentType,
+    sourceTitle: article.sourceTitle,
+    sourceUrl: article.sourceUrl,
+    referenceNumber: article.referenceNumber,
+    referenceYear: article.referenceYear,
+    referenceDate: article.referenceDate,
+    reviewedAt: article.reviewedAt,
+    aiApproved: article.aiApproved,
     id: article.id,
     title: article.title,
     slug: article.slug,

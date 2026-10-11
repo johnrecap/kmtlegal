@@ -1,14 +1,21 @@
+import { legalKnowledgeCopy } from "@/content/legal-knowledge-copy";
+import { LegalKnowledgePage, LegalKnowledgeDetail } from "./legal-knowledge-page";
+import { getKnowledge } from "@/server/public/knowledge-service";
+import { isContentHub, publicHub } from "@/content/public-hubs";
+import { ContentHubPage } from "./content-hub-page";
+import { officeAssets } from "@/content/office-assets";
+import { siteCompletionCopy } from "@/content/site-completion-copy";
+import { isPracticeService } from "@/content/public-service-registry";
 import type { Metadata } from "next";
 import { unstable_noStore as noStore } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Suspense } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/animate-ui/components/radix/accordion";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
-import { FocusCards } from "@/components/ui/focus-cards";
 import { canonicalPublicServiceSlug, findPublicService, getPublicContent, navForPath } from "@/content/public-content";
 import { ConsultationBookingChatFromQuery } from "@/features/public-site/booking-query-client";
 import { ContactForm } from "@/features/public-site/contact-form";
@@ -33,7 +40,6 @@ import {
   DetailCta,
   IndustryLedger,
   LuxuryFeaturePanel,
-  MatterRows,
   PageHero,
   PublicBreadcrumbs,
   PublicSection,
@@ -181,6 +187,14 @@ export function publicLawyerStaticParams(locale: PublicLocale) {
 
 export async function metadataForPublicPath(locale: PublicLocale, path: string[] = []): Promise<Metadata> {
   const [section, slug] = path;
+  if(path.length===1 && isContentHub(section)) {const c=publicHub(section,locale);return publicPageMetadata(locale,"/"+section,c.title+" | KMT Legal",section==='legal-intelligence'?legalKnowledgeCopy[locale].description:c.description);}
+  if (section === "legal-intelligence" && path.length === 2) {
+    const item = await getKnowledge(locale, slug);
+    if (!item) return {};
+    const alternateLocale = locale === "ar" ? "en" : "ar";
+    const alternate = await getKnowledge(alternateLocale, slug);
+    return publicPageMetadata(locale, `/legal-intelligence/${slug}`, item.title, item.excerpt, alternate ? ["en", "ar"] : [locale]);
+  }
   const expansion = publicExpansion[locale];
   if (path.length === 1 && section === "our-firm") return publicPageMetadata(locale, "/our-firm", `${expansion.firm} | KMT Legal`, expansion.firmDescription);
   if (path.length === 1 && section === "industries") return publicPageMetadata(locale, "/industries", `${expansion.industries} | KMT Legal`, expansion.industriesDescription);
@@ -199,8 +213,11 @@ export async function metadataForPublicPath(locale: PublicLocale, path: string[]
   return {};
 }
 
-export async function renderPublicPath(locale: PublicLocale, path: string[] = []) {
+export async function renderPublicPath(locale: PublicLocale, path: string[] = [], query:Record<string,string|string[]|undefined> = {}) {
   const [section, slug] = path;
+  if(section==='legal-intelligence'&&path.length===1)return <LegalKnowledgePage locale={locale} query={query}/>;
+  if(section==='legal-intelligence'&&path.length===2)return <LegalKnowledgeDetail locale={locale} slug={slug}/>;
+  if(path.length===1 && isContentHub(section)) return <ContentHubPage locale={locale} slug={section}/>;
   if (section === "our-firm" && path.length === 1) return <OurFirmPageView locale={locale} />;
   if (section === "industries" && path.length === 1) return <IndustriesPageView locale={locale} />;
   if (section === "articles" && path.length === 1) return <ArticlesPageView locale={locale} />;
@@ -218,9 +235,10 @@ export async function renderPublicPath(locale: PublicLocale, path: string[] = []
   notFound();
 }
 
-export function HomePageView({ locale }: { locale: PublicLocale }) {
+export async function HomePageView({ locale }: { locale: PublicLocale }) {
   const content = getPublicContent(locale);
   const copy = content.home;
+  const latestArticles=await loadArticles(locale).catch(()=>null);
   const focusService = content.legalServices.find((service) => service.slug === "corporate-business-services") ?? content.legalServices[0];
   const currentPath = localizedPublicHref("/", locale);
 
@@ -231,7 +249,7 @@ export function HomePageView({ locale }: { locale: PublicLocale }) {
         title={copy.heroTitle}
         description={copy.heroDescription}
         descriptionHighlight={locale === "ar" ? "الوقائع والمستندات" : "reviews the facts and documents"}
-        image="/site-assets/b392b48a7cb6b561-9c0dd010dc.webp"
+        image={officeAssets.executive.src} imageAlt={siteCompletionCopy[locale].executiveAlt}
         imagePosition="object-[center_55%]"
         pickerLabel={copy.heroPickerLabel}
         matters={content.practiceAreaMatrix.slice(0, 6)}
@@ -258,7 +276,7 @@ export function HomePageView({ locale }: { locale: PublicLocale }) {
 
       <PublicSection align="center" accent="section" eyebrow={copy.practiceEyebrow} title={copy.practiceTitle} description={copy.practiceDescription} descriptionHighlight={locale === "ar" ? "طلب استشارة منظمًا" : "structured consultation request"} descriptionEmphasis="subtle">
         <CapabilityRows
-          items={content.practiceAreaMatrix.map((area) => ({
+          items={content.practiceAreaMatrix.filter(area => isPracticeService(area.slug)).slice(0,6).map((area) => ({
             icon: area.icon,
             title: area.title,
             summary: area.summary,
@@ -266,6 +284,7 @@ export function HomePageView({ locale }: { locale: PublicLocale }) {
           }))}
           locale={locale}
         />
+        <div className="mt-6 text-center"><ButtonLink href={localizedPublicHref("/services",locale)} variant="secondary">{siteCompletionCopy[locale].browse}</ButtonLink></div>
       </PublicSection>
 
       <StatementBreak
@@ -281,7 +300,7 @@ export function HomePageView({ locale }: { locale: PublicLocale }) {
               description: focusService.subServices.join(" · "),
               content: (
                 <div className="relative h-full min-h-[320px] w-full">
-                  <Image alt="" className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src="/site-assets/2484f68d86633ca8-a3542ac22c.webp" unoptimized />
+                  <Image alt={siteCompletionCopy[locale].meetingAlt} className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src={officeAssets.meeting.src} unoptimized />
                   <div className="absolute inset-0 bg-gradient-to-t from-[rgb(var(--kmt-public-scrim)/0.55)] via-transparent to-transparent" aria-hidden="true" />
                 </div>
               )
@@ -291,7 +310,7 @@ export function HomePageView({ locale }: { locale: PublicLocale }) {
               description: focusService.requiredDocuments.join(" · "),
               content: (
                 <div className="relative h-full min-h-[320px] w-full">
-                  <Image alt="" className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src="/site-assets/2484f68d86633ca8-a3542ac22c.webp" unoptimized />
+                  <Image alt={siteCompletionCopy[locale].meetingAlt} className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src={officeAssets.meeting.src} unoptimized />
                   <div className="absolute inset-0 bg-gradient-to-t from-[rgb(var(--kmt-public-scrim)/0.55)] via-transparent to-transparent" aria-hidden="true" />
                 </div>
               )
@@ -301,7 +320,7 @@ export function HomePageView({ locale }: { locale: PublicLocale }) {
               description: focusService.outcomes.join(" · "),
               content: (
                 <div className="relative h-full min-h-[320px] w-full">
-                  <Image alt="" className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src="/site-assets/2484f68d86633ca8-a3542ac22c.webp" unoptimized />
+                  <Image alt={siteCompletionCopy[locale].meetingAlt} className="object-cover opacity-80" fill sizes="(min-width: 1024px) 380px, 100vw" src={officeAssets.meeting.src} unoptimized />
                   <div className="absolute inset-0 bg-gradient-to-t from-[rgb(var(--kmt-public-scrim)/0.55)] via-transparent to-transparent" aria-hidden="true" />
                 </div>
               )
@@ -314,26 +333,14 @@ export function HomePageView({ locale }: { locale: PublicLocale }) {
         <ProcessSteps steps={copy.approachSteps} />
       </PublicSection>
 
-      <PublicSection surface="muted" density="roomy" align="center" accent="section" eyebrow={copy.representativeEyebrow} title={copy.representativeTitle} description={copy.representativeDescription} descriptionHighlight={locale === "ar" ? "دون كشف بيانات عملاء" : "without revealing client data"} descriptionEmphasis="subtle">
-        <MatterRows matters={[...content.representativeMatters]} locale={locale} />
-      </PublicSection>
 
       <PublicSection eyebrow={copy.industriesEyebrow} title={copy.industriesTitle} description={copy.industriesDescription}>
         <IndustryLedger industries={content.publicIndustries} />
       </PublicSection>
       <BusinessDeskSection locale={locale} />
+      <PublicSection title={copy.insightsTitle} description={copy.insightsDescription}>{latestArticles===null?<ArticleUnavailableNotice locale={locale}/>:latestArticles.length?<div className="grid gap-5 md:grid-cols-3">{latestArticles.slice(0,3).map(article=><article key={article.slug} className={cn(publicPanel,'p-5')}><h3 className="text-xl font-semibold"><Link href={localizedPublicHref('/articles/'+article.slug,locale)}>{article.title}</Link></h3><p className="mt-3 leading-8">{article.excerpt}</p></article>)}</div>:<p>{content.shared.insightsEmptyTitle}</p>}<ButtonLink className="mt-6" href={localizedPublicHref('/articles',locale)} variant="secondary">{content.shared.insightsEmptyCta}</ButtonLink></PublicSection>
 
-      <PublicSection surface="muted" accent="section" eyebrow={copy.teamEyebrow} title={copy.teamTitle} description={copy.teamDescription} descriptionHighlight={locale === "ar" ? "مسارات الخبرة" : "expertise paths"} descriptionEmphasis="subtle">
-        <FocusCards
-          cards={content.lawyers.map((lawyer) => ({
-            title: lawyer.name,
-            subtitle: lawyer.title,
-            meta: lawyer.specialties.slice(0, 2).join(" · "),
-            src: lawyer.image,
-            href: localizedPublicHref(`/team/${lawyer.slug}`, locale)
-          }))}
-        />
-      </PublicSection>
+      <PublicSection title={siteCompletionCopy[locale].team} description={siteCompletionCopy[locale].teamIntro}><ButtonLink href={localizedPublicHref('/team',locale)} variant="secondary">{siteCompletionCopy[locale].team}</ButtonLink></PublicSection>
 
     </PublicShell>
   );
@@ -352,7 +359,7 @@ export function ServicesPageView({ locale }: { locale: PublicLocale }) {
           emptyTitle={copy.emptyTitle}
           layout="rows"
           locale={locale}
-          items={content.legalServices.map((service) => ({
+          items={content.legalServices.filter(service => isPracticeService(service.slug)).map((service) => ({
             title: service.title,
             description: service.description,
             href: `/services/${service.slug}`,
@@ -365,6 +372,7 @@ export function ServicesPageView({ locale }: { locale: PublicLocale }) {
           searchLabel={copy.searchLabel}
         />
       </PublicSection>
+      <PublicSection title={siteCompletionCopy[locale].direct}><CapabilityRows locale={locale} items={content.legalServices.filter(service => !isPracticeService(service.slug)).map(service=>({icon:service.icon,title:service.title,summary:service.description,href:'/services/'+service.slug}))} /></PublicSection>
       <PublicSection surface="muted" eyebrow={content.bookingPage.sectionEyebrow} title={content.bookingPage.sectionTitle} description={content.bookingPage.sectionDescription}>
         <div className="flex flex-wrap gap-3">
           <ButtonLink href={localizedPublicHref("/book-consultation", locale)}>
@@ -385,6 +393,7 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
   if (!service) notFound();
   const copy = content.serviceDetail;
   const currentSlug = canonicalPublicServiceSlug(slug);
+  if(currentSlug!==slug)permanentRedirect(localizedPublicHref('/services/'+currentSlug,locale));
   const categoryLabel = content.servicesPage.heroTitle;
   const breadcrumbItems = [
     { label: copy.breadcrumbServices, href: localizedPublicHref("/services", locale) },
@@ -521,6 +530,8 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
           <ul className="mt-5 overflow-hidden rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-panel)]">
             {content.legalServices
               .filter((related) => related.slug !== service.slug)
+              .sort((a,b) => Number(b.category === service.category) - Number(a.category === service.category))
+              .slice(0,4)
               .map((related, index) => (
                 <li key={related.slug} className={cn(index > 0 && "border-t border-[var(--kmt-public-line)]")}>
                   <Link
@@ -551,6 +562,8 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
               <ul className="space-y-1">
                 {content.legalServices
                   .filter((related) => related.slug !== service.slug)
+              .sort((a,b) => Number(b.category === service.category) - Number(a.category === service.category))
+              .slice(0,4)
                   .map((related) => (
                     <li key={related.slug}>
                       <Link
@@ -577,35 +590,9 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
   );
 }
 
-export function TeamPageView({ locale }: { locale: PublicLocale }) {
-  const content = getPublicContent(locale);
-  const copy = content.teamPage;
-
-  return (
-    <PublicShell currentPath={localizedPublicHref("/team", locale)} locale={locale} navItems={navForPath("/team", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/site-assets/bd64f8e89da8f4f6-4d00cc5621.webp" imagePosition="object-[center_38%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
-      <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
-        <DirectoryFilter
-          cardVariant="focus"
-          emptyTitle={copy.emptyTitle}
-          locale={locale}
-          items={content.lawyers.map((lawyer) => ({
-            title: lawyer.name,
-            subtitle: lawyer.title,
-            description: `${lawyer.title}. ${lawyer.bio}`,
-            href: `/team/${lawyer.slug}`,
-            category: lawyer.specialties[0] ?? "team",
-            categoryLabel: lawyer.specialties[0] ?? copy.sectionEyebrow,
-            meta: lawyer.bookingEnabled ? copy.bookingAvailable : copy.officeReview,
-            chips: lawyer.specialties,
-            image: lawyer.image,
-            imageAlt: lawyer.name
-          }))}
-          searchLabel={copy.searchLabel}
-        />
-      </PublicSection>
-    </PublicShell>
-  );
+export function TeamPageView({ locale }: {locale:PublicLocale}) {
+ const c=siteCompletionCopy[locale];
+ return <PublicShell locale={locale} currentPath={localizedPublicHref('/team',locale)} navItems={navForPath('/team',locale)}><PageHero eyebrow="KMT Legal" title={c.team} description={c.teamIntro} image={officeAssets.meeting.src} imageAlt={c.meetingAlt} size="compact"/><PublicSection title={c.next}><ButtonLink href={localizedPublicHref('/book-consultation',locale)}>{c.next}</ButtonLink></PublicSection></PublicShell>;
 }
 
 export function TeamDetailPageView({ locale, slug }: { locale: PublicLocale; slug: string }) {
@@ -861,6 +848,8 @@ export async function ArticleDetailPageView({ locale, slug }: { locale: PublicLo
             <p className={cn("mt-5 text-sm", publicMutedText)}>
               {copy.bylineBy} <span className="font-semibold text-[var(--kmt-public-text)]">{authorName}</span>
             </p>
+            {article.sourceUrl&&<p className="mt-4"><a className="underline" href={article.sourceUrl} rel="noopener noreferrer">{legalKnowledgeCopy[locale].source}: {article.sourceTitle}</a></p>}
+            {article.reviewedAt&&<p>{legalKnowledgeCopy[locale].reviewed}: {article.reviewedAt}</p>}
             <ArticleBody content={article.content} />
             <div className="mt-8 rounded-lg border border-kmt-warning-border bg-kmt-warning-surface p-4 text-sm leading-7 text-kmt-warning-strong">{copy.disclaimer}</div>
             <ButtonLink className={cn(publicMotionButton, publicMotionCta, "mt-6 !border-kmt-gold/35 !text-[var(--kmt-public-text)] hover:!bg-kmt-gold hover:!text-primary-foreground")} href={localizedPublicHref("/articles", locale)} variant="secondary">
@@ -1047,7 +1036,7 @@ export function ContactPageView({ locale }: { locale: PublicLocale }) {
 
   return (
     <PublicShell currentPath={localizedPublicHref("/contact", locale)} locale={locale} navItems={navForPath("/contact", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/site-assets/11c3bae2e63b7192-f780575d56.webp" imagePosition="object-[center_48%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
+      <PageHero eyebrow={copy.heroEyebrow} image={officeAssets.reception.src} imageAlt={siteCompletionCopy[locale].receptionAlt} imagePosition="object-[center_48%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
           <ContactForm locale={locale} />

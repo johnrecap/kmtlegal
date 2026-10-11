@@ -55,7 +55,7 @@ export function PublicShell({
   // action IS that page, and a fixed overlay must never cover the
   // assistant composer (a persistent focused input). Every other public
   // route keeps the dock. Functional no-overlap wins over ubiquity here.
-  const hideDock = stripPublicLocalePrefix(currentPath) === "/book-consultation";
+  const hideDock = ["/book-consultation", "/business-ai"].includes(stripPublicLocalePrefix(currentPath));
 
   return (
     <div
@@ -126,7 +126,7 @@ export function PublicShell({
           <nav aria-label={shell.practiceLinksLabel}>
             <h2 className="font-semibold text-[var(--kmt-public-text)]">{shell.practiceLinksTitle}</h2>
             <ul className="mt-4 space-y-3">
-              {content.footerContent.practiceLinks.map((item) => (
+              {content.footerContent.practiceLinks.slice(0,6).map((item) => (
                 <li key={item.href}>
                   <Link className={cn("inline-flex text-[var(--kmt-public-muted)] transition-colors hover:text-[var(--kmt-public-gold)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold", publicMotionTextLink)} href={localizedPublicHref(item.href, locale)}>
                     {item.label}

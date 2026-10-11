@@ -1,3 +1,4 @@
+import { publicServiceSlugs } from "@/content/public-service-registry";
 import { describe, expect, it } from "vitest";
 import {
   articles,
@@ -16,15 +17,8 @@ import {
 
 describe("public content contracts", () => {
   it("provides public routes with stable slugs", () => {
-    expect(legalServices.map((service) => service.slug)).toEqual([
-      "legal-consultation",
-      "company-formation",
-      "corporate-business-services",
-      "contracts",
-      "real-estate-legal-support",
-      "claims-collections"
-    ]);
-    expect(lawyers.map((lawyer) => lawyer.slug)).toContain("maryam-khaled");
+    expect(legalServices.map((service) => service.slug)).toEqual(publicServiceSlugs);
+    expect(lawyers).toHaveLength(0);
     expect(articles.map((article) => article.slug)).toContain("contract-risk-basics");
     expect(caseStudies.map((study) => study.slug)).toContain("anonymous-commercial-dispute");
   });
@@ -32,7 +26,7 @@ describe("public content contracts", () => {
   it("marks active navigation without duplicating destinations", () => {
     const nav = navForPath("/services/legal-consultation");
     const servicesItem = nav.find((item) => item.href === "/services");
-    expect(servicesItem?.label).toBe("Services");
+    expect(servicesItem?.label).toBe("Expertise");
     expect(servicesItem?.active).toBe(true);
     expect(new Set(nav.map((item) => item.href)).size).toBe(nav.length);
   });
@@ -41,22 +35,15 @@ describe("public content contracts", () => {
     const english = getPublicContent("en");
     const arabic = getPublicContent("ar");
 
-    expect(english.navItems[0].label).toBe("Home");
-    expect(arabic.navItems[0].label).toBe("الرئيسية");
+    expect(english.navItems[0].label).toBe("Our firm");
+    expect(arabic.navItems[0].label).toBe("عن المكتب");
     expect(english.legalServices.map((service) => service.slug)).toEqual(arabic.legalServices.map((service) => service.slug));
     expect(english.legalServices.map((service) => service.subServices.length)).toEqual(arabic.legalServices.map((service) => service.subServices.length));
     expect(english.caseStudies.map((study) => study.slug)).toEqual(arabic.caseStudies.map((study) => study.slug));
   });
 
   it("covers the dark luxury practice-area matrix with stable service links", () => {
-    expect(practiceAreaMatrix.map((area) => area.key)).toEqual([
-      "legal-consultation",
-      "company-formation",
-      "corporate-business-services",
-      "contracts",
-      "real-estate-legal-support",
-      "claims-collections"
-    ]);
+    expect(practiceAreaMatrix.map((area) => area.key)).toEqual(publicServiceSlugs);
     expect(practiceAreaMatrix.map((area) => area.href)).toContain("/services/corporate-business-services");
     expect(new Set(legalServices.map((service) => service.slug)).size).toBe(legalServices.length);
   });

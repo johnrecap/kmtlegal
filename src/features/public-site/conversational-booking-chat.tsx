@@ -45,7 +45,7 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
 
   async function changeMode(mode: "begin_booking" | "return_inquiry" | "account_access") {
     if (!state && !await action({ action: "start", locale, service: initialService })) return;
-    if (await action({ action: mode })) {
+    if (await action({ action: mode, ...(mode === "begin_booking" && initialService ? {service: initialService} : {}) })) {
       setNotice(mode === "begin_booking" ? policy.bookingStarted : mode === "return_inquiry" ? policy.returned : policy.accountOpened);
       setPanelOpen(mode !== "return_inquiry");
       if (mode === "return_inquiry") requestAnimationFrame(() => messageInput.current?.focus());
@@ -132,7 +132,7 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
       </div>}
       {!showPanel && state?.accountReady && <Link className="flex min-h-11 items-center underline" href="/client/requests">{copy.requests}</Link>}
       <a href={publicOfficeProfile.whatsappHref} className="inline-flex min-h-11 items-center underline">{copy.whatsapp}</a>
-      {(state?.submitted || state?.closed) && <Button type="button" variant="outline" disabled={busy} onClick={() => { setPendingMessage(null); void action({ action: "restart", locale }); }}>{copy.newConversation}</Button>}
+      {(state?.submitted || state?.closed) && <Button type="button" variant="outline" disabled={busy} onClick={() => { setPendingMessage(null); void action({ action: "restart", locale, service: initialService }); }}>{copy.newConversation}</Button>}
     </div>
     {showPanel && <Dialog open={panelOpen} onClose={closePanel} title={booking || state?.submitted ? copy.review : policy.account}
       description={!state?.submitted && booking ? direct.formHelp : undefined}

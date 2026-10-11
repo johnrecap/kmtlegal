@@ -219,14 +219,14 @@ async function txOwnedStatus(id: string, clientId: string) {
   return request ?? { submitted: false };
 }
 
-export async function changeAssistantDialogue(token: string, action: "begin_booking" | "return_inquiry" | "account_access", actor?: Principal | null) {
+export async function changeAssistantDialogue(token: string, action: "begin_booking" | "return_inquiry" | "account_access", actor?: Principal | null, selectedService?: string) {
   const session = await ownAssistantSession(token, actor);
   if (session.consultationRequestId && action !== "account_access") throw new ApiError(409, "CONFLICT", "This conversation cannot change mode.");
   const state = readDialogue(session.dialogue);
   if (action === "begin_booking") { state.mode = "BOOKING"; state.consentAt = new Date().toISOString(); }
   if (action === "return_inquiry") { state.mode = "INQUIRY"; state.consentAt = null; state.offerShown = true; state.accountAccess = false; }
   if (action === "account_access") state.accountAccess = true;
-  const changed = await prisma.assistantSession.updateMany({ where: { id: session.id, revision: session.revision, leaseId: null }, data: { dialogue: state as Prisma.InputJsonValue, revision: { increment: 1 } } });
+  const changed = await prisma.assistantSession.updateMany({ where: { id: session.id, revision: session.revision, leaseId: null }, data: { ...(action === "begin_booking" && selectedService ? { draft: intakeDraftSchema.parse({ ...intakeDraftSchema.parse(session.draft), service: selectedService }) } : {}), dialogue: state as Prisma.InputJsonValue, revision: { increment: 1 } } });
   if (!changed.count) throw new ApiError(409, "CONFLICT", "Conversation state changed.");
   return readAssistantSession(token, actor);
 }

@@ -1,5 +1,6 @@
 import vm from "node:vm";
 import ts from "typescript";
+import { readFileSync } from "node:fs";
 
 // Execute only the dispatcher, with inert view markers: no page rendering, imports,
 // database calls or network access. Unknown new dispatcher dependencies fail closed.
@@ -8,7 +9,11 @@ export async function deriveArabicPublicRoutes(source) {
   const ast = ts.createSourceFile("public-pages.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   const dispatcher = ast.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "renderPublicPath");
   if (!dispatcher) throw new Error("renderPublicPath dispatcher was not found");
-  const sections = new Set();
+  const registrySource=readFileSync(new URL('../../src/content/public-service-registry.ts',import.meta.url),'utf8');
+  const registry=ts.createSourceFile('registry.ts',registrySource,ts.ScriptTarget.Latest,true);
+  const hubStatement=registry.statements.find(node=>ts.isVariableStatement(node)&&node.declarationList.declarations.some(d=>d.name.getText(registry)==='contentHubSlugs'));
+  const hubs=[];function readHubs(node){if(ts.isStringLiteral(node))hubs.push(node.text);ts.forEachChild(node,readHubs);}if(hubStatement)readHubs(hubStatement);
+  const sections = new Set(hubs);
   const views = new Set();
   function visit(node) {
     if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken && node.left.getText(ast) === "section" && ts.isStringLiteral(node.right)) sections.add(node.right.text);
@@ -16,7 +21,7 @@ export async function deriveArabicPublicRoutes(source) {
     ts.forEachChild(node, visit);
   }
   visit(dispatcher);
-  const context = { exports: {}, notFound() { throw new Error("INVENTORY_NOT_FOUND"); },
+  const context = { exports: {}, isContentHub(value){return hubs.includes(value);}, notFound() { throw new Error("INVENTORY_NOT_FOUND"); },
     renderElement(view, props) { return { view, props }; } };
   for (const view of views) context[view] = view;
   const compiled = ts.transpileModule(dispatcher.getText(ast), {

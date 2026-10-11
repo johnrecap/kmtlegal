@@ -18,7 +18,7 @@ const actions = z.discriminatedUnion("action", [
   directBookingInputSchema,
   z.strictObject({ action: z.literal("booking_slots"), date: consultationSlotDateSchema.optional() }),
   z.strictObject({ action: z.literal("set_locale"), locale: z.enum(["ar", "en"]) }),
-  z.strictObject({ action: z.literal("begin_booking") }),
+  z.strictObject({ action: z.literal("begin_booking"), service: intakeDraftSchema.shape.service }),
   z.strictObject({ action: z.literal("return_inquiry") }),
   z.strictObject({ action: z.literal("account_access") }),
   z.strictObject({ action: z.literal("start"), locale: z.enum(["ar", "en"]), service: intakeDraftSchema.shape.service }),
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
       await mutateDirectBooking(token, directBookingInputSchema.parse(body), auth?.principal);
       return jsonOk(await readAssistantSession(token, auth?.principal));
     }
-    if (body.action === "begin_booking" || body.action === "return_inquiry" || body.action === "account_access") return jsonOk(await changeAssistantDialogue(token, body.action, auth?.principal));
+    if (body.action === "begin_booking" || body.action === "return_inquiry" || body.action === "account_access") return jsonOk(await changeAssistantDialogue(token, body.action, auth?.principal, body.action === "begin_booking" ? body.service : undefined));
     if (body.action === "message") return jsonOk(await sendAssistantMessage({ ...body, token, actor: auth?.principal, requestId }));
     if (body.action === "verify") {
       await enforceRateLimit(rateLimiters.login, `assistant-email:${body.email}`);

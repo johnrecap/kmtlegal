@@ -2,6 +2,7 @@ import { publicContentAr } from "./public-content.ar";
 import { publicContentEn } from "./public-content.en";
 import { resolvePublicServiceSlug } from "./public-services";
 import { defaultPublicLocale, type PublicLocale } from "@/lib/public-locale";
+import { navigationChildren } from './site-completion-copy';
 
 export const publicContentByLocale = {
   en: publicContentEn,
@@ -37,7 +38,7 @@ export function navForPath(pathname: string, locale: PublicLocale = defaultPubli
 
   return content.navItems.map((item) => ({
     ...item,
-    active: item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)
+    active: item.href === "/" ? pathname === "/" : [item,...navigationChildren(locale,item.href)].some(link=>pathname===link.href||pathname.startsWith(link.href+'/'))
   }));
 }
 
@@ -57,6 +58,8 @@ export function canonicalPublicServiceSlug(slug: string) {
 /** Preserve saved links using old translated titles as well as stable public slugs. */
 export function bookingCategoryForPublicService(value: string | undefined, locale: PublicLocale) {
   if (!value) return "";
+  const legacyTitles: Record<string,string> = {"Business Services":"corporate-business-services","خدمات الأعمال":"corporate-business-services","Real Estate Legal Review":"real-estate-legal-support","الخدمات القانونية العقارية":"real-estate-legal-support","Debt Collection & Settlements":"claims-collections","تحصيل الديون والتسويات":"claims-collections"};
+  value=legacyTitles[value]??value;
   for (const language of [locale, locale === "ar" ? "en" : "ar"] as const) {
     const content = getPublicContent(language);
     const service = content.legalServices.find(item => item.title === value) ?? findPublicService(language, value);

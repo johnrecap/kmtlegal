@@ -12,5 +12,5 @@ export const publicOfficeProfile = {
   }
 } as const;
 
-// Exact address, map pin, official social URLs, team credentials and office photos
+// Exact address, map pin, official social URLs, and team credentials
 // remain pending owner input. Never substitute guessed links or stock-photo claims.

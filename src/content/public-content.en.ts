@@ -1,3 +1,5 @@
+import { industryCatalog } from "./industry-catalog";
+import { publicNavigation } from "./site-completion-copy";
 import { publicOfficeProfile } from "./public-office-profile";
 import { publicLegalServicesEn as legalServices, publicServiceCategoriesEn as serviceCategories } from "./public-services";
 import { publicBookingConsentCopy } from "./public-booking-consent";
@@ -146,7 +148,7 @@ const representativeMatters = [
   }
 ] as const;
 
-const publicIndustries = [
+const legacyPublicIndustries = [
   { title: "Family and mid-sized companies", summary: "Governance, contracts, partnerships, and decisions supported by clearer documentation." },
   { title: "Real estate and development", summary: "Ownership, development, lease, and partnership document review before commitment." },
   { title: "Trade and supply", summary: "Supply contracts, recovery, debts, and commercial disputes tied to sales and purchasing chains." },
@@ -195,44 +197,15 @@ const footerContent = {
 } as const;
 
 export const publicContentEn = {
-  navItems: [
-    {
-      "label": "Home",
-      "href": "/"
-    },
-    {
-      "label": "Our Firm",
-      "href": "/our-firm"
-    },
-    {
-      "label": "Services",
-      "href": "/services"
-    },
-    {
-      "label": "Industries",
-      "href": "/industries"
-    },
-    {
-      "label": "Our Team",
-      "href": "/team"
-    },
-    {
-      "label": "Insights",
-      "href": "/articles"
-    },
-    {
-      "label": "Contact Us",
-      "href": "/contact"
-    }
-  ],
+  navItems: publicNavigation("en"),
   serviceCategories,
   legalServices,
   practiceAreaMatrix,
-  lawyers,
+  lawyers: lawyers.filter(() => false),
   articles,
   caseStudies,
   representativeMatters,
-  publicIndustries,
+  publicIndustries: industryCatalog("en"),
   branches,
   contactChannels,
   footerContent,
@@ -282,11 +255,7 @@ export const publicContentEn = {
     heroDocketMatter: "Matter",
     heroDocketNext: "Next step",
     heroDocketEmpty: "Select a matter to preview your request draft.",
-    heroStats: [
-      { value: legalServices.length, suffix: "", label: "Practice areas" },
-      { value: 3, suffix: "", label: "Office lawyers" },
-      { value: 24, suffix: "h", label: "Response within one business day" }
-    ],
+    heroStats: [{value:18,suffix:"",label:"Legal practices"},{value:3,suffix:"",label:"Direct services"},{value:10,suffix:"",label:"Industries served"}],
     trustItems: [
       { icon: "verified_user", label: "Reviewed by the office before any legal step" },
       { icon: "lock", label: "Client information is handled confidentially" },
@@ -656,7 +625,7 @@ export const publicContentEn = {
     title: "Privacy Policy and Applicant Notice",
     description: "A clear account of the information KMT Legal receives, why it is used, who may access it, and how to exercise your privacy rights.",
     lastUpdatedLabel: "Last updated",
-    lastUpdated: "2026-10-09",
+    lastUpdated: "2026-10-11",
     summaryTitle: "Key information",
     contentsLabel: "On this page",
     summaryItems: [
@@ -666,6 +635,7 @@ export const publicContentEn = {
       { label: "General privacy contact", value: publicOfficeProfile.email }
     ],
     sections: [
+      {"id":"formation-interview","title":"Company formation interview data","paragraphs":["With your consent we save the activity, founders, ownership, management, location and timing. The AI provider may process project information to identify follow-up questions; it does not choose a legal form or provide final advice.","The browser session has a seven-day access period. Explicit submission from a verified account links the interview to a request and retains summary versions needed for follow-up. Client reports are separate from internal notes. Contact the office for access, corrections or deletion requests, subject to applicable retention requirements."],"bullets":[],"links":[]},
       {
         id: "who-we-are",
         title: "1. Who is responsible for your data",

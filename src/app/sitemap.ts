@@ -1,3 +1,4 @@
+import { listKnowledge } from "@/server/public/knowledge-service";
 import type { MetadataRoute } from "next";
 import { getPublicContent } from "@/content/public-content";
 import { availableAlternatePublicLanguages, localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
@@ -16,7 +17,14 @@ const staticPublicPaths = [
   "/contact",
   "/book-consultation",
   "/privacy",
-  "/terms"
+  "/terms",
+  "/how-can-we-help",
+  "/corporate-services",
+  "/corporate-plans",
+  "/innovation",
+  "/legal-intelligence",
+  "/careers",
+  "/business-ai"
 ] as const;
 
 type LocalizedPath = { path: string; locales: Set<PublicLocale> };
@@ -37,6 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const locale of ["en", "ar"] as const) {
     const content = getPublicContent(locale);
     for (const service of content.legalServices) addPath(`/services/${service.slug}`, locale);
+    for(const item of await listKnowledge(locale)) addPath('/legal-intelligence/'+item.slug,locale);
     for (const lawyer of content.lawyers) addPath(`/team/${lawyer.slug}`, locale);
   }
 

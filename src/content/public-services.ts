@@ -1,3 +1,4 @@
+import { practiceServices } from './practice-content';
 export const publicServiceCategoriesEn = {
   "legal-consultation": "Consultations by Area",
   "corporate-business-services": "Companies & Commercial Contracts",
@@ -12,7 +13,7 @@ export const publicServiceCategoriesAr = {
   "claims-collections": "المطالبات المالية والتسويات"
 } as const;
 
-export const publicLegalServicesEn = [
+const directAndLegacyServicesEn = [
   {
     "areaKey": "legal-consultation",
     "title": "Legal Consultations",
@@ -85,17 +86,19 @@ export const publicLegalServicesEn = [
   },
   {
     "areaKey": "corporate-business-services",
-    "title": "Business Services",
+    "title": "Corporate & Commercial",
     "slug": "corporate-business-services",
     "category": "corporate-business-services",
     "icon": "account_balance",
-    "description": "Legal support for company governance, day-to-day commercial matters and business disputes.",
-    "content": "Business requests are organized around entity needs, contracts, governance obligations, and commercial risks so the team can review the file and assign the right lawyer or business advisory path.",
+    "description": "Legal support through formation, contracting, growth and corporate change.",
+    "content": "We assess business needs and legal obligations in the context of commercial objectives. Our work covers formation documents, corporate governance, contracts, transactions and restructuring, with the scope and supporting records agreed before each engagement.",
     "subServices": [
-      "Corporate Decisions and Partner Relations",
-      "Operational Legal Review",
-      "Corporate Governance & Compliance",
-      "Business Dispute Advisory"
+      "Company Formation",
+      "Corporate Governance",
+      "Commercial Contracts",
+      "Mergers & Acquisitions",
+      "Corporate Restructuring",
+      "Commercial Disputes"
     ],
     "audience": [
       "Established companies and family businesses",
@@ -221,7 +224,7 @@ export const publicLegalServicesEn = [
   }
 ] as const;
 
-export const publicLegalServicesAr = [
+const directAndLegacyServicesAr = [
   {
     "areaKey": "legal-consultation",
     "title": "الاستشارات القانونية",
@@ -294,17 +297,19 @@ export const publicLegalServicesAr = [
   },
   {
     "areaKey": "corporate-business-services",
-    "title": "خدمات الأعمال",
+    "title": "الشركات والقانون التجاري",
     "slug": "corporate-business-services",
     "category": "corporate-business-services",
     "icon": "account_balance",
-    "description": "دعم قانوني لحوكمة الشركات والمعاملات التجارية اليومية والمنازعات المتعلقة بالأعمال.",
-    "content": "نراجع احتياجات الشركة وعقودها ومتطلبات الحوكمة والمخاطر التجارية لتحديد المحامي المناسب والخطوات التالية.",
+    "description": "دعم قانوني للشركات عبر التأسيس والتعاقد والتوسع والتغيير المؤسسي.",
+    "content": "نراجع احتياجات الأعمال والتزاماتها في سياق أهدافها التجارية. يشمل عملنا وثائق التأسيس وحوكمة الشركات والعقود والمعاملات وإعادة الهيكلة، مع تحديد نطاق كل مهمة والمستندات اللازمة قبل البدء.",
     "subServices": [
-      "قرارات الشركات وعلاقات الشركاء",
-      "المراجعة القانونية للتشغيل",
-      "الحوكمة والامتثال",
-      "الاستشارات المتعلقة بالمنازعات التجارية"
+      "تأسيس الشركات",
+      "حوكمة الشركات",
+      "العقود التجارية",
+      "الاندماج والاستحواذ",
+      "إعادة الهيكلة",
+      "المنازعات التجارية"
     ],
     "audience": [
       "الشركات القائمة والشركات العائلية",
@@ -433,15 +438,15 @@ export const publicLegalServicesAr = [
 export const serviceSlugAliases = {
   "corporate-law": "corporate-business-services",
   "contract-drafting": "contracts",
-  "foreign-investment": "corporate-business-services",
-  "tax-advisory": "corporate-business-services",
+  "foreign-investment": "investment",
+  "tax-advisory": "tax-customs",
   "commercial-contracts": "contracts",
   "commercial-disputes": "corporate-business-services",
-  "arbitration": "legal-consultation",
-  "litigation": "legal-consultation",
-  "criminal-defense": "legal-consultation",
-  "employment-compliance": "legal-consultation",
-  "labor-law": "legal-consultation",
+
+  "litigation": "litigation-appeals",
+  "criminal-defense": "criminal-law",
+  "employment-compliance": "employment",
+  "labor-law": "employment",
   "real-estate-consultation": "real-estate-legal-support",
   "debt-recovery": "claims-collections",
   "commercial-collection": "claims-collections",
@@ -451,3 +456,7 @@ export const serviceSlugAliases = {
 export function resolvePublicServiceSlug(slug: string) {
   return serviceSlugAliases[slug as keyof typeof serviceSlugAliases] ?? slug;
 }
+
+function combineServices<T extends {slug:string}>(base:readonly T[],locale:'ar'|'en'){const practices=practiceServices(locale); return [...base.map(s=>practices.find(p=>p.slug===s.slug)??s),...practices.filter(p=>!base.some(s=>s.slug===p.slug))];}
+export const publicLegalServicesEn=combineServices(directAndLegacyServicesEn,'en');
+export const publicLegalServicesAr=combineServices(directAndLegacyServicesAr,'ar');

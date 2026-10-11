@@ -48,22 +48,16 @@ export function KmtBrandLogo({
 }) {
   const content =
     variant === "public" ? (
-      <span className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-kmt-gold/30 bg-black px-2.5 py-2" dir="ltr">
-        <BrandMark alt="" imageClassName={imageClassName} shape={shape} size={size === "lg" ? "md" : "sm"} surface="dark" />
-        <span className="flex flex-col items-center font-label-sm leading-none" aria-label={label}>
-          <span className={cn("font-bold tracking-[0.08em] text-white", size === "lg" ? "text-4xl" : "text-2xl sm:text-3xl")}>KMT</span>
-          <span className="mt-1 text-[11px] font-semibold tracking-[0.28em] text-kmt-gold">LEGAL</span>
-        </span>
-      </span>
+      <img alt={label} src="/brand/kmt-official-logo-280d06c72f-256.webp" width={256} height={256} className={cn("block shrink-0 rounded-full object-contain", size === "lg" ? "h-20 w-20" : "h-14 w-14", imageClassName)} />
     ) : variant === "full" ? (
       <img
         alt={label}
         className={cn("block max-w-full object-contain", fullSizeClasses[size], imageClassName)}
         decoding="async"
-        height={890}
+        height={512}
         loading="lazy"
         src="/brand/kmt-logo-full.webp"
-        width={860}
+        width={512}
       />
     ) : variant === "mark" ? (
       <BrandMark alt={label} imageClassName={imageClassName} shape={shape} size={size} surface={surface} />

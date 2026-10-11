@@ -1,5 +1,5 @@
-/** Phase-two public copy; official firm statements and team facts await owner approval. */
-export const firmStatementsApproved = false;
+/** Owner-supplied firm statements approved for this expansion; individual team credentials remain unprovided. */
+export const firmStatementsApproved = true;
 export const publicExpansion = {
   ar: {
     audience: "لمن نقدم هذه الخدمة؟", steps: "خطوات التعامل مع المكتب", whatsapp: "تواصل عبر واتساب",

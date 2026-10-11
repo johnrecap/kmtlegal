@@ -1,0 +1,263 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Users\\UTD\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "C:\\Users\\UTD\\Documents\\Codex\\RecoveredProjects\\local-0efe82359eea107367d678c3c6ae29f0\\kmt legal office\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config",
+      "playwright.site-completion.config.ts"
+    ],
+    "configFile": "C:\\Users\\UTD\\Documents\\Codex\\RecoveredProjects\\local-0efe82359eea107367d678c3c6ae29f0\\kmt legal office\\playwright.site-completion.config.ts",
+    "rootDir": "C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/.playwright/site-completion/final-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "site-completion.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "docs/reviews/2026-10-11/site-completion/browser-final.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "site-completion.spec.ts",
+      "file": "site-completion.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "public bilingual route inventory, aliases, layout, navigation and branding",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 1200000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 232455,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:26:42.521Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "22ecc4f175be79ad7ecc-b4e5a48f152d5406b914",
+          "file": "site-completion.spec.ts",
+          "line": 8,
+          "column": 5
+        },
+        {
+          "title": "formation interview saves, resumes, generates private PDF, submits once and isolates internal notes",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 480000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 43980,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('main')\nExpected substring: \u001b[32m\"Synthetic company\"\u001b[39m\nReceived string:    \u001b[31m\"KMT Legalالنظام لم يكتمل تشغيله بعدتم إيقاف بوابة العميل مؤقتًا لأن فحوصات التشغيل الأساسية لم تكتمل.APP_ORIGIN_HTTPS_REQUIREDAPP_ORIGIN must be the canonical HTTPS production origin.AUTH_SECRET_WEAKAUTH_SECRET must be a production-only secret with at least 32 characters.SESSION_COOKIE_SECURE_REQUIREDSESSION_COOKIE_SECURE=true is required behind HTTPS on the VPS.CSRF_STRICT_ORIGIN_DISABLEDCSRF_STRICT_ORIGIN must be true or unset in production so API mutations reject missing Origin/Referer headers.MALWARE_SCAN_REQUIREDMALWARE_SCAN_MODE=required is mandatory for production document uploads.Installer lockLock the installer and disable INSTALLER_ENABLED before opening the app.Payment configurationPaid booking requires complete Paymob configuration.Payment pricingPaid booking requires an active consultation price.Malware scannerClamAV is not reachable from the app process.\"\u001b[39m\nTimeout: 20000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for locator('main')\u001b[22m\n\u001b[2m    43 × locator resolved to <main class=\"min-h-screen bg-[#060504] px-4 py-10 text-white sm:px-6 lg:px-8\">…</main>\u001b[22m\n\u001b[2m       - unexpected value \"KMT Legalالنظام لم يكتمل تشغيله بعدتم إيقاف بوابة العميل مؤقتًا لأن فحوصات التشغيل الأساسية لم تكتمل.APP_ORIGIN_HTTPS_REQUIREDAPP_ORIGIN must be the canonical HTTPS production origin.AUTH_SECRET_WEAKAUTH_SECRET must be a production-only secret with at least 32 characters.SESSION_COOKIE_SECURE_REQUIREDSESSION_COOKIE_SECURE=true is required behind HTTPS on the VPS.CSRF_STRICT_ORIGIN_DISABLEDCSRF_STRICT_ORIGIN must be true or unset in production so API mutations reject missing Origin/Referer headers.MALWARE_SCAN_REQUIREDMALWARE_SCAN_MODE=required is mandatory for production document uploads.Installer lockLock the installer and disable INSTALLER_ENABLED before opening the app.Payment configurationPaid booking requires complete Paymob configuration.Payment pricingPaid booking requires an active consultation price.Malware scannerClamAV is not reachable from the app process.\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('main')\nExpected substring: \u001b[32m\"Synthetic company\"\u001b[39m\nReceived string:    \u001b[31m\"KMT Legalالنظام لم يكتمل تشغيله بعدتم إيقاف بوابة العميل مؤقتًا لأن فحوصات التشغيل الأساسية لم تكتمل.APP_ORIGIN_HTTPS_REQUIREDAPP_ORIGIN must be the canonical HTTPS production origin.AUTH_SECRET_WEAKAUTH_SECRET must be a production-only secret with at least 32 characters.SESSION_COOKIE_SECURE_REQUIREDSESSION_COOKIE_SECURE=true is required behind HTTPS on the VPS.CSRF_STRICT_ORIGIN_DISABLEDCSRF_STRICT_ORIGIN must be true or unset in production so API mutations reject missing Origin/Referer headers.MALWARE_SCAN_REQUIREDMALWARE_SCAN_MODE=required is mandatory for production document uploads.Installer lockLock the installer and disable INSTALLER_ENABLED before opening the app.Payment configurationPaid booking requires complete Paymob configuration.Payment pricingPaid booking requires an active consultation price.Malware scannerClamAV is not reachable from the app process.\"\u001b[39m\nTimeout: 20000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for locator('main')\u001b[22m\n\u001b[2m    43 × locator resolved to <main class=\"min-h-screen bg-[#060504] px-4 py-10 text-white sm:px-6 lg:px-8\">…</main>\u001b[22m\n\u001b[2m       - unexpected value \"KMT Legalالنظام لم يكتمل تشغيله بعدتم إيقاف بوابة العميل مؤقتًا لأن فحوصات التشغيل الأساسية لم تكتمل.APP_ORIGIN_HTTPS_REQUIREDAPP_ORIGIN must be the canonical HTTPS production origin.AUTH_SECRET_WEAKAUTH_SECRET must be a production-only secret with at least 32 characters.SESSION_COOKIE_SECURE_REQUIREDSESSION_COOKIE_SECURE=true is required behind HTTPS on the VPS.CSRF_STRICT_ORIGIN_DISABLEDCSRF_STRICT_ORIGIN must be true or unset in production so API mutations reject missing Origin/Referer headers.MALWARE_SCAN_REQUIREDMALWARE_SCAN_MODE=required is mandatory for production document uploads.Installer lockLock the installer and disable INSTALLER_ENABLED before opening the app.Payment configurationPaid booking requires complete Paymob configuration.Payment pricingPaid booking requires an active consultation price.Malware scannerClamAV is not reachable from the app process.\"\u001b[22m\n\n    at C:\\Users\\UTD\\Documents\\Codex\\RecoveredProjects\\local-0efe82359eea107367d678c3c6ae29f0\\kmt legal office\\tests\\e2e\\site-completion.spec.ts:45:112",
+                    "location": {
+                      "file": "C:\\Users\\UTD\\Documents\\Codex\\RecoveredProjects\\local-0efe82359eea107367d678c3c6ae29f0\\kmt legal office\\tests\\e2e\\site-completion.spec.ts",
+                      "column": 112,
+                      "line": 45
+                    },
+                    "snippet": "  43 |  const other=await browser.newContext({baseURL});await other.addCookies([{name:'kmt_session',value:users.other.token,url:baseURL!}]);expect((await other.request.get('/api/service-requests/'+id+'/formation-report')).status()).toBe(404);\n  44 |  const guest=await browser.newContext({baseURL});expect((await guest.request.get('/api/public/business-ai/report?version='+row.revision)).status()).toBe(401);\n> 45 |  await page.goto('/client/requests/services/'+id,{waitUntil:'networkidle'});await expect(page.locator('main')).toContainText('Synthetic company');await page.screenshot({path:'.playwright/site-completion/formation-client.png',fullPage:true});await other.close();await guest.close();await staff.close();\n     |                                                                                                                ^\n  46 | });\n  47 | test('sourced reference publication and public article separation',async({browser,baseURL})=>{\n  48 |  test.setTimeout(300000);const users=fixtures().users;const staff=await browser.newContext({baseURL,extraHTTPHeaders:{Origin:baseURL!}});await staff.addCookies([{name:'kmt_session',value:users.admin.token,url:baseURL!}]);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\UTD\\Documents\\Codex\\RecoveredProjects\\local-0efe82359eea107367d678c3c6ae29f0\\kmt legal office\\tests\\e2e\\site-completion.spec.ts",
+                        "column": 112,
+                        "line": 45
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('main')\nExpected substring: \u001b[32m\"Synthetic company\"\u001b[39m\nReceived string:    \u001b[31m\"KMT Legalالنظام لم يكتمل تشغيله بعدتم إيقاف بوابة العميل مؤقتًا لأن فحوصات التشغيل الأساسية لم تكتمل.APP_ORIGIN_HTTPS_REQUIREDAPP_ORIGIN must be the canonical HTTPS production origin.AUTH_SECRET_WEAKAUTH_SECRET must be a production-only secret with at least 32 characters.SESSION_COOKIE_SECURE_REQUIREDSESSION_COOKIE_SECURE=true is required behind HTTPS on the VPS.CSRF_STRICT_ORIGIN_DISABLEDCSRF_STRICT_ORIGIN must be true or unset in production so API mutations reject missing Origin/Referer headers.MALWARE_SCAN_REQUIREDMALWARE_SCAN_MODE=required is mandatory for production document uploads.Installer lockLock the installer and disable INSTALLER_ENABLED before opening the app.Payment configurationPaid booking requires complete Paymob configuration.Payment pricingPaid booking requires an active consultation price.Malware scannerClamAV is not reachable from the app process.\"\u001b[39m\nTimeout: 20000ms\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 20000ms\u001b[22m\n\u001b[2m  - waiting for locator('main')\u001b[22m\n\u001b[2m    43 × locator resolved to <main class=\"min-h-screen bg-[#060504] px-4 py-10 text-white sm:px-6 lg:px-8\">…</main>\u001b[22m\n\u001b[2m       - unexpected value \"KMT Legalالنظام لم يكتمل تشغيله بعدتم إيقاف بوابة العميل مؤقتًا لأن فحوصات التشغيل الأساسية لم تكتمل.APP_ORIGIN_HTTPS_REQUIREDAPP_ORIGIN must be the canonical HTTPS production origin.AUTH_SECRET_WEAKAUTH_SECRET must be a production-only secret with at least 32 characters.SESSION_COOKIE_SECURE_REQUIREDSESSION_COOKIE_SECURE=true is required behind HTTPS on the VPS.CSRF_STRICT_ORIGIN_DISABLEDCSRF_STRICT_ORIGIN must be true or unset in production so API mutations reject missing Origin/Referer headers.MALWARE_SCAN_REQUIREDMALWARE_SCAN_MODE=required is mandatory for production document uploads.Installer lockLock the installer and disable INSTALLER_ENABLED before opening the app.Payment configurationPaid booking requires complete Paymob configuration.Payment pricingPaid booking requires an active consultation price.Malware scannerClamAV is not reachable from the app process.\"\u001b[22m\n\n\n  43 |  const other=await browser.newContext({baseURL});await other.addCookies([{name:'kmt_session',value:users.other.token,url:baseURL!}]);expect((await other.request.get('/api/service-requests/'+id+'/formation-report')).status()).toBe(404);\n  44 |  const guest=await browser.newContext({baseURL});expect((await guest.request.get('/api/public/business-ai/report?version='+row.revision)).status()).toBe(401);\n> 45 |  await page.goto('/client/requests/services/'+id,{waitUntil:'networkidle'});await expect(page.locator('main')).toContainText('Synthetic company');await page.screenshot({path:'.playwright/site-completion/formation-client.png',fullPage:true});await other.close();await guest.close();await staff.close();\n     |                                                                                                                ^\n  46 | });\n  47 | test('sourced reference publication and public article separation',async({browser,baseURL})=>{\n  48 |  test.setTimeout(300000);const users=fixtures().users;const staff=await browser.newContext({baseURL,extraHTTPHeaders:{Origin:baseURL!}});await staff.addCookies([{name:'kmt_session',value:users.admin.token,url:baseURL!}]);\n    at C:\\Users\\UTD\\Documents\\Codex\\RecoveredProjects\\local-0efe82359eea107367d678c3c6ae29f0\\kmt legal office\\tests\\e2e\\site-completion.spec.ts:45:112"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:30:35.271Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\UTD\\Documents\\Codex\\RecoveredProjects\\local-0efe82359eea107367d678c3c6ae29f0\\kmt legal office\\.playwright\\site-completion\\final-results\\site-completion-formation--fdd9e-and-isolates-internal-notes\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\UTD\\Documents\\Codex\\RecoveredProjects\\local-0efe82359eea107367d678c3c6ae29f0\\kmt legal office\\.playwright\\site-completion\\final-results\\site-completion-formation--fdd9e-and-isolates-internal-notes\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\UTD\\Documents\\Codex\\RecoveredProjects\\local-0efe82359eea107367d678c3c6ae29f0\\kmt legal office\\.playwright\\site-completion\\final-results\\site-completion-formation--fdd9e-and-isolates-internal-notes\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\UTD\\Documents\\Codex\\RecoveredProjects\\local-0efe82359eea107367d678c3c6ae29f0\\kmt legal office\\tests\\e2e\\site-completion.spec.ts",
+                    "column": 112,
+                    "line": 45
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "22ecc4f175be79ad7ecc-0e2eb61f6efdc342ccb3",
+          "file": "site-completion.spec.ts",
+          "line": 26,
+          "column": 5
+        },
+        {
+          "title": "sourced reference publication and public article separation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:31:28.559Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "22ecc4f175be79ad7ecc-6df058aaa4283028460c",
+          "file": "site-completion.spec.ts",
+          "line": 47,
+          "column": 5
+        },
+        {
+          "title": "selected practice survives an existing session and callback persistence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T15:31:28.559Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "22ecc4f175be79ad7ecc-aa677c7b9ecca525f868",
+          "file": "site-completion.spec.ts",
+          "line": 56,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T15:26:42.149Z",
+    "duration": 286844.921,
+    "expected": 1,
+    "skipped": 2,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

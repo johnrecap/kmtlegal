@@ -1,4 +1,7 @@
 "use client";
+import type {FormationDraft} from "@/lib/business-formation";
+import {FormationFacts} from "@/features/public-site/business-formation-interview";
+import {formationCopy} from "@/content/business-formation-copy";
 import Link from "next/link";
 import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -8,7 +11,7 @@ import { serviceRequestCopy } from "@/content/service-request-copy";
 type Locale = "ar" | "en";
 type Kind = keyof typeof serviceRequestCopy.en.kinds;
 type Status = keyof typeof serviceRequestCopy.en.statuses;
-type Intake = { title: string; purpose: string; language: "ar" | "en" | "both"; requestedDate: string; answers: Record<string, string> };
+type Intake = { formation?:FormationDraft; title: string; purpose: string; language: "ar" | "en" | "both"; requestedDate: string; answers: Record<string, string> };
 export type ServiceRequestView = {
   id: string; reference: string; kind: string; status: string; revision: number; quoteVersion: number; paymentId: string | null; clientId?: string; conversationThreadId?: string | null; sourceRequestId?: string | null;
   intake: Intake; quote: { amount: string; currency: string; scope: string; durationDays: number } | null;
@@ -31,8 +34,9 @@ export function NewServiceRequest({ locale, verified, healthAvailable, sourceReq
   }
   return <form onSubmit={create} className={panel}><h2 className="text-xl font-semibold">{sourceRequestId ? copy.followup : copy.newRequest}</h2>
     {!verified ? <p>{copy.verify} <Link className="underline" href="/client/assistant">KMT</Link></p> : <>
-      <label>{copy.newRequest}<select className={field} disabled={busy} value={kind} onChange={e => { setKind(e.target.value as Kind); key.current = null; }}>{Object.entries(copy.kinds).map(([value, label]) => <option key={value} value={value} disabled={value === "HEALTH_CHECK" && !healthAvailable}>{label}</option>)}</select></label>
+      <label>{copy.newRequest}<select className={field} disabled={busy} value={kind} onChange={e => { setKind(e.target.value as Kind); key.current = null; }}>{Object.entries(copy.kinds).filter(([value])=>value!=="COMPANY_FORMATION").map(([value, label]) => <option key={value} value={value} disabled={value === "HEALTH_CHECK" && !healthAvailable}>{label}</option>)}</select></label>
       <Button type="submit" disabled={busy}>{copy.create}</Button></>}
+    <Link className="block underline" href={locale==='ar'?'/ar/business-ai':'/business-ai'}>{copy.kinds.COMPANY_FORMATION}</Link>
     {!healthAvailable && <p className="text-sm text-muted-foreground">{copy.healthPending}</p>}{error && <p role="alert">{copy.failed}</p>}
   </form>;
 }
@@ -47,7 +51,7 @@ export function ServiceRequestWorkspace({ value, locale, staff = false, manager 
     catch { setNotice(copy.failed); } finally { setBusy(false); }
   }
   async function upload(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); const data = new FormData(event.currentTarget); data.set("serviceRequestId", value.id); data.set("category", value.kind === "HEALTH_CHECK" ? "OTHER" : "CONTRACT"); setBusy(true); setNotice("");
+    event.preventDefault(); const data = new FormData(event.currentTarget); data.set("serviceRequestId", value.id); data.set("category", ["HEALTH_CHECK", "COMPANY_FORMATION"].includes(value.kind) ? "OTHER" : "CONTRACT"); setBusy(true); setNotice("");
     try { const response = await fetch("/api/files/upload", { method: "POST", body: data }); if (!response.ok) throw new Error(); setNotice(copy.saved); router.refresh(); } catch { setNotice(copy.failed); } finally { setBusy(false); }
   }
   function submitForm(event: FormEvent<HTMLFormElement>, build: (data: FormData) => Record<string, unknown>) { event.preventDefault(); void act(build(new FormData(event.currentTarget))); }
@@ -57,6 +61,7 @@ export function ServiceRequestWorkspace({ value, locale, staff = false, manager 
     {staff && staffLinks.conversation && value.conversationThreadId && <Link className="underline" href={`/admin/messages/${value.conversationThreadId}`}>{copy.notes}</Link>}
     {value.sourceRequestId && <Link className="underline" href={staff ? `/admin/service-requests/${value.sourceRequestId}` : `/client/requests/services/${value.sourceRequestId}`}>{copy.source}</Link>}
     <div className={panel}><h1 className="text-2xl font-semibold">{copy.kinds[value.kind as Kind]}</h1><p className="break-all" dir="ltr">{value.reference}</p><p>{copy.statuses[value.status as Status]}</p></div>
+    {value.kind==='COMPANY_FORMATION'&&value.intake.formation&&<section className={panel}><FormationFacts draft={value.intake.formation} locale={locale}/><a className="underline" href={'/api/service-requests/'+value.id+'/formation-report'}>{formationCopy[locale].download}</a></section>}
     {notice && <p role="status" className={panel}>{notice}</p>}
     <form className={panel} onSubmit={e => { e.preventDefault(); void act({ action: "save", intake }); }}>
       <label className="block">{copy.name}<input className={field} value={intake.title} maxLength={180} disabled={!editable || busy} onChange={e => setIntake({ ...intake, title: e.target.value })} /></label>

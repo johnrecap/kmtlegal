@@ -46,6 +46,7 @@ interface HeroParallaxLayersProps {
   title: string;
   description: string;
   image: string;
+  imageAlt?: string;
   imagePosition?: string;
   pickerLabel: string;
   matters: ReadonlyArray<HeroMatter>;
@@ -94,6 +95,7 @@ export function HeroParallaxLayers({
   title,
   description,
   image,
+  imageAlt="",
   imagePosition = "object-center",
   pickerLabel,
   matters,
@@ -304,10 +306,10 @@ export function HeroParallaxLayers({
 
           <div className="kmt-hero-enter-blur relative" style={{ animationDelay: "300ms" }}>
             <div className="relative overflow-hidden rounded-2xl border border-kmt-gold/20">
-              <div className="absolute -inset-y-[10%] inset-x-0" aria-hidden="true" data-drift="photo">
+              <div className="absolute -inset-y-[10%] inset-x-0" aria-hidden={imageAlt ? undefined : true} data-drift="photo">
                 <Image
-                  alt=""
-                  aria-hidden="true"
+                  alt={imageAlt}
+                  aria-hidden={imageAlt ? undefined : true}
                   className={cn("h-[115%] w-full object-cover opacity-70", imagePosition)}
                   data-testid="public-page-hero-image"
                   fill

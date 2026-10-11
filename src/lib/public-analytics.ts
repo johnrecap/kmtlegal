@@ -1,7 +1,8 @@
+import { publicServiceSlugs, contentHubSlugs } from '@/content/public-service-registry';
 import { stripPublicLocalePrefix } from "./public-locale";
 
-export const publicAnalyticsPages = ["home", "our-firm", "services", "service", "industries", "team", "lawyer", "articles", "article", "contact", "book-consultation", "privacy", "terms"] as const;
-export const publicAnalyticsServices = ["legal-consultation", "company-formation", "corporate-business-services", "contracts", "real-estate-legal-support", "claims-collections"] as const;
+export const publicAnalyticsPages = ["home", "our-firm", "services", "service", "industries", "team", "lawyer", "articles", "article", "contact", "book-consultation", "privacy", "terms", ...contentHubSlugs] as const;
+export const publicAnalyticsServices = publicServiceSlugs;
 export type PublicAnalyticsService = typeof publicAnalyticsServices[number];
 
 /** Never forward URLs, query strings, user text or arbitrary slugs into telemetry. */

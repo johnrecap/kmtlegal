@@ -7,7 +7,7 @@ import { PublicShell } from "@/components/layout";
 import { ButtonLink } from "@/components/ui";
 import { getPublicContent, navForPath } from "@/content/public-content";
 import { DetailCta, PageHero, PublicSection, TrustStrip } from "@/features/public-site/public-components";
-import { HomePageView, PrivacyPageView, ServiceDetailPageView, TermsPageView, TeamDetailPageView, privacyMetadata, termsMetadata } from "@/features/public-site/public-pages";
+import { HomePageView, PrivacyPageView, ServiceDetailPageView, TermsPageView, TeamDetailPageView, TeamPageView, privacyMetadata, termsMetadata } from "@/features/public-site/public-pages";
 
 describe("public website UI", () => {
   it("renders public shell navigation with English default labels and active page", () => {
@@ -36,13 +36,11 @@ describe("public website UI", () => {
     expect(headerSource).toContain("bg-[color:var(--kmt-public-header)]");
     expect(html).toContain("event_available");
     expect(html).toContain("account_circle");
-    expect(html).toContain("/brand/kmt-logo-mark.webp");
-    expect(html).toContain(">KMT</span>");
-    expect(html).toContain(">LEGAL</span>");
+    expect(html).toContain("/brand/kmt-official-logo-280d06c72f-256.webp");
     // Active desktop nav uses gold text + the sliding layout indicator
     // (mobile active pills live inside the closed sheet portal).
     expect(html).toContain("text-[var(--kmt-public-gold)]");
-    expect(html).toContain("kmt-nav-indicator");
+    expect(html).toContain("aria-haspopup");
     expect(html).not.toContain(">balance</span>");
     expect(html).not.toContain("secondary-container");
   });
@@ -71,7 +69,7 @@ describe("public website UI", () => {
     expect(html).toContain("data-testid=\"privacy-policy\"");
     expect(html).toContain("<h1");
     expect(html).toContain("Privacy Policy and Applicant Notice</h1>");
-    expect(html).toContain("dateTime=\"2026-10-09\"");
+    expect(html).toContain("dateTime=\"2026-10-11\"");
     expect(html).toContain("href=\"#data-we-collect\"");
     expect(html).toContain("id=\"data-we-collect\"");
     expect(html).toContain("mailto:contact@kmtlegal.org");
@@ -226,25 +224,11 @@ describe("public website UI", () => {
     expect(html).toContain(service.title);
   });
 
-  it("renders team detail with h1, breadcrumbs, credentials, and warning-token notice", () => {
-    const content = getPublicContent("en");
-    const lawyer = content.lawyers[0];
-    const html = renderToStaticMarkup(<TeamDetailPageView locale="en" slug={lawyer.slug} />);
-
-    expect(html).toContain("<h1");
-    expect(html).toContain("aria-label=\"Breadcrumb\"");
-    expect(html).toContain("aria-current=\"page\"");
-    expect(html).toContain("href=\"/team\"");
-    expect(html).toContain("application/ld+json");
-    expect(html).toContain("\"@type\":\"BreadcrumbList\"");
-    expect(html).toContain("aspect-[4/5]");
-    expect(html).toContain("grayscale-[35%]");
-    expect(html).toContain("bg-kmt-warning-surface");
-    expect(html).toContain("text-kmt-warning-strong");
-    expect(html).toContain(lawyer.education[0]);
-    expect(html).toContain(lawyer.admissions[0]);
-    expect(html).toContain(lawyer.experience);
-    expect(html).toContain(`href="/book-consultation?lawyer=${encodeURIComponent(lawyer.name)}"`);
+  it("hides unconfirmed profiles and presents the general team introduction",()=>{
+    expect(getPublicContent('en').lawyers).toHaveLength(0);
+    expect(()=>renderToStaticMarkup(<TeamDetailPageView locale="en" slug="maryam-khaled"/>)).toThrow();
+    const html=renderToStaticMarkup(<TeamPageView locale="en"/>);
+    expect(html).toContain('<h1');expect(html).toContain('office identifies the appropriate lawyer');expect(html).not.toContain('Cairo University');
   });
 
   it("renders dark public section and detail CTA APIs", () => {

@@ -57,6 +57,8 @@ function mockOutputForTask(task: AITask, input?: unknown) {
         startsAt: null,
         reviewNote: REVIEW_NOTE
       };
+    case "formation_review":
+      return {questionKeys:[],reviewRequired:true};
     case "intake_summary":
       return {
         summary: "تم استلام طلب قانوني منظم يحتاج إلى مراجعة فريق المكتب قبل التواصل.",
