@@ -2,7 +2,6 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { PublicShell } from "@/components/layout";
-import { navForPath } from "@/content/public-content";
 
 /**
  * Phases 6+7 regression: the public footer must ride theme-aware tokens
@@ -12,7 +11,7 @@ import { navForPath } from "@/content/public-content";
 describe("public footer theme", () => {
   it("renders the footer body on the theme-aware canvas, not forced black", () => {
     const html = renderToStaticMarkup(
-      <PublicShell locale="en" navItems={navForPath("/", "en")}>
+      <PublicShell locale="en">
         <div>content</div>
       </PublicShell>
     );
@@ -26,7 +25,7 @@ describe("public footer theme", () => {
 
   it("wraps the footer logo in a dark brand plaque", () => {
     const html = renderToStaticMarkup(
-      <PublicShell locale="en" navItems={navForPath("/", "en")}>
+      <PublicShell locale="en">
         <div>content</div>
       </PublicShell>
     );
@@ -39,7 +38,7 @@ describe("public footer theme", () => {
 
   it("keeps the plaque in Arabic RTL shells", () => {
     const html = renderToStaticMarkup(
-      <PublicShell locale="ar" currentPath="/ar" navItems={navForPath("/", "ar")}>
+      <PublicShell locale="ar" currentPath="/ar">
         <div>content</div>
       </PublicShell>
     );

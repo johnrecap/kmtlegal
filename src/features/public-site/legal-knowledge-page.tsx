@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { PublicShell } from '@/components/layout';
-import { navForPath } from '@/content/public-content';
 import { legalKnowledgeCopy } from '@/content/legal-knowledge-copy';
 import { localizedPublicHref,type PublicLocale } from '@/lib/public-locale';
 import { getKnowledge,knowledgeQuerySchema,listKnowledge } from '@/server/public/knowledge-service';
@@ -11,7 +10,7 @@ const field='min-h-11 w-full rounded-lg border border-[var(--kmt-public-line)] b
 export async function LegalKnowledgePage({locale,query={}}:{locale:PublicLocale;query?:Record<string,string|string[]|undefined>}) {
  const c=legalKnowledgeCopy[locale];const parsed=knowledgeQuerySchema.safeParse(query);const filters=parsed.success?parsed.data:knowledgeQuerySchema.parse({});
  const items=await listKnowledge(locale,filters).catch(()=>null);
- return <PublicShell locale={locale} currentPath={localizedPublicHref('/legal-intelligence',locale)} navItems={navForPath('/articles',locale)}><PublicSection headingLevel="h1" title={c.title} description={c.description}>
+ return <PublicShell locale={locale} currentPath={localizedPublicHref('/legal-intelligence',locale)}><PublicSection headingLevel="h1" title={c.title} description={c.description}>
  <form method="get" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
  <label>{c.query}<input className={field} name="q" defaultValue={filters.q} maxLength={120}/></label>
  <label>{c.type}<select className={field} name="type" defaultValue={filters.type}><option value="">{c.all}</option><option value="JUDGMENT">{c.types.JUDGMENT}</option><option value="LEGISLATION">{c.types.LEGISLATION}</option></select></label>
@@ -22,5 +21,5 @@ export async function LegalKnowledgePage({locale,query={}}:{locale:PublicLocale;
 }
 export async function LegalKnowledgeDetail({locale,slug}:{locale:PublicLocale;slug:string}) {
  const item=await getKnowledge(locale,slug);if(!item)notFound();const c=legalKnowledgeCopy[locale];const alternate=await getKnowledge(locale==='ar'?'en':'ar',slug);
- return <PublicShell languageHref={alternate?localizedPublicHref('/legal-intelligence/'+slug,locale==='ar'?'en':'ar'):null} locale={locale} currentPath={localizedPublicHref('/legal-intelligence/'+slug,locale)} navItems={navForPath('/articles',locale)}><PublicSection headingLevel="h1" title={item.title} description={item.excerpt}><p>{c.reference}: {item.referenceNumber} · {item.referenceYear}</p><p>{c.date}: {item.referenceDate?.toISOString().slice(0,10)}</p><p>{c.reviewed}: {item.reviewedAt?.toISOString().slice(0,10)}</p><p><a className="underline" href={item.sourceUrl??undefined} rel="noopener noreferrer">{c.source}: {item.sourceTitle}</a></p><div className="my-8 whitespace-pre-wrap leading-9">{item.content}</div><Link className="underline" href={localizedPublicHref('/legal-intelligence',locale)}>{c.back}</Link></PublicSection></PublicShell>;
+ return <PublicShell languageHref={alternate?localizedPublicHref('/legal-intelligence/'+slug,locale==='ar'?'en':'ar'):null} locale={locale} currentPath={localizedPublicHref('/legal-intelligence/'+slug,locale)}><PublicSection headingLevel="h1" title={item.title} description={item.excerpt}><p>{c.reference}: {item.referenceNumber} · {item.referenceYear}</p><p>{c.date}: {item.referenceDate?.toISOString().slice(0,10)}</p><p>{c.reviewed}: {item.reviewedAt?.toISOString().slice(0,10)}</p><p><a className="underline" href={item.sourceUrl??undefined} rel="noopener noreferrer">{c.source}: {item.sourceTitle}</a></p><div className="my-8 whitespace-pre-wrap leading-9">{item.content}</div><Link className="underline" href={localizedPublicHref('/legal-intelligence',locale)}>{c.back}</Link></PublicSection></PublicShell>;
 }

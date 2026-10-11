@@ -2,7 +2,7 @@ import Link from "next/link";
 import { paymentReviewCopy } from "@/lib/ui-copy";
 import { PublicShell } from "@/components/layout/public-shell";
 import { MaterialSymbol } from "@/components/ui";
-import { getPublicContent, navForPath, type PublicContent } from "@/content/public-content";
+import { getPublicContent, type PublicContent } from "@/content/public-content";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/legal-format";
 import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
@@ -42,7 +42,7 @@ export async function ConsultationPaymentReturnPage({
   const currentPath = locale === "ar" ? "/ar/payment/consultation/return" : "/payment/consultation/return";
 
   return (
-    <PublicShell currentPath={currentPath} languageHref={languageHref} locale={locale} navItems={navForPath("/", locale)}>
+    <PublicShell currentPath={currentPath} languageHref={languageHref} locale={locale}>
       <section className="mx-auto min-h-[68vh] max-w-[940px] px-4 py-16 sm:px-6 lg:px-10" dir={locale === "ar" ? "rtl" : "ltr"}>
         <div className="rounded-[1.75rem] border border-kmt-gold/30 bg-[#100d08] p-6 sm:p-8">
           <div className="flex items-start gap-4">

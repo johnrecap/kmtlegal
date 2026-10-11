@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge, ButtonLink, MaterialSymbol, TextInput } from "@/components/ui";
@@ -8,6 +8,7 @@ import { BlurFade } from "@/components/ui/blur-fade";
 import { Card as FocusCard } from "@/components/ui/focus-cards";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { getPublicContent, type PublicContent } from "@/content/public-content";
+import { publicDirectoryCopy } from "@/content/site-completion-copy";
 import { normalizeText } from "@/lib/normalize-text";
 import { cn } from "@/lib/cn";
 import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
@@ -63,6 +64,7 @@ export function DirectoryFilter({
   locale = "en",
   copy,
   layout = "cards",
+  categoryControl = "chips",
   cardVariant = "cards"
 }: {
   items: DirectoryItem[];
@@ -72,6 +74,7 @@ export function DirectoryFilter({
   copy?: PublicContent["directoryFilter"];
   /** rows = equal editorial ledger (services index); cards = default grid. */
   layout?: "cards" | "rows";
+  categoryControl?: "chips" | "select";
   /**
    * cards = generic editorial cards (articles/case-studies default);
    * focus = Aceternity Focus Cards people grid (team index only).
@@ -83,6 +86,7 @@ export function DirectoryFilter({
   const dictionary = copy ?? content.directoryFilter;
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
+  const selectId = useId();
   const categories = useMemo(() => {
     const map = new Map<string, string>();
     for (const item of items) {
@@ -117,7 +121,8 @@ export function DirectoryFilter({
       <div
         data-testid="public-directory-filter"
         className={cn(
-          "grid gap-4 rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-surface-muted)] p-4 lg:grid-cols-[minmax(0,1fr)_auto]",
+          "grid gap-4 rounded-lg border border-[var(--kmt-public-line)] bg-[var(--kmt-public-surface-muted)] p-4",
+          categoryControl === "select" ? "lg:grid-cols-[minmax(18rem,1fr)_minmax(16rem,20rem)]" : "lg:grid-cols-[minmax(0,1fr)_auto]",
           publicMotionForm,
           fieldScopeClasses
         )}
@@ -130,7 +135,16 @@ export function DirectoryFilter({
           placeholder={dictionary.placeholder}
           value={query}
         />
-        <div className="flex flex-wrap items-end gap-2">
+        <div className="flex min-w-0 flex-wrap items-end gap-2">
+          {categoryControl === "select" ? (
+            <div className="w-full min-w-0">
+              <label className="mb-2 block text-sm font-semibold text-[var(--kmt-public-muted)]" htmlFor={selectId}>{publicDirectoryCopy[locale].practiceFilter}</label>
+              <select id={selectId} className="min-h-11 w-full min-w-0 rounded border border-[var(--kmt-public-line)] bg-[var(--kmt-public-surface)] px-3 text-[var(--kmt-public-text)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-kmt-gold" value={category} onChange={event => setCategory(event.target.value)}>
+                <option value="all">{dictionary.all}</option>
+                {categories.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+              </select>
+            </div>
+          ) : <>
           <button
             aria-pressed={category === "all"}
             className={categoryButtonClasses(category === "all")}
@@ -150,6 +164,7 @@ export function DirectoryFilter({
               {label}
             </button>
           ))}
+          </>}
           {hasActiveFilters ? (
             <button
               className={clearButtonClasses}
@@ -161,6 +176,8 @@ export function DirectoryFilter({
           ) : null}
         </div>
       </div>
+
+      {categoryControl === "select" ? <p aria-live="polite" className="mt-3 text-sm text-[var(--kmt-public-muted)]">{publicDirectoryCopy[locale].results}: {filteredItems.length}</p> : null}
 
       {filteredItems.length ? (
         layout === "rows" ? (

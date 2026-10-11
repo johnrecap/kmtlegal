@@ -1,9 +1,10 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { KmtBrandLogo } from "@/components/brand";
+import { PublicHeader } from "@/components/layout/public-header";
 import { MaterialSymbol } from "@/components/ui";
 import { buttonClasses } from "@/components/ui/button";
-import { getPublicContent } from "@/content/public-content";
+import { getPublicContent, navForPath } from "@/content/public-content";
 import { formatMoney } from "@/lib/legal-format";
 import type { PublicLocale } from "@/lib/public-locale";
 import type { PaymentReceiptView } from "@/server/payments/payment-receipt-service";
@@ -23,6 +24,8 @@ export function ConsultationPaymentReceiptDocument({ receipt, locale }: { receip
   const provider = providerLabels[receipt.provider] ?? receipt.provider;
 
   return (
+    <div dir={locale === "ar" ? "rtl" : "ltr"} lang={locale}>
+    <div className="print:hidden"><PublicHeader locale={locale} navItems={navForPath("/", locale)} languageHref={null} /></div>
     <main className="min-h-screen bg-[#f4efe6] px-4 py-8 text-kmt-ink print:bg-white print:p-0" dir={locale === "ar" ? "rtl" : "ltr"}>
       <div className="mx-auto mb-5 flex max-w-[980px] flex-wrap items-center justify-between gap-3 print:hidden">
         <Link className={buttonClasses({ variant: "secondary", size: "md", className: "min-h-11 bg-white" })} href={`/login?next=/client/payments&locale=${locale}`}>
@@ -35,7 +38,7 @@ export function ConsultationPaymentReceiptDocument({ receipt, locale }: { receip
       <article className="mx-auto max-w-[980px] overflow-hidden rounded-xl border border-kmt-gold/25 bg-white shadow-[0_28px_90px_-55px_rgba(47,36,20,0.65)] print:max-w-none print:rounded-none print:border-0 print:shadow-none">
         <header className="border-b border-kmt-border bg-white px-6 py-6 text-kmt-ink sm:px-9">
           <div className="flex flex-wrap items-center justify-between gap-5">
-            <KmtBrandLogo size="md" sublabel={copy.sublabel} surface="light" variant="lockup" />
+            <KmtBrandLogo size="md" variant="public" />
             <div className="text-start sm:text-end">
               <p className="text-sm font-semibold text-kmt-gold">{copy.officeName}</p>
               <h1 className="mt-2 text-3xl font-semibold">{copy.title}</h1>
@@ -91,6 +94,7 @@ export function ConsultationPaymentReceiptDocument({ receipt, locale }: { receip
         </div>
       </article>
     </main>
+    </div>
   );
 }
 

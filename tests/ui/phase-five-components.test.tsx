@@ -1,7 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }), usePathname: () => "/account/verify" }));
 import { BusinessDeskSection, ManagedServiceSection } from "@/features/public-site/business-desk";
 import { NewServiceRequest, ServiceRequestWorkspace, type ServiceRequestView } from "@/features/portal/service-request-workspace";
 import { ClientEmailVerification } from "@/features/public-site/client-email-verification";

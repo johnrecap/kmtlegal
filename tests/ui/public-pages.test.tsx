@@ -5,14 +5,14 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { PublicShell } from "@/components/layout";
 import { ButtonLink } from "@/components/ui";
-import { getPublicContent, navForPath } from "@/content/public-content";
+import { getPublicContent } from "@/content/public-content";
 import { DetailCta, PageHero, PublicSection, TrustStrip } from "@/features/public-site/public-components";
 import { HomePageView, PrivacyPageView, ServiceDetailPageView, TermsPageView, TeamDetailPageView, TeamPageView, privacyMetadata, termsMetadata } from "@/features/public-site/public-pages";
 
 describe("public website UI", () => {
   it("renders public shell navigation with English default labels and active page", () => {
     const html = renderToStaticMarkup(
-      <PublicShell locale="en" navItems={navForPath("/services", "en")}>
+      <PublicShell locale="en" currentPath="/services">
         <div>content</div>
       </PublicShell>
     );
@@ -47,7 +47,7 @@ describe("public website UI", () => {
 
   it("renders Arabic public shell with explicit RTL direction", () => {
     const html = renderToStaticMarkup(
-      <PublicShell locale="ar" currentPath="/ar/services" navItems={navForPath("/services", "ar")}>
+      <PublicShell locale="ar" currentPath="/ar/services">
         <div>content</div>
       </PublicShell>
     );

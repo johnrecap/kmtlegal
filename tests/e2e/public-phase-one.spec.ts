@@ -71,7 +71,7 @@ for (const locale of ["ar", "en"] as const) {
         await expect(page.locator('footer a[href="tel:+201117416666"]')).toHaveText(publicOfficeProfile.phoneDisplay);
         await expect(page.locator('footer a[href="mailto:contact@kmtlegal.org"]')).toHaveText(publicOfficeProfile.email);
         await expect(page.locator('a[href*="kmtlegal.com"]')).toHaveCount(0);
-        if (path === "/book-consultation") await expect(page.getByTestId("public-floating-dock")).toHaveCount(0);
+        if (["/book-consultation", "/contact"].includes(path)) await expect(page.getByTestId("public-floating-dock")).toHaveCount(0);
         else {
           const dock = page.getByTestId(width < 768 ? "public-floating-dock-mobile" : "public-floating-dock-desktop");
           await expect(dock).toBeVisible();

@@ -3,7 +3,7 @@ import { officeAssets } from "@/content/office-assets";
 import { siteCompletionCopy } from "@/content/site-completion-copy";
 import { PublicShell } from "@/components/layout";
 import { ButtonLink } from "@/components/ui";
-import { getPublicContent, navForPath } from "@/content/public-content";
+import { getPublicContent } from "@/content/public-content";
 import { firmStatementsApproved, publicExpansion } from "@/content/public-expansion";
 import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
 import { PageHero, PublicSection, publicPanel, publicMutedText } from "./public-components";
@@ -13,7 +13,7 @@ import { BusinessDeskSection } from "./business-desk";
 export function OurFirmPageView({ locale }: { locale: PublicLocale }) {
   const copy = publicExpansion[locale];
   const content = getPublicContent(locale);
-  return <PublicShell locale={locale} currentPath={localizedPublicHref("/our-firm", locale)} navItems={navForPath("/our-firm", locale)}>
+  return <PublicShell locale={locale} currentPath={localizedPublicHref("/our-firm", locale)}>
     <PageHero eyebrow="KMT Legal" title={copy.firm} description={copy.firmDescription} size="compact" image={officeAssets.executive.src} imageAlt={siteCompletionCopy[locale].executiveAlt} />
     <PublicSection eyebrow={copy.firmIntro} title={copy.approachTitle} description={copy.firmBody}>
       <div className={cn("grid gap-8", firmStatementsApproved && "lg:grid-cols-[1fr_1.2fr]")}>
@@ -40,7 +40,7 @@ export function OurFirmPageView({ locale }: { locale: PublicLocale }) {
 export function IndustriesPageView({ locale }: { locale: PublicLocale }) {
   const copy = publicExpansion[locale];
   const content = getPublicContent(locale);
-  return <PublicShell locale={locale} currentPath={localizedPublicHref("/industries", locale)} navItems={navForPath("/industries", locale)}>
+  return <PublicShell locale={locale} currentPath={localizedPublicHref("/industries", locale)}>
     <PageHero eyebrow="KMT Legal" title={copy.industries} description={copy.industriesDescription} size="compact" image={officeAssets.meeting.src} imageAlt={siteCompletionCopy[locale].meetingAlt} />
     <PublicSection title={content.home.industriesTitle} description={content.home.industriesDescription}>
       <div className="divide-y divide-[var(--kmt-public-line)]">

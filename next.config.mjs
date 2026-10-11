@@ -13,6 +13,10 @@ const nextConfig = {
   },
   async headers() {
     return [
+      {
+        source: "/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store" }]
+      },
       ...["/business-ai", "/ar/business-ai", "/legal-intelligence/:path*", "/ar/legal-intelligence/:path*"].map(source => ({source, headers: [{key: "Cache-Control", value: "no-store"}]})),
       {
         source: "/_next/static/:path*",
@@ -20,15 +24,15 @@ const nextConfig = {
       },
       {
         source: "/site-assets/:path*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }]
+        headers: [{ key: "Cache-Control", value: "public, max-age=3600, must-revalidate" }]
       },
       {
         source: "/stitch-assets/:path*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }]
+        headers: [{ key: "Cache-Control", value: "public, max-age=3600, must-revalidate" }]
       },
       {
         source: "/brand/:path*",
-        headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }]
+        headers: [{ key: "Cache-Control", value: "public, max-age=3600, must-revalidate" }]
       },
       {
         source: "/api/:path*",

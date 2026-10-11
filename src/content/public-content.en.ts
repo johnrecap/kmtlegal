@@ -297,7 +297,7 @@ export const publicContentEn = {
     heroTitle: "Find the Right Legal Service",
     heroDescription: "Start from the matter type or search for the service closest to your need, then submit a structured request for office review.",
     sectionEyebrow: "Services",
-    sectionTitle: "Find the Right Legal Service",
+    sectionTitle: "Explore Legal Practices",
     sectionDescription: "Search by service or area of law, explore the details, and request a consultation.",
     searchLabel: "Search by service or matter",
     emptyTitle: "No matching services",

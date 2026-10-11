@@ -16,7 +16,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { ScrollProgress } from "@/components/ui/scroll-progress";
 import { PublicShell } from "@/components/layout";
 import { Badge, ButtonLink, MaterialSymbol } from "@/components/ui";
-import { canonicalPublicServiceSlug, findPublicService, getPublicContent, navForPath } from "@/content/public-content";
+import { canonicalPublicServiceSlug, findPublicService, getPublicContent } from "@/content/public-content";
 import { ConsultationBookingChatFromQuery } from "@/features/public-site/booking-query-client";
 import { ContactForm } from "@/features/public-site/contact-form";
 import { DirectoryFilter } from "@/features/public-site/directory-filter";
@@ -243,7 +243,7 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
   const currentPath = localizedPublicHref("/", locale);
 
   return (
-    <PublicShell currentPath={currentPath} locale={locale} navItems={navForPath("/", locale)}>
+    <PublicShell currentPath={currentPath} locale={locale}>
       <HeroParallaxLayers
         eyebrow={copy.heroEyebrow}
         title={copy.heroTitle}
@@ -349,15 +349,16 @@ export async function HomePageView({ locale }: { locale: PublicLocale }) {
 export function ServicesPageView({ locale }: { locale: PublicLocale }) {
   const content = getPublicContent(locale);
   const copy = content.servicesPage;
-  const teamLabel = content.navItems.find((item) => item.href === "/team")?.label ?? "/team";
+  const teamLabel = siteCompletionCopy[locale].team;
 
   return (
-    <PublicShell currentPath={localizedPublicHref("/services", locale)} locale={locale} navItems={navForPath("/services", locale)}>
-      <PageHero eyebrow={copy.heroEyebrow} image="/site-assets/b8b47a1dd8d5ce08-4332ade87c.webp" imagePosition="object-[center_62%]" size="compact" texture="dots" title={copy.heroTitle} description={copy.heroDescription} />
+    <PublicShell currentPath={localizedPublicHref("/services", locale)} locale={locale}>
+      <PageHero eyebrow={copy.heroEyebrow} image={officeAssets.meeting.src} imageAlt={siteCompletionCopy[locale].meetingAlt} imagePosition="object-[center_48%]" size="compact" texture="dots" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <DirectoryFilter
           emptyTitle={copy.emptyTitle}
           layout="rows"
+          categoryControl="select"
           locale={locale}
           items={content.legalServices.filter(service => isPracticeService(service.slug)).map((service) => ({
             title: service.title,
@@ -409,7 +410,7 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
   };
 
   return (
-    <PublicShell currentPath={localizedPublicHref(`/services/${currentSlug}`, locale)} locale={locale} navItems={navForPath("/services", locale)}>
+    <PublicShell currentPath={localizedPublicHref(`/services/${currentSlug}`, locale)} locale={locale}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }}
@@ -592,7 +593,7 @@ export function ServiceDetailPageView({ locale, slug }: { locale: PublicLocale; 
 
 export function TeamPageView({ locale }: {locale:PublicLocale}) {
  const c=siteCompletionCopy[locale];
- return <PublicShell locale={locale} currentPath={localizedPublicHref('/team',locale)} navItems={navForPath('/team',locale)}><PageHero eyebrow="KMT Legal" title={c.team} description={c.teamIntro} image={officeAssets.meeting.src} imageAlt={c.meetingAlt} size="compact"/><PublicSection title={c.next}><ButtonLink href={localizedPublicHref('/book-consultation',locale)}>{c.next}</ButtonLink></PublicSection></PublicShell>;
+ return <PublicShell locale={locale} currentPath={localizedPublicHref('/team',locale)}><PageHero eyebrow="KMT Legal" title={c.team} description={c.teamIntro} image={officeAssets.meeting.src} imageAlt={c.meetingAlt} size="compact"/><PublicSection title={c.next}><ButtonLink href={localizedPublicHref('/book-consultation',locale)}>{c.next}</ButtonLink></PublicSection></PublicShell>;
 }
 
 export function TeamDetailPageView({ locale, slug }: { locale: PublicLocale; slug: string }) {
@@ -614,7 +615,7 @@ export function TeamDetailPageView({ locale, slug }: { locale: PublicLocale; slu
   };
 
   return (
-    <PublicShell currentPath={localizedPublicHref(`/team/${lawyer.slug}`, locale)} locale={locale} navItems={navForPath("/team", locale)}>
+    <PublicShell currentPath={localizedPublicHref(`/team/${lawyer.slug}`, locale)} locale={locale}>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, "\\u003c") }}
@@ -763,7 +764,7 @@ export async function ArticlesPageView({ locale }: { locale: PublicLocale }) {
   const articles = await loadArticles(locale).catch(() => null);
 
   return (
-    <PublicShell currentPath={localizedPublicHref("/articles", locale)} locale={locale} navItems={navForPath("/articles", locale)}>
+    <PublicShell currentPath={localizedPublicHref("/articles", locale)} locale={locale}>
       <PageHero eyebrow={copy.heroEyebrow} image="/site-assets/2c0d439a80ab607f-9dddafeec7.webp" imagePosition="object-[center_50%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         {articles === null ? <ArticleUnavailableNotice locale={locale} /> : <DirectoryFilter
@@ -792,7 +793,7 @@ export async function ArticleDetailPageView({ locale, slug }: { locale: PublicLo
     loadArticle(alternateLocale, slug).catch(() => null),
     loadArticles(locale).catch(() => [])
   ]);
-  if (article === undefined) return <PublicShell locale={locale} currentPath={localizedPublicHref(`/articles/${slug}`, locale)} languageHref={null} navItems={navForPath("/articles", locale)}><PublicSection headingLevel="h1" title={publicExpansion[locale].unavailableTitle} description={publicExpansion[locale].unavailableDescription}><ArticleUnavailableNotice locale={locale} slug={slug} /></PublicSection></PublicShell>;
+  if (article === undefined) return <PublicShell locale={locale} currentPath={localizedPublicHref(`/articles/${slug}`, locale)} languageHref={null}><PublicSection headingLevel="h1" title={publicExpansion[locale].unavailableTitle} description={publicExpansion[locale].unavailableDescription}><ArticleUnavailableNotice locale={locale} slug={slug} /></PublicSection></PublicShell>;
   if (!article) notFound();
   const copy = content.articleDetail;
   const authorName = article.author ?? copy.defaultAuthor;
@@ -819,7 +820,6 @@ export async function ArticleDetailPageView({ locale, slug }: { locale: PublicLo
       currentPath={localizedPublicHref(`/articles/${article.slug}`, locale)}
       languageHref={alternateArticle ? localizedPublicHref(`/articles/${alternateArticle.slug}`, alternateLocale) : null}
       locale={locale}
-      navItems={navForPath("/articles", locale)}
     >
       <ReadingProgress />
       <script
@@ -889,7 +889,7 @@ export async function CaseStudiesPageView({ locale }: { locale: PublicLocale }) 
   const caseStudies = await loadCaseStudies(locale);
 
   return (
-    <PublicShell currentPath={localizedPublicHref("/case-studies", locale)} locale={locale} navItems={navForPath("/case-studies", locale)}>
+    <PublicShell currentPath={localizedPublicHref("/case-studies", locale)} locale={locale}>
       <PageHero eyebrow={copy.heroEyebrow} image="/site-assets/927e808522dfd86d-498191a3f4.webp" imagePosition="object-[center_50%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <DirectoryFilter
@@ -940,7 +940,6 @@ export async function CaseStudyDetailPageView({ locale, slug }: { locale: Public
       currentPath={localizedPublicHref(`/case-studies/${study.slug}`, locale)}
       languageHref={alternateStudy ? localizedPublicHref(`/case-studies/${alternateStudy.slug}`, alternateLocale) : null}
       locale={locale}
-      navItems={navForPath("/case-studies", locale)}
     >
       <script
         type="application/ld+json"
@@ -1035,7 +1034,7 @@ export function ContactPageView({ locale }: { locale: PublicLocale }) {
   const channels = content.contactChannels;
 
   return (
-    <PublicShell currentPath={localizedPublicHref("/contact", locale)} locale={locale} navItems={navForPath("/contact", locale)}>
+    <PublicShell currentPath={localizedPublicHref("/contact", locale)} locale={locale}>
       <PageHero eyebrow={copy.heroEyebrow} image={officeAssets.reception.src} imageAlt={siteCompletionCopy[locale].receptionAlt} imagePosition="object-[center_48%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
@@ -1083,7 +1082,7 @@ export async function BookConsultationPageView({ locale }: { locale: PublicLocal
   const chatCopy = conversationCopy[locale];
 
   return (
-    <PublicShell currentPath={localizedPublicHref("/book-consultation", locale)} locale={locale} navItems={navForPath("/book-consultation", locale)}>
+    <PublicShell currentPath={localizedPublicHref("/book-consultation", locale)} locale={locale}>
       <BookingFlowHeader
         eyebrow={copy.heroEyebrow}
         title={chatCopy.title}
@@ -1105,7 +1104,7 @@ export function PrivacyPageView({ locale }: { locale: PublicLocale }) {
   const updatedAt = formatPublicPolicyDate(copy.lastUpdated, locale);
 
   return (
-    <PublicShell currentPath={localizedPublicHref("/privacy", locale)} locale={locale} navItems={navForPath("/privacy", locale)}>
+    <PublicShell currentPath={localizedPublicHref("/privacy", locale)} locale={locale}>
       <PublicSection eyebrow={copy.eyebrow} title={copy.title} description={copy.description} headingLevel="h1">
         {/*
           Magic UI Scroll Progress: fixed gold hairline, no layout shift,
@@ -1210,7 +1209,7 @@ export function TermsPageView({ locale }: { locale: PublicLocale }) {
   const updatedAt = formatPublicPolicyDate(copy.lastUpdated, locale);
 
   return (
-    <PublicShell currentPath={localizedPublicHref("/terms", locale)} locale={locale} navItems={navForPath("/terms", locale)}>
+    <PublicShell currentPath={localizedPublicHref("/terms", locale)} locale={locale}>
       <PublicSection eyebrow={copy.eyebrow} title={copy.title} description={copy.description} headingLevel="h1">
         <ScrollProgress
           aria-hidden="true"

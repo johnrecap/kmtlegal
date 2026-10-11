@@ -11,9 +11,9 @@ import { localizedPublicHref, type PublicLocale } from "@/lib/public-locale";
  * Public floating dock: exactly two actions — Consultation (existing
  * localized route, same page, no modal) and WhatsApp (owner-approved shared
  * contact URL, new tab + noopener). Rendered by PublicShell
- * on every public route EXCEPT the consultation route itself (the shell
- * hides it there so the fixed overlay can never cover the assistant
- * composer); Admin/Client Portal (separate layouts) never get it.
+ * on editorial public routes. PublicShell hides the fixed overlay on
+ * form/account/payment routes so it cannot cover inputs or actions.
+ * Admin/Client Portal (separate layouts) never get it.
  */
 export function PublicFloatingDock({ locale = "en" }: { locale?: PublicLocale }) {
   const content = getPublicContent(locale);

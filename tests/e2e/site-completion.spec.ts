@@ -70,3 +70,116 @@ test('mobile grouped navigation, source cache boundaries and nonduplicated page 
  expect(views).toHaveLength(2);expect(errors).toEqual([]);
  for(const path of ['/business-ai','/ar/business-ai','/legal-intelligence','/ar/legal-intelligence'])expect((await page.request.get(path)).headers()['cache-control'],path).toContain('no-store');
 });
+
+test('public repair keeps dropdowns reachable and the service search usable', async ({page}) => {
+ test.setTimeout(240000);
+ for (const [path, label, child] of [['/services','Expertise','Explore practices'],['/ar/services','مجالات الخبرة','استعرض التخصصات']] as const) {
+  for (const width of [1280,1920]) {
+   await page.setViewportSize({width,height:900});
+   await page.emulateMedia({reducedMotion:width===1280?'reduce':'no-preference'});
+   await page.goto(path,{waitUntil:'networkidle'});
+   await expect(page.getByTestId('public-header')).toHaveCount(1);
+   const trigger=page.getByRole('button',{name:label,exact:true});
+   const target=page.getByRole('link',{name:child,exact:true});
+   await trigger.click();await expect(target).toBeVisible();
+   const from=await trigger.boundingBox(),to=await target.boundingBox();
+   expect(from).toBeTruthy();expect(to).toBeTruthy();
+   for(let step=1;step<=6;step++){await page.mouse.move(from!.x+from!.width/2+(to!.x+to!.width/2-from!.x-from!.width/2)*step/6,from!.y+from!.height/2+(to!.y+to!.height/2-from!.y-from!.height/2)*step/6,{steps:2});await expect(trigger).toHaveAttribute('aria-expanded','true');}
+   await page.waitForTimeout(180);await expect(target).toBeVisible();
+   await target.click();await expect(page).toHaveURL(path);
+   await trigger.click();await page.keyboard.press('Escape');await expect(trigger).toBeFocused();await expect(trigger).toHaveAttribute('aria-expanded','false');
+   await page.evaluate(()=>window.scrollTo(0,650));await page.waitForTimeout(250);await page.evaluate(()=>window.scrollTo(0,620));await page.waitForTimeout(250);
+   await trigger.click();const before=await trigger.boundingBox();await page.waitForTimeout(250);const after=await trigger.boundingBox();expect(Math.abs(before!.x-after!.x)+Math.abs(before!.y-after!.y)).toBeLessThan(3);await expect(target).toBeVisible();
+  }
+ }
+ await page.setViewportSize({width:1280,height:900});await page.goto('/services',{waitUntil:'networkidle'});
+ const filter=page.getByTestId('public-directory-filter'),input=filter.getByRole('textbox'),select=filter.getByRole('combobox');
+ expect((await input.boundingBox())!.width).toBeGreaterThan(280);
+ await expect(select.locator('option')).toHaveCount(19);
+ await input.fill('zzzz-no-practice');await expect(page.getByText('No matching services',{exact:true})).toBeVisible();
+ await filter.getByRole('button',{name:'Clear Filters',exact:true}).click();await expect(input).toHaveValue('');
+ for(const path of ['/services','/team','/contact','/services/claims-collections','/ar/services','/ar/team','/ar/contact','/ar/services/claims-collections']){const response=await page.request.get(path);expect(response.status(),path).toBe(200);const html=await response.text();expect(html,path).toContain('kmt-official-logo-');expect(html,path).toContain('name="kmt-release"');}
+});
+
+test('public account, login, payment and fallback pages share one current header', async ({page}) => {
+ test.setTimeout(120000);
+ for(const path of ['/login?next=%2Fclient%2Frequests&reason=expired&locale=en','/client-account/setup','/payment/consultation/return','/account/verify#token='+ 'a'.repeat(64) +'&locale=ar','/page-that-does-not-exist-kmt']){
+  await page.goto(path,{waitUntil:'networkidle'});
+  await expect(page.getByTestId('public-header'),path).toHaveCount(1);
+  await expect(page.getByRole('main'),path).toHaveCount(1);
+  await expect(page.getByTestId('public-header').locator('img[src*="kmt-official-logo-"]'),path).toHaveCount(2);
+  if(path.startsWith('/login')){
+   const href=await page.getByTestId('public-language-switch').first().getAttribute('href');const url=new URL(href!,'http://localhost');
+   expect(url.searchParams.get('next')).toBe('/client/requests');expect(url.searchParams.get('reason')).toBe('expired');expect(url.searchParams.get('locale')).toBe('ar');
+  }
+  if(path.startsWith('/account/verify')){
+   await expect(page.locator('html')).toHaveAttribute('dir','rtl');
+   expect(await page.getByTestId('public-language-switch').first().getAttribute('href')).toContain('token='+ 'a'.repeat(64));
+  }
+ }
+});
+
+test('repaired public shell fits Arabic and English from phone to wide desktop', async ({page}) => {
+ test.setTimeout(240000);
+ await page.goto('/',{waitUntil:'domcontentloaded'});
+ for(const locale of ['en','ar'] as const)for(const theme of ['light','dark'])for(const width of [360,768,1024,1280,1920]){
+  await page.setViewportSize({width,height:900});await page.evaluate(t=>localStorage.setItem('kmt-theme',t),theme);
+  for(const route of ['/services','/contact']){
+   await page.goto((locale==='ar'?'/ar':'')+route,{waitUntil:'networkidle'});
+   await expect(page.getByTestId('public-header')).toHaveCount(1);
+   await expect(page.getByRole('main')).toHaveCount(1);
+   if(route==='/contact')await expect(page.getByTestId('public-floating-dock')).toHaveCount(0);
+   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${locale} ${theme} ${width} ${route}`).toBe(true);
+   if(route==='/services'){
+    const box=await page.getByTestId('public-directory-filter').getByRole('textbox').boundingBox();
+    expect(box!.width,`${locale} ${theme} ${width} search`).toBeGreaterThan(width<768?220:280);
+   }
+  }
+ }
+ await page.setViewportSize({width:360,height:780});await page.goto('/ar/services',{waitUntil:'networkidle'});
+ const open=page.getByRole('button',{name:'التنقل المختصر',exact:true});await open.click();
+ const group=page.getByRole('button',{name:'مجالات الخبرة',exact:true});await group.click();
+ await expect(page.getByRole('link',{name:'استعرض التخصصات',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'إغلاق القائمة',exact:true}).click();await expect(open).toBeFocused();
+});
+
+test('every desktop dropdown retains first and last links through mouse and keyboard travel', async ({page}) => {
+ test.setTimeout(180000);await page.setViewportSize({width:1440,height:900});
+ for(const locale of ['en','ar'] as const){
+  const prefix=locale==='ar'?'/ar':'';
+  const groups=locale==='ar'?
+   [{name:'عن المكتب',first:'/our-firm',last:'/careers'},{name:'مجالات الخبرة',first:'/services',last:'/how-can-we-help'},{name:'خدمات الشركات',first:'/corporate-services',last:'/business-ai'},{name:'المعرفة',first:'/articles',last:'/legal-intelligence'}]:
+   [{name:'Our firm',first:'/our-firm',last:'/careers'},{name:'Expertise',first:'/services',last:'/how-can-we-help'},{name:'Corporate services',first:'/corporate-services',last:'/business-ai'},{name:'Knowledge',first:'/articles',last:'/legal-intelligence'}];
+  await page.goto(prefix||'/',{waitUntil:'networkidle'});
+  for(const group of groups){
+   const header=page.getByTestId('public-header'),trigger=header.getByRole('button',{name:group.name,exact:true});
+   for(const destination of [group.first,group.last]){
+    await trigger.click();const link=header.locator(`a[href="${prefix+destination}"]`).first();await expect(link).toBeVisible();
+    const from=await trigger.boundingBox(),to=await link.boundingBox();expect(from).toBeTruthy();expect(to).toBeTruthy();
+    await page.mouse.move(from!.x+from!.width/2,from!.y+from!.height/2);
+    await page.mouse.move(to!.x+to!.width/2,to!.y+to!.height/2,{steps:12});
+    await page.waitForTimeout(120);await expect(trigger).toHaveAttribute('aria-expanded','true');await link.click();
+    await expect(page).toHaveURL(prefix+destination);
+   }
+   await trigger.click();await page.keyboard.press('Tab');await expect(header.locator(`a[href="${prefix+group.first}"]`).first()).toBeFocused();
+   await page.keyboard.press('Shift+Tab');await expect(trigger).toBeFocused();
+   await page.keyboard.press('Escape');await expect(trigger).toHaveAttribute('aria-expanded','false');
+  }
+ }
+});
+
+test('desktop menus close on explicit actions and mobile groups close after navigation', async ({page}) => {
+ test.setTimeout(120000);await page.setViewportSize({width:1440,height:900});await page.goto('/',{waitUntil:'networkidle'});
+ const header=page.getByTestId('public-header'),firm=header.getByRole('button',{name:'Our firm',exact:true}),expertise=header.getByRole('button',{name:'Expertise',exact:true});
+ await firm.click();await expect(firm).toHaveAttribute('aria-expanded','true');
+ await firm.click();await expect(firm).toHaveAttribute('aria-expanded','false');
+ await firm.click();await expertise.click();await expect(firm).toHaveAttribute('aria-expanded','false');await expect(expertise).toHaveAttribute('aria-expanded','true');
+ await page.getByRole('heading',{level:1}).click();await expect(expertise).toHaveAttribute('aria-expanded','false');
+ await firm.focus();await page.keyboard.press('Enter');await expect(firm).toHaveAttribute('aria-expanded','true');
+ await header.getByRole('link',{name:'Request a Consultation',exact:true}).focus();await expect(firm).toHaveAttribute('aria-expanded','false');
+ await page.setViewportSize({width:390,height:780});await page.goto('/ar/services',{waitUntil:'networkidle'});
+ const open=page.getByRole('button',{name:'التنقل المختصر',exact:true});await open.click();
+ const group=page.getByRole('button',{name:'مجالات الخبرة',exact:true});await group.click();
+ await page.getByRole('link',{name:'كيف يمكننا مساعدتك؟',exact:true}).click();
+ await expect(page).toHaveURL('/ar/how-can-we-help');await expect(open).toHaveAttribute('aria-expanded','false');
+});

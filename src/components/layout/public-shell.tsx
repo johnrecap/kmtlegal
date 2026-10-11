@@ -7,7 +7,7 @@ import { KmtUnderlinedText } from "@/components/ui/kmt-text-underline";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { ShimmerCtaLink } from "@/components/ui/shimmer-cta-link";
 import { publicOfficeProfile } from "@/content/public-office-profile";
-import { getPublicContent } from "@/content/public-content";
+import { getPublicContent, navForPath } from "@/content/public-content";
 import { publicMotionIcon, publicMotionIconHalo, publicMotionTextLink } from "@/features/public-site/public-motion";
 import { cn } from "@/lib/cn";
 import { localizedPublicHref, publicLocaleDirection, publicLocalePrefix, stripPublicLocalePrefix, type PublicLocale } from "@/lib/public-locale";
@@ -22,7 +22,6 @@ export type PublicNavItem = {
 };
 
 export function PublicShell({
-  navItems,
   children,
   className,
   locale = "en",
@@ -30,7 +29,6 @@ export function PublicShell({
   languageHref: languageHrefOverride,
   languageSearch
 }: {
-  navItems: PublicNavItem[];
   children: ReactNode;
   className?: string;
   locale?: PublicLocale;
@@ -51,11 +49,10 @@ export function PublicShell({
     ? `${stripPublicLocalePrefix(currentPath)}${searchSuffix}`
     : `${publicLocalePrefix("ar")}${stripPublicLocalePrefix(currentPath) === "/" ? "" : stripPublicLocalePrefix(currentPath)}${searchSuffix}`;
   const languageHref = languageHrefOverride === undefined ? defaultLanguageHref : languageHrefOverride;
-  // The dock steps aside on the consultation route itself: its primary
-  // action IS that page, and a fixed overlay must never cover the
-  // assistant composer (a persistent focused input). Every other public
-  // route keeps the dock. Functional no-overlap wins over ubiquity here.
-  const hideDock = ["/book-consultation", "/business-ai"].includes(stripPublicLocalePrefix(currentPath));
+  // Keep the fixed actions off pages with forms or payment/account actions.
+  // Their header and page CTAs remain available without covering inputs.
+  const hideDock = ["/book-consultation", "/business-ai", "/contact", "/client-account/setup", "/account/verify", "/payment/consultation/return"].includes(stripPublicLocalePrefix(currentPath));
+  const navItems = navForPath(stripPublicLocalePrefix(currentPath), locale);
 
   return (
     <div
@@ -188,9 +185,7 @@ export function PublicShell({
           </div>
         </div>
       </footer>
-      {/* Public floating dock (consultation + WhatsApp): fixed overlay with
-          click-through surroundings, so it never blocks page content.
-          Hidden on the consultation route (see above). */}
+      {/* Keep the floating actions on editorial pages, away from form fields. */}
       {hideDock ? null : <PublicFloatingDock locale={locale} />}
     </div>
   );

@@ -2,7 +2,6 @@ import { unstable_noStore as noStore } from "next/cache";
 import { BusinessFormationInterview } from "./business-formation-interview";
 import Link from 'next/link';
 import { PublicShell } from '@/components/layout';
-import { navForPath } from '@/content/public-content';
 import { publicHub, type ContentHubSlug } from '@/content/public-hubs';
 import { officeAssets } from '@/content/office-assets';
 import { siteCompletionCopy } from '@/content/site-completion-copy';
@@ -15,7 +14,7 @@ import { cn } from '@/lib/cn';
 export function ContentHubPage({locale,slug}:{locale:PublicLocale;slug:ContentHubSlug}) {
  if(slug==='business-ai')noStore();
  const c=publicHub(slug,locale), shared=siteCompletionCopy[locale];
- return <PublicShell locale={locale} currentPath={localizedPublicHref('/'+slug,locale)} navItems={navForPath('/'+slug,locale)}>
+ return <PublicShell locale={locale} currentPath={localizedPublicHref('/'+slug,locale)}>
   <PageHero eyebrow="KMT Legal" title={c.title} description={c.description} image={officeAssets.meeting.src} imageAlt={shared.meetingAlt} size="compact"/>
   <PublicSection title={c.title}>
    {slug==='business-ai'?<BusinessFormationInterview locale={locale}/>:null}

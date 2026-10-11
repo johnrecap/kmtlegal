@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const rootMetadata: Metadata = {
   title: "KMT Legal Platform",
   description: "Structured legal support, consultation requests, and client portal services from KMT Legal.",
+  other: { "kmt-release": process.env.APP_RELEASE || "development" },
   icons: {
     icon: [
       { url: "/favicon.ico", type: "image/png" },

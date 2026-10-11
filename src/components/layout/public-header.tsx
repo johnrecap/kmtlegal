@@ -77,11 +77,13 @@ function ClientLoginLink({ className, label, locale }: { className?: string; loc
 export function PublicHeader({
   navItems,
   locale = "en",
-  languageHref
+  languageHref,
+  showClientLogin = true
 }: {
   navItems: PublicNavItem[];
   locale?: PublicLocale;
   languageHref?: string | null;
+  showClientLogin?: boolean;
 }) {
   const content = getPublicContent(locale);
   const shell = content.shell;
@@ -89,13 +91,19 @@ export function PublicHeader({
   const [concealed, setConcealed] = useState(false);
   const [servicesActive, setServicesActive] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [headerFocused, setHeaderFocused] = useState(false);
+  const [focusGeometryScrolled, setFocusGeometryScrolled] = useState(false);
+  const [openGeometryScrolled, setOpenGeometryScrolled] = useState(false);
+  const [mobileGeometryScrolled, setMobileGeometryScrolled] = useState(false);
   const lastY = useRef(0);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
 
   const [openGroup, setOpenGroup] = useState<string | null>(null);
 
   const closeMobile = () => {
     setMobileOpen(false);
     setServicesActive(null);
+    setOpenGroup(null);
   };
 
   useEffect(() => {
@@ -118,9 +126,13 @@ export function PublicHeader({
     };
   }, []);
 
-  // Floating pill engages after scroll OR while the Services flyout is open
-  // (so the open dropdown always sits on a readable surface at page top).
-  const glassed = scrolled || servicesActive !== null || mobileOpen;
+  // Opening a menu must never shift its trigger under the pointer. Hold the
+  // current geometry until the menu closes; the pill otherwise follows scroll.
+  const glassed = servicesActive !== null ? openGeometryScrolled : headerFocused ? focusGeometryScrolled : scrolled;
+  const toggleGroup = (href: string) => {
+    if (servicesActive === null) setOpenGeometryScrolled(headerFocused ? focusGeometryScrolled : scrolled);
+    setServicesActive(servicesActive === href ? null : href);
+  };
   const sheetSide = locale === "ar" ? "right" : "left";
   const navLinkClasses = "relative inline-flex items-center px-3 text-sm font-semibold transition-colors duration-kmt-fast ease-kmt-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-6px] focus-visible:outline-ring motion-reduce:transition-none";
 
@@ -158,7 +170,12 @@ export function PublicHeader({
 
   return (
     <MotionConfig reducedMotion="user">
-      <header className={cn("sticky top-0 z-50 transition-transform duration-kmt-normal ease-kmt-out motion-reduce:transition-none", !concealed || servicesActive !== null || mobileOpen ? "translate-y-0" : "-translate-y-full")}>
+      <header
+        data-testid="public-header"
+        onFocusCapture={() => { if (!headerFocused) setFocusGeometryScrolled(scrolled); setHeaderFocused(true); }}
+        onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setHeaderFocused(false); }}
+        className={cn("sticky top-0 z-50 transition-transform duration-kmt-normal ease-kmt-out motion-reduce:transition-none", !concealed || servicesActive !== null || mobileOpen || headerFocused ? "translate-y-0" : "-translate-y-full")}
+      >
         {/* Desktop: Aceternity Resizable Navbar shell + Navbar Menu flyout. */}
         <NavBody visible={glassed} className="px-4 sm:px-6 lg:hidden xl:flex max-w-[1440px]">
           {/* Logo size stays constant across scroll states so the sticky
@@ -166,24 +183,25 @@ export function PublicHeader({
           <KmtBrandLogo className={navItems[0]?.active ? "kmt-logo-enter" : undefined} href={localizedPublicHref("/", locale)} size="md" surface="theme" variant="public" />
           <nav aria-label={shell.mainNavLabel} className="flex min-w-0 flex-1 items-stretch justify-center self-stretch">
             <Menu setActive={setServicesActive} className="min-w-0 flex-1 items-center gap-0.5 space-x-0 self-stretch px-0 py-0">
-              {navItems.map(item => {const children=navigationChildren(locale,item.href);return children.length ? <MenuItem key={item.href} item={item.href} activeLink={item.active} active={servicesActive} setActive={setServicesActive} onToggle={()=>setServicesActive(servicesActive===item.href?null:item.href)} ariaExpanded={servicesActive===item.href} triggerClassName={cn(navLinkClasses,publicMotionNavLink,"min-h-11")} trigger={<>{item.label}<MaterialSymbol name="expand_more"/></>}><ul className="min-w-56 space-y-1">{children.map(child=><li key={child.href}><Link className="flex min-h-11 items-center rounded-lg px-3 text-sm hover:bg-[var(--kmt-public-hover)] focus-visible:outline" href={localizedPublicHref(child.href,locale)} onClick={()=>setServicesActive(null)}>{child.label}</Link></li>)}</ul></MenuItem>:<Link key={item.href} className={cn(navLinkClasses,publicMotionNavLink,"min-h-11")} href={localizedPublicHref(item.href,locale)} aria-current={item.active?'page':undefined}>{item.label}</Link>;})}
+              {navItems.map(item => {const children=navigationChildren(locale,item.href);return children.length ? <MenuItem key={item.href} item={item.href} activeLink={item.active} active={servicesActive} setActive={setServicesActive} onToggle={()=>toggleGroup(item.href)} ariaExpanded={servicesActive===item.href} triggerClassName={cn(navLinkClasses,publicMotionNavLink,"min-h-11")} trigger={<>{item.label}<MaterialSymbol name="expand_more"/></>}><ul className="min-w-56 space-y-1">{children.map(child=><li key={child.href}><Link className="flex min-h-11 items-center rounded-lg px-3 text-sm hover:bg-[var(--kmt-public-hover)] focus-visible:outline" href={localizedPublicHref(child.href,locale)} onClick={()=>setServicesActive(null)}>{child.label}</Link></li>)}</ul></MenuItem>:<Link key={item.href} className={cn(navLinkClasses,publicMotionNavLink,"min-h-11")} href={localizedPublicHref(item.href,locale)} aria-current={item.active?'page':undefined}>{item.label}</Link>;})}
             </Menu>
           </nav>
           <div className="flex shrink-0 items-center gap-2">
             {languageAction}
             {themeAction}
-            <ClientLoginLink label={shell.clientLoginCta} locale={locale} />
+            {showClientLogin ? <ClientLoginLink label={shell.clientLoginCta} locale={locale} /> : null}
             <ConsultationLink className="px-3 max-sm:hidden sm:px-4" label={shell.consultationCta} locale={locale} />
           </div>
         </NavBody>
 
         {/* Mobile: Aceternity MobileNav bar + Animate UI Sheet drawer. */}
-        <MobileNav visible={scrolled} className="px-4 lg:flex xl:hidden">
+        <MobileNav visible={mobileOpen ? mobileGeometryScrolled : headerFocused ? focusGeometryScrolled : scrolled} className="px-4 lg:flex xl:hidden">
           <MobileNavHeader className="h-auto min-h-16 w-full flex-wrap gap-2">
             <div className="flex min-w-0 flex-wrap items-center gap-1">
-              <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <Sheet open={mobileOpen} onOpenChange={open => { if (open) setMobileGeometryScrolled(scrolled); else setOpenGroup(null); setMobileOpen(open); }}>
                 <SheetTrigger asChild>
                   <button
+                    ref={mobileTriggerRef}
                     type="button"
                     aria-expanded={mobileOpen}
                     aria-label={shell.compactNavLabel}
@@ -193,6 +211,7 @@ export function PublicHeader({
                   </button>
                 </SheetTrigger>
                 <SheetContent
+                  onCloseAutoFocus={event => { event.preventDefault(); mobileTriggerRef.current?.focus(); }}
                   side={sheetSide}
                   showCloseButton={false}
                   className="w-[min(22rem,90vw)] border-kmt-gold/25 bg-[color:var(--kmt-public-header)] p-0 backdrop-blur-xl"
@@ -211,9 +230,9 @@ export function PublicHeader({
                     <ul className="mt-3 space-y-1">
                       {navItems.map(item=>{const children=navigationChildren(locale,item.href);return <li key={item.href}><div className="flex items-center"><Link className="flex min-h-12 flex-1 items-center px-3 font-semibold" href={localizedPublicHref(item.href,locale)} onClick={closeMobile}>{item.label}</Link>{children.length?<button type="button" className="h-12 w-12 focus-visible:outline" aria-label={item.label} aria-expanded={openGroup===item.href} onClick={()=>setOpenGroup(openGroup===item.href?null:item.href)}><MaterialSymbol name={openGroup===item.href?'expand_less':'expand_more'}/></button>:null}</div>{children.length&&openGroup===item.href?<ul className="ms-4 border-s border-[var(--kmt-public-line)] ps-3">{children.map(child=><li key={child.href}><Link className="flex min-h-11 items-center px-3 text-sm" href={localizedPublicHref(child.href,locale)} onClick={closeMobile}>{child.label}</Link></li>)}</ul>:null}</li>;})}
                     </ul>
-                    <Link className="mt-4 flex min-h-11 items-center gap-2 rounded-lg border border-[var(--kmt-public-line)] px-3" href={`/login?next=/client&locale=${locale}`} onClick={closeMobile}>
+                    {showClientLogin ? <Link className="mt-4 flex min-h-11 items-center gap-2 rounded-lg border border-[var(--kmt-public-line)] px-3" href={`/login?next=/client&locale=${locale}`} onClick={closeMobile}>
                       <MaterialSymbol name="account_circle" />{shell.clientLoginCta}
-                    </Link>
+                    </Link> : null}
                   </nav>
                 </SheetContent>
               </Sheet>

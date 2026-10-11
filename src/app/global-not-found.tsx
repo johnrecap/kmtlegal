@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
+import { KmtBrandLogo } from "@/components/brand";
+import { PublicHeader } from "@/components/layout/public-header";
+import { ThemeProvider } from "@/components/theme/theme-provider";
+import { navForPath } from "@/content/public-content";
 import { notFoundContent as copy } from "@/content/not-found-content";
 import "./globals.css";
 
@@ -14,6 +17,8 @@ export default function GlobalNotFound() {
   return (
     <html lang="ar" dir="rtl">
       <body className="bg-[var(--kmt-public-canvas)] text-[var(--kmt-public-text)]">
+        <ThemeProvider defaultTheme="dark">
+        <PublicHeader locale="ar" navItems={navForPath("/", "ar")} languageHref="/" />
         <main
           className="relative isolate flex min-h-screen items-center overflow-hidden px-4 py-10 sm:px-6 lg:px-8"
           data-testid="global-not-found"
@@ -29,15 +34,7 @@ export default function GlobalNotFound() {
 
           <section className="mx-auto w-full max-w-5xl rounded-[2rem] border border-[rgba(199,154,82,0.25)] bg-black/25 p-6 shadow-2xl shadow-black/40 backdrop-blur-sm sm:p-10 lg:p-14">
             <div className="flex items-center gap-3">
-              <Image
-                alt=""
-                aria-hidden="true"
-                className="h-12 w-12 rounded-xl object-cover"
-                height={48}
-                priority
-                src="/brand/kmt-logo-icon.png"
-                width={48}
-              />
+              <KmtBrandLogo variant="public" size="sm" imageClassName="!h-12 !w-12" />
               <p className="text-sm font-semibold uppercase tracking-[0.22em] text-[var(--kmt-public-gold)]" dir="ltr">
                 {copy.brand}
               </p>
@@ -91,6 +88,7 @@ export default function GlobalNotFound() {
             </div>
           </section>
         </main>
+        </ThemeProvider>
       </body>
     </html>
   );

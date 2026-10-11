@@ -95,12 +95,12 @@ describe("PLAN-26 panel-aware installer contract", () => {
     expect(source).not.toMatch(/\bapt-get\b|\bsystemctl\b|\bcertbot\b|\/etc\/nginx/);
   });
 
-  it("purges aaPanel proxy cache and retries public build verification on stale HTML", () => {
+  it("bypasses shared HTML cache and checks the complete sitemap without bypass request headers", () => {
     const source = fs.readFileSync(path.join(process.cwd(), "deploy", "install", "aapanel-pm2-update.sh"), "utf8");
 
     expect(source).toContain("PUBLIC_CACHE_PURGE_ENABLED");
     expect(source).toContain("PUBLIC_CACHE_POLICY_ENABLED");
-    expect(source).toContain("PUBLIC_CACHEABLE_VERIFY_PATHS");
+    expect(source).toContain("PUBLIC_HTML_NO_STORE_VERIFY_PATHS");
     expect(source).toContain("SENSITIVE_CACHE_VERIFY_PATHS");
     expect(source).toContain("PUBLIC_PROXY_CACHE_DIRS");
     expect(source).toContain("PUBLIC_VERIFY_RETRY_DELAY_SECONDS");
@@ -109,10 +109,16 @@ describe("PLAN-26 panel-aware installer contract", () => {
     expect(source).toContain("assertPublicCacheHeaders");
     expect(source).toContain("assertSensitiveNoStoreHeaders");
     expect(source).toContain("purge_public_proxy_cache");
-    expect(source).toContain("/www/wwwroot/%s/proxy_cache_dir");
-    expect(source).toContain("kmt-public-cache-policy");
+    expect(source).toContain("proxy_cache_bypass $kmt_skip_proxy_cache;");
+    expect(source).toContain("proxy_no_cache $kmt_skip_proxy_cache;");
+    expect(source).toContain("kmt-html-no-store");
+    expect(source).toContain("function sitemapPaths(xml)");
+    expect(source).toContain("function extractRelease(html)");
+    expect(source).toContain("const response = await fetch(url);");
+    expect(source).not.toContain("printf '/www/wwwroot/%s/proxy_cache_dir");
     expect(source).toContain("next-no-cache");
-    expect(source).toContain('[[ "${cache_dir}" == /www/wwwroot/*/proxy_cache_dir ]]');
+    expect(source).toContain('realpath -e -- "${cache_dir}"');
+    expect(source).toContain('"/www/wwwroot/${host}/proxy_cache_dir"');
     expect(source).not.toMatch(/rm -rf\s+["']?\/["']?(\s|$)/);
   });
 });

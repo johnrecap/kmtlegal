@@ -4,6 +4,8 @@ import { TwoFactorForm } from "@/features/auth/two-factor-form";
 import { getAuthContextForPage } from "@/server/auth/page-guards";
 import { isStaffTwoFactorEnabled } from "@/server/auth/two-factor";
 import { signedInRedirectPath } from "@/lib/auth-routing";
+import { PublicHeader } from "@/components/layout/public-header";
+import { navForPath } from "@/content/public-content";
 
 export const dynamic = "force-dynamic";
 
@@ -25,8 +27,11 @@ export default async function TwoFactorPage({ searchParams }: { searchParams?: P
   if (!isStaffTwoFactorEnabled()) redirect(next ? `/login?next=${encodeURIComponent(next)}` : "/login");
 
   return (
+    <div dir="rtl" lang="ar">
+      <PublicHeader locale="ar" navItems={navForPath("/", "ar")} languageHref={null} showClientLogin={false} />
     <main className="flex min-h-screen items-center justify-center bg-kmt-canvas px-4 py-10 sm:px-6 lg:px-8">
       <TwoFactorForm locale="ar" next={next} />
     </main>
+    </div>
   );
 }

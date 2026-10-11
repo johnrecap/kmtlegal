@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -79,7 +79,7 @@ export const MenuItem = ({
           transition={transition}
         >
           {active === item && (
-            <div className="absolute top-[calc(100%_+_1.2rem)] start-1/2 transform -translate-x-1/2 rtl:translate-x-1/2 pt-4">
+            <div className="absolute top-full start-1/2 z-50 -translate-x-1/2 pt-2 rtl:translate-x-1/2">
               <motion.div
                 transition={transition}
                 layoutId="active" // layoutId ensures smooth animation
@@ -109,9 +109,19 @@ export const Menu = ({
   children: React.ReactNode;
   className?: string;
 }) => {
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const closeOutside = (event: PointerEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) setActive(null);
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    return () => document.removeEventListener("pointerdown", closeOutside);
+  }, [setActive]);
+
   return (
-    <nav
-      onMouseLeave={() => setActive(null)} // resets the state
+    <div
+      ref={menuRef}
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setActive(null);
       }}
@@ -127,7 +137,7 @@ export const Menu = ({
       )}
     >
       {children}
-    </nav>
+    </div>
   );
 };
 

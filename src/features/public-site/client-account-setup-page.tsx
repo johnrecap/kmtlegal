@@ -3,10 +3,7 @@ import { redirect } from "next/navigation";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/animate-ui/components/radix/accordion";
 import { PublicShell } from "@/components/layout/public-shell";
 import { MaterialSymbol } from "@/components/ui";
-import {
-  getPublicContent,
-  navForPath
-} from "@/content/public-content";
+import { getPublicContent } from "@/content/public-content";
 import { ClientAccountSetupForm } from "@/features/public-site/client-account-setup-form";
 import { cn } from "@/lib/cn";
 import { formatDateTime } from "@/lib/legal-format";
@@ -42,9 +39,8 @@ export async function ClientAccountSetupPage({
       currentPath={locale === "ar" ? "/ar/client-account/setup" : "/client-account/setup"}
       languageSearch={token ? `token=${encodeURIComponent(token)}` : undefined}
       locale={locale}
-      navItems={navForPath("/", locale)}
     >
-      <main
+      <div
         className="mx-auto min-h-[68vh] max-w-[1060px] px-4 py-14 sm:px-6 lg:px-10"
         dir={locale === "ar" ? "rtl" : "ltr"}
       >
@@ -124,7 +120,7 @@ export async function ClientAccountSetupPage({
             </>
           ) : null}
         </section>
-      </main>
+      </div>
     </PublicShell>
   );
 }

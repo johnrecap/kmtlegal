@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
-import { KmtBrandLogo } from "@/components/brand";
+import { Suspense, type ReactNode } from "react";
+import { PublicHeader } from "@/components/layout/public-header";
 import { getAuthContent } from "@/content/auth-content";
+import { navForPath } from "@/content/public-content";
 import { normalizeClientLocale, type ClientLocale } from "@/content/client-content";
 import { LoginForm } from "@/features/auth/login-form";
 import { getApplicationReadiness } from "@/server/health/runtime-readiness";
@@ -37,30 +38,15 @@ export default async function LoginPage({
   const readiness = isNextBuildPhase() ? null : await getApplicationReadiness();
 
   if (readiness && !readiness.ready) {
-    return <LoginReadinessBlocked locale={locale} checks={readiness.checks} />;
+    return <LoginPublicFrame locale={locale} params={params}><LoginReadinessBlocked locale={locale} checks={readiness.checks} /></LoginPublicFrame>;
   }
 
   return (
+    <LoginPublicFrame locale={locale} params={params}>
     <main className="min-h-screen bg-kmt-canvas" dir={locale === "ar" ? "rtl" : "ltr"} lang={locale}>
       <div className="mx-auto grid min-h-screen max-w-6xl items-center gap-10 px-4 py-8 sm:px-6 lg:grid-cols-[1fr_460px] lg:px-10">
         <section className="max-w-xl">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <KmtBrandLogo
-              className="max-w-[13rem]"
-              href={locale === "ar" ? "/ar" : "/"}
-              size="sm"
-              variant="full"
-            />
-            <Link
-              className="inline-flex min-h-11 items-center rounded-full border border-kmt-border bg-white px-4 text-sm font-semibold text-kmt-navy transition-colors hover:border-kmt-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kmt-gold"
-              href={loginLanguageHref(locale === "ar" ? "en" : "ar", params)}
-              hrefLang={locale === "ar" ? "en" : "ar"}
-            >
-              {content.login.languageSwitch}
-              <span className="sr-only"> — {content.login.languageSwitchLabel}</span>
-            </Link>
-          </div>
-          <p className="mt-10 text-sm font-semibold text-kmt-gold">{content.login.eyebrow}</p>
+          <p className="text-sm font-semibold text-kmt-gold">{content.login.eyebrow}</p>
           <h1 className="mt-3 text-4xl font-semibold leading-tight text-kmt-ink">{content.login.title}</h1>
           <p className="mt-4 text-base leading-8 text-kmt-muted">{content.login.description}</p>
           <div className="mt-8 rounded-lg border border-kmt-border bg-white p-5 text-sm leading-7 text-kmt-muted">
@@ -78,7 +64,15 @@ export default async function LoginPage({
         </Suspense>
       </div>
     </main>
+    </LoginPublicFrame>
   );
+}
+
+function LoginPublicFrame({ children, locale, params }: { children: ReactNode; locale: ClientLocale; params?: LoginSearchParams }) {
+  return <div className="min-h-screen bg-[var(--kmt-public-canvas)]" dir={locale === "ar" ? "rtl" : "ltr"} lang={locale}>
+    <PublicHeader locale={locale} navItems={navForPath("/", locale)} languageHref={loginLanguageHref(locale === "ar" ? "en" : "ar", params)} showClientLogin={false} />
+    {children}
+  </div>;
 }
 
 function loginLanguageHref(locale: ClientLocale, params?: LoginSearchParams) {

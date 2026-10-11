@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-const DEFAULT_ZONE_NAME = "saeeddev.com";
-const DEFAULT_HOST = "kmtlegal.saeeddev.com";
-const DEFAULT_EDGE_TTL_SECONDS = 900;
+const DEFAULT_ZONE_NAME = "kmtlegal.org";
+const DEFAULT_HOST = "kmtlegal.org";
 const PHASE = "http_request_cache_settings";
 
 const MANAGED_REFS = new Set([
   "kmt_sensitive_bypass_v1",
   "kmt_public_html_cache_v1",
+  "kmt_html_bypass_v2",
 ]);
 
 function parseArgs(argv) {
@@ -18,7 +18,6 @@ function parseArgs(argv) {
     host: process.env.CLOUDFLARE_PUBLIC_HOST || DEFAULT_HOST,
     zoneName: process.env.CLOUDFLARE_ZONE_NAME || DEFAULT_ZONE_NAME,
     zoneId: process.env.CLOUDFLARE_ZONE_ID || "",
-    edgeTtl: Number(process.env.CLOUDFLARE_PUBLIC_EDGE_TTL_SECONDS || DEFAULT_EDGE_TTL_SECONDS),
   };
 
   for (const arg of argv) {
@@ -28,17 +27,12 @@ function parseArgs(argv) {
     else if (arg.startsWith("--host=")) args.host = arg.slice("--host=".length);
     else if (arg.startsWith("--zone=")) args.zoneName = arg.slice("--zone=".length);
     else if (arg.startsWith("--zone-id=")) args.zoneId = arg.slice("--zone-id=".length);
-    else if (arg.startsWith("--edge-ttl=")) args.edgeTtl = Number(arg.slice("--edge-ttl=".length));
     else if (arg === "--help" || arg === "-h") {
       printUsage();
       process.exit(0);
     } else {
       throw new Error(`Unknown argument: ${arg}`);
     }
-  }
-
-  if (!Number.isInteger(args.edgeTtl) || args.edgeTtl < 60) {
-    throw new Error("edge TTL must be an integer of at least 60 seconds.");
   }
 
   if (!args.apply && !args.dryRun) args.print = true;
@@ -52,10 +46,9 @@ function printUsage() {
   CLOUDFLARE_API_TOKEN=... node scripts/cloudflare-public-cache-rule.mjs --apply
 
 Options:
-  --host=kmtlegal.saeeddev.com
-  --zone=saeeddev.com
+  --host=kmtlegal.org
+  --zone=kmtlegal.org
   --zone-id=<zone id>
-  --edge-ttl=900
 
 Required Cloudflare token permissions for --dry-run/--apply:
   Zone: Read
@@ -63,81 +56,15 @@ Required Cloudflare token permissions for --dry-run/--apply:
 `);
 }
 
-function pathExact(path) {
-  return `http.request.uri.path eq "${path}"`;
-}
-
-function pathPrefix(path) {
-  return `(${pathExact(path)} or starts_with(http.request.uri.path, "${path}/"))`;
-}
-
-function buildRules({ host, edgeTtl }) {
-  const hostAndMethod = `(http.host eq "${host}" and http.request.method in {"GET" "HEAD"})`;
-
-  const sensitivePaths = [
-    "/api",
-    "/admin",
-    "/client",
-    "/login",
-    "/install",
-    "/payment",
-    "/ar/payment",
-    "/account",
-    "/client-account",
-    "/ar/client-account",
-    "/legal-intelligence",
-    "/ar/legal-intelligence",
-    "/business-ai",
-    "/ar/business-ai",
-    "/articles",
-    "/ar/articles",
-    "/sitemap.xml",
-  ];
-
-  const publicPaths = [
-    "/",
-    "/ar",
-    "/services",
-    "/our-firm",
-    "/industries",
-    "/team",
-
-    "/contact",
-    "/book-consultation",
-    "/privacy",
-    "/terms",
-  ];
-
-  const sensitiveExpression = sensitivePaths.map(pathPrefix).join(" or ");
-  const publicExpression = publicPaths
-    .map((path) => (path === "/" ? pathExact("/") : pathPrefix(path)))
-    .join(" or ");
-
+function buildRules({ host }) {
   return [
     {
-      ref: "kmt_sensitive_bypass_v1",
-      description: `KMT Legal: bypass cache for private/API paths on ${host}`,
-      expression: `${hostAndMethod} and (${sensitiveExpression})`,
+      ref: "kmt_html_bypass_v2",
+      description: `KMT Legal: bypass shared cache for navigation, API, and replaceable assets on ${host}`,
+      expression: `(http.host eq "${host}" and not starts_with(http.request.uri.path, "/_next/static/"))`,
       action: "set_cache_settings",
       action_parameters: {
         cache: false,
-      },
-      enabled: true,
-    },
-    {
-      ref: "kmt_public_html_cache_v1",
-      description: `KMT Legal: cache public HTML paths on ${host}`,
-      expression: `${hostAndMethod} and not (${sensitiveExpression}) and (${publicExpression})`,
-      action: "set_cache_settings",
-      action_parameters: {
-        cache: true,
-        edge_ttl: {
-          mode: "override_origin",
-          default: edgeTtl,
-        },
-        browser_ttl: {
-          mode: "respect_origin",
-        },
       },
       enabled: true,
     },
@@ -196,7 +123,7 @@ function buildRulesetPayload(existingRuleset, newRules) {
 
   return {
     name: existingRuleset?.result?.name || "KMT Legal cache settings",
-    description: "Public HTML cache and private path bypass rules for KMT Legal.",
+    description: "Bypass shared cache for KMT Legal navigation and mutable routes.",
     kind: "zone",
     phase: PHASE,
     rules: [...preservedRules, ...newRules],
@@ -208,7 +135,7 @@ async function main() {
   const newRules = buildRules(args);
 
   if (args.print) {
-    console.log(JSON.stringify({ mode: "print", host: args.host, zone: args.zoneName, edgeTtl: args.edgeTtl, rules: newRules }, null, 2));
+    console.log(JSON.stringify({ mode: "print", host: args.host, zone: args.zoneName, rules: newRules }, null, 2));
     return;
   }
 

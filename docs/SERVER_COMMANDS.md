@@ -320,7 +320,7 @@ pm2 logs kmtlegal-payment-maintenance --lines 80 --nostream
 
 After restart, check `pm2 status kmtlegal-payment-maintenance` twice around one minute apart. The process should stay `online` and the restart counter should not keep increasing. If the counter increases every few seconds, the watch process is exiting and PM2 is only relaunching it.
 
-## Cloudflare Public HTML Cache Rule
+## Cloudflare navigation cache bypass
 
 Use this only for the public domain cache layer. It is separate from the aaPanel/PM2 deploy and should be run only with a Cloudflare API token that can edit Cache Rules/Zone Rulesets.
 
@@ -329,10 +329,7 @@ Required token permissions:
 - `Zone: Read`
 - `Cache Rules: Edit` or `Zone Rulesets: Edit`
 
-The script manages only these two rules for `kmtlegal.saeeddev.com`:
-
-- Bypass cache for `/api/*`, `/admin/*`, `/client/*`, `/login*`, and `/install*`.
-- Make public `GET/HEAD` pages eligible for Cloudflare edge cache with a 900 second edge TTL.
+The script replaces its two old managed rules with one bypass rule for `kmtlegal.org`: navigation HTML, Next.js RSC responses, API calls and replaceable brand/office assets bypass Cloudflare's shared cache. Fingerprinted `/_next/static/*` remains eligible for long-lived caching. Inspect other rules in the same zone before applying; the script preserves unrelated rules.
 
 Preview the exact expressions without calling Cloudflare:
 
@@ -358,23 +355,23 @@ Override defaults only when needed:
 
 ```bash
 CLOUDFLARE_API_TOKEN='...' \
-npm run cloudflare:cache-rules -- --apply --zone=saeeddev.com --host=kmtlegal.saeeddev.com --edge-ttl=900
+npm run cloudflare:cache-rules -- --apply --zone=kmtlegal.org --host=kmtlegal.org
 ```
 
-After applying, verify public HTML is not `no-store` and sensitive paths still are:
+After applying, verify public HTML and sensitive paths are `no-store` on normal requests:
 
 ```bash
-curl -I https://kmtlegal.saeeddev.com/
-curl -I https://kmtlegal.saeeddev.com/
-curl -I https://kmtlegal.saeeddev.com/api/health
-curl -I https://kmtlegal.saeeddev.com/client
+curl -I https://kmtlegal.org/
+curl -I https://kmtlegal.org/services
+curl -I https://kmtlegal.org/api/health
+curl -I https://kmtlegal.org/client
 ```
 
 Expected results:
 
-- `/` returns `Cache-Control: public, max-age=60, s-maxage=900, stale-while-revalidate=86400`.
-- `/api/*`, `/client/*`, `/admin/*`, login, and install paths return `Cache-Control: no-store`.
-- After Cloudflare has the rule, a repeated request to `/` should become cache-eligible and can return `CF-Cache-Status: HIT` after warm-up.
+- All HTML and RSC navigation, plus `/api/*`, `/client/*`, `/admin/*`, login and install paths, return `Cache-Control: no-store`.
+- Fingerprinted `/_next/static/*` retains `public, max-age=31536000, immutable`; the mutable `/brand/*` and `/site-assets/*` use one-hour revalidation.
+- A repeated public HTML request must display the same `kmt-release` meta as the local PM2 response. `CF-Cache-Status: DYNAMIC` alone is not proof that origin HTML is fresh.
 
 ## Local Push
 
@@ -401,7 +398,7 @@ git pull --ff-only origin main
 
 ## Current Server Pull And Deploy: aaPanel + PM2
 
-Use this for the current `kmtlegal.saeeddev.com` style deployment, where aaPanel owns the domain/reverse proxy and PM2 runs the Node app.
+Use this for the current `kmtlegal.org` deployment, where aaPanel owns the domain/reverse proxy and PM2 runs the Node app.
 
 Run on the server:
 
@@ -432,10 +429,10 @@ The script:
 - Recreates the `kmtlegal` PM2 process with `--cwd /www/wwwroot/kmtlegal` and starts the Next.js CLI directly, not through `npm`, so PM2 does not leave an old child process serving port `3000`.
 - Stops any stale process still listening on port `3000` before starting the new PM2 process.
 - Waits for PM2 to stay `online`, checks the local app response, and prints recent PM2 logs if the process exits.
-- Installs a guarded aaPanel/Nginx public cache policy include when `APP_ORIGIN` is set, so public HTML is cacheable while `/api/*`, `/admin/*`, `/client/*`, `/login*`, and `/install*` remain `no-store`.
-- When `APP_ORIGIN` is set, verifies public `/api/health` reports the same `APP_RELEASE` as the local PM2 app, compares `/`, `/services`, `/team`, `/book-consultation`, `/contact`, `/ar`, and `/ar/services` against the local app build, verifies retired public content routes return `404`, verifies public `_next/static` assets return JavaScript/CSS instead of HTML errors, and fails if the public domain still serves stale homepage article/case-study detail links or stale demo content cards.
-- Also verifies that public pages no longer return `Cache-Control: no-store` or `X-Kmt-Proxy: next-no-cache`, and that sensitive app/API/login/install paths still return `Cache-Control: no-store`.
-- If public `/api/health` reaches the new release but public HTML still serves an old Next.js build, purges the aaPanel/Nginx proxy cache directory derived from `APP_ORIGIN` (`/www/wwwroot/<host>/proxy_cache_dir`), reloads Nginx when available, waits briefly, and retries public verification once.
+- Installs a backed-up aaPanel/Nginx include that prevents both shared-cache reads and writes for HTML/RSC, validates with `nginx -t`, and restores previous files if activation fails.
+- When `APP_ORIGIN` is set, verifies `/api/health` and the HTML `kmt-release` meta against the same commit, expands the full current sitemap, checks every page twice using ordinary requests, compares the public and local asset sets, and checks retired routes and static asset responses.
+- Fails if public HTML is still cacheable. A stale page fails the deployment even if `/api/health` reports the new release.
+- On mismatch, purges only an explicitly configured and inspected KMT proxy cache directory, then retries once; a hostname is never used to guess a deletion path.
 - Runs `npm run jobs:payments`, then starts or restarts `kmtlegal-payment-maintenance` with `npm run jobs:payments:watch` so reservation expiry and cleanup fixes are active after deploy.
 - Saves PM2 state only after the process passes the stability checks.
 
@@ -450,10 +447,11 @@ PORT=3000 \
 bash deploy/install/aapanel-pm2-update.sh
 ```
 
-For a non-standard aaPanel cache path, override the derived cache directory. Keep this limited to aaPanel/Nginx proxy cache directories:
+If origin verification finds a stale Nginx cache, inspect the loaded configuration first. Only set the confirmed KMT-specific directory; do not point to a shared cache zone:
 
 ```bash
-PUBLIC_PROXY_CACHE_DIRS=/www/wwwroot/kmtlegal.saeeddev.com/proxy_cache_dir \
+/www/server/nginx/sbin/nginx -T 2>&1 | grep -E 'proxy_cache_path|proxy_cache|server_name|include'
+PUBLIC_PROXY_CACHE_DIRS=/www/wwwroot/kmtlegal.org/proxy_cache_dir \
 bash deploy/install/aapanel-pm2-update.sh
 ```
 
@@ -462,11 +460,11 @@ Set `PUBLIC_CACHE_PURGE_ENABLED=false` only when the public domain is not behind
 If aaPanel uses a non-standard Nginx vhost file, pass it explicitly so the cache-policy include can be inserted safely:
 
 ```bash
-PUBLIC_NGINX_VHOST_FILES=/www/server/panel/vhost/nginx/kmtlegal.saeeddev.com.conf \
+PUBLIC_NGINX_VHOST_FILES=/www/server/panel/vhost/nginx/kmtlegal.org.conf \
 bash deploy/install/aapanel-pm2-update.sh
 ```
 
-Set `PUBLIC_CACHE_POLICY_ENABLED=false` only if you intentionally want to manage the public/sensitive `Cache-Control` split manually in aaPanel or Cloudflare.
+Set `PUBLIC_CACHE_POLICY_ENABLED=false` only if you have independently configured and verified the same HTML/RSC bypass in the active Nginx vhost.
 
 Set `PAYMENT_MAINTENANCE_PM2_ENABLED=false` only if another supervisor already owns the payment maintenance process.
 
@@ -518,22 +516,26 @@ For the current aaPanel database shown in the panel, the visible target should b
 
 If a deployed page shows `ChunkLoadError`, `Refused to execute script`, or a `_next/static/...js` request returns `400`, `404`, or `text/html`, it usually means the browser has old HTML/runtime state while the server has a newer build. Run the update script again after this static-preservation fix, then hard refresh the browser tab. If a CDN/proxy cached bad asset responses, purge `/_next/static/*` from the proxy.
 
-If public HTML still shows old copy or stale detail links after a successful build, first compare the local PM2 response with the public domain. A public page returning `X-Nextjs-Cache: HIT` plus stale links usually means old HTML is still being served from the Next.js route cache or an upstream proxy/cache:
+If public HTML still shows old copy after a successful build, compare ordinary requests to local PM2 and the public domain. `X-Nextjs-Cache: HIT` alone does not identify which layer served the old response:
 
 ```bash
 pm2 describe kmtlegal | grep -E 'cwd|script|args|status'
 ss -ltnp 'sport = :3000'
-curl -I -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' http://127.0.0.1:3000/
-curl -I -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' https://kmtlegal.saeeddev.com/
-curl -s -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' http://127.0.0.1:3000/api/health | node -e 'let s="";process.stdin.on("data",c=>s+=c);process.stdin.on("end",()=>console.log(JSON.parse(s).data.deployment))'
-curl -s -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' https://kmtlegal.saeeddev.com/api/health | node -e 'let s="";process.stdin.on("data",c=>s+=c);process.stdin.on("end",()=>console.log(JSON.parse(s).data.deployment))'
-curl -s -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' http://127.0.0.1:3000/ | grep -E 'contract-risk-basics|prepare-consultation-file|anonymous-commercial-dispute|أساسيات تقليل مخاطر العقود|كيف تجهز ملف استشارة قانونية|تنظيم نزاع تجاري مجهول الأطراف' || echo 'LOCAL OK'
-curl -s -H 'Cache-Control: no-cache' -H 'Pragma: no-cache' https://kmtlegal.saeeddev.com/ | grep -E 'contract-risk-basics|prepare-consultation-file|anonymous-commercial-dispute|أساسيات تقليل مخاطر العقود|كيف تجهز ملف استشارة قانونية|تنظيم نزاع تجاري مجهول الأطراف' || echo 'PUBLIC OK'
+curl -I http://127.0.0.1:3000/services
+curl -I https://kmtlegal.org/services
+curl -s http://127.0.0.1:3000/api/health | node -e 'let s="";process.stdin.on("data",c=>s+=c);process.stdin.on("end",()=>console.log(JSON.parse(s).data.deployment))'
+curl -s https://kmtlegal.org/api/health | node -e 'let s="";process.stdin.on("data",c=>s+=c);process.stdin.on("end",()=>console.log(JSON.parse(s).data.deployment))'
+curl -s http://127.0.0.1:3000/services | grep -o 'name="kmt-release" content="[^"]*"' | head -1
+curl -s https://kmtlegal.org/services | grep -o 'name="kmt-release" content="[^"]*"' | head -1
+curl -s https://kmtlegal.org/contact | grep -o 'name="kmt-release" content="[^"]*"' | head -1
+curl -s https://kmtlegal.org/team | grep -o 'name="kmt-release" content="[^"]*"' | head -1
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3000/media
-curl -s -o /dev/null -w '%{http_code}\n' https://kmtlegal.saeeddev.com/media
+curl -s -o /dev/null -w '%{http_code}\n' https://kmtlegal.org/media
 ```
 
-If local `/api/health` reports the new release but public `/api/health` reports a different or missing release, the public domain is not reaching the PM2 process that was just restarted. Check aaPanel/Nginx reverse proxy routing and stale listeners. If both health URLs report the new release but public HTML is old, the issue is an HTML cache outside the app process: aaPanel reverse proxy, Nginx cache, or Cloudflare cache/routing. The update script now purges the derived aaPanel/Nginx `proxy_cache_dir` and retries once automatically when this mismatch is detected. If the retry still fails, purge any external CDN/Cloudflare cache for the affected public HTML paths (`/`, `/articles`, `/case-studies`) and recheck aaPanel reverse proxy routing. If both local and public are old while the source is current, check for a stale orphan process on port `3000`; the update script now kills that listener and starts Next directly under PM2 so this mismatch is caught during deploy.
+If local `/api/health` reports the new release but public `/api/health` does not, check aaPanel/Nginx reverse proxy routing and stale listeners. If both health URLs match but public HTML is old, inspect the active Nginx vhost and `proxy_cache_path` with `nginx -T`, then the actual Cloudflare rule for `kmtlegal.org`. Supply `PUBLIC_PROXY_CACHE_DIRS` only after confirming a KMT-specific cache directory. The update script will retry verification once and fail if any sitemap page remains old. If both local and public are old while source is current, check for a stale orphan process on port `3000`.
+
+For this website-only repair, the update script prints the previous checkout commit before pulling and saves timestamped copies of the Nginx vhost/include before editing. Keep that commit and the backup paths in the deploy log. If the new runtime fails, use the previous commit with the manual build/PM2 steps above under supervision, then restore the recorded Nginx files and run `nginx -t` before reload. The automatic update script always targets `origin/main`, so it is not a rollback command. Check database compatibility before any rollback after releases that contain migrations; this repair adds no migration.
 
 If PM2 shows `kmtlegal` as `stopped` after deployment, inspect the runtime crash before running another build:
 
@@ -624,7 +626,7 @@ npm run test:e2e:smoke
 Live admin smoke test, when credentials are available:
 
 ```bash
-KMT_LIVE_BASE_URL=https://kmtlegal.saeeddev.com \
+KMT_LIVE_BASE_URL=https://kmtlegal.org \
 KMT_LIVE_ADMIN_EMAIL=... \
 KMT_LIVE_ADMIN_PASSWORD=... \
 npx playwright test tests/e2e/live-admin-smoke.spec.ts
