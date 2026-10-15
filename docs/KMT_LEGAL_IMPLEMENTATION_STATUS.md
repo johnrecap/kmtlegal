@@ -1,5 +1,24 @@
 # KMT Legal Implementation Status
 
+## 2026-10-15 — Continue inquiries without repeated consultation prompts
+
+Authority: owner requests uninterrupted service conversation, booking on explicit customer request, and at most one optional invitation at a suitable point. Direct work only, no subagents or Spec Kit. Inspected the session service, policy prompts, consent state, bilingual copy and SQL fixture regressions. The existing one-offer marker protects the appended invitation, but inquiry safety fallbacks independently suggest an appointment on every rejected answer; prompt wording also repeatedly suggests office review.
+
+| Obligation / source | Action / verification | State |
+| --- | --- | --- |
+| Owner's conversational request | Neutral inquiry fallback and ambiguity copy; answer-first prompts; immediate explicit booking preserved in SQL/state regressions | VERIFIED locally |
+| Suitable optional timing, no repetition | Two earlier generated, reviewed exchanges plus contextual suitability; persisted `offerShown`, refusal/withdrawal protections; rejected/boilerplate replies excluded; no invitation after submission | VERIFIED locally with controlled provider decisions |
+| Existing text architecture | Reused `assistantPolicyCopy` Arabic/English keys; no new localization system, UI structure, migration or provider change | VERIFIED by diff and text review |
+| Existing consent, tool and booking contracts | Representative bilingual SQL regression failed before repair and passed afterward; five suites / 80 tests include delay, ignore, ambiguity, refusal, explicit booking and existing booking/tool guards | VERIFIED locally; PGlite fixture, not native production PostgreSQL |
+| Repository delivery | Five suites / 80 tests, TypeScript, lint, production build (87 static pages) and diff check passed; guide/runbook updated; Git delivery receipt belongs to release history and final handoff | Local verification VERIFIED; server deployment NOT_VERIFIED |
+| Actual DeepSeek conversational behavior | Real-model timing and wording need a fresh inquiry after deployment; local mocked policy decisions do not establish model quality | NOT_VERIFIED |
+
+Scope: three existing provider stages and their shared budget remain; no new classification pass. Reply review receives the two latest history exchanges with each user/assistant excerpt capped at 1,000 trailing characters to assess contextual pressure without duplicating the full history. Original-template batch checking is NOT_APPLICABLE to this bounded software behavior change. Semantic acceptance is a natural bilingual inquiry that continues without a repeated sales close; database fixture assertions are separate mechanical evidence.
+
+Text review: the optional Arabic/English invitation is a conditional statement that explicitly permits continued questions, not a closing booking question. Neutral fallback/ambiguity keys request clarification without introducing a consultation or collecting contacts. Server append timing and the once-only marker are deterministic; the model's suitability classification and rejection of other generated invitations remain probabilistic. No live-model quality claim is made. No browser/layout check was run because this change affects server response selection and existing message tokens, not components or layout.
+
+Checks: `node node_modules/vitest/vitest.mjs run tests/server/conversation-intake-db.test.ts tests/server/company-conversation-policy.test.ts tests/server/conversation-gateway.test.ts tests/server/openrouter-deepseek.test.ts tests/server/ai-gateway.test.ts --maxWorkers=2`; `node node_modules/typescript/bin/tsc --noEmit`; `node node_modules/next/dist/bin/next lint`; `node node_modules/next/dist/bin/next build`; `git diff --check`. The representative bilingual regression was run first against the old fallback and failed, then passed after implementation. Final checks use the repaired nullable-history handling; existing Vite/pg/Next deprecation warnings remain non-failing. Diff review confirms unchanged provider profile, disabled reasoning, six-call ceiling, deadline, consent evidence, write authorization and booking confirmation.
+
 ## 2026-10-15 — DeepSeek OpenRouter routing repair
 
 Authority: owner's continuing request to restore assistant replies, retaining the chosen model, disabled reasoning and direct work without subagents or Spec Kit. Production probe on release `bc8c1eb` returned HTTP 404 / `NO_COMPATIBLE_ENDPOINTS`; the operator's synthetic probe omitting `parallel_tool_calls` returned HTTP 200, a tool call and `reasoningTokens: 0`, with strict parameter support and reasoning disabled retained. No customer data or secrets are recorded here.

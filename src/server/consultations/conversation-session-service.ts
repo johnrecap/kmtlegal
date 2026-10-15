@@ -8,7 +8,7 @@ import { safeLog } from "@/server/observability/safe-log";
 import { assistantKnowledge } from "./assistant-knowledge";
 import { getAIProviderConfig } from "@/server/ai/config";
 import { getAIProvider } from "@/server/ai/provider-registry";
-import { applyAssessment, bookingAllowed, boundedConversationProvider, INPUT_POLICY, messageAssessmentSchema, OUTPUT_POLICY, policyDecision, readDialogue, replyReviewSchema, type DialogueState } from "@/server/ai/company-conversation-policy";
+import { applyAssessment, bookingAllowed, boundedConversationProvider, INPUT_POLICY, messageAssessmentSchema, OUTPUT_POLICY, policyDecision, readDialogue, replyReviewSchema, shouldOfferConsultation, type DialogueState } from "@/server/ai/company-conversation-policy";
 import { ensureAssistantHandoff } from "@/server/conversations/assistant-handoff-service";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
@@ -111,6 +111,7 @@ export async function sendAssistantMessage(input: {
     await assertActive();
     const copy = assistantPolicyCopy[assessment.locale];
     const dialogue = applyAssessment(initialDialogue, assessment, input.message);
+    const policyFallback = dialogue.mode === "INQUIRY" ? copy.safeReply : directBookingCopy[assessment.locale].fallback;
     let preparedDraft: ReturnType<typeof intakeDraftSchema.parse> | undefined;
     const finalize = async (text: string, state: DialogueState, protocol: AIChatMessage[] = [], draft?: ReturnType<typeof intakeDraftSchema.parse>) => {
       await assertActive();
@@ -187,17 +188,19 @@ export async function sendAssistantMessage(input: {
     });
     } catch (error) {
       if (handoffQueued) return await finalize(directBookingCopy[assessment.locale].queued, dialogue);
-      if (error instanceof ApiError && ["AI_OUTPUT_INVALID", "PERMISSION_DENIED"].includes(error.code)) { safeLog("warn", "assistant.policy_rejected", { reason: error.code }); return await finalize(directBookingCopy[assessment.locale].fallback, dialogue); }
+      if (error instanceof ApiError && ["AI_OUTPUT_INVALID", "PERMISSION_DENIED"].includes(error.code)) { safeLog("warn", "assistant.policy_rejected", { reason: error.code }); return await finalize(policyFallback, dialogue); }
       throw error;
     }
     const review = await policyDecision(provider, replyReviewSchema, "review_company_reply", OUTPUT_POLICY,
-      { message: input.message, assessment, dialogue, knowledge: approvedKnowledge, actualToolResults: result.additions.filter(m => m.role === "tool"), reply: result.text }, input.requestId).catch(error => {
+      { message: input.message, history: history.slice(-2).map(turn => ({ user: turn.user.slice(-1000), assistant: turn.assistant?.slice(-1000) ?? null })), assessment, dialogue, knowledge: approvedKnowledge, actualToolResults: result.additions.filter(m => m.role === "tool"), reply: result.text }, input.requestId).catch(error => {
         if (error instanceof ApiError && error.code === "AI_OUTPUT_INVALID") return { inScope: false };
         throw error;
       });
-    if (!Object.values(review).every(Boolean)) { safeLog("warn", "assistant.policy_rejected", { reason: "REPLY_REVIEW", checks: review }); return await finalize(directBookingCopy[assessment.locale].fallback, dialogue); }
+    if (!Object.values(review).every(Boolean)) { safeLog("warn", "assistant.policy_rejected", { reason: "REPLY_REVIEW", checks: review }); return await finalize(policyFallback, dialogue); }
     let reply = assessment.scope === "MIXED" ? copy.mixed + "\n\n" + result.text : result.text;
-    if (dialogue.mode === "INQUIRY" && !dialogue.offerShown && !dialogue.accountAccess && assessment.intent === "NONE" && assessment.offerAppropriate && ["OFFICE", "RELATED_LEGAL", "MIXED"].includes(assessment.scope)) {
+    // Rejected answers and boilerplate replies must not advance invitation timing.
+    const answeredExchanges = prior.filter(turn => Array.isArray(turn.protocol) && turn.protocol.length > 0).length;
+    if (shouldOfferConsultation({ dialogue, assessment, completedExchanges: answeredExchanges, submitted: !!session.consultationRequestId })) {
       dialogue.offerShown = true;
       reply += "\n\n" + copy.offer;
     }

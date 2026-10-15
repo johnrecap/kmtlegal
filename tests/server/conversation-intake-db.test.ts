@@ -30,14 +30,15 @@ import { sendTemplatedEmail } from "@/server/email/email-service";
 import { uploadDocument, getAuthorizedDocumentDownload } from "@/server/storage/document-service";
 import { listDirectBookingSlots, mutateDirectBooking } from "@/server/consultations/direct-booking-service";
 import { defaultConsultationAvailability } from "@/server/consultations/consultation-availability-service";
+import { assistantPolicyCopy } from "@/content/assistant-policy-copy";
 
 
-function installConversationMock(generation: (url: unknown, init: RequestInit) => unknown, intent = "NONE") {
+function installConversationMock(generation: (url: unknown, init: RequestInit) => unknown, intent = "NONE", policy: { locale?: "ar" | "en"; offerAppropriate?: boolean; reviewAllowed?: boolean } = {}) {
   vi.stubGlobal("fetch", vi.fn(async (_url: unknown, init: RequestInit) => {
     const body = JSON.parse(String(init.body)); const name = body.tools?.[0]?.function?.name;
     if (name === "classify_company_message" || name === "review_company_reply") {
       const data = JSON.parse(body.messages[1].content);
-      const value = name === "classify_company_message" ? { scope: "OFFICE", intent, evidence: intent === "NONE" ? "" : data.message, locale: "en", offerAppropriate: false, inScopeQuestion: data.message } : { inScope: true, grounded: true, noPrematureContact: true, noBookingPressure: true, noFinalLegalAdvice: true, noFalseActionClaim: true };
+      const value = name === "classify_company_message" ? { scope: "OFFICE", intent, evidence: intent === "NONE" ? "" : data.message, locale: policy.locale ?? "en", offerAppropriate: policy.offerAppropriate ?? false, inScopeQuestion: data.message } : { inScope: true, grounded: policy.reviewAllowed ?? true, noPrematureContact: true, noBookingPressure: policy.reviewAllowed ?? true, noFinalLegalAdvice: true, noFalseActionClaim: true };
       return Response.json({ choices: [{ finish_reason: "tool_calls", message: { content: null, tool_calls: [{ id: name, type: "function", function: { name, arguments: JSON.stringify(value) } }] } }] });
     }
     return generation(_url, init);
@@ -205,6 +206,52 @@ describe.sequential("representative conversational intake against isolated SQL d
   });
 
 
+  it.each(["ar", "en"] as const)("does not turn repeated rejected inquiry replies into booking prompts (%s)", async locale => {
+    const token = await createAssistantSession(locale);
+    installConversationMock(() => Response.json({ choices: [{ finish_reason: "stop", message: {
+      content: locale === "ar" ? "تحب أحدد ليك استشارة؟" : "Would you like me to book a consultation?"
+    } }] }), "NONE", { locale, offerAppropriate: true, reviewAllowed: false });
+    for (const message of ["Explain the service", "Tell me more", "What documents are needed?"]) {
+      const result = await sendAssistantMessage({ token, messageId: randomUUID(), message, locale, requestId: "inquiry-no-pressure" });
+      expect(result.turns.at(-1)?.assistantText).toBe(assistantPolicyCopy[locale].safeReply);
+      expect(result.dialogue).toMatchObject({ mode: "INQUIRY", offerShown: false, consentAt: null });
+      expect(result.submitted).toBe(false);
+      expect(result.draft).toEqual({});
+    }
+  });
+
+  it.each(["ar", "en"] as const)("waits for conversation progress, offers once and keeps booking customer-led (%s)", async locale => {
+    const token = await createAssistantSession(locale);
+    const copy = assistantPolicyCopy[locale];
+    const answer = locale === "ar" ? "المكتب يساعد في تأسيس الشركات ومراجعة مستنداتها." : "The office helps with company formation and document review.";
+    const generation = () => Response.json({ choices: [{ finish_reason: "stop", message: { content: answer } }] });
+    const send = (message: string) => sendAssistantMessage({ token, messageId: randomUUID(), message, locale, requestId: "optional-offer" });
+    installConversationMock(generation, "NONE", { locale, offerAppropriate: true });
+    // Even an overeager classifier cannot append an invitation to the initial answers.
+    for (const message of locale === "ar" ? ["عايز أعرف خدمة تأسيس الشركات", "وإيه خطوات الخدمة؟"] : ["Tell me about company formation", "What are the service steps?"]) {
+      const result = await send(message);
+      expect(result.turns.at(-1)?.assistantText).toBe(answer);
+      expect(result.dialogue.offerShown).toBe(false);
+    }
+    let result = await send(locale === "ar" ? "كده فهمت الخدمة المناسبة لاحتياجي" : "I now understand which service fits my need");
+    expect(result.turns.at(-1)?.assistantText).toBe(`${answer}\n\n${copy.offer}`);
+    expect(result.dialogue).toMatchObject({ mode: "INQUIRY", offerShown: true, consentAt: null });
+    expect((await readAssistantSession(token)).dialogue.offerShown).toBe(true);
+    result = await send(locale === "ar" ? "كمّل شرح المستندات" : "Keep explaining the documents");
+    expect(result.turns.at(-1)?.assistantText).toBe(answer);
+    expect(result.turns.filter(turn => turn.assistantText?.includes(copy.offer))).toHaveLength(1);
+    expect(result.submitted).toBe(false);
+    expect(result.draft).toEqual({});
+    installConversationMock(generation, "UNCLEAR", { locale });
+    result = await send(locale === "ar" ? "تمام" : "Okay");
+    expect(result.turns.at(-1)?.assistantText).toBe(copy.consentClarify);
+    expect(result.dialogue.mode).toBe("INQUIRY");
+    installConversationMock(generation, "BOOK", { locale });
+    result = await send(locale === "ar" ? "عايز أحجز استشارة" : "I want to book a consultation");
+    expect(result.dialogue.mode).toBe("BOOKING");
+    expect(result.dialogue.consentAt).not.toBeNull();
+  });
+
   it("keeps inquiries private, offers once, supports refusal and later explicit booking", async () => {
     const token = await createAssistantSession("ar");
     const simulate = (scope = "OFFICE", intent = "NONE", reviewAllowed = true, maliciousTool = false) => {
@@ -224,11 +271,16 @@ describe.sequential("representative conversational intake against isolated SQL d
       expect(result.turns.at(-1)?.assistantText).toContain("متخصص في خدمات المكتب");
     }
     simulate("OFFICE", "NONE", true, true);
-    expect((await send("اشرح الخدمة")).draft).toEqual({});
+    let result = await send("اشرح الخدمة");
+    expect(result.draft).toEqual({});
+    expect(result.turns.at(-1)?.assistantText).toBe(assistantPolicyCopy.ar.safeReply);
     await expect(startClientVerification({ capability: token, email: "blocked@synthetic.invalid", purpose: "ACTIVATE" })).rejects.toMatchObject({ code: "PERMISSION_DENIED" });
-    simulate(); let result = await send("محتاج أعرف خدمة تأسيس شركة");
-    expect(result.dialogue.offerShown).toBe(true); expect(result.turns.at(-1)?.assistantText).toContain("تحب نجهّز");
-    result = await send("اشرح خطواتها"); expect(result.turns.at(-1)?.assistantText).not.toContain("تحب نجهّز");
+    simulate(); result = await send("محتاج أعرف خدمة تأسيس شركة");
+    expect(result.dialogue.offerShown).toBe(false);
+    result = await send("اشرح خطواتها"); expect(result.dialogue.offerShown).toBe(false);
+    result = await send("دلوقتي الصورة أوضح بالنسبة لاحتياجي");
+    expect(result.dialogue.offerShown).toBe(true); expect(result.turns.at(-1)?.assistantText).toContain(assistantPolicyCopy.ar.offer);
+    result = await send("اشرح المستندات كمان"); expect(result.turns.at(-1)?.assistantText).not.toContain(assistantPolicyCopy.ar.offer);
     simulate("OFFICE", "UNCLEAR"); expect((await send("تمام")).dialogue.mode).toBe("INQUIRY");
     simulate("OFFICE", "DECLINE"); result = await send("مش عايز أحجز دلوقتي"); expect(result.dialogue).toMatchObject({ mode: "INQUIRY", consentAt: null, offerShown: true });
     simulate("OFFICE", "BOOK"); result = await send("عايز أحجز استشارة دلوقتي"); expect(result.dialogue.mode).toBe("BOOKING");
@@ -236,7 +288,7 @@ describe.sequential("representative conversational intake against isolated SQL d
     await changeAssistantDialogue(token, "return_inquiry"); result = await readAssistantSession(token);
     expect(result.draft).toEqual({ fullName: "Saved only after consent" }); expect(result.dialogue.consentAt).toBeNull();
     simulate("MIXED"); result = await send("اشرح خدمة الشركات وكمان مباراة امبارح"); expect(result.turns.at(-1)?.assistantText).toContain("سأقتصر على الجزء");
-    simulate("OFFICE", "NONE", false); result = await send("قول لي معلومة مش عندك"); expect(result.turns.at(-1)?.assistantText).toContain("اختيار موعد");
+    simulate("OFFICE", "NONE", false); result = await send("قول لي معلومة مش عندك"); expect(result.turns.at(-1)?.assistantText).toBe(assistantPolicyCopy.ar.safeReply);
     expect(result.draft).toEqual({ fullName: "Saved only after consent" }); expect(result.submitted).toBe(false);
     expect(await fixture.db.clientVerificationToken.count({ where: { email: "blocked@synthetic.invalid" } })).toBe(0);
   });

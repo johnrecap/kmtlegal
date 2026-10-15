@@ -1,5 +1,15 @@
 # Server Commands
 
+## Inquiry continuity — 2026-10-15
+
+Deploy the consultation-offer adjustment using the normal aaPanel/PM2 update script; no new environment value or migration is needed. Start a fresh private-browser inquiry after deployment and ask several service/document follow-ups. The assistant should continue answering without appending a booking question to each reply. One optional invitation is eligible only after two earlier generated, reviewed exchanges and a contextual pause, not automatically on a fixed message number. Ignoring or declining it must keep inquiry open without another invitation. A direct "I want to book a consultation" request must still start booking immediately. Booking confirmation tests belong in a test environment with synthetic data.
+
+Inquiry safety rejections now use neutral continuation copy instead of suggesting an appointment. If many replies still fall back, inspect `assistant.policy_rejected` in the current-release logs: removing a repeated sales close does not prove that the model answered the substantive question well. Live Arabic/Egyptian/English wording and timing remain a separate acceptance check. The chosen OpenRouter/DeepSeek profile and disabled reasoning are unchanged.
+
+```bash
+cd /www/wwwroot/kmtlegal && bash deploy/install/aapanel-pm2-update.sh
+```
+
 ## OpenRouter DeepSeek without reasoning — 2026-10-15
 
 Routing repair: release `bc8c1eb` sent `parallel_tool_calls:false`, and the operator's synthetic chat probe returned HTTP 404 / `NO_COMPATIBLE_ENDPOINTS`. Omitting that optional parameter returned HTTP 200 with a tool call and `reasoningTokens:0`. The repair scopes the omission to the exact OpenRouter/DeepSeek model below; strict parameter support and disabled reasoning remain enabled. Tool actions still execute sequentially on the server after batch validation. Deploy the repair with the normal update command below; no additional environment change is needed if the values already match.

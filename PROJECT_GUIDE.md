@@ -1,5 +1,7 @@
 # KMT Legal Platform Project Guide
 
+Inquiry continuity (2026-10-15): the assistant answers service questions without a recurring consultation close. Inquiry safety fallbacks and ambiguous acknowledgements use neutral bilingual copy. Explicit customer booking still starts intake immediately; an optional server-owned invitation needs two earlier generated, reviewed exchanges plus a contextually suitable pause, and is persisted at most once. Ignoring or declining it leaves inquiry available. Rejected/boilerplate replies do not advance that timing, and submitted requests/account help receive no new invitation. Generation/review prompts follow the same policy; review receives bounded excerpts from the two latest exchanges. No additional provider call, UI layout, database migration or credential change is required.
+
 OpenRouter routing repair (2026-10-15): the exact OpenRouter/DeepSeek V4.1 Flash chat profile omits `parallel_tool_calls`, which caused endpoint rejection with strict parameter routing. Reasoning remains disabled and `provider.require_parameters` remains true. Other models/providers retain their existing tool-parallelism setting. The server still validates complete tool batches and executes each action sequentially. Chat HTTP failures now record safe provider/model/status/request identifiers through the existing logger. The operator's synthetic no-parallelism probe returned HTTP 200, a tool call and zero reasoning tokens; deployed conversation quality remains a separate check.
 
 OpenRouter DeepSeek update (2026-10-15): selecting `AI_PROVIDER=openrouter` now defaults to `deepseek/deepseek-v4.1-flash`. Shared request parameters in `src/server/ai/providers/request-parameters.ts` disable reasoning only for that exact provider/model pair across chat, policy decisions, tool follow-ups and structured generation. OpenRouter requests require supported parameters; other models receive no new reasoning override. Explicit `AI_MODEL` still wins, so replace any old Gemini value on the server. Keep the real `AI_API_KEY` in protected `.env.production.local`; the exact settings and aaPanel/PM2 deployment steps are in `docs/SERVER_COMMANDS.md`. Local development/install examples remain mock by default. No UI, migration, dependency, retry or booking-policy change. Verification and remaining live-provider acceptance are recorded in `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md`.
@@ -66,6 +68,11 @@ For a current-state PRD and external model review brief, use `docs/KMT_LEGAL_CUR
 - PLAN-34 makes Paymob the prepared primary provider, keeps PayTabs disabled standby, leaves paid booking disabled, adds expiring minimized receipts, PostgreSQL rate limiting, async scrypt, required production ClamAV scanning, optional privacy-safe Sentry, locale/error/accessibility/image hardening, and behavior-preserving module decomposition. DB-backed/provider/live deployment evidence remains a release gate.
 
 ## Recent Changes
+
+- 2026-10-15 - Keep consultation invitations optional and avoid interrupting inquiries.
+  - Changed: company conversation policy, generation instructions, session orchestration and existing Arabic/English message keys.
+  - Behavior: neutral inquiry fallback; no initial sales close; one contextual invitation after conversation progress; booking remains based on explicit customer intent.
+  - Verification: bilingual SQL regression failed before repair and passed afterward; five affected suites / 80 tests, TypeScript, lint, production build (87 static pages) and diff check passed. Live-model acceptance remains open in `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md`.
 
 - 2026-10-15 - Repair OpenRouter DeepSeek chat routing.
   - Changed: scoped conversation request parameters, safe HTTP diagnostics, and provider/tool regression tests; no UI, schema, dependency or retry change.
