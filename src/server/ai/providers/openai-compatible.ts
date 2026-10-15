@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { AIProviderAdapter, AIProviderName, AIProviderResult, AITask } from "../types";
 import type { AIProviderConfig } from "../config";
 import { requestConversation } from "./conversational";
+import { providerRequestParameters } from "./request-parameters";
 
 export function createOpenAICompatibleProvider(config: AIProviderConfig, name: AIProviderName): AIProviderAdapter {
   return {
@@ -48,7 +49,8 @@ export function createOpenAICompatibleProvider(config: AIProviderConfig, name: A
                 })
               }
             ],
-            ...structuredOutputParameters(config, name, input.task, input.outputSchema)
+            ...structuredOutputParameters(config, name, input.task, input.outputSchema),
+            ...providerRequestParameters(config)
           })
         });
 
@@ -176,8 +178,7 @@ function structuredOutputParameters(
           strict: true,
           schema: strictProviderJsonSchema(outputSchema)
         }
-      },
-      ...(provider === "openrouter" ? { provider: { require_parameters: true } } : {})
+      }
     };
   } catch {
     safeLog("warn", "ai.structured_output_schema_invalid", {

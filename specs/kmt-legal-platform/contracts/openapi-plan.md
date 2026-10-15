@@ -259,11 +259,13 @@ Config:
 AI_PROVIDER=mock | openrouter | openai-compatible | local | custom
 AI_BASE_URL= # optional for openrouter; defaults to https://openrouter.ai/api/v1
 AI_API_KEY=
-AI_MODEL= # optional for openrouter; defaults to google/gemini-2.5-flash
+AI_MODEL= # optional for openrouter; defaults to deepseek/deepseek-v4.1-flash
 AI_TIMEOUT_MS=
 AI_MAX_TOKENS=
 AI_TEMPERATURE=
 ```
+
+OpenRouter requests require supported parameters. The exact `openrouter` + `deepseek/deepseek-v4.1-flash` pair sends `reasoning: { enabled: false }` for conversational and structured calls; other provider/model pairs receive no reasoning override. Production credentials belong in the protected server environment described in `docs/SERVER_COMMANDS.md`.
 
 Internal method:
 ```ts

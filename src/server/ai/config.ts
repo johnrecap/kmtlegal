@@ -1,5 +1,7 @@
 import type { AIProviderName } from "./types";
 
+export const DEFAULT_OPENROUTER_MODEL = "deepseek/deepseek-v4.1-flash";
+
 export type AIProviderConfig = {
   provider: AIProviderName;
   baseUrl?: string;
@@ -52,7 +54,7 @@ function defaultModelForProvider(provider: AIProviderName) {
     return "mock-kmt-legal-v1";
   }
   if (provider === "openrouter") {
-    return "google/gemini-2.5-flash";
+    return DEFAULT_OPENROUTER_MODEL;
   }
   return "configured-model";
 }

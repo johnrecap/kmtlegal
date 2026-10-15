@@ -13,7 +13,7 @@ import {
 import { createOpenAICompatibleProvider } from "@/server/ai/providers/openai-compatible";
 
 describe("AI Provider Gateway", () => {
-  it("defaults OpenRouter to Gemini 2.5 Flash with the server-side OpenRouter base URL", () => {
+  it("defaults OpenRouter to DeepSeek V4.1 Flash with the server-side OpenRouter base URL", () => {
     process.env.AI_PROVIDER = "openrouter";
     delete process.env.AI_BASE_URL;
     delete process.env.AI_MODEL;
@@ -22,7 +22,7 @@ describe("AI Provider Gateway", () => {
 
     expect(config.provider).toBe("openrouter");
     expect(config.baseUrl).toBe("https://openrouter.ai/api/v1");
-    expect(config.model).toBe("google/gemini-2.5-flash");
+    expect(config.model).toBe("deepseek/deepseek-v4.1-flash");
 
     process.env.AI_PROVIDER = "mock";
   });

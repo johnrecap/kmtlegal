@@ -1,5 +1,22 @@
 # KMT Legal Implementation Status
 
+## 2026-10-15 — OpenRouter DeepSeek without reasoning
+
+Authority: owner's accepted implementation plan in this chat. Direct work only; no subagents or Spec Kit. Existing booking guards, shared deadline and call budgets remain in scope for regression verification; retry redesign, UI, database and live credentials are excluded. Original-template batch validation is NOT_APPLICABLE: this is a bounded provider configuration change.
+
+| Obligation | Evidence / verification | State |
+| --- | --- | --- |
+| OpenRouter defaults to `deepseek/deepseek-v4.1-flash` | `tests/server/openrouter-deepseek.test.ts`: representative outbound test failed on the old Gemini default/missing reasoning setting, then passed after implementation | VERIFIED locally |
+| Disable reasoning in chat, policy, tool follow-ups and structured generation | Shared `providerRequestParameters`; network-boundary tests exercise classification, a synthetic booking tool, continuation, reply review, and structured-output on/off | VERIFIED locally |
+| Preserve other model reasoning behavior and booking protections | Exact-model/provider boundary tests; simulated provider failure and duplicate tool ID never repeat the write; existing policy, gateway and PGlite SQL regressions pass | VERIFIED locally; native PostgreSQL not exercised |
+| Document protected production key and deployment | Server commands, environment examples, API contract and project guide checked against config and aaPanel script; real secrets remain outside Git | VERIFIED locally |
+| Required local checks | Five affected suites / 70 tests; TypeScript, lint, Prisma generation, production build (87 static pages), and diff check passed | VERIFIED locally |
+| Real-provider Arabic quality, reasoning usage and production activation | Separate synthetic live-provider check after operator configures server credentials | NOT_VERIFIED; no production credentials used locally |
+
+Verification commands: `node node_modules/vitest/vitest.mjs run tests/server/openrouter-deepseek.test.ts tests/server/ai-gateway.test.ts tests/server/conversation-gateway.test.ts tests/server/company-conversation-policy.test.ts tests/server/conversation-intake-db.test.ts --maxWorkers=2`; `node node_modules/typescript/bin/tsc --noEmit`; `node node_modules/next/dist/bin/next lint`; `node node_modules/prisma/build/index.js generate`; `node node_modules/next/dist/bin/next build`; `git diff --check`. Windows sandbox initially prevented Vitest cache renaming (EPERM); rerunning the unchanged test command outside that sandbox succeeded. No test expectations were weakened to bypass the restriction.
+
+Review evidence: both outbound adapters invoke the same parameter policy; only the exact selected provider/model receives `enabled:false`, and no reasoning override is sent for other combinations. Existing booking orchestration, authorization, schemas, shared deadline and retry behavior are unchanged in the diff. Synthetic SQL and tool tests establish local behavior, not real-provider correctness or production activation.
+
 ## 2026-10-15 — Owner-requested assistant retry rollback
 
 Authority: owner's explicit rollback plan in this chat. Revert `29a6f27950eb5be289119a31b1c55a93293d7341` through a new commit, preserve history, retain Gemini, and defer retry redesign. Direct work only; no subagents or Spec Kit. Original-template batch validation is NOT_APPLICABLE to this inverse software change.

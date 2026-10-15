@@ -2,6 +2,7 @@ import { z } from "zod";
 import { ApiError } from "@/server/http/errors";
 import type { AIProviderConfig } from "../config";
 import type { AIChatInput, AIChatReply } from "../types";
+import { providerRequestParameters } from "./request-parameters";
 
 const callSchema = z.object({
   id: z.string().min(1).max(160),
@@ -38,7 +39,7 @@ export async function requestConversation(config: AIProviderConfig, input: AICha
       body: JSON.stringify({
         model: config.model, temperature: config.temperature, max_tokens: config.maxTokens,
         messages: input.messages, tools: input.tools, tool_choice: "auto", parallel_tool_calls: false,
-        ...(config.provider === "openrouter" ? { provider: { require_parameters: true } } : {})
+        ...providerRequestParameters(config)
       })
     });
     if (!response.ok) throw new ApiError(502, "AI_PROVIDER_UNAVAILABLE", "AI provider request failed.");

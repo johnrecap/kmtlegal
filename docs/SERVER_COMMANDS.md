@@ -1,5 +1,34 @@
 # Server Commands
 
+## OpenRouter DeepSeek without reasoning — 2026-10-15
+
+After this code update, use aaPanel's file manager to edit the existing protected server file `/www/wwwroot/kmtlegal/.env.production.local`. Replace the existing AI values (do not append duplicate keys or replace the whole file):
+
+```dotenv
+AI_PROVIDER=openrouter
+AI_BASE_URL=https://openrouter.ai/api/v1
+AI_MODEL=deepseek/deepseek-v4.1-flash
+AI_API_KEY='PASTE_OPENROUTER_API_KEY_HERE'
+AI_TIMEOUT_MS=30000
+AI_MAX_TOKENS=1200
+AI_TEMPERATURE=0.2
+```
+
+Replace the API-key placeholder with the real OpenRouter key only on the server. Never put the key in Git, browser code, screenshots or chat. Preserve the file's existing ownership/access restrictions and all non-AI settings. Explicit `AI_MODEL` and `AI_BASE_URL` values override defaults: an old Gemini model or Google endpoint must be replaced too.
+
+The application sends `reasoning: { enabled: false }` only for `AI_PROVIDER=openrouter` with the exact model above. It applies to classification, replies, review, every tool follow-up, and structured generation. No extra reasoning environment variable is needed. Other provider/model combinations retain their existing reasoning behavior. All OpenRouter requests use `provider.require_parameters=true`; provider routing remains automatic within compatible endpoints. See [OpenRouter reasoning controls](https://openrouter.ai/docs/guides/best-practices/reasoning-tokens). Existing structured-output settings, shared conversation deadline, six-call ceiling, authorization, booking validation and idempotency remain unchanged.
+
+After the commit is pushed and the environment is configured, deploy:
+
+```bash
+cd /www/wwwroot/kmtlegal
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+The script loads this environment file before build and PM2 startup. Repository defaults remain `mock` until explicitly configured. Missing credentials still fail with `AI_PROVIDER_UNAVAILABLE`; an upstream rejection also fails normally without switching model or replaying booking actions. Check the protected OpenRouter account balance, model availability and supported routing when requests fail; do not paste raw provider responses or keys into logs/chat.
+
+Local tests use synthetic provider replies and do not prove live Arabic quality or production activation. After deployment, check an Arabic greeting, an office-service question and available-slot retrieval; verify the selected model and, where reported, reasoning-token usage in OpenRouter. Exercise booking writes only in a test environment with synthetic data. Keep deployment/health evidence separate from actual provider acceptance.
+
 ## Assistant retry rollback — 2026-10-15
 
 The owner requested reverting `29a6f27` through a new commit on `main`, restoring application behavior from `9f345f142de46e9badece6c8b66ad20936cf9ece`. Deploy the new revert commit using the normal update path:
