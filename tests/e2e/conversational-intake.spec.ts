@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { conversationCopy } from "../../src/content/conversation-copy";
 import { assistantPolicyCopy } from "../../src/content/assistant-policy-copy";
 import { directBookingCopy } from "../../src/content/direct-booking-copy";
+import { fixtureBookingAvailability } from "./helpers/booking-availability";
 
 for (const locale of ["ar", "en"] as const) {
   test(locale + ": guest booking, optional account and responsive presentation", async ({ page }) => {
@@ -19,7 +20,7 @@ for (const locale of ["ar", "en"] as const) {
       if (input.action === "begin_booking") state = { ...state, dialogue: { mode: "BOOKING", consentAt: new Date().toISOString(), offerShown: true, accountAccess: false } };
       if (input.action === "return_inquiry") state = { ...state, dialogue: { mode: "INQUIRY", consentAt: null, offerShown: true, accountAccess: false } };
       if (input.action === "account_access") state = { ...state, dialogue: { mode: "INQUIRY", consentAt: null, offerShown: false, accountAccess: true } };
-      if (input.action === "booking_slots") return route.fulfill({ json: { data: { published: true, slots: [{ startsAt: start, endsAt: end }] } } });
+      if (input.action === "booking_slots") return route.fulfill({ json: { data: fixtureBookingAvailability({ start, end, date: input.date }) } });
       if (input.action === "message") return route.fulfill({ status: 503, json: { error: { code: "AI_PROVIDER_UNAVAILABLE" } } });
       if (input.action === "confirm_booking") {
         expect(input.email).toBeUndefined(); expect(input.confirmed).toBe(true); keys.add(input.key);
@@ -92,7 +93,7 @@ test("saved Arabic dialogue on an English page keeps booking available during st
     if (route.request().method() === "POST") {
       const input = route.request().postDataJSON();
       if (input.action === "begin_booking") state = { ...state, dialogue: { ...state.dialogue, mode: "BOOKING", consentAt: new Date().toISOString() } };
-      if (input.action === "booking_slots") return route.fulfill({ json: { data: { published: false, slots: [] } } });
+      if (input.action === "booking_slots") return route.fulfill({ json: { data: fixtureBookingAvailability({ published: false, date: input.date }) } });
     }
     return route.fulfill({ json: { data: state } });
   });
@@ -100,7 +101,7 @@ test("saved Arabic dialogue on an English page keeps booking available during st
   await expect(page.getByText(direct.claimed, { exact: true })).toHaveCount(1);
   await page.getByRole("button", { name: assistantPolicyCopy.ar.begin, exact: true }).click();
   await expect(page.getByLabel(direct.name, { exact: true })).toBeVisible();
-  await expect(page.getByText(direct.empty, { exact: true })).toBeVisible();
+  await expect(page.getByText(direct.availabilityReasons.UNPUBLISHED, { exact: true }).last()).toBeVisible();
   await expect(page.getByRole("button", { name: directBookingCopy.en.callback, exact: true })).toHaveCount(0);
 });
 
@@ -114,7 +115,7 @@ test("conversation booking entry opens the popup and closing it does not reopen 
     if (route.request().method() === "POST") {
       const input = route.request().postDataJSON(); mutations.push(input.action);
       if (input.action === "message") state = { ...state, dialogue: { ...state.dialogue, mode: "BOOKING", consentAt: "2026-10-10T00:00:00Z" } };
-      if (input.action === "booking_slots") return route.fulfill({ json: { data: { published: false, slots: [] } } });
+      if (input.action === "booking_slots") return route.fulfill({ json: { data: fixtureBookingAvailability({ published: false, date: input.date }) } });
     }
     return route.fulfill({ json: { data: state } });
   });

@@ -12,7 +12,8 @@ import { bookingCategoryForPublicService } from "@/content/public-content";
 import { bookingAllowed } from "@/server/ai/company-conversation-policy";
 import { ownAssistantSession } from "./conversation-session-service";
 import { intakeDraftSchema } from "./conversation-contract";
-import { cairoDateString, cairoWeekday, CONSULTATION_AVAILABILITY_SETTING_KEY, consultationAvailabilitySchema, consultationSlotDateSchema, defaultConsultationAvailability, generateConsultationSlots } from "./consultation-availability-service";
+import { cairoDateString, CONSULTATION_AVAILABILITY_SETTING_KEY, consultationAvailabilitySchema, consultationSlotWindow, defaultConsultationAvailability, type PublicConsultationSlotFilter } from "./consultation-availability-service";
+import { buildBookingAvailability, directBookingDay, type BookingAvailabilitySnapshot } from "./direct-booking-availability";
 import { ensureAssistantHandoff } from "@/server/conversations/assistant-handoff-service";
 
 type DB = Pick<Prisma.TransactionClient, "systemSetting" | "appointment" | "user">;
@@ -27,36 +28,27 @@ export const directBookingInputSchema = z.strictObject({
   if (["confirm_booking", "reschedule_booking"].includes(v.action) && !v.startsAt) ctx.addIssue({ code: "custom", message: "Appointment time required." });
 });
 
-async function availableCandidates(db: DB, date?: string, excludeAppointmentId?: string, now = new Date()) {
-  if (date) consultationSlotDateSchema.parse(date);
+async function availabilitySnapshot(db: DB, excludeAppointmentId?: string, now = new Date()): Promise<BookingAvailabilitySnapshot> {
   const setting = await db.systemSetting.findUnique({ where: { key: CONSULTATION_AVAILABILITY_SETTING_KEY } });
   const availability = consultationAvailabilitySchema.parse({ ...defaultConsultationAvailability, ...(setting?.value as object ?? {}) });
-  if (!availability.directBooking.published) return { published: false, slots: [] };
   const ids = [...new Set(availability.directBooking.roster.flatMap(d => d.lawyerIds))];
   const lawyers = await db.user.findMany({ where: { id: { in: ids }, status: "ACTIVE", deletedAt: null, role: { name: "Lawyer", status: "ACTIVE" } }, select: { id: true } });
   const appointments = await db.appointment.findMany({ where: {
     id: excludeAppointmentId ? { not: excludeAppointmentId } : undefined,
     status: { in: [...ACTIVE_APPOINTMENT_STATUSES] },
-    endsAt: { gt: new Date(now.getTime() - 86400000) }, startsAt: { lt: new Date(now.getTime() + 62 * 86400000) },
+    endsAt: { gt: new Date(now.getTime() - 86400000) }, startsAt: { lt: consultationSlotWindow(availability, now).endsAt },
     OR: [{ type: "CONSULTATION" }, { lawyerId: { in: ids } }]
   }, select: { id: true, type: true, lawyerId: true, startsAt: true, endsAt: true } });
-  const slots = generateConsultationSlots({ availability, mode: "PHONE", date, now, limit: 6000, appointments: appointments.filter(a => a.type === "CONSULTATION") }).flatMap(slot => {
-    const start = new Date(slot.startsAt), end = new Date(slot.endsAt), day = cairoDateString(start);
-    const roster = availability.directBooking.roster.find(d => d.weekday === cairoWeekday(day))?.lawyerIds ?? [];
-    const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Cairo", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(start).split(":").map(Number);
-    const minute = parts[0] * 60 + parts[1];
-    const busy = (id: string) => appointments.some(a => a.lawyerId === id && a.startsAt < end && a.endsAt > start);
-    const closed = (id: string) => availability.directBooking.closures.some(c => c.date === day && (!c.lawyerId || c.lawyerId === id) && minute < toMinutes(c.end) && minute + availability.slotDurationMinutes > toMinutes(c.start));
-    const eligible = lawyers.filter(l => roster.includes(l.id) && !busy(l.id) && !closed(l.id)).map(l => ({ id: l.id, count: appointments.filter(a => a.lawyerId === l.id && cairoDateString(a.startsAt) === day).length })).sort((a,b) => a.count - b.count || a.id.localeCompare(b.id));
-    return eligible.length ? [{ ...slot, lawyerId: eligible[0].id }] : [];
-  });
-  return { published: true, slots };
+  return { availability, lawyers, appointments, now };
 }
-function toMinutes(clock: string) { const [h,m] = clock.split(":").map(Number); return h * 60 + m; }
 
-export async function listDirectBookingSlots(date?: string, excludeAppointmentId?: string) {
-  const result = await availableCandidates(prisma, date, excludeAppointmentId);
-  return { published: result.published, slots: result.slots.slice(0, date ? 100 : 3).map(({ lawyerId: _lawyerId, ...slot }) => slot) };
+async function availableCandidates(db: DB, date: string, excludeAppointmentId?: string) {
+  const snapshot = await availabilitySnapshot(db, excludeAppointmentId);
+  return directBookingDay(snapshot, date);
+}
+
+export async function listDirectBookingSlots(date?: string, excludeAppointmentId?: string, filter: Omit<PublicConsultationSlotFilter, "date"> = {}) {
+  return buildBookingAvailability(await availabilitySnapshot(prisma, excludeAppointmentId), { ...filter, date });
 }
 
 export async function readDirectBooking(requestId: string | null) {

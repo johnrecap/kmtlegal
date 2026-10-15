@@ -17,6 +17,8 @@ import type { AIChatMessage } from "@/server/ai/types";
 import { appendAuditLog } from "@/server/audit/audit-service";
 import type { Principal } from "@/server/auth/policy";
 import { assistantSystemPrompt, intakeDraftSchema } from "./conversation-contract";
+import { consultationSlotFilterSchema } from "./consultation-availability-service";
+import { bookingAvailabilityToolResult } from "./booking-availability-tool";
 
 export const ASSISTANT_COOKIE = "kmt_assistant";
 export const capabilityHash = (value: string) => createHash("sha256").update(value).digest("hex");
@@ -135,6 +137,7 @@ export async function sendAssistantMessage(input: {
     const requireBooking = () => { if (!canBook()) throw new ApiError(403, "PERMISSION_DENIED", "Booking consent is required."); };
     const messages: AIChatMessage[] = [
       { role: "system", content: assistantSystemPrompt(assessment.locale, bookingAllowed(dialogue) ? session.draft : { service: intakeDraftSchema.parse(session.draft).service }, { dialogue, assessment, knowledge: approvedKnowledge }) },
+      { role: "system", content: `Current Cairo date and time: ${new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Cairo", dateStyle: "full", timeStyle: "short" }).format(new Date())}. Resolve tomorrow and weekdays from this date, never from training knowledge. Consultation hours and closed days require available_slots; office opening hours are a separate topic.` },
       ...prior.reverse().flatMap(turn => [
         { role: "user" as const, content: turn.userText },
         { role: "assistant" as const, content: turn.assistantText }
@@ -149,9 +152,14 @@ export async function sendAssistantMessage(input: {
     try { result = await runConversationTurn({ messages, requestId: input.requestId, assertActive: async () => { await assertActive(); if (handoffQueued) throw new ApiError(409, "CONFLICT", "Handoff queued."); }, provider, signal,
       tools: {
         office_information: { description: "Read approved office and service information with source references. No other knowledge is authorized.", schema: z.strictObject({}), execute: async () => approvedKnowledge },
-        available_slots: { description: "Read live available Cairo times. Availability is not a confirmed reservation.",
-          schema: z.strictObject({ mode: z.literal("PHONE").optional(), date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional() }),
-          execute: async value => listDirectBookingSlots((value as { date?: string }).date) },
+        available_slots: { description: "Read consultation working hours, closed-day reasons and live Cairo appointments. Return the nearest appointment only; request alternatives only if the customer asks. Availability is not a reservation.",
+          schema: z.strictObject({ ...consultationSlotFilterSchema.shape, mode: z.literal("PHONE").optional(), alternatives: z.boolean().optional() }),
+          execute: async value => {
+            const query = value as { date?: string; fromTime?: string; toTime?: string; alternatives?: boolean };
+            const currentBooking = await readDirectBooking(session.consultationRequestId);
+            const availability = await listDirectBookingSlots(query.date, currentBooking?.appointments[0]?.id, { fromTime: query.fromTime, toTime: query.toTime });
+            return bookingAvailabilityToolResult(availability, assessment.locale, query.alternatives ?? false);
+          } },
         prepare_request: { description: "Save customer-provided facts only after explicit booking consent. Does not submit or confirm a booking.", schema: intakeDraftSchema,
           execute: async value => {
             requireBooking();

@@ -10,13 +10,13 @@ import { attachAuthenticatedClient, submitConversationRequest } from "@/server/c
 import { conversationMessageSchema, intakeDraftSchema } from "@/server/consultations/conversation-contract";
 import { startClientVerification, startVerificationSchema } from "@/server/portal/client-verification-service";
 import { directBookingInputSchema, listDirectBookingSlots, mutateDirectBooking } from "@/server/consultations/direct-booking-service";
-import { consultationSlotDateSchema } from "@/server/consultations/consultation-availability-service";
+import { consultationSlotFilterSchema } from "@/server/consultations/consultation-availability-service";
 import { ownAssistantSession } from "@/server/consultations/conversation-session-service";
 
 export const dynamic = "force-dynamic";
 const actions = z.discriminatedUnion("action", [
   directBookingInputSchema,
-  z.strictObject({ action: z.literal("booking_slots"), date: consultationSlotDateSchema.optional() }),
+  z.strictObject({ action: z.literal("booking_slots"), ...consultationSlotFilterSchema.shape }),
   z.strictObject({ action: z.literal("set_locale"), locale: z.enum(["ar", "en"]) }),
   z.strictObject({ action: z.literal("begin_booking"), service: intakeDraftSchema.shape.service }),
   z.strictObject({ action: z.literal("return_inquiry") }),
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
     if (!token) throw new ApiError(401, "AUTH_REQUIRED", "Authentication required.");
     if (body.action === "booking_slots") {
       const session = await readAssistantSession(token, auth?.principal);
-      return jsonOk(await listDirectBookingSlots(body.date, session.booking?.appointments[0]?.id));
+      return jsonOk(await listDirectBookingSlots(body.date, session.booking?.appointments[0]?.id, { fromTime: body.fromTime, toTime: body.toTime }));
     }
     if (body.action === "set_locale") {
       const session = await ownAssistantSession(token, auth?.principal);

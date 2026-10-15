@@ -1,5 +1,17 @@
 # Server Commands
 
+## Ordered consultation availability — 2026-10-15
+
+Deploy using the normal command below. No migration, new dependency or environment setting is needed; existing administration days, hours, roster and closures are not edited by deployment. The displayed schedule is for phone/WhatsApp consultations, separately from general office opening hours.
+
+```bash
+cd /www/wwwroot/kmtlegal && bash deploy/install/aapanel-pm2-update.sh
+```
+
+After deployment, open a fresh booking inquiry and ask about consultation working days and the nearest appointment. The chat should explain actual unavailable-day reasons and show one nearest appointment; two additional alternatives are allowed only on request. In the booking panel, check weekly hours, seven-day navigation, one day's ordered time choices, explicit closure reasons and a later alternative. Changing the day must keep name/phone while clearing time and confirmation consent. An empty selected day must not offer a callback when other days remain available. Test confirmation/rescheduling/cancellation with synthetic data in a test environment. Actual model wording and production concurrency remain separate acceptance checks.
+
+Availability metadata contains no lawyer identifiers or customer appointment details. When the schedule is unpublished, it returns the unpublished state without weekly-hour details. Empty results are distinguished from closures and busy periods; mixed causes use a neutral unavailable state. The public date range and appointment-conflict query share the existing lead-time/window boundary, including configurations whose lead time extends the end beyond 62 days.
+
 ## Inquiry continuity — 2026-10-15
 
 Deploy the consultation-offer adjustment using the normal aaPanel/PM2 update script; no new environment value or migration is needed. Start a fresh private-browser inquiry after deployment and ask several service/document follow-ups. The assistant should continue answering without appending a booking question to each reply. One optional invitation is eligible only after two earlier generated, reviewed exchanges and a contextual pause, not automatically on a fixed message number. Ignoring or declining it must keep inquiry open without another invitation. A direct "I want to book a consultation" request must still start booking immediately. Booking confirmation tests belong in a test environment with synthetic data.

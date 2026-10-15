@@ -327,7 +327,7 @@ function normalizeDays(value: unknown) {
   });
 }
 
-function consultationSlotWindow(availability: ConsultationAvailability, now: Date) {
+export function consultationSlotWindow(availability: ConsultationAvailability, now: Date) {
   const startsAt = new Date(now.getTime() + availability.minLeadHours * 60 * 60_000);
   const endsAt = new Date(startsAt.getTime() + availability.bookingWindowDays * 24 * 60 * 60_000);
   return { startsAt, endsAt };
@@ -378,7 +378,7 @@ export function cairoDateString(date: Date) {
   return `${value("year")}-${value("month")}-${value("day")}`;
 }
 
-function addCairoDays(date: string, offset: number) {
+export function addCairoDays(date: string, offset: number) {
   const base = new Date(`${date}T12:00:00+03:00`);
   base.setUTCDate(base.getUTCDate() + offset);
   return cairoDateString(base);

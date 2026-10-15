@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { directBookingCopy } from "@/content/direct-booking-copy";
 import { getPublicContent } from "@/content/public-content";
 import type { PublicLocale } from "@/lib/public-locale";
+import type { BookingAvailability, BookingSlot } from "@/lib/direct-booking-availability";
+import { BookingAvailabilityPicker } from "./booking-availability-picker";
 
 export type DirectBooking = {
   confirmationSource: string; contactChannel: string; publicReference: string | null;
   fullName: string; phone: string | null; serviceCategory: string; status: string;
   appointments: Array<{ id: string; startsAt: string; endsAt: string; status: string; lawyer: { name: string } | null }>;
 };
-type Slot = { startsAt: string; endsAt: string };
+type Slot = BookingSlot;
 const endpoint = "/api/public/assistant/conversation";
 const field = "min-h-11 w-full min-w-0 rounded border border-kmt-gold/30 bg-transparent px-3";
 
@@ -25,6 +27,7 @@ export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh
   const [channel, setChannel] = useState("PHONE");
   const [date, setDate] = useState("");
   const [slots, setSlots] = useState<Slot[]>([]);
+  const [availability, setAvailability] = useState<BookingAvailability | null>(null);
   const [slot, setSlot] = useState<Slot | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,16 +45,22 @@ export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh
   const canEdit = !!appointment && ["SCHEDULED", "RESCHEDULED"].includes(appointment.status) && Date.parse(appointment.startsAt) > Date.now();
   const format = (time: string) => new Intl.DateTimeFormat(locale, { dateStyle: "full", timeStyle: "short", timeZone: "Africa/Cairo" }).format(new Date(time));
   const service = getPublicContent(locale).legalServices.find(s => s.slug === draft.service)?.title;
+  const canCallback = loaded && !!availability && (!availability.published || !availability.hasAvailability) && !editing;
+  const localDate = (time: string) => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(time));
 
   const load = useCallback(async () => {
     const request = ++slotRequest.current;
-    setLoading(true); setLoaded(false); setError("");
+    setLoading(true); setLoaded(false); setSlots([]); setError("");
+    if (!pending.current) { setSlot(null); setConsent(false); }
     try {
       const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json", "x-kmt-locale": locale }, body: JSON.stringify({ action: "booking_slots", ...(date ? { date } : {}) }) });
       const data = await response.json();
       if (request !== slotRequest.current) return;
       if (!response.ok) throw new Error();
-      setSlots(data.data.slots); setLoaded(true);
+      const result = data.data as BookingAvailability;
+      setAvailability(result);
+      if (!date && result.nearestSlot) { setDate(new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(result.nearestSlot.startsAt))); return; }
+      setSlots(result.slots); setLoaded(true);
       if (requestedTime.current) {
         const requested = data.data.slots.find((s: Slot) => Date.parse(s.startsAt) === Date.parse(requestedTime.current!));
         setSlot(requested ?? null); setConsent(false);
@@ -70,6 +79,18 @@ export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh
       setDate(new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(draft.requestedStartsAt)));
     }
   }, [draft.requestedStartsAt, draft.contactChannel, booking]);
+
+  function chooseDate(next: string) {
+    if (next === date) return;
+    slotRequest.current += 1; requestedTime.current = null;
+    setDate(next); setSlots([]); setLoaded(false); setSlot(null); setConsent(false); setError("");
+  }
+  function chooseNearest() {
+    const nearest = availability?.nearestSlot;
+    if (!nearest) return;
+    if (date === localDate(nearest.startsAt)) { setSlot(nearest); setConsent(false); }
+    else { chooseDate(localDate(nearest.startsAt)); requestedTime.current = nearest.startsAt; }
+  }
 
   async function submit(action: string) {
     setBusy(true); setError("");
@@ -103,7 +124,7 @@ export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh
       <p>{booking.fullName} · <bdi>{booking.phone}</bdi></p><p>{booking.contactChannel === "WHATSAPP" ? copy.whatsapp : copy.phone}</p>
       {canEdit && !editing && !cancelling && <div className="flex flex-wrap gap-2">
         <Button type="button" variant="outline" onClick={calendar}>{copy.calendar}</Button>
-        <Button type="button" variant="outline" onClick={() => { setEditing(true); setConsent(false); }}>{copy.change}</Button>
+        <Button type="button" variant="outline" onClick={() => { chooseDate(localDate(appointment.startsAt)); setEditing(true); setConsent(false); }}>{copy.change}</Button>
         <Button type="button" variant="ghost" onClick={() => setCancelling(true)}>{copy.cancel}</Button>
       </div>}
       {cancelling && <div className="flex flex-wrap gap-2"><Button type="button" disabled={busy} onClick={() => void submit("cancel_booking")}>{copy.cancelConfirm}</Button><Button type="button" variant="ghost" disabled={busy || !!pending.current} onClick={() => setCancelling(false)}>{copy.keep}</Button></div>}
@@ -113,18 +134,19 @@ export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh
       <p className="text-sm leading-7">{copy.intro}</p>
       <fieldset disabled={busy || !!pending.current} className="min-w-0 space-y-4">
         {!booking && <label className="block space-y-2"><span>{copy.channel}</span><select aria-label={copy.channel} className={field} value={channel} onChange={e => { setChannel(e.target.value); setConsent(false); }}><option value="PHONE">{copy.phone}</option><option value="WHATSAPP">{copy.whatsapp}</option></select></label>}
-        <label className="block space-y-2"><span>{copy.date}</span><input className={field} type="date" value={date} onChange={e => { setDate(e.target.value); setSlot(null); setConsent(false); }} /></label>
-        {date && <Button type="button" variant="ghost" onClick={() => { setDate(""); setSlot(null); setConsent(false); }}>{copy.nearest}</Button>}
-        {loading ? <p role="status">{copy.waiting}</p> : loaded && !slots.length ? <p>{copy.empty}</p> : <fieldset className="space-y-2"><legend>{copy.choose} · {copy.cairo}</legend>{slots.map(s => <label key={s.startsAt} className="flex min-h-11 cursor-pointer items-center gap-2 rounded border border-kmt-gold/30 p-3 text-sm"><input type="radio" name="direct-slot" checked={slot?.startsAt === s.startsAt} onChange={() => { setSlot(s); setConsent(false); }} /><span>{format(s.startsAt)}</span></label>)}</fieldset>}
+        <label className="block space-y-2"><span>{copy.date}</span><input className={field} type="date" value={date} min={availability?.window.startsOn} max={availability?.window.endsOn} onChange={e => chooseDate(e.target.value)} /></label>
+        {date && <Button type="button" variant="ghost" onClick={() => chooseDate("")}>{copy.nearest}</Button>}
+        {loading && <p role="status">{copy.waiting}</p>}
+        {availability && <BookingAvailabilityPicker locale={locale} availability={availability} date={date || availability.selectedDay.date} slot={slot} loading={loading || !loaded} slots={loaded ? slots : []} onDate={chooseDate} onSlot={value => { setSlot(value); setConsent(false); }} onNearest={chooseNearest} />}
         {!booking && <><label className="block space-y-2"><span>{copy.name}</span><input className={field} required minLength={2} maxLength={160} autoComplete="name" value={name} onChange={e => { setName(e.target.value); setConsent(false); }} /></label><label className="block space-y-2"><span>{copy.number}</span><input className={field} required type="tel" dir="ltr" maxLength={24} autoComplete="tel" value={phone} onChange={e => { setPhone(e.target.value); setConsent(false); }} /></label></>}
-        {(slot || (loaded && !slots.length && !editing)) && <div className="space-y-2 rounded border border-kmt-gold/30 p-3 text-sm leading-7">
+        {(slot || canCallback) && <div className="space-y-2 rounded border border-kmt-gold/30 p-3 text-sm leading-7">
           <p className="font-semibold">{copy.review}</p>{service && <p>{service}</p>}
           {slot ? <><p>{format(slot.startsAt)} · {copy.cairo}</p><p>{(Date.parse(slot.endsAt) - Date.parse(slot.startsAt)) / 60000} {copy.minutes}</p></> : <p>{copy.callback}</p>}
           <p>{booking?.fullName ?? name} · <bdi>{booking?.phone ?? phone}</bdi></p><p>{(booking?.contactChannel ?? channel) === "WHATSAPP" ? copy.whatsapp : copy.phone}</p>
           <label className="flex min-h-11 items-start gap-2"><input className="mt-2 size-5 shrink-0" type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} /><span>{copy.consent}</span></label>
         </div>}
       </fieldset>
-      <Button className="h-auto min-h-11 whitespace-normal" type="submit" disabled={busy || loading || !consent || (!slot && (editing || !loaded || !!slots.length))}>{busy ? copy.waiting : pending.current ? copy.retry : slot ? copy.confirm : copy.callback}</Button>
+      <Button className="h-auto min-h-11 whitespace-normal" type="submit" disabled={busy || loading || (!pending.current && (!loaded || !consent || (!slot && !canCallback)))}>{busy ? copy.waiting : pending.current ? copy.retry : canCallback && !slot ? copy.callback : copy.confirm}</Button>
       {editing && <Button type="button" variant="ghost" disabled={busy || !!pending.current} onClick={() => setEditing(false)}>{copy.keep}</Button>}
     </form>}
     {error && <p role="alert" className="text-sm leading-7">{error}</p>}

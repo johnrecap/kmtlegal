@@ -1,5 +1,13 @@
 export const directBookingCopy = {
   ar: {
+    scheduleTitle: "مواعيد الاستشارات الهاتفية وواتساب", weeklyTitle: "ساعات الاستشارات الأسبوعية", closedDay: "لا توجد استشارات في هذا اليوم",
+    nearestOne: "أقرب موعد متاح", chooseNearest: "اختيار هذا الموعد", daysTitle: "اختيار يوم", previousDays: "الأيام السابقة", nextDays: "الأيام التالية", dayTimes: "ساعات اليوم المختار", closedPeriods: "إغلاق استثنائي",
+    availabilityReasons: {
+      AVAILABLE: "توجد مواعيد متاحة", CLOSED_WEEKLY: "هذا اليوم خارج جدول عمل الاستشارات.", CLOSED_EXCEPTION: "الحجز متوقف في هذا اليوم بسبب إغلاق استثنائي.",
+      MODE_UNAVAILABLE: "الاستشارات الهاتفية وواتساب غير متاحة في هذا اليوم.", FULL: "كل المواعيد المتاحة لهذه الفترة محجوزة.", LEAD_TIME: "انتهت الفترات الممكنة أو لم تعد تسمح بمهلة الحجز المطلوبة.",
+      OUTSIDE_WINDOW: "هذا التاريخ خارج فترة الحجز المتاحة.", UNPUBLISHED: "جدول الحجز غير منشور حاليًا.", NO_STAFF: "لا توجد فترات متاحة للحجز مع محامٍ في هذا اليوم.",
+      NO_SLOTS: "لا توجد فترات متاحة لهذا الاختيار.", OUTSIDE_HOURS: "الوقت المطلوب خارج ساعات الاستشارات في هذا اليوم."
+    },
     openForm: "استكمال بيانات الحجز", openDetails: "عرض تفاصيل الطلب", closeForm: "إغلاق والعودة للمحادثة", formHelp: "اختر الموعد وأدخل اسمك ورقم هاتفك، ثم اضغط زر التأكيد لإرسال الطلب للمكتب. إغلاق النافذة وحده لا يرسل الطلب؛ تبقى مدخلاتك عند فتحها مجددًا في هذه الصفحة.",
     title: "اختيار موعد للتواصل مع محامٍ", intro: "اختر وقتًا مناسبًا ليتواصل معك محامٍ من المكتب. الأتعاب منفصلة عن تثبيت الموعد.",
     phone: "مكالمة هاتفية", whatsapp: "التواصل عبر واتساب", channel: "طريقة التواصل", name: "الاسم", number: "رقم الهاتف", date: "اختيار يوم آخر", nearest: "أقرب المواعيد", choose: "اختر الموعد", confirm: "تأكيد الموعد", review: "راجع الموعد والاسم والرقم قبل التأكيد", consent: "راجعت البيانات وأوافق على تثبيت الموعد والتواصل معي.",
@@ -8,6 +16,14 @@ export const directBookingCopy = {
     adminTitle: "الحجز المباشر مع المحامين", publish: "نشر الجدول والسماح بالتأكيد المباشر", adminNote: "النشر يعتمد هذه المواعيد مسبقًا. يُحجز موعد واحد في الفترة نفسها ويُسند لمحامٍ متفرغ من القائمة اليومية. لا يغيّر تعديل الجدول الحجوزات السابقة.", roster: "المحامون المشاركون في هذا اليوم", closures: "الإجازات والفترات المغلقة", addClosure: "إضافة فترة مغلقة", remove: "حذف الفترة", allLawyers: "كل المحامين", closureDate: "التاريخ", closureStart: "من", closureEnd: "إلى", closureLawyer: "المحامي أو المكتب", source: "طريقة اعتماد الموعد", sources: { STAFF_APPROVAL: "مراجعة الإدارة", PUBLISHED_SLOT: "جدول معتمد مسبقًا", CALLBACK_REQUEST: "طلب تواصل دون موعد" }
   },
   en: {
+    scheduleTitle: "Phone and WhatsApp consultation times", weeklyTitle: "Weekly consultation hours", closedDay: "No consultations on this day",
+    nearestOne: "Nearest available appointment", chooseNearest: "Choose this appointment", daysTitle: "Choose a day", previousDays: "Previous days", nextDays: "Next days", dayTimes: "Times for the selected day", closedPeriods: "Exceptional closure",
+    availabilityReasons: {
+      AVAILABLE: "Appointments available", CLOSED_WEEKLY: "This day is outside the consultation working schedule.", CLOSED_EXCEPTION: "Bookings are closed on this day due to an exceptional closure.",
+      MODE_UNAVAILABLE: "Phone and WhatsApp consultations are unavailable on this day.", FULL: "All available appointments for this period are booked.", LEAD_TIME: "The possible times have passed or no longer meet the booking notice period.",
+      OUTSIDE_WINDOW: "This date is outside the available booking window.", UNPUBLISHED: "The booking schedule is not published right now.", NO_STAFF: "No lawyer appointment times are available for booking on this day.",
+      NO_SLOTS: "No appointment times are available for this selection.", OUTSIDE_HOURS: "The requested time is outside this day’s consultation hours."
+    },
     openForm: "Continue booking details", openDetails: "View request details", closeForm: "Close and return to chat", formHelp: "Choose a time and enter your name and phone, then use the confirmation button to send your request to the office. Closing this window does not send it; your entries remain when you reopen it on this page.",
     title: "Choose a time to speak with a lawyer", intro: "Choose a suitable time for an office lawyer to contact you. Fees are separate from appointment confirmation.",
     phone: "Phone call", whatsapp: "Contact via WhatsApp", channel: "Contact method", name: "Name", number: "Phone number", date: "Choose another day", nearest: "Nearest available times", choose: "Choose a time", confirm: "Confirm appointment", review: "Review your appointment, name and phone before confirming", consent: "I have reviewed the details and agree to this appointment and being contacted.",

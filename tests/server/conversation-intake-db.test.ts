@@ -29,7 +29,7 @@ import { createServiceRequest, actOnServiceRequest, getServiceRequest, publishQu
 import { sendTemplatedEmail } from "@/server/email/email-service";
 import { uploadDocument, getAuthorizedDocumentDownload } from "@/server/storage/document-service";
 import { listDirectBookingSlots, mutateDirectBooking } from "@/server/consultations/direct-booking-service";
-import { defaultConsultationAvailability } from "@/server/consultations/consultation-availability-service";
+import { cairoDateString, cairoWeekday, defaultConsultationAvailability } from "@/server/consultations/consultation-availability-service";
 import { assistantPolicyCopy } from "@/content/assistant-policy-copy";
 
 
@@ -314,6 +314,38 @@ describe.sequential("representative conversational intake against isolated SQL d
     const returned = await changeAssistantDialogue(token, "return_inquiry", actor);
     await expect(submitConversationRequest({ token, actor, revision: returned.revision })).rejects.toMatchObject({ code: "PERMISSION_DENIED" });
     await expect(startClientVerification({ capability: token, actor, email: "withdrawn@synthetic.invalid", purpose: "ACTIVATE" })).rejects.toMatchObject({ code: "PERMISSION_DENIED" });
+  });
+
+  it("explains a closed booking day and finds the next actual appointment", async () => {
+    const previous = await fixture.db.systemSetting.findUnique({ where: { key: "consultation.availability" } });
+    const role = await fixture.db.role.upsert({ where: { name: "Lawyer" }, create: { name: "Lawyer", status: "ACTIVE" }, update: {} });
+    const lawyer = await fixture.db.user.create({ data: { name: "Schedule Test Lawyer", email: "schedule-lawyer@synthetic.invalid", roleId: role.id, status: "ACTIVE" } });
+    const date = cairoDateString(new Date(Date.now() + 86400000));
+    const weekday = cairoWeekday(date);
+    const schedule = { ...defaultConsultationAvailability, minLeadHours: 0, days: defaultConsultationAvailability.days.map(day => ({ ...day, enabled: day.weekday !== weekday, modes: ["PHONE"] })), directBooking: { published: true, closures: [], roster: defaultConsultationAvailability.days.map(day => ({ weekday: day.weekday, lawyerIds: [lawyer.id] })) } };
+    await fixture.db.systemSetting.upsert({ where: { key: "consultation.availability" }, create: { key: "consultation.availability", value: schedule }, update: { value: schedule } });
+    try {
+      const result = await listDirectBookingSlots(date);
+      expect(result.slots).toEqual([]);
+      expect(result).toMatchObject({ selectedDay: { date, status: "CLOSED_WEEKLY" }, timezone: "Africa/Cairo", hasAvailability: true });
+      expect(cairoDateString(new Date(result.nearestSlot!.startsAt)) > date).toBe(true);
+      expect(JSON.stringify(result)).not.toContain(lawyer.id);
+      const token = await createAssistantSession("ar");
+      installConversationMock((_url, init) => {
+        const body = JSON.parse(String(init.body));
+        return body.messages.some((message: { role: string }) => message.role === "tool")
+          ? Response.json({ choices: [{ finish_reason: "stop", message: { content: "هذا اليوم خارج جدول الاستشارات؛ الموعد التالي ظاهر في خيارات الحجز." } }] })
+          : Response.json({ choices: [{ finish_reason: "tool_calls", message: { content: null, tool_calls: [{ id: "availability-check", type: "function", function: { name: "available_slots", arguments: JSON.stringify({ date }) } }] } }] });
+      }, "NONE", { locale: "ar" });
+      const messageId = randomUUID();
+      await sendAssistantMessage({ token, messageId, message: "هل توجد مواعيد في هذا اليوم؟", locale: "ar", requestId: "closed-day-tool" });
+      const turn = await fixture.db.assistantTurn.findUniqueOrThrow({ where: { sessionId_messageId: { sessionId: (await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } })).id, messageId } } });
+      const tool = (turn.protocol as Array<{ role: string; content: string }>).find(message => message.role === "tool");
+      expect(JSON.parse(tool!.content)).toMatchObject({ requestedDay: { date, status: "CLOSED_WEEKLY" }, nearestSlot: { startsAt: result.nearestSlot!.startsAt } });
+    } finally {
+      if (previous) await fixture.db.systemSetting.update({ where: { key: "consultation.availability" }, data: { value: previous.value! } });
+      else await fixture.db.systemSetting.delete({ where: { key: "consultation.availability" } });
+    }
   });
 
   it("books a guest directly, isolates identity, retries safely and retains the old time on a failed change", async () => {

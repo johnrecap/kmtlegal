@@ -58,6 +58,14 @@ All API Route Handlers and Server Actions must follow these standards:
 
 ## Endpoint Groups
 
+### Conversational Booking Availability
+
+`POST /api/public/assistant/conversation`, action `booking_slots`, uses the existing protected conversation capability/ownership checks and conversation rate limit. Request adds optional `fromTime` (`00:00`–`23:59`) and `toTime` (`00:00`–`24:00`) alongside the existing validated `date` (`YYYY-MM-DD`). Reversed/equal time ranges and invalid date/time values return the existing `VALIDATION_ERROR` envelope. Time-only filters use today's Cairo date.
+
+The existing `{ data: ... }` envelope retains `published` and `slots` (up to three nearest entries without a date, up to 100 for a selected day). Additions: `timezone`, `now`, `slotDurationMinutes`, `weeklyHours`, `days`, `selectedDay`, inclusive local-date `window`, `nearestSlot`, `suggestedSlots` (at most three) and `hasAvailability` for the whole window. Slots retain `id`, `startsAt`, `endsAt`, `mode`; their timestamps are ISO instants. Weekly hours contain weekday/enabled/hours; days contain date/status/hours/public office-wide closure periods. An unpublished schedule withholds hours/closure metadata. No lawyer IDs, lawyer-specific closure records or client appointment details are exposed.
+
+Day statuses: `AVAILABLE`, `CLOSED_WEEKLY`, `CLOSED_EXCEPTION`, `MODE_UNAVAILABLE`, `FULL`, `LEAD_TIME`, `OUTSIDE_WINDOW`, `UNPUBLISHED`, `NO_STAFF`, `NO_SLOTS`, `OUTSIDE_HOURS`. Mixed causes use `NO_SLOTS`. The nearest result first fits the requested time range; when none fits, it is the first appointment after that range (or requested date/from-time), within the existing lead/window bounds. A later alternative never replaces the requested date or creates a reservation. `hasAvailability` ignores selected-day filters, preventing a callback prompt when other days still have times. Current appointment exclusion during rescheduling remains server-owned. Shared tool output projects localized labels and at most one suggestion by default, three on explicit alternatives requests, without the full dated calendar.
+
 ### Runtime Health
 | Method | Path | Purpose | Auth | Permission | Notes |
 | --- | --- | --- | --- | --- | --- |
