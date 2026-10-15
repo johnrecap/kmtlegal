@@ -1,0 +1,151 @@
+{
+  "scope": "Local bounded automatic recovery from conversational provider HTTP 429",
+  "date": "2026-10-15",
+  "authority": "Accepted user plan in this chat; maximum 30 seconds, Gemini unchanged, no subagents or Spec Kit",
+  "fingerprintFormat": "SHA256 of canonical staged Git blob bytes, not Windows checkout line endings",
+  "sourceVersions": {
+    "PROJECT_GUIDE.md": {
+      "gitBlob": "aa988490cb86d6babf7eaef206301a56b0344bb8",
+      "sha256GitBlobBytes": "cc0ee70c0265d78cedae9f7a2a275a1268875f287b8b4f774253ed577344c788"
+    },
+    "docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md": {
+      "gitBlob": "050063c7523c8c7e366c19e84d64b386d594752e",
+      "sha256GitBlobBytes": "50461a9c5ba1e4ad01ec4ed6bf4333c10e05d42518b6d08e2e509e4f40aaa0d8"
+    },
+    "docs/SERVER_COMMANDS.md": {
+      "gitBlob": "7c262af375b7515f2d14b72be8efb3ca3ea27615",
+      "sha256GitBlobBytes": "da12ec06e9a885cc9a86bb8ca8dbe477eb6f18b0825e4e31b57394a05a7b1fe4"
+    },
+    "src/content/conversation-copy.ts": {
+      "gitBlob": "1ef04854bc3d4c1c2581710caf5e0747335a815b",
+      "sha256GitBlobBytes": "562f5cb1b1e161228f2ba78e0fd7f9a122086e4c9be181fd8861222b4a75719b"
+    },
+    "src/features/public-site/conversational-booking-chat.tsx": {
+      "gitBlob": "715fc0fbe9f73ff915e81a44d6e4acefde63f6c1",
+      "sha256GitBlobBytes": "8044778423ab72b3b4dc104815aa6f9fbf099d0f948bf8c3c033afca0082fbaf"
+    },
+    "src/server/ai/company-conversation-policy.ts": {
+      "gitBlob": "80e2b7b8c1df29ca6b4a2d7078de0c255483b624",
+      "sha256GitBlobBytes": "d01d43c46c7f6c0f0c9cda10b866628ca188535d25a74343522347cabbc99949"
+    },
+    "src/server/ai/conversation-rate-limit.ts": {
+      "gitBlob": "b690a20316988abe84c384a314f0ee4065831588",
+      "sha256GitBlobBytes": "78a66c23cf6c6c4cd78e3cbb0e36ccdea39b2b9d1a6f55ebda87a0373602f6a4"
+    },
+    "src/server/ai/providers/conversational.ts": {
+      "gitBlob": "74d79eb544ea70568180e2f0f2bbc40dd2c8186f",
+      "sha256GitBlobBytes": "75c2cde70d52c61a2f529d65243a4ab61df93a462da3f679aff96a06634771ff"
+    },
+    "src/server/consultations/conversation-session-service.ts": {
+      "gitBlob": "dd716c48a631296fa39ab4367e85a2d7bb33d306",
+      "sha256GitBlobBytes": "adc44512ad45059702659ca3e6afad48eb2f0baa996addb7e44da962335b700f"
+    },
+    "src/server/http/phase-five-errors.ts": {
+      "gitBlob": "f8c8694c2f61d1604f7c0cb212f7a88e197fcbc8",
+      "sha256GitBlobBytes": "967d09f2a9b97e2a5933c616ccceead81662cba43de9c9e8c296756aa872168e"
+    },
+    "tests/e2e/assistant-rate-limit.spec.ts": {
+      "gitBlob": "f1880682cb3432849374657dedf2946e00eec778",
+      "sha256GitBlobBytes": "edeb0d4a152747d633269f0c5ee117a35e51d9298ca95f427668c80f26e76287"
+    },
+    "tests/server/company-conversation-policy.test.ts": {
+      "gitBlob": "d74988497b79f9fb9ed07fede1381f3a32fd4bc0",
+      "sha256GitBlobBytes": "207a59d74e7fec5053269c2d3670bbf62251c1b057af2d2b047c8d7e7d7af3dc"
+    },
+    "tests/server/conversation-intake-db.test.ts": {
+      "gitBlob": "e89d5cddc39993c44ef7af0273a78119b7f50d10",
+      "sha256GitBlobBytes": "278f239b76ae9115faf7cad8cff08020ab8c23f03f6daa75d99790f0ed52d98c"
+    },
+    "tests/server/conversation-rate-limit.test.ts": {
+      "gitBlob": "ee5bd15b647500d747ba3b10091bdd2db034b3c1",
+      "sha256GitBlobBytes": "b2112624b1bf3e90233a27082b18dc485202b0060c1de21122cd0cff2adb052d"
+    },
+    "AGENTS.md": {
+      "gitBlob": "d15cc72977bf8599c90d36d592b4332c29fd0c9e",
+      "sha256GitBlobBytes": "0b0d4ff77caf5e9eba13adb9b8e69aad5dd15ebd2ebb4e266ac5352ba1f5c97a"
+    },
+    "package-lock.json": {
+      "gitBlob": "c3721aae3336cbbbec5d2dddf0037500659ee5d3",
+      "sha256GitBlobBytes": "bc0b94e43fc8c8d5479283634ab3d71275f7922808f800415fa8de41fd452f50"
+    },
+    "prisma/schema.prisma": {
+      "gitBlob": "3a84fd8bee3fbf5dcba5413a265ede645aa13b10",
+      "sha256GitBlobBytes": "70cc8165b4519999e5beab67472bc4b23ce1635caf7d8a0c4c3312717b3aaa3c"
+    }
+  },
+  "verification": [
+    {
+      "scope": "Representative 429 then success, before expansion",
+      "command": "node node_modules/vitest/vitest.mjs run tests/server/conversation-rate-limit.test.ts",
+      "exitCode": 0,
+      "passed": 1
+    },
+    {
+      "scope": "Final AI/provider/policy regressions",
+      "command": "node node_modules/vitest/vitest.mjs run tests/server/conversation-rate-limit.test.ts tests/server/conversation-gateway.test.ts tests/server/company-conversation-policy.test.ts",
+      "exitCode": 0,
+      "passed": 56
+    },
+    {
+      "scope": "Isolated SQL, including one-turn/replay and 30-second cap",
+      "command": "node node_modules/vitest/vitest.mjs run tests/server/conversation-intake-db.test.ts",
+      "exitCode": 0,
+      "passed": 22
+    },
+    {
+      "scope": "Final affected UI regressions",
+      "command": "node node_modules/vitest/vitest.mjs run tests/ui/public-pages.test.tsx tests/ui/booking-assistant-stage.test.tsx",
+      "exitCode": 0,
+      "passed": 35
+    },
+    {
+      "scope": "Final actual local HTTP + SQL + synthetic provider in installed Chrome; AR mobile / EN desktop; includes plain-text 429",
+      "command": "node scripts/run-playwright-with-server.mjs tests/e2e/assistant-rate-limit.spec.ts --workers=1",
+      "environmentRecipe": "docs/SERVER_COMMANDS.md#assistant-http-429-recovery--2026-10-15",
+      "exitCode": 0,
+      "passed": 4
+    },
+    {
+      "scope": "TypeScript",
+      "command": "node node_modules/typescript/bin/tsc --noEmit",
+      "exitCode": 0
+    },
+    {
+      "scope": "ESLint",
+      "command": "node node_modules/next/dist/bin/next lint",
+      "exitCode": 0
+    },
+    {
+      "scope": "Optimized production build with local synthetic DB and AI/email disabled",
+      "command": "node node_modules/next/dist/bin/next build",
+      "exitCode": 0
+    },
+    {
+      "scope": "Broad regression run; final affected lanes rechecked separately",
+      "command": "node node_modules/vitest/vitest.mjs run --maxWorkers=2",
+      "exitCode": 1,
+      "passed": 857,
+      "skipped": 55,
+      "failedSuite": "tests/server/postgres-backup-tool-resolution.test.ts",
+      "reason": "Git Bash is required and absent; suite could not initialize. No assertion failed in the executed suites."
+    }
+  ],
+  "captures": {
+    "ar-waiting.png": {
+      "sha256": "60916f3ee3296ea78796dd6d8300a78430418fac5c00d70c5ef38105435101bc"
+    },
+    "ar-limited.png": {
+      "sha256": "e1622ed9927790f845e4d774b96fb9f57caa6d179cb5c3329ae2e8e8375a84c8"
+    },
+    "en-recovered.png": {
+      "sha256": "21512a87c849b18f800be078cb5a2e04eb6c456714ba3d4aaca780f0bc0e58db"
+    }
+  },
+  "semanticReview": "See the separate semantic acceptance paragraph in docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md, dated 2026-10-15. Mechanical results do not certify live model quality or production deployment.",
+  "limits": [
+    "Actual Gemini recovery and production deployment NOT_VERIFIED",
+    "Absolute full-suite gate INCOMPLETE because Git Bash is absent",
+    "Physical devices and assistive technology NOT_VERIFIED",
+    "Daily/zero quota cannot be recovered by a short wait"
+  ]
+}

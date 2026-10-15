@@ -63,6 +63,11 @@ For a current-state PRD and external model review brief, use `docs/KMT_LEGAL_CUR
 
 ## Recent Changes
 
+- 2026-10-15 - Added bounded automatic recovery from conversational AI provider HTTP 429, keeping the configured Gemini provider and billing unchanged.
+  - Retries only the rejected model request, at most twice across one message, within six total provider calls and the existing timeout capped at 30 seconds. Honors Retry-After and Google RetryInfo; confirmed daily/zero quotas stop immediately.
+  - Arabic/English pending and busy feedback retains failed message text and IDs, including plain-text HTTP 429 responses. The browser never automatically resubmits a message; existing tools and request/account actions are not replayed.
+  - Verification and remaining production/Bash gates are recorded in `docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md`. Reproduction and privacy-safe operational events are documented in `docs/SERVER_COMMANDS.md`.
+
 - 2026-10-09 — Published-roster guest appointments, optional account attachment, queue/claim separation, bilingual direct controls, admin roster/closure editor and focused SQL/API/browser coverage. Current receipts and gaps are in the implementation register.
 
 - 2026-10-09 — Added published-roster guest appointments, optional account attachment, queue/claim separation, bilingual direct controls, admin roster/closure editor and focused SQL/API/browser coverage. See the current implementation register for receipts and remaining operational gates.

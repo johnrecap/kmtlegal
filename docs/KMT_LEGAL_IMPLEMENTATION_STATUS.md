@@ -1,5 +1,25 @@
 # KMT Legal Implementation Status
 
+## 2026-10-15 — Bounded automatic recovery from assistant-provider 429
+
+Authority: owner's accepted implementation plan in this chat. Direct work only, no subagents or Spec Kit. Keep Gemini and all production credentials/billing unchanged. Original-template checker is NOT_APPLICABLE: this is a focused software repair, not a Markdown-template batch.
+
+| Obligation / source | Verification and evidence | State |
+| --- | --- | --- |
+| Plan / distinguish provider 429 and preserve the existing API envelope | `conversation-rate-limit.test.ts`: headers/date/RetryInfo, malformed/oversized and array-wrapped bodies, existing localized JSON shape and Retry-After | VERIFIED locally |
+| Plan / two additional attempts shared by the whole message, six total provider calls, maximum 30 seconds | Final provider/gateway/policy lane: 56 tests pass. Explicit global retry/call budgets, one/two-second fallback waits and deadline checks; SQL test rejects a 40-second wait even with AI_TIMEOUT_MS=60000 | VERIFIED locally |
+| Plan / retry only the rejected provider request; preserve tools and message identity | Representative 429-then-success passed before expansion and in the final lane. Tool-side-effect regression and 22 isolated SQL tests pass, including a prepared draft, one persisted turn/protocol tool result, and unchanged replay revision | VERIFIED synthetic transport + SQL |
+| Plan / stop on deadline, ownership change, daily/zero quota or excessive requested delay | Final abort/ownership/quota/deadline/reserve/budget cases pass. The session lease is released after terminal failure | VERIFIED locally |
+| Plan / bilingual waiting and rate-limit feedback without automatic browser resubmission | Four final Chrome tests pass on AR 390x844 and EN 1280x900, against the actual local API + disposable SQL + synthetic provider. One browser message POST recovers from provider 429, with one stored reply; daily quota and plain-text intermediary 429 retain text and ID. Final affected UI lane: 35 tests pass | VERIFIED local Chrome; physical devices/assistive technology NOT_VERIFIED |
+| Plan / privacy-safe diagnostics | Semantic source review: retry logs contain status, counts, delay and request ID only. The typed error has fixed prose; provider bodies are bounded to 128 KiB and never logged or returned. Screenshot review confirms readable/wrapping Arabic feedback and retained input | VERIFIED scoped source/visual review; real provider behavior NOT_VERIFIED |
+| Plan / verification, documentation and repository delivery | Current optimized Next build, TypeScript, lint and diff checks pass. Broad run: 857 tests pass / 55 skip; one unrelated backup resolver suite cannot initialize without Git Bash. Final 56-test AI lane and 35-test UI lane rechecked after affected changes. Guide/runbook updated; containing Git commit and origin/main are the repository delivery evidence | Scoped repair VERIFIED; absolute full-suite gate INCOMPLETE |
+| Plan / real Gemini acceptance after production deployment | Owner's live probe established provider HTTP 429, but this repair has not been deployed or exercised against real Gemini | NOT_VERIFIED — production follow-up remains separate |
+
+Mechanical receipt and source-version fingerprints: `docs/reviews/2026-10-15/assistant-rate-limit/verification.json`. Full-page AR waiting/busy and EN recovered captures are stored alongside it; complete local build/browser logs remain in ignored `_workspace/assistant-rate-limit/`.
+
+Semantic acceptance is scoped to this repair: the retry surrounds the provider call, so successful classification/generation steps and executed tools are retained inside the same turn; no new browser POST loop can replay a whole workflow. SQL and actual HTTP/browser checks independently establish one turn and stable replay identity. Existing consent, office takeover, output review, booking confirmation and ownership guards remain in control. This does not prove live Gemini grounding, capacity or an exhausted daily allowance can recover inside 30 seconds. The broad test run regenerated two historical formation sample PDFs; only those test-produced changes were restored to their clean starting versions and excluded from this delivery. No migration, dependency, provider selection, credential or production billing change was made.
+
+
 ## 2026-10-11 — Public-site consistency, menu usability and HTML cache repair
 
 Authority: owner's approved repair plan in this chat. Direct work only; no subagents or Spec Kit. This section tracks the current repair separately from the earlier content/Business AI delivery. Original-template checker is NOT_APPLICABLE: this is a software/UI repair, not a prescribed Markdown-template batch.
