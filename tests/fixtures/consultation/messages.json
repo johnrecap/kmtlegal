@@ -1,0 +1,16 @@
+{
+  "ar": {
+    "question": "مساء الخير، أريد معرفة خدمات المكتب للشركات.",
+    "answer": "أهلًا بك. يمكننا توضيح خدمات المكتب في تأسيس الشركات والعقود والمتابعة القانونية. أي جانب تريد أن نبدأ به؟",
+    "followup": "أريد أن أتحدث مع محامٍ عن احتياج شركتي.",
+    "response": "يمكنك اختيار موعد من الجدول المنشور ومراجعة بياناتك قبل التأكيد. ونقدر نكمل استفسارك هنا في أي وقت.",
+    "syntheticName": "عميل تجريبي"
+  },
+  "en": {
+    "question": "Good evening. I would like to know about your services for companies.",
+    "answer": "Welcome. We can explain the office’s company formation, contract and legal follow-up services. Where would you like to start?",
+    "followup": "I would like to speak with a lawyer about my company’s needs.",
+    "response": "You can choose a published appointment and review your contact details before confirming. We can continue your questions here at any time.",
+    "syntheticName": "Synthetic Customer"
+  }
+}

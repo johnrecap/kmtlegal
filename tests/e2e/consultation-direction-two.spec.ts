@@ -4,16 +4,17 @@ import vm from "node:vm";
 import { conversationCopy } from "../../src/content/conversation-copy";
 import { directBookingCopy } from "../../src/content/direct-booking-copy";
 import { assistantPolicyCopy } from "../../src/content/assistant-policy-copy";
+import messages from "../fixtures/consultation/messages.json";
 
 // The same fixed sample as the selected HTML authority, never production data.
 const context = { window: {} as Record<string, any> };
-for (const file of ["preview-copy.js", "fixtures.js"]) vm.runInNewContext(readFileSync(`design-preview/consultation/shared/${file}`, "utf8"), context);
+vm.runInNewContext(readFileSync("tests/fixtures/consultation/availability.js", "utf8"), context);
 const fixture = context.window.KMT_FIXTURE;
 
 for (const locale of ["ar", "en"] as const) for (const theme of ["light", "dark"]) for (const width of [390, 1440]) {
   test(`direction-02 ${locale}-${theme}-${width}: selected appearance and protected booking controls`, async ({ page }, testInfo) => {
     test.setTimeout(120_000);
-    const copy = conversationCopy[locale], direct = directBookingCopy[locale], policy = assistantPolicyCopy[locale], preview = context.window.KMT_PREVIEW[locale];
+    const copy = conversationCopy[locale], direct = directBookingCopy[locale], policy = assistantPolicyCopy[locale], preview = messages[locale];
     const state: Record<string, any> = { locale, handoffState: "NONE", booking: null, draft: {}, dialogue: { mode: "INQUIRY", consentAt: null, offerShown: true, accountAccess: false }, revision: 0, accountReady: false, humanOwned: false, submitted: false,
       turns: [{ messageId: "sample-a", userText: preview.question, assistantText: preview.answer, createdAt: fixture.now }, { messageId: "sample-b", userText: preview.followup, assistantText: preview.response, createdAt: "2026-10-15T06:00:02Z" }] };
     const errors: string[] = []; const writes: any[] = [];

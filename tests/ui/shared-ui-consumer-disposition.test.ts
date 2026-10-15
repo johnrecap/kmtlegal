@@ -14,7 +14,7 @@ type DispositionArtifact = {
   consumers: ConsumerDisposition[];
 };
 
-const artifactPath = join(process.cwd(), "test-results", "plan35", "shared-ui-consumer-disposition.json");
+const artifactPath = join(process.cwd(), "tests", "fixtures", "ui", "shared-ui-consumer-disposition.json");
 
 const changedBarrelExports = new Set([
   "Badge",

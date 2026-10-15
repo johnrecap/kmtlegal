@@ -1,8 +1,0 @@
-   ▲ Next.js 15.5.25
-   - Environments: .env
-   - Experiments (use with caution):
-     · sri
-     ✓ globalNotFound
-     · clientTraceMetadata
-
-   Creating an optimized production build ...

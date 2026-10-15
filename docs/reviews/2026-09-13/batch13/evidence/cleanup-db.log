@@ -1,7 +1,0 @@
- pg_terminate_backend
-----------------------
-(0 rows)
-
-DROP DATABASE
-REVOKE ROLE
-DROP ROLE

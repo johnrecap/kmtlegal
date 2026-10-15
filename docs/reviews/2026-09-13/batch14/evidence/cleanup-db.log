@@ -1,6 +1,0 @@
-REVOKE ROLE
-DROP ROLE
- databases | roles
------------+-------
-         0 |     0
-(1 row)

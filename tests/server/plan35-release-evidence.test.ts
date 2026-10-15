@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import archivedEvidence from "../fixtures/release/plan35-evidence.json";
 
 type GateResult = "PASS" | "FAIL" | "BLOCKED" | "SKIPPED";
 type EvidenceGate = {
@@ -11,14 +12,6 @@ type EvidenceGate = {
 };
 
 const root = process.cwd();
-const evidencePath = path.join(root, "docs", "evidence", "PLAN_35_ADMIN_OPERATIONS.md");
-const featureTasksPath = path.join(
-  root,
-  "specs",
-  "kmt-legal-platform",
-  "plan-35-admin-operations-remediation",
-  "tasks.md"
-);
 
 function read(relativePath: string) {
   return fs.readFileSync(path.join(root, relativePath), "utf8");
@@ -58,9 +51,9 @@ function highestVerifiedState(gates: EvidenceGate[]) {
   return highest;
 }
 
-describe("PLAN-35 release evidence truth", () => {
-  it("derives Local-Verified only and never promotes blocked or skipped gates", () => {
-    const evidence = fs.readFileSync(evidencePath, "utf8");
+describe("PLAN-35 archived release evidence and executable QA safeguards", () => {
+  it("derives archived Local-Verified only and never promotes blocked or skipped gates", () => {
+    const evidence = archivedEvidence.evidence;
     const gates = parseGateLedger(evidence);
 
     expect(gates.map(({ gate }) => gate)).toEqual([
@@ -79,19 +72,19 @@ describe("PLAN-35 release evidence truth", () => {
     expect(evidence).toContain("Production database used: `no`");
   });
 
-  it("keeps DB, authenticated-browser, and live acceptance tasks open", () => {
-    const tasks = fs.readFileSync(featureTasksPath, "utf8");
+  it("preserves the archived open DB, authenticated-browser, and live acceptance tasks", () => {
+    const tasks = archivedEvidence.tasks;
     for (const taskId of ["T123", "T124", "T125"]) {
       expect(tasks).toMatch(new RegExp(`- \\[ \\] ${taskId}\\b`));
     }
     expect(tasks).not.toMatch(/- \[[xX]\] T12[345]\b/);
   });
 
-  it("keeps every roll-up document at the same highest evidenced state", () => {
+  it("keeps archived roll-up markers at the same highest evidenced state", () => {
     const expectedMarker = "Highest evidenced PLAN-35 state: `Local-Verified`";
-    expect(read("docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md")).toContain(expectedMarker);
-    expect(read("docs/KMT_LEGAL_SPEC_KIT_PLAN_INDEX.md")).toContain(expectedMarker);
-    expect(read("specs/kmt-legal-platform/tasks.md")).toContain(expectedMarker);
+    expect(archivedEvidence.rollups["docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md"]).toContain(expectedMarker);
+    expect(archivedEvidence.rollups["docs/KMT_LEGAL_SPEC_KIT_PLAN_INDEX.md"]).toContain(expectedMarker);
+    expect(archivedEvidence.rollups["specs/kmt-legal-platform/tasks.md"]).toContain(expectedMarker);
   });
 
   it("keeps PLAN-35 browser and DB specs in the standard QA harness without treating collection as acceptance", () => {

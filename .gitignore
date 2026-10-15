@@ -31,3 +31,14 @@ Thumbs.db
 _workspace/
 .codex/
 .agents/
+
+# Local documents, planning and offline design references (not application inputs)
+/docs/
+/specs/
+/.specify/
+/design-preview/
+/stitch_kmt_legal_platform_ui_system/
+/*.md
+/opencode.json
+
+# Keep source, deployment files, public assets and test-owned fixtures tracked.

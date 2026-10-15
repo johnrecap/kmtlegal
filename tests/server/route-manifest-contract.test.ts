@@ -91,7 +91,7 @@ function filesUnder(directory: string): string[] {
 describe("route manifest contract", () => {
   it("documents the implemented MVP API route families", () => {
     const routes = apiRoutes();
-    const contract = fs.readFileSync(path.join(process.cwd(), "specs/kmt-legal-platform/contracts/openapi-plan.md"), "utf8");
+    const contract = fs.readFileSync(path.join(process.cwd(), "tests/fixtures/contracts/openapi-plan.md"), "utf8");
 
     for (const [route, contractRoute] of [
       ["/api/admin/finance", "/api/admin/finance"],
@@ -171,7 +171,7 @@ describe("route manifest contract", () => {
     const contract = fs.readFileSync(
       path.join(
         process.cwd(),
-        "specs/kmt-legal-platform/plan-35-admin-operations-remediation/contracts/admin-operations-contract.md"
+        "tests/fixtures/contracts/admin-operations-contract.md"
       ),
       "utf8"
     );
@@ -189,7 +189,7 @@ describe("route manifest contract", () => {
 
   it("keeps every implemented PLAN-35 method, permission, stable error, and consumer documented", () => {
     const openApi = fs.readFileSync(
-      path.join(process.cwd(), "specs/kmt-legal-platform/contracts/openapi-plan.md"),
+      path.join(process.cwd(), "tests/fixtures/contracts/openapi-plan.md"),
       "utf8"
     );
     const operations = parsePlan35Operations(openApi);

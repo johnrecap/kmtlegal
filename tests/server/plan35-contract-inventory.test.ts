@@ -11,9 +11,8 @@ import {
 } from "@/server/audit/audit-event-catalog";
 import { canonicalApiErrorCode } from "@/server/http/errors";
 
-const featureRoot = path.join(process.cwd(), "specs", "kmt-legal-platform", "plan-35-admin-operations-remediation");
-const contractPath = path.join(featureRoot, "contracts", "admin-operations-contract.md");
-const platformOpenApiPath = path.join(process.cwd(), "specs", "kmt-legal-platform", "contracts", "openapi-plan.md");
+const contractPath = path.join(process.cwd(), "tests/fixtures/contracts/admin-operations-contract.md");
+const platformOpenApiPath = path.join(process.cwd(), "tests/fixtures/contracts/openapi-plan.md");
 
 type AffectedRoute = { method: string; apiPath: string; planned: boolean; authorization: string };
 type ContractRoute = {

@@ -6,7 +6,7 @@ import {publicServiceSlugs} from '@/content/public-service-registry';
 import {z} from 'zod';
 import {referenceFields,referenceReady} from '@/lib/legal-reference';
 import {knowledgeWhere} from '@/server/public/knowledge-service';
-const source=JSON.parse(readFileSync('docs/reviews/2026-10-11/site-completion/source-practices.json','utf8')) as {page:number;englishServices:string[]}[];
+const source=JSON.parse(readFileSync('tests/fixtures/site-completion/source-practices.json','utf8')) as {page:number;englishServices:string[]}[];
 const normalize=(v:string)=>v.replace('Old and New Tenancy Matters','TenancyDisputes').toLowerCase().replace(/[^a-z0-9]/g,'');
 it('covers every original practice subservice in order with bilingual parity',()=>{
  expect(practiceDefinitions).toHaveLength(18);
