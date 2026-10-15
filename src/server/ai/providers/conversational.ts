@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { ApiError } from "@/server/http/errors";
-import { conversationRateLimitError } from "../conversation-rate-limit";
 import type { AIProviderConfig } from "../config";
 import type { AIChatInput, AIChatReply } from "../types";
 
@@ -42,15 +41,26 @@ export async function requestConversation(config: AIProviderConfig, input: AICha
         ...(config.provider === "openrouter" ? { provider: { require_parameters: true } } : {})
       })
     });
-    if (response.status === 429) {
-      const rawError = await readProviderBody(response).catch(error => {
-        if (error instanceof ApiError && error.code === "AI_OUTPUT_INVALID") return "";
-        throw error;
-      });
-      throw conversationRateLimitError(response.headers, rawError);
-    }
     if (!response.ok) throw new ApiError(502, "AI_PROVIDER_UNAVAILABLE", "AI provider request failed.");
-    const raw = await readProviderBody(response);
+    // Bound response size before parsing; do not include provider body or customer content in diagnostics.
+    const reader = response.body?.getReader();
+    if (!reader) throw new ApiError(502, "AI_OUTPUT_INVALID", "AI provider response is invalid.");
+    let raw = "";
+    let bytes = 0;
+    const decoder = new TextDecoder();
+    try {
+      while (true) {
+        const part = await reader.read();
+        if (part.done) break;
+        bytes += part.value.byteLength;
+        if (bytes > 131_072) {
+          await reader.cancel();
+          throw new ApiError(502, "AI_OUTPUT_INVALID", "AI provider response is invalid.");
+        }
+        raw += decoder.decode(part.value, { stream: true });
+      }
+      raw += decoder.decode();
+    } finally { reader.releaseLock(); }
     let value: unknown;
     try { value = JSON.parse(raw); } catch { throw new ApiError(502, "AI_OUTPUT_INVALID", "AI provider response is invalid."); }
     const parsed = responseSchema.safeParse(value);
@@ -76,26 +86,4 @@ export async function requestConversation(config: AIProviderConfig, input: AICha
     if (signal.aborted) throw new ApiError(504, "AI_PROVIDER_TIMEOUT", "AI provider timed out.");
     throw new ApiError(502, "AI_PROVIDER_UNAVAILABLE", "AI provider request failed.");
   }
-}
-
-// Both successful and rate-limited envelopes must stay bounded; never log their contents.
-async function readProviderBody(response: Response) {
-  const reader = response.body?.getReader();
-  if (!reader) throw new ApiError(502, "AI_OUTPUT_INVALID", "AI provider response is invalid.");
-  let raw = "";
-  let bytes = 0;
-  const decoder = new TextDecoder();
-  try {
-    while (true) {
-      const part = await reader.read();
-      if (part.done) break;
-      bytes += part.value.byteLength;
-      if (bytes > 131_072) {
-        await reader.cancel();
-        throw new ApiError(502, "AI_OUTPUT_INVALID", "AI provider response is invalid.");
-      }
-      raw += decoder.decode(part.value, { stream: true });
-    }
-    return raw + decoder.decode();
-  } finally { reader.releaseLock(); }
 }

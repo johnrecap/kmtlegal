@@ -1,24 +1,17 @@
 # KMT Legal Implementation Status
 
-## 2026-10-15 — Bounded automatic recovery from assistant-provider 429
+## 2026-10-15 — Owner-requested assistant retry rollback
 
-Authority: owner's accepted implementation plan in this chat. Direct work only, no subagents or Spec Kit. Keep Gemini and all production credentials/billing unchanged. Original-template checker is NOT_APPLICABLE: this is a focused software repair, not a Markdown-template batch.
+Authority: owner's explicit rollback plan in this chat. Revert `29a6f27950eb5be289119a31b1c55a93293d7341` through a new commit, preserve history, retain Gemini, and defer retry redesign. Direct work only; no subagents or Spec Kit. Original-template batch validation is NOT_APPLICABLE to this inverse software change.
 
-| Obligation / source | Verification and evidence | State |
+| Obligation | Evidence | State |
 | --- | --- | --- |
-| Plan / distinguish provider 429 and preserve the existing API envelope | `conversation-rate-limit.test.ts`: headers/date/RetryInfo, malformed/oversized and array-wrapped bodies, existing localized JSON shape and Retry-After | VERIFIED locally |
-| Plan / two additional attempts shared by the whole message, six total provider calls, maximum 30 seconds | Final provider/gateway/policy lane: 56 tests pass. Explicit global retry/call budgets, one/two-second fallback waits and deadline checks; SQL test rejects a 40-second wait even with AI_TIMEOUT_MS=60000 | VERIFIED locally |
-| Plan / retry only the rejected provider request; preserve tools and message identity | Representative 429-then-success passed before expansion and in the final lane. Tool-side-effect regression and 22 isolated SQL tests pass, including a prepared draft, one persisted turn/protocol tool result, and unchanged replay revision | VERIFIED synthetic transport + SQL |
-| Plan / stop on deadline, ownership change, daily/zero quota or excessive requested delay | Final abort/ownership/quota/deadline/reserve/budget cases pass. The session lease is released after terminal failure | VERIFIED locally |
-| Plan / bilingual waiting and rate-limit feedback without automatic browser resubmission | Four final Chrome tests pass on AR 390x844 and EN 1280x900, against the actual local API + disposable SQL + synthetic provider. One browser message POST recovers from provider 429, with one stored reply; daily quota and plain-text intermediary 429 retain text and ID. Final affected UI lane: 35 tests pass | VERIFIED local Chrome; physical devices/assistive technology NOT_VERIFIED |
-| Plan / privacy-safe diagnostics | Semantic source review: retry logs contain status, counts, delay and request ID only. The typed error has fixed prose; provider bodies are bounded to 128 KiB and never logged or returned. Screenshot review confirms readable/wrapping Arabic feedback and retained input | VERIFIED scoped source/visual review; real provider behavior NOT_VERIFIED |
-| Plan / verification, documentation and repository delivery | Current optimized Next build, TypeScript, lint and diff checks pass. Broad run: 857 tests pass / 55 skip; one unrelated backup resolver suite cannot initialize without Git Bash. Final 56-test AI lane and 35-test UI lane rechecked after affected changes. Guide/runbook updated; containing Git commit and origin/main are the repository delivery evidence | Scoped repair VERIFIED; absolute full-suite gate INCOMPLETE |
-| Plan / real Gemini acceptance after production deployment | Owner's live probe established provider HTTP 429, but this repair has not been deployed or exercised against real Gemini | NOT_VERIFIED — production follow-up remains separate |
+| Restore previous application behavior | `git diff --exit-code 9f345f142de46e9badece6c8b66ad20936cf9ece -- src tests package.json package-lock.json prisma` exits 0 after the inverse change | VERIFIED locally |
+| Affected regression checks | Five suites: conversation gateway, company policy, conversation intake SQL, public pages and booking assistant stage; 80 tests passed | VERIFIED locally |
+| Static checks | TypeScript and lint passed; `git diff --check` passed. Initial TypeScript run included the previous ignored delivery snapshot; that task-generated snapshot was preserved outside the project and the unchanged checker rerun successfully | VERIFIED locally |
+| Production rollback | Requires deploying the new revert commit using the existing aaPanel/PM2 update script | NOT_VERIFIED |
 
-Mechanical receipt and source-version fingerprints: `docs/reviews/2026-10-15/assistant-rate-limit/verification.json`. Full-page AR waiting/busy and EN recovered captures are stored alongside it; complete local build/browser logs remain in ignored `_workspace/assistant-rate-limit/`.
-
-Semantic acceptance is scoped to this repair: the retry surrounds the provider call, so successful classification/generation steps and executed tools are retained inside the same turn; no new browser POST loop can replay a whole workflow. SQL and actual HTTP/browser checks independently establish one turn and stable replay identity. Existing consent, office takeover, output review, booking confirmation and ownership guards remain in control. This does not prove live Gemini grounding, capacity or an exhausted daily allowance can recover inside 30 seconds. The broad test run regenerated two historical formation sample PDFs; only those test-produced changes were restored to their clean starting versions and excluded from this delivery. No migration, dependency, provider selection, credential or production billing change was made.
-
+Semantic scope: restored code removes the automatic provider-429 retry behavior and returns the prior error/UI path. It does not establish Gemini availability. Owner-provided production logs from `29a6f27` show provider 429 on the first call and parsed waits around 29.8 million milliseconds; these requests were not rejected by the application's inbound limiter. Historical retry evidence remains accessible in Git at `29a6f27`. No database rollback, credential or billing change is authorized or required. Full build/browser/live-provider checks are not rerun for this exact application-code rollback; local checks do not establish production recovery.
 
 ## 2026-10-11 — Public-site consistency, menu usability and HTML cache repair
 

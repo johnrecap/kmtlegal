@@ -1,8 +1,5 @@
 import { z } from "zod";
-import { setTimeout as delay } from "node:timers/promises";
 import { ApiError } from "@/server/http/errors";
-import { safeLog } from "@/server/observability/safe-log";
-import { ConversationRateLimitError } from "./conversation-rate-limit";
 import type { AIChatMessage, AIProviderAdapter } from "./types";
 
 export const dialogueSchema = z.object({
@@ -44,49 +41,16 @@ export function applyAssessment(state: DialogueState, a: MessageAssessment, user
   return next;
 }
 
-type ConversationRetryBudget = { calls: number; retries: number; deadlineAt: number; lastRateLimit?: ConversationRateLimitError };
-
-function assertConversationDeadline(signal: AbortSignal, deadlineAt: number) {
-  if (signal.aborted || Date.now() >= deadlineAt) throw new ApiError(504, "AI_PROVIDER_TIMEOUT", "AI provider timed out.");
-}
-
-async function waitForProviderRateLimit(error: ConversationRateLimitError, budget: ConversationRetryBudget, signal: AbortSignal, requestId: string) {
-  budget.lastRateLimit = error;
-  const waitMs = (error.retryAfterMs ?? 1000 * 2 ** budget.retries) + Math.floor(Math.random() * 251);
-  const retryAllowed = error.retryable && budget.retries < 2 && budget.calls < 6 && Date.now() + waitMs + 1000 <= budget.deadlineAt;
-  safeLog("warn", retryAllowed ? "assistant.rate_limit_retry" : "assistant.rate_limit_stopped", {
-    status: 429, calls: budget.calls, retries: budget.retries, waitMs, requestId
-  });
-  if (!retryAllowed) throw error;
-  budget.retries += 1;
-  try { await delay(waitMs, undefined, { signal }); }
-  catch (waitError) {
-    if (signal.aborted) throw new ApiError(504, "AI_PROVIDER_TIMEOUT", "AI provider timed out.");
-    throw waitError;
-  }
-}
-
-export function boundedConversationProvider(provider: AIProviderAdapter, signal: AbortSignal, assertActive: () => Promise<void>, deadlineAt: number) {
-  const budget: ConversationRetryBudget = { calls: 0, retries: 0, deadlineAt };
+export function boundedConversationProvider(provider: AIProviderAdapter, signal: AbortSignal, assertActive: () => Promise<void>) {
+  let calls = 0;
   return { ...provider, chat: async (input: Parameters<NonNullable<AIProviderAdapter["chat"]>>[0]) => {
-    while (true) {
-      await assertActive();
-      assertConversationDeadline(signal, deadlineAt);
-      if (!provider.chat) throw new ApiError(503, "AI_PROVIDER_UNAVAILABLE", "Conversational provider unavailable.");
-      if (budget.calls >= 6) {
-        safeLog("warn", "assistant.provider_budget_exhausted", { calls: budget.calls, retries: budget.retries, requestId: input.requestId });
-        throw budget.lastRateLimit ?? new ApiError(502, "AI_OUTPUT_INVALID", "Conversation call limit reached.");
-      }
-      budget.calls += 1;
-      try {
-        const result = await provider.chat({ ...input, signal });
-        assertConversationDeadline(signal, deadlineAt);
-        return result;
-      } catch (error) {
-        if (!(error instanceof ConversationRateLimitError)) throw error;
-        await waitForProviderRateLimit(error, budget, signal, input.requestId);
-      }
-    }
+    await assertActive();
+    if (signal.aborted) throw new ApiError(504, "AI_PROVIDER_TIMEOUT", "AI provider timed out.");
+    if (!provider.chat) throw new ApiError(503, "AI_PROVIDER_UNAVAILABLE", "Conversational provider unavailable.");
+    if (++calls > 6) throw new ApiError(502, "AI_OUTPUT_INVALID", "Conversation call limit reached.");
+    const result = await provider.chat({ ...input, signal });
+    if (signal.aborted) throw new ApiError(504, "AI_PROVIDER_TIMEOUT", "AI provider timed out.");
+    return result;
   } } satisfies AIProviderAdapter;
 }
 

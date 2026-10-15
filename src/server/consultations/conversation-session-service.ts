@@ -60,7 +60,6 @@ export async function readAssistantSession(token: string, actor?: Principal | nu
 export async function sendAssistantMessage(input: {
   token: string; actor?: Principal | null; messageId: string; message: string; locale: "ar" | "en"; requestId: string;
 }) {
-  const startedAt = Date.now();
   const session = await ownAssistantSession(input.token, input.actor);
   const identity = { sessionId_messageId: { sessionId: session.id, messageId: input.messageId } };
   const previous = await prisma.assistantTurn.findUnique({ where: identity });
@@ -102,9 +101,8 @@ export async function sendAssistantMessage(input: {
     };
     const prior = await prisma.assistantTurn.findMany({ where: { sessionId: session.id, status: "COMPLETED", messageId: { not: input.messageId } }, orderBy: { createdAt: "desc" }, take: 20 });
     const config = getAIProviderConfig();
-    const deadlineAt = startedAt + Math.min(config.timeoutMs, 30_000);
-    const signal = AbortSignal.timeout(Math.max(0, deadlineAt - Date.now()));
-    const provider = boundedConversationProvider(getAIProvider(config), signal, assertActive, deadlineAt);
+    const signal = AbortSignal.timeout(config.timeoutMs);
+    const provider = boundedConversationProvider(getAIProvider(config), signal, assertActive);
     const history = prior.slice().reverse().map(t => ({ user: t.userText, assistant: t.assistantText }));
     const initialDialogue = readDialogue(session.dialogue);
     const knowledge = assistantKnowledge(input.locale);

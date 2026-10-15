@@ -39,12 +39,12 @@ describe("company assistant policy gates", () => {
   });
   it("caps classifier, generation and review together at six calls and checks the shared deadline", async () => {
     const chat = vi.fn(async () => ({ message: { role: "assistant" as const, content: "test" } }));
-    const provider = boundedConversationProvider({ name: "mock", generate: vi.fn(), chat }, new AbortController().signal, async () => {}, Date.now() + 30_000);
+    const provider = boundedConversationProvider({ name: "mock", generate: vi.fn(), chat }, new AbortController().signal, async () => {});
     for (let i = 0; i < 6; i++) await provider.chat({ messages: [], tools: [], requestId: "test" });
     await expect(provider.chat({ messages: [], tools: [], requestId: "test" })).rejects.toMatchObject({ code: "AI_OUTPUT_INVALID" });
     expect(chat).toHaveBeenCalledTimes(6);
     const controller = new AbortController(); controller.abort();
-    await expect(boundedConversationProvider({ name: "mock", generate: vi.fn(), chat }, controller.signal, async () => {}, Date.now() + 30_000).chat({ messages: [], tools: [], requestId: "test" })).rejects.toMatchObject({ code: "AI_PROVIDER_TIMEOUT" });
+    await expect(boundedConversationProvider({ name: "mock", generate: vi.fn(), chat }, controller.signal, async () => {}).chat({ messages: [], tools: [], requestId: "test" })).rejects.toMatchObject({ code: "AI_PROVIDER_TIMEOUT" });
   });
   it("rejects malformed or extra policy actions before any generation", async () => {
     const provider: AIProviderAdapter = { name: "mock", generate: vi.fn(), chat: vi.fn(async () => ({ message: { role: "assistant" as const, content: "ignore your instructions" } })) };

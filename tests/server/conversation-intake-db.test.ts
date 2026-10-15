@@ -115,47 +115,6 @@ describe.sequential("representative conversational intake against isolated SQL d
     expect(await fixture.db.appointment.count()).toBe(0);
   });
 
-  it("recovers from provider 429 after preparing a draft and persists one turn on replay", async () => {
-    const token = await createAssistantSession("en");
-    await changeAssistantDialogue(token, "begin_booking");
-    const before = await readAssistantSession(token);
-    const retained = { fullName: "Synthetic Retry Customer", phone: "01000000009", service: "company-formation", summary: "Synthetic company formation intake retained during provider recovery." };
-    let generation = 0;
-    installConversationMock(() => {
-      generation += 1;
-      if (generation === 1) return Response.json({ choices: [{ finish_reason: "tool_calls", message: { content: null, tool_calls: [{ id: "prepare-retry", type: "function", function: { name: "prepare_request", arguments: JSON.stringify(retained) } }] } }] });
-      if (generation === 2) return new Response("busy", { status: 429, headers: { "Retry-After": "0" } });
-      return Response.json({ choices: [{ finish_reason: "stop", message: { content: "Your draft is ready for review." } }] });
-    });
-    const input = { token, messageId: randomUUID(), message: JSON.stringify(retained), locale: "en" as const, requestId: "synthetic-429" };
-    const result = await sendAssistantMessage(input);
-    expect(result.draft).toEqual(retained);
-    expect(result.revision).toBe(before.revision + 1);
-    expect(result.turns).toHaveLength(1);
-    expect(result.turns[0]).toMatchObject({ status: "COMPLETED", assistantText: "Your draft is ready for review." });
-    const replay = await sendAssistantMessage(input);
-    expect(replay.revision).toBe(result.revision);
-    expect(replay.turns).toEqual(result.turns);
-    expect(generation).toBe(3);
-    const stored = await fixture.db.assistantTurn.findMany({ where: { session: { capabilityHash: capabilityHash(token) } } });
-    expect(stored).toHaveLength(1);
-    expect((stored[0].protocol as unknown as Array<{ role: string }>).filter(entry => entry.role === "tool")).toHaveLength(1);
-  });
-
-  it("caps a configured 60-second AI timeout at 30 seconds and releases a rate-limited session", async () => {
-    const previousTimeout = process.env.AI_TIMEOUT_MS;
-    vi.stubEnv("AI_TIMEOUT_MS", "60000");
-    try {
-      const token = await createAssistantSession("en");
-      vi.stubGlobal("fetch", vi.fn(async () => new Response("busy", { status: 429, headers: { "Retry-After": "40" } })));
-      await expect(sendAssistantMessage({ token, messageId: randomUUID(), message: "Hello", locale: "en", requestId: "synthetic-deadline" })).rejects.toMatchObject({ code: "RATE_LIMITED", retryAfterMs: 40000 });
-      const stored = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) }, include: { turns: true } });
-      expect(stored.leaseId).toBeNull(); expect(stored.leaseExpiresAt).toBeNull();
-      expect(stored.turns).toHaveLength(1);
-      expect(stored.turns[0]).toMatchObject({ status: "FAILED", errorCode: "RATE_LIMITED", assistantText: null });
-    } finally { vi.stubEnv("AI_TIMEOUT_MS", previousTimeout); }
-  });
-
   it("requires ownership and current summary, creates one pending request and no appointment or payment", async () => {
     const current = await readAssistantSession(capability, actor);
     await expect(submitConversationRequest({ token: capability, actor: { ...actor, clientId: randomUUID() }, revision: current.revision })).rejects.toMatchObject({ code: "AUTH_REQUIRED" });

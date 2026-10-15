@@ -8,7 +8,6 @@ import { conversationCopy } from "@/content/conversation-copy";
 import { assistantPolicyCopy } from "@/content/assistant-policy-copy";
 import { publicOfficeProfile } from "@/content/public-office-profile";
 import { directBookingCopy } from "@/content/direct-booking-copy";
-import { phaseFiveApiCopy } from "@/content/phase-five-api-copy";
 import { DirectBookingPanel, type DirectBooking } from "./direct-booking-panel";
 import type { PublicLocale } from "@/lib/public-locale";
 
@@ -35,7 +34,6 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
-  const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState("");
   const [pendingMessage, setPendingMessage] = useState<{ messageId: string; message: string } | null>(null);
   const booking = state?.dialogue?.mode === "BOOKING" && !!state.dialogue.consentAt;
@@ -55,15 +53,13 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
   }
 
   async function action(body: Record<string, unknown>) {
-    setBusy(true); setSending(body.action === "message"); setNotice("");
-    const rateLimitNotice = body.action === "message" ? copy.rateLimited : phaseFiveApiCopy[language].RATE_LIMITED;
+    setBusy(true); setNotice("");
     try {
       const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json", "x-kmt-locale": language }, body: JSON.stringify(body) });
-      if (response.status === 429) { setNotice(rateLimitNotice); return false; }
       const payload = await response.json();
       if (!response.ok) {
         const code = payload.error?.code;
-        setNotice(code === "RATE_LIMITED" || code === "TOO_MANY_REQUESTS" ? rateLimitNotice : code === "AUTH_REQUIRED" ? copy.loginRequired : code === "CONFLICT" || code === "APPOINTMENT_CONFLICT" ? copy.changed : code === "VALIDATION_ERROR" ? copy.needDetails : copy.unavailable);
+        setNotice(code === "AUTH_REQUIRED" ? copy.loginRequired : code === "CONFLICT" || code === "APPOINTMENT_CONFLICT" ? copy.changed : code === "VALIDATION_ERROR" ? copy.needDetails : copy.unavailable);
         return false;
       }
       if (body.action === "verify") { setNotice(copy.emailSent); return true; }
@@ -72,7 +68,7 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
       setState(refreshed.data);
       return true;
     } catch { setNotice(copy.unavailable); return false; }
-    finally { setBusy(false); setSending(false); }
+    finally { setBusy(false); }
   }
 
   useEffect(() => {
@@ -97,7 +93,7 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
   }, [state?.humanOwned, state?.handoffState]);
 
   async function send(value = pendingMessage) {
-    const next = value ?? (pendingMessage?.message === message.trim() ? pendingMessage : { messageId: crypto.randomUUID(), message: message.trim() });
+    const next = value ?? { messageId: crypto.randomUUID(), message: message.trim() };
     if (!next.message) return;
     if (!state && !await action({ action: "start", locale, service: initialService })) return;
     setPendingMessage(next);
@@ -128,7 +124,6 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
         <Button disabled={busy || state?.closed || !message.trim()} type="submit">{busy ? copy.waiting : copy.send}</Button>
         {pendingMessage && !busy && <Button type="button" variant="outline" onClick={() => void send()}>{copy.retry}</Button>}
       </form>
-      {pendingMessage && sending && <p role="status" className="break-words text-sm leading-7">{copy.waitingHint}</p>}
       {notice && !panelOpen && <p role="status" className="break-words text-sm leading-7">{notice}</p>}
       {showPanel && <Button className="h-auto min-h-11 whitespace-normal" type="button" onClick={() => setPanelOpen(true)}>{state?.submitted ? direct.openDetails : booking ? direct.openForm : policy.account}</Button>}
       {interactive && <div className="flex flex-wrap gap-2">

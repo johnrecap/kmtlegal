@@ -1,29 +1,15 @@
 # Server Commands
 
-## Assistant HTTP 429 recovery — 2026-10-15
+## Assistant retry rollback — 2026-10-15
 
-Keep the existing Gemini `AI_PROVIDER`, `AI_BASE_URL`, `AI_MODEL` and `AI_API_KEY` settings in protected configuration. No new environment variable, dependency, database migration or billing change is required for this repair. Apply it through the normal update:
+The owner requested reverting `29a6f27` through a new commit on `main`, restoring application behavior from `9f345f142de46e9badece6c8b66ad20936cf9ece`. Deploy the new revert commit using the normal update path:
 
 ```bash
 cd /www/wwwroot/kmtlegal
 bash deploy/install/aapanel-pm2-update.sh
 ```
 
-One message has a shared AI deadline of `min(AI_TIMEOUT_MS, 30000)` milliseconds, beginning when message processing starts. At most two additional provider requests are allowed across classification, generation and review; failed requests count toward the existing six-call maximum. Only HTTP 429 is retried. Successfully completed stages and server tools are not replayed.
-
-The server honors the longest valid `Retry-After` value (seconds or HTTP date) and Google `google.rpc.RetryInfo.retryDelay`. Without a valid hint it waits one second, then two seconds; each wait adds 0–250 milliseconds of jitter. It stops if the wait would leave less than one second for the next call, when ownership changes or the deadline expires, and when structured `QuotaFailure` identifies a daily quota or zero allowance. Long requested waits are never shortened to fit the deadline. Persistent 429 returns the existing `RATE_LIMITED` JSON envelope with HTTP 429, and Retry-After when applicable. Short retries cannot restore an exhausted daily allowance.
-
-The public chat keeps send disabled during processing and shows localized waiting/busy feedback. A retry of unchanged text keeps the same message ID. There is no automatic browser resubmission loop. A plain-text 429 from an intermediary is also shown as busy without losing the input.
-
-Safe diagnostic events are `assistant.rate_limit_retry`, `assistant.rate_limit_stopped` and `assistant.provider_budget_exhausted`; they include counts, delay and request ID, never customer text, provider bodies or keys:
-
-```bash
-pm2 logs kmtlegal --lines 120 --nostream | grep -E 'assistant\.(rate_limit_retry|rate_limit_stopped|provider_budget_exhausted|turn_failed)'
-```
-
-Local regression commands are `npm test -- tests/server/conversation-rate-limit.test.ts tests/server/conversation-gateway.test.ts tests/server/company-conversation-policy.test.ts tests/server/conversation-intake-db.test.ts` and `npm run test:e2e -- tests/e2e/assistant-rate-limit.spec.ts --workers=1`. The browser test is opt-in: start the existing `node scripts/phase-five-fixture-server.mjs` in a separate local terminal, then point `DATABASE_URL` at its synthetic loopback server on port 55469 and set `RUN_PHASE_FIVE_FIXTURES=true`, `AI_PROVIDER=openai-compatible`, `AI_BASE_URL=http://127.0.0.1:55529/v1`, `AI_API_KEY=synthetic-not-a-secret`, `AI_MODEL=gemini-2.5-flash`, `AI_TIMEOUT_MS=30000`, `APP_ENV=local`, `APP_ORIGIN=http://127.0.0.1:3219`, `SESSION_COOKIE_SECURE=false`, `SMTP_ENABLED=false`, `CLIENT_ACCOUNT_EMAIL_ENABLED=false`, `KMT_PORT=3219` and `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3219` for the test runner. Use `postgresql://postgres:synthetic@127.0.0.1:55469/template1` as the **local synthetic example** database URL. The spec owns a synthetic provider listener on port 55529. `PLAYWRIGHT_CHANNEL=chrome` uses installed Chrome if bundled Chromium is absent. Both the application and SQL target must be disposable/local; never use production credentials or data for this lane.
-
-After deployment, separately check actual Gemini recovery and the project's quota page. Local tests simulate Google's HTTP protocol and prove bounded recovery and persistence, not availability or real-model answer quality.
+Keep Gemini configuration, credentials and billing unchanged; no database rollback is required. Verify `/api/health` reports the new revert commit after deployment. This restores prior behavior, but does not remove the provider's 429 quota limit. Retry redesign remains deferred.
 
 ## Content, formation and sourced knowledge — 2026-10-11
 
