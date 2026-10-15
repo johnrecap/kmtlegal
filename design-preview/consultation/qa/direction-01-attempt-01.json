@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-15",
+  "environment": "Local standalone HTML / synthetic data / Chrome",
+  "directions": [
+    "01"
+  ],
+  "results": [],
+  "issues": [
+    {
+      "label": "01-ar-light-390",
+      "message": "Focus escaped modal"
+    },
+    {
+      "label": "01-ar-light-1440",
+      "message": "Geometry or asset failure: {\"overflow\":false,\"dialog\":true,\"body\":true,\"assets\":false}"
+    },
+    {
+      "label": "01-ar-dark-390",
+      "message": "Focus escaped modal"
+    },
+    {
+      "label": "01-ar-dark-1440",
+      "message": "Geometry or asset failure: {\"overflow\":false,\"dialog\":true,\"body\":true,\"assets\":false}"
+    },
+    {
+      "label": "01-en-light-390",
+      "message": "Geometry or asset failure: {\"overflow\":false,\"dialog\":true,\"body\":true,\"assets\":false}"
+    },
+    {
+      "label": "01-en-light-1440",
+      "message": "Focus escaped modal"
+    },
+    {
+      "label": "01-en-dark-390",
+      "message": "Geometry or asset failure: {\"overflow\":false,\"dialog\":true,\"body\":true,\"assets\":false}"
+    },
+    {
+      "label": "01-en-dark-1440",
+      "message": "Geometry or asset failure: {\"overflow\":false,\"dialog\":true,\"body\":true,\"assets\":false}"
+    }
+  ],
+  "externalRequests": [],
+  "summary": {
+    "passed": 0,
+    "failed": 8
+  }
+}

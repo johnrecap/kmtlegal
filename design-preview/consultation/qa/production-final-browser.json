@@ -1,0 +1,379 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Users\\UTD\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+      "C:\\Users\\UTD\\Documents\\Codex\\RecoveredProjects\\local-0efe82359eea107367d678c3c6ae29f0\\kmt legal office\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "tests/e2e/consultation-direction-two.spec.ts",
+      "tests/e2e/conversational-intake.spec.ts",
+      "--workers=1",
+      "--grep",
+      "ar-light-1440|en-dark-390|long messages|guest booking|saved Arabic|conversation booking entry",
+      "--reporter=line,json"
+    ],
+    "configFile": "C:\\Users\\UTD\\Documents\\Codex\\RecoveredProjects\\local-0efe82359eea107367d678c3c6ae29f0\\kmt legal office\\playwright.config.ts",
+    "rootDir": "C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/.playwright/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/UTD/Documents/Codex/RecoveredProjects/local-0efe82359eea107367d678c3c6ae29f0/kmt legal office/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.61.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "consultation-direction-two.spec.ts",
+      "file": "consultation-direction-two.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "direction-02 ar-light-1440: selected appearance and protected booking controls",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3140,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-15T21:13:41.324Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "scope",
+                      "contentType": "text/plain",
+                      "body": "UmVhbCBwcm9kdWN0aW9uIFVJLCBpbnRlcmNlcHRlZCBzeW50aGV0aWMgQVBJLiBObyBib29raW5nIHdyaXRlcyBvciByZWFsIEFJIGNhbGxzLg=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f0215ee6714081d1fee0-18397b71eca1beec443c",
+          "file": "consultation-direction-two.spec.ts",
+          "line": 14,
+          "column": 7
+        },
+        {
+          "title": "direction-02 en-dark-390: selected appearance and protected booking controls",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2600,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-15T21:13:44.654Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "scope",
+                      "contentType": "text/plain",
+                      "body": "UmVhbCBwcm9kdWN0aW9uIFVJLCBpbnRlcmNlcHRlZCBzeW50aGV0aWMgQVBJLiBObyBib29raW5nIHdyaXRlcyBvciByZWFsIEFJIGNhbGxzLg=="
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f0215ee6714081d1fee0-c1eb75deed964b85ebe0",
+          "file": "consultation-direction-two.spec.ts",
+          "line": 14,
+          "column": 7
+        },
+        {
+          "title": "ar: long messages stay inside the log and polling respects reading position",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1094,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-15T21:13:47.260Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f0215ee6714081d1fee0-29ad452744bf9a89b452",
+          "file": "consultation-direction-two.spec.ts",
+          "line": 85,
+          "column": 49
+        },
+        {
+          "title": "en: long messages stay inside the log and polling respects reading position",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1165,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-15T21:13:48.361Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f0215ee6714081d1fee0-5584e28a1b28817cedde",
+          "file": "consultation-direction-two.spec.ts",
+          "line": 85,
+          "column": 49
+        }
+      ]
+    },
+    {
+      "title": "conversational-intake.spec.ts",
+      "file": "conversational-intake.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "ar: guest booking, optional account and responsive presentation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2034,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-15T21:13:49.540Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eeb3bbbaab82bf43d979-a667766df0fd0fb3c24b",
+          "file": "conversational-intake.spec.ts",
+          "line": 8,
+          "column": 7
+        },
+        {
+          "title": "en: guest booking, optional account and responsive presentation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2191,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-15T21:13:51.581Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eeb3bbbaab82bf43d979-c9014add80501cc0746c",
+          "file": "conversational-intake.spec.ts",
+          "line": 8,
+          "column": 7
+        },
+        {
+          "title": "saved Arabic dialogue on an English page keeps booking available during staff ownership",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1455,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-15T21:13:53.779Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eeb3bbbaab82bf43d979-036b438ce29e65d6572d",
+          "file": "conversational-intake.spec.ts",
+          "line": 89,
+          "column": 5
+        },
+        {
+          "title": "conversation booking entry opens the popup and closing it does not reopen on another reply",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1405,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-15T21:13:55.243Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eeb3bbbaab82bf43d979-f1236e404215a60982ba",
+          "file": "conversational-intake.spec.ts",
+          "line": 108,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-15T21:13:40.941Z",
+    "duration": 16110.103,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

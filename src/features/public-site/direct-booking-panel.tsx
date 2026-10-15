@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { directBookingCopy } from "@/content/direct-booking-copy";
 import { getPublicContent } from "@/content/public-content";
@@ -17,11 +18,13 @@ type Slot = BookingSlot;
 const endpoint = "/api/public/assistant/conversation";
 const field = "min-h-11 w-full min-w-0 rounded border border-kmt-gold/30 bg-transparent px-3";
 
-export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh }: {
+export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh, footerContainer }: {
   locale: PublicLocale; revision: number; draft: Record<string, string | null>;
   booking: DirectBooking | null; onRefresh: () => Promise<void>;
+  footerContainer?: HTMLElement | null;
 }) {
   const copy = directBookingCopy[locale];
+  const formId = useId();
   const [name, setName] = useState(draft.fullName ?? "");
   const [phone, setPhone] = useState(draft.phone ?? "");
   const [channel, setChannel] = useState("PHONE");
@@ -44,6 +47,7 @@ export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh
   const cancelled = appointment?.status === "CANCELLED";
   const canEdit = !!appointment && ["SCHEDULED", "RESCHEDULED"].includes(appointment.status) && Date.parse(appointment.startsAt) > Date.now();
   const format = (time: string) => new Intl.DateTimeFormat(locale, { dateStyle: "full", timeStyle: "short", timeZone: "Africa/Cairo" }).format(new Date(time));
+  const compactTime = (time: string) => new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Africa/Cairo" }).format(new Date(time));
   const service = getPublicContent(locale).legalServices.find(s => s.slug === draft.service)?.title;
   const canCallback = loaded && !!availability && (!availability.published || !availability.hasAvailability) && !editing;
   const localDate = (time: string) => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(time));
@@ -115,9 +119,10 @@ export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh
     const url = URL.createObjectURL(new Blob([data], { type: "text/calendar;charset=utf-8" }));
     const link = document.createElement("a"); link.href = url; link.download = "kmt-appointment.ics"; link.click(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
-  return <div className="space-y-4" aria-busy={busy || loading}>
-    <h3 className="text-lg font-semibold">{copy.title}</h3>
-    {booking && <div className="space-y-3 rounded border border-kmt-gold/30 p-3">
+  const footer = (!booking || editing) ? <><div className="consultation-footer-summary">{slot ? <><strong>{compactTime(slot.startsAt)}</strong>{copy.cairo}</> : canCallback ? copy.callback : copy.choose}</div><Button className="h-auto min-h-11 whitespace-normal" form={formId} type="submit" disabled={busy || loading || (!pending.current && (!loaded || !consent || (!slot && !canCallback)))}>{busy ? copy.waiting : pending.current ? copy.retry : canCallback && !slot ? copy.callback : copy.confirm}</Button>{editing && <Button type="button" variant="ghost" disabled={busy || !!pending.current} onClick={() => setEditing(false)}>{copy.keep}</Button>}</> : null;
+  return <div className="consultation-booking" aria-busy={busy || loading}>
+    <h3 className="sr-only">{copy.title}</h3>
+    {booking && <div className="consultation-confirmation space-y-3">
       <p role="status">{cancelled ? copy.cancelled : appointment ? copy.confirmed : copy.callbackDone}</p>
       <p className="break-all">{copy.reference}: <bdi>{booking.publicReference}</bdi></p>
       {appointment && <><p>{format(appointment.startsAt)} — {copy.cairo}</p><p>{copy.lawyer}: {appointment.lawyer?.name}</p></>}
@@ -130,25 +135,20 @@ export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh
       {cancelling && <div className="flex flex-wrap gap-2"><Button type="button" disabled={busy} onClick={() => void submit("cancel_booking")}>{copy.cancelConfirm}</Button><Button type="button" variant="ghost" disabled={busy || !!pending.current} onClick={() => setCancelling(false)}>{copy.keep}</Button></div>}
       <p className="text-sm leading-6">{copy.optionalAccount}</p><p className="text-sm leading-6">{copy.expired}</p>
     </div>}
-    {(!booking || editing) && <form className="space-y-4" onSubmit={event => { event.preventDefault(); void submit(editing ? "reschedule_booking" : slot ? "confirm_booking" : "request_callback"); }}>
-      <p className="text-sm leading-7">{copy.intro}</p>
-      <fieldset disabled={busy || !!pending.current} className="min-w-0 space-y-4">
-        {!booking && <label className="block space-y-2"><span>{copy.channel}</span><select aria-label={copy.channel} className={field} value={channel} onChange={e => { setChannel(e.target.value); setConsent(false); }}><option value="PHONE">{copy.phone}</option><option value="WHATSAPP">{copy.whatsapp}</option></select></label>}
-        <label className="block space-y-2"><span>{copy.date}</span><input className={field} type="date" value={date} min={availability?.window.startsOn} max={availability?.window.endsOn} onChange={e => chooseDate(e.target.value)} /></label>
-        {date && <Button type="button" variant="ghost" onClick={() => chooseDate("")}>{copy.nearest}</Button>}
+    {(!booking || editing) && <form id={formId} className="space-y-5" onSubmit={event => { event.preventDefault(); void submit(editing ? "reschedule_booking" : slot ? "confirm_booking" : "request_callback"); }}>
+      <fieldset disabled={busy || !!pending.current} className="min-w-0 space-y-5">
         {loading && <p role="status">{copy.waiting}</p>}
         {availability && <BookingAvailabilityPicker locale={locale} availability={availability} date={date || availability.selectedDay.date} slot={slot} loading={loading || !loaded} slots={loaded ? slots : []} onDate={chooseDate} onSlot={value => { setSlot(value); setConsent(false); }} onNearest={chooseNearest} />}
-        {!booking && <><label className="block space-y-2"><span>{copy.name}</span><input className={field} required minLength={2} maxLength={160} autoComplete="name" value={name} onChange={e => { setName(e.target.value); setConsent(false); }} /></label><label className="block space-y-2"><span>{copy.number}</span><input className={field} required type="tel" dir="ltr" maxLength={24} autoComplete="tel" value={phone} onChange={e => { setPhone(e.target.value); setConsent(false); }} /></label></>}
-        {(slot || canCallback) && <div className="space-y-2 rounded border border-kmt-gold/30 p-3 text-sm leading-7">
+        {!booking && <section className="consultation-contacts"><h4>{copy.contactDetails}</h4><label className="block space-y-2"><span>{copy.name}</span><input className={field} required minLength={2} maxLength={160} autoComplete="name" value={name} onChange={e => { setName(e.target.value); setConsent(false); }} /></label><label className="block space-y-2"><span>{copy.number}</span><input className={field} required type="tel" dir="ltr" maxLength={24} autoComplete="tel" value={phone} onChange={e => { setPhone(e.target.value); setConsent(false); }} /></label><label className="block space-y-2 consultation-channel"><span>{copy.channel}</span><select aria-label={copy.channel} className={field} value={channel} onChange={e => { setChannel(e.target.value); setConsent(false); }}><option value="PHONE">{copy.phone}</option><option value="WHATSAPP">{copy.whatsapp}</option></select></label></section>}
+        {(slot || canCallback) && <div className="consultation-review space-y-2 text-sm leading-7">
           <p className="font-semibold">{copy.review}</p>{service && <p>{service}</p>}
           {slot ? <><p>{format(slot.startsAt)} · {copy.cairo}</p><p>{(Date.parse(slot.endsAt) - Date.parse(slot.startsAt)) / 60000} {copy.minutes}</p></> : <p>{copy.callback}</p>}
           <p>{booking?.fullName ?? name} · <bdi>{booking?.phone ?? phone}</bdi></p><p>{(booking?.contactChannel ?? channel) === "WHATSAPP" ? copy.whatsapp : copy.phone}</p>
           <label className="flex min-h-11 items-start gap-2"><input className="mt-2 size-5 shrink-0" type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} /><span>{copy.consent}</span></label>
         </div>}
       </fieldset>
-      <Button className="h-auto min-h-11 whitespace-normal" type="submit" disabled={busy || loading || (!pending.current && (!loaded || !consent || (!slot && !canCallback)))}>{busy ? copy.waiting : pending.current ? copy.retry : canCallback && !slot ? copy.callback : copy.confirm}</Button>
-      {editing && <Button type="button" variant="ghost" disabled={busy || !!pending.current} onClick={() => setEditing(false)}>{copy.keep}</Button>}
     </form>}
+    {footerContainer ? createPortal(footer, footerContainer) : <div className="consultation-dialog-actions">{footer}</div>}
     {error && <p role="alert" className="text-sm leading-7">{error}</p>}
     {!loaded && !loading && (!booking || editing) && <Button type="button" variant="outline" onClick={() => void load()}>{copy.retry}</Button>}
   </div>;

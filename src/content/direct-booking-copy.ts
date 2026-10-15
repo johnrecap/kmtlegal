@@ -1,5 +1,6 @@
 export const directBookingCopy = {
   ar: {
+    dialogTitle: "لنختار موعدًا يناسبك", shortHelp: "اختر موعدًا، ثم راجع بيانات التواصل قبل التأكيد.", contactDetails: "بيانات التواصل", selectionHint: "اختيار الساعة لا يؤكد الحجز.", compactDays: { AVAILABLE: "متاح", CLOSED_WEEKLY: "مغلق", CLOSED_EXCEPTION: "مغلق", FULL: "ممتلئ", LEAD_TIME: "غير متاح", MODE_UNAVAILABLE: "غير متاح", OUTSIDE_WINDOW: "غير متاح", UNPUBLISHED: "غير منشور", NO_STAFF: "غير متاح", NO_SLOTS: "غير متاح", OUTSIDE_HOURS: "غير متاح" },
     scheduleTitle: "مواعيد الاستشارات الهاتفية وواتساب", weeklyTitle: "ساعات الاستشارات الأسبوعية", closedDay: "لا توجد استشارات في هذا اليوم",
     nearestOne: "أقرب موعد متاح", chooseNearest: "اختيار هذا الموعد", daysTitle: "اختيار يوم", previousDays: "الأيام السابقة", nextDays: "الأيام التالية", dayTimes: "ساعات اليوم المختار", closedPeriods: "إغلاق استثنائي",
     availabilityReasons: {
@@ -16,6 +17,7 @@ export const directBookingCopy = {
     adminTitle: "الحجز المباشر مع المحامين", publish: "نشر الجدول والسماح بالتأكيد المباشر", adminNote: "النشر يعتمد هذه المواعيد مسبقًا. يُحجز موعد واحد في الفترة نفسها ويُسند لمحامٍ متفرغ من القائمة اليومية. لا يغيّر تعديل الجدول الحجوزات السابقة.", roster: "المحامون المشاركون في هذا اليوم", closures: "الإجازات والفترات المغلقة", addClosure: "إضافة فترة مغلقة", remove: "حذف الفترة", allLawyers: "كل المحامين", closureDate: "التاريخ", closureStart: "من", closureEnd: "إلى", closureLawyer: "المحامي أو المكتب", source: "طريقة اعتماد الموعد", sources: { STAFF_APPROVAL: "مراجعة الإدارة", PUBLISHED_SLOT: "جدول معتمد مسبقًا", CALLBACK_REQUEST: "طلب تواصل دون موعد" }
   },
   en: {
+    dialogTitle: "Let’s find a time for you", shortHelp: "Choose a time, then review your contact details before confirming.", contactDetails: "Contact details", selectionHint: "Choosing a time does not confirm a booking.", compactDays: { AVAILABLE: "Available", CLOSED_WEEKLY: "Closed", CLOSED_EXCEPTION: "Closed", FULL: "Fully booked", LEAD_TIME: "Unavailable", MODE_UNAVAILABLE: "Unavailable", OUTSIDE_WINDOW: "Unavailable", UNPUBLISHED: "Unpublished", NO_STAFF: "Unavailable", NO_SLOTS: "Unavailable", OUTSIDE_HOURS: "Unavailable" },
     scheduleTitle: "Phone and WhatsApp consultation times", weeklyTitle: "Weekly consultation hours", closedDay: "No consultations on this day",
     nearestOne: "Nearest available appointment", chooseNearest: "Choose this appointment", daysTitle: "Choose a day", previousDays: "Previous days", nextDays: "Next days", dayTimes: "Times for the selected day", closedPeriods: "Exceptional closure",
     availabilityReasons: {

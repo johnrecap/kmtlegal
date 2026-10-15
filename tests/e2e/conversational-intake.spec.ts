@@ -41,7 +41,7 @@ for (const locale of ["ar", "en"] as const) {
       await page.getByRole("button", { name: copy.send, exact: true }).click();
       await expect(page.getByText(copy.unavailable, { exact: true })).toBeVisible();
       await page.getByRole("button", { name: policy.begin, exact: true }).click();
-      const dialog = page.getByRole("dialog", { name: copy.review, exact: true });
+      const dialog = page.getByRole("dialog", { name: direct.dialogTitle, exact: true });
       await expect(dialog).toBeVisible();
       expect(await dialog.evaluate(element => element.contains(document.activeElement))).toBe(true);
       await expect(page.getByLabel(copy.email, { exact: true })).toHaveCount(0);

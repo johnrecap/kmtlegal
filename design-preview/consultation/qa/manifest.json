@@ -1,0 +1,1705 @@
+{
+  "date": "2026-10-15",
+  "applicationBaseline": "dbdc9268b4286fe10c3893f7eab1fb1c09d9b533",
+  "headAtEvidenceTime": "dbdc9268b4286fe10c3893f7eab1fb1c09d9b533",
+  "selectedDirection": "02",
+  "selectionAuthority": "Owner message: التصميمين دول كويسين اعتمدهم; two supplied screenshots retained; later explicit implementation/commit/push request and spacious bounded reading requirement",
+  "appearanceApproved": true,
+  "productionImplementation": true,
+  "serverDeployment": "NOT_VERIFIED",
+  "templateBatchChecker": "NOT_APPLICABLE: no prescribed Markdown template batch",
+  "verification": {
+    "prototype": {
+      "passed": 40,
+      "failed": 0
+    },
+    "gallery": {
+      "passed": 13,
+      "failed": 0
+    },
+    "productionCaptures": 8,
+    "finalBuildBrowser": {
+      "startTime": "2026-10-15T21:13:40.941Z",
+      "duration": 16110.103,
+      "expected": 8,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "syntax": 12,
+    "localDocLinks": 73
+  },
+  "limits": [
+    "Root self-review only",
+    "Local Chrome and synthetic fixtures",
+    "No physical-device keyboard or non-Chromium browser acceptance",
+    "No actual model or production-server booking verification"
+  ],
+  "entries": [
+    {
+      "path": "design-preview/consultation/direction-01/DESIGN.md",
+      "sha256": "5b7539de324affd20e4edf11da5fb44520b3431d47ae9085ed850be3c3241d0c",
+      "bytes": 5533
+    },
+    {
+      "path": "design-preview/consultation/direction-01/index.html",
+      "sha256": "0f6bafa164dd366fce752b949419e7f63a9e4efca4bf61a123c6c33a44cde801",
+      "bytes": 778
+    },
+    {
+      "path": "design-preview/consultation/direction-01/tokens.css",
+      "sha256": "954d969e91c2a7201cf0aad63a7e9d5261585eb5b63083829abbb6f2f532625b",
+      "bytes": 1779
+    },
+    {
+      "path": "design-preview/consultation/direction-02/DESIGN.md",
+      "sha256": "529f86e45bbd30ace302c456cc798f2e0929b17050ae9c0740b79c5d67e250a8",
+      "bytes": 5721
+    },
+    {
+      "path": "design-preview/consultation/direction-02/index.html",
+      "sha256": "c574659708ce0ef41345ca24d0fac9caaa7e096064aa3c444bea3fb122b448d1",
+      "bytes": 778
+    },
+    {
+      "path": "design-preview/consultation/direction-02/tokens.css",
+      "sha256": "e27eb0e2451886e4b245e6a20e346cece7bed02a4475f8b78a3aa61723136a82",
+      "bytes": 2776
+    },
+    {
+      "path": "design-preview/consultation/direction-03/DESIGN.md",
+      "sha256": "208ddd0725aae42e47a47f8fa4a3b6d4ec52d9537d772b9dad403ef11d25a5da",
+      "bytes": 5519
+    },
+    {
+      "path": "design-preview/consultation/direction-03/index.html",
+      "sha256": "9c89f3b52b2b169fef97b85947903c6af8d4f00351223157858dae287dead8ee",
+      "bytes": 778
+    },
+    {
+      "path": "design-preview/consultation/direction-03/tokens.css",
+      "sha256": "9b9235e78a9119e7710190779fe9d6535d6fbe03b4ecc738e05278584e2356c6",
+      "bytes": 3636
+    },
+    {
+      "path": "design-preview/consultation/direction-04/DESIGN.md",
+      "sha256": "ae385f7140feb7eb1a293c9c3ad3ea86a190efbdd96c3245e89e154c78f16e0b",
+      "bytes": 5520
+    },
+    {
+      "path": "design-preview/consultation/direction-04/index.html",
+      "sha256": "f5a03bb9a81ebced1f1bf29f081c096c5753598e06bf955294b788e013b6f50e",
+      "bytes": 778
+    },
+    {
+      "path": "design-preview/consultation/direction-04/tokens.css",
+      "sha256": "bda87c2ad1434746ea2b1eb7431c369bfd9de51854591a921e29992f843973fe",
+      "bytes": 3392
+    },
+    {
+      "path": "design-preview/consultation/direction-05/DESIGN.md",
+      "sha256": "9d18a3fbeb4caca773d5199c214567838881243ab86d452fc6cc6b0bb50fa42b",
+      "bytes": 5529
+    },
+    {
+      "path": "design-preview/consultation/direction-05/index.html",
+      "sha256": "cbf5fde23ae7c133f06e0111247dcc86f0ffb0e9180ce7063e41b58535d06c1a",
+      "bytes": 778
+    },
+    {
+      "path": "design-preview/consultation/direction-05/tokens.css",
+      "sha256": "97194054b5b2d9849c50dce1b2ea603f56e8a616dd6aa2814227ca6f25ed6fff",
+      "bytes": 3761
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-ar-dark-1440-booking.png",
+      "sha256": "9f29189f712849747ba4220523a39ee12182f0270c6fe8aa53cf8b6fe8966773",
+      "bytes": 44258
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-ar-dark-1440-chat.png",
+      "sha256": "20497e2f5c89010979b23bedbe3677a4a65683c5f529dbe2bd11ed253904e3b3",
+      "bytes": 33840
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-ar-dark-1440-review.png",
+      "sha256": "3324a05bf75762824ffcff096071027e63e5f0783170b5b5ffd653e96d9d07b7",
+      "bytes": 38316
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-ar-dark-390-booking.png",
+      "sha256": "e627f910e0c6899a3d3e7aa1c8fc53234bf59e1f6a4eaa04a312d4066866be0f",
+      "bytes": 37272
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-ar-dark-390-chat.png",
+      "sha256": "7a63738cca2d218794a356556ccc36c1b6c17f38642fc229efe22e9b46b0aff6",
+      "bytes": 33044
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-ar-dark-390-review.png",
+      "sha256": "6236cc2b05024ec2127a888d8cd058f4cb04cf9d831c9ab5adfa7f8c13383eb7",
+      "bytes": 33012
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-ar-light-1440-booking.png",
+      "sha256": "96ba68bd7ecba2544b676ae731084d22696cd49b8087fa84701a0e57fffe09d5",
+      "bytes": 44029
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-ar-light-1440-chat.png",
+      "sha256": "c5385337350768be860eaa9a68642ee0559a62731b0b478b9cca5b85cbc72525",
+      "bytes": 33927
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-ar-light-1440-review.png",
+      "sha256": "2e4bb1e64f3ee55e21e38d6f1855e3cdbfc92b66a53e36bbb106969a59f24cde",
+      "bytes": 38272
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-ar-light-390-booking.png",
+      "sha256": "d384cbf7ac4f2b7749978e279c93fde3fefdacb5df6969976a4e5b458532e5b3",
+      "bytes": 37231
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-ar-light-390-chat.png",
+      "sha256": "7526b3d5f95b22642588821fb3a02f3e9ebdbb8fb45628305b3d991e01b88b68",
+      "bytes": 33029
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-ar-light-390-review.png",
+      "sha256": "44fad3c21589f7484d0268b77d163253af2f4eacbed99595926df813aff67590",
+      "bytes": 33080
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-en-dark-1440-booking.png",
+      "sha256": "dd049a8d6e77de88deb74f96e303f2dbea82313b68b13f7569677d591d9128b0",
+      "bytes": 78345
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-en-dark-1440-chat.png",
+      "sha256": "0fea828df076dc2b9b940d9920ccd391d478f35dd9a976477906bbe60524ea97",
+      "bytes": 77963
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-en-dark-1440-review.png",
+      "sha256": "ca6872c455f47420cf6c1ed7cdb8ecf8d22c300ec5e06a873e21f55624588cee",
+      "bytes": 66432
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-en-dark-390-booking.png",
+      "sha256": "d4f875a7820728cc63063183bfe04776b0b6e46b2ff413f7f06a9eead6b27d32",
+      "bytes": 65602
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-en-dark-390-chat.png",
+      "sha256": "5a3d35f14cd8435743760f90c9a395b2d5cfc6e0ec1dd68057063be4045822f5",
+      "bytes": 74661
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-en-dark-390-review.png",
+      "sha256": "bb56c22af573e4ce9b946b09abf57dc7489e321878ed899cdeb413fa192706e7",
+      "bytes": 58620
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-en-light-1440-booking.png",
+      "sha256": "3541ade784fe251a893e7feaea3da480c83bbcdf4e1895fe4daff1cb7d5bdc5e",
+      "bytes": 77753
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-en-light-1440-chat.png",
+      "sha256": "74759227313aa19f7cc3b5daaf83727296b542203aace731cebebd6067d53a16",
+      "bytes": 76463
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-en-light-1440-review.png",
+      "sha256": "0bc9ec0f8a6eb2d32c9f7970fc6fa4364408e833278e7fad61d65187eb0e5d8d",
+      "bytes": 66248
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-en-light-390-booking.png",
+      "sha256": "5996b08d5d24fd35b0250101dcd0a7f5f71926154b389eefe41f0280fea03a9e",
+      "bytes": 64710
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-en-light-390-chat.png",
+      "sha256": "4bb1b59a90d5eda40a71ed3e0b37e90615bfe9a3bdc6834dfcf72d45c97e7b95",
+      "bytes": 71632
+    },
+    {
+      "path": "design-preview/consultation/images/baseline-en-light-390-review.png",
+      "sha256": "d9147ff5d2c7653bcbdc66c59704f5859e9a969dca08c53b9355aa27a54384a4",
+      "bytes": 58556
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-dark-1440-booking.png",
+      "sha256": "a2007e5e62a6089a9ce43d3085118d6ae588ee640a2d944094d633251dfbbf4c",
+      "bytes": 109356
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-dark-1440-chat.png",
+      "sha256": "c52ae46ad48a39d4c05a71bf1158ac893fdea217a430ea10d656692215cbf117",
+      "bytes": 72088
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-dark-1440-conversation.png",
+      "sha256": "d184a5c3bf16032b303da4e4791fecce5bca75f7eae4eeffe58a990190a1e9a2",
+      "bytes": 31106
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-dark-1440-dialog.png",
+      "sha256": "9eaa3b14161e28bc7c58f3dc2ef6cc57e3dc1967a2bf20f74a7eb1bdee72c4b5",
+      "bytes": 57749
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-dark-1440-review.png",
+      "sha256": "acd31b1051f1ece30b0e7a49dc1b11f3f7b5130659a919522b3410854c778e41",
+      "bytes": 122085
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-dark-390-booking.png",
+      "sha256": "8093e1503bbd5711adaaad14fc149e0cf3d1f3a74fdb8161b050325e2099ad1f",
+      "bytes": 43601
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-dark-390-chat.png",
+      "sha256": "0cd7852c54e7522d094969b0bddfd7fc2c8b7ef93fbca50c804a07c25b7c2aa4",
+      "bytes": 38896
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-dark-390-conversation.png",
+      "sha256": "1fe948c0f215ba4bb937f6df458f51acb227f605632aaa66a375eb88e7b199ce",
+      "bytes": 22313
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-dark-390-dialog.png",
+      "sha256": "073521fb2874b72c9cdcff38a0cabd237f3fae3a40297a5b79447ded55070cab",
+      "bytes": 41911
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-dark-390-review.png",
+      "sha256": "8ac8de51e08991502a33ff1e59b3024702e9aa2d04fb3a554f3abbcc399f9355",
+      "bytes": 39667
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-light-1440-booking.png",
+      "sha256": "da361be60ff2704752bd73fdc54c2a591b4e8f49779d5472520b240b5ab2a878",
+      "bytes": 118713
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-light-1440-chat.png",
+      "sha256": "fa985a3d521a7494a9d2649518e49e040f0434a5844454f02f6122923e70d950",
+      "bytes": 75110
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-light-1440-conversation.png",
+      "sha256": "2fa016c159dec64eec2d6d061b0b7c9defa49c4775e99c4fcb71f978378d5afe",
+      "bytes": 31165
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-light-1440-dialog.png",
+      "sha256": "b7087d79e38d6b34afadab0b891393dbe6835c96d882b1b71be163b0c3f6051e",
+      "bytes": 57959
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-light-1440-review.png",
+      "sha256": "b05b344ef04838ede4d2418fc220eed0e6356a1c6714cd9bf9a1c52a87317e56",
+      "bytes": 131321
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-light-390-booking.png",
+      "sha256": "a5517fffe8fdf06a505b70e834946fa627a5e8603a9eac978040839465839be7",
+      "bytes": 45546
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-light-390-chat.png",
+      "sha256": "9a3c64a7ada2120acb5b866a4db10f05aa26024329f1d76251dd136697645807",
+      "bytes": 38938
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-light-390-conversation.png",
+      "sha256": "c37de0bef454fafcf9189c2f9a58ed425e89960435dad541639e288ff5a69304",
+      "bytes": 22240
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-light-390-dialog.png",
+      "sha256": "460e1886f5a3e00b128ef2f4d6ddd63f0dd1d8c8866315fe64c9df9bc43690ef",
+      "bytes": 42033
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-ar-light-390-review.png",
+      "sha256": "96a7077aab7c997d1857980db42437960ad90931635bdc66e2fed79847237fc1",
+      "bytes": 41781
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-dark-1440-booking.png",
+      "sha256": "3fa2a974a712e967295a93cb7165ac1db79a431db351882678f522489fd64752",
+      "bytes": 157069
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-dark-1440-chat.png",
+      "sha256": "6afb216ed83632a3bbb1966c004b81c6061b4b6bfc498bb1fc9c0ec3daf172ae",
+      "bytes": 122602
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-dark-1440-conversation.png",
+      "sha256": "92c5655bdf8f44dd43a3b1ebe85eb3f6074deb3b8fbe34a2e6cefb7065c8b142",
+      "bytes": 59088
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-dark-1440-dialog.png",
+      "sha256": "38795968b826968bbca517960fe99dbc6e8d7efe0d8d5c73ed0e826dce5fdb16",
+      "bytes": 89288
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-dark-1440-review.png",
+      "sha256": "8ad1e2542051bcc9133185a6dd8488bee22684e2385310907b424099c62fd6c8",
+      "bytes": 179994
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-dark-390-booking.png",
+      "sha256": "8cb3f5a3d8bdb4400450b0786f80b6e4c0872b678690b4e0105609b65d25bcc9",
+      "bytes": 64030
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-dark-390-chat.png",
+      "sha256": "aefe6aa786d4400f7348e260fe6a98f7d7ec2397c95b8427e8d16110bd5d5ef5",
+      "bytes": 60227
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-dark-390-conversation.png",
+      "sha256": "6abc41a7616da5d3f347543512f4121aeeef1c52019e4de36f2cedc0087ecbe6",
+      "bytes": 42891
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-dark-390-dialog.png",
+      "sha256": "46840df7e911d6c9350510c3f7ca4ff4523efa6c482c98ebc1c472db38807654",
+      "bytes": 60178
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-dark-390-review.png",
+      "sha256": "e594e9ff3dc7f85fef303aab007c13b26fb7daac0d44a051c0f5aed2ca382c68",
+      "bytes": 65076
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-light-1440-booking.png",
+      "sha256": "859c171ad8617db8a9455075059817b69216fbc1e80a851762be0a89824aa0cf",
+      "bytes": 166423
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-light-1440-chat.png",
+      "sha256": "aff943edfcb9ac5c3763225122c9ab26b72cc512575d5ba6949adf63812fa71e",
+      "bytes": 124485
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-light-1440-conversation.png",
+      "sha256": "b1224c0e41bd060bb2c92fcdbfa2ba5aeeeadc74596fe299fb1284a329e0cda4",
+      "bytes": 58643
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-light-1440-dialog.png",
+      "sha256": "ea58768ac6be88efcd291e6c7ad7bae30d8fd059bb4694f0eb195bb8b63946ce",
+      "bytes": 89068
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-light-1440-review.png",
+      "sha256": "dd5bc75175d4af2483c785835d690476dd34916803b9279d65a79aadb863b63a",
+      "bytes": 188959
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-light-390-booking.png",
+      "sha256": "3415eb82e0d363d5a89261ad694b7ee7adebf1d571ea50e886ecf9cd6e3d45e1",
+      "bytes": 65375
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-light-390-chat.png",
+      "sha256": "cf93dd615b94cc04882dd67588b92b6d3092dcba2b7cf09ce2d28c009f50423b",
+      "bytes": 60174
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-light-390-conversation.png",
+      "sha256": "638951987f85597442ca708d40ba5eb8c3063e3ebe259b1bce73639d6d2758ce",
+      "bytes": 42884
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-light-390-dialog.png",
+      "sha256": "4923f7b7d6946324d0a4f3c53624e8fb492302522bb7ac266692e6d9567a1aed",
+      "bytes": 59823
+    },
+    {
+      "path": "design-preview/consultation/images/direction-01-en-light-390-review.png",
+      "sha256": "b7b825ffce0ce8a51b6b58a051f9e70ecfc099661ebac276d3beb12f56e541aa",
+      "bytes": 66943
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-dark-1440-booking.png",
+      "sha256": "9a6f787ff76e9d5213a5b4b852a947a2bc5ad2f1eb83df9cac52d0a287dc8fba",
+      "bytes": 76372
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-dark-1440-chat.png",
+      "sha256": "e8ddb20fa1eb4b6a222310757b662d97f4cca1f2158cd2a9d5d0a00a9879d660",
+      "bytes": 56815
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-dark-1440-conversation.png",
+      "sha256": "fd708e4b3407c11c6f4de775b6686b10e7fecfc98c11ad3b0e92d3510c3ed84c",
+      "bytes": 27108
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-dark-1440-dialog.png",
+      "sha256": "76039aa0aa09a6cecba9a6497f06663306e6fbdbcba15ad3dda166b46febb872",
+      "bytes": 52556
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-dark-1440-review.png",
+      "sha256": "333908330c3fe579a93152f0a6d745b7032e661daeea56bd5ea8761f9ce44416",
+      "bytes": 72886
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-dark-390-booking.png",
+      "sha256": "cfcc759144b6f3a01b7b36808e4fed7faca5109fe81d5848a763e2e1dca18ea4",
+      "bytes": 49728
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-dark-390-chat.png",
+      "sha256": "cc7b99659115c7dcd6b61865a240569ce61fe27482e381b179cef8a2b65ec95c",
+      "bytes": 42961
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-dark-390-conversation.png",
+      "sha256": "831e36ecec898fdea1fcfddecaa941c53630a2d623a240019fca20ecd7205666",
+      "bytes": 24240
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-dark-390-dialog.png",
+      "sha256": "4b1542a3248d4e4f62a33b683ef64dcff028004378bb459a39b6df7b0a9253e1",
+      "bytes": 48307
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-dark-390-review.png",
+      "sha256": "21cc82f792b0dd327ef9995a7cebf5a48b52ed0baf69a57f1d0072ddd83f9c5c",
+      "bytes": 43601
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-light-1440-booking.png",
+      "sha256": "fca03568321c21e7c5d74a2eb062912979d034b862c0fb7b0a75c519a3ea5fda",
+      "bytes": 86874
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-light-1440-chat.png",
+      "sha256": "9aa8a897ee1582b13793dd377dff63185e863a6adaaadde30c17edf35fbf86f7",
+      "bytes": 60013
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-light-1440-conversation.png",
+      "sha256": "947e7ef23caf1392025621c0160a68bc55da45abbbc17fbb19311e72328e192e",
+      "bytes": 27483
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-light-1440-dialog.png",
+      "sha256": "ffa363e60ef23ccccf486733e7302a45ae28fdeca6fa21e376b0e1d3bd2023e8",
+      "bytes": 52789
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-light-1440-review.png",
+      "sha256": "416c0e1b4c721324f773def878f194428d6a641341ebc7a585f52be05acc31d4",
+      "bytes": 83630
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-light-390-booking.png",
+      "sha256": "102731e9c13d574c3dfa49ef1e07eed100452e1ddac4887eafe8252c6f130f04",
+      "bytes": 52100
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-light-390-chat.png",
+      "sha256": "4acfcebd02dad21596d1ed9476500d3643cca0602c991924db646ea1a8949a57",
+      "bytes": 45740
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-light-390-conversation.png",
+      "sha256": "a5a9cee20fd568a394cca5800746a9ec6aa40acc7dbd2eb184052756e0dbb8c5",
+      "bytes": 24282
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-light-390-dialog.png",
+      "sha256": "fca50db4b73b2dca561b88df324fc1ef34c0be7cd2d31141eab98443560e60ba",
+      "bytes": 48473
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-ar-light-390-review.png",
+      "sha256": "4aec33abf225a3edf4871a553f5158bf4523b53744e4fc79234f58c5c6d889d4",
+      "bytes": 46080
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-dark-1440-booking.png",
+      "sha256": "8884a555da012d013f7710f84e180c3071f1b2feacea3826a3afac63bd9ff35f",
+      "bytes": 102227
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-dark-1440-chat.png",
+      "sha256": "d631b3d76f828e951f1ee3939d1f37a7645543a24d6eaa06bf92cb960be4af5d",
+      "bytes": 85653
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-dark-1440-conversation.png",
+      "sha256": "ca5b1ae7094d936b26efea0906c4d6ca647eca880ffeaac6a67c8faa9360fd27",
+      "bytes": 47743
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-dark-1440-dialog.png",
+      "sha256": "7ca44782cd2b3e2739a12490b3147dfcb6e1fb45481900f9d77085bae0e926f1",
+      "bytes": 76388
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-dark-1440-review.png",
+      "sha256": "256e9304e78c079f221501679f1760929d643e03d5b245dc870134de1e981215",
+      "bytes": 99895
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-dark-390-booking.png",
+      "sha256": "f7dc814edbaf84ae195e17ef79ebeb91176da2df93935b80c0daa1bd07f024af",
+      "bytes": 67428
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-dark-390-chat.png",
+      "sha256": "84902ebeab00de0224192aafc309030c317123341c12c65ccbfdd234018813d5",
+      "bytes": 63302
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-dark-390-conversation.png",
+      "sha256": "9049ed886552cf8d7074395212e5bde5affd0d6344c1b45317f9d1970f062aee",
+      "bytes": 44548
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-dark-390-dialog.png",
+      "sha256": "abf55b58f94bfdb7ce2b95443dda13b7cb48c7247c257f3393859dcb58ad7579",
+      "bytes": 65414
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-dark-390-review.png",
+      "sha256": "94099fcd3a3fe20a2ae7a9dee06b5adcc0a7a75252715e3b09661f45909cb416",
+      "bytes": 64652
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-light-1440-booking.png",
+      "sha256": "90025fcfc7f7ff4eafc89d14484148fca016d6ea9216f3e33341a1271042671c",
+      "bytes": 111849
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-light-1440-chat.png",
+      "sha256": "b7564c72824ea3cf0504456801146881d6d2c240885aa66374b88f024014a98e",
+      "bytes": 88225
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-light-1440-conversation.png",
+      "sha256": "86aa7ba3b945102b08c7fb453b956ddfd42d55bdc0cbf48b9d5e161a309a6986",
+      "bytes": 47976
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-light-1440-dialog.png",
+      "sha256": "ae788daa070a11e23a2cd17c88c935a71334c70a38126d586dd04b651e6c962b",
+      "bytes": 76543
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-light-1440-review.png",
+      "sha256": "89ec4795a409fc5b542341958cdd1e9890553f07b2003c434be15132c71181fd",
+      "bytes": 109790
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-light-390-booking.png",
+      "sha256": "0b4a1295ec91044e84901942f86c6b0c0200912ba87c62c4f9618fc9a9c51dc3",
+      "bytes": 69472
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-light-390-chat.png",
+      "sha256": "12134755a13f74a4491e55e7d8846719297b06944dcbdfcf74ed36eadbe5137c",
+      "bytes": 65164
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-light-390-conversation.png",
+      "sha256": "2c21b2d70ef6ceba0f4a7b3f0967ef5cfe8f6be98f2bdbe7414f7aaf75aeea06",
+      "bytes": 45251
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-light-390-dialog.png",
+      "sha256": "8b15242d9068e934bd3abb60881049a0531048937fc89d99ddfc321646b8deb6",
+      "bytes": 65118
+    },
+    {
+      "path": "design-preview/consultation/images/direction-02-en-light-390-review.png",
+      "sha256": "119294cd1326424c5c400f302b0b8913ad42598c8e1fdd0765ef74ebde7930d9",
+      "bytes": 61846
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-dark-1440-booking.png",
+      "sha256": "6486a8883235a5632e4d7c5c772a6b2b07a3b9272657e64153651d0de9ad875e",
+      "bytes": 71936
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-dark-1440-chat.png",
+      "sha256": "e4a32ea33623388243c95f4ed5f27b6bbeee0e7fb3cdd1880738c07b8494b2b5",
+      "bytes": 55134
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-dark-1440-conversation.png",
+      "sha256": "e89669678af982bca3a98187901d8eb7817cd9bee62714513b3f31b31b0d36b0",
+      "bytes": 28334
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-dark-1440-dialog.png",
+      "sha256": "7316805105a040c0f1a4b7bbc65c5ed0d68042e83c91cd86c21b5dc4d60bedbc",
+      "bytes": 55657
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-dark-1440-review.png",
+      "sha256": "2e2dc05de2cbe4d0072549dcb12cce232c97509658f0341407e0de81de39be9d",
+      "bytes": 84030
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-dark-390-booking.png",
+      "sha256": "7b49ccab9e973fc18d346ea0189dc241a6c9487418755f87a4fd3386cb85ea91",
+      "bytes": 41930
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-dark-390-chat.png",
+      "sha256": "9a3f6b98a2bcf7a1dac620eb5bb65727bbb4586bfb16894778210643c75cd9d5",
+      "bytes": 37763
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-dark-390-conversation.png",
+      "sha256": "ca0f00873bb97f1e2aaa3001c46286df33a9c1f13681ea7c1991f4298d685cde",
+      "bytes": 19425
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-dark-390-dialog.png",
+      "sha256": "8f40c8dfab5a87f66be348b92037b6240372983ba8112b1939da7158157abf7c",
+      "bytes": 40332
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-dark-390-review.png",
+      "sha256": "0651927be3e1b78107aa5a1732b8b9f125e01db0fca0fcc01d0349680365c897",
+      "bytes": 38737
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-light-1440-booking.png",
+      "sha256": "8372fe4189665be0d4b45c5bea0f331e544a1c0002c27b8b98dc0eb8435e94ff",
+      "bytes": 80664
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-light-1440-chat.png",
+      "sha256": "f12482514995969700a2f07eb6ac788db6aa34c70c23c3c089a8f8c7a6773145",
+      "bytes": 55390
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-light-1440-conversation.png",
+      "sha256": "0851e8f5167ea93beeb9f32cee3fda71366b951fe902f76f89443002353c3234",
+      "bytes": 28422
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-light-1440-dialog.png",
+      "sha256": "81baa0f7d8f9c0e76a2a67de2e4447d7fd1237c712e5bf3ef220db5ebd2c74c0",
+      "bytes": 55786
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-light-1440-review.png",
+      "sha256": "c0a067197ac916f6ebd7bc9095ade7d0ca8951d3394a38f8b0cb12af7770c60a",
+      "bytes": 92406
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-light-390-booking.png",
+      "sha256": "861a7db13a3acbcd1f4b02e7865f879c246951dddca29e22d5cb6acfcc433f80",
+      "bytes": 43744
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-light-390-chat.png",
+      "sha256": "30cb8d21b4175150cf617b3771aded80bd7430c0b33a0f510902c5177f15a7c6",
+      "bytes": 37972
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-light-390-conversation.png",
+      "sha256": "e2917a6cf18451e73804c27290c3d383a0ebc28c7d03e9d6d154a8bad7b6ced5",
+      "bytes": 19150
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-light-390-dialog.png",
+      "sha256": "f48ff85fc980a9cbb0719f013213be311ebe0821f4b01192e2e9e1b449f62ee1",
+      "bytes": 40504
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-ar-light-390-review.png",
+      "sha256": "c7c37e153fc29415af2ced483a93b8df2ce7e227d1bf26f792b4c9585c9acd04",
+      "bytes": 40860
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-dark-1440-booking.png",
+      "sha256": "f46f177169bbca27f82e307dd97b9a1b5521c60244cce8dc95b330f23c555af1",
+      "bytes": 107751
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-dark-1440-chat.png",
+      "sha256": "104528b9398702163b5b0be4eb6eb529b46e2932ebea7c38cf1943713a3b1f8e",
+      "bytes": 89535
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-dark-1440-conversation.png",
+      "sha256": "3b64c377b635e1e80c2d9b83043b3e0f666666a63a47d19354ad93ef8b3c4337",
+      "bytes": 55793
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-dark-1440-dialog.png",
+      "sha256": "e2a40702f0b14b5c6e172d9a33678d5597d92931567301b4c32204bb6558cc38",
+      "bytes": 89121
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-dark-1440-review.png",
+      "sha256": "24419c2d268fe6e373017458f371e64dfa5230b1670e67cb896bcf40738f5bc6",
+      "bytes": 124929
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-dark-390-booking.png",
+      "sha256": "9d7965cdfce90ac99c53885218b071af107998da06b229acd30e9a130890f2b8",
+      "bytes": 58357
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-dark-390-chat.png",
+      "sha256": "ba2cc5964e1ab5398eab06be3e8610c6debe8ac4a9748baa471c90b1a8223ed4",
+      "bytes": 57453
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-dark-390-conversation.png",
+      "sha256": "ab48597a6baff8cf6ba1d9c537f37fd09f4751eb46c891ce40f83ea83a7e674d",
+      "bytes": 38405
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-dark-390-dialog.png",
+      "sha256": "b84884a7c3266f54f8378e55207d0b1292e8debc30ea13f5ea5552327c1b02f8",
+      "bytes": 56540
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-dark-390-review.png",
+      "sha256": "ff771804de456f08c5525d956ad2f0008f308b16407cc19ecb01b56b11228132",
+      "bytes": 58997
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-light-1440-booking.png",
+      "sha256": "d13df22d420d85644a580d725c9f03657a0fe987f6b44d02bb082408ac05d8a8",
+      "bytes": 116412
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-light-1440-chat.png",
+      "sha256": "32480622642fcc6fb124e1ce7b15a77e1d03571ab37d8076d5360b26252b677d",
+      "bytes": 88548
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-light-1440-conversation.png",
+      "sha256": "a5b9a93631a58bbecc818eb0aeecaa42e5d6d818ec3b3fc2c96e4e48c5d4692f",
+      "bytes": 55034
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-light-1440-dialog.png",
+      "sha256": "2db6baf0ccf75f8f5ca0517041a53eb8992171adf4cb7093e801bca7a1f29bee",
+      "bytes": 89034
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-light-1440-review.png",
+      "sha256": "ba377d8890a7b569c958565fc72accae52cc4693d5771034d2ca93f41e5f32c3",
+      "bytes": 133962
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-light-390-booking.png",
+      "sha256": "0c7a075bb3f19c594571c751297ba1262c23fad5f4be99303df2a7a5f7c4c039",
+      "bytes": 60292
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-light-390-chat.png",
+      "sha256": "89ba13379d331183948402c61924b083e150c7ee02959448f552a9fd06603d85",
+      "bytes": 57748
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-light-390-conversation.png",
+      "sha256": "baff0b778e1b8ac50e5daecab57a360bb7dd0e63c7d3973bc55e052fe067ee8b",
+      "bytes": 38394
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-light-390-dialog.png",
+      "sha256": "07872c2cb49425ca5276adb69f4fa85ee787dafaf6323133e5d9b91e2950b5e6",
+      "bytes": 56558
+    },
+    {
+      "path": "design-preview/consultation/images/direction-03-en-light-390-review.png",
+      "sha256": "838c64ae02812a48f52ec2363fdaa48cd6b36deb8f603b4f5be583fd3929d7e8",
+      "bytes": 60776
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-dark-1440-booking.png",
+      "sha256": "d920a774e2763dc0e0bcc3e5442afc0754534480498100df79a6069ce73a358e",
+      "bytes": 75487
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-dark-1440-chat.png",
+      "sha256": "b1d667c68661073219cd95898d9aa11d34370eaf6bcd3cdc49de77bf57184e84",
+      "bytes": 68947
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-dark-1440-conversation.png",
+      "sha256": "afbcce9655d4b305397834d76a0c40ba5c81932ea2fa7a34cfc072903c7e4e20",
+      "bytes": 36664
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-dark-1440-dialog.png",
+      "sha256": "e0b9548baa358b90006ed6b6bfd4bc325f35b7ca1d0c33118b56bc24144586fe",
+      "bytes": 60328
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-dark-1440-review.png",
+      "sha256": "967c86806f6097ff2ae86f0a456e0201681cad8672e88daf43673de28a495c17",
+      "bytes": 89725
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-dark-390-booking.png",
+      "sha256": "7cf23a5d4a8066e6cfbc109456fe492120483797cff0500bbe9765b50ab860dc",
+      "bytes": 45421
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-dark-390-chat.png",
+      "sha256": "ecad21936f3bc91f32104a1db27fce9d0d14dd861c7abba82d9613f056c93d9c",
+      "bytes": 48294
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-dark-390-conversation.png",
+      "sha256": "2ec516cd4aa7d1c0bcfa8ec4a58f2d01eb127c87e05ac856a9fc722bcf44572d",
+      "bytes": 26066
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-dark-390-dialog.png",
+      "sha256": "5896c7023339bab3b003730337ff128b1bef83c3f658d51e0e143aafa85d9f80",
+      "bytes": 43972
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-dark-390-review.png",
+      "sha256": "72cde123ed093a7d34f3e32b03e1aa34cab12cbf315efa0c09b7ae9c8a7d96e7",
+      "bytes": 40155
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-light-1440-booking.png",
+      "sha256": "9cbb3a225f15a9483368e6ce42f4fccf4bd13fe88885b0d6973363cc0a28da5b",
+      "bytes": 84313
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-light-1440-chat.png",
+      "sha256": "515092f9f1f17a105e1bf2f63303a7d4bdb91df77ee7ce9ecd3f65da9384af36",
+      "bytes": 72297
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-light-1440-conversation.png",
+      "sha256": "392a8423213017aed6eaab61f1a5545a4f5df0b4e4d86268bb3d428c3cf98db0",
+      "bytes": 36914
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-light-1440-dialog.png",
+      "sha256": "fbd9acbcf414ad7534093dd98ebdf29034b22d463ee039d5638e671698a0814c",
+      "bytes": 60434
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-light-1440-review.png",
+      "sha256": "7e32ca01eb9296a6192004721ce4b4c72666025d11bad33479ec5c88182445bb",
+      "bytes": 98471
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-light-390-booking.png",
+      "sha256": "374a2d0124be6d8edc4556f5e6891b760ab2ebf6eda2f54c0594a93ef4335fa4",
+      "bytes": 47528
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-light-390-chat.png",
+      "sha256": "24a4d296e1473b1772876771ba1916d444ebe3cf917e9f34bf9137fa4d1653b9",
+      "bytes": 48345
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-light-390-conversation.png",
+      "sha256": "d10300c2adddba4a1273b6bef5383b20ecf03dc31b4cd21e72bf3a8d30d8f786",
+      "bytes": 26094
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-light-390-dialog.png",
+      "sha256": "7fc820311dca8ab8a312d679f39efca37b67bcd5d37fefc7b122e5d5f3d07699",
+      "bytes": 44219
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-ar-light-390-review.png",
+      "sha256": "7f1dbaf6a26d3db6c6bb96d9c1f50101ba24290300763fa979b9a2f1f0ac0d13",
+      "bytes": 45167
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-dark-1440-booking.png",
+      "sha256": "4c10d6b1518cc7a6862b99632c090ed294f65441368d997ddf34f73d2ee89073",
+      "bytes": 107273
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-dark-1440-chat.png",
+      "sha256": "055a2783097e507bb21ec14c2b52de341b03e5cb9f8264a190888659f5ac1903",
+      "bytes": 102176
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-dark-1440-conversation.png",
+      "sha256": "dd7c3886f074382e9e7b62b49a6044b94fd5e2c98063c54cc7bf9f47825cd4df",
+      "bytes": 62311
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-dark-1440-dialog.png",
+      "sha256": "7e483bdc54d9fc3f4926d3b6d23e93658f261749446e9fc616195bb28db444e6",
+      "bytes": 90810
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-dark-1440-review.png",
+      "sha256": "a3458d98c6b11edafa949aa08ed65a565bdb4fc49b90d81a824a7eadf510d706",
+      "bytes": 126716
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-dark-390-booking.png",
+      "sha256": "a5511c2dcac4d0ac322d34aea3187f388e279d14fc1eed267625e979936f8e5d",
+      "bytes": 60130
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-dark-390-chat.png",
+      "sha256": "d8f9e3d3bdc27e52f1772698b091bde888bd6dac809ffe86a27879a07f8bb2f4",
+      "bytes": 69502
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-dark-390-conversation.png",
+      "sha256": "c2f796a1170f0d97520d97cca14dd8d733db5c05b9c9b161783e1d3cbb28bdf0",
+      "bytes": 46128
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-dark-390-dialog.png",
+      "sha256": "8a2e4beb482b245cf53063f23b6db77916823e50e963a74784ff61b0a224a42e",
+      "bytes": 58055
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-dark-390-review.png",
+      "sha256": "a4bade670293dedc5aa9b77b844d1f2d7a83b49051a645b12e7bcf800c559c86",
+      "bytes": 59229
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-light-1440-booking.png",
+      "sha256": "d7e35c6f0acc54222883b66740e0b5e532fad883cd00af61b6c21b57f3c17766",
+      "bytes": 115829
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-light-1440-chat.png",
+      "sha256": "8a3cc0950f40c68514138852eda7887ce55b5ff62c686a88420a332f4f7866fd",
+      "bytes": 105086
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-light-1440-conversation.png",
+      "sha256": "d1004b270c69b38f8ab74d9608260172b4876549ed335724941842bb71009cb5",
+      "bytes": 62569
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-light-1440-dialog.png",
+      "sha256": "33ed7c038ac4f9ecea72c4cf7b3b9e4e9827d6c8862a0f685d644652d5591f36",
+      "bytes": 90940
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-light-1440-review.png",
+      "sha256": "401e9b708de704dea6a9862ed45fe215817aa079fcb3f490168dc7f2fca607e8",
+      "bytes": 135352
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-light-390-booking.png",
+      "sha256": "e24fbec86ce6a8f9342fdd29b73c4d65f6d52836ab6de9a97e41756386ba4e30",
+      "bytes": 61783
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-light-390-chat.png",
+      "sha256": "80662705d221458809755743cb4c873ca707f1c29baab253908926540ecba87d",
+      "bytes": 69833
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-light-390-conversation.png",
+      "sha256": "0b9dfc4e918d7d746fcc9fc20b4982822024d6f6745ecf3fa62e9f706cdfe16b",
+      "bytes": 46477
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-light-390-dialog.png",
+      "sha256": "87e5c439b11c1fc9b64dadceced34e7de71c3854de505b58593bef699970ec88",
+      "bytes": 57826
+    },
+    {
+      "path": "design-preview/consultation/images/direction-04-en-light-390-review.png",
+      "sha256": "5624f67180cf8601f9fa6058cfdb50f8e91322b8b6d7353ba85ab73e39e83e15",
+      "bytes": 61141
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-dark-1440-booking.png",
+      "sha256": "3f0fc1fa00647224bcabc56f4b8eab4559d7f853e18272ddc5a8935504c445ae",
+      "bytes": 81189
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-dark-1440-chat.png",
+      "sha256": "9afbca4e34f0cd0a69862f00819c268445b42ad11fa3be23314017d6702e284b",
+      "bytes": 50882
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-dark-1440-conversation.png",
+      "sha256": "199bcd8ce7fc0bd766b7a2ed44a9b36719547fb9f44e541a1f150fd50219ebd0",
+      "bytes": 25888
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-dark-1440-dialog.png",
+      "sha256": "8e23b2bef1f081279ecbaf70295fe3c467fcb81572f1f693d31c6f9c1528d48d",
+      "bytes": 41547
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-dark-1440-review.png",
+      "sha256": "ed62cf2c60e41896ccd3f23259899cbb5aaebcbfd36b0dcbd67510aae199f0ed",
+      "bytes": 82397
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-dark-390-booking.png",
+      "sha256": "82a559ddeefd325ee85aa739f2394d712e3209bf0e0d37603bdc7e99e7d313d5",
+      "bytes": 40363
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-dark-390-chat.png",
+      "sha256": "a879fb8faf3f406586b8de866bf6f15fed982a39c3b412800d91b96b258f12c3",
+      "bytes": 38853
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-dark-390-conversation.png",
+      "sha256": "dccf60724ccdfb8e67bdab027bf1be070ed6a85af218fffa92f45e1f96a1f34b",
+      "bytes": 20368
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-dark-390-dialog.png",
+      "sha256": "d8c69628b3861a2e4c5dc7bc9cf62ecfb6dfcbc4afb5a2c429d3ead66c9bdf5c",
+      "bytes": 38429
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-dark-390-review.png",
+      "sha256": "51e0294fc4af2875ebec2903a065e63acb91daff5ec4bbb97703cfe1e74c2b8f",
+      "bytes": 36684
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-light-1440-booking.png",
+      "sha256": "2a5345b6c0624017e6a4dd44a1aa247ecba2544ee29bf47a9fda03000caf2ae2",
+      "bytes": 89781
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-light-1440-chat.png",
+      "sha256": "7ebb0ea4e8b78563d321c536a78e01c8d798b969eb1613d8217b50087edf6729",
+      "bytes": 50993
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-light-1440-conversation.png",
+      "sha256": "865838612db23a5acf3414ac859168ec22bb3bb103dd8e9bd91e6bdce765ccad",
+      "bytes": 25858
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-light-1440-dialog.png",
+      "sha256": "ff77933294119703c20d5505e860ddf29537c22513b32c42897b644feacbe520",
+      "bytes": 41455
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-light-1440-review.png",
+      "sha256": "293d7aad757e2a9bc3af7a6c18c146e33e5aa6fae16bc42e684d1264b50d405c",
+      "bytes": 91255
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-light-390-booking.png",
+      "sha256": "3a64d371400291a32acc09ff002c31cfc1e2a94fba1301fb49af58c72be8d7db",
+      "bytes": 41914
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-light-390-chat.png",
+      "sha256": "89fc8a417658177d7a39ae1901d32da993f21e074cbde02d3bed145085084953",
+      "bytes": 38695
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-light-390-conversation.png",
+      "sha256": "bb6c34613a6896d056a7411e1de91e8344d22ca1a7b526646b74349d1f0d08e2",
+      "bytes": 20156
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-light-390-dialog.png",
+      "sha256": "43a87b4b5e1bd33c2346d34c51198e9090e1d92e05fbe3d65bc0eb36079bfd95",
+      "bytes": 38102
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-ar-light-390-review.png",
+      "sha256": "4a32b98503988005d837ec16e880fa9e10ae9d6afdb4ef085799180f24680a56",
+      "bytes": 38602
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-dark-1440-booking.png",
+      "sha256": "afd0e4ecdd59783eb2ae7ee1eadc42fe836587f83d581dc2fbee59991c6019e9",
+      "bytes": 112243
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-dark-1440-chat.png",
+      "sha256": "38809a6948eb7a2d7e128f962f5759e4e49362ecd3b67d78c7d0163a405ba9ff",
+      "bytes": 84565
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-dark-1440-conversation.png",
+      "sha256": "4bcc938bab2ffa9c44d62f4b8507069444eab2513f5d0032edc40d33e03a180e",
+      "bytes": 54951
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-dark-1440-dialog.png",
+      "sha256": "0e87f01494a075102825461d4fab6a2861a82fb5e16e402c370b160872ce245c",
+      "bytes": 65958
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-dark-1440-review.png",
+      "sha256": "1c01c12b0ab53404bee7da0e7c8196da77c0db7077ef9203de04d33aa4ef888f",
+      "bytes": 115519
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-dark-390-booking.png",
+      "sha256": "34ca08216debce77bf79b57906eda0658d2e9a5c274b33a9231927c922f0ba90",
+      "bytes": 57779
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-dark-390-chat.png",
+      "sha256": "737d1134d468687617c7a97a7070d9be8bbd86bae422d2aa1934b2ea354b6fd2",
+      "bytes": 58925
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-dark-390-conversation.png",
+      "sha256": "f00e3dfbb7f6fff7c77d3f407f3e87ded3abf634e83e472b2e5d2d1dc8a28301",
+      "bytes": 37209
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-dark-390-dialog.png",
+      "sha256": "e5e70774c444b9f1c4b670043162cb6d9440dc8d46d393838f89e30121d82346",
+      "bytes": 55790
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-dark-390-review.png",
+      "sha256": "9c49de8eccb1c5ededf9eee6ca11f2768f32ec1cd3bb85c48e92b632c1bd2083",
+      "bytes": 55206
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-light-1440-booking.png",
+      "sha256": "04dec7a368060838cc7ae6655496a7447430bd9d1106beb3f94f398d67ba3ce3",
+      "bytes": 120919
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-light-1440-chat.png",
+      "sha256": "a0057b5904c0d7dea8359eaf8ef440d0fe108495173d55b2050562b207b9d96b",
+      "bytes": 82652
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-light-1440-conversation.png",
+      "sha256": "b5b0d11bc8282b52b9b40b1179e71587b969a6e690a0588b08b7a9f80876691a",
+      "bytes": 53121
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-light-1440-dialog.png",
+      "sha256": "dbbac73aa48d385b82697ea249d66f0bafe1273ae21f35a891408a3b8fc7d9b1",
+      "bytes": 65619
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-light-1440-review.png",
+      "sha256": "aa8d862c2c82aac7ff55808f7ff4ea4be9bcbc3d0b71a4eadd48691163d67376",
+      "bytes": 123921
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-light-390-booking.png",
+      "sha256": "065caf88c04e67b32fc8de009c7c61b8d60c080072cc62fcfcf504d92bdff759",
+      "bytes": 58949
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-light-390-chat.png",
+      "sha256": "146616f4b9e851a74d78b91bb9203c87d6745929d2b006ce61073afaf3003da6",
+      "bytes": 58761
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-light-390-conversation.png",
+      "sha256": "3abdd1a424ca806e50cb131ccc4c178ed71bb4e964b9583f7799cdf6d9e7922c",
+      "bytes": 36917
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-light-390-dialog.png",
+      "sha256": "a8d564c5997520525cfba9bfa4fde6b37d09db63204cf77956a31a26587f0b9e",
+      "bytes": 55070
+    },
+    {
+      "path": "design-preview/consultation/images/direction-05-en-light-390-review.png",
+      "sha256": "fa255d45d815fca1f567b16a545b922a040479aaa035609c0e332ea99347b5c1",
+      "bytes": 56457
+    },
+    {
+      "path": "design-preview/consultation/images/failure-01-ar-dark-1440.png",
+      "sha256": "ad69d044835e6b9e450c3d6910335211af7b2b089c61361743def778614011b8",
+      "bytes": 41428
+    },
+    {
+      "path": "design-preview/consultation/images/failure-01-ar-dark-390.png",
+      "sha256": "ad69d044835e6b9e450c3d6910335211af7b2b089c61361743def778614011b8",
+      "bytes": 41428
+    },
+    {
+      "path": "design-preview/consultation/images/failure-01-ar-light-1440.png",
+      "sha256": "4e60e4f01ffbaadd342cd597941e397a260493cdcb789f60ecfe750123ad9d2c",
+      "bytes": 43221
+    },
+    {
+      "path": "design-preview/consultation/images/failure-01-ar-light-390.png",
+      "sha256": "4e60e4f01ffbaadd342cd597941e397a260493cdcb789f60ecfe750123ad9d2c",
+      "bytes": 43221
+    },
+    {
+      "path": "design-preview/consultation/images/failure-01-en-dark-1440.png",
+      "sha256": "feda99b973cd8ca0eb8b51815d12c43c305d78b087d45bbc286f93d6ce2a1f3d",
+      "bytes": 55140
+    },
+    {
+      "path": "design-preview/consultation/images/failure-01-en-dark-390.png",
+      "sha256": "383621be639ce6159701c10e4c4d7b484c9eace187231efe45af251c9bff6754",
+      "bytes": 51862
+    },
+    {
+      "path": "design-preview/consultation/images/failure-01-en-light-1440.png",
+      "sha256": "7af1091883097ab1ed32b2741d5199331b9a77e26b6c250e75cb784cc550c450",
+      "bytes": 53249
+    },
+    {
+      "path": "design-preview/consultation/images/failure-01-en-light-390.png",
+      "sha256": "7af1091883097ab1ed32b2741d5199331b9a77e26b6c250e75cb784cc550c450",
+      "bytes": 53249
+    },
+    {
+      "path": "design-preview/consultation/images/gallery-ar-dark-390.png",
+      "sha256": "975bc3eb5495828ad02d8f39854bb10b7403275bc2e51ba6373ffc34e47c3906",
+      "bytes": 310046
+    },
+    {
+      "path": "design-preview/consultation/images/gallery-ar-light-1440.png",
+      "sha256": "842b4109ea2d69d4602bdd62d1ffdf877eefb72c3100e0be2085edc553eb6441",
+      "bytes": 369106
+    },
+    {
+      "path": "design-preview/consultation/images/owner-selected-booking-dark-en-390.png",
+      "sha256": "340a75ae5dd098205df6cf6ee9550f1db2c726d72e82cc626daace4617e60065",
+      "bytes": 83217
+    },
+    {
+      "path": "design-preview/consultation/images/owner-selected-chat-light-ar-1440.png",
+      "sha256": "226e52dbcfb2a44950a4d451a87a7164aece6edc63c3f1a5848a78c2965e969c",
+      "bytes": 84025
+    },
+    {
+      "path": "design-preview/consultation/images/production-ar-dark-1440-booking.png",
+      "sha256": "b97d27fd9c98e0c0ad7488d5571598adaed308a9ba522854784dfe13cc33645c",
+      "bytes": 48762
+    },
+    {
+      "path": "design-preview/consultation/images/production-ar-dark-1440-chat.png",
+      "sha256": "771be9d10907a1c34658c33faa3f93253f466120a6c0dc9c1611108e5357087a",
+      "bytes": 43488
+    },
+    {
+      "path": "design-preview/consultation/images/production-ar-dark-1440-review.png",
+      "sha256": "7cc25efbc7097f659b0c1a57685b6b73139f8e8c2513492b968bb0ae4a77a9d2",
+      "bytes": 46883
+    },
+    {
+      "path": "design-preview/consultation/images/production-ar-dark-390-booking.png",
+      "sha256": "1cdc48d9093672d228be5680bf15ca34c78998568fb0cba2abf646719d3e14b3",
+      "bytes": 43496
+    },
+    {
+      "path": "design-preview/consultation/images/production-ar-dark-390-chat.png",
+      "sha256": "a622323732a0072ac98f05147d33f8995f1cc652be1e51ad518239ae945f6ddd",
+      "bytes": 35894
+    },
+    {
+      "path": "design-preview/consultation/images/production-ar-dark-390-review.png",
+      "sha256": "2f38d35c5e568118b0fa1873b49913eb08bd0da44e82b5b85077d3014f67767e",
+      "bytes": 35695
+    },
+    {
+      "path": "design-preview/consultation/images/production-ar-light-1440-booking.png",
+      "sha256": "0f7d81e68c22adf3dbd75b8049f57d961051c4eb0c992fbd12c4c16c1c37f99c",
+      "bytes": 48807
+    },
+    {
+      "path": "design-preview/consultation/images/production-ar-light-1440-chat.png",
+      "sha256": "b778a718f27444a53f0d89048a9ff1f238af9ea4648c7026f49f279a6d89ef72",
+      "bytes": 44811
+    },
+    {
+      "path": "design-preview/consultation/images/production-ar-light-1440-review.png",
+      "sha256": "7a8042af35994710874f22393fb01067dbcd8ea63bc72597bcef1b70d87eb54d",
+      "bytes": 47168
+    },
+    {
+      "path": "design-preview/consultation/images/production-ar-light-390-booking.png",
+      "sha256": "4d6aca3a551fde4b5edcfc7f4111b8137586eb39721ed8d70a966b610984b467",
+      "bytes": 43405
+    },
+    {
+      "path": "design-preview/consultation/images/production-ar-light-390-chat.png",
+      "sha256": "4702b0c406a4550cb78bdbfa16eac561e112a04b1b49a16999793bce52fb5f32",
+      "bytes": 36495
+    },
+    {
+      "path": "design-preview/consultation/images/production-ar-light-390-review.png",
+      "sha256": "9d378697c2cc3b190e7faf133df1cf8fbbc148eb5efda824b49799ed0c01085a",
+      "bytes": 36138
+    },
+    {
+      "path": "design-preview/consultation/images/production-en-dark-1440-booking.png",
+      "sha256": "73c1f8fb200e7c15baad8a1d5dd6afbfb1286e448c3f3d75759543f37fa96cae",
+      "bytes": 69872
+    },
+    {
+      "path": "design-preview/consultation/images/production-en-dark-1440-chat.png",
+      "sha256": "1fbf13920fdce7b055168bbb5fe7be83930486844cc6f3709dd76790c0ee8d84",
+      "bytes": 75929
+    },
+    {
+      "path": "design-preview/consultation/images/production-en-dark-1440-review.png",
+      "sha256": "80d9b79dd6d9150b4dceded52da62f7f9f69a0b072b8dd3f5e57df79429372e6",
+      "bytes": 71406
+    },
+    {
+      "path": "design-preview/consultation/images/production-en-dark-390-booking.png",
+      "sha256": "d756986c817e2549c999d03ba79b967a2ff294827e2654a8bb876438cd19fec3",
+      "bytes": 62298
+    },
+    {
+      "path": "design-preview/consultation/images/production-en-dark-390-chat.png",
+      "sha256": "c85aded04f73dba960b4273ecf721d9aff52d0d0e5ee8f60ac1b68145c4d04d8",
+      "bytes": 55695
+    },
+    {
+      "path": "design-preview/consultation/images/production-en-dark-390-review.png",
+      "sha256": "fed35865083e877ec6f6d32676cb5adffe37caf8faaf16d9648943f40da60f88",
+      "bytes": 52944
+    },
+    {
+      "path": "design-preview/consultation/images/production-en-light-1440-booking.png",
+      "sha256": "def943db87b3031a3de6e33ef6d3f3e52d5d7c03ffdc106c80b58ac0638e1f4f",
+      "bytes": 69967
+    },
+    {
+      "path": "design-preview/consultation/images/production-en-light-1440-chat.png",
+      "sha256": "5fcd96bd81de8236de6b1698e8bf97dc1efe27348c6eed905c4fce82fa44fc87",
+      "bytes": 76306
+    },
+    {
+      "path": "design-preview/consultation/images/production-en-light-1440-review.png",
+      "sha256": "5ef5372402f31749353e7e7a74f7986feb7b34d5e8fb986d5379e09bce09aeb6",
+      "bytes": 71872
+    },
+    {
+      "path": "design-preview/consultation/images/production-en-light-390-booking.png",
+      "sha256": "e68a01aa16a94a4a241b9ef2fee903f5573be5d647134941ca4e9bb17d3dd5ee",
+      "bytes": 62241
+    },
+    {
+      "path": "design-preview/consultation/images/production-en-light-390-chat.png",
+      "sha256": "c3346dfa98ce892546dc02c18c49a2eef6d682f3f0748bf4f79b5dc79479158e",
+      "bytes": 56627
+    },
+    {
+      "path": "design-preview/consultation/images/production-en-light-390-review.png",
+      "sha256": "111f9fd85bac662c1ff92ca5272e3f54f930c5f89b273e67b18d82f943cd33c2",
+      "bytes": 53759
+    },
+    {
+      "path": "design-preview/consultation/index.html",
+      "sha256": "407cb4ae93ca2b6fde10d5d3c7116711a2078fd2b0d7a32dc75a788d0a96107e",
+      "bytes": 527
+    },
+    {
+      "path": "design-preview/consultation/prepare.mjs",
+      "sha256": "4862171edb7f5d4a4a6c0d671ded910bb9c098db6decd364cbf006f7b52e1ca5",
+      "bytes": 1918
+    },
+    {
+      "path": "design-preview/consultation/qa/baseline-results.json",
+      "sha256": "859952799623663f0afaef6539341678cbeed2ceaf4bd09709c5e3675cdc04cd",
+      "bytes": 2323
+    },
+    {
+      "path": "design-preview/consultation/qa/capture-baseline.mjs",
+      "sha256": "896fb6162cd1759029c401d6dd3e1e37a96e6976b700ce63d8243cbd7edbf355",
+      "bytes": 4345
+    },
+    {
+      "path": "design-preview/consultation/qa/capture-production.mjs",
+      "sha256": "a1aa4432ba6eda8f4da5e92d48390d201e1555ecf1ee9bcc956f596e49d83554",
+      "bytes": 5641
+    },
+    {
+      "path": "design-preview/consultation/qa/check.mjs",
+      "sha256": "cdd9ce98b7ffdecba2eb45684568023fbe1eb677a9e5ce62c63fcdb21ca08945",
+      "bytes": 10992
+    },
+    {
+      "path": "design-preview/consultation/qa/direction-01-attempt-01.json",
+      "sha256": "dae36e1ccd6b9d1b842fc8f4b034953dac50bd131202ff8969d3ca0176b6d17c",
+      "bytes": 1303
+    },
+    {
+      "path": "design-preview/consultation/qa/direction-01-attempt-02.json",
+      "sha256": "6473497cc133b67adfbd4d7edf4ca1256744b4d30f5ee888ae5472d242af8080",
+      "bytes": 4268
+    },
+    {
+      "path": "design-preview/consultation/qa/direction-01-results.json",
+      "sha256": "2251989f6c8ecb2a240a40e3268eb669e5b6957a49de5ec856fd4a40dfbee8c0",
+      "bytes": 7800
+    },
+    {
+      "path": "design-preview/consultation/qa/finalize-evidence.mjs",
+      "sha256": "2101cae01c6001a911617babf7827f9a31d76f1ae3510e51da98cfd6dd5fdc8e",
+      "bytes": 5613
+    },
+    {
+      "path": "design-preview/consultation/qa/gallery-attempt-sandbox.json",
+      "sha256": "923d831d90de2569de37265b3a514fe93bfa3bca4b17874f5fcbc9f30c1575ce",
+      "bytes": 3547
+    },
+    {
+      "path": "design-preview/consultation/qa/gallery-before-image-polish.json",
+      "sha256": "53b2a13d2113813da4c2a4d3911a651b3447e6d9e804a2b36a7f11b4875f7887",
+      "bytes": 3953
+    },
+    {
+      "path": "design-preview/consultation/qa/gallery-check.mjs",
+      "sha256": "1f632c1043cce775506f3a336e35fdb47105aff09bddd797e5d0dac65afe3142",
+      "bytes": 4716
+    },
+    {
+      "path": "design-preview/consultation/qa/gallery-results.json",
+      "sha256": "53b2a13d2113813da4c2a4d3911a651b3447e6d9e804a2b36a7f11b4875f7887",
+      "bytes": 3953
+    },
+    {
+      "path": "design-preview/consultation/qa/production-browser-full-run.json",
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "bytes": 45
+    },
+    {
+      "path": "design-preview/consultation/qa/production-final-browser.json",
+      "sha256": "232bda557dd6947cb0efdfa104a381f27d5d0e25041d0375db2dfcdf2e516bb3",
+      "bytes": 12039
+    },
+    {
+      "path": "design-preview/consultation/qa/production-results.json",
+      "sha256": "68ab0e23ee4981bde4b3a5585ab7a68c24bcabf2fe0a44cdece0848ea256a737",
+      "bytes": 5307
+    },
+    {
+      "path": "design-preview/consultation/qa/results-before-polish.json",
+      "sha256": "0a820b1b4de4b242dbef8acf4b32c4fe67b2e6bd3d81ce944b7cf9d48d67c48e",
+      "bytes": 38081
+    },
+    {
+      "path": "design-preview/consultation/qa/results.json",
+      "sha256": "0a820b1b4de4b242dbef8acf4b32c4fe67b2e6bd3d81ce944b7cf9d48d67c48e",
+      "bytes": 38081
+    },
+    {
+      "path": "design-preview/consultation/qa/static-results.json",
+      "sha256": "ccb4efde41585d480d97e0c486280390d7676dacef02c31478e2ca45a43a43ba",
+      "bytes": 789
+    },
+    {
+      "path": "design-preview/consultation/README.md",
+      "sha256": "e1fad18037120e8a150bbed3ddbe9d1dd757fa441aaa4fe042dda8c74d859ae2",
+      "bytes": 6388
+    },
+    {
+      "path": "design-preview/consultation/serve.mjs",
+      "sha256": "5f31b095887492d160c1711de2b4d1e446c3bc5f461bd6aa24a317277434c1b2",
+      "bytes": 1485
+    },
+    {
+      "path": "design-preview/consultation/shared/app.js",
+      "sha256": "b2d1257115ff6b123751973cbe178c3e23d16762fd419298c000b808cbac4bd0",
+      "bytes": 28205
+    },
+    {
+      "path": "design-preview/consultation/shared/assets/arabic-400.woff2",
+      "sha256": "6010e7fd0dce5d527583951750728cbe3c895efbd16aa0f809ab8c824878c9d8",
+      "bytes": 42848
+    },
+    {
+      "path": "design-preview/consultation/shared/assets/arabic-500.woff2",
+      "sha256": "90aef64fea9794f232332e907d45810ab268d1a11721340025eba2a2cdb36d5c",
+      "bytes": 45296
+    },
+    {
+      "path": "design-preview/consultation/shared/assets/arabic-600.woff2",
+      "sha256": "16734a5adb27b0f363e566cbbeacec480da0dc0baa19c8f0053251c2e2bc0eac",
+      "bytes": 45688
+    },
+    {
+      "path": "design-preview/consultation/shared/assets/arabic-700.woff2",
+      "sha256": "04c730b4292731ccedadd5bd80756124364ae4923895145d9cd7b1f28e443de1",
+      "bytes": 44280
+    },
+    {
+      "path": "design-preview/consultation/shared/assets/arabic-LICENSE.txt",
+      "sha256": "1c32ddc3fc6efd167cdcbe475195287f2dc26ed1a4c92fbe31c87ceaffe44f98",
+      "bytes": 4808
+    },
+    {
+      "path": "design-preview/consultation/shared/assets/inter-400.woff2",
+      "sha256": "8909904ab6c872eb994093482a88a28eca2cd95912d7b6fecd72103b0dc07edc",
+      "bytes": 23664
+    },
+    {
+      "path": "design-preview/consultation/shared/assets/inter-500.woff2",
+      "sha256": "f3779f1efccc4bdcdf9c0a02ab95bf6bd092ed09c48c08cedc725889edd1d19f",
+      "bytes": 24272
+    },
+    {
+      "path": "design-preview/consultation/shared/assets/inter-600.woff2",
+      "sha256": "f9a06e79cd3a2a20951c0f0e28f66dd0e6d3fda73911d640a2125c8fcb78f21a",
+      "bytes": 24452
+    },
+    {
+      "path": "design-preview/consultation/shared/assets/inter-LICENSE.txt",
+      "sha256": "3b0a5fca3d17942cde889069889dedbbbd075e9b599968c82a95f4d944e9b345",
+      "bytes": 4477
+    },
+    {
+      "path": "design-preview/consultation/shared/assets/kmt-logo.webp",
+      "sha256": "3b3f3af8f302a167485d2b60fccdd47a11eb1fa858377c3ee9558346fab3409c",
+      "bytes": 15756
+    },
+    {
+      "path": "design-preview/consultation/shared/base.css",
+      "sha256": "4beab08c707a6e16ed3f3466572a3d311b2319031d38062f354778ec1048188b",
+      "bytes": 19417
+    },
+    {
+      "path": "design-preview/consultation/shared/catalogs.js",
+      "sha256": "50152b36e6761acbc2ee204a26b6edc83e79d9730c56b463d41c5221c8590a47",
+      "bytes": 24612
+    },
+    {
+      "path": "design-preview/consultation/shared/fixtures.js",
+      "sha256": "4f801381c7e1a7cf1b4e1aaebfbe2704092b2310097cbf6574bfd5834ae941b9",
+      "bytes": 3062
+    },
+    {
+      "path": "design-preview/consultation/shared/gallery.css",
+      "sha256": "0d63860463c8ed2ed5676ac2f00dc4289f3a22c351dc1b2d9e043e056406520b",
+      "bytes": 5022
+    },
+    {
+      "path": "design-preview/consultation/shared/gallery.js",
+      "sha256": "05878543e6010f71d7e86921fb176e4bb4864f689d3fb82c6fc1d11aea6c9201",
+      "bytes": 6175
+    },
+    {
+      "path": "design-preview/consultation/shared/preview-copy.js",
+      "sha256": "98574761e02fde64945fa5ae946548c7d9341d280d9db1a9c7f3bbc50e8fc55f",
+      "bytes": 12884
+    },
+    {
+      "path": "design-preview/consultation/SOURCES.md",
+      "sha256": "8bd7ccf6dfd76c4bf01baa38a35b82f68eb66c283301bac36fa4d9cef0706379",
+      "bytes": 5041
+    },
+    {
+      "path": "PROJECT_GUIDE.md",
+      "sha256": "acfb7a0df48ca2aec3e7ba338383f1ee804ec35d5a3112d9afe274dc495d1e4b",
+      "bytes": 46242
+    },
+    {
+      "path": "docs/KMT_LEGAL_IMPLEMENTATION_STATUS.md",
+      "sha256": "2f4b4e155e1af42a04887dd439a5e7bbfad1b161e2aaf9030c7642228b5b8403",
+      "bytes": 195293
+    },
+    {
+      "path": "docs/SERVER_COMMANDS.md",
+      "sha256": "89c81fd47760f8c32275a2ec0c091f1d1c0df692f16784545a3171c2b47e9f1b",
+      "bytes": 45782
+    },
+    {
+      "path": "docs/ui-redesign/DECISIONS.md",
+      "sha256": "242b6db7bfc8d39508956af555f0bb31b1dd78b1c19bc3b493d68680d57670e7",
+      "bytes": 18667
+    },
+    {
+      "path": "docs/ui-redesign/CONSULTATION_DESIGN.md",
+      "sha256": "08a6e037fa656f6dfe6676865ad9e80cd4c5c53821a6a62fc6ffbd3f192c9df5",
+      "bytes": 5434
+    },
+    {
+      "path": "docs/ui-redesign/CONSULTATION_INTEGRATION_PLAN.md",
+      "sha256": "a90467b0f59f853cbcdd1f9c2abe6c7f140c6eecc199005faae7f38e256ad576",
+      "bytes": 4454
+    },
+    {
+      "path": "src/app/globals.css",
+      "sha256": "0974ef0dfba067e4959a30b1b082ad340ef011adcba2a2142df3c03cb3448d66",
+      "bytes": 31255
+    },
+    {
+      "path": "src/content/conversation-copy.ts",
+      "sha256": "539cacb940661b21cd76f30fc76368dc80c7dfd4168d2b71a1dd399ccc3ddff4",
+      "bytes": 8465
+    },
+    {
+      "path": "src/content/assistant-policy-copy.ts",
+      "sha256": "20c19d243e407308de498156fb27320fcdbae966de7dacb4a1cc00320e92bf0e",
+      "bytes": 3602
+    },
+    {
+      "path": "src/content/direct-booking-copy.ts",
+      "sha256": "3183d3be861695fb699f400c6d22e861ea24396dbe263b8e649fc41da87b9811",
+      "bytes": 12106
+    },
+    {
+      "path": "src/features/public-site/conversational-booking-chat.tsx",
+      "sha256": "a8608ff2942fd279a10abb0b9333c02aa63aa6031d437f42b96d43aebabe8ad8",
+      "bytes": 14584
+    },
+    {
+      "path": "src/features/public-site/direct-booking-panel.tsx",
+      "sha256": "6281eec6b8b1871880e274f47c5778c05b87a15076c0ee2340fac54567604e51",
+      "bytes": 12833
+    },
+    {
+      "path": "src/features/public-site/booking-availability-picker.tsx",
+      "sha256": "7980c9430a3ad1212ef477d1cd9cfa2d8c7f3abdcaddd22ab1142f6b56260c34",
+      "bytes": 5612
+    },
+    {
+      "path": "src/features/public-site/consultation-experience.css",
+      "sha256": "249714e2fbf0824e4bca818047c3bee58965a4cf9ff0ed4a542c333757df51fb",
+      "bytes": 15931
+    },
+    {
+      "path": "src/features/public-site/public-pages.tsx",
+      "sha256": "e78614d5c23a2a6bfff8d7dcd15638a9c54a3fb34f760bba71957a2dd561d2b5",
+      "bytes": 69163
+    },
+    {
+      "path": "src/components/ui/dialog.tsx",
+      "sha256": "fb361a5b3c175595a3ee98edec67a190813f86dce9463f61cbdcc8fb8e9ca925",
+      "bytes": 4088
+    },
+    {
+      "path": "tests/e2e/consultation-direction-two.spec.ts",
+      "sha256": "9770418320c3f330d0d4609aa8dc5f5de624e88690de2e6e80b36eaa44f1e21b",
+      "bytes": 9848
+    },
+    {
+      "path": "tests/e2e/conversational-intake.spec.ts",
+      "sha256": "0aac015692436f2a6faddf7932bac475a6e423e23a9a1e04365d126cb30f575a",
+      "bytes": 11535
+    }
+  ]
+}

@@ -1,5 +1,16 @@
 # Server Commands
 
+## Selected consultation direction 02 — 2026-10-15
+
+Deploy the selected chat/booking appearance with the existing update script. No migration, dependency, provider/reasoning, business-hours or environment changes are required.
+
+```bash
+cd /www/wwwroot/kmtlegal
+bash deploy/install/aapanel-pm2-update.sh
+```
+
+After the script succeeds, refresh `/ar/book-consultation` and `/book-consultation`; check both themes. Messages should have distinct soft bubbles, a larger bounded reading area with internal scrolling and an anchored composer. A long reply must not grow the page; incoming staff messages must preserve history reading and show the new-messages action. In the single booking dialog, verify nearest/day/clock ordering, closed-day explanation, contact retention and consent reset, reachable review and explicit confirmation. Exercise confirmation/retry/reschedule/cancel using synthetic data in a test environment. Physical keyboard behavior, real provider wording and live deployment remain separate from local checks. DeepSeek reasoning settings are unchanged.
+
 ## Ordered consultation availability — 2026-10-15
 
 Deploy using the normal command below. No migration, new dependency or environment setting is needed; existing administration days, hours, roster and closures are not edited by deployment. The displayed schedule is for phone/WhatsApp consultations, separately from general office opening hours.

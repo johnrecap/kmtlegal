@@ -35,7 +35,6 @@ import { ReadingProgress } from "@/components/motion-ui/reading-progress";
 import { Reveal } from "@/components/motion-ui/reveal";
 import { StickyScroll } from "@/components/ui/sticky-scroll-reveal";
 import {
-  BookingFlowHeader,
   CapabilityRows,
   DetailCta,
   IndustryLedger,
@@ -66,7 +65,6 @@ import {
   getPublishedArticleBySlug,
   getPublishedCaseStudyBySlug
 } from "@/server/public/content-service";
-import { conversationCopy } from "@/content/conversation-copy";
 
 export function publicPageMetadata(
   locale: PublicLocale,
@@ -1077,19 +1075,9 @@ export function ContactPageView({ locale }: { locale: PublicLocale }) {
 
 export async function BookConsultationPageView({ locale }: { locale: PublicLocale }) {
   noStore();
-  const content = getPublicContent(locale);
-  const copy = content.bookingPage;
-  const chatCopy = conversationCopy[locale];
-
   return (
     <PublicShell currentPath={localizedPublicHref("/book-consultation", locale)} locale={locale}>
-      <BookingFlowHeader
-        eyebrow={copy.heroEyebrow}
-        title={chatCopy.title}
-        description={chatCopy.introduction}
-        locale={locale}
-      />
-      <div className="mx-auto w-full max-w-[56rem] px-4 py-8 sm:px-6 md:py-10 lg:px-8">
+      <div className="mx-auto w-full max-w-[56rem] px-4 py-4 sm:px-6 lg:px-8">
         <Suspense fallback={<div aria-hidden="true" className={cn(publicPanel, "min-h-[32rem] rounded-[1.75rem] border-[var(--kmt-assistant-line)] bg-[var(--kmt-assistant-shell)]")} />}>
           <ConsultationBookingChatFromQuery locale={locale} />
         </Suspense>

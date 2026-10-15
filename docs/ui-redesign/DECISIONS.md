@@ -1,5 +1,17 @@
 # DECISIONS (Owner-Locked Rulings)
 
+## 2026-10-15 — Direction 02 implementation and spacious bounded chat authorized
+
+The owner explicitly requested implementation on the real chat/booking in Arabic/English and both themes, preserving booking logic, testing, commit/push and aaPanel/PM2 handoff; direct work without subagents. This supersedes the earlier proposal-only no-push boundary. The follow-up request rejects the small reading area and unbounded page growth: give messages most remaining viewport height, retain internal scrolling and keep the composer anchored. Incoming messages must respect a visitor reading earlier content. The selected visual identity remains direction 02; only the reading-area sizing contract changes. No provider, business schedule, database or dependency changes.
+
+## 2026-10-15 — Owner-selected consultation appearance: direction 02
+
+Exact owner decision: «التصميمين دول كويسين اعتمدهم», attached to the English dark mobile booking dialog and Arabic light desktop conversation screenshots. Both depict **direction 02 / A natural conversation**. Preserve these visual authorities at `design-preview/consultation/images/owner-selected-booking-dark-en-390.png` and `owner-selected-chat-light-ar-1440.png`; fingerprints are in the preview evidence manifest.
+
+Adopt the soft conversation bubbles, ivory/gold light appearance, near-black/gold dark appearance, rounded composer, compact pill-shaped days/times and stacked booking sections within one native dialog. Keep KMT identity, existing fonts, Arabic/English and responsive behavior. No permanent stepper. The selection approves appearance; it does not approve synthetic dates/business hours or authorize production implementation/deployment. The final local preview retains the same composition with latest-message scroll and a shorter viewport-adaptive log to keep the primary booking action visible. These usability adjustments are recorded separately from the exact supplied screenshots.
+
+Canonical scoped contract: `docs/ui-redesign/CONSULTATION_DESIGN.md`. Direction 01 was the initial reviewer recommendation, superseded by this explicit owner choice. Historical component-family rulings remain; this appearance approval does not authorize installing a new library or replacing production primitives. Work remains direct, without subagents.
+
 ## 2026-10-09 — Owner-approved published lawyer appointments
 
 The latest explicit plan supersedes mandatory post-request office approval only for new bookings in an explicitly published lawyer schedule. Customer confirmation creates the appointment immediately, with name/phone and PHONE or WhatsApp; email/account are optional afterward. Publishing must never occur from default settings. One office consultation per interval, daily participating lawyers, closures and live conflict checks apply. Legacy requests, payments and claimed conversations remain unchanged. Queued handoff does not pause AI; actual staff ownership does. No subagents, new libraries, fee/free claims or general notifications. Protected guest edits/cancellation and isolated lead creation are authorized.

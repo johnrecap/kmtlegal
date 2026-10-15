@@ -1,5 +1,6 @@
 export const conversationCopy = {
   ar: {
+    welcome: "أهلًا بك في KMT Legal", conversationIntro: "نتحدث أولًا، ونرتّب الموعد عندما تحتاجه.", assistant: "مساعد خدمات المكتب", you: "أنت", today: "اليوم", placeholder: "اكتب سؤالك عن خدمات المكتب…", privacy: "بيانات التواصل تُطلب عند الحجز فقط.", latest: "الرسائل الجديدة", emptyConversation: "ابدأ بسؤالك عن خدمات المكتب.",
     newConversation: "بدء محادثة جديدة", closed: "أغلق المكتب هذه المحادثة. يمكنك بدء محادثة جديدة.",
     guest: "زائر لم يتحقق من حسابه بعد", staff: "فريق المكتب", resume: "إعادة المحادثة للمساعد", takeOver: "استلام المحادثة", transcript: "سجل المحادثة",
     legacy: "تم تحديث الحجز. افتح صفحة حجز الاستشارة للاختيار من المواعيد التي ينشرها المكتب؛ لا يلزم الدفع داخل المحادثة.",
@@ -19,6 +20,7 @@ export const conversationCopy = {
     requested: "الموعد المطلوب", confirmed: "الموعد المعتمد", noTime: "يُنسّق مع المكتب", noConfirmation: "لم يُعتمد موعد بعد", nextStep: "تابع حالة طلبك هنا؛ سيتولى المكتب مراجعته."
   },
   en: {
+    welcome: "Welcome to KMT Legal", conversationIntro: "A conversation first. An appointment when you need it.", assistant: "Office services assistant", you: "You", today: "Today", placeholder: "Ask about the office’s services…", privacy: "Contact details are requested only when you book.", latest: "New messages", emptyConversation: "Start with a question about the office’s services.",
     newConversation: "Start a new conversation", closed: "The office closed this conversation. You can start a new one.",
     guest: "Guest account not yet verified", staff: "Office team", resume: "Return conversation to AI", takeOver: "Take over conversation", transcript: "Conversation history",
     legacy: "Booking has been updated. Open the consultation page to choose from the office’s published times. Payment is not required in chat.",

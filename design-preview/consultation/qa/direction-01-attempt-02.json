@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-15",
+  "environment": "Local standalone HTML / synthetic data / Chrome",
+  "directions": [
+    "01"
+  ],
+  "results": [],
+  "issues": [
+    {
+      "label": "01-ar-light-390",
+      "message": "Console/page errors: Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class | Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class | Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class"
+    },
+    {
+      "label": "01-ar-light-1440",
+      "message": "Console/page errors: Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class | Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class"
+    },
+    {
+      "label": "01-ar-dark-390",
+      "message": "Console/page errors: Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class | Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class | Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class"
+    },
+    {
+      "label": "01-ar-dark-1440",
+      "message": "Console/page errors: Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class | Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class"
+    },
+    {
+      "label": "01-en-light-390",
+      "message": "Console/page errors: Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class | Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class"
+    },
+    {
+      "label": "01-en-light-1440",
+      "message": "Console/page errors: Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class | Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class"
+    },
+    {
+      "label": "01-en-dark-390",
+      "message": "Console/page errors: Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class | Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class"
+    },
+    {
+      "label": "01-en-dark-1440",
+      "message": "Console/page errors: Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class | Pattern attribute value [+0-9 ()-]{8,24} is not a valid regular expression: Uncaught SyntaxError: Invalid regular expression: /[+0-9 ()-]{8,24}/v: Invalid character in character class"
+    }
+  ],
+  "externalRequests": [],
+  "summary": {
+    "passed": 0,
+    "failed": 8
+  }
+}

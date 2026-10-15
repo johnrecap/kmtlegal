@@ -14,9 +14,10 @@ export type DialogProps = {
   children?: ReactNode;
   footer?: ReactNode;
   className?: string;
+  closeLabel?: string;
 };
 
-export function Dialog({ open, onClose, title, description, children, footer, className }: DialogProps) {
+export function Dialog({ open, onClose, title, description, children, footer, className, closeLabel }: DialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const headingId = useId();
@@ -64,7 +65,12 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
     if (event.key !== "Tab") return;
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+    const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(element => {
+      if (!element.getClientRects().length || element.closest("fieldset:disabled")) return false;
+      if (!(element instanceof HTMLInputElement) || element.type !== "radio") return true;
+      const group = Array.from(dialog.querySelectorAll<HTMLInputElement>('input[type="radio"]')).filter(radio => radio.name === element.name);
+      return element === (group.find(radio => radio.checked) ?? group[0]);
+    });
     if (focusable.length === 0) return;
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
@@ -92,6 +98,7 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
       }}
     >
       <div className="border-b border-border px-5 py-4">
+        {closeLabel && <button type="button" className="kmt-dialog-close" aria-label={closeLabel} onClick={onClose}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg></button>}
         <h2 id={headingId} className="text-lg font-semibold text-foreground">
           {title}
         </h2>
