@@ -21,6 +21,30 @@ describe("bounded conversational gateway", () => {
     expect(result.additions.map(message => message.role)).toEqual(["assistant", "tool", "assistant"]);
     expect(provider.chat).toHaveBeenLastCalledWith(expect.objectContaining({ messages: expect.arrayContaining([expect.objectContaining({ role: "tool", content: '{"slots":[]}' })]) }));
   });
+  it("executes a provider's multi-tool batch sequentially", async () => {
+    const input = base();
+    const events: string[] = [];
+    const execute = vi.fn(async (_args: unknown, id: string) => {
+      events.push(`start:${id}`);
+      await Promise.resolve();
+      events.push(`end:${id}`);
+      return { slots: [] };
+    });
+    const batch = { ...call(), tool_calls: [call().tool_calls[0], call("slots", "{}", "call2").tool_calls[0]] };
+    const result = await runConversationTurn({
+      ...input, tools: { slots: { ...input.tools.slots, execute } },
+      provider: providerFor({ message: batch }, { message: answer })
+    });
+    expect(result.text).toBe(answer.content);
+    expect(events).toEqual(["start:call1", "end:call1", "start:call2", "end:call2"]);
+  });
+  it.each(["invalid arguments", "duplicate ID"])("rejects the complete multi-tool batch before any effect: %s", async failure => {
+    const input = base();
+    const second = failure === "invalid arguments" ? call("slots", '{"userId":"other"}', "call2") : call();
+    const batch = { ...call(), tool_calls: [call().tool_calls[0], second.tool_calls[0]] };
+    await expect(runConversationTurn({ ...input, provider: providerFor({ message: batch }) })).rejects.toMatchObject({ code: "AI_OUTPUT_INVALID" });
+    expect(input.tools.slots.execute).not.toHaveBeenCalled();
+  });
   it.each([["delete_user", "{}"], ["slots", '{"userId":"other"}'], ["slots", "broken"], ["constructor", "{}"]])("rejects untrusted action %s before execution", async (name, args) => {
     const input = base();
     await expect(runConversationTurn({ ...input, provider: providerFor({ message: call(name, args) }) })).rejects.toMatchObject({ code: "AI_OUTPUT_INVALID" });

@@ -25,22 +25,37 @@ const toolResponse = (name: string, args: unknown, id = name) => Response.json({
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 describe("OpenRouter DeepSeek request profile", () => {
-  it("defaults to DeepSeek and disables reasoning on the outbound chat request", async () => {
+  it("routes DeepSeek without the incompatible parallel-tool parameter and keeps reasoning disabled", async () => {
     vi.stubEnv("AI_PROVIDER", "openrouter");
     vi.stubEnv("AI_MODEL", "");
     vi.stubEnv("AI_BASE_URL", "");
     vi.stubEnv("AI_API_KEY", "fixture-key");
-    const fetchMock = vi.fn(async () => Response.json({ choices: [{ finish_reason: "stop", message: { content: "أهلاً بحضرتك" } }] }));
+    // Reproduce the observed routing rejection at the network boundary.
+    const fetchMock = vi.fn(async (_url: string, init: RequestInit) => {
+      const payload = JSON.parse(String(init.body));
+      if (Object.hasOwn(payload, "parallel_tool_calls")) {
+        return Response.json({ error: { message: "No compatible endpoints" } }, { status: 404 });
+      }
+      return toolResponse("diagnostic", { ok: true });
+    });
     vi.stubGlobal("fetch", fetchMock);
 
-    await requestConversation(getAIProviderConfig(), { messages: [{ role: "user", content: "أهلاً" }], tools: [], requestId: "fixture" });
+    const reply = await requestConversation(getAIProviderConfig(), {
+      messages: [{ role: "user", content: "Call diagnostic with ok=true." }],
+      tools: [{ type: "function", function: { name: "diagnostic", description: "Synthetic test only.", parameters: {
+        type: "object", properties: { ok: { type: "boolean" } }, required: ["ok"], additionalProperties: false
+      } } }], requestId: "fixture"
+    });
+    expect(reply.message.tool_calls?.[0].function.name).toBe("diagnostic");
 
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe("https://openrouter.ai/api/v1/chat/completions");
     expect(JSON.parse(String(init.body))).toMatchObject({
       model: "deepseek/deepseek-v4.1-flash", reasoning: { enabled: false },
-      provider: { require_parameters: true }, parallel_tool_calls: false
+      provider: { require_parameters: true }
     });
+    expect(JSON.parse(String(init.body))).not.toHaveProperty("parallel_tool_calls");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it.each(["off", "json_schema"] as const)("disables reasoning and retains parsed output with structured outputs %s", async structuredOutputs => {
@@ -51,6 +66,7 @@ describe("OpenRouter DeepSeek request profile", () => {
     const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     const payload = JSON.parse(String(init.body));
     expect(payload).toMatchObject({ model: config.model, reasoning: { enabled: false }, provider: { require_parameters: true } });
+    expect(payload).not.toHaveProperty("parallel_tool_calls");
     if (structuredOutputs === "json_schema") {
       expect(payload.response_format).toMatchObject({ type: "json_schema", json_schema: { strict: true } });
     } else {
@@ -70,6 +86,8 @@ describe("OpenRouter DeepSeek request profile", () => {
     const provider = getAIProvider({ ...config, ...override });
     await provider.chat!({ messages: [{ role: "user", content: "fixture" }], tools: [], requestId: "fixture" });
     await provider.generate(structuredInput);
+    expect(JSON.parse(String((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body)).parallel_tool_calls).toBe(false);
+    expect(JSON.parse(String((fetchMock.mock.calls[1] as unknown as [string, RequestInit])[1].body))).not.toHaveProperty("parallel_tool_calls");
     for (const call of fetchMock.mock.calls) {
       const [, init] = call as unknown as [string, RequestInit];
       const payload = JSON.parse(String(init.body));
@@ -116,8 +134,26 @@ describe("OpenRouter DeepSeek request profile", () => {
     }
     expect(execute).toHaveBeenCalledExactlyOnceWith({ slotId: "fixture-slot" }, "write-once");
     for (const payload of payloads) {
-      expect(payload).toMatchObject({ model: config.model, reasoning: { enabled: false }, provider: { require_parameters: true }, parallel_tool_calls: false });
+      expect(payload).toMatchObject({ model: config.model, reasoning: { enabled: false }, provider: { require_parameters: true } });
+      expect(payload).not.toHaveProperty("parallel_tool_calls");
     }
+  });
+
+  it.each([404, 429, 503])("logs only safe HTTP diagnostics for status %s without retrying", async status => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const fetchMock = vi.fn(async () => Response.json({ error: { message: "private upstream body and fixture-key" } }, { status }));
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(requestConversation(config, {
+      messages: [{ role: "user", content: "private client prompt" }], tools: [], requestId: "safe-correlation"
+    })).rejects.toMatchObject({ code: "AI_PROVIDER_UNAVAILABLE", message: "AI provider request failed." });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledTimes(1);
+    const line = String(warn.mock.calls[0][0]);
+    expect(JSON.parse(line)).toMatchObject({ event: "ai.provider_request_failed" });
+    expect(JSON.parse(line).metadata).toEqual({
+      provider: config.provider, model: config.model, requestId: "safe-correlation", diagnosticKind: "provider", status
+    });
+    expect(line).not.toMatch(/fixture-key|private upstream|private client/);
   });
 
   it("rejects a missing key before either request path reaches the network", async () => {

@@ -2,6 +2,8 @@
 
 ## OpenRouter DeepSeek without reasoning — 2026-10-15
 
+Routing repair: release `bc8c1eb` sent `parallel_tool_calls:false`, and the operator's synthetic chat probe returned HTTP 404 / `NO_COMPATIBLE_ENDPOINTS`. Omitting that optional parameter returned HTTP 200 with a tool call and `reasoningTokens:0`. The repair scopes the omission to the exact OpenRouter/DeepSeek model below; strict parameter support and disabled reasoning remain enabled. Tool actions still execute sequentially on the server after batch validation. Deploy the repair with the normal update command below; no additional environment change is needed if the values already match.
+
 After this code update, use aaPanel's file manager to edit the existing protected server file `/www/wwwroot/kmtlegal/.env.production.local`. Replace the existing AI values (do not append duplicate keys or replace the whole file):
 
 ```dotenv
@@ -26,6 +28,14 @@ bash deploy/install/aapanel-pm2-update.sh
 ```
 
 The script loads this environment file before build and PM2 startup. Repository defaults remain `mock` until explicitly configured. Missing credentials still fail with `AI_PROVIDER_UNAVAILABLE`; an upstream rejection also fails normally without switching model or replaying booking actions. Check the protected OpenRouter account balance, model availability and supported routing when requests fail; do not paste raw provider responses or keys into logs/chat.
+
+After the repair, upstream HTTP failures in chat and structured generation both emit `ai.provider_request_failed` with the HTTP status and safe correlation fields. Inspect these alongside turn failures (PM2 retains old releases, so check the `release` value):
+
+```bash
+pm2 logs kmtlegal --lines 100 --nostream | grep -E 'ai\.provider_request_failed|assistant\.turn_failed'
+```
+
+Never paste the complete environment file for diagnosis. If credentials were exposed, rotate the affected secrets through their existing operational procedure; changing provider request parameters does not rotate secrets.
 
 Local tests use synthetic provider replies and do not prove live Arabic quality or production activation. After deployment, check an Arabic greeting, an office-service question and available-slot retrieval; verify the selected model and, where reported, reasoning-token usage in OpenRouter. Exercise booking writes only in a test environment with synthetic data. Keep deployment/health evidence separate from actual provider acceptance.
 

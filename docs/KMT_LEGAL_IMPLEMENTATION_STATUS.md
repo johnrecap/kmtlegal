@@ -1,5 +1,23 @@
 # KMT Legal Implementation Status
 
+## 2026-10-15 — DeepSeek OpenRouter routing repair
+
+Authority: owner's continuing request to restore assistant replies, retaining the chosen model, disabled reasoning and direct work without subagents or Spec Kit. Production probe on release `bc8c1eb` returned HTTP 404 / `NO_COMPATIBLE_ENDPOINTS`; the operator's synthetic probe omitting `parallel_tool_calls` returned HTTP 200, a tool call and `reasoningTokens: 0`, with strict parameter support and reasoning disabled retained. No customer data or secrets are recorded here.
+
+| Obligation / source | Action and verification | State |
+| --- | --- | --- |
+| Incident evidence; accepted provider and reasoning choices | `openrouter-deepseek.test.ts`: representative network-boundary regression failed with the old request and passed after the repair; exact pair omits the parameter while retaining `require_parameters:true` and `reasoning.enabled:false` | VERIFIED locally |
+| Existing booking safeguards and call budgets | Five affected suites / 76 tests: policy/tool follow-ups, sequential multi-call execution, complete-batch validation, duplicate IDs, provider failure without replay and synthetic SQL regressions pass; orchestration/database unchanged | VERIFIED locally; native PostgreSQL not exercised |
+| Existing privacy-safe diagnostics | Parameterized 404/429/503 tests assert exact safe metadata, unchanged public error and one provider call; raw body, key and prompt are absent from logs | VERIFIED locally |
+| Repository delivery instructions | Five suites / 76 tests, TypeScript, lint, production build (87 static pages) and diff check passed; project guide/runbook updated; commit/push receipt belongs to Git history and final handoff | Local checks VERIFIED; server deployment NOT_VERIFIED |
+| Real-provider acceptance | Operator's synthetic tool probe succeeded; complete deployed Arabic conversation and booking workflow still require verification after deployment | Synthetic routing VERIFIED from operator output; full application NOT_VERIFIED |
+
+Scope review: the public conversation service reaches classification, tool-capable generation and reply review through the same chat adapter. Structured generation shares reasoning settings but never sent the incompatible tool-parallelism parameter. No UI text, API response contract, environment secrets, dependency, migration, retry or booking authorization change is needed. Original-template batch checking is NOT_APPLICABLE to this bounded software repair.
+
+Evidence boundary: the operator's live probe tests routing and one synthetic tool call only. Local mocks establish request shape and deterministic guard behavior, not Arabic quality or successful production bookings. Full application acceptance after deployment remains open.
+
+Checks: `node node_modules/vitest/vitest.mjs run tests/server/openrouter-deepseek.test.ts tests/server/ai-gateway.test.ts tests/server/conversation-gateway.test.ts tests/server/company-conversation-policy.test.ts tests/server/conversation-intake-db.test.ts --maxWorkers=2`; `node node_modules/typescript/bin/tsc --noEmit`; `node node_modules/next/dist/bin/next lint`; `node node_modules/next/dist/bin/next build`; `git diff --check`. Non-failing existing tool warnings concern Vite config loading, future pg query concurrency behavior and Next lint deprecation. No dependency changes were made for those warnings. Diff review confirms booking orchestration, schema, deadlines, retries and public error contracts are unchanged; no browser UI change was made.
+
 ## 2026-10-15 — OpenRouter DeepSeek without reasoning
 
 Authority: owner's accepted implementation plan in this chat. Direct work only; no subagents or Spec Kit. Existing booking guards, shared deadline and call budgets remain in scope for regression verification; retry redesign, UI, database and live credentials are excluded. Original-template batch validation is NOT_APPLICABLE: this is a bounded provider configuration change.

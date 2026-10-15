@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { ApiError } from "@/server/http/errors";
+import { safeLog } from "@/server/observability/safe-log";
 import type { AIProviderConfig } from "../config";
 import type { AIChatInput, AIChatReply } from "../types";
-import { providerRequestParameters } from "./request-parameters";
+import { conversationRequestParameters } from "./request-parameters";
 
 const callSchema = z.object({
   id: z.string().min(1).max(160),
@@ -38,11 +39,17 @@ export async function requestConversation(config: AIProviderConfig, input: AICha
       headers: { "Content-Type": "application/json", ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {}) },
       body: JSON.stringify({
         model: config.model, temperature: config.temperature, max_tokens: config.maxTokens,
-        messages: input.messages, tools: input.tools, tool_choice: "auto", parallel_tool_calls: false,
-        ...providerRequestParameters(config)
+        messages: input.messages, tools: input.tools, tool_choice: "auto",
+        ...conversationRequestParameters(config)
       })
     });
-    if (!response.ok) throw new ApiError(502, "AI_PROVIDER_UNAVAILABLE", "AI provider request failed.");
+    if (!response.ok) {
+      safeLog("warn", "ai.provider_request_failed", {
+        provider: config.provider, model: config.model, requestId: input.requestId,
+        diagnosticKind: "provider", status: response.status
+      });
+      throw new ApiError(502, "AI_PROVIDER_UNAVAILABLE", "AI provider request failed.");
+    }
     // Bound response size before parsing; do not include provider body or customer content in diagnostics.
     const reader = response.body?.getReader();
     if (!reader) throw new ApiError(502, "AI_OUTPUT_INVALID", "AI provider response is invalid.");
