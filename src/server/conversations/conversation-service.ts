@@ -48,7 +48,7 @@ const ACTIVE_THREAD_STATUSES = ["OPEN", "WAITING_STAFF", "WAITING_CLIENT"] as co
 const ASSIGNABLE_ROLE_NAMES = ["Secretary", "Office Admin", "Super Admin"] as const;
 
 const listThreadInclude = {
-  assistantSession: { select: { humanOwned: true } },
+  assistantSession: { select: { humanOwned: true, officePhone: true, officeContactChannel: true, officeContactConsentedAt: true } },
   client: { select: { id: true, fullName: true, phone: true, email: true } },
   assignedTo: { select: { id: true, name: true, email: true } },
   messages: {
@@ -58,6 +58,7 @@ const listThreadInclude = {
       id: true,
       senderType: true,
       body: true,
+      recipient: true,
       createdAt: true,
       senderUser: { select: { id: true, name: true } }
     }
@@ -65,7 +66,7 @@ const listThreadInclude = {
 } satisfies Prisma.ConversationThreadInclude;
 
 const detailThreadInclude = {
-  assistantSession: { select: { humanOwned: true } },
+  assistantSession: { select: { humanOwned: true, officePhone: true, officeContactChannel: true, officeContactConsentedAt: true } },
   client: { select: { id: true, fullName: true, phone: true, email: true } },
   assignedTo: { select: { id: true, name: true, email: true } },
   messages: {
@@ -74,6 +75,7 @@ const detailThreadInclude = {
       id: true,
       senderType: true,
       body: true,
+      recipient: true,
       createdAt: true,
       senderUser: { select: { id: true, name: true } }
     }
@@ -154,6 +156,7 @@ function serializeMessage(message: ThreadMessage) {
     id: message.id,
     senderType: message.senderType,
     body: message.body,
+    recipient: message.recipient,
     createdAt: message.createdAt.toISOString(),
     senderUser: message.senderUser ? { id: message.senderUser.id, name: message.senderUser.name } : null
   };
@@ -166,6 +169,10 @@ function serializeThread(thread: ListThread | DetailThread) {
     status: thread.status,
     subject: thread.subject,
     assistantMode: thread.assistantSession ? (thread.assistantSession.humanOwned ? "HUMAN" as const : "AI" as const) : null,
+    officeContact: thread.assistantSession?.officePhone && thread.assistantSession.officeContactConsentedAt ? {
+      phone: thread.assistantSession.officePhone, contactChannel: thread.assistantSession.officeContactChannel,
+      consentedAt: thread.assistantSession.officeContactConsentedAt.toISOString()
+    } : null,
     client: {
       id: thread.client?.id ?? "",
       fullName: thread.client?.fullName ?? conversationCopy.ar.guest,
@@ -236,6 +243,11 @@ function assertThreadIsReplyable(status: string) {
   if (status === "CLOSED" || status === "ARCHIVED") {
     throw new ApiError(409, "CONFLICT", "Conversation thread is closed.");
   }
+}
+
+// Match the session -> thread lock order used by public routing and booking.
+async function lockAssistantThreadSession(tx: Prisma.TransactionClient, threadId: string) {
+  await tx.$queryRaw`SELECT id FROM assistant_sessions WHERE "conversationThreadId" = ${threadId}::uuid FOR UPDATE`;
 }
 
 /**
@@ -462,6 +474,7 @@ export async function replyAdminConversation(input: {
   const body = normalizeMessageBody(input.body);
 
   const updatedThread = await prisma.$transaction(async (tx) => {
+    await lockAssistantThreadSession(tx, thread.id);
     await lockActiveConversationThread(tx, { threadId: thread.id });
     const message = await tx.conversationMessage.create({
       data: {
@@ -548,10 +561,13 @@ export async function updateAdminConversation(input: {
 
   let updated: DetailThread;
   try {
-    updated = await prisma.conversationThread.update({
-      where: { id: thread.id, updatedAt: new Date(body.updatedAt) },
-      data: updateData,
-      include: detailThreadInclude
+    updated = await prisma.$transaction(async tx => {
+      await lockAssistantThreadSession(tx, thread.id);
+      return tx.conversationThread.update({
+        where: { id: thread.id, updatedAt: new Date(body.updatedAt) },
+        data: updateData,
+        include: detailThreadInclude
+      });
     });
   } catch (error) {
     if (isPrismaRecordNotFound(error)) {

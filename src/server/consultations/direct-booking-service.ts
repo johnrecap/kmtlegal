@@ -5,6 +5,7 @@ import { prisma } from "@/server/db/prisma";
 import type { Principal } from "@/server/auth/policy";
 import { ApiError } from "@/server/http/errors";
 import { canonicalPhone } from "@/server/phone/phone-normalization";
+import { phoneSchema } from "@/server/phone/phone-schema";
 import { appendAuditLog } from "@/server/audit/audit-service";
 import { runAppointmentConflictTransaction, assertNoAppointmentConflict, APPOINTMENT_TRANSACTION_MODES, ACTIVE_APPOINTMENT_STATUSES } from "@/server/appointments/appointment-conflict-service";
 import { directBookingCopy } from "@/content/direct-booking-copy";
@@ -17,7 +18,6 @@ import { buildBookingAvailability, directBookingDay, type BookingAvailabilitySna
 import { ensureAssistantHandoff } from "@/server/conversations/assistant-handoff-service";
 
 type DB = Pick<Prisma.TransactionClient, "systemSetting" | "appointment" | "user">;
-const phoneSchema = z.string().trim().max(24).refine(v => /^[+\d٠-٩۰-۹ ()-]+$/.test(v) && /^\d{8,15}$/.test(canonicalPhone(v) ?? ""));
 export const directBookingInputSchema = z.strictObject({
   action: z.enum(["confirm_booking", "reschedule_booking", "cancel_booking", "request_callback"]),
   key: z.uuid(), revision: z.number().int().nonnegative(), confirmed: z.literal(true),

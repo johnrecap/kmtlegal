@@ -12,10 +12,12 @@ import { startClientVerification, startVerificationSchema } from "@/server/porta
 import { directBookingInputSchema, listDirectBookingSlots, mutateDirectBooking } from "@/server/consultations/direct-booking-service";
 import { consultationSlotFilterSchema } from "@/server/consultations/consultation-availability-service";
 import { ownAssistantSession } from "@/server/consultations/conversation-session-service";
+import { officeContactSchema, setOfficeContact } from "@/server/consultations/office-contact-service";
 
 export const dynamic = "force-dynamic";
 const actions = z.discriminatedUnion("action", [
   directBookingInputSchema,
+  officeContactSchema,
   z.strictObject({ action: z.literal("booking_slots"), ...consultationSlotFilterSchema.shape }),
   z.strictObject({ action: z.literal("set_locale"), locale: z.enum(["ar", "en"]) }),
   z.strictObject({ action: z.literal("begin_booking"), service: intakeDraftSchema.shape.service }),
@@ -44,7 +46,7 @@ export async function POST(request: Request) {
   try {
     const body = await parseJsonRequest(request, actions);
     const auth = await getAuthContextFromRequest(request);
-    const modeAction = ["begin_booking", "return_inquiry", "account_access", "booking_slots", "set_locale"].includes(body.action);
+    const modeAction = ["begin_booking", "return_inquiry", "account_access", "booking_slots", "set_locale", "set_office_contact"].includes(body.action);
     // Reversible mode changes must not consume the five-request booking quota.
     const limiter = body.action === "message" ? rateLimiters.ai : modeAction ? rateLimiters.conversation : rateLimiters.booking;
     await enforceRateLimit(limiter, `assistant-v2:${auth?.principal.id ?? getIpAddress(request) ?? "unknown"}`);
@@ -60,6 +62,7 @@ export async function POST(request: Request) {
       return response;
     }
     if (!token) throw new ApiError(401, "AUTH_REQUIRED", "Authentication required.");
+    if (body.action === "set_office_contact") return jsonOk(await setOfficeContact(token, body, auth?.principal));
     if (body.action === "booking_slots") {
       const session = await readAssistantSession(token, auth?.principal);
       return jsonOk(await listDirectBookingSlots(body.date, session.booking?.appointments[0]?.id, { fromTime: body.fromTime, toTime: body.toTime }));

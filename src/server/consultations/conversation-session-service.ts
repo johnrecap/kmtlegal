@@ -2,6 +2,7 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { assistantPolicyCopy } from "@/content/assistant-policy-copy";
+import { conversationCopy } from "@/content/conversation-copy";
 import { directBookingCopy } from "@/content/direct-booking-copy";
 import { listDirectBookingSlots, readDirectBooking } from "./direct-booking-service";
 import { safeLog } from "@/server/observability/safe-log";
@@ -49,23 +50,27 @@ export async function ownAssistantSession(token: string, actor?: Principal | nul
 export async function readAssistantSession(token: string, actor?: Principal | null) {
   const session = await ownAssistantSession(token, actor);
   const turns = await prisma.assistantTurn.findMany({ where: { sessionId: session.id }, orderBy: { createdAt: "asc" }, take: 100,
-    select: { messageId: true, userText: true, assistantText: true, status: true, createdAt: true, updatedAt: true } });
+    select: { messageId: true, recipient: true, userText: true, assistantText: true, status: true, createdAt: true, updatedAt: true } });
   const staffMessages = session.conversationThreadId ? await prisma.conversationMessage.findMany({
     where: { threadId: session.conversationThreadId, senderType: "STAFF" }, orderBy: { createdAt: "asc" }, take: 100,
     select: { id: true, body: true, createdAt: true }
   }) : [];
   const thread = session.conversationThreadId ? await prisma.conversationThread.findUnique({ where: { id: session.conversationThreadId }, select: { status: true } }) : null;
   const verified = session.clientId ? await prisma.client.count({ where: { id: session.clientId, userId: actor?.id, deletedAt: null, user: { status: "ACTIVE", emailVerifiedAt: { not: null }, deletedAt: null } } }) : 0;
-  return { locale: session.locale === "en" ? "en" : "ar", handoffState: session.humanOwned ? "CLAIMED" : session.handoffRequestedAt ? "QUEUED" : "NONE", booking: await readDirectBooking(session.consultationRequestId), dialogue: readDialogue(session.dialogue), draft: session.draft, revision: session.revision, accountReady: verified > 0, humanOwned: session.humanOwned, closed: !!thread && ["CLOSED", "ARCHIVED"].includes(thread.status), submitted: !!session.consultationRequestId, turns, staffMessages };
+  return { locale: session.locale === "en" ? "en" : "ar", handoffState: session.humanOwned ? "CLAIMED" : session.handoffRequestedAt ? "QUEUED" : "NONE", booking: await readDirectBooking(session.consultationRequestId), dialogue: readDialogue(session.dialogue), draft: session.draft, revision: session.revision, accountReady: verified > 0, humanOwned: session.humanOwned, closed: !!thread && ["CLOSED", "ARCHIVED"].includes(thread.status), submitted: !!session.consultationRequestId, turns, staffMessages,
+    officeThreadStatus: thread?.status ?? null, expiresAt: session.expiresAt.toISOString(),
+    officeContact: session.officePhone && session.officeContactChannel && session.officeContactConsentedAt
+      ? { phone: session.officePhone, contactChannel: session.officeContactChannel, consentedAt: session.officeContactConsentedAt.toISOString() } : null };
 }
 
 export async function sendAssistantMessage(input: {
-  token: string; actor?: Principal | null; messageId: string; message: string; locale: "ar" | "en"; requestId: string;
+  token: string; actor?: Principal | null; messageId: string; message: string; locale: "ar" | "en"; requestId: string; recipient?: "ASSISTANT" | "OFFICE";
 }) {
   const session = await ownAssistantSession(input.token, input.actor);
+  const recipient = input.recipient ?? "ASSISTANT";
   const identity = { sessionId_messageId: { sessionId: session.id, messageId: input.messageId } };
   const previous = await prisma.assistantTurn.findUnique({ where: identity });
-  if (previous && previous.userText !== input.message) throw new ApiError(409, "CONFLICT", "Message identifier has already been used.");
+  if (previous && (previous.userText !== input.message || previous.recipient !== recipient)) throw new ApiError(409, "CONFLICT", "Message identifier has already been used.");
   if (previous?.status === "COMPLETED" || previous?.status === "HUMAN") return readAssistantSession(input.token, input.actor);
   const leaseId = randomUUID();
   const acquired = await prisma.assistantSession.updateMany({ where: {
@@ -74,30 +79,34 @@ export async function sendAssistantMessage(input: {
   if (!acquired.count) throw new ApiError(409, "CONFLICT", "A conversation response is already in progress.");
   try {
     const replay = await prisma.assistantTurn.findUnique({ where: identity });
+    if (replay && (replay.userText !== input.message || replay.recipient !== recipient)) throw new ApiError(409, "CONFLICT", "Message identifier has already been used.");
     if (replay?.status === "COMPLETED" || replay?.status === "HUMAN") return readAssistantSession(input.token, input.actor);
     const count = await prisma.assistantTurn.count({ where: { sessionId: session.id } });
     if (!previous && count >= 60) throw new ApiError(429, "RATE_LIMITED", "Conversation message limit reached.");
     await prisma.assistantTurn.upsert({ where: identity,
-      create: { sessionId: session.id, messageId: input.messageId, userText: input.message },
+      create: { sessionId: session.id, messageId: input.messageId, userText: input.message, recipient },
       update: { status: "PENDING", errorCode: null }
     });
-    if (session.humanOwned) {
+    if (recipient === "OFFICE") {
       await prisma.$transaction(async tx => {
         await tx.$queryRaw`SELECT id FROM assistant_sessions WHERE id = ${session.id}::uuid FOR UPDATE`;
         const fresh = await tx.assistantSession.findUniqueOrThrow({ where: { id: session.id } });
+        if (fresh.expiresAt <= new Date() || (fresh.clientId && fresh.clientId !== input.actor?.clientId)) throw new ApiError(401, "AUTH_REQUIRED", "Authentication required.");
+        if (fresh.leaseId !== leaseId || !fresh.leaseExpiresAt || fresh.leaseExpiresAt <= new Date()) throw new ApiError(409, "CONFLICT", "Conversation ownership changed.");
         if (fresh.conversationThreadId) {
           const thread = await tx.conversationThread.findUniqueOrThrow({ where: { id: fresh.conversationThreadId } });
           if (["CLOSED", "ARCHIVED"].includes(thread.status)) throw new ApiError(409, "CONFLICT", "This conversation is closed.");
         }
+        await tx.assistantTurn.update({ where: identity, data: { status: "HUMAN" } });
         const threadId = await ensureAssistantHandoff(tx, session.id);
         await tx.conversationThread.update({ where: { id: threadId }, data: { status: "WAITING_STAFF", lastMessageAt: new Date() } });
-        await tx.assistantTurn.update({ where: identity, data: { status: "HUMAN" } });
+        await tx.assistantSession.update({ where: { id: session.id }, data: { handoffRequestedAt: fresh.handoffRequestedAt ?? new Date(), revision: { increment: 1 } } });
       });
       return readAssistantSession(input.token, input.actor);
     }
     const assertActive = async () => {
       const current = await ownAssistantSession(input.token, input.actor);
-      if (current.humanOwned || current.leaseId !== leaseId || !current.leaseExpiresAt || current.leaseExpiresAt <= new Date()) {
+      if (current.leaseId !== leaseId || !current.leaseExpiresAt || current.leaseExpiresAt <= new Date()) {
         throw new ApiError(409, "CONFLICT", "Conversation ownership changed.");
       }
     };
@@ -106,7 +115,7 @@ export async function sendAssistantMessage(input: {
     const signal = AbortSignal.timeout(config.timeoutMs);
     const provider = boundedConversationProvider(getAIProvider(config), signal, assertActive);
     const history = prior.slice().reverse().map(t => ({ user: t.userText, assistant: t.assistantText }));
-    const initialDialogue = readDialogue(session.dialogue);
+    const initialDialogue = readDialogue(session.consultationRequestId ? { ...readDialogue(session.dialogue), mode: "INQUIRY", consentAt: null } : session.dialogue);
     const knowledge = assistantKnowledge(input.locale);
     const assessment = await policyDecision(provider, messageAssessmentSchema, "classify_company_message", INPUT_POLICY,
       { message: input.message, history, dialogue: initialDialogue, serviceIds: knowledge.services.map(s => ({ id: s.id, title: s.title })) }, input.requestId);
@@ -118,19 +127,24 @@ export async function sendAssistantMessage(input: {
     const finalize = async (text: string, state: DialogueState, protocol: AIChatMessage[] = [], draft?: ReturnType<typeof intakeDraftSchema.parse>) => {
       await assertActive();
       await prisma.$transaction(async tx => {
-        const claimed = await tx.assistantSession.updateMany({ where: { id: session.id, leaseId, humanOwned: false, leaseExpiresAt: { gt: new Date() } }, data: {
+        const claimed = await tx.assistantSession.updateMany({ where: { id: session.id, leaseId, leaseExpiresAt: { gt: new Date() } }, data: {
           revision: { increment: 1 }, dialogue: state as Prisma.InputJsonValue, locale: assessment.locale,
           ...(draft ? { draft: draft as Prisma.InputJsonValue } : {})
         } });
         if (!claimed.count) throw new ApiError(409, "CONFLICT", "Conversation ownership changed.");
         await tx.assistantTurn.update({ where: identity, data: { assistantText: text, protocol: protocol as unknown as Prisma.InputJsonValue, status: "COMPLETED" } });
-        if (session.conversationThreadId) await ensureAssistantHandoff(tx, session.id);
+        const linked = await tx.assistantSession.findUniqueOrThrow({ where: { id: session.id }, select: { conversationThreadId: true } });
+        if (linked.conversationThreadId) await ensureAssistantHandoff(tx, session.id);
       });
       return readAssistantSession(input.token, input.actor);
     };
     if (assessment.scope === "OFF_TOPIC") { safeLog("info", "assistant.policy_rejected", { reason: "OUT_OF_SCOPE" }); return await finalize(copy.outside, initialDialogue); }
     if (assessment.scope === "UNCLEAR") return await finalize(copy.clarify, initialDialogue);
     if (assessment.intent === "UNCLEAR") return await finalize(copy.consentClarify, initialDialogue);
+    if (assessment.intent === "HANDOFF" && session.conversationThreadId) {
+      const thread = await prisma.conversationThread.findUnique({ where: { id: session.conversationThreadId }, select: { status: true } });
+      if (thread && ["CLOSED", "ARCHIVED"].includes(thread.status)) return await finalize(conversationCopy[assessment.locale].closed, dialogue);
+    }
     if (["DECLINE", "WITHDRAW"].includes(assessment.intent) && dialogue.mode === "INQUIRY" && dialogue.offerShown) return await finalize(copy.withdrawn, dialogue);
     const approvedKnowledge = assistantKnowledge(assessment.locale);
     const canBook = () => bookingAllowed(dialogue) && !session.consultationRequestId;
@@ -180,17 +194,20 @@ export async function sendAssistantMessage(input: {
             if (!input.actor?.clientId) return await readDirectBooking(fresh.consultationRequestId) ?? { nextAction: "LOGIN_REQUIRED" };
             return txOwnedStatus(fresh.consultationRequestId, input.actor.clientId);
           } },
-        handoff_to_office: { description: "Queue for office pickup. AI can still help book a time until staff claims the conversation. No live response is promised.", schema: z.strictObject({}),
+        handoff_to_office: { description: "Queue for office follow-up in this same protected conversation. The customer can always select the assistant. No live response or external notification is promised.", schema: z.strictObject({}),
           execute: async () => {
             if (assessment.intent !== "HANDOFF" || !assessment.evidence || !input.message.includes(assessment.evidence)) throw new ApiError(403, "PERMISSION_DENIED", "Office handoff must be requested.");
             await prisma.$transaction(async tx => {
-              const claimed = await tx.assistantSession.updateMany({ where: { id: session.id, leaseId, humanOwned: false }, data: { handoffRequestedAt: new Date(), locale: assessment.locale } });
+              const claimed = await tx.assistantSession.updateMany({ where: { id: session.id, leaseId }, data: { handoffRequestedAt: new Date(), locale: assessment.locale } });
               if (!claimed.count) throw new ApiError(409, "CONFLICT", "Conversation ownership changed.");
-              await ensureAssistantHandoff(tx, session.id);
+              const threadId = await ensureAssistantHandoff(tx, session.id);
+              const thread = await tx.conversationThread.findUniqueOrThrow({ where: { id: threadId } });
+              if (["CLOSED", "ARCHIVED"].includes(thread.status)) throw new ApiError(409, "CONFLICT", "This office conversation is closed.");
+              await tx.conversationThread.update({ where: { id: threadId }, data: { status: "WAITING_STAFF", lastMessageAt: new Date() } });
               await appendAuditLog({ action: "assistant.handoff", resourceType: "AssistantSession", resourceId: session.id, actorId: input.actor?.id, client: tx });
             });
             handoffQueued = true;
-            return { queued: true, liveAgentAvailable: false, nextAction: "CHOOSE_PUBLISHED_CONTACT_TIME" };
+            return { queued: true, liveAgentAvailable: false, nextAction: "FOLLOW_REPLIES_HERE", assistantAvailable: true };
           } }
       }
     });
@@ -232,7 +249,7 @@ async function txOwnedStatus(id: string, clientId: string) {
 
 export async function changeAssistantDialogue(token: string, action: "begin_booking" | "return_inquiry" | "account_access", actor?: Principal | null, selectedService?: string) {
   const session = await ownAssistantSession(token, actor);
-  if (session.consultationRequestId && action !== "account_access") throw new ApiError(409, "CONFLICT", "This conversation cannot change mode.");
+  if (session.consultationRequestId && action === "begin_booking") throw new ApiError(409, "CONFLICT", "This conversation cannot change mode.");
   const state = readDialogue(session.dialogue);
   if (action === "begin_booking") { state.mode = "BOOKING"; state.consentAt = new Date().toISOString(); }
   if (action === "return_inquiry") { state.mode = "INQUIRY"; state.consentAt = null; state.offerShown = true; state.accountAccess = false; }

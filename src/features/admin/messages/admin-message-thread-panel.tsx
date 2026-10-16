@@ -14,12 +14,14 @@ type ConversationMessage = {
   id: string;
   senderType: "CLIENT" | "STAFF" | "SYSTEM";
   body: string;
+  recipient?: string | null;
   createdAt: string | Date;
   senderUser: { id: string; name: string } | null;
 };
 
 type ConversationThread = {
   assistantMode?: "AI" | "HUMAN" | null;
+  officeContact?: { phone: string; contactChannel: string | null; consentedAt: string } | null;
   id: string;
   status: string;
   subject: string | null;
@@ -311,8 +313,9 @@ export function AdminMessageThreadPanel({
               <div key={item.id} data-message-id={item.id} className={cn("flex gap-3", isStaff ? "justify-end" : "justify-start")}>
                 {!isStaff ? <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-surface text-primary"><MaterialSymbol className="text-[19px]" name="person" /></div> : null}
                 <div className={cn("max-w-[82%] rounded-2xl px-4 py-3 text-sm leading-7 shadow-sm", isStaff ? "rounded-br-md bg-surface-strong text-surface-strong-foreground" : "rounded-bl-md border border-border bg-surface text-foreground")}>
+                  {item.recipient && <p className="mb-1 text-xs text-muted-foreground">{item.recipient === "OFFICE" ? conversationCopy.ar.sentToOffice : conversationCopy.ar.sentToAssistant}</p>}
                   <p className="whitespace-pre-wrap break-words">{item.body}</p>
-                  <p className={cn("mt-2 text-xs", isStaff ? "text-surface-strong-foreground/70" : "text-muted-foreground")}>{item.senderUser?.name ?? (isStaff ? "الفريق" : thread.client.fullName)} · {formatDateTime(item.createdAt)}</p>
+                  <p className={cn("mt-2 text-xs", isStaff ? "text-surface-strong-foreground/70" : "text-muted-foreground")}>{item.senderUser?.name ?? (item.senderType === "SYSTEM" ? conversationCopy.ar.assistant : isStaff ? "الفريق" : thread.client.fullName)} · {formatDateTime(item.createdAt)}</p>
                 </div>
                 {isStaff ? <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"><MaterialSymbol className="text-[19px]" name="support_agent" /></div> : null}
               </div>
@@ -346,6 +349,7 @@ export function AdminMessageThreadPanel({
         <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
           <h3 className="text-base font-semibold text-foreground">بيانات العميل</h3>
           <dl className="mt-4 space-y-3 text-sm">
+            {thread.officeContact && <div><dt className="font-semibold text-muted-foreground">{conversationCopy.ar.staffContact}</dt><dd className="mt-1 text-foreground"><bdi dir="ltr">{thread.officeContact.phone}</bdi> · {thread.officeContact.contactChannel === "WHATSAPP" ? conversationCopy.ar.contactWhatsapp : conversationCopy.ar.contactPhone}</dd></div>}
             <div><dt className="font-semibold text-muted-foreground">الهاتف</dt><dd className="mt-1 text-foreground" dir="ltr"><bdi>{thread.client.phone}</bdi></dd></div>
             <div><dt className="font-semibold text-muted-foreground">البريد</dt><dd className="mt-1 break-words text-foreground" dir="ltr"><bdi>{thread.client.email ?? "غير محدد"}</bdi></dd></div>
             <div><dt className="font-semibold text-muted-foreground">آخر رسالة</dt><dd className="mt-1 text-foreground">{formatDateTime(thread.lastMessageAt)}</dd></div>
@@ -358,6 +362,7 @@ export function AdminMessageThreadPanel({
             {thread.assistantMode && canManage && <Button type="button" variant="outline" disabled={isUpdating || isSending || managementDirty || thread.status === "CLOSED" || thread.status === "ARCHIVED"} onClick={() => void updateThread({ assistantMode: thread.assistantMode === "HUMAN" ? "AI" : "HUMAN" })}>
               {thread.assistantMode === "HUMAN" ? conversationCopy.ar.resume : conversationCopy.ar.takeOver}
             </Button>}
+            {thread.assistantMode && <p className="text-xs leading-6 text-muted-foreground">{conversationCopy.ar.staffContactNote}</p>}
             <label className="block text-sm font-semibold text-muted-foreground">المسؤول
               <select className="mt-2 min-h-11 w-full rounded border border-input bg-surface px-3 text-foreground outline-none focus:border-primary" value={draftAssigneeId} disabled={!canAssign || isUpdating || isSending || isReviewingLatest} onChange={(event) => { beginManagementEdit("assignee"); setDraftAssigneeId(event.target.value); }}>
                 <option value="">غير معين</option>{assignees.map((assignee) => <option key={assignee.id} value={assignee.id}>{assignee.name} - {assignee.role.name}</option>)}

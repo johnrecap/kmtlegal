@@ -10,6 +10,9 @@ const serviceMocks = vi.hoisted(() => ({
 
 vi.mock("@/server/db/prisma", () => ({
   prisma: {
+    $transaction: async (callback: (tx: unknown) => Promise<unknown>) => callback({
+      $queryRaw: vi.fn(async () => []), conversationThread: { update: serviceMocks.update }
+    }),
     conversationThread: {
       findUnique: serviceMocks.findUnique,
       update: serviceMocks.update

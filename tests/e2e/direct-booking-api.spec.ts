@@ -8,7 +8,8 @@ test("synthetic HTTP: published roster, guest confirmation, lawyer access and ca
   const fixture = JSON.parse(await readFile(".playwright/phase-five/fixtures.json", "utf8"));
   const admin = await playwright.request.newContext({ baseURL, extraHTTPHeaders: { Origin: baseURL, Cookie: `kmt_session=${fixture.users.admin.token}` } });
   const lawyer = await playwright.request.newContext({ baseURL, extraHTTPHeaders: { Origin: baseURL, Cookie: `kmt_session=${fixture.users.lawyer.token}` } });
-  const api = await playwright.request.newContext({ baseURL, extraHTTPHeaders: { Origin: baseURL, "x-forwarded-for": "192.0.2.41" } });
+  const syntheticIp = `192.0.2.${crypto.getRandomValues(new Uint8Array(1))[0] % 200 + 20}`;
+  const api = await playwright.request.newContext({ baseURL, extraHTTPHeaders: { Origin: baseURL, "x-real-ip": syntheticIp, "x-forwarded-for": syntheticIp } });
   const endpoint = "/api/public/assistant/conversation";
   const post = (data: Record<string, unknown>) => api.post(endpoint, { data });
   try {

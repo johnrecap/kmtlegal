@@ -8,9 +8,9 @@ function transcriptId(turnId: string, side: string) {
 }
 
 export async function syncAssistantTranscript(tx: Prisma.TransactionClient, sessionId: string, threadId: string) {
-  const turns = await tx.assistantTurn.findMany({ where: { sessionId }, orderBy: { createdAt: "asc" }, take: 100 });
+  const turns = await tx.assistantTurn.findMany({ where: { sessionId, status: { in: ["COMPLETED", "HUMAN"] } }, orderBy: { createdAt: "asc" }, take: 100 });
   await tx.conversationMessage.createMany({ skipDuplicates: true, data: turns.flatMap(turn => [
-    { id: transcriptId(turn.id, "user"), threadId, senderType: "CLIENT" as const, body: turn.userText, createdAt: turn.createdAt },
+    { id: transcriptId(turn.id, "user"), threadId, senderType: "CLIENT" as const, recipient: turn.recipient, body: turn.userText, createdAt: turn.createdAt },
     ...(turn.assistantText ? [{ id: transcriptId(turn.id, "assistant"), threadId, senderType: "SYSTEM" as const, body: turn.assistantText, createdAt: turn.updatedAt }] : [])
   ]) });
 }

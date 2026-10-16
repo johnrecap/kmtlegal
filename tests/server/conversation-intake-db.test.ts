@@ -31,6 +31,7 @@ import { uploadDocument, getAuthorizedDocumentDownload } from "@/server/storage/
 import { listDirectBookingSlots, mutateDirectBooking } from "@/server/consultations/direct-booking-service";
 import { cairoDateString, cairoWeekday, defaultConsultationAvailability } from "@/server/consultations/consultation-availability-service";
 import { assistantPolicyCopy } from "@/content/assistant-policy-copy";
+import { officeContactSchema, setOfficeContact } from "@/server/consultations/office-contact-service";
 
 
 function installConversationMock(generation: (url: unknown, init: RequestInit) => unknown, intent = "NONE", policy: { locale?: "ar" | "en"; offerAppropriate?: boolean; reviewAllowed?: boolean } = {}) {
@@ -79,6 +80,40 @@ afterAll(async () => {
 });
 
 describe.sequential("representative conversational intake against isolated SQL database", () => {
+  it("keeps the assistant available to a guest after an office reply in the same session", async () => {
+    const token = await createAssistantSession("ar");
+    const officeMessage = { token, messageId: randomUUID(), message: "رسالة للمكتب", locale: "ar" as const, recipient: "OFFICE" as const, requestId: "recipient-representative" };
+    const noProvider = vi.fn(); vi.stubGlobal("fetch", noProvider);
+    const queued = await sendAssistantMessage(officeMessage);
+    expect(noProvider).not.toHaveBeenCalled();
+    expect(queued.turns).toHaveLength(1);
+    expect(queued.turns[0]).toMatchObject({ recipient: "OFFICE", status: "HUMAN", assistantText: null });
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    expect(session.clientId).toBeNull(); expect(session.consultationRequestId).toBeNull();
+    const role = await fixture.db.role.upsert({ where: { name: "Office Admin" }, create: { name: "Office Admin", status: "ACTIVE" }, update: {} });
+    const user = await fixture.db.user.create({ data: { name: "Routing fixture staff", email: "recipient-staff@synthetic.invalid", roleId: role.id, status: "ACTIVE" } });
+    const staff = { id: user.id, roleName: "Office Admin" };
+    await replyAdminConversation({ actor: staff, threadId: session.conversationThreadId!, body: { message: "رد تجريبي من المكتب" } });
+    const generation = vi.fn(() => Response.json({ choices: [{ finish_reason: "stop", message: { content: "أهلاً، يمكنني شرح خدمات المكتب." } }] }));
+    installConversationMock(generation, "NONE", { locale: "ar" });
+    const aiMessage = { token, messageId: randomUUID(), message: "اشرح خدمات المكتب", locale: "ar" as const, requestId: "recipient-representative-ai" };
+    const answered = await sendAssistantMessage(aiMessage); // Missing recipient defaults to ASSISTANT for old pages.
+    expect(answered.humanOwned).toBe(true);
+    expect(answered.staffMessages).toHaveLength(1);
+    expect(answered.turns).toHaveLength(2);
+    expect(answered.turns[1]).toMatchObject({ recipient: "ASSISTANT", status: "COMPLETED", assistantText: "أهلاً، يمكنني شرح خدمات المكتب." });
+    expect(generation).toHaveBeenCalledTimes(1);
+    await sendAssistantMessage(officeMessage); await sendAssistantMessage(aiMessage);
+    expect(generation).toHaveBeenCalledTimes(1);
+    await expect(sendAssistantMessage({ ...officeMessage, recipient: "ASSISTANT" })).rejects.toMatchObject({ code: "CONFLICT" });
+    await expect(sendAssistantMessage({ ...aiMessage, message: "Changed" })).rejects.toMatchObject({ code: "CONFLICT" });
+    const thread = await getAdminConversationDetail({ actor: staff, threadId: session.conversationThreadId! });
+    expect(thread.status).toBe("WAITING_CLIENT"); // AI questions do not queue a new office reply.
+    expect(thread.messages.filter(m => m.body === officeMessage.message)).toHaveLength(1);
+    expect(thread.messages.find(m => m.body === aiMessage.message)?.recipient).toBe("ASSISTANT");
+    expect(thread.messages.filter(m => m.body === answered.turns[1].assistantText)).toHaveLength(1);
+  });
+
   it("saves a multi-field conversational draft and makes message retries idempotent", async () => {
     capability = await createAssistantSession("en");
     await changeAssistantDialogue(capability, "begin_booking");
@@ -154,7 +189,7 @@ describe.sequential("representative conversational intake against isolated SQL d
   it("requires authorized staff approval and exposes only the owned request and confirmed appointment", async () => {
     const lawyerRole = await fixture.db.role.create({ data: { name: "Lawyer", status: "ACTIVE" } });
     const lawyer = await fixture.db.user.create({ data: { name: "Synthetic Lawyer", email: "lawyer@synthetic.invalid", status: "ACTIVE", roleId: lawyerRole.id } });
-    const adminRole = await fixture.db.role.create({ data: { name: "Office Admin", status: "ACTIVE" } });
+    const adminRole = await fixture.db.role.upsert({ where: { name: "Office Admin" }, create: { name: "Office Admin", status: "ACTIVE" }, update: {} });
     const admin = await fixture.db.user.create({ data: { name: "Synthetic Admin", email: "admin@synthetic.invalid", status: "ACTIVE", roleId: adminRole.id } });
     const own = await listOwnConsultationRequests(actor);
     expect(own).toHaveLength(1);
@@ -171,17 +206,92 @@ describe.sequential("representative conversational intake against isolated SQL d
     expect(await fixture.db.payment.count()).toBe(0);
   });
 
-  it("does not invoke AI after staff takes ownership", async () => {
+  it("continues inquiry after a submitted request without creating another booking", async () => {
+    const before = await fixture.db.consultationRequest.count();
+    installConversationMock(() => Response.json({ choices: [{ finish_reason: "stop", message: { content: "You can continue asking about office services." } }] }));
+    const result = await sendAssistantMessage({ token: capability, actor, messageId: randomUUID(), message: "Explain services", locale: "en", requestId: "after-submission" });
+    expect(result.submitted).toBe(true); expect(result.dialogue.mode).toBe("INQUIRY");
+    expect(result.turns.at(-1)?.assistantText).toBe("You can continue asking about office services.");
+    expect(await fixture.db.consultationRequest.count()).toBe(before);
+    expect((await changeAssistantDialogue(capability, "return_inquiry", actor)).dialogue.mode).toBe("INQUIRY");
+    await expect(changeAssistantDialogue(capability, "begin_booking", actor)).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("does not invoke AI for explicitly office-directed messages during staff follow-up", async () => {
     const token = await createAssistantSession("ar");
     await fixture.db.assistantSession.update({ where: { capabilityHash: capabilityHash(token) }, data: { humanOwned: true } });
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
-    const result = await sendAssistantMessage({ token, messageId: randomUUID(), message: "عايز أكلم المكتب", locale: "ar", requestId: "human" });
+    const result = await sendAssistantMessage({ token, messageId: randomUUID(), message: "عايز أكلم المكتب", locale: "ar", requestId: "human", recipient: "OFFICE" });
     expect(result.turns[0].status).toBe("HUMAN");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("hands off a guest to the existing inbox, delivers staff replies and requires staff permission to resume AI", async () => {
+  it("saves, changes and removes optional office contact without booking, identity matching or model disclosure", async () => {
+    const token = await createAssistantSession("ar");
+    const noProvider = vi.fn(); vi.stubGlobal("fetch", noProvider);
+    await expect(setOfficeContact(token, { action: "set_office_contact", revision: 0, phone: "01055551234", contactChannel: "PHONE", consent: true })).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    const queued = await sendAssistantMessage({ token, recipient: "OFFICE", messageId: randomUUID(), message: "Please follow up here", locale: "en", requestId: "contact" });
+    expect(officeContactSchema.safeParse({ action: "set_office_contact", revision: queued.revision, phone: "01055551234", contactChannel: "PHONE", consent: false }).success).toBe(false);
+    expect(officeContactSchema.safeParse({ action: "set_office_contact", revision: queued.revision, phone: "bad phone", contactChannel: "PHONE", consent: true }).success).toBe(false);
+    let saved = await setOfficeContact(token, { action: "set_office_contact", revision: queued.revision, phone: "٠١٠٥٥٥٥١٢٣٤", contactChannel: "WHATSAPP", consent: true });
+    expect(saved.officeContact).toMatchObject({ phone: "+201055551234", contactChannel: "WHATSAPP" });
+    expect(saved.draft).toEqual({}); expect(saved.booking).toBeNull(); expect(saved.accountReady).toBe(false);
+    expect(noProvider).not.toHaveBeenCalled();
+    await expect(setOfficeContact(token, { action: "set_office_contact", revision: queued.revision, phone: null, contactChannel: null, consent: false })).rejects.toMatchObject({ code: "CONFLICT" });
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    expect(session.clientId).toBeNull(); expect(session.consultationRequestId).toBeNull();
+    const admin = await fixture.db.user.findUniqueOrThrow({ where: { email: "admin@synthetic.invalid" } });
+    expect((await getAdminConversationDetail({ actor: { id: admin.id, roleName: "Office Admin" }, threadId: session.conversationThreadId! })).officeContact?.phone).toBe("+201055551234");
+    await expect(getAdminConversationDetail({ actor: { id: randomUUID(), roleName: "Client" }, threadId: session.conversationThreadId! })).rejects.toMatchObject({ code: "PERMISSION_DENIED" });
+    installConversationMock(() => Response.json({ choices: [{ finish_reason: "stop", message: { content: "Office service information." } }] }));
+    const answered = await sendAssistantMessage({ token, messageId: randomUUID(), message: "Explain office services", locale: "en", requestId: "private-contact" });
+    const providerInputs = JSON.stringify(vi.mocked(fetch).mock.calls.map(call => call[1]?.body));
+    expect(providerInputs).not.toContain("201055551234"); expect(providerInputs).not.toContain("officeContactConsentedAt");
+    saved = await setOfficeContact(token, { action: "set_office_contact", revision: answered.revision, phone: "01055554321", contactChannel: "PHONE", consent: true });
+    expect(saved.officeContact?.phone).toBe("+201055554321");
+    saved = await setOfficeContact(token, { action: "set_office_contact", revision: saved.revision, phone: null, contactChannel: null, consent: false });
+    expect(saved.officeContact).toBeNull();
+    const other = await createAssistantSession("ar");
+    expect((await readAssistantSession(other)).officeContact).toBeNull();
+    await fixture.db.assistantSession.update({ where: { id: session.id }, data: { expiresAt: new Date(Date.now() - 1000) } });
+    await expect(readAssistantSession(token)).rejects.toMatchObject({ code: "AUTH_REQUIRED" });
+    await expect(setOfficeContact(token, { action: "set_office_contact", revision: saved.revision, phone: null, contactChannel: null, consent: false })).rejects.toMatchObject({ code: "AUTH_REQUIRED" });
+  });
+
+  it.each(["CLOSED", "ARCHIVED"] as const)("keeps AI available when the office thread is %s", async status => {
+    const token = await createAssistantSession("en");
+    await sendAssistantMessage({ token, recipient: "OFFICE", messageId: randomUUID(), message: "Office request", locale: "en", requestId: "closed-office" });
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    const admin = await fixture.db.user.findUniqueOrThrow({ where: { email: "admin@synthetic.invalid" } });
+    const staff = { id: admin.id, roleName: "Office Admin" };
+    const thread = await getAdminConversationDetail({ actor: staff, threadId: session.conversationThreadId! });
+    await updateAdminConversation({ actor: staff, threadId: thread.id, body: { status, updatedAt: thread.updatedAt } });
+    await expect(sendAssistantMessage({ token, recipient: "OFFICE", messageId: randomUUID(), message: "Another office request", locale: "en", requestId: "closed-office" })).rejects.toMatchObject({ code: "CONFLICT" });
+    installConversationMock(() => Response.json({ choices: [{ finish_reason: "stop", message: { content: "You can still ask about office services." } }] }));
+    const answered = await sendAssistantMessage({ token, recipient: "ASSISTANT", messageId: randomUUID(), message: "Explain office services", locale: "en", requestId: "closed-assistant" });
+    expect(answered.closed).toBe(true); expect(answered.officeThreadStatus).toBe(status);
+    expect(answered.turns.at(-1)?.status).toBe("COMPLETED");
+    expect(answered.turns.at(-1)?.assistantText).toBe("You can still ask about office services.");
+    const current = await getAdminConversationDetail({ actor: staff, threadId: thread.id });
+    expect(current.messages.some(message => message.body === "Another office request")).toBe(false);
+  });
+
+  it("preserves an in-flight AI response when staff replies concurrently", async () => {
+    const token = await createAssistantSession("en");
+    await sendAssistantMessage({ token, recipient: "OFFICE", messageId: randomUUID(), message: "Office request", locale: "en", requestId: "concurrent-office" });
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    const admin = await fixture.db.user.findUniqueOrThrow({ where: { email: "admin@synthetic.invalid" } });
+    installConversationMock(async () => {
+      await replyAdminConversation({ actor: { id: admin.id, roleName: "Office Admin" }, threadId: session.conversationThreadId!, body: { message: "Concurrent office reply" } });
+      return Response.json({ choices: [{ finish_reason: "stop", message: { content: "Assistant response survived." } }] });
+    });
+    const result = await sendAssistantMessage({ token, messageId: randomUUID(), message: "Explain services", locale: "en", requestId: "concurrent-ai" });
+    expect(result.turns.at(-1)?.assistantText).toBe("Assistant response survived.");
+    expect(result.staffMessages).toHaveLength(1); expect(result.humanOwned).toBe(true);
+  });
+
+  it("hands off a guest to the existing inbox, delivers staff replies and protects staff follow-up controls", async () => {
     const token = await createAssistantSession("ar");
     const fetchMock = vi.fn(async () => Response.json({ choices: [{ finish_reason: "tool_calls", message: { content: null, tool_calls: [{ id: "handoff", type: "function", function: { name: "handoff_to_office", arguments: "{}" } }] } }] }));
     installConversationMock(fetchMock, "HANDOFF");

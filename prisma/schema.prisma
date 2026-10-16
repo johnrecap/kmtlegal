@@ -21,6 +21,9 @@ model AssistantSession {
   draft                 Json @default("{}")
   dialogue              Json @default("{}")
   humanOwned            Boolean @default(false)
+  officePhone           String?
+  officeContactChannel  String?
+  officeContactConsentedAt DateTime?
   handoffRequestedAt    DateTime?
   bookingActions        AssistantBookingAction[]
   revision              Int @default(0)
@@ -55,6 +58,7 @@ model AssistantTurn {
   session        AssistantSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   messageId      String @db.Uuid
   userText       String
+  recipient      String @default("ASSISTANT")
   protocol       Json @default("[]")
   assistantText  String?
   status         String @default("PENDING")
@@ -1298,6 +1302,7 @@ model ConversationMessage {
   senderUserId String?                       @db.Uuid
   senderUser   User?                         @relation("ConversationMessageSender", fields: [senderUserId], references: [id], onDelete: SetNull)
   body         String                        @db.Text
+  recipient    String?
   createdAt    DateTime                      @default(now())
 
   @@index([threadId])

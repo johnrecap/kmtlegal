@@ -10,6 +10,7 @@ import { assistantPolicyCopy } from "@/content/assistant-policy-copy";
 import { publicOfficeProfile } from "@/content/public-office-profile";
 import { directBookingCopy } from "@/content/direct-booking-copy";
 import { DirectBookingPanel, type DirectBooking } from "./direct-booking-panel";
+import { OfficeContactDialog, type OfficeContact, type OfficeContactInput } from "./office-contact-dialog";
 import type { PublicLocale } from "@/lib/public-locale";
 import "./consultation-experience.css";
 
@@ -17,10 +18,13 @@ type State = {
   locale: PublicLocale; handoffState: "NONE" | "QUEUED" | "CLAIMED"; booking: DirectBooking | null;
   dialogue: { mode: "INQUIRY" | "BOOKING"; offerShown: boolean; consentAt: string | null; accountAccess: boolean };
   draft: Record<string, string | null>; revision: number; accountReady: boolean; humanOwned: boolean; submitted: boolean;
-  turns: Array<{ messageId: string; userText: string; assistantText: string | null; status: string; createdAt?: string; updatedAt?: string }>;
+  turns: Array<{ messageId: string; recipient?: "ASSISTANT" | "OFFICE"; userText: string; assistantText: string | null; status: string; createdAt?: string; updatedAt?: string }>;
   staffMessages?: Array<{ id: string; body: string; createdAt: string }>;
   closed?: boolean;
+  officeThreadStatus?: string | null; officeContact?: OfficeContact | null; expiresAt?: string;
 };
+type Recipient = "ASSISTANT" | "OFFICE";
+type PendingMessage = { messageId: string; message: string; recipient: Recipient };
 const endpoint = "/api/public/assistant/conversation";
 
 export function ConversationalBookingChat({ locale, initialService }: { locale: PublicLocale; initialService?: string }) {
@@ -38,13 +42,24 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
   const copy = conversationCopy[language];
   const policy = assistantPolicyCopy[language];
   const direct = directBookingCopy[language];
-  const [message, setMessage] = useState("");
+  const [recipient, setRecipient] = useState<Recipient>("ASSISTANT");
+  const [drafts, setDrafts] = useState({ ASSISTANT: "", OFFICE: "" });
+  const message = drafts[recipient];
+  const setMessage = (value: string) => setDrafts(current => ({ ...current, [recipient]: value }));
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
-  const [pendingMessage, setPendingMessage] = useState<{ messageId: string; message: string } | null>(null);
+  const [pendingMessages, setPendingMessages] = useState<Record<Recipient, PendingMessage | null>>({ ASSISTANT: null, OFFICE: null });
+  const pendingMessage = pendingMessages[recipient];
+  const [contactOpen, setContactOpen] = useState(false);
+  const followupTrigger = useRef<HTMLButtonElement>(null);
+  const closeContact = useCallback(() => { setContactOpen(false); requestAnimationFrame(() => followupTrigger.current?.focus()); }, []);
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const requestEpoch = useRef(0);
+  const operationPending = useRef(false);
   const booking = state?.dialogue?.mode === "BOOKING" && !!state.dialogue.consentAt;
-  const interactive = !state?.closed && !state?.submitted;
+  const interactive = !state?.submitted && !sessionExpired;
+  const hasOffice = !!state?.officeThreadStatus || !!state?.humanOwned || state?.handoffState === "QUEUED";
   const showPanel = !!state?.submitted || (interactive && (booking || !!state?.dialogue?.accountAccess));
   const latestAssistant = state?.turns.at(-1)?.assistantText;
 
@@ -66,7 +81,7 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
   }, [state?.turns.length, latestAssistant, state?.staffMessages?.length]);
 
   // Open on entry into a data-entry phase, not on polling or draft updates.
-  useEffect(() => { setPanelOpen(showPanel); }, [showPanel, booking]);
+  useEffect(() => { setPanelOpen(showPanel && (!state?.submitted || booking)); }, [showPanel, booking, state?.submitted]);
 
   async function changeMode(mode: "begin_booking" | "return_inquiry" | "account_access") {
     if (!state && !await action({ action: "start", locale, service: initialService })) return;
@@ -78,52 +93,73 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
   }
 
   async function action(body: Record<string, unknown>) {
+    requestEpoch.current++; operationPending.current = true;
     setBusy(true); setNotice("");
     try {
       const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json", "x-kmt-locale": language }, body: JSON.stringify(body) });
       const payload = await response.json();
       if (!response.ok) {
         const code = payload.error?.code;
-        setNotice(code === "AUTH_REQUIRED" ? copy.loginRequired : code === "CONFLICT" || code === "APPOINTMENT_CONFLICT" ? copy.changed : code === "VALIDATION_ERROR" ? copy.needDetails : copy.unavailable);
+        if (code === "AUTH_REQUIRED" && !state?.accountReady) setSessionExpired(true);
+        setNotice(code === "AUTH_REQUIRED" ? state?.accountReady ? copy.loginRequired : copy.sessionExpired : code === "CONFLICT" || code === "APPOINTMENT_CONFLICT" ? copy.changed : code === "VALIDATION_ERROR" ? body.action === "set_office_contact" ? copy.contactInvalid : copy.needDetails : copy.unavailable);
         return false;
       }
       if (body.action === "verify") { setNotice(copy.emailSent); return true; }
       const refreshed = body.action === "submit" || body.action === "attach"
         ? await fetch(endpoint, { cache: "no-store" }).then(async value => { if (!value.ok) throw new Error(); return value.json(); }) : payload;
       setState(refreshed.data);
+      setSessionExpired(false);
       return true;
     } catch { setNotice(copy.unavailable); return false; }
-    finally { setBusy(false); }
+    finally { requestEpoch.current++; operationPending.current = false; setBusy(false); }
   }
 
   useEffect(() => {
     let active = true;
+    const epoch = requestEpoch.current;
     fetch(endpoint, { cache: "no-store" }).then(async response => {
       if (!response.ok) return;
       const payload = await response.json();
-      if (active) setState(payload.data);
+      if (active && epoch === requestEpoch.current) setState(payload.data);
     }).catch(() => { if (active) setNotice(copy.unavailable); });
     return () => { active = false; };
   }, [copy.unavailable]);
 
   useEffect(() => {
-    if (!state?.humanOwned && state?.handoffState !== "QUEUED") return;
-    const timer = window.setInterval(() => {
-      if (document.visibilityState !== "visible") return;
+    if (!hasOffice || sessionExpired) return;
+    let active = true;
+    const refresh = () => {
+      if (document.visibilityState !== "visible" || operationPending.current) return;
+      const epoch = requestEpoch.current;
       fetch(endpoint, { cache: "no-store" }).then(async response => {
-        if (response.ok) setState((await response.json()).data);
+        if (response.ok) {
+          const payload = await response.json();
+          if (active && epoch === requestEpoch.current) setState(current => !current || payload.data?.revision >= current.revision ? payload.data : current);
+        }
       }).catch(() => {});
-    }, 15_000);
-    return () => window.clearInterval(timer);
-  }, [state?.humanOwned, state?.handoffState]);
+    };
+    const timer = window.setInterval(refresh, 15_000);
+    window.addEventListener("focus", refresh); document.addEventListener("visibilitychange", refresh);
+    return () => { active = false; window.clearInterval(timer); window.removeEventListener("focus", refresh); document.removeEventListener("visibilitychange", refresh); };
+  }, [hasOffice, sessionExpired]);
 
   async function send(value = pendingMessage) {
-    const next = value ?? { messageId: crypto.randomUUID(), message: message.trim() };
+    const next = value ?? { messageId: crypto.randomUUID(), message: message.trim(), recipient };
     if (!next.message) return;
     followLatest.current = true; setNewMessages(false);
     if (!state && !await action({ action: "start", locale, service: initialService })) return;
-    setPendingMessage(next);
-    if (await action({ action: "message", ...next, locale: language })) { setPendingMessage(null); setMessage(""); }
+    setPendingMessages(current => ({ ...current, [next.recipient]: next }));
+    if (await action({ action: "message", ...next, locale: language })) {
+      setPendingMessages(current => ({ ...current, [next.recipient]: null }));
+      setDrafts(current => ({ ...current, [next.recipient]: "" }));
+      if (next.recipient === "OFFICE") setNotice(copy.officeReceived);
+    }
+  }
+
+  async function saveContact(value: OfficeContactInput) {
+    const saved = await action({ action: "set_office_contact", revision: state?.revision, ...value });
+    if (saved) setNotice(value.phone ? copy.contactSaved : copy.contactRemoved);
+    return saved;
   }
 
   return <section ref={experience} lang={language} aria-label={copy.title} className="kmt-consultation" dir={language === "ar" ? "rtl" : "ltr"}>
@@ -136,24 +172,30 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
         {!state?.turns.length && !state?.staffMessages?.length && <p className="consultation-empty">{copy.emptyConversation}</p>}
         {[
           ...(state?.turns.flatMap((turn, index) => [
-            { id: `${turn.messageId}-user`, body: turn.userText, type: "user", at: turn.createdAt ? Date.parse(turn.createdAt) : index * 2 },
+            { id: `${turn.messageId}-user`, body: turn.userText, type: "user", recipient: turn.recipient ?? (turn.status === "HUMAN" ? "OFFICE" : "ASSISTANT"), at: turn.createdAt ? Date.parse(turn.createdAt) : index * 2 },
             ...(turn.assistantText ? [{ id: `${turn.messageId}-assistant`, body: turn.assistantText, type: "assistant", at: turn.updatedAt ? Date.parse(turn.updatedAt) : turn.createdAt ? Date.parse(turn.createdAt) + 1 : index * 2 + 1 }] : [])
           ]) ?? []),
           ...(state?.staffMessages?.map(item => ({ id: item.id, body: item.body, type: "staff", at: Date.parse(item.createdAt) })) ?? [])
         ].sort((a, b) => a.at - b.at).map(item => <div key={item.id} className={`consultation-message consultation-message-${item.type}`}>
-          <p className="consultation-author">{item.type === "user" ? <UserRound aria-hidden="true" /> : item.type === "staff" ? <Headset aria-hidden="true" /> : <Scale aria-hidden="true" />}{item.type === "user" ? copy.you : item.type === "staff" ? copy.staff : copy.assistant}</p><p className="whitespace-pre-wrap break-words" dir="auto">{item.body}</p>
+          <p className="consultation-author">{item.type === "user" ? <UserRound aria-hidden="true" /> : item.type === "staff" ? <Headset aria-hidden="true" /> : <Scale aria-hidden="true" />}{item.type === "user" ? copy.you : item.type === "staff" ? copy.staff : copy.assistant}{"recipient" in item && <span className="consultation-recipient-label">{item.recipient === "OFFICE" ? copy.sentToOffice : copy.sentToAssistant}</span>}</p><p className="whitespace-pre-wrap break-words" dir="auto">{item.body}</p>
         </div>)}
       </div>
       {newMessages && <Button className="consultation-latest" variant="outline" type="button" onClick={() => { followLatest.current = true; setNewMessages(false); if (log.current) log.current.scrollTop = log.current.scrollHeight; }}>{copy.latest}</Button>}
       </div>
       <div className="consultation-chat-bottom">
-      {state?.humanOwned && <p role="status" className="text-sm leading-7">{state.closed ? copy.closed : direct.claimed}</p>}
-      <form onSubmit={event => { event.preventDefault(); void send(null); }} className="consultation-composer">
+      <div className="consultation-routing">
+        <div role="group" aria-label={copy.recipient} className="consultation-recipient-options">
+          {(["ASSISTANT", "OFFICE"] as const).map(target => <button key={target} type="button" aria-pressed={recipient === target} disabled={busy || sessionExpired} onClick={() => { setRecipient(target); setNotice(""); requestAnimationFrame(() => messageInput.current?.focus()); }}>{target === "ASSISTANT" ? <Scale aria-hidden="true" /> : <Headset aria-hidden="true" />}{target === "ASSISTANT" ? copy.toAssistant : copy.toOffice}</button>)}
+        </div>
+        {hasOffice && <button ref={followupTrigger} className="consultation-followup-link" type="button" disabled={busy} onClick={() => setContactOpen(true)}>{copy.followupDetails}</button>}
+      </div>
+      {hasOffice && <p role="status" className="consultation-feedback">{state?.closed ? copy.closed : copy.officeFollowup}</p>}
+      <form onSubmit={event => { event.preventDefault(); void send(pendingMessage); }} className="consultation-composer">
         <label htmlFor="kmt-chat-message" className="sr-only">{copy.message}</label>
-        <textarea ref={messageInput} id="kmt-chat-message" placeholder={copy.placeholder} value={message} onChange={event => setMessage(event.target.value)} maxLength={4000} rows={1} disabled={busy} dir="auto" />
-        <Button aria-label={busy ? copy.waiting : copy.send} disabled={busy || state?.closed || !message.trim()} type="submit"><ArrowUp aria-hidden="true" /></Button>
+        <textarea ref={messageInput} id="kmt-chat-message" placeholder={recipient === "OFFICE" ? copy.officePlaceholder : copy.placeholder} value={message} onChange={event => { setMessage(event.target.value); if (pendingMessage) setPendingMessages(current => ({ ...current, [recipient]: null })); }} maxLength={4000} rows={1} disabled={busy || sessionExpired || (recipient === "OFFICE" && !!state?.closed)} dir="auto" />
+        <Button aria-label={busy ? copy.waiting : copy.send} disabled={busy || sessionExpired || (recipient === "OFFICE" && !!state?.closed) || !message.trim()} type="submit"><ArrowUp aria-hidden="true" /></Button>
       </form>
-      {busy && <p role="status" className="consultation-feedback">{copy.waiting}</p>}
+      {busy && <p role="status" className="consultation-feedback">{recipient === "OFFICE" ? copy.officeSending : copy.waiting}</p>}
       {pendingMessage && !busy && <Button type="button" variant="outline" onClick={() => void send()}>{copy.retry}</Button>}
       {notice && !panelOpen && <p role="status" className="break-words text-sm leading-7">{notice}</p>}
       {showPanel && <Button className="h-auto min-h-11 whitespace-normal" type="button" onClick={() => setPanelOpen(true)}>{state?.submitted ? direct.openDetails : booking ? direct.openForm : policy.account}</Button>}
@@ -163,9 +205,10 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
       </div>}
       {!showPanel && state?.accountReady && <Link className="flex min-h-11 items-center underline" href="/client/requests">{copy.requests}</Link>}
       <div className="consultation-help"><span><ShieldCheck aria-hidden="true" />{copy.privacy}</span><a href={publicOfficeProfile.whatsappHref}>{copy.whatsapp}</a></div>
-      {(state?.submitted || state?.closed) && <Button type="button" variant="outline" disabled={busy} onClick={() => { setPendingMessage(null); void action({ action: "restart", locale, service: initialService }); }}>{copy.newConversation}</Button>}
+      {(state?.submitted || state?.closed || sessionExpired) && <Button type="button" variant="outline" disabled={busy} onClick={() => { setPendingMessages({ ASSISTANT: null, OFFICE: null }); setDrafts({ ASSISTANT: "", OFFICE: "" }); setRecipient("ASSISTANT"); void action({ action: "restart", locale: language, service: initialService }); }}>{copy.newConversation}</Button>}
       </div>
     </div>
+    {contactOpen && <OfficeContactDialog locale={language} contact={state?.officeContact ?? null} expiresAt={state?.expiresAt} accountReady={!!state?.accountReady} canSave={!!state?.officeThreadStatus && !sessionExpired} error={notice} onClose={closeContact} onSave={saveContact} />}
     {showPanel && <Dialog open={panelOpen} onClose={closePanel} title={booking || state?.submitted ? direct.dialogTitle : policy.account}
       closeLabel={direct.closeForm}
       description={!state?.submitted && booking ? direct.shortHelp : undefined}
