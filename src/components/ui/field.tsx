@@ -44,23 +44,25 @@ export type TextInputProps = InputHTMLAttributes<HTMLInputElement> & {
   idPrefix?: string;
   hint?: ReactNode;
   error?: ReactNode;
+  endAdornment?: ReactNode;
 };
 
-export function TextInput({ id, idPrefix, label, hint, error, className, type, dir, "aria-describedby": describedBy, "aria-errormessage": errorMessage, "aria-invalid": ariaInvalid, ...props }: TextInputProps) {
+export function TextInput({ id, idPrefix, label, hint, error, endAdornment, className, type, dir, "aria-describedby": describedBy, "aria-errormessage": errorMessage, "aria-invalid": ariaInvalid, ...props }: TextInputProps) {
   const htmlFor = controlId({ id, idPrefix, name: props.name, generatedId: useId() });
   const usesNativePicker = typeof type === "string" && nativePickerInputTypes.has(type);
-  return (
-    <FieldShell htmlFor={htmlFor} label={label} hint={hint} error={error}>
-      <input
+  const input = <input
         {...props}
         id={htmlFor}
-        className={cn(controlClasses, usesNativePicker ? "pe-11 text-left" : undefined, error ? "border-kmt-danger focus:border-kmt-danger" : undefined, className)}
+        className={cn(controlClasses, usesNativePicker ? "pe-11 text-left" : undefined, endAdornment ? "pe-14" : undefined, error ? "border-kmt-danger focus:border-kmt-danger" : undefined, className)}
         dir={dir ?? (usesNativePicker ? "ltr" : undefined)}
         type={type}
         aria-invalid={error ? true : ariaInvalid}
         aria-describedby={describedByIds({ htmlFor, hint, error, describedBy })}
         aria-errormessage={error ? `${htmlFor}-error` : errorMessage}
-      />
+      />;
+  return (
+    <FieldShell htmlFor={htmlFor} label={label} hint={hint} error={error}>
+      {endAdornment ? <div className="relative">{input}<div className="absolute inset-y-0 end-0 flex items-center">{endAdornment}</div></div> : input}
     </FieldShell>
   );
 }

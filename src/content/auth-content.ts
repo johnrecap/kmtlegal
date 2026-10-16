@@ -19,6 +19,8 @@ const authContentAr = {
     formDescription: "أدخل بيانات حسابك للوصول إلى بوابة العميل أو لوحة المكتب.",
     email: "البريد الإلكتروني",
     password: "كلمة المرور",
+    showPassword: "إظهار كلمة المرور",
+    hidePassword: "إخفاء كلمة المرور",
     submit: "دخول",
     twoFactorExpired:
       "انتهت جلسة التحقق الثنائي. سجل الدخول مرة أخرى ثم اطلب رمزًا جديدًا.",
@@ -88,6 +90,8 @@ const authContentEn = {
     formDescription: "Enter your account details to open the client portal or staff workspace.",
     email: "Email address",
     password: "Password",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
     submit: "Sign in",
     twoFactorExpired:
       "Your two-factor verification session expired. Sign in again, then request a new code.",

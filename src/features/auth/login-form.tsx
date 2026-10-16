@@ -2,7 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { type FormEvent, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, MaterialSymbol, TextInput } from "@/components/ui";
+import { Eye, EyeOff } from "lucide-react";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, MaterialSymbol, TextInput } from "@/components/ui";
 import { Button as StatefulButton } from "@/components/ui/stateful-button";
 import { getAuthContent } from "@/content/auth-content";
 import type { ClientLocale } from "@/content/client-content";
@@ -59,6 +60,7 @@ export function LoginForm({ locale }: { locale: ClientLocale }) {
       : null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<LoginFieldErrors>({});
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -87,6 +89,7 @@ export function LoginForm({ locale }: { locale: ClientLocale }) {
     }
 
     setFieldErrors({});
+    setPasswordVisible(false);
     setIsSubmitting(true);
 
     try {
@@ -155,13 +158,21 @@ export function LoginForm({ locale }: { locale: ClientLocale }) {
           <TextInput
             disabled={!isHydrated || isSubmitting}
             autoComplete="current-password"
+            id="login-password"
             error={fieldErrors.password}
             label={copy.password}
             name="password"
             onChange={(event) => updatePassword(event.target.value)}
             required
-            type="password"
+            type={passwordVisible ? "text" : "password"}
             value={password}
+            endAdornment={<Button type="button" variant="ghost" className="h-11 w-11 min-w-11 border-0 p-0 text-muted-foreground hover:text-foreground"
+              aria-label={passwordVisible ? copy.hidePassword : copy.showPassword}
+              title={passwordVisible ? copy.hidePassword : copy.showPassword}
+              aria-pressed={passwordVisible} aria-controls="login-password" disabled={!isHydrated || isSubmitting}
+              onClick={() => setPasswordVisible(current => !current)}>
+              {passwordVisible ? <EyeOff className="h-5 w-5" aria-hidden="true" /> : <Eye className="h-5 w-5" aria-hidden="true" />}
+            </Button>}
           />
           {error ? (
             <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm leading-6 text-kmt-danger" role="alert">
