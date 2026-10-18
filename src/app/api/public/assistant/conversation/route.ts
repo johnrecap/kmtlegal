@@ -90,7 +90,11 @@ export async function POST(request: Request) {
       return jsonOk(await readAssistantSession(token, auth?.principal));
     }
     if (body.action === "begin_booking" || body.action === "return_inquiry" || body.action === "account_access") return jsonOk(await changeAssistantDialogue(token, body.action, auth?.principal, body.action === "begin_booking" ? body.service : undefined));
-    if (body.action === "message") return jsonOk(await sendAssistantMessage({ ...body, token, actor: auth?.principal, requestId }));
+    if (body.action === "message") return jsonOk(await sendAssistantMessage({ ...body, token, actor: auth?.principal, requestId, assertIdentity: async () => {
+      if (!auth) return;
+      const current = await getAuthContextFromRequest(request);
+      if (!current || current.principal.id !== auth.principal.id || current.principal.clientId !== auth.principal.clientId) throw new ApiError(401, "AUTH_REQUIRED", "Authentication required.");
+    } }));
     if (body.action === "verify") {
       await enforceRateLimit(rateLimiters.login, `assistant-email:${body.email}`);
       return jsonOk(await startClientVerification({ capability: token, email: body.email, purpose: body.purpose, actor: auth?.principal }));

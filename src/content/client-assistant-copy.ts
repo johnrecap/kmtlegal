@@ -1,0 +1,30 @@
+export const clientAssistantCopy = {
+  ar: {
+    unavailable: "تعذر قراءة بيانات حسابك مؤقتًا. أعد المحاولة بعد قليل؛ ده مش معناه إن مفيش طلب مسجّل.",
+    login: "سجّل الدخول لقراءة طلبات حسابك. الزائر يقدر يتابع فقط الحجز المرتبط بنفس المحادثة.",
+    empty: "لا توجد سجلات ظاهرة لحسابك في هذا القسم حاليًا.",
+    notFound: "لم أجد هذا السجل ضمن البيانات المسموح لحسابك بقراءتها.",
+    choose: "تقصد أنهي سجل؟ اكتب رقمه في القائمة أو المرجع.", more: "توجد نتائج أخرى؛ اكتب «التالي» لعرض خمسة أخرى.",
+    shortened: "عرض مختصر لأحدث البيانات؛ باقي التفاصيل متاحة في البوابة.",
+    noReply: "لا يوجد رد من المكتب مسجّل هنا حتى الآن. ده لا ينفي حدوث تواصل خارج الموقع.",
+    officeReply: "آخر رد مسجّل من المكتب", noMissing: "لا توجد نواقص محددة مسجّلة في البيانات المعروضة؛ ده لا يعني اعتماد المستندات.",
+    status: "الحالة الحالية", updated: "آخر تحديث", reference: "المرجع", date: "التاريخ", appointment: "الموعد المؤكد", requested: "الموعد المطلوب (غير مؤكد)",
+    step: "الخطوة المطلوبة", missing: "المعلومات المطلوبة من المكتب", quote: "عرض المكتب", amount: "الأتعاب", duration: "المدة المقترحة بالأيام", scope: "نطاق العرض", files: "المستندات", reply: "رد المكتب", total: "الإجمالي", paid: "المدفوع", remaining: "المتبقي", review: "يلزم مراجعة مالية قبل تأكيد الرصيد", due: "المستحقات حسب العملة", nextSession: "الجلسة التالية", court: "المحكمة", decision: "قرار الجلسة", name: "الاسم", phone: "الهاتف", email: "البريد", city: "المدينة", thread: "حالة متابعة المكتب",
+    kinds: { CONSULTATION: "طلب استشارة", SERVICE_REQUEST: "طلب خدمة", CASE: "قضية", HEARING: "جلسة قضية", APPOINTMENT: "موعد", DOCUMENT: "مستند", PAYMENT: "فاتورة", CONVERSATION: "مراسلة المكتب", PROFILE: "الملف الشخصي" },
+    outcome: "نتيجة الموعد المسجّلة", outcomes: { PENDING: "بانتظار الموعد", AWAITING_RESULT: "بانتظار تسجيل النتيجة", MISSED: "طلب فائت", SUCCESSFUL: "استشارة مكتملة بنجاح", NO_SHOW: "لم يحضر", CANCELLED: "ملغى" },
+    consultation: { NEW: "تم استلام الطلب؛ ينتظر مراجعة المكتب ولم يتأكد موعد بعد.", REVIEWING: "المكتب يراجع الطلب؛ لم يتأكد موعد بعد.", PAYMENT_PENDING: "ينتظر استكمال الدفع؛ راجع الفاتورة في البوابة.", SCHEDULED: "الطلب مجدول؛ الموعد الفعلي مبيّن أدناه إن كان مسجّلًا.", REJECTED: "الطلب غير مقبول وفق حالته المسجّلة.", CONVERTED: "تم تحويل الطلب إلى ملف قضية.", CANCELLED: "تم إلغاء الموعد." },
+    serviceSteps: { DRAFT: "استكمل المسودة وأرسلها من صفحة الطلب.", RECEIVED: "تم استلام الطلب وينتظر مراجعة المكتب؛ الاستلام ليس قبولًا نهائيًا.", NEEDS_INFORMATION: "استكمل المعلومات المطلوبة من صفحة الطلب.", AWAITING_ACCEPTANCE: "راجع عرض المكتب واقبله من صفحة الطلب إن كان مناسبًا؛ لم تسجّل الموافقة بعد.", IN_PROGRESS: "الطلب قيد العمل لدى المكتب.", READY: "راجع نسخة التسليم من صفحة الطلب.", COMPLETED: "اكتمل الطلب حسب السجل.", CANCELLED: "الطلب ملغى حسب السجل." }
+  },
+  en: {
+    unavailable: "Your account data could not be read temporarily. Please try again shortly; this does not mean no request exists.",
+    login: "Sign in to read your account requests. Guests can only follow the booking bound to this conversation.",
+    empty: "There are currently no records visible to your account in this section.", notFound: "This record was not found among the data your account may read.",
+    choose: "Which record do you mean? Reply with its list number or reference.", more: "More results are available; type ‘next’ for five more.", shortened: "A summary of the latest data is shown; further details are available in the portal.",
+    noReply: "No office reply is recorded here yet. This does not rule out contact outside the website.", officeReply: "Latest recorded office reply", noMissing: "No specific missing requirements are recorded in the displayed data; this does not establish document approval.",
+    status: "Current status", updated: "Last updated", reference: "Reference", date: "Date", appointment: "Confirmed appointment", requested: "Requested time (unconfirmed)", step: "Next step", missing: "Information requested by the office", quote: "Office proposal", amount: "Fee", duration: "Proposed duration in days", scope: "Proposal scope", files: "Documents", reply: "Office reply", total: "Total", paid: "Paid", remaining: "Remaining", review: "Financial review is required before confirming the balance", due: "Amounts due by currency", nextSession: "Next hearing", court: "Court", decision: "Hearing decision", name: "Name", phone: "Phone", email: "Email", city: "City", thread: "Office follow-up status",
+    kinds: { CONSULTATION: "Consultation request", SERVICE_REQUEST: "Service request", CASE: "Case", HEARING: "Case hearing", APPOINTMENT: "Appointment", DOCUMENT: "Document", PAYMENT: "Invoice", CONVERSATION: "Office conversation", PROFILE: "Profile" },
+    outcome: "Recorded appointment outcome", outcomes: { PENDING: "Awaiting appointment", AWAITING_RESULT: "Awaiting recorded outcome", MISSED: "Missed request", SUCCESSFUL: "Consultation completed successfully", NO_SHOW: "No show", CANCELLED: "Cancelled" },
+    consultation: { NEW: "Received; awaiting office review. No appointment is confirmed yet.", REVIEWING: "Under office review. No appointment is confirmed yet.", PAYMENT_PENDING: "Awaiting payment; review the invoice in the portal.", SCHEDULED: "Scheduled; the actual appointment is listed below if recorded.", REJECTED: "The recorded request status is rejected.", CONVERTED: "Converted to a case file.", CANCELLED: "The appointment was cancelled." },
+    serviceSteps: { DRAFT: "Complete and submit the draft from its request page.", RECEIVED: "Received and awaiting office review; receipt is not final acceptance.", NEEDS_INFORMATION: "Supply the requested information from the request page.", AWAITING_ACCEPTANCE: "Review and accept the proposal from the request page if suitable; acceptance is not yet recorded.", IN_PROGRESS: "The office is working on the request.", READY: "Review the delivery from the request page.", COMPLETED: "The request is recorded as completed.", CANCELLED: "The request is recorded as cancelled." }
+  }
+} as const;

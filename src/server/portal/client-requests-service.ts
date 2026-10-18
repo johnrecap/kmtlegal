@@ -7,9 +7,12 @@ import { ApiError } from "@/server/http/errors";
 import { assertPublicConsultationSlotAvailable } from "@/server/consultations/consultation-availability-service";
 import { appendAuditLog } from "@/server/audit/audit-service";
 
-export async function listOwnConsultationRequests(actor: Principal) {
+export function ownConsultationRequestWhere(actor: Principal) {
   const clientId = assertClientPortalAccess(actor);
-  return prisma.consultationRequest.findMany({ where: { clientId, client: { userId: actor.id, deletedAt: null } },
+  return { clientId, client: { userId: actor.id, deletedAt: null } };
+}
+export async function listOwnConsultationRequests(actor: Principal) {
+  return prisma.consultationRequest.findMany({ where: ownConsultationRequestWhere(actor),
     orderBy: { createdAt: "desc" }, take: 100,
     select: { id: true, publicReference: true, status: true, confirmationSource: true, contactChannel: true, outcomeStatus: true, serviceCategory: true, createdAt: true, requestedStartsAt: true, outcomeVersion: true, preferredMode: true,
       appointments: { where: { status: { in: ["SCHEDULED", "RESCHEDULED"] } }, select: { startsAt: true, endsAt: true, mode: true }, orderBy: { startsAt: "asc" } }

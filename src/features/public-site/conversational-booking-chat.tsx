@@ -105,6 +105,7 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
         const code = payload.error?.code;
         const expired = !!state?.expiresAt && Date.parse(state.expiresAt) <= Date.now();
         if (code === "AUTH_REQUIRED" && expired) setSessionExpired(true);
+        if (["AUTH_REQUIRED", "PERMISSION_DENIED"].includes(code)) { setState(null); setSignedIn(false); }
         setNotice(code === "ACCOUNT_EMAIL_UNAVAILABLE" ? copy.accountUnavailable : code === "RATE_LIMITED" ? copy.accountRateLimited : code === "AUTH_REQUIRED" ? expired ? copy.sessionExpired : copy.loginRequired : code === "CONFLICT" || code === "APPOINTMENT_CONFLICT" ? copy.changed : code === "VALIDATION_ERROR" ? body.action === "register" ? copy.accountInvalid : body.action === "set_office_contact" ? copy.contactInvalid : copy.needDetails : copy.unavailable);
         return false;
       }
@@ -149,7 +150,7 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
     let active = true;
     const epoch = requestEpoch.current;
     fetch(endpoint, { cache: "no-store" }).then(async response => {
-      if (!response.ok) return;
+      if (!response.ok) { if (active && epoch === requestEpoch.current && response.status === 401) { requestEpoch.current++; setState(null); setSignedIn(false); } return; }
       const payload = await response.json();
       if (active && epoch === requestEpoch.current) setState(payload.data);
     }).catch(() => { if (active) setNotice(copy.unavailable); });
@@ -157,7 +158,7 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
   }, [copy.unavailable]);
 
   useEffect(() => {
-    if (!hasOffice || sessionExpired) return;
+    if ((!hasOffice && !state?.accountReady) || sessionExpired) return;
     let active = true;
     const refresh = () => {
       if (document.visibilityState !== "visible" || operationPending.current) return;
@@ -166,13 +167,13 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
         if (response.ok) {
           const payload = await response.json();
           if (active && epoch === requestEpoch.current) setState(current => !current || payload.data?.revision >= current.revision ? payload.data : current);
-        }
+        } else if (response.status === 401 && active && epoch === requestEpoch.current) { requestEpoch.current++; setState(null); setSignedIn(false); setNotice(copy.loginRequired); }
       }).catch(() => {});
     };
     const timer = window.setInterval(refresh, 15_000);
     window.addEventListener("focus", refresh); document.addEventListener("visibilitychange", refresh);
     return () => { active = false; window.clearInterval(timer); window.removeEventListener("focus", refresh); document.removeEventListener("visibilitychange", refresh); };
-  }, [hasOffice, sessionExpired]);
+  }, [hasOffice, state?.accountReady, sessionExpired, copy.loginRequired]);
 
   async function send(value = pendingMessage) {
     const next = value ?? { messageId: crypto.randomUUID(), message: message.trim(), recipient };

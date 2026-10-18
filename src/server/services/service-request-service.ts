@@ -33,12 +33,13 @@ export const questionnaireSchema = z.object({
 
 function denied() { return new ApiError(403, "PERMISSION_DENIED", "This action is not permitted."); }
 function conflict() { return new ApiError(409, "CONFLICT", "Refresh the request before continuing."); }
-function scope(actor: Principal): Prisma.ServiceRequestWhereInput {
+export function serviceRequestWhere(actor: Principal): Prisma.ServiceRequestWhereInput {
   if (hasPermission(actor, "case.read.any")) return { client: { deletedAt: null } };
   if (hasPermission(actor, "case.read.assigned")) return { assignedLawyerId: actor.id, client: { deletedAt: null } };
   if (hasPermission(actor, "client.read.self") && actor.clientId) return { clientId: actor.clientId, client: { userId: actor.id, deletedAt: null } };
   throw denied();
 }
+const scope = serviceRequestWhere;
 export async function assertActiveServiceClient(actor: Principal) {
   if (!actor.clientId || !hasPermission(actor, "client.read.self")) throw denied();
   const client = await prisma.client.findFirst({ where: { id: actor.clientId, userId: actor.id, deletedAt: null, user: { status: "ACTIVE", deletedAt: null, role: { name: "Client", status: "ACTIVE" } } } });

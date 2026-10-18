@@ -38,6 +38,11 @@ function redactValue(value: unknown, depth: number): RedactableJson {
   if (typeof value === "object") {
     const output: Record<string, RedactableJson> = {};
     for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+      // Correlation UUIDs can contain phone-shaped digit runs; preserve only this strict identifier shape.
+      if (key === "requestId" && typeof entry === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(entry)) {
+        output[key] = entry;
+        continue;
+      }
       const safeProviderCheckoutId =
         key === "providerCheckoutId" &&
         typeof entry === "string" &&
