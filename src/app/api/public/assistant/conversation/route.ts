@@ -1,7 +1,7 @@
 import { phaseFiveErrorResponse } from "@/server/http/phase-five-errors";
 import { z } from "zod";
 import { getAuthContextFromRequest, getIpAddress } from "@/server/auth/session-store";
-import { shouldUseSecureCookie } from "@/server/auth/session";
+import { setSessionCookie, shouldUseSecureCookie } from "@/server/auth/session";
 import { getRequestId, jsonOk, ApiError } from "@/server/http/errors";
 import { parseJsonRequest } from "@/server/validation/schemas";
 import { enforceRateLimit, rateLimiters } from "@/server/rate-limit/memory-rate-limit";
@@ -13,6 +13,7 @@ import { directBookingInputSchema, listDirectBookingSlots, mutateDirectBooking }
 import { consultationSlotFilterSchema } from "@/server/consultations/consultation-availability-service";
 import { ownAssistantSession } from "@/server/consultations/conversation-session-service";
 import { officeContactSchema, setOfficeContact } from "@/server/consultations/office-contact-service";
+import { clientRegistrationSchema, registerConversationClient } from "@/server/portal/client-registration-service";
 
 export const dynamic = "force-dynamic";
 const actions = z.discriminatedUnion("action", [
@@ -27,6 +28,7 @@ const actions = z.discriminatedUnion("action", [
   z.strictObject({ action: z.literal("restart"), locale: z.enum(["ar", "en"]), service: intakeDraftSchema.shape.service }),
   conversationMessageSchema.extend({ action: z.literal("message") }),
   startVerificationSchema.extend({ action: z.literal("verify") }),
+  clientRegistrationSchema.safeExtend({ action: z.literal("register") }),
   z.strictObject({ action: z.literal("attach") }),
   z.strictObject({ action: z.literal("submit"), revision: z.number().int().nonnegative(), confirmed: z.literal(true) })
 ]);
@@ -48,7 +50,7 @@ export async function POST(request: Request) {
     const auth = await getAuthContextFromRequest(request);
     const modeAction = ["begin_booking", "return_inquiry", "account_access", "booking_slots", "set_locale", "set_office_contact"].includes(body.action);
     // Reversible mode changes must not consume the five-request booking quota.
-    const limiter = body.action === "message" ? rateLimiters.ai : modeAction ? rateLimiters.conversation : rateLimiters.booking;
+    const limiter = body.action === "register" ? rateLimiters.login : body.action === "message" ? rateLimiters.ai : modeAction ? rateLimiters.conversation : rateLimiters.booking;
     await enforceRateLimit(limiter, `assistant-v2:${auth?.principal.id ?? getIpAddress(request) ?? "unknown"}`);
     let token = assistantCapability(request);
     if (body.action === "start" || body.action === "restart") {
@@ -62,6 +64,15 @@ export async function POST(request: Request) {
       return response;
     }
     if (!token) throw new ApiError(401, "AUTH_REQUIRED", "Authentication required.");
+    if (body.action === "register") {
+      await enforceRateLimit(rateLimiters.login, `assistant-signup-email:${body.email}`);
+      const registered = await registerConversationClient({ capability: token, body: {
+        revision: body.revision, fullName: body.fullName, phone: body.phone, email: body.email, password: body.password, confirmPassword: body.confirmPassword
+      }, actor: auth?.principal, request });
+      const response = jsonOk(await readAssistantSession(token, registered.principal));
+      setSessionCookie(response, registered.token);
+      return response;
+    }
     if (body.action === "set_office_contact") return jsonOk(await setOfficeContact(token, body, auth?.principal));
     if (body.action === "booking_slots") {
       const session = await readAssistantSession(token, auth?.principal);

@@ -22,7 +22,7 @@ export type ServiceRequestView = {
 const field = "min-h-11 w-full min-w-0 rounded-lg border border-input bg-surface p-3 text-foreground";
 const panel = "min-w-0 rounded-xl border border-border bg-surface p-5 space-y-4";
 
-export function NewServiceRequest({ locale, verified, healthAvailable, sourceRequestId }: { locale: Locale; verified: boolean; healthAvailable: boolean; sourceRequestId?: string }) {
+export function NewServiceRequest({ locale, accountReady, healthAvailable, sourceRequestId }: { locale: Locale; accountReady: boolean; healthAvailable: boolean; sourceRequestId?: string }) {
   const copy = serviceRequestCopy[locale]; const router = useRouter();
   const [kind, setKind] = useState<Kind>("CONTRACT_DRAFT"); const [busy, setBusy] = useState(false); const [error, setError] = useState(false);
   const key = useRef<string | null>(null);
@@ -33,7 +33,7 @@ export function NewServiceRequest({ locale, verified, healthAvailable, sourceReq
     } catch { setError(true); setBusy(false); }
   }
   return <form onSubmit={create} className={panel}><h2 className="text-xl font-semibold">{sourceRequestId ? copy.followup : copy.newRequest}</h2>
-    {!verified ? <p>{copy.verify} <Link className="underline" href="/client/assistant">KMT</Link></p> : <>
+    {!accountReady ? <p>{copy.verify} <Link className="underline" href="/client/assistant">KMT</Link></p> : <>
       <label>{copy.newRequest}<select className={field} disabled={busy} value={kind} onChange={e => { setKind(e.target.value as Kind); key.current = null; }}>{Object.entries(copy.kinds).filter(([value])=>value!=="COMPANY_FORMATION").map(([value, label]) => <option key={value} value={value} disabled={value === "HEALTH_CHECK" && !healthAvailable}>{label}</option>)}</select></label>
       <Button type="submit" disabled={busy}>{copy.create}</Button></>}
     <Link className="block underline" href={locale==='ar'?'/ar/business-ai':'/business-ai'}>{copy.kinds.COMPANY_FORMATION}</Link>
@@ -85,7 +85,7 @@ export function ServiceRequestWorkspace({ value, locale, staff = false, manager 
     {!terminal && (staff ? canWork : value.status !== "IN_PROGRESS") && <form className={panel} onSubmit={e => submitForm(e, data => ({ action: "transition", status: data.get("status"), body: data.get("body") }))}>
       <label>{copy.changeStatus}<select className={field} name="status" required><option value="">{copy.choose}</option>{(staff ? (value.status === "IN_PROGRESS" ? ["READY", "CANCELLED"] : value.status === "READY" ? ["IN_PROGRESS", "COMPLETED", "CANCELLED"] : value.status === "RECEIVED" || value.status === "AWAITING_ACCEPTANCE" ? ["NEEDS_INFORMATION", "CANCELLED"] : ["CANCELLED"]) : value.status === "READY" ? ["IN_PROGRESS", "COMPLETED"] : ["DRAFT", "RECEIVED", "NEEDS_INFORMATION", "AWAITING_ACCEPTANCE"].includes(value.status) ? ["CANCELLED"] : []).map(status => <option key={status} value={status}>{!staff && status === "IN_PROGRESS" ? copy.revision : copy.statuses[status as Status]}</option>)}</select></label><label>{copy.reason}<textarea className={field} name="body" maxLength={5000} /></label><Button type="submit" disabled={busy}>{copy.changeStatus}</Button>
     </form>}
-    {!staff && value.kind === "HEALTH_CHECK" && ["READY", "COMPLETED"].includes(value.status) && <NewServiceRequest locale={locale} verified healthAvailable={false} sourceRequestId={value.id} />}
+    {!staff && value.kind === "HEALTH_CHECK" && ["READY", "COMPLETED"].includes(value.status) && <NewServiceRequest locale={locale} accountReady healthAvailable={false} sourceRequestId={value.id} />}
   </div>;
 }
 

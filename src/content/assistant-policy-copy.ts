@@ -7,11 +7,11 @@ export const assistantPolicyCopy = {
     safeReply: "أقدر أوضّح المعلومات المتاحة عن خدمات المكتب. أي نقطة تحب نكمل فيها؟",
     mixed: "سأقتصر على الجزء المتعلق بخدمات KMT Legal.",
     offer: "ولو احتجت مراجعة حالتك مع محامٍ، نقدر نرتّب استشارة لما تحب. ونقدر نكمل استفسارك هنا.",
-    begin: "بدء طلب استشارة", back: "العودة للاستفسار", account: "الدخول أو استعادة الحساب",
+    begin: "بدء طلب استشارة", back: "العودة للاستفسار", account: "الحساب: إنشاء أو تسجيل الدخول",
     inquiry: "يمكنك الاستفسار عن خدمات المكتب دون إدخال بيانات التواصل.",
     bookingStarted: "يمكنك الآن تجهيز طلبك. أخبرني باحتياجك والبيانات الناقصة، ثم راجع الملخص قبل الإرسال.",
     returned: "عدنا للاستفسار. مسودة الطلب محفوظة ولم تُرسل إلى المكتب.",
-    accountOpened: "يمكنك تسجيل الدخول أو استعادة الوصول إلى حسابك من الخيارات الظاهرة.",
+    accountOpened: "يمكنك إنشاء حساب أو تسجيل الدخول من الخيارات الظاهرة. لاستعادة الدخول تواصل مع المكتب.",
     withdrawn: "توقفنا عن تجهيز الحجز، والمسودة محفوظة دون إرسال. يمكنك استكمال الاستفسار عن خدمات المكتب."
   },
   en: {
@@ -22,11 +22,11 @@ export const assistantPolicyCopy = {
     safeReply: "I can explain the available information about the office’s services. Which point would you like to explore next?",
     mixed: "I’ll address the part related to KMT Legal’s services.",
     offer: "If you need a lawyer to review your situation, we can arrange a consultation whenever you wish. We can also continue your questions here.",
-    begin: "Start a consultation request", back: "Return to service questions", account: "Sign in or recover account",
+    begin: "Start a consultation request", back: "Return to service questions", account: "Account: create or sign in",
     inquiry: "You can ask about the office’s services without providing contact details.",
     bookingStarted: "You can now prepare your request. Tell me what you need and provide any missing details, then review the summary before submitting.",
     returned: "You can continue asking about services. Your draft is saved and has not been submitted to the office.",
-    accountOpened: "You can sign in or recover account access using the displayed options.",
+    accountOpened: "You can create an account or sign in using the displayed options. Contact the office for access recovery.",
     withdrawn: "Booking preparation has stopped. Your draft is saved without submission, and you can continue asking about office services."
   }
 } as const;

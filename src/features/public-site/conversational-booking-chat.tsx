@@ -11,6 +11,7 @@ import { publicOfficeProfile } from "@/content/public-office-profile";
 import { directBookingCopy } from "@/content/direct-booking-copy";
 import { DirectBookingPanel, type DirectBooking } from "./direct-booking-panel";
 import { OfficeContactDialog, type OfficeContact, type OfficeContactInput } from "./office-contact-dialog";
+import { ConversationAccountForm } from "./conversation-account-form";
 import type { PublicLocale } from "@/lib/public-locale";
 import "./consultation-experience.css";
 
@@ -46,7 +47,7 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
   const [drafts, setDrafts] = useState({ ASSISTANT: "", OFFICE: "" });
   const message = drafts[recipient];
   const setMessage = (value: string) => setDrafts(current => ({ ...current, [recipient]: value }));
-  const [email, setEmail] = useState("");
+  const [signedIn, setSignedIn] = useState(false);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const [pendingMessages, setPendingMessages] = useState<Record<Recipient, PendingMessage | null>>({ ASSISTANT: null, OFFICE: null });
@@ -60,7 +61,7 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
   const booking = state?.dialogue?.mode === "BOOKING" && !!state.dialogue.consentAt;
   const interactive = !state?.submitted && !sessionExpired;
   const hasOffice = !!state?.officeThreadStatus || !!state?.humanOwned || state?.handoffState === "QUEUED";
-  const showPanel = !!state?.submitted || (interactive && (booking || !!state?.dialogue?.accountAccess));
+  const showPanel = !!state?.submitted || (interactive && (booking || (!!state?.dialogue?.accountAccess && !state.accountReady)));
   const latestAssistant = state?.turns.at(-1)?.assistantText;
 
   useEffect(() => {
@@ -96,23 +97,52 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
     requestEpoch.current++; operationPending.current = true;
     setBusy(true); setNotice("");
     try {
+      if (body.action === "register" && await recoverRegistration()) return true;
       const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json", "x-kmt-locale": language }, body: JSON.stringify(body) });
       const payload = await response.json();
       if (!response.ok) {
         const code = payload.error?.code;
-        if (code === "AUTH_REQUIRED" && !state?.accountReady) setSessionExpired(true);
-        setNotice(code === "AUTH_REQUIRED" ? state?.accountReady ? copy.loginRequired : copy.sessionExpired : code === "CONFLICT" || code === "APPOINTMENT_CONFLICT" ? copy.changed : code === "VALIDATION_ERROR" ? body.action === "set_office_contact" ? copy.contactInvalid : copy.needDetails : copy.unavailable);
+        const expired = !!state?.expiresAt && Date.parse(state.expiresAt) <= Date.now();
+        if (code === "AUTH_REQUIRED" && expired) setSessionExpired(true);
+        setNotice(code === "ACCOUNT_EMAIL_UNAVAILABLE" ? copy.accountUnavailable : code === "RATE_LIMITED" ? copy.accountRateLimited : code === "AUTH_REQUIRED" ? expired ? copy.sessionExpired : copy.loginRequired : code === "CONFLICT" || code === "APPOINTMENT_CONFLICT" ? copy.changed : code === "VALIDATION_ERROR" ? body.action === "register" ? copy.accountInvalid : body.action === "set_office_contact" ? copy.contactInvalid : copy.needDetails : copy.unavailable);
         return false;
       }
-      if (body.action === "verify") { setNotice(copy.emailSent); return true; }
       const refreshed = body.action === "submit" || body.action === "attach"
         ? await fetch(endpoint, { cache: "no-store" }).then(async value => { if (!value.ok) throw new Error(); return value.json(); }) : payload;
       setState(refreshed.data);
       setSessionExpired(false);
+      if (body.action === "register") { setSignedIn(true); setNotice(copy.registered); }
       return true;
-    } catch { setNotice(copy.unavailable); return false; }
+    } catch {
+      if (body.action === "register" && await recoverRegistration()) return true;
+      setNotice(copy.unavailable); return false;
+    }
     finally { requestEpoch.current++; operationPending.current = false; setBusy(false); }
   }
+
+  async function recoverRegistration() {
+    // A lost response is a success only when both authenticated identity and owned conversation agree.
+    try {
+      const auth = await fetch("/api/auth/me", { cache: "no-store" });
+      if (!auth.ok) return false;
+      const response = await fetch(endpoint, { cache: "no-store" });
+      if (!response.ok) return false;
+      const payload = await response.json();
+      if (!payload.data?.accountReady) return false;
+      setState(payload.data); setSignedIn(true); setSessionExpired(false); setNotice(copy.registered);
+      return true;
+    } catch { return false; }
+  }
+
+  useEffect(() => {
+    if (!panelOpen) return;
+    let active = true;
+    fetch("/api/auth/me", { cache: "no-store" }).then(async response => {
+      const payload = response.ok ? await response.json() : null;
+      if (active) setSignedIn(payload?.user?.role === "Client" && !!payload.user.clientId);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [panelOpen]);
 
   useEffect(() => {
     let active = true;
@@ -218,14 +248,9 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
       {notice && notice !== policy.bookingStarted && <p role="status" className="break-words text-sm leading-7">{notice}</p>}
       {state && ((booking && !state.submitted) || state.booking) && <DirectBookingPanel footerContainer={bookingFooter} locale={language} revision={state.revision} draft={state.draft} booking={state.booking} onRefresh={async () => { const response = await fetch(endpoint, { cache: "no-store" }); if (!response.ok) throw new Error(); setState((await response.json()).data); }} />}
       {state?.submitted && !state.booking && <p role="status">{copy.submitted}</p>}
-      {!state?.accountReady && !state?.closed && (state?.booking || state?.dialogue?.accountAccess) && <div className="space-y-3 border-t border-kmt-gold/20 pt-4">
-        <label htmlFor="kmt-account-email" className="block text-sm">{copy.email}</label>
-        <input type="email" id="kmt-account-email" autoComplete="email" dir="ltr" value={email} onChange={event => setEmail(event.target.value)} className="min-h-11 w-full rounded border border-kmt-gold/30 bg-transparent px-3" />
-        {(booking || state?.booking) && <Button type="button" disabled={busy || !state || !email} onClick={() => void action({ action: "verify", email, purpose: "ACTIVATE" })}>{copy.verify}</Button>}
-        <Button type="button" variant="ghost" disabled={busy || !state || !email} onClick={() => void action({ action: "verify", email, purpose: "RECOVER" })}>{copy.recover}</Button>
-        <Link className="flex min-h-11 items-center underline" href={`/login?locale=${language}&next=${encodeURIComponent(language === "ar" ? "/ar/book-consultation" : "/book-consultation")}`}>{copy.signIn}</Link>
-        <Button type="button" variant="outline" disabled={busy || !state} onClick={() => void action({ action: "attach" })}>{copy.attach}</Button>
-      </div>}
+      {!state?.accountReady && (state?.booking || state?.dialogue?.accountAccess) && <ConversationAccountForm locale={language} panelOpen={panelOpen} busy={busy} authenticated={signedIn}
+        initial={{ fullName: state?.booking?.fullName ?? state?.draft.fullName ?? "", phone: state?.booking?.phone ?? state?.draft.phone ?? "", email: state?.draft.email ?? "" }}
+        onRegister={value => action({ action: "register", revision: state?.revision, ...value })} onAttach={() => void action({ action: "attach" })} />}
       {state?.accountReady && <Link className="flex min-h-11 items-center underline" href="/client/requests">{copy.requests}</Link>}
       </div>
     </Dialog>}

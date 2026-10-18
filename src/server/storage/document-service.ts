@@ -10,7 +10,7 @@ import { documentDownloadHeaders } from "./download-headers";
 import { assertMalwareScanSafe } from "./malware-scan";
 import { assertUploadAllowed } from "./upload-policy";
 import { deletePrivateFileBestEffort, readPrivateFile, savePrivateFile } from "./vps-storage";
-import { assertVerifiedServiceClient } from "@/server/services/service-request-service";
+import { assertActiveServiceClient } from "@/server/services/service-request-service";
 
 export const documentCategorySchema = z.enum(["CONTRACT", "COURT_FILE", "IDENTITY", "EVIDENCE", "PAYMENT", "OTHER"]);
 export const documentVisibilitySchema = z.enum(["CLIENT_VISIBLE", "STAFF_ONLY", "INTERNAL_ONLY"]);
@@ -54,7 +54,7 @@ export async function uploadDocument(input: {
     serviceTarget = await prisma.serviceRequest.findUnique({ where: { id: fields.serviceRequestId }, select: { clientId: true, assignedLawyerId: true, status: true } });
     if (!serviceTarget || ["COMPLETED", "CANCELLED"].includes(serviceTarget.status)) throw new ApiError(404, "NOT_FOUND", "Request not found.");
     const own = input.actor.roleName === "Client" && input.actor.clientId === serviceTarget.clientId;
-    if (own) await assertVerifiedServiceClient(input.actor);
+    if (own) await assertActiveServiceClient(input.actor);
     const staff = hasPermission(input.actor, "document.manage.any") || (hasPermission(input.actor, "case.update.assigned") && serviceTarget.assignedLawyerId === input.actor.id);
     if ((!own && !staff) || (fields.delivery && (!staff || serviceTarget.status !== "IN_PROGRESS")) || fields.caseId || (fields.ownerClientId && fields.ownerClientId !== serviceTarget.clientId)) throw new ApiError(403, "PERMISSION_DENIED", "Request upload is not allowed.");
   } else {

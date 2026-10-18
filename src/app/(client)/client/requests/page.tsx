@@ -10,7 +10,6 @@ import Link from "next/link";
 import { listServiceRequests, publishedQuestionnaire } from "@/server/services/service-request-service";
 import { NewServiceRequest } from "@/features/portal/service-request-workspace";
 import { serviceRequestCopy } from "@/content/service-request-copy";
-import { prisma } from "@/server/db/prisma";
 import { RequestAlternativeTime } from "@/features/portal/request-alternative-time";
 import { directBookingCopy } from "@/content/direct-booking-copy";
 
@@ -23,11 +22,11 @@ export default async function ClientRequestsPage() {
   const direct = directBookingCopy[locale];
   if (guard.status === "forbidden") return <PermissionBlocked description={guard.description} locale={locale} title={guard.title} />;
   const requests = await listOwnConsultationRequests(guard.context.principal);
-  const [services, questionnaire, user] = await Promise.all([listServiceRequests(guard.context.principal), publishedQuestionnaire(), prisma.user.findUnique({ where: { id: guard.context.principal.id }, select: { emailVerifiedAt: true } })]);
+  const [services, questionnaire] = await Promise.all([listServiceRequests(guard.context.principal), publishedQuestionnaire()]);
   const serviceCopy = serviceRequestCopy[locale];
   return <ClientSiteShell locale={locale} navItems={clientNavForPath("/client/requests", locale)} title={copy.requests} userLabel={guard.context.user.name}>
     <div className="grid min-w-0 gap-5 lg:grid-cols-2">
-      <NewServiceRequest locale={locale} verified={Boolean(user?.emailVerifiedAt)} healthAvailable={Boolean(questionnaire)} />
+      <NewServiceRequest locale={locale} accountReady healthAvailable={Boolean(questionnaire)} />
       {services.map(service => <ClientPortalPanel key={service.id} title={serviceCopy.kinds[service.kind as keyof typeof serviceCopy.kinds]} description={serviceCopy.statuses[service.status as keyof typeof serviceCopy.statuses]}><Link className="break-all underline" href={`/client/requests/services/${service.id}`}>{service.reference}</Link></ClientPortalPanel>)}
       {!requests.length && <p>{copy.emptyRequests}</p>}
       {requests.map(request => <ClientPortalPanel key={request.id} title={request.publicReference ?? publicConsultationReference(request.id)} description={request.outcomeStatus === "CANCELLED" ? direct.cancelled : copy.statuses[request.status]}>

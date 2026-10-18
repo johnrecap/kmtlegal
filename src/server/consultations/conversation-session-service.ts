@@ -56,8 +56,8 @@ export async function readAssistantSession(token: string, actor?: Principal | nu
     select: { id: true, body: true, createdAt: true }
   }) : [];
   const thread = session.conversationThreadId ? await prisma.conversationThread.findUnique({ where: { id: session.conversationThreadId }, select: { status: true } }) : null;
-  const verified = session.clientId ? await prisma.client.count({ where: { id: session.clientId, userId: actor?.id, deletedAt: null, user: { status: "ACTIVE", emailVerifiedAt: { not: null }, deletedAt: null } } }) : 0;
-  return { locale: session.locale === "en" ? "en" : "ar", handoffState: session.humanOwned ? "CLAIMED" : session.handoffRequestedAt ? "QUEUED" : "NONE", booking: await readDirectBooking(session.consultationRequestId), dialogue: readDialogue(session.dialogue), draft: session.draft, revision: session.revision, accountReady: verified > 0, humanOwned: session.humanOwned, closed: !!thread && ["CLOSED", "ARCHIVED"].includes(thread.status), submitted: !!session.consultationRequestId, turns, staffMessages,
+  const accountReady = session.clientId && actor ? await prisma.client.count({ where: { id: session.clientId, userId: actor.id, deletedAt: null, user: { status: "ACTIVE", deletedAt: null, role: { status: "ACTIVE" } } } }) : 0;
+  return { locale: session.locale === "en" ? "en" : "ar", handoffState: session.humanOwned ? "CLAIMED" : session.handoffRequestedAt ? "QUEUED" : "NONE", booking: await readDirectBooking(session.consultationRequestId), dialogue: readDialogue(session.dialogue), draft: session.draft, revision: session.revision, accountReady: accountReady > 0, humanOwned: session.humanOwned, closed: !!thread && ["CLOSED", "ARCHIVED"].includes(thread.status), submitted: !!session.consultationRequestId, turns, staffMessages,
     officeThreadStatus: thread?.status ?? null, expiresAt: session.expiresAt.toISOString(),
     officeContact: session.officePhone && session.officeContactChannel && session.officeContactConsentedAt
       ? { phone: session.officePhone, contactChannel: session.officeContactChannel, consentedAt: session.officeContactConsentedAt.toISOString() } : null };
@@ -185,7 +185,7 @@ export async function sendAssistantMessage(input: {
         activate_account: { description: "Show secure account interface only for requested booking or account help.", schema: z.strictObject({}),
           execute: async () => {
             if (!bookingAllowed(dialogue) && !dialogue.accountAccess) throw new ApiError(403, "PERMISSION_DENIED", "Account access must be requested.");
-            return { nextAction: bookingAllowed(dialogue) ? "SECURE_EMAIL_VERIFICATION" : "ACCOUNT_LOGIN_OR_RECOVERY", sent: false };
+            return { nextAction: "SECURE_ACCOUNT_FORM", sent: false };
           } },
         own_request_status: { description: "Read only the request bound to this protected conversation. Historical requests require authenticated ownership.", schema: z.strictObject({}),
           execute: async () => {

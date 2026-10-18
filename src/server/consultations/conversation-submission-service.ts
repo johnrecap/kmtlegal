@@ -41,7 +41,7 @@ export async function submitConversationRequest(input: { token: string; actor: P
     if (!bookingAllowed(fresh.dialogue)) throw new ApiError(403, "PERMISSION_DENIED", "Booking consent is required.");
     if (fresh.revision !== input.revision || fresh.leaseId || fresh.clientId !== input.actor.clientId) throw new ApiError(409, "CONFLICT", "The request changed. Review the latest summary before submitting.");
     const client = await tx.client.findFirst({ where: { id: input.actor.clientId!, userId: input.actor.id, deletedAt: null }, include: { user: true } });
-    if (!client?.user || client.user.status !== "ACTIVE" || !client.user.emailVerifiedAt) throw new ApiError(401, "AUTH_REQUIRED", "A verified email account is required.");
+    if (!client?.user || client.user.status !== "ACTIVE" || client.user.deletedAt) throw new ApiError(401, "AUTH_REQUIRED", "An active client account is required.");
     const id = randomUUID();
     const request = await tx.consultationRequest.create({ data: {
       id, publicReference: `CONS-${id.replaceAll("-", "").toUpperCase()}`,

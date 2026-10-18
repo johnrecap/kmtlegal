@@ -1,5 +1,9 @@
 export const conversationCopy = {
   ar: {
+    register: "إنشاء حساب جديد", registerSubmit: "إنشاء الحساب وتسجيل الدخول", registerIntro: "أنشئ حسابك لمتابعة محادثتك وطلباتك. لا تحتاج لتفعيل البريد، والحجز متاح أيضًا بدون حساب.",
+    registered: "تم إنشاء حسابك وتسجيل الدخول. يمكنك استكمال المحادثة أو فتح طلباتك.", accountUnavailable: "تعذر استخدام هذا البريد لإنشاء حساب. جرّب تسجيل الدخول أو تواصل مع المكتب.",
+    accountInvalid: "راجع الاسم والهاتف والبريد وكلمة المرور المطلوبة.", passwordHint: "استخدم من 10 إلى 256 حرفًا.", signupPassword: "كلمة المرور", forgotPassword: "نسيت كلمة المرور؟", recoveryHelp: "لاستعادة الدخول، تواصل مع المكتب للتحقق من هويتك وإعادة تعيين كلمة المرور. لا نرسل روابط استعادة بالبريد حاليًا.",
+    registerWaiting: "جارٍ إنشاء الحساب…", accountRateLimited: "محاولات كثيرة. انتظر قليلًا ثم حاول مرة أخرى.", accountFields: { fullName: "الاسم الكامل", phone: "رقم الهاتف" },
     welcome: "أهلًا بك في KMT Legal", conversationIntro: "نتحدث أولًا، ونرتّب الموعد عندما تحتاجه.", assistant: "مساعد خدمات المكتب", you: "أنت", today: "اليوم", placeholder: "اكتب سؤالك عن خدمات المكتب…", privacy: "رقم المتابعة اختياري للمراسلة، ومطلوب للحجز.", latest: "الرسائل الجديدة", emptyConversation: "ابدأ بسؤالك عن خدمات المكتب.",
     newConversation: "بدء محادثة جديدة", closed: "أغلق المكتب المراسلة. يمكنك متابعة أسئلتك مع المساعد الذكي هنا.",
     guest: "زائر لم يتحقق من حسابه بعد", staff: "فريق المكتب", resume: "إنهاء متابعة الموظف", takeOver: "بدء متابعة الموظف", transcript: "سجل المحادثة",
@@ -25,6 +29,10 @@ export const conversationCopy = {
     requested: "الموعد المطلوب", confirmed: "الموعد المعتمد", noTime: "يُنسّق مع المكتب", noConfirmation: "لم يُعتمد موعد بعد", nextStep: "تابع حالة طلبك هنا؛ سيتولى المكتب مراجعته."
   },
   en: {
+    register: "Create a new account", registerSubmit: "Create account and sign in", registerIntro: "Create an account to follow your conversation and requests. No email activation is needed; booking is also available without an account.",
+    registered: "Your account is created and you are signed in. Continue the conversation or open your requests.", accountUnavailable: "This email cannot be used to create an account. Try signing in or contact the office.",
+    accountInvalid: "Check your name, phone, email and required password.", passwordHint: "Use 10 to 256 characters.", signupPassword: "Password", forgotPassword: "Forgot your password?", recoveryHelp: "Contact the office to verify your identity and reset your password. Password recovery emails are not currently sent.",
+    registerWaiting: "Creating your account…", accountRateLimited: "Too many attempts. Wait a moment and try again.", accountFields: { fullName: "Full name", phone: "Phone number" },
     welcome: "Welcome to KMT Legal", conversationIntro: "A conversation first. An appointment when you need it.", assistant: "Office services assistant", you: "You", today: "Today", placeholder: "Ask about the office’s services…", privacy: "A number is optional for messages and required for booking.", latest: "New messages", emptyConversation: "Start with a question about the office’s services.",
     newConversation: "Start a new conversation", closed: "The office closed its message thread. You can continue asking the AI assistant here.",
     guest: "Guest account not yet verified", staff: "Office team", resume: "Finish staff follow-up", takeOver: "Begin staff follow-up", transcript: "Conversation history",

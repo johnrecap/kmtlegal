@@ -4,7 +4,7 @@ const mocks=vi.hoisted(()=>({session:{id:'session',clientId:null as string|null,
 vi.mock('@/server/consultations/conversation-session-service',()=>({ownAssistantSession:vi.fn(async(_token,actor)=>{if(mocks.session.clientId&&actor?.clientId!==mocks.session.clientId)throw Error('AUTH_REQUIRED');return mocks.session;})}));
 vi.mock('@/server/services/formation-assessment',()=>({assessFormation:mocks.assessment}));
 vi.mock('@/server/audit/audit-service',()=>({appendAuditLog:mocks.audit}));
-vi.mock('@/server/services/service-request-service',async()=>{const {z}=await import('zod');return {assertVerifiedServiceClient:mocks.verified,intakeSchema:z.object({title:z.string(),purpose:z.string(),language:z.string()})};});
+vi.mock('@/server/services/service-request-service',async()=>{const {z}=await import('zod');return {assertActiveServiceClient:mocks.verified,intakeSchema:z.object({title:z.string(),purpose:z.string(),language:z.string()})};});
 vi.mock('@/server/db/prisma',()=>{const db={
  $queryRaw:vi.fn(),assistantSession:{findUnique:async()=>mocks.session,update:async({data}:any)=>Object.assign(mocks.session,data)},
  formationInterview:{findUnique:async()=>mocks.row?{...mocks.row,reports:mocks.reports.filter(r=>r.version===mocks.row.revision)}:null,upsert:async({create}:any)=>mocks.row??(mocks.row={id:'interview',revision:0,serviceRequestId:null,...create}),update:async({data}:any)=>{const {revision,...rest}=data;Object.assign(mocks.row,rest);if(revision)mocks.row.revision+=revision.increment;return mocks.row;}},

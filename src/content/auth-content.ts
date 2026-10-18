@@ -11,7 +11,7 @@ const authContentAr = {
     description:
       "تُحمى جلسات العمل وبيانات القضايا بصلاحيات واضحة ومراجعة داخلية لعمليات الدخول.",
     securityNote:
-      "استخدم بيانات الحساب التي أرسلها لك فريق KMT Legal فقط. إذا تعذر الدخول، تواصل مع المكتب للتحقق من الحساب.",
+      "استخدم بيانات حسابك أو البيانات التي أرسلها لك فريق KMT Legal. إذا تعذر الدخول، تواصل مع المكتب للتحقق من الحساب.",
     languageSwitch: "English",
     languageSwitchLabel: "عرض صفحة الدخول بالإنجليزية",
     backHome: "العودة إلى الموقع",
@@ -82,7 +82,7 @@ const authContentEn = {
     description:
       "Work sessions and case information are protected by clear permissions and internal sign-in review.",
     securityNote:
-      "Use only the account details sent to you by KMT Legal. If you cannot sign in, contact the office so the account can be verified.",
+      "Use your account details or those sent to you by KMT Legal. If you cannot sign in, contact the office so the account can be verified.",
     languageSwitch: "العربية",
     languageSwitchLabel: "Show the sign-in page in Arabic",
     backHome: "Back to website",

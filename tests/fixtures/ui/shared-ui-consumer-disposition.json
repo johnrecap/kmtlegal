@@ -830,6 +830,23 @@
       ],
       "disposition": "backward-compatible",
       "evidence": "tests/ui/booking-availability-picker.test.tsx"
+    },
+    {
+      "path": "src/features/public-site/conversation-account-form.tsx",
+      "contracts": [
+        "button",
+        "field"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/conversation-account-form.test.tsx"
+    },
+    {
+      "path": "src/features/public-site/office-contact-dialog.tsx",
+      "contracts": [
+        "button"
+      ],
+      "disposition": "backward-compatible",
+      "evidence": "tests/ui/conversation-account-form.test.tsx"
     }
   ],
   "connectedSurfaces": [

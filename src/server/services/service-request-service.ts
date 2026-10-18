@@ -39,9 +39,9 @@ function scope(actor: Principal): Prisma.ServiceRequestWhereInput {
   if (hasPermission(actor, "client.read.self") && actor.clientId) return { clientId: actor.clientId, client: { userId: actor.id, deletedAt: null } };
   throw denied();
 }
-export async function assertVerifiedServiceClient(actor: Principal) {
+export async function assertActiveServiceClient(actor: Principal) {
   if (!actor.clientId || !hasPermission(actor, "client.read.self")) throw denied();
-  const client = await prisma.client.findFirst({ where: { id: actor.clientId, userId: actor.id, deletedAt: null, user: { status: "ACTIVE", deletedAt: null, emailVerifiedAt: { not: null } } } });
+  const client = await prisma.client.findFirst({ where: { id: actor.clientId, userId: actor.id, deletedAt: null, user: { status: "ACTIVE", deletedAt: null, role: { name: "Client", status: "ACTIVE" } } } });
   if (!client) throw denied();
   return client;
 }
@@ -61,7 +61,7 @@ export async function publishQuestionnaire(actor: Principal, input: unknown) {
   });
 }
 export async function createServiceRequest(actor: Principal, input: unknown) {
-  const client = await assertVerifiedServiceClient(actor);
+  const client = await assertActiveServiceClient(actor);
   const body = parseWithSchema(createServiceRequestSchema, input);
   if(body.kind==='COMPANY_FORMATION')throw new ApiError(400,'VALIDATION_ERROR','Start through the formation interview.');
   const existing = await prisma.serviceRequest.findUnique({ where: { clientId_idempotencyKey: { clientId: client.id, idempotencyKey: body.idempotencyKey } } });

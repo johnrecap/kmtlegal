@@ -9,7 +9,7 @@ import {
 } from "./session";
 import { canFinalizeSession, initialSessionStatusForRole, isStaffTwoFactorEnabled } from "./two-factor";
 
-const authUserInclude = {
+export const authUserInclude = {
   role: {
     include: {
       permissions: {
@@ -120,13 +120,13 @@ export function getSessionTokenFromCookieHeader(cookieHeader: string) {
   }
 }
 
-export async function createSessionForUser(user: AuthUser, request: Request) {
+export async function createSessionForUser(user: AuthUser, request: Request, client: Pick<Prisma.TransactionClient, "session"> = prisma) {
   if (!isActiveAuthUser(user)) {
     throw new ActiveSessionRequiredError();
   }
   const token = createSessionToken();
   const status = initialSessionStatusForRole(user.role.name);
-  const session = await prisma.session.create({
+  const session = await client.session.create({
     data: {
       userId: user.id,
       tokenHash: hashSessionToken(token),

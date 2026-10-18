@@ -27,7 +27,7 @@ describe("phase-five shared component consumers", () => {
     const copy = serviceRequestCopy[locale];
     const draft = renderToStaticMarkup(<ServiceRequestWorkspace value={request} locale={locale} />);
     expect(draft).toContain(copy.save); expect(draft).toContain(copy.submit); expect(draft).not.toContain(copy.internal);
-    expect(renderToStaticMarkup(<NewServiceRequest locale={locale} verified={false} healthAvailable={false} />)).toContain(copy.verify);
+    expect(renderToStaticMarkup(<NewServiceRequest locale={locale} accountReady={false} healthAvailable={false} />)).toContain(copy.verify);
     const company = renderToStaticMarkup(<BusinessDeskSection locale={locale} />); expect(company).toContain("https://wa.me/201117416666?text="); expect(company).not.toContain("/checkout");
     expect(renderToStaticMarkup(<ManagedServiceSection locale={locale} health />)).toContain("/client/requests");
     expect(renderToStaticMarkup(<ConversationalBookingChat locale={locale} />)).toContain("textarea");

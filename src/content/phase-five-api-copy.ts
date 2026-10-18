@@ -1,6 +1,7 @@
 export const phaseFiveApiCopy: Record<"ar" | "en", Record<string, string>> = {
   ar: {
-    AUTH_REQUIRED: "سجّل الدخول بحساب موثّق للمتابعة.", PERMISSION_DENIED: "لا تملك الصلاحية المطلوبة لهذا الإجراء.", FORBIDDEN: "لا تملك الصلاحية المطلوبة لهذا الإجراء.",
+    ACCOUNT_EMAIL_UNAVAILABLE: "تعذر استخدام هذا البريد لإنشاء حساب. جرّب تسجيل الدخول أو تواصل مع المكتب.",
+    AUTH_REQUIRED: "سجّل الدخول بحسابك للمتابعة.", PERMISSION_DENIED: "لا تملك الصلاحية المطلوبة لهذا الإجراء.", FORBIDDEN: "لا تملك الصلاحية المطلوبة لهذا الإجراء.",
     NOT_FOUND: "لم يتم العثور على الطلب المطلوب.", TOKEN_EXPIRED: "رابط التحقق غير صالح أو انتهت صلاحيته. اطلب رابطًا جديدًا.",
     VALIDATION_ERROR: "راجع البيانات المطلوبة وأعد المحاولة.", CONFLICT: "تغيرت البيانات أو حالة الطلب. حدّث الصفحة وراجع التفاصيل قبل المتابعة.",
     APPOINTMENT_CONFLICT: "الموعد المطلوب غير متاح. اختر موعدًا بديلًا ليُراجعه المكتب.",
@@ -11,7 +12,8 @@ export const phaseFiveApiCopy: Record<"ar" | "en", Record<string, string>> = {
     fallback: "تعذر إكمال الإجراء. أعد المحاولة أو تواصل مع المكتب."
   },
   en: {
-    AUTH_REQUIRED: "Sign in with a verified account to continue.", PERMISSION_DENIED: "You do not have permission for this action.", FORBIDDEN: "You do not have permission for this action.",
+    ACCOUNT_EMAIL_UNAVAILABLE: "This email cannot be used to create an account. Try signing in or contact the office.",
+    AUTH_REQUIRED: "Sign in with your account to continue.", PERMISSION_DENIED: "You do not have permission for this action.", FORBIDDEN: "You do not have permission for this action.",
     NOT_FOUND: "The requested item was not found.", TOKEN_EXPIRED: "The verification link is invalid or expired. Request a new link.",
     VALIDATION_ERROR: "Check the required details and try again.", CONFLICT: "The details or request status changed. Refresh and review them before continuing.",
     APPOINTMENT_CONFLICT: "The requested time is unavailable. Choose an alternative for office review.",
