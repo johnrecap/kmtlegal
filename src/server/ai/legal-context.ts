@@ -1,0 +1,35 @@
+import { legalContextSchema, type LegalAssessment, type LegalContext } from "./legal-assistance-contract";
+
+export function normalizedLegalText(text: string) { return text.toLowerCase().replace(/[\u064B-\u065F\u0670]/g, "").replace(/[أإآ]/g, "ا").replace(/ى/g, "ي"); }
+const countryAliases: Record<string, string[]> = {
+  EG: ["مصر", "المصري", "المصرية", "egypt", "egyptian"], SA: ["السعودية", "السعودي", "saudi arabia", "saudi"],
+  AE: ["الامارات", "الاماراتي", "uae", "united arab emirates"], GB: ["بريطانيا", "انجلترا", "england", "united kingdom", "british"],
+  US: ["امريكا", "الامريكي", "united states", "usa"], FR: ["فرنسا", "الفرنسي", "france", "french"],
+  DE: ["المانيا", "الالماني", "germany", "german"], CA: ["كندا", "الكندي", "canada", "canadian"],
+  AU: ["استراليا", "الاسترالي", "australia", "australian"], IN: ["الهند", "الهندي", "india", "indian"]
+};
+export function legalContextForMessage(previous: LegalContext | undefined, assessment: LegalAssessment | undefined, message: string) {
+  const context = legalContextSchema.parse(previous ?? {});
+  const text = normalizedLegalText(message.replace(/https?:\/\/\S+|\S+@\S+/g, ""));
+  const countries = Object.entries(countryAliases).filter(([, aliases]) => aliases.some(alias => new RegExp(`(?<![\\p{L}\\p{N}])${alias}(?![\\p{L}\\p{N}])`, "u").test(text))).map(([code]) => code);
+  if (assessment?.conflict || countries.length > 1) return { context, conflict: true, changed: false };
+  const evidence = assessment?.jurisdictionEvidence;
+  const claimed = evidence && message.includes(evidence) ? assessment?.jurisdiction : undefined;
+  const jurisdiction = countries[0] ?? claimed;
+  const changed = !previous || (!!jurisdiction && jurisdiction !== context.jurisdiction);
+  return { conflict: false, changed, context: legalContextSchema.parse({
+    ...context, ...(jurisdiction ? { jurisdiction, explicit: true } : {}),
+    ...(assessment?.topics ? { topics: assessment.topics } : {}), ...(assessment?.mode ? { mode: assessment.mode } : {})
+  }) };
+}
+
+/** Legal conditions/procedures and analysis requests must not be mistaken for account status. */
+export function legalSubjectQuestion(text: string) {
+  const value = normalizedLegalText(text);
+  if (/حلل|تحليل|صياغ[هة]|اكتب.*(?:عقد|مذكر[هة]|صحيف[هة])|\b(?:draft|legal analysis)\b/.test(value)) return true;
+  if (explicitAccountQuestion(value) && /حالة|اتقبل|وصل لفين|مستندات|ناقص|\b(?:status|accepted|missing)\b/.test(value)) return false;
+  return /شروط.*الدعوي|قبول الدعوي|رفع دعوي|عمل توكيل|اعمل توكيل|هل.*قانوني|هل يجوز|هل يحق|ما حكم|حقوقي|الطلاق|الخلع|النفقة|الحضانة|الميراث|فسخ العقد|\b(?:admissibility|power of attorney|is .* legal|divorce|custody|alimony|inheritance|can (?:a landlord|an employer))\b/.test(value);
+}
+export function explicitAccountQuestion(text: string) {
+  return /طلبي|طلباتي|طلب (?:بتاعي|الخاص بي|للمكتب)|فاتورتي|فواتيري|ميعادي|موعدي|مواعيدي|ملفي|ملفاتي|مستنداتي|قضيتي|قضايايا|جلساتي|مدفوعاتي|بياناتي|رصيدي|عليا كام|علي كام|\b(?:owe|my (?:request|filing|booking|invoice|appointment|case|profile|balance|documents?|files?))\b|\b(?:CONS|CONTRACT|HEALTH|CASE|INV|SRV|REQ|SR|KMT)[-_][a-z0-9-]+/i.test(normalizedLegalText(text));
+}

@@ -14,8 +14,9 @@ for (const locale of ["ar", "en"] as const) for (const width of [390, 1440]) {
     test.setTimeout(180000);
     const copy = conversationCopy[locale], policy = assistantPolicyCopy[locale];
     const errors: string[] = [];
+    let expectedProviderFailure = false;
     page.on("pageerror", error => errors.push(error.message));
-    page.on("console", message => { if (message.type() === "error" && !/401|503/.test(message.text())) errors.push(message.text()); });
+    page.on("console", message => { if (message.type() === "error" && !/401|503/.test(message.text()) && !(expectedProviderFailure && /status of 502/.test(message.text()))) errors.push(message.text()); });
     await page.setViewportSize({ width, height: 844 });
     await page.addInitScript(theme => localStorage.setItem("kmt-theme", theme), width === 390 ? "light" : "dark");
     await page.setExtraHTTPHeaders({ "x-real-ip": `192.0.2.${width === 390 ? 10 : 20}${locale === "ar" ? 1 : 2}` });
@@ -73,8 +74,12 @@ for (const locale of ["ar", "en"] as const) for (const width of [390, 1440]) {
     await expect(page.getByRole("heading", { name: serviceRequestCopy[locale].newRequest, exact: true })).toBeVisible();
     expect((await page.request.get("/api/auth/me")).status()).toBe(200);
     await page.goto(`${locale === "ar" ? "/ar" : ""}/book-consultation`, { waitUntil: "networkidle" });
+    expectedProviderFailure = true;
+    const failedMessage = page.waitForResponse(response => response.url().endsWith("/api/public/assistant/conversation") && response.request().method() === "POST" && response.request().postDataJSON().action === "message");
     await page.getByLabel(copy.message, { exact: true }).fill("Synthetic service question");
     await page.getByRole("button", { name: copy.send, exact: true }).click();
+    const failure = await failedMessage;
+    expect([502, 503]).toContain(failure.status()); expect((await failure.json()).error.code).toBe("AI_PROVIDER_UNAVAILABLE");
     await expect(page.getByText(copy.unavailable, { exact: true })).toBeVisible();
     expect(errors).toEqual(width === 390 ? ["Failed to load resource: net::ERR_FAILED"] : []);
   });

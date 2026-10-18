@@ -4,6 +4,7 @@ import { safeLog } from "@/server/observability/safe-log";
 import type { AIProviderConfig } from "../config";
 import type { AIChatInput, AIChatReply } from "../types";
 import { conversationRequestParameters } from "./request-parameters";
+import { readBoundedAIResponse } from "./bounded-response";
 
 const callSchema = z.object({
   id: z.string().min(1).max(160),
@@ -38,7 +39,7 @@ export async function requestConversation(config: AIProviderConfig, input: AICha
       method: "POST", signal,
       headers: { "Content-Type": "application/json", ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {}) },
       body: JSON.stringify({
-        model: config.model, temperature: config.temperature, max_tokens: config.maxTokens,
+        model: config.model, temperature: config.temperature, max_tokens: input.maxTokens ? Math.min(8000, Math.max(100, input.maxTokens)) : config.maxTokens,
         messages: input.messages, tools: input.tools, tool_choice: "auto",
         ...conversationRequestParameters(config)
       })
@@ -50,27 +51,7 @@ export async function requestConversation(config: AIProviderConfig, input: AICha
       });
       throw new ApiError(502, "AI_PROVIDER_UNAVAILABLE", "AI provider request failed.");
     }
-    // Bound response size before parsing; do not include provider body or customer content in diagnostics.
-    const reader = response.body?.getReader();
-    if (!reader) throw new ApiError(502, "AI_OUTPUT_INVALID", "AI provider response is invalid.");
-    let raw = "";
-    let bytes = 0;
-    const decoder = new TextDecoder();
-    try {
-      while (true) {
-        const part = await reader.read();
-        if (part.done) break;
-        bytes += part.value.byteLength;
-        if (bytes > 131_072) {
-          await reader.cancel();
-          throw new ApiError(502, "AI_OUTPUT_INVALID", "AI provider response is invalid.");
-        }
-        raw += decoder.decode(part.value, { stream: true });
-      }
-      raw += decoder.decode();
-    } finally { reader.releaseLock(); }
-    let value: unknown;
-    try { value = JSON.parse(raw); } catch { throw new ApiError(502, "AI_OUTPUT_INVALID", "AI provider response is invalid."); }
+    const value = await readBoundedAIResponse(response);
     const parsed = responseSchema.safeParse(value);
     if (!parsed.success) throw new ApiError(502, "AI_OUTPUT_INVALID", "AI provider response is invalid.");
     const reply = parsed.data.choices[0];

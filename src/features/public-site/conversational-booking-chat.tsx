@@ -13,13 +13,15 @@ import { DirectBookingPanel, type DirectBooking } from "./direct-booking-panel";
 import { OfficeContactDialog, type OfficeContact, type OfficeContactInput } from "./office-contact-dialog";
 import { ConversationAccountForm } from "./conversation-account-form";
 import type { PublicLocale } from "@/lib/public-locale";
+import { legalSourceSchema, type LegalSource } from "@/lib/legal-assistant";
+import { legalAssistantCopy } from "@/content/legal-assistant-copy";
 import "./consultation-experience.css";
 
 type State = {
   locale: PublicLocale; handoffState: "NONE" | "QUEUED" | "CLAIMED"; booking: DirectBooking | null;
   dialogue: { mode: "INQUIRY" | "BOOKING"; offerShown: boolean; consentAt: string | null; accountAccess: boolean };
   draft: Record<string, string | null>; revision: number; accountReady: boolean; humanOwned: boolean; submitted: boolean;
-  turns: Array<{ messageId: string; recipient?: "ASSISTANT" | "OFFICE"; userText: string; assistantText: string | null; status: string; createdAt?: string; updatedAt?: string }>;
+  turns: Array<{ messageId: string; recipient?: "ASSISTANT" | "OFFICE"; userText: string; assistantText: string | null; status: string; createdAt?: string; updatedAt?: string; sources?: LegalSource[] }>;
   staffMessages?: Array<{ id: string; body: string; createdAt: string }>;
   closed?: boolean;
   officeThreadStatus?: string | null; officeContact?: OfficeContact | null; expiresAt?: string;
@@ -207,12 +209,16 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
         {!state?.turns.length && !state?.staffMessages?.length && <p className="consultation-empty">{copy.emptyConversation}</p>}
         {[
           ...(state?.turns.flatMap((turn, index) => [
-            { id: `${turn.messageId}-user`, body: turn.userText, type: "user", recipient: turn.recipient ?? (turn.status === "HUMAN" ? "OFFICE" : "ASSISTANT"), at: turn.createdAt ? Date.parse(turn.createdAt) : index * 2 },
-            ...(turn.assistantText ? [{ id: `${turn.messageId}-assistant`, body: turn.assistantText, type: "assistant", at: turn.updatedAt ? Date.parse(turn.updatedAt) : turn.createdAt ? Date.parse(turn.createdAt) + 1 : index * 2 + 1 }] : [])
+            { id: `${turn.messageId}-user`, body: turn.userText, type: "user", sources: [] as LegalSource[], recipient: turn.recipient ?? (turn.status === "HUMAN" ? "OFFICE" : "ASSISTANT"), at: turn.createdAt ? Date.parse(turn.createdAt) : index * 2 },
+            ...(turn.assistantText ? [{ id: `${turn.messageId}-assistant`, body: turn.assistantText, type: "assistant", sources: turn.sources, at: turn.updatedAt ? Date.parse(turn.updatedAt) : turn.createdAt ? Date.parse(turn.createdAt) + 1 : index * 2 + 1 }] : [])
           ]) ?? []),
-          ...(state?.staffMessages?.map(item => ({ id: item.id, body: item.body, type: "staff", at: Date.parse(item.createdAt) })) ?? [])
+          ...(state?.staffMessages?.map(item => ({ id: item.id, body: item.body, type: "staff", sources: [] as LegalSource[], at: Date.parse(item.createdAt) })) ?? [])
         ].sort((a, b) => a.at - b.at).map(item => <div key={item.id} className={`consultation-message consultation-message-${item.type}`}>
           <p className="consultation-author">{item.type === "user" ? <UserRound aria-hidden="true" /> : item.type === "staff" ? <Headset aria-hidden="true" /> : <Scale aria-hidden="true" />}{item.type === "user" ? copy.you : item.type === "staff" ? copy.staff : copy.assistant}{"recipient" in item && <span className="consultation-recipient-label">{item.recipient === "OFFICE" ? copy.sentToOffice : copy.sentToAssistant}</span>}</p><p className="whitespace-pre-wrap break-words" dir="auto">{item.body}</p>
+          {item.sources?.some(s => legalSourceSchema.safeParse(s).success) && <nav aria-label={legalAssistantCopy[language].sources} className="mt-3 space-y-2 text-sm">
+            <p>{legalAssistantCopy[language].sources}</p>
+            {item.sources.filter(s => legalSourceSchema.safeParse(s).success).slice(0, 5).map(source => <p key={source.id} className="break-words"><a href={source.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">[{source.id}] {source.title}</a>{" · "}{legalAssistantCopy[language].accessed} {new Intl.DateTimeFormat(language, { dateStyle: "medium" }).format(new Date(source.retrievedAt))}</p>)}
+          </nav>}
         </div>)}
       </div>
       {newMessages && <Button className="consultation-latest" variant="outline" type="button" onClick={() => { followLatest.current = true; setNewMessages(false); if (log.current) log.current.scrollTop = log.current.scrollHeight; }}>{copy.latest}</Button>}

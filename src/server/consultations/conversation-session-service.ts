@@ -27,10 +27,21 @@ import { followupCategory, renderClientRecord, resolveClientFollowup } from "@/s
 import { clientAssistantCopy } from "@/content/client-assistant-copy";
 import { formatDateTime } from "@/lib/legal-format";
 import { getClientContent } from "@/content/client-content";
+import { legalSourceMetadata, readLegalSources } from "@/lib/legal-assistant";
+import { legalAssistantCopy } from "@/content/legal-assistant-copy";
+import { legalContextForMessage, legalSubjectQuestion, explicitAccountQuestion } from "@/server/ai/legal-context";
+import { legalTopics } from "@/server/ai/legal-assistance-contract";
+import { composeLegalAssistance } from "@/server/ai/legal-assistance-service";
+import { noOutsideReferral } from "@/server/ai/legal-safety";
+import type { ClientRecord } from "@/server/portal/client-assistant-contract";
 
 export const ASSISTANT_COOKIE = "kmt_assistant";
 export const capabilityHash = (value: string) => createHash("sha256").update(value).digest("hex");
 const ACCOUNT_FACTS_MARKER = "CLIENT_ACCOUNT_FACTS";
+const LEGAL_ANSWER_MARKER = "LEGAL_ASSISTANCE_ANSWER";
+function answeredExchange(turn: { protocol: Prisma.JsonValue }) {
+  return !privateAnswer(turn) && Array.isArray(turn.protocol) && turn.protocol.some(value => value && typeof value === "object" && !Array.isArray(value) && (value.role === "assistant" || (value.role === "system" && value.content === LEGAL_ANSWER_MARKER)));
+}
 function privateAnswer(turn: { protocol: Prisma.JsonValue }) {
   return Array.isArray(turn.protocol) && turn.protocol.some(value => value && typeof value === "object" && !Array.isArray(value) && value.role === "system" && value.content === ACCOUNT_FACTS_MARKER);
 }
@@ -64,8 +75,9 @@ export async function ownAssistantSession(token: string, actor?: Principal | nul
 
 export async function readAssistantSession(token: string, actor?: Principal | null) {
   const session = await ownAssistantSession(token, actor);
-  const turns = await prisma.assistantTurn.findMany({ where: { sessionId: session.id }, orderBy: { createdAt: "asc" }, take: 100,
-    select: { messageId: true, recipient: true, userText: true, assistantText: true, status: true, createdAt: true, updatedAt: true } });
+  const savedTurns = await prisma.assistantTurn.findMany({ where: { sessionId: session.id }, orderBy: { createdAt: "asc" }, take: 100,
+    select: { messageId: true, recipient: true, userText: true, assistantText: true, status: true, createdAt: true, updatedAt: true, protocol: true } });
+  const turns = savedTurns.map(({ protocol, ...turn }) => ({ ...turn, sources: readLegalSources(protocol) }));
   const staffMessages = session.conversationThreadId ? await prisma.conversationMessage.findMany({
     where: { threadId: session.conversationThreadId, senderType: "STAFF" }, orderBy: { createdAt: "asc" }, take: 100,
     select: { id: true, body: true, createdAt: true }
@@ -133,14 +145,19 @@ export async function sendAssistantMessage(input: {
     const history = prior.slice().reverse().map(t => ({ user: t.userText, assistant: historyAnswer(t) }));
     const initialDialogue = readDialogue(session.consultationRequestId ? { ...readDialogue(session.dialogue), mode: "INQUIRY", consentAt: null } : session.dialogue);
     const knowledge = assistantKnowledge(input.locale);
-    const category = initialDialogue.mode === "BOOKING" && !initialDialogue.followup ? null : followupCategory(input.message, initialDialogue.followup);
-    const assessment = category ? messageAssessmentSchema.parse({ scope: "OFFICE", intent: "FOLLOW_UP", evidence: input.message, locale: input.locale, offerAppropriate: false, inScopeQuestion: input.message }) : await policyDecision(provider, messageAssessmentSchema, "classify_company_message", INPUT_POLICY,
-      { message: input.message, history, dialogue: initialDialogue, serviceIds: knowledge.services.map(s => ({ id: s.id, title: s.title })) }, input.requestId);
+    const legalContinuation = initialDialogue.activeDomain === "LEGAL" && !explicitAccountQuestion(input.message) && !(/^\s*[1-5][؟?.\s]*$/.test(input.message) && initialDialogue.followup?.choices && !initialDialogue.legal?.useSelectedRecord);
+    const category = (initialDialogue.mode === "BOOKING" && !initialDialogue.followup) || legalContinuation ? null : followupCategory(input.message, initialDialogue.followup);
+    let assessment = category ? messageAssessmentSchema.parse({ scope: "OFFICE", intent: "FOLLOW_UP", evidence: input.message, locale: input.locale, offerAppropriate: false, inScopeQuestion: input.message }) : await policyDecision(provider, messageAssessmentSchema, "classify_company_message", INPUT_POLICY,
+      { message: input.message, history, dialogue: initialDialogue, legalTopics: Object.keys(legalTopics), serviceIds: knowledge.services.map(s => ({ id: s.id, title: s.title })) }, input.requestId);
+    if (assessment.intent === "FOLLOW_UP" && (legalSubjectQuestion(input.message) || legalContinuation)) assessment = { ...assessment, scope: "LEGAL", intent: "NONE", evidence: "" };
     await assertActive();
     const copy = assistantPolicyCopy[assessment.locale];
     const dialogue = applyAssessment(initialDialogue, assessment, input.message);
+    if (assessment.intent === "FOLLOW_UP") dialogue.activeDomain = "ACCOUNT";
+    else if (assessment.scope === "OFFICE" || ["BOOK", "ACCOUNT", "HANDOFF"].includes(assessment.intent)) dialogue.activeDomain = "OFFICE";
     const policyFallback = dialogue.mode === "INQUIRY" ? copy.safeReply : directBookingCopy[assessment.locale].fallback;
     let groundedReply: string | undefined;
+    let containsPrivateFacts = false;
     const assertPrivate = async () => {
       await assertActive();
       if (!input.actor?.clientId) throw new ApiError(401, "AUTH_REQUIRED", "Authentication required.");
@@ -174,7 +191,7 @@ export async function sendAssistantMessage(input: {
           ...(draft ? { draft: draft as Prisma.InputJsonValue } : {})
         } });
         if (!claimed.count) throw new ApiError(409, "CONFLICT", "Conversation ownership changed.");
-        const savedProtocol = input.actor?.clientId && (groundedReply || assessment.intent === "FOLLOW_UP") ? [{ role: "system", content: ACCOUNT_FACTS_MARKER }] : protocol;
+        const savedProtocol = input.actor?.clientId && (containsPrivateFacts || groundedReply || assessment.intent === "FOLLOW_UP") ? [...protocol, { role: "system", content: ACCOUNT_FACTS_MARKER }] : protocol;
         await tx.assistantTurn.update({ where: identity, data: { assistantText: text, protocol: savedProtocol as unknown as Prisma.InputJsonValue, status: "COMPLETED" } });
         const linked = await tx.assistantSession.findUniqueOrThrow({ where: { id: session.id }, select: { conversationThreadId: true } });
         if (linked.conversationThreadId) await ensureAssistantHandoff(tx, session.id);
@@ -230,6 +247,37 @@ export async function sendAssistantMessage(input: {
     }
     if (["DECLINE", "WITHDRAW"].includes(assessment.intent) && dialogue.mode === "INQUIRY" && dialogue.offerShown) return await finalize(copy.withdrawn, dialogue);
     const approvedKnowledge = assistantKnowledge(assessment.locale);
+    if ((["LEGAL", "RELATED_LEGAL"].includes(assessment.scope) || (assessment.scope === "MIXED" && assessment.legal)) && assessment.intent === "NONE") {
+      const legal = legalContextForMessage(initialDialogue.legal, assessment.legal, input.message);
+      if (legal.conflict) return await finalize(legalAssistantCopy[assessment.locale].conflict, dialogue);
+      dialogue.legal = legal.context;
+      dialogue.activeDomain = "LEGAL";
+      let ownedRecord: ClientRecord | undefined;
+      const evidence = assessment.accountEvidence;
+      const explicitOwnAnalysis = !!evidence && input.message.includes(evidence) && explicitAccountQuestion(input.message);
+      const continuingOwnAnalysis = legalContinuation && initialDialogue.legal?.useSelectedRecord && JSON.stringify(legal.context.topics) === JSON.stringify(initialDialogue.legal.topics);
+      legal.context.useSelectedRecord = explicitOwnAnalysis || !!continuingOwnAnalysis;
+      if (legal.context.useSelectedRecord) {
+        if (!input.actor?.clientId) return await finalize(clientAssistantCopy[assessment.locale].login, dialogue);
+        await assertPrivate(); containsPrivateFacts = true;
+        try {
+          const legalCategory = assessment.followupCategory ?? (/قضيتي|my case/i.test(input.message) ? "CASE" : dialogue.followup?.category ?? "CASE");
+          const followup = await resolveClientFollowup({ actor: input.actor, message: input.message, locale: assessment.locale, category: legalCategory, focus: dialogue.followup });
+          dialogue.followup = followup.focus;
+          if (!followup.record) return await finalize(followup.text, dialogue);
+          ownedRecord = followup.record;
+        } catch (error) {
+          if (error instanceof ApiError && ["AUTH_REQUIRED", "PERMISSION_DENIED", "CONFLICT"].includes(error.code)) throw error;
+          safeLog("warn", "assistant.legal_data", { requestId: input.requestId, reason: error instanceof ApiError && error.code === "NOT_FOUND" ? "NOT_FOUND" : "DATA_UNAVAILABLE" });
+          return await finalize(clientAssistantCopy[assessment.locale][error instanceof ApiError && error.code === "NOT_FOUND" ? "notFound" : "unavailable"], dialogue);
+        }
+      }
+      const legalReply = await composeLegalAssistance({ provider, context: legal.context, locale: assessment.locale, message: input.message, requestId: input.requestId, history, knowledge: approvedKnowledge, showJurisdiction: legal.changed, ownedRecord });
+      if (legalReply.accepted && shouldOfferConsultation({ dialogue, assessment, completedExchanges: prior.filter(answeredExchange).length, submitted: !!session.consultationRequestId })) {
+        dialogue.offerShown = true; legalReply.text += "\n\n" + copy.offer;
+      }
+      return await finalize(legalReply.text, dialogue, [legalSourceMetadata(legalReply.sources), ...(legalReply.accepted ? [{ role: "system" as const, content: LEGAL_ANSWER_MARKER }] : [])]);
+    }
     const canBook = () => bookingAllowed(dialogue) && !session.consultationRequestId;
     const requireBooking = () => { if (!canBook()) throw new ApiError(403, "PERMISSION_DENIED", "Booking consent is required."); };
     const messages: AIChatMessage[] = [
@@ -333,10 +381,10 @@ export async function sendAssistantMessage(input: {
         if (error instanceof ApiError && error.code === "AI_OUTPUT_INVALID") return { inScope: false };
         throw error;
       });
-    if (!Object.values(review).every(Boolean)) { safeLog("warn", "assistant.policy_rejected", { requestId: input.requestId, reason: "REPLY_REVIEW", checks: review }); return await finalize(policyFallback, dialogue); }
+    if (!Object.values(review).every(Boolean) || !noOutsideReferral(result.text, [approvedKnowledge.office.whatsapp])) { safeLog("warn", "assistant.policy_rejected", { requestId: input.requestId, reason: "REPLY_REVIEW", checks: review }); return await finalize(policyFallback, dialogue); }
     let reply = assessment.scope === "MIXED" ? copy.mixed + "\n\n" + result.text : result.text;
     // Rejected answers and boilerplate replies must not advance invitation timing.
-    const answeredExchanges = prior.filter(turn => !privateAnswer(turn) && Array.isArray(turn.protocol) && turn.protocol.length > 0).length;
+    const answeredExchanges = prior.filter(answeredExchange).length;
     if (shouldOfferConsultation({ dialogue, assessment, completedExchanges: answeredExchanges, submitted: !!session.consultationRequestId })) {
       dialogue.offerShown = true;
       reply += "\n\n" + copy.offer;
@@ -358,7 +406,7 @@ export async function changeAssistantDialogue(token: string, action: "begin_book
   const session = await ownAssistantSession(token, actor);
   if (session.consultationRequestId && action === "begin_booking") throw new ApiError(409, "CONFLICT", "This conversation cannot change mode.");
   const state = readDialogue(session.dialogue);
-  if (action === "begin_booking") { state.mode = "BOOKING"; state.consentAt = new Date().toISOString(); delete state.followup; }
+  if (action === "begin_booking") { state.mode = "BOOKING"; state.consentAt = new Date().toISOString(); state.activeDomain = "OFFICE"; delete state.followup; }
   if (action === "return_inquiry") { state.mode = "INQUIRY"; state.consentAt = null; state.offerShown = true; state.accountAccess = false; }
   if (action === "account_access") state.accountAccess = true;
   const changed = await prisma.assistantSession.updateMany({ where: { id: session.id, revision: session.revision, leaseId: null }, data: { ...(action === "begin_booking" && selectedService ? { draft: intakeDraftSchema.parse({ ...intakeDraftSchema.parse(session.draft), service: selectedService }) } : {}), dialogue: state as Prisma.InputJsonValue, revision: { increment: 1 } } });

@@ -5,11 +5,13 @@ import type { AIProviderAdapter, AIProviderName, AIProviderResult, AITask } from
 import type { AIProviderConfig } from "../config";
 import { requestConversation } from "./conversational";
 import { providerRequestParameters } from "./request-parameters";
+import { requestLegalResearch } from "./legal-research";
 
 export function createOpenAICompatibleProvider(config: AIProviderConfig, name: AIProviderName): AIProviderAdapter {
   return {
     name,
     chat: (input) => requestConversation(config, input),
+    researchLegal: input => requestLegalResearch(config, input),
     async generate(input): Promise<AIProviderResult> {
       if (!config.baseUrl) {
         throw new ApiError(500, "AI_PROVIDER_UNAVAILABLE", "AI provider base URL is not configured.");

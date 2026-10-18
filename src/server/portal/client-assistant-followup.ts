@@ -4,6 +4,7 @@ import type { Principal } from "@/server/auth/policy";
 import { ApiError } from "@/server/http/errors";
 import { clientAssistantDueBalances, findClientAssistantReference, getClientAssistantRecord, listClientAssistantRecords } from "./client-assistant-data";
 import type { Category, ClientRecord, FollowupFocus, RecordRef } from "./client-assistant-contract";
+import { legalSubjectQuestion } from "@/server/ai/legal-context";
 
 export function normalizeFollowup(text: string) {
   return text.toLowerCase().replace(/[\u064B-\u065F\u0670]/g, "").replace(/[أإآ]/g, "ا").replace(/ى/g, "ي").replace(/[٠-٩]/g, d => String("٠١٢٣٤٥٦٧٨٩".indexOf(d))).trim();
@@ -13,6 +14,7 @@ export function explicitNewBooking(text: string) {
 }
 export function followupCategory(text: string, focus?: FollowupFocus): Category | null {
   const t = normalizeFollowup(text);
+  if (legalSubjectQuestion(text)) return null;
   if (explicitNewBooking(t)) return null;
   if (/طلباتي|كل الطلبات|\bmy requests\b/.test(t)) return "REQUESTS";
   if (focus?.selected && /ناقص|missing|عرض المكتب|proposal|quote/.test(t)) return focus.category;

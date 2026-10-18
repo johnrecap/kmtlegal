@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import type { LegalResearchInput, LegalResearchResult } from "./legal-assistance-contract";
 
 export type AIProviderName = "mock" | "openrouter" | "openai-compatible" | "local" | "custom";
 
@@ -57,6 +58,7 @@ export type AIGatewayResult<TOutput> = {
 export type AIProviderAdapter = {
   name: AIProviderName;
   chat?(input: AIChatInput): Promise<AIChatReply>;
+  researchLegal?(input: LegalResearchInput): Promise<LegalResearchResult>;
   generate(input: {
     task: AITask;
     locale: "ar" | "en";
@@ -85,6 +87,7 @@ export type AIChatTool = {
 };
 
 export type AIChatInput = {
+  maxTokens?: number;
   messages: AIChatMessage[];
   tools: AIChatTool[];
   requestId: string;
