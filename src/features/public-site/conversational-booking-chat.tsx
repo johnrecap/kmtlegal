@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowUp, CalendarDays, Scale, ShieldCheck, UserRound, Headset } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ type Recipient = "ASSISTANT" | "OFFICE";
 type PendingMessage = { messageId: string; message: string; recipient: Recipient };
 const endpoint = "/api/public/assistant/conversation";
 
-export function ConversationalBookingChat({ locale, initialService }: { locale: PublicLocale; initialService?: string }) {
+export function ConversationalBookingChat({ locale, initialService, layout = "public", headerAction }: { locale: PublicLocale; initialService?: string; layout?: "public" | "portal"; headerAction?: ReactNode }) {
 
   const [panelOpen, setPanelOpen] = useState(false);
   const closePanel = useCallback(() => setPanelOpen(false), []);
@@ -65,13 +65,14 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
   const latestAssistant = state?.turns.at(-1)?.assistantText;
 
   useEffect(() => {
+    if (layout === "portal") return;
     const resize = () => {
       const root = experience.current;
       if (root) root.style.setProperty("--consultation-height", `${Math.max(180, (window.visualViewport?.height ?? window.innerHeight) - Math.max(0, root.getBoundingClientRect().top) - 16)}px`);
     };
     resize(); window.addEventListener("resize", resize); window.visualViewport?.addEventListener("resize", resize);
     return () => { window.removeEventListener("resize", resize); window.visualViewport?.removeEventListener("resize", resize); };
-  }, [language]);
+  }, [language, layout]);
   useEffect(() => {
     const input = messageInput.current;
     if (input) { input.style.height = "44px"; input.style.height = `${Math.min(120, input.scrollHeight)}px`; }
@@ -192,11 +193,14 @@ export function ConversationalBookingChat({ locale, initialService }: { locale: 
     return saved;
   }
 
-  return <section ref={experience} lang={language} aria-label={copy.title} className="kmt-consultation" dir={language === "ar" ? "rtl" : "ltr"}>
-    <header className="consultation-welcome"><h1>{copy.welcome}</h1><p>{copy.conversationIntro}</p></header>
+  const Heading = layout === "portal" ? "h1" : "h2";
+  const languageControl = <Button type="button" variant="ghost" disabled={busy || !state} onClick={() => void action({ action: "set_locale", locale: language === "ar" ? "en" : "ar" })}>{language === "ar" ? "English" : "العربية"}</Button>;
+
+  return <section ref={experience} lang={language} aria-label={copy.title} className={`kmt-consultation${layout === "portal" ? " kmt-consultation--portal" : ""}`} dir={language === "ar" ? "rtl" : "ltr"}>
+    {layout === "public" && <header className="consultation-welcome"><h1>{copy.welcome}</h1><p>{copy.conversationIntro}</p></header>}
     <div className="consultation-chat">
-      <header className="consultation-chat-head"><div className="consultation-heading"><span className="consultation-avatar"><Scale aria-hidden="true" /></span><div><h2>{copy.title}</h2><p>{copy.conversationIntro}</p></div></div>
-      <Button type="button" variant="ghost" disabled={busy || !state} onClick={() => void action({ action: "set_locale", locale: language === "ar" ? "en" : "ar" })}>{language === "ar" ? "English" : "العربية"}</Button></header>
+      <header className="consultation-chat-head"><div className="consultation-heading"><span className="consultation-avatar"><Scale aria-hidden="true" /></span><div><Heading>{copy.title}</Heading><p>{copy.conversationIntro}</p></div></div>
+      {headerAction ? <div className="consultation-header-actions">{headerAction}{languageControl}</div> : languageControl}</header>
       <div className="consultation-log-wrap"><div ref={log} role="log" tabIndex={0} aria-label={copy.transcript} aria-live="polite" aria-relevant="additions" className="consultation-log" onScroll={() => { const el = log.current; if (el) { followLatest.current = el.scrollHeight - el.clientHeight - el.scrollTop < 64; if (followLatest.current) setNewMessages(false); } }}>
         <p className="consultation-day-label">{copy.today}</p>
         {!state?.turns.length && !state?.staffMessages?.length && <p className="consultation-empty">{copy.emptyConversation}</p>}

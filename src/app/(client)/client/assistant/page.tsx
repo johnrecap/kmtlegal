@@ -20,7 +20,7 @@ export default async function ClientAssistantPage() {
   }
 
   return (
-    <ClientSiteShell locale={locale} navItems={clientNavForPath("/client/assistant", locale)} title={copy.assistant.pageTitle} userLabel={guard.context.user.name}>
+    <ClientSiteShell contentMode="conversation" locale={locale} navItems={clientNavForPath("/client/assistant", locale)} title={copy.assistant.pageTitle} userLabel={guard.context.user.name}>
       <ClientConversationWorkspace locale={locale} />
     </ClientSiteShell>
   );

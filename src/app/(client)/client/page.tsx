@@ -121,7 +121,7 @@ export default async function ClientHomePage() {
       userLabel={guard.context.user.name}
     >
       <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <ClientPortalMetric icon="gavel" label={copy.dashboard.cases} value={String(dashboard.casesCount)} meta={copy.dashboard.casesMeta} />
           <ClientPortalMetric icon="event" label={copy.dashboard.upcoming} value={String(dashboard.appointmentsCount)} meta={copy.dashboard.upcomingMeta} />
           <ClientPortalMetric icon="folder" label={copy.dashboard.files} value={String(dashboard.documentsCount)} meta={copy.dashboard.filesMeta} />

@@ -17,8 +17,17 @@ for (const locale of ["ar", "en"] as const) for (const theme of ["light", "dark"
     const copy = conversationCopy[locale], direct = directBookingCopy[locale], policy = assistantPolicyCopy[locale], preview = messages[locale];
     const state: Record<string, any> = { locale, handoffState: "NONE", booking: null, draft: {}, dialogue: { mode: "INQUIRY", consentAt: null, offerShown: true, accountAccess: false }, revision: 0, accountReady: false, humanOwned: false, submitted: false,
       turns: [{ messageId: "sample-a", userText: preview.question, assistantText: preview.answer, createdAt: fixture.now }, { messageId: "sample-b", userText: preview.followup, assistantText: preview.response, createdAt: "2026-10-15T06:00:02Z" }] };
-    const errors: string[] = []; const writes: any[] = [];
-    page.on("pageerror", e => errors.push(e.message)); page.on("console", m => { if (m.type() === "error") errors.push(m.text()); });
+    const errors: string[] = []; const writes: any[] = []; const guestSessionChecks: number[] = [];
+    page.on("pageerror", e => errors.push(e.message));
+    page.on("response", response => {
+      if (new URL(response.url()).pathname === "/api/auth/me") guestSessionChecks.push(response.status());
+    });
+    page.on("console", message => {
+      if (message.type() !== "error") return;
+      // Opening the account panel checks guest identity; the real API returns 401.
+      if (message.location().url.endsWith("/api/auth/me") && /status of 401/.test(message.text())) return;
+      errors.push(message.text());
+    });
     await page.setViewportSize({ width, height: 900 });
     await page.addInitScript(value => localStorage.setItem("kmt-theme", value), theme);
     await page.route("**/api/analytics/events", route => route.fulfill({ status: 202, json: { data: { accepted: true } } }));
@@ -79,6 +88,8 @@ for (const locale of ["ar", "en"] as const) for (const theme of ["light", "dark"
       await page.keyboard.press("Escape");
     }
     expect(writes).toEqual([]); expect(errors).toEqual([]);
+    expect(guestSessionChecks.length).toBeGreaterThan(0);
+    expect(guestSessionChecks.every(status => status === 401)).toBe(true);
     await testInfo.attach("scope", { body: "Real production UI, intercepted synthetic API. No booking writes or real AI calls.", contentType: "text/plain" });
   });
 }

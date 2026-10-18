@@ -12,8 +12,20 @@ import { PaymentProofForm } from "@/features/portal/payment-proof-form";
 import { serviceRequestCopy } from "@/content/service-request-copy";
 import { DirectBookingPanel } from "@/features/public-site/direct-booking-panel";
 import { directBookingCopy } from "@/content/direct-booking-copy";
+import { conversationCopy } from "@/content/conversation-copy";
 const request: ServiceRequestView = { id: "synthetic", reference: "CONTRACT-SYNTHETIC", kind: "CONTRACT_REVIEW", status: "DRAFT", revision: 0, quoteVersion: 0, paymentId: null, intake: { title: "Synthetic contract", purpose: "Synthetic review", language: "en", requestedDate: "", answers: {} }, quote: null, questionnaire: null, documents: [], events: [] };
 describe("phase-five shared component consumers", () => {
+  for (const locale of ["ar", "en"] as const) it(`${locale}: keeps the public welcome and gives the portal one compact chat heading`, () => {
+    const publicChat = renderToStaticMarkup(<ConversationalBookingChat locale={locale} />);
+    const portalChat = renderToStaticMarkup(<ConversationalBookingChat locale={locale} layout="portal" headerAction={<button>{conversationCopy[locale].staff}</button>} />);
+    expect(publicChat).toContain(conversationCopy[locale].welcome);
+    expect(publicChat).not.toContain("kmt-consultation--portal");
+    expect(portalChat).not.toContain(conversationCopy[locale].welcome);
+    expect(portalChat.match(/<h1[ >]/g)).toHaveLength(1);
+    expect(portalChat).toContain(conversationCopy[locale].staff);
+    expect(portalChat).toContain('role="log"');
+    expect(portalChat).toContain(conversationCopy[locale].message);
+  });
   for (const locale of ["ar", "en"] as const) it(`${locale}: distinguishes unconfirmed callback from confirmed guest appointment`, () => {
     const base = { confirmationSource: "CALLBACK_REQUEST", contactChannel: "WHATSAPP", publicReference: "CONS-SYNTHETIC", fullName: "Synthetic", phone: "01012345678", serviceCategory: "corporate", status: "NEW", appointments: [] };
     const callback = renderToStaticMarkup(<DirectBookingPanel locale={locale} revision={1} draft={{}} booking={base} onRefresh={async () => {}} />);
