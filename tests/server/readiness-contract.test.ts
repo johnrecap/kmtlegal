@@ -4,6 +4,7 @@ import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { databaseReadinessChecks, readinessSummary } from "@/server/health/runtime-readiness";
 import { productionReadinessIssues } from "@/server/config/production-readiness";
+import * as readiness from "@/server/health/runtime-readiness";
 
 function prismaFixture(overrides: {
   queryFails?: boolean;
@@ -31,6 +32,25 @@ function prismaFixture(overrides: {
 }
 
 describe("runtime readiness contract", () => {
+  it.each([
+    [{ AI_PROVIDER: "openrouter", AI_API_KEY: "synthetic-not-a-secret" }, true],
+    [{ AI_PROVIDER: "openrouter", AI_API_KEY: "" }, false],
+    [{ AI_PROVIDER: "mock" }, false],
+    [{ AI_PROVIDER: "custom", AI_API_KEY: "synthetic-not-a-secret", AI_BASE_URL: "file:///private" }, false]
+  ])("PLAN40 reports assistant configuration only without blocking the site or calling the provider: %j", (env, configured) => {
+    const network = vi.fn(() => { throw new Error("A readiness check must not call the provider"); });
+    vi.stubGlobal("fetch", network);
+    try {
+      const check = readiness.assistantConfigurationReadinessCheck({ ...env, NODE_ENV: "test" });
+      expect(check).toMatchObject({ id: "assistant.configuration", ok: configured, blocking: false });
+      expect(check.message).toMatch(/configuration only/i);
+      expect(readinessSummary([check]).ready).toBe(true);
+      expect(network).not.toHaveBeenCalled();
+      expect(JSON.stringify(check)).not.toContain("synthetic-not-a-secret");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
   it("reports database connection failure as blocking readiness checks", async () => {
     const checks = await databaseReadinessChecks({
       requireBootstrap: true,

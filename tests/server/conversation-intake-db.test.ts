@@ -80,6 +80,61 @@ afterAll(async () => {
 });
 
 describe.sequential("representative conversational intake against isolated SQL database", () => {
+  // PLAN-40 incident: a 30s shared deadline aborted classification/generation/review together.
+  it.each([
+    { name: "completes three 15s stages within the separate 60s turn budget", delay: 15_000, budget: "60000", completed: true },
+    { name: "aborts one call exceeding 30s and permits same-identity recovery", delay: 31_000, budget: "60000", completed: false },
+    { name: "aborts cumulative stages exceeding the full turn budget", delay: 15_000, budget: "20000", completed: false }
+  ])("PLAN40 $name", async ({ delay, budget, completed }) => {
+    const token = await createAssistantSession("en");
+    const messageId = randomUUID();
+    vi.stubEnv("AI_TIMEOUT_MS", "30000");
+    vi.stubEnv("AI_CONVERSATION_TIMEOUT_MS", budget);
+    installConversationMock(() => Response.json({ choices: [{ finish_reason: "stop", message: { content: "The office can explain company formation steps and the documents required." } }] }));
+    const respond = globalThis.fetch;
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const timeout = vi.spyOn(AbortSignal, "timeout").mockImplementation(ms => {
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(new DOMException("Timed out", "TimeoutError")), ms);
+      return controller.signal;
+    });
+    let elapsed = 0;
+    vi.stubGlobal("fetch", vi.fn(async (...args: Parameters<typeof fetch>) => {
+      elapsed += delay;
+      await vi.advanceTimersByTimeAsync(delay);
+      args[1]?.signal?.throwIfAborted();
+      return respond(...args);
+    }));
+    try {
+      const input = { token, messageId, message: "Explain company formation steps", locale: "en" as const, requestId: randomUUID() };
+      if (completed) {
+        const result = await sendAssistantMessage(input);
+        expect(elapsed).toBe(45_000);
+        expect(result.turns).toHaveLength(1);
+        expect(result.turns[0]).toMatchObject({ messageId, status: "COMPLETED" });
+        expect(result.turns[0].assistantText).toContain("company formation");
+      } else {
+        await expect(sendAssistantMessage(input)).rejects.toMatchObject({ code: "AI_PROVIDER_TIMEOUT" });
+        const saved = await readAssistantSession(token);
+        expect(saved.turns).toHaveLength(1);
+        expect(saved.turns[0]).toMatchObject({ messageId, status: "FAILED", assistantText: null });
+        const failedSession = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+        expect(failedSession).toMatchObject({ leaseId: null, leaseExpiresAt: null });
+        installConversationMock(() => Response.json({ choices: [{ finish_reason: "stop", message: { content: "The office can explain company formation steps." } }] }));
+        const recovered = await sendAssistantMessage(input);
+        expect(recovered.turns).toHaveLength(1);
+        expect(recovered.turns[0]).toMatchObject({ messageId, status: "COMPLETED" });
+      }
+      const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+      expect(session).toMatchObject({ leaseId: null, leaseExpiresAt: null });
+    } finally {
+      timeout.mockRestore();
+      vi.useRealTimers();
+      vi.stubEnv("AI_TIMEOUT_MS", "30000");
+      vi.stubEnv("AI_CONVERSATION_TIMEOUT_MS", "60000");
+    }
+  });
+
   it("keeps the assistant available to a guest after an office reply in the same session", async () => {
     const token = await createAssistantSession("ar");
     const officeMessage = { token, messageId: randomUUID(), message: "رسالة للمكتب", locale: "ar" as const, recipient: "OFFICE" as const, requestId: "recipient-representative" };
@@ -664,4 +719,42 @@ describe.sequential("representative conversational intake against isolated SQL d
       await expect(uploadDocument({ actor: { ...owner, id: randomUUID(), clientId: randomUUID() }, fields: { paymentId: payment.id }, file: { fileName: "evidence.pdf", mimeType: "application/pdf", sizeBytes: bytes.length, bytes } })).rejects.toMatchObject({ code: "NOT_FOUND" });
     } finally { await rm(root, { recursive: true, force: true }); }
   });
+  it("PLAN40 confirms one booking and office delivery while generated answers are unavailable", async () => {
+    const previous = await fixture.db.systemSetting.findUnique({ where: { key: "consultation.availability" } });
+    const role = await fixture.db.role.upsert({ where: { name: "Lawyer" }, create: { name: "Lawyer", status: "ACTIVE" }, update: {} });
+    const lawyer = await fixture.db.user.create({ data: { name: "Outage fixture lawyer", email: `${randomUUID()}@synthetic.invalid`, roleId: role.id, status: "ACTIVE" } });
+    const value = { ...defaultConsultationAvailability, directBooking: { published: true, closures: [], roster: defaultConsultationAvailability.days.map(day => ({ weekday: day.weekday, lawyerIds: [lawyer.id] })) } };
+    await fixture.db.systemSetting.upsert({ where: { key: "consultation.availability" }, create: { key: "consultation.availability", value }, update: { value } });
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("Unavailable", { status: 503 })));
+    try {
+      const token = await createAssistantSession("en");
+      await expect(sendAssistantMessage({ token, messageId: randomUUID(), message: "Explain office services", locale: "en", requestId: randomUUID() })).rejects.toMatchObject({ code: "AI_PROVIDER_UNAVAILABLE" });
+      const ready = await changeAssistantDialogue(token, "begin_booking");
+      const availability = await listDirectBookingSlots();
+      const slot = availability.slots[0] ?? availability.nearestSlot;
+      expect(slot).toBeTruthy();
+      const confirmation = { action: "confirm_booking" as const, key: randomUUID(), revision: ready.revision, confirmed: true as const,
+        fullName: "Synthetic outage guest", phone: "01000000000", contactChannel: "PHONE" as const, startsAt: slot!.startsAt };
+      await mutateDirectBooking(token, confirmation);
+      const first = await readAssistantSession(token);
+      // A lost HTTP response reuses the exact key/body even though the revision has changed.
+      await mutateDirectBooking(token, confirmation);
+      const replay = await readAssistantSession(token);
+      expect(replay.booking?.appointments).toHaveLength(1);
+      expect(replay.booking?.appointments[0].id).toBe(first.booking?.appointments[0].id);
+      expect(replay.accountReady).toBe(false);
+      const officeMessage = { token, recipient: "OFFICE" as const, messageId: randomUUID(), message: "Please follow up on this synthetic booking", locale: "en" as const, requestId: randomUUID() };
+      await sendAssistantMessage(officeMessage); const delivered = await sendAssistantMessage(officeMessage);
+      expect(delivered.turns.filter(turn => turn.messageId === officeMessage.messageId)).toHaveLength(1);
+      expect(delivered.turns.find(turn => turn.messageId === officeMessage.messageId)).toMatchObject({ recipient: "OFFICE", status: "HUMAN", assistantText: null });
+      expect(delivered.booking?.appointments[0].status).toBe("SCHEDULED");
+      // Release the synthetic slot so later independent suite scenarios retain their schedule.
+      await mutateDirectBooking(token, { action: "cancel_booking", key: randomUUID(), revision: delivered.revision, confirmed: true });
+    } finally {
+      if (previous) await fixture.db.systemSetting.update({ where: { key: "consultation.availability" }, data: { value: previous.value! } });
+      else await fixture.db.systemSetting.delete({ where: { key: "consultation.availability" } });
+    }
+  });
+
+
 });

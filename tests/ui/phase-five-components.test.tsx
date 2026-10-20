@@ -28,11 +28,11 @@ describe("phase-five shared component consumers", () => {
   });
   for (const locale of ["ar", "en"] as const) it(`${locale}: distinguishes unconfirmed callback from confirmed guest appointment`, () => {
     const base = { confirmationSource: "CALLBACK_REQUEST", contactChannel: "WHATSAPP", publicReference: "CONS-SYNTHETIC", fullName: "Synthetic", phone: "01012345678", serviceCategory: "corporate", status: "NEW", appointments: [] };
-    const callback = renderToStaticMarkup(<DirectBookingPanel locale={locale} revision={1} draft={{}} booking={base} onRefresh={async () => {}} />);
+    const callback = renderToStaticMarkup(<DirectBookingPanel locale={locale} revision={1} draft={{}} booking={base} onRefresh={async () => {}} onState={() => {}} onAccessFailure={() => {}} />);
     expect(callback).toContain(directBookingCopy[locale].callbackDone);
     expect(callback).not.toContain(directBookingCopy[locale].confirmed);
     expect(callback).not.toContain('type="email"');
-    const confirmed = renderToStaticMarkup(<DirectBookingPanel locale={locale} revision={1} draft={{}} booking={{ ...base, confirmationSource: "PUBLISHED_SLOT", appointments: [{ id: "synthetic", startsAt: "2099-01-01T10:00:00Z", endsAt: "2099-01-01T11:00:00Z", status: "SCHEDULED", lawyer: { name: "Synthetic Lawyer" } }] }} onRefresh={async () => {}} />);
+    const confirmed = renderToStaticMarkup(<DirectBookingPanel locale={locale} revision={1} draft={{}} booking={{ ...base, confirmationSource: "PUBLISHED_SLOT", appointments: [{ id: "synthetic", startsAt: "2099-01-01T10:00:00Z", endsAt: "2099-01-01T11:00:00Z", status: "SCHEDULED", lawyer: { name: "Synthetic Lawyer" } }] }} onRefresh={async () => {}} onState={() => {}} onAccessFailure={() => {}} />);
     expect(confirmed).toContain(directBookingCopy[locale].confirmed); expect(confirmed).toContain(directBookingCopy[locale].cancel); expect(confirmed).toContain(directBookingCopy[locale].calendar);
   });
   for (const locale of ["ar", "en"] as const) it(`${locale}: renders verified service states and branded company entries`, () => {

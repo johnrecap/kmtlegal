@@ -5,6 +5,7 @@ import { isContentHub, publicHub } from "@/content/public-hubs";
 import { ContentHubPage } from "./content-hub-page";
 import { officeAssets } from "@/content/office-assets";
 import { siteCompletionCopy } from "@/content/site-completion-copy";
+import { publicOfficeProfile } from "@/content/public-office-profile";
 import { isPracticeService } from "@/content/public-service-registry";
 import type { Metadata } from "next";
 import { unstable_noStore as noStore } from "next/cache";
@@ -987,14 +988,14 @@ function BranchDetails({
   branch,
   channels
 }: {
-  branch: { address: string; hours: string; email: string };
+  branch: { address: string; hours: string; email: string; mapHref?: string };
   channels: { phoneHref: string; phoneDisplay: string };
 }) {
   return (
     <ul className="mt-4 space-y-3 text-sm">
       <li className="flex gap-3">
         <MaterialSymbol className={cn("mt-0.5 text-base", publicGoldText, publicMotionIcon, publicMotionIconHalo)} name="location_on" />
-        <span className={cn("leading-6", publicMutedText)}>{branch.address}</span>
+        {branch.mapHref ? <a href={branch.mapHref} className={cn("min-h-11 leading-6 underline underline-offset-4 hover:text-[var(--kmt-public-gold)]", publicMutedText)}>{branch.address}</a> : <span className={cn("leading-6", publicMutedText)}>{branch.address}</span>}
       </li>
       {channels.phoneHref && channels.phoneDisplay ? (
         <li className="flex gap-3">
@@ -1033,6 +1034,7 @@ export function ContactPageView({ locale }: { locale: PublicLocale }) {
 
   return (
     <PublicShell currentPath={localizedPublicHref("/contact", locale)} locale={locale}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "LegalService", name: "KMT Legal", address: publicOfficeProfile.address[locale], hasMap: publicOfficeProfile.mapHref, telephone: publicOfficeProfile.phoneHref.slice(4), email: publicOfficeProfile.email }).replace(/</g, "\\u003c") }} />
       <PageHero eyebrow={copy.heroEyebrow} image={officeAssets.reception.src} imageAlt={siteCompletionCopy[locale].receptionAlt} imagePosition="object-[center_48%]" size="compact" title={copy.heroTitle} description={copy.heroDescription} />
       <PublicSection eyebrow={copy.sectionEyebrow} title={copy.sectionTitle} description={copy.sectionDescription}>
         <div className="grid gap-6 lg:grid-cols-[1fr_420px]">

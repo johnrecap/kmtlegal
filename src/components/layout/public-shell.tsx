@@ -144,7 +144,7 @@ export function PublicShell({
               {content.footerContent.offices.map((office) => (
                 <li key={office.name}>
                   <p className="font-semibold text-[var(--kmt-public-text)]">{office.name}</p>
-                  <p className="mt-1 leading-6 text-[var(--kmt-public-muted)]">{office.address}</p>
+                  <p className="mt-1 leading-6 text-[var(--kmt-public-muted)]">{office.mapHref ? <a href={office.mapHref} className="inline-flex min-h-11 items-center underline underline-offset-4 hover:text-[var(--kmt-public-gold)]">{office.address}</a> : office.address}</p>
                 </li>
               ))}
             </ul>

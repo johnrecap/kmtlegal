@@ -9,31 +9,25 @@ import { conversationCopy } from "@/content/conversation-copy";
 import { assistantPolicyCopy } from "@/content/assistant-policy-copy";
 import { publicOfficeProfile } from "@/content/public-office-profile";
 import { directBookingCopy } from "@/content/direct-booking-copy";
-import { DirectBookingPanel, type DirectBooking } from "./direct-booking-panel";
-import { OfficeContactDialog, type OfficeContact, type OfficeContactInput } from "./office-contact-dialog";
+import { DirectBookingPanel } from "./direct-booking-panel";
+import { OfficeContactDialog, type OfficeContactInput } from "./office-contact-dialog";
 import { ConversationAccountForm } from "./conversation-account-form";
 import type { PublicLocale } from "@/lib/public-locale";
 import { legalSourceSchema, type LegalSource } from "@/lib/legal-assistant";
 import { legalAssistantCopy } from "@/content/legal-assistant-copy";
+import { conversationRequest, ConversationRequestError, type ConversationState as State } from "./conversation-request";
 import "./consultation-experience.css";
 
-type State = {
-  locale: PublicLocale; handoffState: "NONE" | "QUEUED" | "CLAIMED"; booking: DirectBooking | null;
-  dialogue: { mode: "INQUIRY" | "BOOKING"; offerShown: boolean; consentAt: string | null; accountAccess: boolean };
-  draft: Record<string, string | null>; revision: number; accountReady: boolean; humanOwned: boolean; submitted: boolean;
-  turns: Array<{ messageId: string; recipient?: "ASSISTANT" | "OFFICE"; userText: string; assistantText: string | null; status: string; createdAt?: string; updatedAt?: string; sources?: LegalSource[] }>;
-  staffMessages?: Array<{ id: string; body: string; createdAt: string }>;
-  closed?: boolean;
-  officeThreadStatus?: string | null; officeContact?: OfficeContact | null; expiresAt?: string;
-};
 type Recipient = "ASSISTANT" | "OFFICE";
-type PendingMessage = { messageId: string; message: string; recipient: Recipient };
-const endpoint = "/api/public/assistant/conversation";
+type PendingMessage = { messageId: string; message: string; recipient: Recipient; delivery: "SENDING" | "UNKNOWN" | "FAILED" | "PENDING"; local: boolean; at: number };
+function turnRecipient(turn: State["turns"][number]): Recipient { return turn.recipient ?? (turn.status === "HUMAN" ? "OFFICE" : "ASSISTANT"); }
+function sameAttempt(turn: State["turns"][number], pending: PendingMessage) { return turn.messageId === pending.messageId && turn.userText === pending.message && turnRecipient(turn) === pending.recipient; }
 
 export function ConversationalBookingChat({ locale, initialService, layout = "public", headerAction }: { locale: PublicLocale; initialService?: string; layout?: "public" | "portal"; headerAction?: ReactNode }) {
 
   const [panelOpen, setPanelOpen] = useState(false);
-  const closePanel = useCallback(() => setPanelOpen(false), []);
+  const panelTrigger = useRef<HTMLButtonElement>(null);
+  const closePanel = useCallback(() => { setPanelOpen(false); requestAnimationFrame(() => panelTrigger.current?.focus()); }, []);
   const messageInput = useRef<HTMLTextAreaElement>(null);
   const experience = useRef<HTMLElement>(null);
   const log = useRef<HTMLDivElement>(null);
@@ -41,6 +35,8 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
   const [newMessages, setNewMessages] = useState(false);
   const [bookingFooter, setBookingFooter] = useState<HTMLDivElement | null>(null);
   const [state, setState] = useState<State | null>(null);
+  const currentState = useRef<State | null>(null);
+  const acceptSnapshot = useCallback((snapshot: State | null) => { currentState.current = snapshot; setState(snapshot); }, []);
   const language = state?.locale ?? locale;
   const copy = conversationCopy[language];
   const policy = assistantPolicyCopy[language];
@@ -60,6 +56,10 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
   const [sessionExpired, setSessionExpired] = useState(false);
   const requestEpoch = useRef(0);
   const operationPending = useRef(false);
+  const sendPending = useRef(false);
+  const recoverySnapshot = useRef<State | null>(null);
+  const lastFailure = useRef<ConversationRequestError | null>(null);
+  const awaitingAnswer = !!state?.turns.some(turn => turn.status === "PENDING");
   const booking = state?.dialogue?.mode === "BOOKING" && !!state.dialogue.consentAt;
   const interactive = !state?.submitted && !sessionExpired;
   const hasOffice = !!state?.officeThreadStatus || !!state?.humanOwned || state?.handoffState === "QUEUED";
@@ -82,7 +82,34 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
   useEffect(() => {
     if (followLatest.current && log.current) log.current.scrollTop = log.current.scrollHeight;
     else setNewMessages(true);
-  }, [state?.turns.length, latestAssistant, state?.staffMessages?.length]);
+  }, [state?.turns.length, latestAssistant, state?.staffMessages?.length, pendingMessages.ASSISTANT?.messageId, pendingMessages.OFFICE?.messageId]);
+
+  useEffect(() => {
+    if (!state) return;
+    const restoreSaved = recoverySnapshot.current !== state;
+    recoverySnapshot.current = state;
+    for (const target of ["ASSISTANT", "OFFICE"] as const) {
+      const pending = pendingMessages[target];
+      if (pending && state.turns.some(turn => sameAttempt(turn, pending) && ["COMPLETED", "HUMAN"].includes(turn.status))) {
+        setDrafts(current => current[target].trim() === pending.message ? { ...current, [target]: "" } : current);
+      }
+    }
+    setPendingMessages(current => {
+      const recovered = { ...current };
+      let changed = false;
+      for (const target of ["ASSISTANT", "OFFICE"] as const) {
+        const pending = current[target];
+        const turn = pending ? state.turns.find(turn => sameAttempt(turn, pending)) : state.turns.filter(turn => turnRecipient(turn) === target).at(-1);
+        if (!turn) continue;
+        if (!pending && (!restoreSaved || (drafts[target].trim() && drafts[target].trim() !== turn.userText))) continue;
+        if (["COMPLETED", "HUMAN"].includes(turn.status) && pending) { recovered[target] = null; changed = true; }
+        else if (["FAILED", "PENDING"].includes(turn.status) && pending?.delivery !== "SENDING" && (!pending || pending.delivery !== turn.status)) { recovered[target] = {
+          messageId: turn.messageId, message: turn.userText, recipient: target, delivery: turn.status as "FAILED" | "PENDING", local: pending?.local ?? false, at: pending?.at ?? Date.now()
+        }; changed = true; }
+      }
+      return changed ? recovered : current;
+    });
+  }, [state, pendingMessages, drafts]);
 
   // Open on entry into a data-entry phase, not on polling or draft updates.
   useEffect(() => { setPanelOpen(showPanel && (!state?.submitted || booking)); }, [showPanel, booking, state?.submitted]);
@@ -97,43 +124,62 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
   }
 
   async function action(body: Record<string, unknown>) {
+    if (operationPending.current) return false;
     requestEpoch.current++; operationPending.current = true;
+    const epoch = requestEpoch.current;
+    lastFailure.current = null;
     setBusy(true); setNotice("");
     try {
       if (body.action === "register" && await recoverRegistration()) return true;
-      const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json", "x-kmt-locale": language }, body: JSON.stringify(body) });
-      const payload = await response.json();
-      if (!response.ok) {
-        const code = payload.error?.code;
-        const expired = !!state?.expiresAt && Date.parse(state.expiresAt) <= Date.now();
-        if (code === "AUTH_REQUIRED" && expired) setSessionExpired(true);
-        if (["AUTH_REQUIRED", "PERMISSION_DENIED"].includes(code)) { setState(null); setSignedIn(false); }
-        setNotice(code === "ACCOUNT_EMAIL_UNAVAILABLE" ? copy.accountUnavailable : code === "RATE_LIMITED" ? copy.accountRateLimited : code === "AUTH_REQUIRED" ? expired ? copy.sessionExpired : copy.loginRequired : code === "CONFLICT" || code === "APPOINTMENT_CONFLICT" ? copy.changed : code === "VALIDATION_ERROR" ? body.action === "register" ? copy.accountInvalid : body.action === "set_office_contact" ? copy.contactInvalid : copy.needDetails : copy.unavailable);
-        return false;
-      }
+      const snapshot = await conversationRequest(body, language);
       const refreshed = body.action === "submit" || body.action === "attach"
-        ? await fetch(endpoint, { cache: "no-store" }).then(async value => { if (!value.ok) throw new Error(); return value.json(); }) : payload;
-      setState(refreshed.data);
+        ? await conversationRequest(undefined, language) : snapshot;
+      if (epoch !== requestEpoch.current) return false;
+      acceptSnapshot(refreshed);
       setSessionExpired(false);
       if (body.action === "register") { setSignedIn(true); setNotice(copy.registered); }
       return true;
-    } catch {
+    } catch (error) {
       if (body.action === "register" && await recoverRegistration()) return true;
-      setNotice(copy.unavailable); return false;
+      if (epoch !== requestEpoch.current) return false;
+      const failure = error instanceof ConversationRequestError ? error : new ConversationRequestError("NETWORK");
+      lastFailure.current = failure;
+      showFailure(failure, body.action);
+      return false;
     }
     finally { requestEpoch.current++; operationPending.current = false; setBusy(false); }
   }
 
+  const showFailure = useCallback((error: unknown, operation?: unknown) => {
+    const failure = error instanceof ConversationRequestError ? error : new ConversationRequestError("NETWORK");
+    const expired = !!currentState.current?.expiresAt && Date.parse(currentState.current.expiresAt) <= Date.now();
+    const denied = failure.status === 401 || failure.status === 403;
+    if (denied) {
+      requestEpoch.current++; acceptSnapshot(null); setSignedIn(false);
+      setPendingMessages(current => ({ ASSISTANT: current.ASSISTANT?.local ? { ...current.ASSISTANT, delivery: "UNKNOWN" } : null, OFFICE: current.OFFICE?.local ? { ...current.OFFICE, delivery: "UNKNOWN" } : null }));
+      if (expired) setSessionExpired(true);
+    }
+    const code = failure.code;
+    const explanation = denied ? expired ? copy.sessionExpired : copy.loginRequired
+      : failure.kind === "TIMEOUT" || code === "AI_PROVIDER_TIMEOUT" ? copy.timeout
+      : failure.kind === "NETWORK" ? copy.network
+      : failure.kind === "INVALID_RESPONSE" ? copy.invalidResponse
+      : code === "ACCOUNT_EMAIL_UNAVAILABLE" ? copy.accountUnavailable
+      : failure.status === 429 ? copy.accountRateLimited
+      : failure.status === 409 ? copy.changed
+      : code === "VALIDATION_ERROR" ? operation === "register" ? copy.accountInvalid : operation === "set_office_contact" ? copy.contactInvalid : copy.needDetails : copy.unavailable;
+    setNotice(failure.requestId ? `${explanation} ${copy.supportReference.replace("{id}", failure.requestId)}` : explanation);
+  }, [acceptSnapshot, copy]);
+
   async function recoverRegistration() {
     // A lost response is a success only when both authenticated identity and owned conversation agree.
     try {
-      const auth = await fetch("/api/auth/me", { cache: "no-store" });
+      const epoch = requestEpoch.current;
+      const auth = await fetch("/api/auth/me", { cache: "no-store", signal: AbortSignal.timeout(20_000) });
       if (!auth.ok) return false;
-      const response = await fetch(endpoint, { cache: "no-store" });
-      if (!response.ok) return false;
-      const payload = await response.json();
-      if (!payload.data?.accountReady) return false;
-      setState(payload.data); setSignedIn(true); setSessionExpired(false); setNotice(copy.registered);
+      const snapshot = await conversationRequest(undefined, language);
+      if (!snapshot?.accountReady || epoch !== requestEpoch.current) return false;
+      acceptSnapshot(snapshot); setSignedIn(true); setSessionExpired(false); setNotice(copy.registered);
       return true;
     } catch { return false; }
   }
@@ -141,9 +187,10 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
   useEffect(() => {
     if (!panelOpen) return;
     let active = true;
-    fetch("/api/auth/me", { cache: "no-store" }).then(async response => {
+    const epoch = requestEpoch.current;
+    fetch("/api/auth/me", { cache: "no-store", signal: AbortSignal.timeout(20_000) }).then(async response => {
       const payload = response.ok ? await response.json() : null;
-      if (active) setSignedIn(payload?.user?.role === "Client" && !!payload.user.clientId);
+      if (active && epoch === requestEpoch.current) setSignedIn(payload?.user?.role === "Client" && !!payload.user.clientId);
     }).catch(() => {});
     return () => { active = false; };
   }, [panelOpen]);
@@ -151,43 +198,78 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
   useEffect(() => {
     let active = true;
     const epoch = requestEpoch.current;
-    fetch(endpoint, { cache: "no-store" }).then(async response => {
-      if (!response.ok) { if (active && epoch === requestEpoch.current && response.status === 401) { requestEpoch.current++; setState(null); setSignedIn(false); } return; }
-      const payload = await response.json();
-      if (active && epoch === requestEpoch.current) setState(payload.data);
-    }).catch(() => { if (active) setNotice(copy.unavailable); });
+    conversationRequest(undefined, locale).then(snapshot => {
+      if (active && epoch === requestEpoch.current) acceptSnapshot(snapshot);
+    }).catch(error => { if (active && epoch === requestEpoch.current) showFailure(error); });
     return () => { active = false; };
-  }, [copy.unavailable]);
+  }, [copy.unavailable, acceptSnapshot, locale, showFailure]);
 
   useEffect(() => {
-    if ((!hasOffice && !state?.accountReady) || sessionExpired) return;
+    if ((!hasOffice && !state?.accountReady && !awaitingAnswer) || sessionExpired) return;
     let active = true;
     const refresh = () => {
-      if (document.visibilityState !== "visible" || operationPending.current) return;
+      if (document.visibilityState !== "visible" || operationPending.current || sendPending.current) return;
       const epoch = requestEpoch.current;
-      fetch(endpoint, { cache: "no-store" }).then(async response => {
-        if (response.ok) {
-          const payload = await response.json();
-          if (active && epoch === requestEpoch.current) setState(current => !current || payload.data?.revision >= current.revision ? payload.data : current);
-        } else if (response.status === 401 && active && epoch === requestEpoch.current) { requestEpoch.current++; setState(null); setSignedIn(false); setNotice(copy.loginRequired); }
-      }).catch(() => {});
+      conversationRequest(undefined, locale).then(snapshot => {
+        if (active && epoch === requestEpoch.current && snapshot && (!currentState.current || snapshot.revision >= currentState.current.revision)) acceptSnapshot(snapshot);
+      }).catch(error => { if (active && epoch === requestEpoch.current && error instanceof ConversationRequestError && [401, 403].includes(error.status ?? 0)) showFailure(error); });
     };
     const timer = window.setInterval(refresh, 15_000);
     window.addEventListener("focus", refresh); document.addEventListener("visibilitychange", refresh);
     return () => { active = false; window.clearInterval(timer); window.removeEventListener("focus", refresh); document.removeEventListener("visibilitychange", refresh); };
-  }, [hasOffice, state?.accountReady, sessionExpired, copy.loginRequired]);
+  }, [hasOffice, state?.accountReady, awaitingAnswer, sessionExpired, copy.loginRequired, acceptSnapshot, locale, showFailure]);
 
   async function send(value = pendingMessage) {
-    const next = value ?? { messageId: crypto.randomUUID(), message: message.trim(), recipient };
+    if (sendPending.current || operationPending.current || sessionExpired) return;
+    const next: PendingMessage = value ?? { messageId: crypto.randomUUID(), message: message.trim(), recipient, delivery: "SENDING", local: true, at: Date.now() };
     if (!next.message) return;
+    sendPending.current = true; setBusy(true);
     followLatest.current = true; setNewMessages(false);
-    if (!state && !await action({ action: "start", locale, service: initialService })) return;
-    setPendingMessages(current => ({ ...current, [next.recipient]: next }));
-    if (await action({ action: "message", ...next, locale: language })) {
-      setPendingMessages(current => ({ ...current, [next.recipient]: null }));
-      setDrafts(current => ({ ...current, [next.recipient]: "" }));
-      if (next.recipient === "OFFICE") setNotice(copy.officeReceived);
+    try {
+      if (value) {
+        const epoch = requestEpoch.current;
+        try {
+          const snapshot = await conversationRequest(undefined, language);
+          if (epoch !== requestEpoch.current) return;
+          acceptSnapshot(snapshot);
+          const recovered = reconcileAttempt(snapshot, next);
+          if (recovered === "ACCEPTED" || recovered === "PENDING") return;
+        } catch (error) { showFailure(error); if (next.local || !(error instanceof ConversationRequestError) || ![401, 403].includes(error.status ?? 0)) updateDelivery(next, "UNKNOWN"); return; }
+      }
+      updateDelivery(next, "SENDING");
+      if (!currentState.current && !await action({ action: "start", locale, service: initialService })) { updateDelivery(next, "UNKNOWN"); return; }
+      const sent = await action({ action: "message", messageId: next.messageId, message: next.message, recipient: next.recipient, locale: language });
+      if (sent) { reconcileAttempt(currentState.current, next); return; }
+      if ([401, 403].includes(lastFailure.current?.status ?? 0)) { if (next.local) updateDelivery(next, "UNKNOWN"); return; }
+      const epoch = requestEpoch.current;
+      try {
+        const snapshot = await conversationRequest(undefined, language);
+        if (epoch !== requestEpoch.current) return;
+        acceptSnapshot(snapshot); reconcileAttempt(snapshot, next);
+      } catch (error) {
+        if (epoch !== requestEpoch.current) return;
+        const denied = error instanceof ConversationRequestError && [401, 403].includes(error.status ?? 0);
+        if (denied) showFailure(error);
+        if (next.local || !denied) updateDelivery(next, "UNKNOWN");
+      }
+    } finally { sendPending.current = false; setBusy(false); }
+  }
+
+  function updateDelivery(pending: PendingMessage, delivery: PendingMessage["delivery"]) {
+    setPendingMessages(current => ({ ...current, [pending.recipient]: { ...pending, delivery } }));
+  }
+
+  function reconcileAttempt(snapshot: State | null, pending: PendingMessage) {
+    const turn = snapshot?.turns.find(turn => sameAttempt(turn, pending));
+    if (turn && ["COMPLETED", "HUMAN"].includes(turn.status)) {
+      setPendingMessages(current => current[pending.recipient]?.messageId === pending.messageId ? { ...current, [pending.recipient]: null } : current);
+      setDrafts(current => current[pending.recipient].trim() === pending.message ? { ...current, [pending.recipient]: "" } : current);
+      setNotice(pending.recipient === "OFFICE" ? copy.officeReceived : "");
+      return "ACCEPTED";
     }
+    const delivery = turn?.status === "FAILED" ? "FAILED" : turn?.status === "PENDING" ? "PENDING" : "UNKNOWN";
+    updateDelivery(pending, delivery);
+    return delivery;
   }
 
   async function saveContact(value: OfficeContactInput) {
@@ -197,6 +279,9 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
   }
 
   const Heading = layout === "portal" ? "h1" : "h2";
+  const panelEpoch = requestEpoch.current;
+  const bookingAccessFailure = useCallback((error: unknown) => { if (panelEpoch === requestEpoch.current) showFailure(error); }, [panelEpoch, showFailure]);
+  const deliveryLabel = (delivery?: string) => delivery === "SENDING" ? copy.deliveryPending : delivery === "FAILED" ? copy.deliveryFailed : delivery === "PENDING" ? copy.deliveryProcessing : delivery === "UNKNOWN" ? copy.deliveryUnknown : undefined;
   const languageControl = <Button type="button" variant="ghost" disabled={busy || !state} onClick={() => void action({ action: "set_locale", locale: language === "ar" ? "en" : "ar" })}>{language === "ar" ? "English" : "العربية"}</Button>;
 
   return <section ref={experience} lang={language} aria-label={copy.title} className={`kmt-consultation${layout === "portal" ? " kmt-consultation--portal" : ""}`} dir={language === "ar" ? "rtl" : "ltr"}>
@@ -206,15 +291,17 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
       {headerAction ? <div className="consultation-header-actions">{headerAction}{languageControl}</div> : languageControl}</header>
       <div className="consultation-log-wrap"><div ref={log} role="log" tabIndex={0} aria-label={copy.transcript} aria-live="polite" aria-relevant="additions" className="consultation-log" onScroll={() => { const el = log.current; if (el) { followLatest.current = el.scrollHeight - el.clientHeight - el.scrollTop < 64; if (followLatest.current) setNewMessages(false); } }}>
         <p className="consultation-day-label">{copy.today}</p>
-        {!state?.turns.length && !state?.staffMessages?.length && <p className="consultation-empty">{copy.emptyConversation}</p>}
+        {!state?.turns.length && !state?.staffMessages?.length && !Object.values(pendingMessages).some(Boolean) && <p className="consultation-empty">{copy.emptyConversation}</p>}
         {[
           ...(state?.turns.flatMap((turn, index) => [
-            { id: `${turn.messageId}-user`, body: turn.userText, type: "user", sources: [] as LegalSource[], recipient: turn.recipient ?? (turn.status === "HUMAN" ? "OFFICE" : "ASSISTANT"), at: turn.createdAt ? Date.parse(turn.createdAt) : index * 2 },
+            { id: `${turn.messageId}-user`, body: turn.userText, type: "user", sources: [] as LegalSource[], recipient: turnRecipient(turn), delivery: deliveryLabel(pendingMessages[turnRecipient(turn)]?.messageId === turn.messageId ? pendingMessages[turnRecipient(turn)]?.delivery : turn.status), at: turn.createdAt ? Date.parse(turn.createdAt) : index * 2 },
             ...(turn.assistantText ? [{ id: `${turn.messageId}-assistant`, body: turn.assistantText, type: "assistant", sources: turn.sources, at: turn.updatedAt ? Date.parse(turn.updatedAt) : turn.createdAt ? Date.parse(turn.createdAt) + 1 : index * 2 + 1 }] : [])
           ]) ?? []),
-          ...(state?.staffMessages?.map(item => ({ id: item.id, body: item.body, type: "staff", sources: [] as LegalSource[], at: Date.parse(item.createdAt) })) ?? [])
+          ...(state?.staffMessages?.map(item => ({ id: item.id, body: item.body, type: "staff", sources: [] as LegalSource[], at: Date.parse(item.createdAt) })) ?? []),
+          ...Object.values(pendingMessages).flatMap(pending => pending && !state?.turns.some(turn => sameAttempt(turn, pending)) ? [{ id: `${pending.messageId}-user`, body: pending.message, type: "user", recipient: pending.recipient, delivery: deliveryLabel(pending.delivery), sources: [] as LegalSource[], at: pending.at }] : [])
         ].sort((a, b) => a.at - b.at).map(item => <div key={item.id} className={`consultation-message consultation-message-${item.type}`}>
           <p className="consultation-author">{item.type === "user" ? <UserRound aria-hidden="true" /> : item.type === "staff" ? <Headset aria-hidden="true" /> : <Scale aria-hidden="true" />}{item.type === "user" ? copy.you : item.type === "staff" ? copy.staff : copy.assistant}{"recipient" in item && <span className="consultation-recipient-label">{item.recipient === "OFFICE" ? copy.sentToOffice : copy.sentToAssistant}</span>}</p><p className="whitespace-pre-wrap break-words" dir="auto">{item.body}</p>
+          {"delivery" in item && item.delivery && <p role="status" className="text-sm leading-7">{item.delivery}</p>}
           {item.sources?.some(s => legalSourceSchema.safeParse(s).success) && <nav aria-label={legalAssistantCopy[language].sources} className="mt-3 space-y-2 text-sm">
             <p>{legalAssistantCopy[language].sources}</p>
             {item.sources.filter(s => legalSourceSchema.safeParse(s).success).slice(0, 5).map(source => <p key={source.id} className="break-words"><a href={source.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">[{source.id}] {source.title}</a>{" · "}{legalAssistantCopy[language].accessed} {new Intl.DateTimeFormat(language, { dateStyle: "medium" }).format(new Date(source.retrievedAt))}</p>)}
@@ -237,9 +324,9 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
         <Button aria-label={busy ? copy.waiting : copy.send} disabled={busy || sessionExpired || (recipient === "OFFICE" && !!state?.closed) || !message.trim()} type="submit"><ArrowUp aria-hidden="true" /></Button>
       </form>
       {busy && <p role="status" className="consultation-feedback">{recipient === "OFFICE" ? copy.officeSending : copy.waiting}</p>}
-      {pendingMessage && !busy && <Button type="button" variant="outline" onClick={() => void send()}>{copy.retry}</Button>}
+      {pendingMessage && !busy && <Button type="button" variant="outline" disabled={pendingMessage.delivery === "PENDING" || pendingMessage.delivery === "SENDING"} onClick={() => void send()}>{copy.retry}</Button>}
       {notice && !panelOpen && <p role="status" className="break-words text-sm leading-7">{notice}</p>}
-      {showPanel && <Button className="h-auto min-h-11 whitespace-normal" type="button" onClick={() => setPanelOpen(true)}>{state?.submitted ? direct.openDetails : booking ? direct.openForm : policy.account}</Button>}
+      {showPanel && <Button ref={panelTrigger} className="h-auto min-h-11 whitespace-normal" type="button" onClick={() => setPanelOpen(true)}>{state?.submitted ? direct.openDetails : booking ? direct.openForm : policy.account}</Button>}
       {interactive && <div className="consultation-chat-actions">
         <Button className="h-auto min-h-11 whitespace-normal" type="button" disabled={busy} onClick={() => void changeMode(booking ? "return_inquiry" : "begin_booking")} leadingIcon={<CalendarDays aria-hidden="true" />}>{booking ? policy.back : policy.begin}</Button>
         {!booking && !state?.dialogue?.accountAccess && !state?.accountReady && <Button className="h-auto min-h-11 whitespace-normal" type="button" variant="ghost" disabled={busy} onClick={() => void changeMode("account_access")}>{policy.account}</Button>}
@@ -251,13 +338,17 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
     </div>
     {contactOpen && <OfficeContactDialog locale={language} contact={state?.officeContact ?? null} expiresAt={state?.expiresAt} accountReady={!!state?.accountReady} canSave={!!state?.officeThreadStatus && !sessionExpired} error={notice} onClose={closeContact} onSave={saveContact} />}
     {showPanel && <Dialog open={panelOpen} onClose={closePanel} title={booking || state?.submitted ? direct.dialogTitle : policy.account}
+      fitVisualViewport
       closeLabel={direct.closeForm}
       description={!state?.submitted && booking ? direct.shortHelp : undefined}
       className="kmt-consultation-dialog"
       footer={(booking || state?.booking) ? <div ref={setBookingFooter} className="consultation-dialog-actions" /> : undefined}>
       <div className="min-w-0 space-y-4">
       {notice && notice !== policy.bookingStarted && <p role="status" className="break-words text-sm leading-7">{notice}</p>}
-      {state && ((booking && !state.submitted) || state.booking) && <DirectBookingPanel footerContainer={bookingFooter} locale={language} revision={state.revision} draft={state.draft} booking={state.booking} onRefresh={async () => { const response = await fetch(endpoint, { cache: "no-store" }); if (!response.ok) throw new Error(); setState((await response.json()).data); }} />}
+      {state && ((booking && !state.submitted) || state.booking) && <DirectBookingPanel footerContainer={bookingFooter} locale={language} revision={state.revision} draft={state.draft} booking={state.booking}
+        onAccessFailure={bookingAccessFailure}
+        onState={snapshot => { if (panelEpoch === requestEpoch.current && (!currentState.current || snapshot.revision >= currentState.current.revision)) acceptSnapshot(snapshot); }}
+        onRefresh={async () => { const snapshot = await conversationRequest(undefined, language); if (panelEpoch === requestEpoch.current && (!snapshot || !currentState.current || snapshot.revision >= currentState.current.revision)) acceptSnapshot(snapshot); }} />}
       {state?.submitted && !state.booking && <p role="status">{copy.submitted}</p>}
       {!state?.accountReady && (state?.booking || state?.dialogue?.accountAccess) && <ConversationAccountForm locale={language} panelOpen={panelOpen} busy={busy} authenticated={signedIn}
         initial={{ fullName: state?.booking?.fullName ?? state?.draft.fullName ?? "", phone: state?.booking?.phone ?? state?.draft.phone ?? "", email: state?.draft.email ?? "" }}

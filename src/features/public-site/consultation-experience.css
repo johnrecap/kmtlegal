@@ -60,3 +60,30 @@
   .kmt-consultation--portal .consultation-chat-bottom{gap:4px;padding-top:4px;max-height:65%}
   .kmt-consultation--portal .consultation-composer textarea{max-height:72px}
 }
+
+/* Consultation-only readable controls; other Dialog consumers keep their styles. */
+.kmt-consultation-dialog{font-size:16px;overflow-wrap:anywhere}
+.kmt-consultation-dialog input:not([type=radio]):not([type=checkbox]),.kmt-consultation-dialog select,.kmt-consultation-dialog textarea{font-size:16px;min-height:44px;max-width:100%}
+.kmt-consultation-dialog button,.kmt-consultation-dialog summary{min-width:44px;min-height:44px;white-space:normal}
+.kmt-consultation-dialog .consultation-weekly,.kmt-consultation-dialog .consultation-weekly summary,.kmt-consultation-dialog .consultation-weekly summary>span:last-of-type,
+.kmt-consultation-dialog .consultation-eyebrow,.kmt-consultation-dialog .consultation-weekday,.kmt-consultation-dialog .consultation-date-status,
+.kmt-consultation-dialog .consultation-selection-hint,.kmt-consultation-dialog .consultation-direct-date,.kmt-consultation-dialog .consultation-time-title,
+.kmt-consultation-dialog .consultation-footer-summary,.kmt-consultation-dialog .consultation-footer-summary strong,.kmt-consultation-dialog .consultation-contacts,
+.kmt-consultation-dialog .consultation-dialog-actions button,.kmt-consultation-dialog .consultation-nearest button,.kmt-consultation-dialog>div:first-child>p{font-size:14px;line-height:1.6}
+.kmt-consultation-dialog .consultation-time{min-height:44px;font-size:14px}
+.kmt-consultation-dialog .consultation-direct-date{flex-wrap:wrap}
+.kmt-consultation-dialog .consultation-direct-date input{width:auto;max-width:100%}
+.kmt-consultation-dialog .consultation-nearest{flex-wrap:wrap}
+.kmt-consultation-dialog .consultation-nearest button{max-width:100%}
+.kmt-consultation-dialog .consultation-dialog-actions{flex-wrap:wrap}
+.kmt-consultation-dialog .consultation-dialog-actions button{height:auto}
+@media(max-width:700px){
+  .kmt-consultation-dialog[data-fit-visual-viewport]{position:fixed;inset:auto;inset-block-start:var(--dialog-viewport-top,0px);inset-inline-start:0;width:100%;max-width:none;height:var(--dialog-viewport-height,100dvh);max-height:var(--dialog-viewport-height,100dvh);margin:0;border:0;border-radius:0}
+  .kmt-consultation-dialog[data-fit-visual-viewport]>div:first-child{padding-top:max(16px,env(safe-area-inset-top));padding-inline-start:max(16px,env(safe-area-inset-left));flex-shrink:0}
+  .kmt-consultation-dialog[data-fit-visual-viewport]>div:nth-child(2){flex:1;min-height:0;max-height:none;overflow:auto;overscroll-behavior:contain;padding-inline:max(16px,env(safe-area-inset-left)) max(16px,env(safe-area-inset-right))}
+  .kmt-consultation-dialog[data-fit-visual-viewport]>div:last-child:not(:nth-child(2)){flex-shrink:0;padding-bottom:max(12px,env(safe-area-inset-bottom))}
+  .kmt-consultation-dialog .consultation-times{grid-template-columns:repeat(auto-fit,minmax(90px,1fr))}
+  .kmt-consultation-dialog .consultation-days{grid-template-columns:repeat(auto-fit,minmax(min(100%,4em),1fr))}
+  .kmt-consultation-dialog .consultation-dialog-actions>button{flex:1 1 10em;max-width:100%}
+  .kmt-consultation-dialog .consultation-footer-summary{flex:1 1 8em}
+}

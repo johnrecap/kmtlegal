@@ -163,6 +163,7 @@ const branches = [
   {
     name: "New Administrative Capital Office",
     address: publicOfficeProfile.address.en,
+    mapHref: publicOfficeProfile.mapHref,
     hours: officeHours,
     email: publicOfficeProfile.email
   },
@@ -183,7 +184,7 @@ const contactChannels = {
 const footerContent = {
   brandSummary: "Structured legal support for companies, investors, and individuals, with intake, document review, and office follow-up.",
   practiceLinks: practiceAreaMatrix.map((area) => ({ label: area.title, href: area.href })),
-  offices: branches.map((branch) => ({ name: branch.name, address: branch.address })),
+  offices: branches.map((branch) => ({ name: branch.name, address: branch.address, mapHref: "mapHref" in branch ? branch.mapHref : undefined })),
   contact: {
     email: publicOfficeProfile.email,
     phone: publicOfficeProfile.phoneDisplay,

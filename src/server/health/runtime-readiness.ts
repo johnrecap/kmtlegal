@@ -11,6 +11,7 @@ import {
   paymentProviderReadiness
 } from "@/server/payments/payment-config";
 import { malwareScanMode, pingClamAv } from "@/server/storage/malware-scan";
+import { getAIProviderConfig } from "@/server/ai/config";
 
 export type RuntimeReadinessCheck = {
   id: string;
@@ -47,10 +48,28 @@ export function readinessSummary(checks: RuntimeReadinessCheck[]): RuntimeReadin
   };
 }
 
+/** Operational configuration signal only; never sends a paid model probe. */
+export function assistantConfigurationReadinessCheck(env: NodeJS.ProcessEnv = process.env): RuntimeReadinessCheck {
+  const config = getAIProviderConfig(env);
+  let validEndpoint = false;
+  try {
+    const endpoint = new URL(config.baseUrl ?? "");
+    validEndpoint = ["https:", "http:"].includes(endpoint.protocol) && !endpoint.username && !endpoint.password;
+  } catch { /* An absent/invalid endpoint is configuration-unavailable. */ }
+  const configured = config.provider !== "mock" && validEndpoint && (config.provider === "local" || !!config.apiKey?.trim());
+  return {
+    id: "assistant.configuration", ok: configured, blocking: false, label: "Assistant configuration",
+    message: configured
+      ? "Assistant configuration only: configured; provider responses have not been verified."
+      : "Assistant configuration only: unavailable; provider responses have not been verified."
+  };
+}
+
 export async function getApplicationReadiness(env: NodeJS.ProcessEnv = process.env) {
   if (!isProductionRuntime(env)) {
     return readinessSummary([
-      passingCheck("runtime.mode", "Runtime mode", "Readiness gate is enforced only in production runtime.")
+      passingCheck("runtime.mode", "Runtime mode", "Readiness gate is enforced only in production runtime."),
+      assistantConfigurationReadinessCheck(env)
     ]);
   }
 
@@ -66,7 +85,7 @@ export async function getApplicationReadiness(env: NodeJS.ProcessEnv = process.e
     databaseReadinessChecks({ requireBootstrap: true, includePaymentRuntime: true, env }),
     malwareScannerReadinessCheck(env)
   ]);
-  return readinessSummary([...environmentChecks, ...databaseChecks, malwareCheck]);
+  return readinessSummary([...environmentChecks, ...databaseChecks, malwareCheck, assistantConfigurationReadinessCheck(env)]);
 }
 
 async function malwareScannerReadinessCheck(env: NodeJS.ProcessEnv): Promise<RuntimeReadinessCheck> {

@@ -1,6 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
-import { parseEnv } from "node:util";
+import { readdir, readFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
@@ -16,7 +15,7 @@ vi.mock("@/server/db/prisma", () => ({ prisma: new Proxy({}, { get: (_target, ke
 import { capabilityHash, createAssistantSession, readAssistantSession, sendAssistantMessage } from "@/server/consultations/conversation-session-service";
 import { permissionsForRole } from "@/server/auth/policy";
 import { legalAssistantCopy } from "@/content/legal-assistant-copy";
-import { getAIProviderConfig } from "@/server/ai/config";
+import { liveAssistantEvaluation } from "./helpers/live-assistant-evaluation";
 import { assistantPolicyCopy } from "@/content/assistant-policy-copy";
 
 let db: PGlite, server: PGLiteSocketServer;
@@ -186,24 +185,25 @@ describe.sequential("legal assistance with isolated SQL and controlled provider"
     expect((await ask(token, "كمل الشرح")).turns.at(-1)?.assistantText).not.toContain(assistantPolicyCopy.ar.offer);
   });
   it.skipIf(process.env.RUN_LIVE_LEGAL_ASSISTANT !== "true")("evaluates real configured OpenRouter with synthetic legal questions separately", async () => {
-    const env = parseEnv(await readFile(".env", "utf8"));
-    for (const key of ["AI_PROVIDER", "AI_API_KEY", "AI_BASE_URL", "AI_MODEL", "AI_TIMEOUT_MS", "AI_MAX_TOKENS", "AI_TEMPERATURE"]) vi.stubEnv(key, env[key] ?? "");
-    vi.stubGlobal("fetch", nativeFetch); const config = getAIProviderConfig();
+    const evaluation = await liveAssistantEvaluation(nativeFetch, ".playwright/legal-assistant");
     const cases: Array<{ question: string; answer: string | null; sources: unknown }> = [];
+    let passed = false, failure: unknown;
     try {
-      expect(config.provider).toBe("openrouter"); expect(!!config.apiKey).toBe(true);
+      evaluation.requireConfigured();
       const token = await createAssistantSession("ar");
       for (const question of ["ما الفرق عمومًا بين عقد الإيجار القديم والجديد في مصر؟ اذكر مصدرًا رسميًا دون افتراض تفاصيل حالة شخصية.", "ما أهم المعلومات الناقصة لتقييم عقد؟", "اكتب مسودة بند يحدد العين المؤجرة مع خانات فارغة للمعلومات الناقصة", "عايز احجز استشارة مع المكتب"]) {
-        const state = await ask(token, question); const last = state.turns.at(-1)!;
+        const state = await sendAssistantMessage({ token, messageId: randomUUID(), message: question, locale: "ar", requestId: randomUUID() }); const last = state.turns.at(-1)!;
         cases.push({ question, answer: last.assistantText, sources: last.sources });
         expect(last.assistantText?.length).toBeGreaterThan(40);
         if (cases.length === 1) expect(last.sources.length).toBeGreaterThan(0);
         if (cases.length === 3) expect(last.assistantText).toContain(legalAssistantCopy.ar.draft);
         if (cases.length === 4) expect(state.dialogue.mode).toBe("BOOKING");
       }
+      expect(evaluation.requestCount()).toBeGreaterThan(0);
+      passed = true;
+    } catch (error) { failure = error; throw error;
     } finally {
-      await mkdir(".playwright/legal-assistant", { recursive: true });
-      await writeFile(".playwright/legal-assistant/live-provider.json", JSON.stringify({ provider: config.provider, model: config.model, syntheticOnly: true, cases, semanticAcceptance: "Requires review of current source support and conversational usefulness, separately from assertions." }, null, 2));
+      await evaluation.report(passed, cases, failure);
     }
-  }, 180_000);
+  }, 300_000);
 });

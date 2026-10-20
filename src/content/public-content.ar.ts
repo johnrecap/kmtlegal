@@ -159,7 +159,7 @@ const legacyPublicIndustries = [
 const officeHours = "الأحد - الخميس، 9:00 ص - 6:00 م";
 
 const branches = [
-  { name: "مكتب العاصمة الإدارية", address: publicOfficeProfile.address.ar, hours: officeHours, email: publicOfficeProfile.email },
+  { name: "مكتب العاصمة الإدارية", address: publicOfficeProfile.address.ar, mapHref: publicOfficeProfile.mapHref, hours: officeHours, email: publicOfficeProfile.email },
   { name: "اجتماعات عن بعد", address: "اجتماعات عن بُعد بمكالمة فيديو أو هاتف، تُرتب بعد مراجعة الطلب.", hours: officeHours, email: publicOfficeProfile.email }
 ] as const;
 
@@ -172,7 +172,7 @@ const contactChannels = {
 const footerContent = {
   brandSummary: "دعم قانوني منظم للشركات والمستثمرين والأفراد مع مراعاة السرية ومراجعة المكتب.",
   practiceLinks: practiceAreaMatrix.map((area) => ({ label: area.title, href: area.href })),
-  offices: branches.map((branch) => ({ name: branch.name, address: branch.address })),
+  offices: branches.map((branch) => ({ name: branch.name, address: branch.address, mapHref: "mapHref" in branch ? branch.mapHref : undefined })),
   contact: {
     email: publicOfficeProfile.email,
     phone: publicOfficeProfile.phoneDisplay,

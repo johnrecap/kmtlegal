@@ -16,7 +16,7 @@ for (const locale of ["ar", "en"] as const) for (const theme of ["light", "dark"
     test.setTimeout(120_000);
     const copy = conversationCopy[locale], direct = directBookingCopy[locale], policy = assistantPolicyCopy[locale], preview = messages[locale];
     const state: Record<string, any> = { locale, handoffState: "NONE", booking: null, draft: {}, dialogue: { mode: "INQUIRY", consentAt: null, offerShown: true, accountAccess: false }, revision: 0, accountReady: false, humanOwned: false, submitted: false,
-      turns: [{ messageId: "sample-a", userText: preview.question, assistantText: preview.answer, createdAt: fixture.now }, { messageId: "sample-b", userText: preview.followup, assistantText: preview.response, createdAt: "2026-10-15T06:00:02Z" }] };
+      turns: [{ messageId: "sample-a", status: "COMPLETED", userText: preview.question, assistantText: preview.answer, createdAt: fixture.now }, { messageId: "sample-b", status: "COMPLETED", userText: preview.followup, assistantText: preview.response, createdAt: "2026-10-15T06:00:02Z" }] };
     const errors: string[] = []; const writes: any[] = []; const guestSessionChecks: number[] = [];
     page.on("pageerror", e => errors.push(e.message));
     page.on("response", response => {
@@ -98,7 +98,7 @@ for (const locale of ["ar", "en"] as const) test(`${locale}: long messages stay 
   const copy = conversationCopy[locale], width = locale === "ar" ? 390 : 1440;
   let polls = 0;
   const state: Record<string, any> = { locale, handoffState: "CLAIMED", booking: null, draft: {}, dialogue: { mode: "INQUIRY", consentAt: null, offerShown: false, accountAccess: false }, revision: 0, accountReady: false, humanOwned: true, submitted: false,
-    turns: [{ messageId: "long-a", userText: "Synthetic question", assistantText: (locale === "ar" ? "شرح تجريبي طويل لخدمات المكتب. " : "A long sample explanation of office services. ").repeat(250) }], staffMessages: [] };
+    turns: [{ messageId: "long-a", status: "COMPLETED", userText: "Synthetic question", assistantText: (locale === "ar" ? "شرح تجريبي طويل لخدمات المكتب. " : "A long sample explanation of office services. ").repeat(250) }], staffMessages: [] };
   await page.setViewportSize({ width, height: 900 }); await page.clock.install();
   await page.route("**/api/analytics/events", route => route.fulfill({ status: 202, json: { data: { accepted: true } } }));
   await page.route("**/api/public/assistant/conversation", route => {

@@ -34,13 +34,15 @@ for (const locale of ["ar", "en"] as const) for (const theme of ["light", "dark"
     await input.fill("Assistant draft"); await office.click(); await expect(input).toHaveValue("");
     await input.fill("Office draft"); await assistant.click(); await expect(input).toHaveValue("Assistant draft");
     await office.click(); await page.getByRole("button", { name: copy.send, exact: true }).click();
-    await expect(page.getByRole("button", { name: copy.retry, exact: true })).toBeVisible();
+    // PLAN-40: a protected read proves the lost office response succeeded; never resend it.
+    await expect(page.getByText(copy.officeReceived, { exact: true })).toBeVisible();
+    await expect(input).toHaveValue("");
     await assistant.click(); await page.getByRole("button", { name: copy.send, exact: true }).click();
     await expect(page.getByRole("log").getByText("Synthetic assistant reply", { exact: true })).toBeVisible();
-    await office.click(); await expect(input).toHaveValue("Office draft");
-    await page.getByRole("button", { name: copy.retry, exact: true }).click();
+    await office.click(); await expect(input).toHaveValue("");
+    await expect(page.getByRole("button", { name: copy.retry, exact: true })).toHaveCount(0);
     const officeWrites = writes.filter(body => body.action === "message" && body.recipient === "OFFICE");
-    expect(officeWrites).toHaveLength(2); expect(officeWrites[0]).toEqual(officeWrites[1]);
+    expect(officeWrites).toHaveLength(1);
     await expect(page.getByRole("log").getByText("Office draft", { exact: true })).toHaveCount(1);
     await page.getByRole("button", { name: copy.followupDetails, exact: true }).click();
     let dialog = page.getByRole("dialog", { name: copy.contactTitle, exact: true });

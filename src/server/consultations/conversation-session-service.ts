@@ -9,7 +9,7 @@ import { safeLog } from "@/server/observability/safe-log";
 import { assistantKnowledge } from "./assistant-knowledge";
 import { getAIProviderConfig } from "@/server/ai/config";
 import { getAIProvider } from "@/server/ai/provider-registry";
-import { applyAssessment, bookingAllowed, boundedConversationProvider, INPUT_POLICY, messageAssessmentSchema, OUTPUT_POLICY, policyDecision, readDialogue, replyReviewSchema, shouldOfferConsultation, type DialogueState } from "@/server/ai/company-conversation-policy";
+import { applyAssessment, bookingAllowed, boundedConversationProvider, conversationDiagnostics, INPUT_POLICY, messageAssessmentSchema, OUTPUT_POLICY, policyDecision, readDialogue, replyReviewSchema, shouldOfferConsultation, type DialogueState } from "@/server/ai/company-conversation-policy";
 import { bindAssistantThreadIdentity, ensureAssistantHandoff } from "@/server/conversations/assistant-handoff-service";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
@@ -104,6 +104,8 @@ export async function sendAssistantMessage(input: {
     id: session.id, revision: session.revision, OR: [{ leaseId: null }, { leaseExpiresAt: { lt: new Date() } }]
   }, data: { leaseId, leaseExpiresAt: new Date(Date.now() + 90_000), locale: input.locale } });
   if (!acquired.count) throw new ApiError(409, "CONFLICT", "A conversation response is already in progress.");
+  const config = getAIProviderConfig();
+  const diagnostics = conversationDiagnostics(input.requestId, config.conversationTimeoutMs, config.timeoutMs);
   try {
     const replay = await prisma.assistantTurn.findUnique({ where: identity });
     if (replay && (replay.userText !== input.message || replay.recipient !== recipient)) throw new ApiError(409, "CONFLICT", "Message identifier has already been used.");
@@ -139,9 +141,8 @@ export async function sendAssistantMessage(input: {
       }
     };
     const prior = await prisma.assistantTurn.findMany({ where: { sessionId: session.id, status: "COMPLETED", messageId: { not: input.messageId } }, orderBy: { createdAt: "desc" }, take: 20 });
-    const config = getAIProviderConfig();
-    const signal = AbortSignal.timeout(config.timeoutMs);
-    const provider = boundedConversationProvider(getAIProvider(config), signal, assertActive);
+    const signal = AbortSignal.timeout(config.conversationTimeoutMs);
+    const provider = boundedConversationProvider(getAIProvider(config), signal, assertActive, diagnostics);
     const history = prior.slice().reverse().map(t => ({ user: t.userText, assistant: historyAnswer(t) }));
     const initialDialogue = readDialogue(session.consultationRequestId ? { ...readDialogue(session.dialogue), mode: "INQUIRY", consentAt: null } : session.dialogue);
     const knowledge = assistantKnowledge(input.locale);
@@ -392,7 +393,7 @@ export async function sendAssistantMessage(input: {
     return await finalize(reply, dialogue, result.additions, preparedDraft);
 
   } catch (error) {
-    safeLog("warn", "assistant.turn_failed", { requestId: input.requestId, code: error instanceof ApiError ? error.code : "AI_PROVIDER_UNAVAILABLE" });
+    safeLog("warn", "assistant.turn_failed", { ...diagnostics.metadata(), code: error instanceof ApiError ? error.code : "AI_PROVIDER_UNAVAILABLE" });
     const current = await prisma.assistantTurn.findUnique({ where: identity });
     if (current?.status === "HUMAN") return readAssistantSession(input.token, input.actor);
     await prisma.assistantTurn.updateMany({ where: { sessionId: session.id, messageId: input.messageId, status: "PENDING" }, data: { status: "FAILED", errorCode: error instanceof ApiError ? error.code : "AI_PROVIDER_UNAVAILABLE" } });

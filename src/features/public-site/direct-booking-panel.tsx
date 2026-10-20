@@ -8,6 +8,7 @@ import { getPublicContent } from "@/content/public-content";
 import type { PublicLocale } from "@/lib/public-locale";
 import type { BookingAvailability, BookingSlot } from "@/lib/direct-booking-availability";
 import { BookingAvailabilityPicker } from "./booking-availability-picker";
+import { conversationRequest, ConversationRequestError, type ConversationState } from "./conversation-request";
 
 export type DirectBooking = {
   confirmationSource: string; contactChannel: string; publicReference: string | null;
@@ -15,12 +16,12 @@ export type DirectBooking = {
   appointments: Array<{ id: string; startsAt: string; endsAt: string; status: string; lawyer: { name: string } | null }>;
 };
 type Slot = BookingSlot;
-const endpoint = "/api/public/assistant/conversation";
 const field = "min-h-11 w-full min-w-0 rounded border border-kmt-gold/30 bg-transparent px-3";
 
-export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh, footerContainer }: {
+export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh, onState, onAccessFailure, footerContainer }: {
   locale: PublicLocale; revision: number; draft: Record<string, string | null>;
   booking: DirectBooking | null; onRefresh: () => Promise<void>;
+  onState: (snapshot: ConversationState) => void; onAccessFailure: (error: unknown) => void;
   footerContainer?: HTMLElement | null;
 }) {
   const copy = directBookingCopy[locale];
@@ -41,6 +42,7 @@ export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh
   const [cancelling, setCancelling] = useState(false);
   // Preserve the exact request after an uncertain network result. A retry must not create a second booking.
   const pending = useRef<Record<string, unknown> | null>(null);
+  const mutationInFlight = useRef(false);
   const requestedTime = useRef<string | null>(null);
   const slotRequest = useRef(0);
   const appointment = booking?.appointments[0];
@@ -51,29 +53,34 @@ export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh
   const service = getPublicContent(locale).legalServices.find(s => s.slug === draft.service)?.title;
   const canCallback = loaded && !!availability && (!availability.published || !availability.hasAvailability) && !editing;
   const localDate = (time: string) => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(time));
+  const failureMessage = useCallback((failure: unknown) => {
+    if (!(failure instanceof ConversationRequestError)) return copy.failed;
+    if (failure.status === 401 || failure.status === 403) { onAccessFailure(failure); return copy.accessFailed; }
+    if (failure.status === 429) return copy.rateLimited;
+    if (failure.kind === "TIMEOUT") return copy.timedOut;
+    if (failure.kind === "INVALID_RESPONSE") return copy.invalidResponse;
+    return copy.failed;
+  }, [copy, onAccessFailure]);
 
   const load = useCallback(async () => {
     const request = ++slotRequest.current;
     setLoading(true); setLoaded(false); setSlots([]); setError("");
     if (!pending.current) { setSlot(null); setConsent(false); }
     try {
-      const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json", "x-kmt-locale": locale }, body: JSON.stringify({ action: "booking_slots", ...(date ? { date } : {}) }) });
-      const data = await response.json();
+      const result = await conversationRequest<BookingAvailability>({ action: "booking_slots", ...(date ? { date } : {}) }, locale);
       if (request !== slotRequest.current) return;
-      if (!response.ok) throw new Error();
-      const result = data.data as BookingAvailability;
       setAvailability(result);
       if (!date && result.nearestSlot) { setDate(new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(result.nearestSlot.startsAt))); return; }
       setSlots(result.slots); setLoaded(true);
       if (requestedTime.current) {
-        const requested = data.data.slots.find((s: Slot) => Date.parse(s.startsAt) === Date.parse(requestedTime.current!));
+        const requested = result.slots.find((s: Slot) => Date.parse(s.startsAt) === Date.parse(requestedTime.current!));
         setSlot(requested ?? null); setConsent(false);
         if (!requested) setError(copy.conflict);
         requestedTime.current = null;
       }
-    } catch { if (request === slotRequest.current) setError(copy.failed); }
+    } catch (failure) { if (request === slotRequest.current) setError(failureMessage(failure)); }
     finally { if (request === slotRequest.current) setLoading(false); }
-  }, [date, locale, copy.failed, copy.conflict]);
+  }, [date, locale, failureMessage, copy.conflict]);
   useEffect(() => { if (!booking || editing) void load(); }, [load, booking, editing]);
   useEffect(() => { if (draft.fullName) setName(draft.fullName); if (draft.phone) setPhone(draft.phone); }, [draft.fullName, draft.phone]);
   useEffect(() => {
@@ -97,20 +104,25 @@ export function DirectBookingPanel({ locale, revision, draft, booking, onRefresh
   }
 
   async function submit(action: string) {
+    if (mutationInFlight.current) return;
+    mutationInFlight.current = true;
     setBusy(true); setError("");
     pending.current ??= { action, key: crypto.randomUUID(), revision, confirmed: true,
       ...(!booking ? { fullName: name.trim(), phone: phone.trim(), contactChannel: channel } : {}),
       ...(slot && action !== "cancel_booking" ? { startsAt: slot.startsAt } : {}) };
     try {
-      const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json", "x-kmt-locale": locale }, body: JSON.stringify(pending.current) });
-      if (!response.ok) {
-        if (response.status < 500) pending.current = null;
-        if (response.status === 409) { await onRefresh(); setSlot(null); setConsent(false); await load(); }
-        setError(response.status === 409 ? copy.conflict : copy.failed); return;
-      }
-      await onRefresh(); pending.current = null; setEditing(false); setCancelling(false); setConsent(false); setSlot(null);
-    } catch { setError(copy.failed); }
-    finally { setBusy(false); }
+      const snapshot = await conversationRequest<ConversationState>(pending.current, locale);
+      onState(snapshot);
+      pending.current = null; setEditing(false); setCancelling(false); setConsent(false); setSlot(null);
+    } catch (failure) {
+      if (failure instanceof ConversationRequestError && failure.status && failure.status < 500) pending.current = null;
+      if (failure instanceof ConversationRequestError && failure.status === 409) {
+        setSlot(null); setConsent(false);
+        try { await onRefresh(); } catch (refreshFailure) { failureMessage(refreshFailure); }
+        await load(); setError(copy.conflict);
+      } else setError(failureMessage(failure));
+    }
+    finally { mutationInFlight.current = false; setBusy(false); }
   }
   function calendar() {
     if (!appointment) return;

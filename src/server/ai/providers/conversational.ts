@@ -34,6 +34,7 @@ export async function requestConversation(config: AIProviderConfig, input: AICha
   const signal = input.signal
     ? AbortSignal.any([input.signal, AbortSignal.timeout(config.timeoutMs)])
     : AbortSignal.timeout(config.timeoutMs);
+  const startedAt = performance.now();
   try {
     const response = await fetch(`${config.baseUrl.replace(/\/$/, "")}/chat/completions`, {
       method: "POST", signal,
@@ -46,8 +47,10 @@ export async function requestConversation(config: AIProviderConfig, input: AICha
     });
     if (!response.ok) {
       safeLog("warn", "ai.provider_request_failed", {
-        provider: config.provider, model: config.model, requestId: input.requestId,
-        diagnosticKind: "provider", status: response.status
+        provider: config.provider, model: config.model,
+        ...(/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(input.requestId) ? { requestId: input.requestId } : {}),
+        diagnosticKind: "provider", status: response.status,
+        elapsedMs: Math.round(performance.now() - startedAt), callTimeoutMs: config.timeoutMs
       });
       throw new ApiError(502, "AI_PROVIDER_UNAVAILABLE", "AI provider request failed.");
     }
@@ -71,8 +74,8 @@ export async function requestConversation(config: AIProviderConfig, input: AICha
       } : undefined
     };
   } catch (error) {
-    if (error instanceof ApiError) throw error;
     if (signal.aborted) throw new ApiError(504, "AI_PROVIDER_TIMEOUT", "AI provider timed out.");
+    if (error instanceof ApiError) throw error;
     throw new ApiError(502, "AI_PROVIDER_UNAVAILABLE", "AI provider request failed.");
   }
 }

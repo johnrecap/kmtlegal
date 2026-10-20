@@ -1,5 +1,9 @@
 export const conversationCopy = {
   ar: {
+    deliveryPending: "جارٍ إرسال رسالتك…", deliveryFailed: "وصلت رسالتك، لكن تعذر تجهيز الرد. يمكنك إعادة المحاولة بنفس الرسالة.",
+    deliveryProcessing: "وصلت رسالتك والرد ما زال قيد التجهيز. سنتحقق من حالته هنا.", deliveryUnknown: "لم نتمكن من تأكيد وصول الرسالة. النص موجود هنا؛ تحقق من الاتصال ثم أعد المحاولة.",
+    timeout: "استغرق الطلب وقتًا أطول من المهلة المتاحة. نتحقق من حالته قبل إعادة المحاولة.", network: "تعذر الاتصال. احتفظنا بالنص في هذه الصفحة؛ تحقق من الإنترنت ثم حاول مجددًا.",
+    invalidResponse: "وصل رد غير متوقع. نتحقق من حالة الطلب قبل إعادة المحاولة.", supportReference: "رقم التتبع للدعم: {id}",
     register: "إنشاء حساب جديد", registerSubmit: "إنشاء الحساب وتسجيل الدخول", registerIntro: "أنشئ حسابك لمتابعة محادثتك وطلباتك. لا تحتاج لتفعيل البريد، والحجز متاح أيضًا بدون حساب.",
     registered: "تم إنشاء حسابك وتسجيل الدخول. يمكنك استكمال المحادثة أو فتح طلباتك.", accountUnavailable: "تعذر استخدام هذا البريد لإنشاء حساب. جرّب تسجيل الدخول أو تواصل مع المكتب.",
     accountInvalid: "راجع الاسم والهاتف والبريد وكلمة المرور المطلوبة.", passwordHint: "استخدم من 10 إلى 256 حرفًا.", signupPassword: "كلمة المرور", forgotPassword: "نسيت كلمة المرور؟", recoveryHelp: "لاستعادة الدخول، تواصل مع المكتب للتحقق من هويتك وإعادة تعيين كلمة المرور. لا نرسل روابط استعادة بالبريد حاليًا.",
@@ -14,7 +18,7 @@ export const conversationCopy = {
     optionalPhone: "رقم للتواصل — اختياري", contactMethod: "طريقة التواصل", contactPhone: "اتصال هاتفي", contactWhatsapp: "واتساب", contactConsent: "أوافق على استخدام الرقم بواسطة المكتب للتواصل بشأن هذه المراسلة.", contactSave: "حفظ بيانات التواصل", contactRemove: "حذف رقم التواصل", contactSaved: "تم حفظ بيانات التواصل للمكتب.", contactRemoved: "تم حذف بيانات التواصل الاختيارية.", contactInvalid: "أدخل رقمًا صالحًا واختر طريقة التواصل ووافق على استخدامه.", contactUnavailable: "أرسل رسالة للمكتب أولًا لإضافة وسيلة تواصل اختيارية.", contactClose: "إغلاق بيانات المتابعة", contactNone: "لم تضف رقمًا؛ متابعة الرد داخل هذه المحادثة فقط.", staffContact: "رقم متابعة المراسلة", staffContactNote: "المساعد متاح للعميل دائمًا؛ هذا الاختيار يحدد متابعة الموظف فقط.",
     legacy: "تم تحديث الحجز. افتح صفحة حجز الاستشارة للاختيار من المواعيد التي ينشرها المكتب؛ لا يلزم الدفع داخل المحادثة.",
     title: "مساعد KMT الذكي", introduction: "أنا مساعد KMT Legal الذكي. أشرح المسائل القانونية وأساعدك في التحليل والمسودات الأولية، ومتابعة طلباتك والحجز داخل الموقع. أعتمد القانون المصري ما لم تحدد دولة أخرى.",
-    message: "رسالتك", send: "إرسال", waiting: "جارٍ تجهيز الرد…", retry: "إعادة المحاولة", unavailable: "تعذر إتمام الإجراء. بياناتك محفوظة؛ حاول مرة أخرى أو تواصل مع المكتب.",
+    message: "رسالتك", send: "إرسال", waiting: "جارٍ تجهيز الرد…", retry: "إعادة المحاولة", unavailable: "تعذر إتمام الإجراء. راجع حالته هنا ثم حاول مرة أخرى أو تواصل مع المكتب.",
     review: "مراجعة طلب الاستشارة", reviewNote: "راجع البيانات قبل الإرسال. الموعد المطلوب لا يُحجز نهائيًا إلا بعد اعتماد الإدارة، والأتعاب تُحدد منفصلة.",
     verify: "التحقق من البريد وإنشاء الحساب", email: "البريد الإلكتروني", emailSent: "إذا أمكن متابعة هذا الطلب، ستصلك رسالة بخطوة الوصول المناسبة. راجع بريدك، بما فيه مجلد الرسائل غير المرغوب فيها.",
     signIn: "لدي حساب — تسجيل الدخول", attach: "ربط حسابي بهذه المحادثة", submit: "أؤكد البيانات وأرسل الطلب", submitted: "تم استلام طلبك وينتظر مراجعة المكتب. تابع الرد هنا في المحادثة؛ يمكنك الاستمرار مع المساعد الذكي.",
@@ -29,6 +33,10 @@ export const conversationCopy = {
     requested: "الموعد المطلوب", confirmed: "الموعد المعتمد", noTime: "يُنسّق مع المكتب", noConfirmation: "لم يُعتمد موعد بعد", nextStep: "تابع حالة طلبك هنا؛ سيتولى المكتب مراجعته."
   },
   en: {
+    deliveryPending: "Sending your message…", deliveryFailed: "Your message was received, but the reply failed. You can retry the same message.",
+    deliveryProcessing: "Your message was received and the reply is still processing. Its status will update here.", deliveryUnknown: "We could not confirm delivery. Your text remains here; check your connection before retrying.",
+    timeout: "The request exceeded its time limit. We are checking its status before another attempt.", network: "We could not connect. Your text remains on this page; check your connection and try again.",
+    invalidResponse: "An unexpected response arrived. We are checking the request status before another attempt.", supportReference: "Support reference: {id}",
     register: "Create a new account", registerSubmit: "Create account and sign in", registerIntro: "Create an account to follow your conversation and requests. No email activation is needed; booking is also available without an account.",
     registered: "Your account is created and you are signed in. Continue the conversation or open your requests.", accountUnavailable: "This email cannot be used to create an account. Try signing in or contact the office.",
     accountInvalid: "Check your name, phone, email and required password.", passwordHint: "Use 10 to 256 characters.", signupPassword: "Password", forgotPassword: "Forgot your password?", recoveryHelp: "Contact the office to verify your identity and reset your password. Password recovery emails are not currently sent.",
@@ -43,7 +51,7 @@ export const conversationCopy = {
     optionalPhone: "Contact number — optional", contactMethod: "Contact method", contactPhone: "Phone call", contactWhatsapp: "WhatsApp", contactConsent: "I agree that the office may use this number to follow up on these messages.", contactSave: "Save contact details", contactRemove: "Remove contact number", contactSaved: "Your contact details were saved for the office.", contactRemoved: "Your optional contact details were removed.", contactInvalid: "Enter a valid number, choose a contact method and consent to its use.", contactUnavailable: "Send a message to the office before adding optional contact details.", contactClose: "Close follow-up details", contactNone: "No number added; follow replies in this conversation only.", staffContact: "Message follow-up number", staffContactNote: "The AI assistant is always available to the customer; this control only marks staff follow-up.",
     legacy: "Booking has been updated. Open the consultation page to choose from the office’s published times. Payment is not required in chat.",
     title: "KMT AI assistant", introduction: "I’m KMT Legal’s AI assistant. I explain legal matters, help with analysis and preliminary drafts, and support your requests and website booking. Egyptian law is the default unless you specify another country.",
-    message: "Your message", send: "Send", waiting: "Preparing a reply…", retry: "Try again", unavailable: "We could not complete this action. Your saved data is retained; try again or contact the office.",
+    message: "Your message", send: "Send", waiting: "Preparing a reply…", retry: "Try again", unavailable: "We could not complete this action. Review its status here, then retry or contact the office.",
     review: "Review consultation request", reviewNote: "Check your details before submitting. Your requested time is confirmed only after office approval. Fees are handled separately.",
     verify: "Verify email and create account", email: "Email address", emailSent: "If this request can proceed, an email will explain the appropriate access step. Check your inbox and spam folder.",
     signIn: "Already have an account? Sign in", attach: "Link my account to this conversation", submit: "Confirm details and submit request", submitted: "Your request awaits office review. Follow replies here; you can continue with the AI assistant.",

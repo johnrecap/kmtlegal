@@ -1,6 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
-import { parseEnv } from "node:util";
+import { readdir, readFile } from "node:fs/promises";
 import { randomUUID, createHash } from "node:crypto";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
@@ -20,7 +19,7 @@ import { followupCategory, explicitNewBooking } from "@/server/portal/client-ass
 import { clientAssistantCopy } from "@/content/client-assistant-copy";
 import { GET, POST } from "@/app/api/public/assistant/conversation/route";
 import { permissionsForRole } from "@/server/auth/policy";
-import { getAIProviderConfig } from "@/server/ai/config";
+import { liveAssistantEvaluation } from "./helpers/live-assistant-evaluation";
 
 let db: PGlite, server: PGLiteSocketServer;
 let actor: Principal;
@@ -230,25 +229,36 @@ describe.sequential("account-aware assistant against isolated migrated SQL", () 
     await ask(token, "اشرح خدمات المكتب", owner); expect(payloads.join("\n")).not.toContain("SYNTHETIC_PRIVATE_PROFILE_CITY");
   });
   it.skipIf(process.env.RUN_LIVE_CLIENT_ASSISTANT !== "true")("evaluates the configured live provider with synthetic account data only", async () => {
-    const env = parseEnv(await readFile(".env", "utf8"));
-    for (const key of ["AI_PROVIDER", "AI_API_KEY", "AI_BASE_URL", "AI_MODEL", "AI_TIMEOUT_MS", "AI_MAX_TOKENS", "AI_TEMPERATURE"]) vi.stubEnv(key, env[key] ?? "");
-    vi.stubGlobal("fetch", nativeFetch);
-    const config = getAIProviderConfig(), owner = await account(), row = await service(owner, "NEEDS_INFORMATION");
+    const evaluation = await liveAssistantEvaluation(nativeFetch, ".playwright/client-context");
     const cases: Array<{ question: string; reply: string; grounded: boolean }> = [];
+    let passed = false, failure: unknown;
     try {
+      evaluation.requireConfigured();
+      const owner = await account(), row = await service(owner, "NEEDS_INFORMATION");
       const token = await createAssistantSession("ar", owner);
       for (const question of ["فين وصلنا بملفي؟", "طيب محتاجين مني حاجة؟"]) {
         const reply = (await ask(token, question, owner)).text;
         cases.push({ question, reply, grounded: reply.includes(row.reference) && reply.includes("يحتاج معلومات") });
       }
       const english = await createAssistantSession("en", owner);
-      const state = await sendAssistantMessage({ token: english, actor: owner, messageId: randomUUID(), message: "Could you check the progress of my filing?", locale: "en", requestId: "synthetic-live-context" });
+      const state = await sendAssistantMessage({ token: english, actor: owner, messageId: randomUUID(), message: "Could you check the progress of my filing?", locale: "en", requestId: randomUUID() });
       const reply = state.turns.at(-1)!.assistantText!;
       cases.push({ question: "Could you check the progress of my filing?", reply, grounded: reply.includes(row.reference) && reply.includes("Information needed") });
       expect(cases.every(c => c.grounded)).toBe(true);
+      // Grounded status replies can be deterministic. A separate published-service question
+      // must actually reach the configured provider before this can count as a live evaluation.
+      const officeToken = await createAssistantSession("ar", owner);
+      const question = "اشرح خدمة مراجعة العقود المتاحة لدى المكتب.";
+      const probe = await sendAssistantMessage({ token: officeToken, actor: owner, messageId: randomUUID(), message: question, locale: "ar", requestId: randomUUID() });
+      const probeReply = probe.turns.at(-1)!.assistantText!;
+      cases.push({ question, reply: probeReply, grounded: false });
+      expect(probeReply.length).toBeGreaterThan(40);
+      expect(probe.booking).toBeNull();
+      expect(evaluation.requestCount()).toBeGreaterThan(0);
+      passed = true;
+    } catch (error) { failure = error; throw error;
     } finally {
-      await mkdir(".playwright/client-context", { recursive: true });
-      await writeFile(".playwright/client-context/live-provider.json", JSON.stringify({ provider: config.provider, model: config.model, syntheticOnly: true, cases, scope: "Limited end-to-end classification and grounded reply evaluation; not general model acceptance" }, null, 2));
+      await evaluation.report(passed, cases, failure);
     }
-  }, 120_000);
+  }, 300_000);
 });

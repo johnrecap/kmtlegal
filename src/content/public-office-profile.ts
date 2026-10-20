@@ -6,11 +6,12 @@ export const publicOfficeProfile = {
   email: "contact@kmtlegal.org",
   emailHref: "mailto:contact@kmtlegal.org",
   applicantPrivacyHref: "mailto:contact@kmtlegal.org?subject=Applicant%20privacy%20request",
+  mapHref: "https://maps.app.goo.gl/muoNe1hNgw2QNWtb9",
   address: {
-    ar: "العاصمة الإدارية الجديدة، مصر",
-    en: "New Administrative Capital, Egypt"
+    ar: "العاصمة الإدارية الجديدة، طريق الأمل، مول جولدن تاور، الدور الثاني، مكتب ٢٠١",
+    en: "New Administrative Capital, Al Amal Road, Golden Tower Mall, Second Floor, Office 201"
   }
 } as const;
 
-// Exact address, map pin, official social URLs, and team credentials
-// remain pending owner input. Never substitute guessed links or stock-photo claims.
+// Address and map were supplied by the owner. Official social URLs and team
+// credentials remain pending owner input; never substitute guessed facts.

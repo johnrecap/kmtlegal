@@ -7,9 +7,19 @@ import { PublicShell } from "@/components/layout";
 import { ButtonLink } from "@/components/ui";
 import { getPublicContent } from "@/content/public-content";
 import { DetailCta, PageHero, PublicSection, TrustStrip } from "@/features/public-site/public-components";
-import { HomePageView, PrivacyPageView, ServiceDetailPageView, TermsPageView, TeamDetailPageView, TeamPageView, privacyMetadata, termsMetadata } from "@/features/public-site/public-pages";
+import { HomePageView, ContactPageView, PrivacyPageView, ServiceDetailPageView, TermsPageView, TeamDetailPageView, TeamPageView, privacyMetadata, termsMetadata } from "@/features/public-site/public-pages";
 
 describe("public website UI", () => {
+  it.each(["ar", "en"] as const)("PLAN40 %s contact/footer render the approved full office address and map", locale => {
+    const expected = locale === "ar" ? "العاصمة الإدارية الجديدة، طريق الأمل، مول جولدن تاور، الدور الثاني، مكتب ٢٠١" : "New Administrative Capital, Al Amal Road, Golden Tower Mall, Second Floor, Office 201";
+    const html = renderToStaticMarkup(<ContactPageView locale={locale} />);
+    expect(html).toContain(expected);
+    expect(html.match(/href="https:\/\/maps\.app\.goo\.gl\/muoNe1hNgw2QNWtb9"/g)?.length).toBeGreaterThanOrEqual(2);
+    const schemas = [...html.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>(.*?)<\/script>/gs)].map(match => JSON.parse(match[1]));
+    const office = schemas.find(value => value["@type"] === "LegalService");
+    expect(office).toMatchObject({ name: "KMT Legal", address: expected, hasMap: "https://maps.app.goo.gl/muoNe1hNgw2QNWtb9" });
+    expect(office.geo).toBeUndefined();
+  });
   it("renders public shell navigation with English default labels and active page", () => {
     const html = renderToStaticMarkup(
       <PublicShell locale="en" currentPath="/services">

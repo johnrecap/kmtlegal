@@ -8,23 +8,30 @@ export type AIProviderConfig = {
   apiKey?: string;
   model: string;
   timeoutMs: number;
+  conversationTimeoutMs?: number;
   maxTokens: number;
   temperature: number;
   structuredOutputs?: "json_schema" | "off";
 };
 
-export function getAIProviderConfig(): AIProviderConfig {
-  const provider = normalizeProvider(process.env.AI_PROVIDER);
+export function getAIProviderConfig(env: NodeJS.ProcessEnv = process.env): AIProviderConfig & { conversationTimeoutMs: number } {
+  const provider = normalizeProvider(env.AI_PROVIDER);
+  const boundedNumber = (key: string, fallback: number, minimum: number, maximum: number) => {
+    const numeric = Number(env[key]);
+    return Number.isFinite(numeric) && numeric >= minimum && numeric <= maximum ? numeric : fallback;
+  };
+  const turnTimeout = Number(env.AI_CONVERSATION_TIMEOUT_MS);
 
   return {
     provider,
-    baseUrl: process.env.AI_BASE_URL || defaultBaseUrlForProvider(provider),
-    apiKey: process.env.AI_API_KEY || undefined,
-    model: process.env.AI_MODEL || defaultModelForProvider(provider),
-    timeoutMs: boundedNumberFromEnv("AI_TIMEOUT_MS", 30_000, 1_000, 60_000),
-    maxTokens: Math.trunc(boundedNumberFromEnv("AI_MAX_TOKENS", 1200, 100, 8_000)),
-    temperature: boundedNumberFromEnv("AI_TEMPERATURE", 0.2, 0, 2),
-    structuredOutputs: process.env.AI_STRUCTURED_OUTPUTS === "json_schema" ? "json_schema" : "off"
+    baseUrl: env.AI_BASE_URL || defaultBaseUrlForProvider(provider),
+    apiKey: env.AI_API_KEY || undefined,
+    model: env.AI_MODEL || defaultModelForProvider(provider),
+    timeoutMs: boundedNumber("AI_TIMEOUT_MS", 30_000, 1_000, 60_000),
+    conversationTimeoutMs: Number.isInteger(turnTimeout) && turnTimeout >= 1000 && turnTimeout <= 60_000 ? turnTimeout : 60_000,
+    maxTokens: Math.trunc(boundedNumber("AI_MAX_TOKENS", 1200, 100, 8_000)),
+    temperature: boundedNumber("AI_TEMPERATURE", 0.2, 0, 2),
+    structuredOutputs: env.AI_STRUCTURED_OUTPUTS === "json_schema" ? "json_schema" : "off"
   };
 }
 
@@ -34,11 +41,6 @@ function normalizeProvider(value: string | undefined): AIProviderName {
   }
 
   return "mock";
-}
-
-function boundedNumberFromEnv(key: string, fallback: number, minimum: number, maximum: number) {
-  const value = Number(process.env[key]);
-  return Number.isFinite(value) && value >= minimum && value <= maximum ? value : fallback;
 }
 
 function defaultBaseUrlForProvider(provider: AIProviderName) {

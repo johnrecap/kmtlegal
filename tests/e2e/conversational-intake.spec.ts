@@ -109,12 +109,12 @@ test("conversation booking entry opens the popup and closing it does not reopen 
   await page.setViewportSize({ width: 390, height: 500 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   const copy = conversationCopy.ar, direct = directBookingCopy.ar;
-  let state = { locale: "ar", handoffState: "NONE", booking: null, draft: {}, dialogue: { mode: "INQUIRY", consentAt: null as string | null, offerShown: false, accountAccess: false }, revision: 0, accountReady: false, humanOwned: false, submitted: false, turns: [] };
+  let state = { locale: "ar", handoffState: "NONE", booking: null, draft: {}, dialogue: { mode: "INQUIRY", consentAt: null as string | null, offerShown: false, accountAccess: false }, revision: 0, accountReady: false, humanOwned: false, submitted: false, turns: [] as Array<{ messageId: string; userText: string; assistantText: string; status: string }> };
   const mutations: string[] = [];
   await page.route("**/api/public/assistant/conversation", route => {
     if (route.request().method() === "POST") {
       const input = route.request().postDataJSON(); mutations.push(input.action);
-      if (input.action === "message") state = { ...state, dialogue: { ...state.dialogue, mode: "BOOKING", consentAt: "2026-10-10T00:00:00Z" } };
+      if (input.action === "message") state = { ...state, turns: [...state.turns, { messageId: input.messageId, userText: input.message, assistantText: "رد تجريبي لاستكمال المحادثة", status: "COMPLETED" }], dialogue: { ...state.dialogue, mode: "BOOKING", consentAt: "2026-10-10T00:00:00Z" } };
       if (input.action === "booking_slots") return route.fulfill({ json: { data: fixtureBookingAvailability({ published: false, date: input.date }) } });
     }
     return route.fulfill({ json: { data: state } });
@@ -127,7 +127,7 @@ test("conversation booking entry opens the popup and closing it does not reopen 
   const bounds = await dialog.boundingBox();
   expect(bounds!.y).toBeGreaterThanOrEqual(0); expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(501);
   await page.getByLabel(direct.name, { exact: true }).fill("عميل تجريبي");
-  await page.mouse.click(2, 2);
+  await dialog.getByRole("button", { name: direct.closeForm, exact: true }).click();
   await expect(dialog).not.toBeVisible();
   await page.getByLabel(copy.message, { exact: true }).fill("عندي سؤال آخر");
   await page.getByRole("button", { name: copy.send, exact: true }).click();

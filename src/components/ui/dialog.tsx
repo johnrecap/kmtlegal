@@ -15,12 +15,34 @@ export type DialogProps = {
   footer?: ReactNode;
   className?: string;
   closeLabel?: string;
+  fitVisualViewport?: boolean;
 };
 
-export function Dialog({ open, onClose, title, description, children, footer, className, closeLabel }: DialogProps) {
+export function Dialog({ open, onClose, title, description, children, footer, className, closeLabel, fitVisualViewport = false }: DialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const headingId = useId();
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!open || !fitVisualViewport || !dialog) return;
+    const viewport = window.visualViewport;
+    const sync = () => {
+      dialog.style.setProperty("--dialog-viewport-height", `${viewport?.height ?? window.innerHeight}px`);
+      dialog.style.setProperty("--dialog-viewport-top", `${viewport?.offsetTop ?? 0}px`);
+    };
+    sync();
+    viewport?.addEventListener("resize", sync);
+    viewport?.addEventListener("scroll", sync);
+    window.addEventListener("resize", sync);
+    return () => {
+      viewport?.removeEventListener("resize", sync);
+      viewport?.removeEventListener("scroll", sync);
+      window.removeEventListener("resize", sync);
+      dialog.style.removeProperty("--dialog-viewport-height");
+      dialog.style.removeProperty("--dialog-viewport-top");
+    };
+  }, [open, fitVisualViewport]);
 
   const handleCancel = useCallback(
     (event: Event) => {
@@ -86,6 +108,7 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
   return (
     <dialog
       ref={dialogRef}
+      data-fit-visual-viewport={fitVisualViewport || undefined}
       aria-labelledby={headingId}
       className={cn(
         "m-auto w-full max-w-lg rounded-xl border border-border bg-surface p-0 text-foreground shadow-kmt-popover backdrop:bg-black/60",

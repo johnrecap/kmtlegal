@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ApiError } from "@/server/http/errors";
+import { safeLog } from "@/server/observability/safe-log";
 import type { AIChatMessage, AIProviderAdapter } from "./types";
 import { assistantCategory, assistantFocus } from "@/server/portal/client-assistant-contract";
 import { legalAssessmentSchema, legalContextSchema } from "./legal-assistance-contract";
@@ -52,7 +53,23 @@ export function shouldOfferConsultation(input: { dialogue: DialogueState; assess
     assessment.offerAppropriate && ["OFFICE", "LEGAL", "RELATED_LEGAL", "MIXED"].includes(assessment.scope);
 }
 
-export function boundedConversationProvider(provider: AIProviderAdapter, signal: AbortSignal, assertActive: () => Promise<void>) {
+export function conversationDiagnostics(requestId: string, turnTimeoutMs: number, callTimeoutMs: number) {
+  const startedAt = performance.now();
+  let stageStartedAt = startedAt;
+  let phase: "PREPARATION" | "CLASSIFICATION" | "GENERATION" | "RESEARCH" | "REVIEW" = "PREPARATION";
+  const metadata = () => ({
+    ...(/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(requestId) ? { requestId } : {}),
+    phase, elapsedMs: Math.round(performance.now() - startedAt),
+    stageElapsedMs: Math.round(performance.now() - stageStartedAt), turnTimeoutMs, callTimeoutMs
+  });
+  return {
+    begin(nextPhase: typeof phase) { phase = nextPhase; stageStartedAt = performance.now(); },
+    completed() { safeLog("info", "assistant.stage_completed", metadata()); },
+    metadata
+  };
+}
+
+export function boundedConversationProvider(provider: AIProviderAdapter, signal: AbortSignal, assertActive: () => Promise<void>, diagnostics?: ReturnType<typeof conversationDiagnostics>) {
   let calls = 0;
   const before = async () => {
     await assertActive();
@@ -60,16 +77,21 @@ export function boundedConversationProvider(provider: AIProviderAdapter, signal:
     if (++calls > 6) throw new ApiError(502, "AI_OUTPUT_INVALID", "Conversation call limit reached.");
   };
   return { ...provider, chat: async (input: Parameters<NonNullable<AIProviderAdapter["chat"]>>[0]) => {
+    const operation = input.tools[0]?.function.name ?? "";
+    diagnostics?.begin(operation.startsWith("classify_") ? "CLASSIFICATION" : operation.startsWith("review_") ? "REVIEW" : "GENERATION");
     await before();
     if (!provider.chat) throw new ApiError(503, "AI_PROVIDER_UNAVAILABLE", "Conversational provider unavailable.");
     const result = await provider.chat({ ...input, signal });
     if (signal.aborted) throw new ApiError(504, "AI_PROVIDER_TIMEOUT", "AI provider timed out.");
+    diagnostics?.completed();
     return result;
   }, researchLegal: async (input: Parameters<NonNullable<AIProviderAdapter["researchLegal"]>>[0]) => {
+    diagnostics?.begin("RESEARCH");
     await before();
     const result = provider.researchLegal ? await provider.researchLegal({ ...input, signal }) : { status: "UNAVAILABLE" as const, sources: [] };
     await assertActive();
     if (signal.aborted) throw new ApiError(504, "AI_PROVIDER_TIMEOUT", "AI provider timed out.");
+    diagnostics?.completed();
     return result;
   } } satisfies AIProviderAdapter;
 }

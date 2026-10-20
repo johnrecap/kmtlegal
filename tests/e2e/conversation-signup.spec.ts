@@ -79,8 +79,9 @@ for (const locale of ["ar", "en"] as const) for (const width of [390, 1440]) {
     await page.getByLabel(copy.message, { exact: true }).fill("Synthetic service question");
     await page.getByRole("button", { name: copy.send, exact: true }).click();
     const failure = await failedMessage;
-    expect([502, 503]).toContain(failure.status()); expect((await failure.json()).error.code).toBe("AI_PROVIDER_UNAVAILABLE");
-    await expect(page.getByText(copy.unavailable, { exact: true })).toBeVisible();
+    const failureBody = await failure.json();
+    expect([502, 503]).toContain(failure.status()); expect(failureBody.error.code).toBe("AI_PROVIDER_UNAVAILABLE");
+    await expect(page.getByText(copy.unavailable, { exact: false })).toContainText(failureBody.error.requestId);
     expect(errors).toEqual(width === 390 ? ["Failed to load resource: net::ERR_FAILED"] : []);
   });
 }
@@ -104,7 +105,7 @@ test("existing email remains recoverable, guest booking is prefilled and attache
   await page.getByLabel(copy.signupPassword, { exact: true }).fill("Synthetic-browser-signup-2026");
   await page.getByLabel(copy.confirmPassword, { exact: true }).fill("Synthetic-browser-signup-2026");
   await page.getByRole("button", { name: copy.registerSubmit, exact: true }).click();
-  await expect(page.getByText(copy.accountUnavailable, { exact: true })).toBeVisible();
+  await expect(page.getByText(copy.accountUnavailable, { exact: false })).toBeVisible();
   await expect(page.getByLabel(copy.email, { exact: true })).toHaveValue("admin@phase-five.invalid");
   // No navigation or clearing the ordinary draft on an account conflict.
   await page.getByLabel(copy.email, { exact: true }).fill(`after-booking-${crypto.randomUUID()}@signup.invalid`);

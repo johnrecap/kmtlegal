@@ -3,9 +3,28 @@ import { describe, expect, it, vi } from "vitest";
 import { applyAssessment, bookingAllowed, boundedConversationProvider, messageAssessmentSchema, policyDecision, readDialogue, type MessageAssessment } from "@/server/ai/company-conversation-policy";
 import { assistantKnowledge } from "@/server/consultations/assistant-knowledge";
 import type { AIProviderAdapter } from "@/server/ai/types";
+import { getAIProviderConfig } from "@/server/ai/config";
 
 const assessment = (patch: Partial<MessageAssessment> = {}): MessageAssessment => ({ scope: "OFFICE", intent: "NONE", evidence: "", locale: "ar", offerAppropriate: false, inScopeQuestion: "", ...patch });
 describe("company assistant policy gates", () => {
+  it.each([
+    [undefined, 60_000], ["60000", 60_000], ["1000", 1000],
+    ["999", 60_000], ["60001", 60_000], ["1500.5", 60_000], ["invalid", 60_000]
+  ])("PLAN40 separates full-turn config %s from the per-call bound", (value, expected) => {
+    const oldTurn = process.env.AI_CONVERSATION_TIMEOUT_MS;
+    const oldCall = process.env.AI_TIMEOUT_MS;
+    try {
+      if (value === undefined) delete process.env.AI_CONVERSATION_TIMEOUT_MS;
+      else process.env.AI_CONVERSATION_TIMEOUT_MS = value;
+      process.env.AI_TIMEOUT_MS = "30000";
+      expect(getAIProviderConfig()).toMatchObject({ conversationTimeoutMs: expected, timeoutMs: 30_000 });
+    } finally {
+      if (oldTurn === undefined) delete process.env.AI_CONVERSATION_TIMEOUT_MS;
+      else process.env.AI_CONVERSATION_TIMEOUT_MS = oldTurn;
+      if (oldCall === undefined) delete process.env.AI_TIMEOUT_MS;
+      else process.env.AI_TIMEOUT_MS = oldCall;
+    }
+  });
   it("defaults old/invalid state to inquiry without manufacturing consent", () => {
     expect(bookingAllowed({})).toBe(false);
     expect(bookingAllowed({ mode: "BOOKING", consentAt: null })).toBe(false);
