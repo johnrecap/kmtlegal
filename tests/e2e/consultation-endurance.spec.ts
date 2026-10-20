@@ -104,8 +104,8 @@ for (const locale of ["ar", "en"] as const) test(`${locale}: long history quota 
   await expect(page.getByRole("log").getByText(text,{exact:true})).toHaveCount(1);expect(sends).toBe(1);
 });
 
-for(const locale of ["ar","en"] as const)test(`${locale}: available-times question reopens full-screen form once, preserving entered details`,async({page})=>{
-  const copy=conversationCopy[locale],direct=directBookingCopy[locale],question=locale==="ar"?"امتي الاوقات المتاحه":"What appointment times are available?";
+for(const locale of ["ar","en"] as const) for(const trigger of ["availability","explicit-booking"] as const)test(`${locale}: ${trigger} reopens full-screen form once, preserving entered details`,async({page},info)=>{
+  const copy=conversationCopy[locale],direct=directBookingCopy[locale],question=trigger==="explicit-booking"?(locale==="ar"?"عايز احجز استشارة":"I want to book a consultation"):(locale==="ar"?"امتي الاوقات المتاحه":"What appointment times are available?");
   const writes:string[]=[];
   let snapshot={locale,revision:1,handoffState:"QUEUED",officeThreadStatus:"WAITING_STAFF",booking:null,draft:{},accountReady:false,humanOwned:false,submitted:false,
     dialogue:{mode:"BOOKING",offerShown:false,consentAt:new Date().toISOString(),accountAccess:false,bookingFormRequestId:undefined as string|undefined},
@@ -128,6 +128,7 @@ for(const locale of ["ar","en"] as const)test(`${locale}: available-times questi
   await page.getByLabel(copy.message,{exact:true}).fill(question);await page.getByRole("button",{name:copy.send,exact:true}).tap();
   await expect(dialog).toBeVisible();await expect(name).toHaveValue("Synthetic retained name");
   const bounds=(await dialog.boundingBox())!;expect(bounds.width).toBeCloseTo(page.viewportSize()!.width,0);expect(bounds.height).toBeCloseTo(page.viewportSize()!.height,0);
+  await page.screenshot({path:`.playwright/plan40/direct-booking-${info.project.name}-${locale}-${trigger}.png`});
   await dialog.getByRole("button",{name:direct.closeForm,exact:true}).tap();
   const refresh=page.waitForResponse(response=>response.url().endsWith("/api/public/assistant/conversation")&&response.request().method()==="GET");
   await page.evaluate(()=>window.dispatchEvent(new Event("focus")));await refresh;await expect(dialog).not.toBeVisible();

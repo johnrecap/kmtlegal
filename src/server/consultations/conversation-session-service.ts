@@ -9,7 +9,7 @@ import { safeLog } from "@/server/observability/safe-log";
 import { assistantKnowledge } from "./assistant-knowledge";
 import { getAIProviderConfig } from "@/server/ai/config";
 import { getAIProvider } from "@/server/ai/provider-registry";
-import { applyAssessment, bookingAllowed, boundedConversationProvider, conversationDiagnostics, INPUT_POLICY, messageAssessmentSchema, OUTPUT_POLICY, policyDecision, readDialogue, replyReviewSchema, shouldOfferConsultation, type DialogueState } from "@/server/ai/company-conversation-policy";
+import { applyAssessment, bookingAllowed, boundedConversationProvider, conversationDiagnostics, explicitBookingRequest, INPUT_POLICY, messageAssessmentSchema, OUTPUT_POLICY, policyDecision, readDialogue, replyReviewSchema, shouldOfferConsultation, type DialogueState } from "@/server/ai/company-conversation-policy";
 import { bindAssistantThreadIdentity, ensureAssistantHandoff } from "@/server/conversations/assistant-handoff-service";
 import { prisma } from "@/server/db/prisma";
 import { ApiError } from "@/server/http/errors";
@@ -168,6 +168,7 @@ export async function sendAssistantMessage(input: {
     }
     const initialDialogue = readDialogue(session.consultationRequestId ? { ...readDialogue(session.dialogue), mode: "INQUIRY", consentAt: null } : session.dialogue);
     const formText = normalizeFollowup(input.message);
+    const directBooking = !session.consultationRequestId && explicitBookingRequest(input.message);
     const formFollowup = bookingAllowed(initialDialogue) && !session.consultationRequestId &&
       !/^\s*[\[{]/.test(input.message) &&
       !explicitAccountQuestion(input.message) && !legalSubjectQuestion(input.message) &&
@@ -177,7 +178,7 @@ export async function sendAssistantMessage(input: {
     const knowledge = assistantKnowledge(input.locale);
     const legalContinuation = initialDialogue.activeDomain === "LEGAL" && !explicitAccountQuestion(input.message) && !(/^\s*[1-5][؟?.\s]*$/.test(input.message) && initialDialogue.followup?.choices && !initialDialogue.legal?.useSelectedRecord);
     const category = (initialDialogue.mode === "BOOKING" && !initialDialogue.followup) || legalContinuation ? null : followupCategory(input.message, initialDialogue.followup);
-    let assessment = formFollowup ? messageAssessmentSchema.parse({ scope: "OFFICE", intent: "NONE", evidence: "", locale: input.locale, offerAppropriate: false, inScopeQuestion: input.message }) : category ? messageAssessmentSchema.parse({ scope: "OFFICE", intent: "FOLLOW_UP", evidence: input.message, locale: input.locale, offerAppropriate: false, inScopeQuestion: input.message }) : await policyDecision(provider, messageAssessmentSchema, "classify_company_message", INPUT_POLICY,
+    let assessment = directBooking ? messageAssessmentSchema.parse({ scope: "OFFICE", intent: "BOOK", evidence: input.message, locale: input.locale, offerAppropriate: false, inScopeQuestion: input.message }) : formFollowup ? messageAssessmentSchema.parse({ scope: "OFFICE", intent: "NONE", evidence: "", locale: input.locale, offerAppropriate: false, inScopeQuestion: input.message }) : category ? messageAssessmentSchema.parse({ scope: "OFFICE", intent: "FOLLOW_UP", evidence: input.message, locale: input.locale, offerAppropriate: false, inScopeQuestion: input.message }) : await policyDecision(provider, messageAssessmentSchema, "classify_company_message", INPUT_POLICY,
       { message: input.message, history, dialogue: initialDialogue, legalTopics: Object.keys(legalTopics), serviceIds: knowledge.services.map(s => ({ id: s.id, title: s.title })) }, input.requestId);
     if (assessment.intent === "FOLLOW_UP" && (legalSubjectQuestion(input.message) || legalContinuation)) assessment = { ...assessment, scope: "LEGAL", intent: "NONE", evidence: "" };
     await assertActive();

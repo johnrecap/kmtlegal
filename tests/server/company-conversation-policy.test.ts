@@ -1,12 +1,18 @@
 import { publicServiceSlugs } from "@/content/public-service-registry";
 import { describe, expect, it, vi } from "vitest";
-import { applyAssessment, bookingAllowed, boundedConversationProvider, messageAssessmentSchema, policyDecision, readDialogue, type MessageAssessment } from "@/server/ai/company-conversation-policy";
+import { applyAssessment, bookingAllowed, boundedConversationProvider, explicitBookingRequest, messageAssessmentSchema, policyDecision, readDialogue, type MessageAssessment } from "@/server/ai/company-conversation-policy";
 import { assistantKnowledge } from "@/server/consultations/assistant-knowledge";
 import type { AIProviderAdapter } from "@/server/ai/types";
 import { getAIProviderConfig } from "@/server/ai/config";
 
 const assessment = (patch: Partial<MessageAssessment> = {}): MessageAssessment => ({ scope: "OFFICE", intent: "NONE", evidence: "", locale: "ar", offerAppropriate: false, inScopeQuestion: "", ...patch });
 describe("company assistant policy gates", () => {
+  it.each(["عايز احجز استشارة", "عايز أحجز استشارة", "أرغب في حجز موعد", "احجزلي استشارة قانونية", "I want to book a consultation", "Please schedule an appointment"])("recognizes a standalone direct booking request: %s", message => {
+    expect(explicitBookingRequest(message)).toBe(true);
+  });
+  it.each(["مش عايز احجز استشارة", "لا أريد حجز استشارة", "كيف أحجز استشارة؟", "ما حالة حجزي؟", "قال: عايز احجز استشارة", "\"عايز احجز استشارة\"", "كنت عايز احجز استشارة", "I don't want to book a consultation", "How do I book a consultation?", "What happened to my booking?", "If I say book a consultation, what happens?"])("does not manufacture booking consent from other text: %s", message => {
+    expect(explicitBookingRequest(message)).toBe(false);
+  });
   it.each([
     [undefined, 60_000], ["60000", 60_000], ["1000", 1000],
     ["999", 60_000], ["60001", 60_000], ["1500.5", 60_000], ["invalid", 60_000]

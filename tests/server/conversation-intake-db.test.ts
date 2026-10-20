@@ -81,6 +81,86 @@ afterAll(async () => {
 });
 
 describe.sequential("representative conversational intake against isolated SQL database", () => {
+  it("explicit booking request reopens a consented guest form when classification is offline", async () => {
+    const token = await createAssistantSession("ar");
+    await changeAssistantDialogue(token, "begin_booking");
+    const messageId = randomUUID();
+    const provider = vi.fn(async () => { throw new Error("synthetic classifier offline"); });
+    vi.stubGlobal("fetch", provider);
+    const state = await sendAssistantMessage({ token, messageId, message: "عايز احجز استشارة", locale: "ar", requestId: randomUUID() });
+    expect(provider).not.toHaveBeenCalled();
+    expect(state.dialogue).toMatchObject({ mode: "BOOKING", bookingFormRequestId: messageId });
+    expect(state.turns.at(-1)).toMatchObject({ messageId, status: "COMPLETED", assistantText: directBookingCopy.ar.intro });
+    expect(state.booking).toBeNull();
+  });
+  it.each([
+    { locale: "ar" as const, message: "عايز أحجز استشارة" },
+    { locale: "en" as const, message: "I want to book a consultation" }
+  ])("direct $locale request starts a guest booking without provider classification", async ({ locale, message }) => {
+    const token = await createAssistantSession(locale), messageId = randomUUID();
+    const provider = vi.fn(async () => { throw new Error("synthetic classifier offline"); });
+    vi.stubGlobal("fetch", provider);
+    const state = await sendAssistantMessage({ token, messageId, message, locale, requestId: randomUUID() });
+    expect(provider).not.toHaveBeenCalled();
+    expect(state.dialogue).toMatchObject({ mode: "BOOKING", bookingFormRequestId: messageId });
+    expect(state.turns.at(-1)).toMatchObject({ messageId, status: "COMPLETED", assistantText: directBookingCopy[locale].intro });
+    expect(state.booking).toBeNull(); expect(state.submitted).toBe(false);
+  });
+  it("existing guest message API returns the form trigger without provider access or a new booking", async () => {
+    const { POST } = await import("@/app/api/public/assistant/conversation/route");
+    const token = await createAssistantSession("ar"), messageId = randomUUID();
+    const provider = vi.fn(async () => { throw new Error("synthetic classifier offline"); });
+    vi.stubGlobal("fetch", provider);
+    const response = await POST(new Request("http://localhost/api/public/assistant/conversation", {
+      method: "POST", headers: { "content-type": "application/json", cookie: `kmt_assistant=${token}`, "x-forwarded-for": "203.0.113.248" },
+      body: JSON.stringify({ action: "message", recipient: "ASSISTANT", messageId, message: "عايز احجز استشارة", locale: "ar" })
+    }));
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.data.dialogue).toMatchObject({ mode: "BOOKING", bookingFormRequestId: messageId });
+    expect(body.data.turns.at(-1)).toMatchObject({ messageId, status: "COMPLETED", assistantText: directBookingCopy.ar.intro });
+    expect(body.data.booking).toBeNull(); expect(body.data.submitted).toBe(false);
+    expect(provider).not.toHaveBeenCalled();
+  });
+  it("same-ID replay completes a historically failed booking turn once", async () => {
+    const token = await createAssistantSession("ar");
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    const messageId = randomUUID(), message = "عايز احجز استشارة";
+    await fixture.db.assistantTurn.create({ data: { sessionId: session.id, messageId, userText: message, recipient: "ASSISTANT", status: "FAILED", errorCode: "AI_PROVIDER_UNAVAILABLE" } });
+    const provider = vi.fn(async () => { throw new Error("synthetic classifier offline"); });
+    vi.stubGlobal("fetch", provider);
+    const input = { token, messageId, message, locale: "ar" as const, requestId: randomUUID() };
+    const state = await sendAssistantMessage(input);
+    expect(state.turns.filter(turn => turn.messageId === messageId)).toHaveLength(1);
+    expect(state.turns.at(-1)?.status).toBe("COMPLETED");
+    expect(state.dialogue.bookingFormRequestId).toBe(messageId);
+    const replay = await sendAssistantMessage(input);
+    expect(replay.turns.filter(turn => turn.messageId === messageId)).toHaveLength(1);
+    expect(await fixture.db.assistantTurn.count({ where: { sessionId: session.id, messageId } })).toBe(1);
+    expect(provider).not.toHaveBeenCalled();
+  });
+  it.each(["كيف أحجز استشارة؟", "مش عايز احجز استشارة", "ما حالة حجزي؟", "\"عايز احجز استشارة\""])("non-consent text still follows policy: %s", async message => {
+    const token = await createAssistantSession("ar");
+    const provider = vi.fn(async (_url: unknown, init: RequestInit) => {
+      const body = JSON.parse(String(init.body));
+      const name = body.tools?.[0]?.function?.name;
+      if (name === "classify_company_message") {
+        const decision = { scope: "OFFICE", intent: "NONE", evidence: "", locale: "ar", offerAppropriate: false, inScopeQuestion: message };
+        return Response.json({ choices: [{ finish_reason: "tool_calls", message: { content: null, tool_calls: [{ id: name, type: "function", function: { name, arguments: JSON.stringify(decision) } }] } }] });
+      }
+      if (name === "review_company_reply") {
+        const review = { inScope: true, grounded: true, noPrematureContact: true, noBookingPressure: true, noFinalLegalAdvice: true, noFalseActionClaim: true };
+        return Response.json({ choices: [{ finish_reason: "tool_calls", message: { content: null, tool_calls: [{ id: name, type: "function", function: { name, arguments: JSON.stringify(review) } }] } }] });
+      }
+      return Response.json({ choices: [{ finish_reason: "stop", message: { content: "يمكنني شرح طريقة الحجز وخدمات المكتب." } }] });
+    });
+    vi.stubGlobal("fetch", provider);
+    const state = await sendAssistantMessage({ token, messageId: randomUUID(), message, locale: "ar", requestId: randomUUID() });
+    expect(provider).toHaveBeenCalled();
+    expect(state.dialogue.mode).toBe("INQUIRY");
+    expect(state.dialogue.bookingFormRequestId).toBeUndefined();
+    expect(state.booking).toBeNull();
+  });
   it.each(["expired","account-bound"])("old guest cookie: %s allows a new anonymous session while protecting prior history",async(kind)=>{
     const {POST,GET}=await import("@/app/api/public/assistant/conversation/route");
     const token=await createAssistantSession("en");

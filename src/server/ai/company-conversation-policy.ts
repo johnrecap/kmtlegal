@@ -18,6 +18,15 @@ export function readDialogue(value: unknown): DialogueState {
 }
 export function bookingAllowed(value: unknown) { const d = readDialogue(value); return d.mode === "BOOKING" && !!d.consentAt; }
 
+// Only short, standalone requests to start a booking bypass model classification.
+// The full anchored grammar intentionally leaves status, how-to and quoted text to policy.
+export function explicitBookingRequest(message: string): boolean {
+  const text = message.toLowerCase().replace(/[\u064b-\u065f\u0670]/g, "").replace(/[أإآ]/g, "ا")
+    .replace(/ى/g, "ي").trim().replace(/[.!،]+$/g, "").replace(/\s+/g, " ");
+  if (text.length > 100 || /[؟?\n\r"'`«»]/.test(message)) return false;
+  return /^(?:(?:عايز|عاوز|عاوزه|اريد|ارغب|محتاج|حابب|نفسي) (?:في )?(?:احجز|حجز|احجزلي|حجزلي) (?:استشار[هة]|موعد)(?: قانوني[هة])?(?: مع المكتب)?|(?:احجز|احجزلي) (?:استشار[هة]|موعد)(?: قانوني[هة])?(?: مع المكتب)?|(?:i want to|i would like to|i'd like to|please) (?:book|schedule|arrange|request) (?:me )?(?:a |an )?(?:consultation|appointment)(?: with the office)?|(?:book|schedule) (?:me )?(?:a |an )?(?:consultation|appointment)(?: with the office)?)$/.test(text);
+}
+
 export const messageAssessmentSchema = z.strictObject({
   scope: z.enum(["OFFICE", "LEGAL", "RELATED_LEGAL", "SOCIAL", "OFF_TOPIC", "MIXED", "UNCLEAR"]),
   intent: z.enum(["NONE", "BOOK", "ACCEPT", "DECLINE", "WITHDRAW", "ACCOUNT", "HANDOFF", "FOLLOW_UP", "UNCLEAR"]),
