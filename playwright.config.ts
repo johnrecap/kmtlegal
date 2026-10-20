@@ -15,7 +15,13 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
+      testIgnore: /consultation-endurance\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] }
-    }
+    },
+    ...(process.env.PLAYWRIGHT_MOBILE_ENGINES === "true" ? [
+      { name: "iphone-se-webkit", testMatch: /consultation-endurance\.spec\.ts/, use: { ...devices["iPhone SE"], browserName: "webkit" as const, channel: undefined } },
+      { name: "iphone-13-webkit", testMatch: /consultation-endurance\.spec\.ts/, use: { ...devices["iPhone 13"], browserName: "webkit" as const, channel: undefined } },
+      { name: "android-chromium", testMatch: /consultation-endurance\.spec\.ts/, use: { ...devices["Pixel 7"], browserName: "chromium" as const, channel: "chrome" } }
+    ] : [])
   ]
 });

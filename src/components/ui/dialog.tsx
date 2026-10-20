@@ -28,8 +28,10 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
     if (!open || !fitVisualViewport || !dialog) return;
     const viewport = window.visualViewport;
     const sync = () => {
-      dialog.style.setProperty("--dialog-viewport-height", `${viewport?.height ?? window.innerHeight}px`);
+      const height = viewport?.height ?? window.innerHeight;
+      dialog.style.setProperty("--dialog-viewport-height", `${height}px`);
       dialog.style.setProperty("--dialog-viewport-top", `${viewport?.offsetTop ?? 0}px`);
+      dialog.toggleAttribute("data-compact-viewport", height < 500);
     };
     sync();
     viewport?.addEventListener("resize", sync);
@@ -41,6 +43,7 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
       window.removeEventListener("resize", sync);
       dialog.style.removeProperty("--dialog-viewport-height");
       dialog.style.removeProperty("--dialog-viewport-top");
+      dialog.removeAttribute("data-compact-viewport");
     };
   }, [open, fitVisualViewport]);
 

@@ -1,5 +1,6 @@
 export const conversationCopy = {
   ar: {
+    messageLimit: "وصلت هذه المحادثة إلى حد الرسائل. ابدأ محادثة جديدة للمتابعة؛ سيبقى النص الذي كتبته هنا. الحجز يظل متاحًا.",
     deliveryPending: "جارٍ إرسال رسالتك…", deliveryFailed: "وصلت رسالتك، لكن تعذر تجهيز الرد. يمكنك إعادة المحاولة بنفس الرسالة.",
     deliveryProcessing: "وصلت رسالتك والرد ما زال قيد التجهيز. سنتحقق من حالته هنا.", deliveryUnknown: "لم نتمكن من تأكيد وصول الرسالة. النص موجود هنا؛ تحقق من الاتصال ثم أعد المحاولة.",
     timeout: "استغرق الطلب وقتًا أطول من المهلة المتاحة. نتحقق من حالته قبل إعادة المحاولة.", network: "تعذر الاتصال. احتفظنا بالنص في هذه الصفحة؛ تحقق من الإنترنت ثم حاول مجددًا.",
@@ -26,6 +27,7 @@ export const conversationCopy = {
     whatsapp: "التواصل عبر واتساب", password: "كلمة المرور الجديدة", confirmPassword: "تأكيد كلمة المرور", activate: "تأكيد البريد والمتابعة", verified: "تم التحقق من بريدك. يمكنك متابعة طلبك الآن.",
     invalidToken: "رابط التحقق غير صالح أو منتهي. اطلب رسالة جديدة من صفحة الحجز.", back: "العودة إلى المحادثة", passwordMismatch: "كلمتا المرور غير متطابقتين.",
     recover: "استعادة الدخول", consent: "راجعت البيانات وأوافق على إرسالها للمكتب لمتابعة طلبي.", needDetails: "أكمل الاسم والهاتف والبريد والخدمة وملخص الاحتياج وطريقة الاستشارة في المحادثة قبل الإرسال.",
+    sessionUnavailable: "المحادثة السابقة غير متاحة في هذه الجلسة. يمكنك بدء محادثة جديدة بدون حساب، أو تسجيل الدخول للوصول إلى محادثة مرتبطة بحسابك.",
     loginRequired: "سجّل الدخول أو فعّل حسابك بالبريد أولًا.", changed: "تغيرت البيانات أو الموعد. راجع الملخص الحالي وحاول مرة أخرى.", emptyRequests: "لا توجد طلبات مسجلة حتى الآن.",
     fields: { fullName: "الاسم", phone: "الهاتف", email: "البريد", city: "المدينة", service: "الخدمة", summary: "ملخص الاحتياج", preferredMode: "طريقة الاستشارة", requestedStartsAt: "الموعد المطلوب" },
     modes: { PHONE: "هاتف", ONLINE: "عن بُعد", OFFICE: "في المكتب" },
@@ -33,6 +35,7 @@ export const conversationCopy = {
     requested: "الموعد المطلوب", confirmed: "الموعد المعتمد", noTime: "يُنسّق مع المكتب", noConfirmation: "لم يُعتمد موعد بعد", nextStep: "تابع حالة طلبك هنا؛ سيتولى المكتب مراجعته."
   },
   en: {
+    messageLimit: "This conversation reached its message limit. Start a new conversation to continue; your typed text will stay here. Booking remains available.",
     deliveryPending: "Sending your message…", deliveryFailed: "Your message was received, but the reply failed. You can retry the same message.",
     deliveryProcessing: "Your message was received and the reply is still processing. Its status will update here.", deliveryUnknown: "We could not confirm delivery. Your text remains here; check your connection before retrying.",
     timeout: "The request exceeded its time limit. We are checking its status before another attempt.", network: "We could not connect. Your text remains on this page; check your connection and try again.",
@@ -59,6 +62,7 @@ export const conversationCopy = {
     whatsapp: "Contact on WhatsApp", password: "New password", confirmPassword: "Confirm password", activate: "Verify email and continue", verified: "Your email is verified. You can continue your request now.",
     invalidToken: "This verification link is invalid or expired. Request a new email from the booking page.", back: "Back to conversation", passwordMismatch: "Passwords do not match.",
     recover: "Recover account access", consent: "I have reviewed these details and agree to send them to the office for my request.", needDetails: "Complete your name, phone, email, service, needs summary and consultation mode in the conversation before submitting.",
+    sessionUnavailable: "The previous conversation is unavailable in this session. Start a new conversation without an account, or sign in to access a conversation linked to your account.",
     loginRequired: "Sign in or activate your account by email first.", changed: "The details or appointment changed. Review the current summary and try again.", emptyRequests: "You have no requests yet.",
     fields: { fullName: "Name", phone: "Phone", email: "Email", city: "City", service: "Service", summary: "Needs summary", preferredMode: "Consultation mode", requestedStartsAt: "Requested time" },
     modes: { PHONE: "Phone", ONLINE: "Online", OFFICE: "At the office" },

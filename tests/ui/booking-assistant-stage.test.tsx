@@ -342,7 +342,8 @@ describe("booking page zones (source contract)", () => {
 
   it("composes one centered assistant console with no external flow UI", () => {
     expect(pagesSource).toContain("ConsultationBookingChatFromQuery");
-    expect(pagesSource).toContain("BookingFlowHeader");
+    // The introduction is owned by the chat; the retired outer flow header must stay absent.
+    expect(pagesSource).not.toContain("BookingFlowHeader");
     expect(pagesSource).toContain("max-w-[56rem]");
     expect(pagesSource).not.toContain("BookingSupportPanel");
     expect(pagesSource).not.toContain("AfterSubmitStrip");

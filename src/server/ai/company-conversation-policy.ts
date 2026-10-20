@@ -8,7 +8,8 @@ import { legalAssessmentSchema, legalContextSchema } from "./legal-assistance-co
 export const dialogueSchema = z.object({
   mode: z.enum(["INQUIRY", "BOOKING"]).default("INQUIRY"),
   offerShown: z.boolean().default(false), consentAt: z.string().nullable().default(null),
-  accountAccess: z.boolean().default(false), followup: assistantFocus.optional(), legal: legalContextSchema.optional(), activeDomain: z.enum(["LEGAL", "ACCOUNT", "OFFICE"]).optional()
+  accountAccess: z.boolean().default(false), followup: assistantFocus.optional(), legal: legalContextSchema.optional(), activeDomain: z.enum(["LEGAL", "ACCOUNT", "OFFICE"]).optional(),
+  bookingFormRequestId: z.string().uuid().optional()
 });
 export type DialogueState = z.infer<typeof dialogueSchema>;
 export function readDialogue(value: unknown): DialogueState {

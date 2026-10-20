@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { readdir, readFile, mkdtemp, rm } from "node:fs/promises";
+import { readdir, readFile, mkdtemp, rm, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
@@ -31,6 +31,7 @@ import { uploadDocument, getAuthorizedDocumentDownload } from "@/server/storage/
 import { listDirectBookingSlots, mutateDirectBooking } from "@/server/consultations/direct-booking-service";
 import { cairoDateString, cairoWeekday, defaultConsultationAvailability } from "@/server/consultations/consultation-availability-service";
 import { assistantPolicyCopy } from "@/content/assistant-policy-copy";
+import { directBookingCopy } from "@/content/direct-booking-copy";
 import { officeContactSchema, setOfficeContact } from "@/server/consultations/office-contact-service";
 
 
@@ -80,6 +81,148 @@ afterAll(async () => {
 });
 
 describe.sequential("representative conversational intake against isolated SQL database", () => {
+  it.each(["expired","account-bound"])("old guest cookie: %s allows a new anonymous session while protecting prior history",async(kind)=>{
+    const {POST,GET}=await import("@/app/api/public/assistant/conversation/route");
+    const token=await createAssistantSession("en");
+    const old=await fixture.db.assistantSession.findUniqueOrThrow({where:{capabilityHash:capabilityHash(token)}});
+    await fixture.db.assistantTurn.create({data:{sessionId:old.id,messageId:randomUUID(),userText:"Synthetic protected old question",assistantText:"Synthetic protected old answer",status:"COMPLETED"}});
+    const client=await fixture.db.client.findFirstOrThrow();
+    await fixture.db.assistantSession.update({where:{id:old.id},data:kind==="expired"?{expiresAt:new Date(0)}:{clientId:client.id}});
+    const headers={"content-type":"application/json",cookie:`kmt_assistant=${token}`,"x-forwarded-for":kind==="expired"?"203.0.113.241":"203.0.113.242"};
+    const denied=await GET(new Request("http://localhost/api/public/assistant/conversation",{headers}));expect(denied.status).toBe(401);
+    expect(JSON.stringify(await denied.json())).not.toContain("Synthetic protected old");
+    const response=await POST(new Request("http://localhost/api/public/assistant/conversation",{method:"POST",headers,body:JSON.stringify({action:"restart",locale:"en"})}));
+    expect(response.status).toBe(200);const body=await response.json();expect(body.data.turns).toEqual([]);expect(body.data.accountReady).toBe(false);
+    const replacement=response.headers.get("set-cookie")?.match(/kmt_assistant=([^;]+)/)?.[1];expect(replacement).toBeTruthy();expect(replacement).not.toBe(token);
+    expect(response.headers.get("set-cookie")).toContain("HttpOnly");
+    const next=await fixture.db.assistantSession.findUniqueOrThrow({where:{capabilityHash:capabilityHash(replacement!)}});expect(next.clientId).toBeNull();
+    const visible=await GET(new Request("http://localhost/api/public/assistant/conversation",{headers:{cookie:`kmt_assistant=${replacement}`}}));expect(visible.status).toBe(200);
+    installConversationMock(()=>Response.json({choices:[{finish_reason:"stop",message:{content:"Synthetic anonymous reply"}}]}));
+    const sent=await POST(new Request("http://localhost/api/public/assistant/conversation",{method:"POST",headers:{...headers,cookie:`kmt_assistant=${replacement}`},body:JSON.stringify({action:"message",messageId:randomUUID(),message:"Explain office services",recipient:"ASSISTANT",locale:"en"})}));
+    expect(sent.status).toBe(200);expect((await sent.json()).data.turns.at(-1).assistantText).toBe("Synthetic anonymous reply");
+    await expect(readAssistantSession(token)).rejects.toMatchObject({code:"AUTH_REQUIRED"});
+    expect(await fixture.db.assistantTurn.count({where:{sessionId:old.id}})).toBe(1);
+  });
+
+  it.each([
+    {locale:"ar" as const,message:"امتي الاوقات المتاحه"},
+    {locale:"ar" as const,message:"عميل تجريبي\n01000000000 واتساب"},
+    {locale:"en" as const,message:"What appointment times are available?"}
+  ])("booking-form incident: $message reopens the consented form without relying on a generated answer",async({locale,message})=>{
+    const token=await createAssistantSession(locale);await changeAssistantDialogue(token,"begin_booking");
+    vi.stubGlobal("fetch",vi.fn(async()=>{throw new Error("synthetic provider offline");}));
+    const messageId=randomUUID(),state=await sendAssistantMessage({token,messageId,message,locale,requestId:randomUUID()});
+    expect(state.dialogue).toMatchObject({mode:"BOOKING",bookingFormRequestId:messageId});
+    expect(state.turns.at(-1)?.assistantText).toBe(directBookingCopy[locale].intro);
+    expect(state.booking).toBeNull();expect(state.submitted).toBe(false);
+    expect((await readAssistantSession(token)).dialogue).toHaveProperty("bookingFormRequestId",messageId);
+  });
+  it("booking-form incident: validated booking intent uses the form instead of a generated contact interview",async()=>{
+    const token=await createAssistantSession("ar"),messageId=randomUUID();
+    installConversationMock(()=>{throw new Error("synthetic generation offline");},"BOOK",{locale:"ar"});
+    const state=await sendAssistantMessage({token,messageId,message:"عايز احجز استشارة",locale:"ar",requestId:randomUUID()});
+    expect(state.dialogue).toMatchObject({mode:"BOOKING",bookingFormRequestId:messageId});
+    expect(state.turns.at(-1)?.assistantText).toBe(directBookingCopy.ar.intro);expect(state.booking).toBeNull();
+  });
+  it("booking-form incident: contact data alone does not authorize entering booking",async()=>{
+    const token=await createAssistantSession("ar");
+    installConversationMock(()=>Response.json({choices:[{finish_reason:"stop",message:{content:"يمكنني شرح خدمات المكتب المنشورة والإجابة عن سؤالك."}}]}),"NONE",{locale:"ar"});
+    const state=await sendAssistantMessage({token,messageId:randomUUID(),message:"عميل تجريبي 01000000000 واتساب",locale:"ar",requestId:randomUUID()});
+    expect(state.dialogue.mode).toBe("INQUIRY");expect(state.dialogue.consentAt).toBeNull();
+    expect(state.dialogue.bookingFormRequestId).toBeUndefined();expect(state.booking).toBeNull();
+  });
+  it("sustained-use incident: shared HTTP quota blocks attempt21 but protected reads and later window still work", async () => {
+    const {POST,GET}=await import("@/app/api/public/assistant/conversation/route");
+    const token=await createAssistantSession("en"),messageId=randomUUID();
+    const headers={"content-type":"application/json",cookie:`kmt_assistant=${token}`,"x-forwarded-for":"203.0.113.249","x-kmt-locale":"en"};
+    const post=(id:string)=>POST(new Request("http://localhost/api/public/assistant/conversation",{method:"POST",headers,body:JSON.stringify({action:"message",messageId:id,message:"Synthetic office follow-up",recipient:"OFFICE",locale:"en"})}));
+    vi.stubEnv("RATE_LIMIT_STORAGE","postgres");let now=Date.now();const clock=vi.spyOn(Date,"now").mockImplementation(()=>now);
+    try{
+      for(let i=0;i<20;i++)expect((await post(randomUUID())).status).toBe(200);
+      const limited=await post(messageId);expect(limited.status).toBe(429);expect((await limited.json()).error.code).toBe("RATE_LIMITED");
+      const recovered=await GET(new Request("http://localhost/api/public/assistant/conversation",{headers}));
+      expect(recovered.status).toBe(200);expect((await recovered.json()).data.turns).toHaveLength(20);
+      now+=10*60*1000;
+      expect((await post(messageId)).status).toBe(200);
+      expect((await readAssistantSession(token)).turns).toHaveLength(21);
+    }finally{clock.mockRestore();vi.stubEnv("RATE_LIMIT_STORAGE","");}
+  });
+  it("sustained-use incident: twelve concurrent sessions recover injected failures with sixty unique saved replies", async () => {
+    const tokens=await Promise.all(Array.from({length:12},()=>createAssistantSession("en")));
+    let fail=4,failures=0,attempts=0,inFlight=0,peak=0;
+    const durations:number[]=[],started=performance.now();
+    installConversationMock(async()=>{
+      await new Promise(resolve=>setTimeout(resolve,10));
+      if(fail-->0)return new Response("synthetic provider outage",{status:503});
+      return Response.json({choices:[{finish_reason:"stop",message:{content:"The office offers contract review and company formation guidance."}}]});
+    });
+    await Promise.all(tokens.map(async(token,sessionIndex)=>{
+      for(let round=0;round<5;round++){
+        const input={token,messageId:randomUUID(),message:`SOAK-${sessionIndex}-${round} explain office services`,locale:"en" as const,requestId:randomUUID()};
+        const begin=performance.now();inFlight++;peak=Math.max(peak,inFlight);
+        try{
+          attempts++;
+          try{await sendAssistantMessage(input);}catch(error){
+            expect(error).toMatchObject({code:"AI_PROVIDER_UNAVAILABLE"});failures++;
+            const recovered=await readAssistantSession(token);
+            expect(recovered.turns.find(t=>t.messageId===input.messageId)?.status).toBe("FAILED");
+            attempts++;await sendAssistantMessage(input);
+          }
+          const state=await readAssistantSession(token);
+          expect(state.turns.filter(t=>t.messageId===input.messageId)).toMatchObject([{status:"COMPLETED",userText:input.message}]);
+        }finally{durations.push(performance.now()-begin);inFlight--;}
+      }
+    }));
+    expect(failures).toBe(4);expect(peak).toBe(12);
+    const sessions=await fixture.db.assistantSession.findMany({where:{capabilityHash:{in:tokens.map(capabilityHash)}}});
+    expect(sessions.every(s=>s.leaseId===null)).toBe(true);
+    expect(await fixture.db.assistantTurn.count({where:{sessionId:{in:sessions.map(s=>s.id)},status:"COMPLETED"}})).toBe(60);
+    durations.sort((a,b)=>a-b);
+    await mkdir(".playwright/plan40",{recursive:true});
+    await writeFile(".playwright/plan40/concurrent-soak.json",JSON.stringify({syntheticOnly:true,sessions:12,peakInFlight:peak,savedReplies:60,attempts,injectedFailures:failures,elapsedMs:Math.round(performance.now()-started),p95Ms:Math.round(durations[Math.floor(durations.length*.95)]),limit:"Application lifecycle and isolated PGlite SQL with pool1/controlled provider; not actual VPS/PostgreSQL/provider capacity."},null,2));
+  },60000);
+  it("sustained-use incident: a late failed worker cannot mark a newer owner's pending reply failed", async () => {
+    const token=await createAssistantSession("en"),messageId=randomUUID();
+    let started!:()=>void,release!:()=>void;
+    const entered=new Promise<void>(resolve=>{started=resolve;}), gate=new Promise<void>(resolve=>{release=resolve;});
+    installConversationMock(async()=>{started();await gate;return new Response("synthetic outage",{status:503});});
+    const operation=sendAssistantMessage({token,messageId,message:"Explain office services",locale:"en",requestId:randomUUID()});
+    const rejected=expect(operation).rejects.toMatchObject({code:"AI_PROVIDER_UNAVAILABLE"});
+    await entered;
+    const newerOwner=randomUUID();
+    await fixture.db.assistantSession.update({where:{capabilityHash:capabilityHash(token)},data:{leaseId:newerOwner,leaseExpiresAt:new Date(Date.now()+90000)}});
+    release();await rejected;
+    const session=await fixture.db.assistantSession.findUniqueOrThrow({where:{capabilityHash:capabilityHash(token)}});
+    expect(session.leaseId).toBe(newerOwner);
+    expect((await fixture.db.assistantTurn.findFirstOrThrow({where:{sessionId:session.id,messageId}})).status).toBe("PENDING");
+  });
+  it("sustained-use incident: expired worker lease makes its pending reply retryable and unlocks booking", async () => {
+    const token = await createAssistantSession("en"), messageId = randomUUID();
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({where:{capabilityHash:capabilityHash(token)}});
+    await fixture.db.assistantSession.update({where:{id:session.id},data:{leaseId:randomUUID(),leaseExpiresAt:new Date(Date.now()-1000)}});
+    await fixture.db.assistantTurn.create({data:{sessionId:session.id,messageId,userText:"Explain office services",status:"PENDING",recipient:"ASSISTANT"}});
+    const recovered=await readAssistantSession(token);
+    expect(recovered.turns.find(turn=>turn.messageId===messageId)?.status).toBe("FAILED");
+    expect((await changeAssistantDialogue(token,"begin_booking")).dialogue.mode).toBe("BOOKING");
+    installConversationMock(()=>Response.json({choices:[{finish_reason:"stop",message:{content:"The office offers contract review and company formation guidance."}}]}));
+    expect((await sendAssistantMessage({token,messageId,message:"Explain office services",locale:"en",requestId:randomUUID()})).turns.find(turn=>turn.messageId===messageId)?.status).toBe("COMPLETED");
+    expect(await fixture.db.assistantTurn.count({where:{sessionId:session.id,messageId}})).toBe(1);
+  });
+  it("sustained-use incident: lifetime cap is explicit and does not permanently masquerade as a temporary wait", async () => {
+    const token=await createAssistantSession("en");
+    const session=await fixture.db.assistantSession.findUniqueOrThrow({where:{capabilityHash:capabilityHash(token)}});
+    const answer="The office can explain contract review and company formation documents. ".repeat(60),started=performance.now();
+    installConversationMock(()=>Response.json({choices:[{finish_reason:"stop",message:{content:answer}}]}));
+    for(let i=0;i<60;i++){
+      const state=await sendAssistantMessage({token,messageId:randomUUID(),message:`Explain office services, synthetic long-session question ${i}`,locale:"en",requestId:randomUUID()});
+      expect(state.turns).toHaveLength(i+1);expect(state.turns.at(-1)?.status).toBe("COMPLETED");expect(state.turns.at(-1)?.assistantText?.length).toBeGreaterThan(4000);
+    }
+    expect(await readAssistantSession(token)).toHaveProperty("messageLimitReached",true);
+    await expect(sendAssistantMessage({token,messageId:randomUUID(),message:"One more question",locale:"en",requestId:randomUUID()})).rejects.toMatchObject({status:429,code:"CONVERSATION_LIMIT_REACHED"});
+    expect((await readAssistantSession(token)).turns).toHaveLength(60);
+    expect((await changeAssistantDialogue(token,"begin_booking")).dialogue.mode).toBe("BOOKING");
+    await mkdir(".playwright/plan40",{recursive:true});await writeFile(".playwright/plan40/single-session-soak.json",JSON.stringify({syntheticOnly:true,consecutiveReplies:60,replyCharacters:answer.length,transcriptTurns:60,nextAttemptCode:"CONVERSATION_LIMIT_REACHED",bookingStillAvailable:true,elapsedMs:Math.round(performance.now()-started),limit:"Actual application/SQL transitions, controlled provider; not real model/VPS throughput."},null,2));
+  },60000);
   // PLAN-40 incident: a 30s shared deadline aborted classification/generation/review together.
   it.each([
     { name: "completes three 15s stages within the separate 60s turn budget", delay: 15_000, budget: "60000", completed: true },

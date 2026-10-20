@@ -50,6 +50,7 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
   const [notice, setNotice] = useState("");
   const [pendingMessages, setPendingMessages] = useState<Record<Recipient, PendingMessage | null>>({ ASSISTANT: null, OFFICE: null });
   const pendingMessage = pendingMessages[recipient];
+  const limitStopsAttempt = !!state?.messageLimitReached && (!pendingMessage || !state.turns.some(turn => sameAttempt(turn, pendingMessage)));
   const [contactOpen, setContactOpen] = useState(false);
   const followupTrigger = useRef<HTMLButtonElement>(null);
   const closeContact = useCallback(() => { setContactOpen(false); requestAnimationFrame(() => followupTrigger.current?.focus()); }, []);
@@ -113,6 +114,9 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
 
   // Open on entry into a data-entry phase, not on polling or draft updates.
   useEffect(() => { setPanelOpen(showPanel && (!state?.submitted || booking)); }, [showPanel, booking, state?.submitted]);
+  useEffect(() => {
+    if (booking && state?.dialogue.bookingFormRequestId && !state.submitted) setPanelOpen(true);
+  }, [booking, state?.dialogue.bookingFormRequestId, state?.submitted]);
 
   async function changeMode(mode: "begin_booking" | "return_inquiry" | "account_access") {
     if (!state && !await action({ action: "start", locale, service: initialService })) return;
@@ -157,14 +161,16 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
     if (denied) {
       requestEpoch.current++; acceptSnapshot(null); setSignedIn(false);
       setPendingMessages(current => ({ ASSISTANT: current.ASSISTANT?.local ? { ...current.ASSISTANT, delivery: "UNKNOWN" } : null, OFFICE: current.OFFICE?.local ? { ...current.OFFICE, delivery: "UNKNOWN" } : null }));
-      if (expired) setSessionExpired(true);
+      // An inaccessible saved capability also needs explicit replacement, even before the first snapshot.
+      setSessionExpired(true);
     }
     const code = failure.code;
-    const explanation = denied ? expired ? copy.sessionExpired : copy.loginRequired
+    const explanation = denied ? expired ? copy.sessionExpired : copy.sessionUnavailable
       : failure.kind === "TIMEOUT" || code === "AI_PROVIDER_TIMEOUT" ? copy.timeout
       : failure.kind === "NETWORK" ? copy.network
       : failure.kind === "INVALID_RESPONSE" ? copy.invalidResponse
       : code === "ACCOUNT_EMAIL_UNAVAILABLE" ? copy.accountUnavailable
+      : code === "CONVERSATION_LIMIT_REACHED" ? copy.messageLimit
       : failure.status === 429 ? copy.accountRateLimited
       : failure.status === 409 ? copy.changed
       : code === "VALIDATION_ERROR" ? operation === "register" ? copy.accountInvalid : operation === "set_office_contact" ? copy.contactInvalid : copy.needDetails : copy.unavailable;
@@ -278,6 +284,14 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
     return saved;
   }
 
+  async function restartConversation() {
+    if (await action({ action: "restart", locale: language, service: initialService })) {
+      // Keep each recipient's typed draft. Retire only the old session's attempt IDs,
+      // and only after the server confirms the replacement session.
+      setPendingMessages({ ASSISTANT: null, OFFICE: null });
+    }
+  }
+
   const Heading = layout === "portal" ? "h1" : "h2";
   const panelEpoch = requestEpoch.current;
   const bookingAccessFailure = useCallback((error: unknown) => { if (panelEpoch === requestEpoch.current) showFailure(error); }, [panelEpoch, showFailure]);
@@ -321,10 +335,11 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
       <form onSubmit={event => { event.preventDefault(); void send(pendingMessage); }} className="consultation-composer">
         <label htmlFor="kmt-chat-message" className="sr-only">{copy.message}</label>
         <textarea ref={messageInput} id="kmt-chat-message" placeholder={recipient === "OFFICE" ? copy.officePlaceholder : copy.placeholder} value={message} onChange={event => { setMessage(event.target.value); if (pendingMessage) setPendingMessages(current => ({ ...current, [recipient]: null })); }} maxLength={4000} rows={1} disabled={busy || sessionExpired || (recipient === "OFFICE" && !!state?.closed)} dir="auto" />
-        <Button aria-label={busy ? copy.waiting : copy.send} disabled={busy || sessionExpired || (recipient === "OFFICE" && !!state?.closed) || !message.trim()} type="submit"><ArrowUp aria-hidden="true" /></Button>
+        <Button aria-label={busy ? copy.waiting : copy.send} disabled={busy || sessionExpired || limitStopsAttempt || (recipient === "OFFICE" && !!state?.closed) || !message.trim()} type="submit"><ArrowUp aria-hidden="true" /></Button>
       </form>
       {busy && <p role="status" className="consultation-feedback">{recipient === "OFFICE" ? copy.officeSending : copy.waiting}</p>}
-      {pendingMessage && !busy && <Button type="button" variant="outline" disabled={pendingMessage.delivery === "PENDING" || pendingMessage.delivery === "SENDING"} onClick={() => void send()}>{copy.retry}</Button>}
+      {pendingMessage && !busy && <Button type="button" variant="outline" disabled={sessionExpired || limitStopsAttempt || pendingMessage.delivery === "PENDING" || pendingMessage.delivery === "SENDING"} onClick={() => void send()}>{copy.retry}</Button>}
+      {state?.messageLimitReached && <p role="status" className="consultation-feedback">{copy.messageLimit}</p>}
       {notice && !panelOpen && <p role="status" className="break-words text-sm leading-7">{notice}</p>}
       {showPanel && <Button ref={panelTrigger} className="h-auto min-h-11 whitespace-normal" type="button" onClick={() => setPanelOpen(true)}>{state?.submitted ? direct.openDetails : booking ? direct.openForm : policy.account}</Button>}
       {interactive && <div className="consultation-chat-actions">
@@ -333,7 +348,7 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
       </div>}
       {!showPanel && state?.accountReady && <Link className="flex min-h-11 items-center underline" href="/client/requests">{copy.requests}</Link>}
       <div className="consultation-help"><span><ShieldCheck aria-hidden="true" />{copy.privacy}</span><a href={publicOfficeProfile.whatsappHref}>{copy.whatsapp}</a></div>
-      {(state?.submitted || state?.closed || sessionExpired) && <Button type="button" variant="outline" disabled={busy} onClick={() => { setPendingMessages({ ASSISTANT: null, OFFICE: null }); setDrafts({ ASSISTANT: "", OFFICE: "" }); setRecipient("ASSISTANT"); void action({ action: "restart", locale: language, service: initialService }); }}>{copy.newConversation}</Button>}
+      {(state?.submitted || state?.closed || sessionExpired || state?.messageLimitReached) && <Button type="button" variant="outline" disabled={busy} onClick={() => void restartConversation()}>{copy.newConversation}</Button>}
       </div>
     </div>
     {contactOpen && <OfficeContactDialog locale={language} contact={state?.officeContact ?? null} expiresAt={state?.expiresAt} accountReady={!!state?.accountReady} canSave={!!state?.officeThreadStatus && !sessionExpired} error={notice} onClose={closeContact} onSave={saveContact} />}

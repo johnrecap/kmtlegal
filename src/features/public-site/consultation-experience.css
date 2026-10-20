@@ -78,6 +78,11 @@
 .kmt-consultation-dialog .consultation-dialog-actions{flex-wrap:wrap}
 .kmt-consultation-dialog .consultation-dialog-actions button{height:auto}
 @media(max-width:700px){
+  .kmt-consultation:not(.kmt-consultation--portal){min-height:480px}
+  .kmt-consultation:not(.kmt-consultation--portal) .consultation-log-wrap{min-height:96px}
+  .kmt-consultation:not(.kmt-consultation--portal) .consultation-chat{overflow:hidden}
+  .kmt-consultation:not(.kmt-consultation--portal) .consultation-chat-bottom{flex:0 1 auto;min-height:0;max-height:65%;overflow-y:auto;overscroll-behavior:contain}
+  .kmt-consultation .consultation-composer textarea{font-size:16px}
   .kmt-consultation-dialog[data-fit-visual-viewport]{position:fixed;inset:auto;inset-block-start:var(--dialog-viewport-top,0px);inset-inline-start:0;width:100%;max-width:none;height:var(--dialog-viewport-height,100dvh);max-height:var(--dialog-viewport-height,100dvh);margin:0;border:0;border-radius:0}
   .kmt-consultation-dialog[data-fit-visual-viewport]>div:first-child{padding-top:max(16px,env(safe-area-inset-top));padding-inline-start:max(16px,env(safe-area-inset-left));flex-shrink:0}
   .kmt-consultation-dialog[data-fit-visual-viewport]>div:nth-child(2){flex:1;min-height:0;max-height:none;overflow:auto;overscroll-behavior:contain;padding-inline:max(16px,env(safe-area-inset-left)) max(16px,env(safe-area-inset-right))}
@@ -86,4 +91,10 @@
   .kmt-consultation-dialog .consultation-days{grid-template-columns:repeat(auto-fit,minmax(min(100%,4em),1fr))}
   .kmt-consultation-dialog .consultation-dialog-actions>button{flex:1 1 10em;max-width:100%}
   .kmt-consultation-dialog .consultation-footer-summary{flex:1 1 8em}
+  .kmt-consultation-dialog[data-compact-viewport]>div:first-child{min-height:68px;padding-block:12px;padding-inline-start:16px}
+  .kmt-consultation-dialog[data-compact-viewport]>div:first-child>p{display:none}
+  .kmt-consultation-dialog[data-compact-viewport]>div:first-child>h2{font-size:18px;line-height:1.4}
+  .kmt-consultation-dialog[data-compact-viewport] .kmt-dialog-close{inset-block-start:12px;inset-inline-end:16px}
+  .kmt-consultation-dialog[data-compact-viewport]>div:nth-child(2){padding-block:12px}
+  .kmt-consultation-dialog[data-compact-viewport]>div:last-child:not(:nth-child(2)){padding-top:8px;padding-bottom:max(8px,env(safe-area-inset-bottom))}
 }

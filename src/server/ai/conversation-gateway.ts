@@ -12,6 +12,8 @@ export type ConversationTool = {
   execute: (argumentsValue: unknown, callId: string) => Promise<unknown>;
 };
 
+export const MAX_CONVERSATION_CONTEXT_CHARS = 64_000;
+
 /** One bounded turn, supplied exclusively with server-owned state and tool implementations. */
 export async function runConversationTurn(input: {
   messages: AIChatMessage[];
@@ -24,7 +26,7 @@ export async function runConversationTurn(input: {
   const config = getAIProviderConfig();
   const provider = input.provider ?? getAIProvider(config);
   if (!provider.chat) throw new ApiError(503, "AI_PROVIDER_UNAVAILABLE", "Conversational AI provider is not configured.");
-  if (input.messages.length > 80 || JSON.stringify(input.messages).length > 64_000) {
+  if (input.messages.length > 80 || JSON.stringify(input.messages).length > MAX_CONVERSATION_CONTEXT_CHARS) {
     throw new ApiError(400, "VALIDATION_ERROR", "Conversation context limit reached.");
   }
   const tools = Object.entries(input.tools).map(([name, tool]) => ({
