@@ -18,9 +18,9 @@ export function followupCategory(text: string, focus?: FollowupFocus): Category 
   if (explicitNewBooking(t)) return null;
   if (/طلباتي|كل الطلبات|\bmy requests\b/.test(t)) return "REQUESTS";
   if (focus?.selected && /ناقص|missing|عرض المكتب|proposal|quote/.test(t)) return focus.category;
-  if (/عليا كام|علي كام|علي[اّ]* فلوس|فواتيري|فاتورتي|مدفوعاتي|رصيدي|\b(?:owe|my balance|my invoices?|my payments?)\b/.test(t) || (focus && /فواتير|فاتور|مدفوع|متبقي|رصيد|\b(?:balance|invoice|payments?|paid|fees)\b/.test(t))) return "PAYMENT";
+  if (/عليا كام|علي كام|علي[اّ]* فلوس|فواتيري|فاتورتي|مدفوعاتي|رصيدي|\b(?:owe|my (?:(?:current|latest|outstanding) )?(?:balance|invoices?|payments?))\b/.test(t) || (focus && /فواتير|فاتور|مدفوع|متبقي|رصيد|\b(?:balance|invoice|payments?|paid|fees)\b/.test(t))) return "PAYMENT";
   if (/مستنداتي|ملفاتي|ورقي|\bmy (?:documents?|files?)\b/.test(t) || (focus && /مستند|ملفات|ورق|\b(?:documents?|files?)\b/.test(t))) return "DOCUMENT";
-  if (/جلساتي|الجلس[هة].*امتي|\bmy hearings?\b/.test(t)) return "HEARING";
+  if (/جلساتي|الجلس[هة].*امتي|\bmy (?:next )?(?:court )?hearings?\b/.test(t)) return "HEARING";
   if (/قضيتي|قضايايا|\bmy (?:cases?|court)\b/.test(t) || (focus && /قضي|قضايا|جلس[هة]|محكم|\b(?:cases?|hearings?|court)\b/.test(t))) return "CASE";
   if (/ميعادي|موعدي|مواعيدي|\b(?:my appointments?|when.*my meeting)\b/.test(t) || (focus && /ميعاد|موعد|مواعيد|\bappointments?\b/.test(t))) return "APPOINTMENT";
   if (/بيانات[يى]|ملفي الشخصي|\b(?:my profile|my phone|my email)\b/.test(t)) return "PROFILE";

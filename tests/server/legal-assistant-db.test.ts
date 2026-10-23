@@ -97,6 +97,23 @@ describe.sequential("legal assistance with isolated SQL and controlled provider"
     expect(result.dialogue.activeDomain).toBe("LEGAL");
     expect(result.proposals).toHaveLength(0);
   });
+  it.each(["I am not logged in. What is my current invoice balance and next court hearing date? Do not invent details or use my legal examples as account records.", "What is my next court hearing date?"])("routes guest account questions away from a prior legal draft: %s", async message => {
+    const token = await createAssistantSession("en");
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    await fixture.db.assistantSession.update({ where: { id: session.id }, data: { dialogue: { activeDomain: "LEGAL", legal: { jurisdiction: "EG", topics: ["CONTRACTS"], mode: "DRAFT" } } } });
+    const fetch = mockProvider();
+    const result = await sendAssistantMessage({ token, messageId: randomUUID(), message, locale: "en", requestId: "synthetic-guest-transition" });
+    expect(result.turns.at(-1)?.assistantText).toBe("Sign in to read your account requests. Guests can only follow the booking bound to this conversation.");
+    expect(result.dialogue.activeDomain).toBe("ACCOUNT");
+    expect(fetch).not.toHaveBeenCalled();
+  });
+  it("uses classified follow-up category for a guest without falling through to draft generation", async () => {
+    const token = await createAssistantSession("ar");
+    mockProvider({ classification: { scope: "OFFICE", intent: "FOLLOW_UP", followupCategory: "CASE", evidence: "فين وصلنا بملفي" } });
+    const result = await ask(token, "فين وصلنا بملفي");
+    expect(result.turns.at(-1)?.assistantText).toContain("سجّل الدخول");
+    expect(requests).toHaveLength(1);
+  });
   it("routes the original receipt question away from an existing account focus and retains facts after rejected replies", async () => {
     const actor = await account(), token = await createAssistantSession("ar", actor);
     const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });

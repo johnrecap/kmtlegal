@@ -33,10 +33,10 @@ export function legalSubjectQuestion(text: string) {
   if (/ايصال.*امان[هة]|ارفع قضي[هة]|رفع قضي[هة]|\b(?:trust receipt|file a (?:claim|case|lawsuit))\b/.test(value)) return true;
   if (/حلل|تحليل|صياغ[هة]|اكتب.*(?:عقد|مذكر[هة]|صحيف[هة])|\b(?:draft|legal analysis)\b/.test(value)) return true;
   if (explicitAccountQuestion(value) && /حالة|اتقبل|وصل لفين|مستندات|ناقص|\b(?:status|accepted|missing)\b/.test(value)) return false;
-  return /شروط.*الدعوي|قبول الدعوي|رفع دعوي|عمل توكيل|اعمل توكيل|هل.*قانوني|هل يجوز|هل يحق|ما حكم|حقوقي|الطلاق|الخلع|النفقة|الحضانة|الميراث|فسخ العقد|\b(?:admissibility|power of attorney|is .* legal|divorce|custody|alimony|inheritance|can (?:a landlord|an employer))\b/.test(value);
+  return /شروط.*الدعوي|قبول الدعوي|رفع دعوي|عمل توكيل|اعمل توكيل|هل.*قانوني|هل يجوز|هل يحق|ما حكم|حقوقي|الطلاق|الخلع|النفقة|الحضانة|الميراث|فسخ العقد|\b(?:admissibility|power of attorney|is [^.!?\n]+ legal(?=[?!.]|$)|divorce|custody|alimony|inheritance|can (?:a landlord|an employer))\b/.test(value);
 }
 export function explicitAccountQuestion(text: string) {
-  return /طلبي|طلباتي|طلب (?:بتاعي|الخاص بي|للمكتب)|فاتورتي|فواتيري|ميعادي|موعدي|مواعيدي|ملفي|ملفاتي|مستنداتي|قضيتي|قضايايا|جلساتي|مدفوعاتي|بياناتي|رصيدي|عليا كام|علي كام|\b(?:owe|my (?:request|filing|booking|invoice|appointment|case|profile|balance|documents?|files?))\b|\b(?:CONS|CONTRACT|HEALTH|CASE|INV|SRV|REQ|SR|KMT)[-_][a-z0-9-]+/i.test(normalizedLegalText(text));
+  return /طلبي|طلباتي|طلب (?:بتاعي|الخاص بي|للمكتب)|فاتورتي|فواتيري|ميعادي|موعدي|مواعيدي|ملفي|ملفاتي|مستنداتي|قضيتي|قضايايا|جلساتي|مدفوعاتي|بياناتي|رصيدي|عليا كام|علي كام|\b(?:owe|my (?:(?:current|next|latest|outstanding) )?(?:request|filing|booking|invoice|appointment|case|court hearing|profile|balance|documents?|files?))\b|\b(?:CONS|CONTRACT|HEALTH|CASE|INV|SRV|REQ|SR|KMT)[-_][a-z0-9-]+/i.test(normalizedLegalText(text));
 }
 
 /** Correcting reported dialogue facts is not a command to edit an account record. */
