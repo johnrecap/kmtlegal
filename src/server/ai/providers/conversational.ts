@@ -22,7 +22,8 @@ const responseSchema = z.object({
   usage: z.object({
     prompt_tokens: z.number().int().nonnegative().optional(),
     completion_tokens: z.number().int().nonnegative().optional(),
-    total_tokens: z.number().int().nonnegative().optional()
+    total_tokens: z.number().int().nonnegative().optional(),
+    cost: z.number().nonnegative().optional()
   }).optional()
 });
 
@@ -41,7 +42,7 @@ export async function requestConversation(config: AIProviderConfig, input: AICha
       headers: { "Content-Type": "application/json", ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {}) },
       body: JSON.stringify({
         model: config.model, temperature: config.temperature, max_tokens: input.maxTokens ? Math.min(8000, Math.max(100, input.maxTokens)) : config.maxTokens,
-        messages: input.messages, tools: input.tools, tool_choice: "auto",
+        messages: input.messages, tools: input.tools, tool_choice: input.toolChoice ?? "auto",
         ...conversationRequestParameters(config)
       })
     });
@@ -58,6 +59,7 @@ export async function requestConversation(config: AIProviderConfig, input: AICha
     const parsed = responseSchema.safeParse(value);
     if (!parsed.success) throw new ApiError(502, "AI_OUTPUT_INVALID", "AI provider response is invalid.");
     const reply = parsed.data.choices[0];
+    safeLog("info", "assistant.provider_usage", { requestId: input.requestId, model: config.model, provider: config.provider, inputCount: parsed.data.usage?.prompt_tokens, outputCount: parsed.data.usage?.completion_tokens, costUsd: parsed.data.usage?.cost, elapsedMs: Math.round(performance.now() - startedAt), policyVersion: "kmt-legal-20261023" });
     const calls = reply.message.tool_calls;
     if ((!calls?.length && !reply.message.content?.trim()) ||
       (reply.finish_reason === "tool_calls" && !calls?.length) ||

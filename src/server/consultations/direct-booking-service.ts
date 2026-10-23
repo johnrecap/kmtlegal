@@ -61,10 +61,10 @@ export async function readDirectBooking(requestId: string | null) {
   return row && row.confirmationSource !== "STAFF_APPROVAL" ? row : null;
 }
 
-export async function mutateDirectBooking(token: string, body: z.infer<typeof directBookingInputSchema>, actor?: Principal | null) {
-  const owned = await ownAssistantSession(token, actor);
+export async function mutateDirectBooking(token: string, body: z.infer<typeof directBookingInputSchema>, actor?: Principal | null, transaction?: { client: Prisma.TransactionClient; sessionId: string }) {
+  const owned = transaction ? await transaction.client.assistantSession.findUniqueOrThrow({ where: { id: transaction.sessionId } }) : await ownAssistantSession(token, actor);
   const hash = createHash("sha256").update(JSON.stringify(body)).digest("hex");
-  await runAppointmentConflictTransaction({ mode: APPOINTMENT_TRANSACTION_MODES.databaseCreateBoundedRetry, operation: async tx => {
+  const operation = async (tx: Prisma.TransactionClient) => {
     await tx.$queryRaw`SELECT id FROM assistant_sessions WHERE id = ${owned.id}::uuid FOR UPDATE`;
     const session = await tx.assistantSession.findUniqueOrThrow({ where: { id: owned.id } });
     if (session.expiresAt <= new Date() || (session.clientId && session.clientId !== actor?.clientId)) throw new ApiError(401, "AUTH_REQUIRED", "Authentication required.");
@@ -121,5 +121,7 @@ export async function mutateDirectBooking(token: string, body: z.infer<typeof di
     await tx.assistantSession.update({ where: { id: session.id }, data: { revision: { increment: 1 } } });
     await tx.assistantBookingAction.create({ data: { sessionId: session.id, key: body.key, requestHash: hash } });
     await appendAuditLog({ client: tx, action: `assistant.${body.action}`, actorId: actor?.id, resourceType: "AssistantSession", resourceId: session.id });
-  } });
+  };
+  if (transaction) await operation(transaction.client);
+  else await runAppointmentConflictTransaction({ mode: APPOINTMENT_TRANSACTION_MODES.databaseCreateBoundedRetry, operation });
 }

@@ -4,6 +4,9 @@ import type { LegalSource } from "@/lib/legal-assistant";
 // Controlled concepts make the search boundary independent of private customer prose.
 export const legalTopics = {
   GENERAL: ["القواعد والإجراءات القانونية", "legal principles and procedures"],
+  TRUST_RECEIPT: ["إيصال الأمانة وتسليم المال وخيانة الأمانة", "trust receipt actual delivery of money breach of trust"],
+  BLANK_SIGNATURE: ["التوقيع على بياض وملء البيانات وخيانة الائتمان على التوقيع", "blank signature completion of signed document abuse of entrusted signature"],
+  POWER_OF_ATTORNEY: ["التوكيل وحدود الوكالة وإلغاؤها", "power of attorney scope and revocation of agency"],
   DIVORCE: ["الطلاق والخلع", "divorce and dissolution of marriage"],
   CUSTODY: ["حضانة الأطفال والرؤية", "child custody and access"],
   ALIMONY: ["النفقة", "maintenance and alimony"],
@@ -61,5 +64,6 @@ export const legalReplySchema = z.strictObject({
 });
 export const legalReviewSchema = z.strictObject({
   inScope: z.boolean(), grounded: z.boolean(), noFalseCurrentLaw: z.boolean(), factsAccurate: z.boolean(),
-  noExternalReferrals: z.boolean(), noGuarantees: z.boolean(), draftMarked: z.boolean(), noFalseActionClaim: z.boolean()
+  noExternalReferrals: z.boolean(), noGuarantees: z.boolean(), draftMarked: z.boolean(), noFalseActionClaim: z.boolean(),
+  corrections: z.array(z.string().trim().min(1).max(240)).max(3).optional()
 });

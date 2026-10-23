@@ -29,6 +29,7 @@ coverage/
 .DS_Store
 Thumbs.db
 _workspace/
+.runtime/
 .codex/
 .agents/
 

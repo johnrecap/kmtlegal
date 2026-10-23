@@ -40,14 +40,14 @@ export function serviceRequestWhere(actor: Principal): Prisma.ServiceRequestWher
   throw denied();
 }
 const scope = serviceRequestWhere;
-export async function assertActiveServiceClient(actor: Principal) {
+export async function assertActiveServiceClient(actor: Principal, db: Pick<Prisma.TransactionClient, "client"> = prisma) {
   if (!actor.clientId || !hasPermission(actor, "client.read.self")) throw denied();
-  const client = await prisma.client.findFirst({ where: { id: actor.clientId, userId: actor.id, deletedAt: null, user: { status: "ACTIVE", deletedAt: null, role: { name: "Client", status: "ACTIVE" } } } });
+  const client = await db.client.findFirst({ where: { id: actor.clientId, userId: actor.id, deletedAt: null, user: { status: "ACTIVE", deletedAt: null, role: { name: "Client", status: "ACTIVE" } } } });
   if (!client) throw denied();
   return client;
 }
-export async function publishedQuestionnaire() {
-  return prisma.healthQuestionnaire.findFirst({ where: { published: true, approvedAt: { not: null }, approvedById: { not: null } }, orderBy: { version: "desc" }, select: { id: true, version: true, questions: true } });
+export async function publishedQuestionnaire(db: Pick<Prisma.TransactionClient, "healthQuestionnaire"> = prisma) {
+  return db.healthQuestionnaire.findFirst({ where: { published: true, approvedAt: { not: null }, approvedById: { not: null } }, orderBy: { version: "desc" }, select: { id: true, version: true, questions: true } });
 }
 export async function publishQuestionnaire(actor: Principal, input: unknown) {
   if (!hasPermission(actor, "settings.manage.any")) throw denied();
@@ -61,23 +61,25 @@ export async function publishQuestionnaire(actor: Principal, input: unknown) {
     return result;
   });
 }
-export async function createServiceRequest(actor: Principal, input: unknown) {
-  const client = await assertActiveServiceClient(actor);
+export async function createServiceRequest(actor: Principal, input: unknown, transaction?: Prisma.TransactionClient) {
+  const db = transaction ?? prisma;
+  const client = await assertActiveServiceClient(actor, db);
   const body = parseWithSchema(createServiceRequestSchema, input);
   if(body.kind==='COMPANY_FORMATION')throw new ApiError(400,'VALIDATION_ERROR','Start through the formation interview.');
-  const existing = await prisma.serviceRequest.findUnique({ where: { clientId_idempotencyKey: { clientId: client.id, idempotencyKey: body.idempotencyKey } } });
+  const existing = await db.serviceRequest.findUnique({ where: { clientId_idempotencyKey: { clientId: client.id, idempotencyKey: body.idempotencyKey } } });
   if (existing) { if (existing.kind !== body.kind || existing.locale !== body.locale || existing.sourceRequestId !== (body.sourceRequestId ?? null)) throw conflict(); return existing; }
-  if (body.sourceRequestId && !await prisma.serviceRequest.count({ where: { id: body.sourceRequestId, clientId: client.id, kind: "HEALTH_CHECK", status: { in: ["READY", "COMPLETED"] } } })) throw new ApiError(404, "NOT_FOUND", "Request not found.");
-  const questionnaire = body.kind === "HEALTH_CHECK" ? await publishedQuestionnaire() : null;
+  if (body.sourceRequestId && !await db.serviceRequest.count({ where: { id: body.sourceRequestId, clientId: client.id, kind: "HEALTH_CHECK", status: { in: ["READY", "COMPLETED"] } } })) throw new ApiError(404, "NOT_FOUND", "Request not found.");
+  const questionnaire = body.kind === "HEALTH_CHECK" ? await publishedQuestionnaire(db) : null;
   if (body.kind === "HEALTH_CHECK" && !questionnaire) throw new ApiError(409, "FEATURE_DISABLED", "The questionnaire is awaiting office approval.");
-  return prisma.$transaction(async tx => {
+  const operation = async (tx: Prisma.TransactionClient) => {
     await tx.$queryRaw`SELECT "id" FROM "clients" WHERE "id" = ${client.id}::uuid FOR UPDATE`;
     const replay = await tx.serviceRequest.findUnique({ where: { clientId_idempotencyKey: { clientId: client.id, idempotencyKey: body.idempotencyKey } } });
     if (replay) { if (replay.kind !== body.kind || replay.locale !== body.locale || replay.sourceRequestId !== (body.sourceRequestId ?? null)) throw conflict(); return replay; }
     const result = await tx.serviceRequest.create({ data: { clientId: client.id, ...body, reference: `${body.kind === "HEALTH_CHECK" ? "HEALTH" : "CONTRACT"}-${randomUUID().replaceAll("-", "").toUpperCase()}`, intake: intakeSchema.parse({}), questionnaireId: questionnaire?.id } });
     await appendAuditLog({ client: tx, actorId: actor.id, action: "service_request.create", resourceType: "ServiceRequest", resourceId: result.id, clientId: client.id });
     return result;
-  });
+  };
+  return transaction ? operation(transaction) : prisma.$transaction(operation);
 }
 export async function listServiceRequests(actor: Principal, status?: "RECEIVED" | "AWAITING_ACCEPTANCE") {
   return prisma.serviceRequest.findMany({ where: { ...scope(actor), ...(status ? { status } : {}) }, orderBy: { updatedAt: "desc" }, take: 100,
@@ -104,9 +106,9 @@ export async function getServiceRequest(actor: Principal, id: string) {
   const messages = conversationThread?.messages.map(message => ({ ...message, action: "message", internal: false })) ?? [];
   return { ...record, events: [...record.events, ...messages].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()) };
 }
-export async function actOnServiceRequest(actor: Principal, id: string, input: unknown) {
+export async function actOnServiceRequest(actor: Principal, id: string, input: unknown, transaction?: Prisma.TransactionClient) {
   const body = parseWithSchema(serviceActionSchema, input);
-  return prisma.$transaction(async tx => {
+  const operation = async (tx: Prisma.TransactionClient) => {
     await tx.$queryRaw`SELECT "id" FROM "service_requests" WHERE "id" = ${id}::uuid FOR UPDATE`;
     const row = await tx.serviceRequest.findFirst({ where: { id, ...scope(actor) }, include: { questionnaire: true } });
     if (!row) throw new ApiError(404, "NOT_FOUND", "Request not found.");
@@ -178,5 +180,6 @@ export async function actOnServiceRequest(actor: Principal, id: string, input: u
     await tx.serviceRequestEvent.create({ data: { requestId: id, actorId: actor.id, action: body.action === "transition" ? body.status : body.action, body: eventBody, internal } });
     await appendAuditLog({ client: tx, actorId: actor.id, action: `service_request.${body.action}`, resourceType: "ServiceRequest", resourceId: id, clientId: row.clientId, metadata: { revision: row.revision + 1 } });
     return { id, revision: row.revision + 1 };
-  });
+  };
+  return transaction ? operation(transaction) : prisma.$transaction(operation);
 }

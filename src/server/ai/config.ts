@@ -12,6 +12,7 @@ export type AIProviderConfig = {
   maxTokens: number;
   temperature: number;
   structuredOutputs?: "json_schema" | "off";
+  providerOnly?: string[];
 };
 
 export function getAIProviderConfig(env: NodeJS.ProcessEnv = process.env): AIProviderConfig & { conversationTimeoutMs: number } {
@@ -21,6 +22,8 @@ export function getAIProviderConfig(env: NodeJS.ProcessEnv = process.env): AIPro
     return Number.isFinite(numeric) && numeric >= minimum && numeric <= maximum ? numeric : fallback;
   };
   const turnTimeout = Number(env.AI_CONVERSATION_TIMEOUT_MS);
+  const providerOnly = (env.AI_OPENROUTER_PROVIDERS ?? "").split(",").map(value => value.trim()).filter(Boolean);
+  if (providerOnly.length > 5 || providerOnly.some(value => !/^[a-zA-Z0-9][a-zA-Z0-9_./ -]{0,99}$/.test(value))) throw new Error("Invalid OpenRouter provider routing configuration.");
 
   return {
     provider,
@@ -31,7 +34,8 @@ export function getAIProviderConfig(env: NodeJS.ProcessEnv = process.env): AIPro
     conversationTimeoutMs: Number.isInteger(turnTimeout) && turnTimeout >= 1000 && turnTimeout <= 60_000 ? turnTimeout : 60_000,
     maxTokens: Math.trunc(boundedNumber("AI_MAX_TOKENS", 1200, 100, 8_000)),
     temperature: boundedNumber("AI_TEMPERATURE", 0.2, 0, 2),
-    structuredOutputs: env.AI_STRUCTURED_OUTPUTS === "json_schema" ? "json_schema" : "off"
+    structuredOutputs: env.AI_STRUCTURED_OUTPUTS === "json_schema" ? "json_schema" : "off",
+    providerOnly
   };
 }
 

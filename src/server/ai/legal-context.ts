@@ -17,15 +17,20 @@ export function legalContextForMessage(previous: LegalContext | undefined, asses
   const claimed = evidence && message.includes(evidence) ? assessment?.jurisdiction : undefined;
   const jurisdiction = countries[0] ?? claimed;
   const changed = !previous || (!!jurisdiction && jurisdiction !== context.jurisdiction);
+  const specific: LegalContext["topics"] = [];
+  if (/ايصال.*امان[هة]|\btrust receipt\b/.test(text)) specific.push("TRUST_RECEIPT");
+  if (/علي بياض|على بياض|\bblank (?:signature|signed|receipt)\b/.test(text)) specific.push("BLANK_SIGNATURE");
+  if (/توكيل|\bpower of attorney\b/.test(text)) specific.push("POWER_OF_ATTORNEY");
   return { conflict: false, changed, context: legalContextSchema.parse({
     ...context, ...(jurisdiction ? { jurisdiction, explicit: true } : {}),
-    ...(assessment?.topics ? { topics: assessment.topics } : {}), ...(assessment?.mode ? { mode: assessment.mode } : {})
+    ...(specific.length ? { topics: [...new Set([...specific, ...(assessment?.topics ?? [])])].slice(0, 3) } : assessment?.topics ? { topics: assessment.topics } : {}), ...(assessment?.mode ? { mode: assessment.mode } : {})
   }) };
 }
 
 /** Legal conditions/procedures and analysis requests must not be mistaken for account status. */
 export function legalSubjectQuestion(text: string) {
   const value = normalizedLegalText(text);
+  if (/ايصال.*امان[هة]|ارفع قضي[هة]|رفع قضي[هة]|\b(?:trust receipt|file a (?:claim|case|lawsuit))\b/.test(value)) return true;
   if (/حلل|تحليل|صياغ[هة]|اكتب.*(?:عقد|مذكر[هة]|صحيف[هة])|\b(?:draft|legal analysis)\b/.test(value)) return true;
   if (explicitAccountQuestion(value) && /حالة|اتقبل|وصل لفين|مستندات|ناقص|\b(?:status|accepted|missing)\b/.test(value)) return false;
   return /شروط.*الدعوي|قبول الدعوي|رفع دعوي|عمل توكيل|اعمل توكيل|هل.*قانوني|هل يجوز|هل يحق|ما حكم|حقوقي|الطلاق|الخلع|النفقة|الحضانة|الميراث|فسخ العقد|\b(?:admissibility|power of attorney|is .* legal|divorce|custody|alimony|inheritance|can (?:a landlord|an employer))\b/.test(value);

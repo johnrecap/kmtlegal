@@ -569,14 +569,18 @@ describe.sequential("representative conversational intake against isolated SQL d
     expect(result.staffMessages).toHaveLength(1); expect(result.humanOwned).toBe(true);
   });
 
-  it("hands off a guest to the existing inbox, delivers staff replies and protects staff follow-up controls", async () => {
+  it("requires a guest to review and send to Office before queuing, then protects staff follow-up controls", async () => {
     const token = await createAssistantSession("ar");
     const fetchMock = vi.fn(async () => Response.json({ choices: [{ finish_reason: "tool_calls", message: { content: null, tool_calls: [{ id: "handoff", type: "function", function: { name: "handoff_to_office", arguments: "{}" } }] } }] }));
-    installConversationMock(fetchMock, "HANDOFF");
-    const handed = await sendAssistantMessage({ token, messageId: randomUUID(), message: "محتاج أكلم موظف", locale: "ar", requestId: "guest-handoff" });
+    installConversationMock(fetchMock, "HANDOFF", { locale: "ar" });
+    const preview = await sendAssistantMessage({ token, messageId: randomUUID(), message: "محتاج أكلم موظف", locale: "ar", requestId: "guest-handoff" });
+    expect(preview.turns.at(-1)?.assistantText).toContain("راجع رسالتك");
+    expect((await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } })).conversationThreadId).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+    const handed = await sendAssistantMessage({ token, messageId: randomUUID(), message: "محتاج أكلم موظف", recipient: "OFFICE", locale: "ar", requestId: "guest-confirmed-send" });
     expect(handed.humanOwned).toBe(false);
     expect(handed.handoffState).toBe("QUEUED");
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).not.toHaveBeenCalled();
     const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
     expect(session.clientId).toBeNull();
     expect(session.conversationThreadId).not.toBeNull();

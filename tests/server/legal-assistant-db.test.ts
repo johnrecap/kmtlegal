@@ -17,6 +17,9 @@ import { permissionsForRole } from "@/server/auth/policy";
 import { legalAssistantCopy } from "@/content/legal-assistant-copy";
 import { liveAssistantEvaluation } from "./helpers/live-assistant-evaluation";
 import { assistantPolicyCopy } from "@/content/assistant-policy-copy";
+import { proposeAssistantAction, resolveAssistantAction } from "@/server/consultations/assistant-action-service";
+import { listDirectBookingSlots } from "@/server/consultations/direct-booking-service";
+import { CONSULTATION_AVAILABILITY_SETTING_KEY, defaultConsultationAvailability } from "@/server/consultations/consultation-availability-service";
 
 let db: PGlite, server: PGLiteSocketServer;
 const nativeFetch = globalThis.fetch;
@@ -70,6 +73,177 @@ beforeAll(async () => {
 afterAll(async () => { await fixture.db?.$disconnect(); await server?.stop(); await db?.close(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 describe.sequential("legal assistance with isolated SQL and controlled provider", () => {
+  it("turns an account handoff into a saved preview without sending until explicit confirmation", async () => {
+    vi.stubEnv("AI_ACTIONS_ENABLED", "true"); vi.stubEnv("AI_ACTION_CLIENT_IDS", "*");
+    const actor = await account(), token = await createAssistantSession("ar", actor);
+    const message = "محتاج أكلم موظف";
+    mockProvider({ classification: { scope: "OFFICE", intent: "HANDOFF", evidence: message } });
+    const preview = await ask(token, message, actor);
+    expect(preview.proposals).toHaveLength(1);
+    expect(await fixture.db.conversationThread.count({ where: { clientId: actor.clientId } })).toBe(0);
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    await resolveAssistantAction({ sessionId: session.id, actor, proposalId: preview.proposals[0].id, decision: "confirm" });
+    expect(await fixture.db.conversationMessage.count({ where: { thread: { clientId: actor.clientId }, body: message } })).toBe(1);
+  });
+  it("routes the original receipt question away from an existing account focus and retains facts after rejected replies", async () => {
+    const actor = await account(), token = await createAssistantSession("ar", actor);
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    await fixture.db.assistantSession.update({ where: { id: session.id }, data: { dialogue: { followup: { category: "CASE" } } } });
+    mockProvider({ search: "fail", answer: "ذكرت أن معك إيصال أمانة على بياض. هل تسلم الموقّع مالًا بالفعل؟" });
+    const first = await ask(token, "معايا إيصال أمانة على بياض وعايز أرفع قضية بيه", actor);
+    expect(first.dialogue.activeDomain).toBe("LEGAL");
+    mockProvider({ review: false });
+    await expect(ask(token, "تصحيح: استلم مبلغ بس مش مني", actor)).rejects.toMatchObject({ code: "AI_OUTPUT_INVALID" });
+    const saved = await readAssistantSession(token, actor);
+    expect(saved.dialogue.legalMemory?.statements.at(-1)?.quote).toBe("تصحيح: استلم مبلغ بس مش مني");
+    expect(saved.dialogue.legalMemory?.pendingQuestion?.text).toContain("هل تسلم");
+  });
+  it("persists a profile proposal, requires explicit confirmation, rejects changed data and replays one atomic result", async () => {
+    vi.stubEnv("AI_ACTIONS_ENABLED", "true"); vi.stubEnv("AI_ACTION_CLIENT_IDS", "*");
+    const actor = await account(), other = await account();
+    const token = await createAssistantSession("ar", actor);
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    const proposal = await proposeAssistantAction({ sessionId: session.id, actor, messageId: randomUUID(), locale: "ar", draft: { kind: "PROFILE", changes: { city: "القاهرة" } } });
+    expect((await fixture.db.client.findUniqueOrThrow({ where: { id: actor.clientId } })).city).not.toBe("القاهرة");
+    await expect(resolveAssistantAction({ sessionId: session.id, actor: other, proposalId: proposal.id, decision: "confirm" })).rejects.toMatchObject({ code: "AUTH_REQUIRED" });
+    const results = await Promise.all([1, 2].map(() => resolveAssistantAction({ sessionId: session.id, actor, proposalId: proposal.id, decision: "confirm" })));
+    expect(results).toEqual([{ status: "COMPLETED", result: { updated: true } }, { status: "COMPLETED", result: { updated: true } }]);
+    expect((await fixture.db.client.findUniqueOrThrow({ where: { id: actor.clientId } })).city).toBe("القاهرة");
+    const second = await proposeAssistantAction({ sessionId: session.id, actor, messageId: randomUUID(), locale: "ar", draft: { kind: "PROFILE", changes: { city: "الجيزة" } } });
+    await fixture.db.client.update({ where: { id: actor.clientId }, data: { city: "الإسكندرية" } });
+    expect(await resolveAssistantAction({ sessionId: session.id, actor, proposalId: second.id, decision: "confirm" })).toMatchObject({ status: "STALE" });
+    expect((await fixture.db.client.findUniqueOrThrow({ where: { id: actor.clientId } })).city).toBe("الإسكندرية");
+  });
+  it("executes service create/save/submit/accept through existing services and invalidates a changed quote", async () => {
+    const actor = await account(), token = await createAssistantSession("ar", actor);
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    const propose = (draft: unknown) => proposeAssistantAction({ sessionId: session.id, actor, messageId: randomUUID(), locale: "ar", draft });
+    const confirm = (proposalId: string) => resolveAssistantAction({ sessionId: session.id, actor, proposalId, decision: "confirm" });
+    const created = await confirm((await propose({ kind: "SERVICE_CREATE", service: "CONTRACT_REVIEW" })).id);
+    const id = (created.result as { id: string }).id;
+    expect((await fixture.db.serviceRequest.findUniqueOrThrow({ where: { id } })).status).toBe("DRAFT");
+    await confirm((await propose({ kind: "SERVICE", targetId: id, operation: "save", intake: { title: "Synthetic contract", purpose: "Review terms before signing the synthetic contract" } })).id);
+    await confirm((await propose({ kind: "SERVICE", targetId: id, operation: "submit" })).id);
+    expect((await fixture.db.serviceRequest.findUniqueOrThrow({ where: { id } })).status).toBe("RECEIVED");
+    const quote = { amount: "100", currency: "EGP", scope: "Synthetic contract review", durationDays: 3 };
+    await fixture.db.serviceRequest.update({ where: { id }, data: { status: "AWAITING_ACCEPTANCE", quote, quoteVersion: 1, revision: { increment: 1 } } });
+    const old = await propose({ kind: "SERVICE", targetId: id, operation: "accept" });
+    await fixture.db.serviceRequest.update({ where: { id }, data: { quote: { ...quote, amount: "150" }, quoteVersion: 2, revision: { increment: 1 } } });
+    expect(await confirm(old.id)).toMatchObject({ status: "STALE" });
+    const accepted = await propose({ kind: "SERVICE", targetId: id, operation: "accept" });
+    expect(JSON.stringify(accepted.preview)).toContain("150");
+    await Promise.all([confirm(accepted.id), confirm(accepted.id)]);
+    expect(await fixture.db.payment.count({ where: { clientId: actor.clientId } })).toBe(1);
+    expect((await fixture.db.payment.findFirstOrThrow({ where: { clientId: actor.clientId } })).amount.toString()).toBe("150");
+    await expect(propose({ kind: "SERVICE", targetId: id, operation: "quote" })).rejects.toBeDefined();
+  });
+  it("honors the emergency hold before executing an already saved proposal", async () => {
+    const actor = await account(), token = await createAssistantSession("ar", actor);
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    const proposal = await proposeAssistantAction({ sessionId: session.id, actor, locale: "ar", messageId: randomUUID(), draft: { kind: "PROFILE", changes: { city: "Cairo" } } });
+    vi.stubEnv("AI_ACTIONS_HOLD_FILE", "package.json"); // Existing file represents a hold, without creating/deleting runtime state.
+    try {
+      await expect(resolveAssistantAction({ sessionId: session.id, actor, proposalId: proposal.id, decision: "confirm" })).rejects.toMatchObject({ code: "FEATURE_DISABLED" });
+      expect((await fixture.db.assistantActionProposal.findUniqueOrThrow({ where: { id: proposal.id } })).status).toBe("PENDING");
+      expect((await fixture.db.client.findUniqueOrThrow({ where: { id: actor.clientId } })).city).not.toBe("Cairo");
+    } finally { vi.stubEnv("AI_ACTIONS_HOLD_FILE", ""); }
+  });
+  it("confirms an office message once and denies a suspended client before executing a saved proposal", async () => {
+    const actor = await account(), token = await createAssistantSession("ar", actor);
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    const thread = await fixture.db.conversationThread.create({ data: { clientId: actor.clientId!, subject: "Synthetic office thread" } });
+    const proposal = await proposeAssistantAction({ sessionId: session.id, actor, messageId: randomUUID(), locale: "ar", draft: { kind: "OFFICE_MESSAGE", targetId: thread.id, message: "Please clarify the required documents." } });
+    const input = { sessionId: session.id, actor, proposalId: proposal.id, decision: "confirm" as const };
+    expect(await fixture.db.conversationMessage.count({ where: { threadId: thread.id } })).toBe(0);
+    await Promise.all([resolveAssistantAction(input), resolveAssistantAction(input)]);
+    expect(await fixture.db.conversationMessage.count({ where: { threadId: thread.id } })).toBe(1);
+    const next = await proposeAssistantAction({ sessionId: session.id, actor, messageId: randomUUID(), locale: "ar", draft: { kind: "PROFILE", changes: { city: "Cairo" } } });
+    await fixture.db.user.update({ where: { id: actor.id }, data: { status: "SUSPENDED" } });
+    await expect(resolveAssistantAction({ ...input, proposalId: next.id })).rejects.toMatchObject({ code: "PERMISSION_DENIED" });
+    expect((await fixture.db.assistantActionProposal.findUniqueOrThrow({ where: { id: next.id } })).status).toBe("PENDING");
+  });
+  it("keeps a failed legal turn retryable under the original identity, then persists receipt context across reopen", async () => {
+    const token = await createAssistantSession("ar"), messageId = randomUUID();
+    const input = { token, messageId, message: "معايا إيصال أمانة على بياض", locale: "ar" as const, requestId: randomUUID() };
+    mockProvider({ review: false });
+    await expect(sendAssistantMessage(input)).rejects.toMatchObject({ code: "AI_OUTPUT_INVALID" });
+    mockProvider({ search: "fail", answer: "ذكرت إيصال أمانة على بياض. هل حصل تسليم فعلي للمال؟" });
+    const first = await sendAssistantMessage(input);
+    expect(first.turns).toHaveLength(1); expect(first.turns[0].status).toBe("COMPLETED");
+    expect((await readAssistantSession(token)).dialogue.legalMemory?.statements[0]).toMatchObject({ messageId, quote: input.message });
+    for (let i = 0; i < 6; i++) await ask(token, `متابعة ${i}`);
+    await ask(token, "تصحيح: مفيش تسليم فلوس");
+    const generation = requests.filter(r => r.tools[0]?.function?.name === "compose_legal_reply").at(-1)!;
+    const data = JSON.parse(generation.messages[1].content);
+    expect(data.customerStatements.statements[0].messageId).toBe(messageId);
+    expect(data.customerStatements.statements.at(-1).quote).toBe("تصحيح: مفيش تسليم فلوس");
+  });
+  it("does not strand a lease on invalid routing or repeat the research banner after reopening", async () => {
+    const token = await createAssistantSession("ar");
+    vi.stubEnv("AI_OPENROUTER_PROVIDERS", "invalid!route");
+    await expect(ask(token, "اشرح إيصال الأمانة")).rejects.toThrow("routing");
+    expect((await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } })).leaseId).toBeNull();
+    vi.stubEnv("AI_OPENROUTER_PROVIDERS", "");
+    mockProvider({ search: "fail" });
+    expect((await ask(token, "ما حقوق المستأجر؟")).turns.at(-1)?.assistantText).toContain(legalAssistantCopy.ar.unverified);
+    await readAssistantSession(token);
+    expect((await ask(token, "كمل")).turns.at(-1)?.assistantText).not.toContain(legalAssistantCopy.ar.unverified);
+  });
+  it("creates only the confirmed office message and remembers its thread without forwarding legal history", async () => {
+    const actor = await account(), token = await createAssistantSession("ar", actor);
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    await fixture.db.assistantTurn.create({ data: { sessionId: session.id, messageId: randomUUID(), userText: "PRIVATE LEGAL HISTORY", status: "COMPLETED", assistantText: "PRIVATE LEGAL ANSWER" } });
+    const proposal = await proposeAssistantAction({ sessionId: session.id, actor, locale: "ar", messageId: randomUUID(), draft: { kind: "OFFICE_MESSAGE", message: "Please clarify the documents." } });
+    expect(await fixture.db.conversationThread.count({ where: { clientId: actor.clientId } })).toBe(0);
+    const result = await resolveAssistantAction({ sessionId: session.id, actor, proposalId: proposal.id, decision: "confirm" });
+    const threadId = (result.result as { id: string }).id;
+    const messages = await fixture.db.conversationMessage.findMany({ where: { threadId } });
+    expect(messages.map(m => m.body)).toEqual(["Please clarify the documents."]);
+    expect((await readAssistantSession(token, actor)).dialogue.followup?.selected).toEqual({ kind: "CONVERSATION", id: threadId });
+  });
+  it("cancels a proposal without executing it and keeps callback creation atomic on repeated confirmation", async () => {
+    const actor = await account(), token = await createAssistantSession("ar", actor);
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    await fixture.db.assistantSession.update({ where: { id: session.id }, data: { dialogue: { mode: "BOOKING", consentAt: new Date().toISOString() } } });
+    const propose = () => proposeAssistantAction({ sessionId: session.id, actor, locale: "ar", messageId: randomUUID(), draft: { kind: "BOOKING", operation: "request_callback", fullName: "Synthetic callback", phone: "01099998888", contactChannel: "PHONE" } });
+    const cancelled = await propose();
+    const resolve = (proposalId: string, decision: "confirm" | "cancel") => resolveAssistantAction({ sessionId: session.id, actor, proposalId, decision });
+    expect(await resolve(cancelled.id, "cancel")).toMatchObject({ status: "CANCELLED" });
+    expect(await resolve(cancelled.id, "confirm")).toMatchObject({ status: "CANCELLED" });
+    expect(await fixture.db.consultationRequest.count({ where: { clientId: actor.clientId } })).toBe(0);
+    const next = await propose();
+    await Promise.all([resolve(next.id, "confirm"), resolve(next.id, "confirm")]);
+    expect(await fixture.db.consultationRequest.count({ where: { clientId: actor.clientId } })).toBe(1);
+    expect(await fixture.db.assistantBookingAction.count({ where: { sessionId: session.id } })).toBe(1);
+    expect((await fixture.db.assistantActionProposal.findUniqueOrThrow({ where: { id: next.id } })).status).toBe("COMPLETED");
+  });
+  it("uses published slots for confirmed booking, reschedule and cancellation; alternative requests stay unconfirmed", async () => {
+    const role = await fixture.db.role.upsert({ where: { name: "Lawyer" }, create: { name: "Lawyer", status: "ACTIVE" }, update: {} });
+    const lawyer = await fixture.db.user.create({ data: { name: "Synthetic lawyer", email: `${randomUUID()}@synthetic.invalid`, roleId: role.id, status: "ACTIVE" } });
+    const availability = { ...defaultConsultationAvailability, minLeadHours: 1, days: defaultConsultationAvailability.days.map(day => ({ ...day, enabled: true })), directBooking: { published: true, closures: [], roster: defaultConsultationAvailability.days.map(day => ({ weekday: day.weekday, lawyerIds: [lawyer.id] })) } };
+    await fixture.db.systemSetting.upsert({ where: { key: CONSULTATION_AVAILABILITY_SETTING_KEY }, create: { key: CONSULTATION_AVAILABILITY_SETTING_KEY, value: availability }, update: { value: availability } });
+    const actor = await account(), token = await createAssistantSession("ar", actor);
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    await fixture.db.assistantSession.update({ where: { id: session.id }, data: { dialogue: { mode: "BOOKING", consentAt: new Date().toISOString() } } });
+    const slot = (await listDirectBookingSlots()).nearestSlot!; expect(slot).toBeTruthy();
+    const propose = (draft: unknown) => proposeAssistantAction({ sessionId: session.id, actor, locale: "ar", messageId: randomUUID(), draft });
+    const confirm = (proposalId: string) => resolveAssistantAction({ sessionId: session.id, actor, proposalId, decision: "confirm" });
+    const booking = await propose({ kind: "BOOKING", operation: "confirm_booking", startsAt: slot.startsAt, fullName: "Synthetic client", phone: "01012345678", contactChannel: "PHONE" });
+    expect(await fixture.db.appointment.count({ where: { clientId: actor.clientId } })).toBe(0);
+    await confirm(booking.id);
+    const appointment = await fixture.db.appointment.findFirstOrThrow({ where: { clientId: actor.clientId } });
+    const nextSlot = (await listDirectBookingSlots()).nearestSlot!;
+    const move = await propose({ kind: "BOOKING", operation: "reschedule_booking", startsAt: nextSlot.startsAt });
+    await confirm(move.id);
+    expect((await fixture.db.appointment.findUniqueOrThrow({ where: { id: appointment.id } })).startsAt.toISOString()).toBe(nextSlot.startsAt);
+    await confirm((await propose({ kind: "BOOKING", operation: "cancel_booking" })).id);
+    expect((await fixture.db.appointment.findUniqueOrThrow({ where: { id: appointment.id } })).status).toBe("CANCELLED");
+    const request = await fixture.db.consultationRequest.create({ data: { clientId: actor.clientId!, fullName: "Synthetic alternative", phone: "01012345678", summary: "Synthetic", serviceCategory: "legal", preferredMode: "PHONE" } });
+    await fixture.db.assistantSession.update({ where: { id: session.id }, data: { consultationRequestId: request.id } });
+    await confirm((await propose({ kind: "ALTERNATIVE_TIME", targetId: request.id, startsAt: slot.startsAt, mode: "PHONE" })).id);
+    expect(await fixture.db.consultationRequest.findUniqueOrThrow({ where: { id: request.id } })).toMatchObject({ status: "NEW", outcomeVersion: 1, requestedStartsAt: new Date(slot.startsAt) });
+    expect(await fixture.db.appointment.count({ where: { consultationRequestId: request.id } })).toBe(0);
+  });
   it("representative Arabic legal question → cited answer → follow-up → preliminary draft → internal booking", async () => {
     mockProvider(); const token = await createAssistantSession("ar");
     const first = await ask(token, "ما حقوق المستأجر في عقد الإيجار؟");
@@ -100,9 +274,10 @@ describe.sequential("legal assistance with isolated SQL and controlled provider"
     await ask(token, "هل ينفع؟"); expect(requests.at(-1)?.tools[0].function.name).toBe("review_legal_reply");
   });
   it.each(["ما شروط قبول الدعوى؟", "ناقصني إيه لعمل توكيل؟"])("corrects an account-followup misclassification for %s", async message => {
-    const owner = await account(); mockProvider({ classification: { scope: "OFFICE", intent: "FOLLOW_UP", evidence: message } });
+    const answer = message.includes("توكيل") ? "تقييم التوكيل يبدأ بتحديد التصرف المطلوب وحدود الوكالة، دون افتراض صلاحيات غير مذكورة. [S1]" : "قبول الدعوى يتطلب تقييم موضوع الطلب وصفة الأطراف والمصلحة بحسب الوقائع، دون الجزم بقبول حالة بعينها. [S1]";
+    const owner = await account(); mockProvider({ answer, classification: { scope: "OFFICE", intent: "FOLLOW_UP", evidence: message } });
     const token = await createAssistantSession("ar", owner); const result = await ask(token, message, owner);
-    expect(result.turns.at(-1)?.assistantText).toContain("نوع العقد"); expect(result.dialogue.followup).toBeUndefined();
+    expect(result.turns.at(-1)?.assistantText).toContain(answer); expect(result.dialogue.followup).toBeUndefined();
     expect(requests.some(r => r.tools[0]?.type === "openrouter:web_search")).toBe(true);
   });
   it.each(["fail", "commercial"] as const)("gives useful qualified explanation when research is %s", async search => {
@@ -111,9 +286,10 @@ describe.sequential("legal assistance with isolated SQL and controlled provider"
     expect(state.turns.at(-1)?.assistantText).toContain("نوع العقد"); expect(state.turns.at(-1)?.sources).toEqual([]);
   });
   it.each(["أرشح المحامي أحمد [S1]", "هتكسب أكيد [S1]", "راجع المصدر [S5]", "هذا أحدث قانون نافذ قطعًا [S1]"])("rejects unsafe/unsupported prose or citations: %s", async answer => {
-    mockProvider({ answer, review: false }); const state = await ask(await createAssistantSession("ar"), "وضح القانون");
-    expect(state.turns.at(-1)?.assistantText).toContain(legalAssistantCopy.ar.fallback); expect(state.turns.at(-1)?.sources).toEqual([]);
-    expect(state.turns.at(-1)?.assistantText).not.toContain(answer);
+    mockProvider({ answer, review: false }); const token = await createAssistantSession("ar");
+    await expect(ask(token, "وضح القانون")).rejects.toMatchObject({ code: "AI_OUTPUT_INVALID" });
+    const state = await readAssistantSession(token);
+    expect(state.turns.at(-1)).toMatchObject({ status: "FAILED", assistantText: null, sources: [] });
   });
   it("rechecks a selected owned case, separates legal analysis from status and never sends private facts to research", async () => {
     const owner = await account();
@@ -177,7 +353,8 @@ describe.sequential("legal assistance with isolated SQL and controlled provider"
   it("does not count rejected legal answers as booking invitations and offers at most once after useful answers", async () => {
     const token = await createAssistantSession("ar");
     mockProvider({ review: false, classification: { offerAppropriate: true } });
-    for (let i = 0; i < 3; i++) expect((await ask(token, "وضح حقوق المستأجر")).dialogue.offerShown).toBe(false);
+    for (let i = 0; i < 3; i++) await expect(ask(token, "وضح حقوق المستأجر")).rejects.toMatchObject({ code: "AI_OUTPUT_INVALID" });
+    expect((await readAssistantSession(token)).dialogue.offerShown).toBe(false);
     mockProvider({ classification: { offerAppropriate: true } });
     expect((await ask(token, "اشرح نوع العقد")).dialogue.offerShown).toBe(false);
     expect((await ask(token, "وضح طبيعة العين")).dialogue.offerShown).toBe(false);

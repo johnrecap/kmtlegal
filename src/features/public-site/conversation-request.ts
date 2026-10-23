@@ -5,10 +5,11 @@ import type { DirectBooking } from "./direct-booking-panel";
 import type { OfficeContact } from "./office-contact-dialog";
 
 export type ConversationState = {
+  proposals?: Array<{ id: string; messageId: string; preview: { title: string; lines: string[] }; status: "PENDING" | "COMPLETED" | "CANCELLED" | "STALE"; expiresAt: string }>;
   locale: PublicLocale; handoffState: "NONE" | "QUEUED" | "CLAIMED"; booking: DirectBooking | null;
   dialogue: { mode: "INQUIRY" | "BOOKING"; offerShown: boolean; consentAt: string | null; accountAccess: boolean; bookingFormRequestId?: string };
   draft: Record<string, string | null>; revision: number; accountReady: boolean; humanOwned: boolean; submitted: boolean;
-  turns: Array<{ messageId: string; recipient?: "ASSISTANT" | "OFFICE"; userText: string; assistantText: string | null; status: string; createdAt?: string; updatedAt?: string; sources?: LegalSource[] }>;
+  turns: Array<{ messageId: string; recipient?: "ASSISTANT" | "OFFICE"; userText: string; assistantText: string | null; status: string; errorCode?: string | null; createdAt?: string; updatedAt?: string; sources?: LegalSource[] }>;
   staffMessages?: Array<{ id: string; body: string; createdAt: string }>;
   closed?: boolean; messageLimitReached?: boolean; officeThreadStatus?: string | null; officeContact?: OfficeContact | null; expiresAt?: string;
 };
@@ -17,12 +18,13 @@ const timestamp = z.string().refine(value => Number.isFinite(Date.parse(value)))
 const appointmentSchema = z.object({ id: z.string(), startsAt: timestamp, endsAt: timestamp, status: z.string(), lawyer: z.object({ name: z.string() }).nullable() });
 const bookingSchema = z.object({ confirmationSource: z.string(), contactChannel: z.string(), publicReference: z.string().nullable(), fullName: z.string(), phone: z.string().nullable(), appointments: z.array(appointmentSchema) });
 const conversationSchema = z.object({
+  proposals: z.array(z.object({ id: z.string().uuid(), messageId: z.string().uuid(), preview: z.object({ title: z.string(), lines: z.array(z.string()) }), status: z.enum(["PENDING", "COMPLETED", "CANCELLED", "STALE"]), expiresAt: timestamp })).optional(),
   locale: z.enum(["ar", "en"]), revision: z.number().int().nonnegative(),
   handoffState: z.enum(["NONE", "QUEUED", "CLAIMED"]), booking: bookingSchema.nullable(),
   draft: z.object({ fullName: z.string().nullable().optional(), phone: z.string().nullable().optional(), email: z.string().nullable().optional(), service: z.string().nullable().optional(), contactChannel: z.string().nullable().optional(), requestedStartsAt: z.string().nullable().optional() }).passthrough(),
   accountReady: z.boolean(), humanOwned: z.boolean(), submitted: z.boolean(),
   dialogue: z.object({ mode: z.enum(["INQUIRY", "BOOKING"]), offerShown: z.boolean(), consentAt: z.string().nullable(), accountAccess: z.boolean(), bookingFormRequestId: z.string().uuid().optional() }),
-  turns: z.array(z.object({ messageId: z.string().min(1), recipient: z.enum(["ASSISTANT", "OFFICE"]).optional(), userText: z.string(), assistantText: z.string().nullable(), status: z.enum(["PENDING", "FAILED", "COMPLETED", "HUMAN"]) })),
+  turns: z.array(z.object({ messageId: z.string().min(1), recipient: z.enum(["ASSISTANT", "OFFICE"]).optional(), userText: z.string(), assistantText: z.string().nullable(), status: z.enum(["PENDING", "FAILED", "COMPLETED", "HUMAN"]), errorCode: z.string().regex(/^[A-Z][A-Z0-9_]{0,63}$/).nullable().optional() })),
   staffMessages: z.array(z.object({ id: z.string(), body: z.string(), createdAt: timestamp })).optional(),
   closed: z.boolean().optional(), messageLimitReached: z.boolean().optional(), expiresAt: timestamp.optional(), officeThreadStatus: z.string().nullable().optional(),
   officeContact: z.object({ phone: z.string(), contactChannel: z.string(), consentedAt: timestamp }).nullable().optional()

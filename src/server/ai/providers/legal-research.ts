@@ -6,10 +6,11 @@ import { legalContextSchema, legalTopics, type LegalResearchInput, type LegalRes
 import { readBoundedAIResponse } from "./bounded-response";
 import { providerRequestParameters } from "./request-parameters";
 
-const envelope = z.object({ choices: z.array(z.object({ message: z.object({
-  annotations: z.array(z.object({ type: z.literal("url_citation"), url_citation: z.object({
+const citation = z.object({ type: z.literal("url_citation"), url_citation: z.object({
     url: z.string().max(2048), title: z.string().max(2000).optional(), content: z.string().max(20_000).optional()
-  }) })).max(30).optional()
+  }) });
+const envelope = z.object({ choices: z.array(z.object({ message: z.object({
+  annotations: z.array(z.unknown()).max(30).optional()
 }) })).min(1) });
 
 export function legalResearchQuery(input: Pick<LegalResearchInput, "jurisdiction" | "topics" | "locale">) {
@@ -25,6 +26,7 @@ export async function requestLegalResearch(config: AIProviderConfig, input: Lega
   if (!domains?.length) return { status: "INSUFFICIENT", sources: [] };
   if (config.provider !== "openrouter" || !config.apiKey || !config.baseUrl) return { status: "UNAVAILABLE", sources: [] };
   const signal = AbortSignal.any([...(input.signal ? [input.signal] : []), AbortSignal.timeout(Math.min(config.timeoutMs, 15_000))]);
+  let failureReason = "RESEARCH_UNAVAILABLE";
   try {
     const response = await fetch(`${config.baseUrl.replace(/\/$/, "")}/chat/completions`, {
       method: "POST", signal,
@@ -36,20 +38,24 @@ export async function requestLegalResearch(config: AIProviderConfig, input: Lega
         max_tool_calls: 1, ...providerRequestParameters(config)
       })
     });
-    if (!response.ok) throw new Error("RESEARCH_HTTP_FAILURE");
+    if (!response.ok) { failureReason = response.status === 402 ? "RESEARCH_CREDIT" : response.status === 429 ? "RESEARCH_RATE_LIMIT" : "RESEARCH_HTTP_FAILURE"; throw new Error(failureReason); }
     const result = envelope.safeParse(await readBoundedAIResponse(response));
-    if (!result.success) throw new Error("RESEARCH_SCHEMA_FAILURE");
+    if (!result.success) { failureReason = "RESEARCH_SCHEMA_FAILURE"; throw new Error(failureReason); }
     const seen = new Set<string>();
     const sources = (result.data.choices[0].message.annotations ?? []).flatMap(annotation => {
-      const value = annotation.url_citation;
+      // Beta responses can include other annotation kinds. Only validated citations are evidence.
+      const parsed = citation.safeParse(annotation);
+      if (!parsed.success) return [];
+      const value = parsed.data.url_citation;
       if (!officialLegalUrl(value.url, input.jurisdiction) || !value.content?.trim() || !value.title?.trim() || seen.has(value.url)) return [];
       seen.add(value.url);
       return [{ id: `S${seen.size}`, url: value.url, title: value.title.slice(0, 300), excerpt: value.content.slice(0, 2000), retrievedAt: new Date().toISOString(), jurisdiction: input.jurisdiction }];
     }).slice(0, 5);
+    safeLog("info", "assistant.legal_research", { requestId: input.requestId, reason: sources.length ? "RESEARCH_AVAILABLE" : "RESEARCH_NO_USABLE_EXCERPTS", sourceCount: sources.length });
     // Reassign after filtering; identifiers are server-owned and stable within this response.
     return { status: sources.length ? "AVAILABLE" : "INSUFFICIENT", sources: sources.map((s, i) => ({ ...s, id: `S${i + 1}` })) };
   } catch {
-    safeLog("warn", "assistant.legal_research", { requestId: input.requestId, reason: signal.aborted ? "RESEARCH_TIMEOUT" : "RESEARCH_UNAVAILABLE" });
+    safeLog("warn", "assistant.legal_research", { requestId: input.requestId, reason: signal.aborted ? "RESEARCH_TIMEOUT" : failureReason });
     return { status: "UNAVAILABLE", sources: [] };
   }
 }

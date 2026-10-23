@@ -394,25 +394,7 @@ export async function replyClientConversation(input: {
   const body = normalizeMessageBody(input.body);
 
   const updatedThread = await prisma.$transaction(async (tx) => {
-    await lockActiveConversationThread(tx, { threadId: thread.id, clientId });
-    const message = await tx.conversationMessage.create({
-      data: {
-        threadId: thread.id,
-        senderType: "CLIENT",
-        senderUserId: input.actor.id,
-        body: body.message
-      }
-    });
-
-    return tx.conversationThread.update({
-      where: { id: thread.id },
-      data: {
-        status: "WAITING_STAFF",
-        lastMessageAt: message.createdAt,
-        closedAt: null
-      },
-      include: detailThreadInclude
-    });
+    return replyClientConversationInTransaction(tx, { actor: input.actor, threadId: thread.id, body });
   });
 
   await appendAuditLogBestEffort({
@@ -427,6 +409,16 @@ export async function replyClientConversation(input: {
   });
 
   return serializeThread(updatedThread);
+}
+
+/** Shared write core: the assistant's proposal/result ledger joins this transaction. */
+export async function replyClientConversationInTransaction(tx: Prisma.TransactionClient, input: { actor: Principal; threadId?: string; body: unknown; locale?: "ar" | "en" }) {
+  const clientId = assertClientConversationAccess(input.actor);
+  const body = normalizeMessageBody(input.body);
+  const threadId = input.threadId ?? (await tx.conversationThread.create({ data: { clientId, subject: conversationCopy[input.locale ?? "ar"].title, status: "WAITING_STAFF" } })).id;
+  await lockActiveConversationThread(tx, { threadId, clientId });
+  const message = await tx.conversationMessage.create({ data: { threadId, senderType: "CLIENT", senderUserId: input.actor.id, body: body.message } });
+  return tx.conversationThread.update({ where: { id: threadId }, data: { status: "WAITING_STAFF", lastMessageAt: message.createdAt, closedAt: null }, include: detailThreadInclude });
 }
 
 export async function listAdminConversations(input: { actor: Principal; query: unknown }) {

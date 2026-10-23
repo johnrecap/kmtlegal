@@ -14,10 +14,13 @@ import { consultationSlotFilterSchema } from "@/server/consultations/consultatio
 import { ownAssistantSession } from "@/server/consultations/conversation-session-service";
 import { officeContactSchema, setOfficeContact } from "@/server/consultations/office-contact-service";
 import { clientRegistrationSchema, registerConversationClient } from "@/server/portal/client-registration-service";
+import { resolveAssistantAction } from "@/server/consultations/assistant-action-service";
 
 export const dynamic = "force-dynamic";
 const actions = z.discriminatedUnion("action", [
   directBookingInputSchema,
+  z.strictObject({ action: z.literal("confirm_action"), proposalId: z.string().uuid(), confirmed: z.literal(true) }),
+  z.strictObject({ action: z.literal("cancel_action"), proposalId: z.string().uuid() }),
   officeContactSchema,
   z.strictObject({ action: z.literal("booking_slots"), ...consultationSlotFilterSchema.shape }),
   z.strictObject({ action: z.literal("set_locale"), locale: z.enum(["ar", "en"]) }),
@@ -64,6 +67,12 @@ export async function POST(request: Request) {
       return response;
     }
     if (!token) throw new ApiError(401, "AUTH_REQUIRED", "Authentication required.");
+    if (body.action === "confirm_action" || body.action === "cancel_action") {
+      if (!auth) throw new ApiError(401, "AUTH_REQUIRED", "Authentication required.");
+      const session = await ownAssistantSession(token, auth.principal);
+      await resolveAssistantAction({ sessionId: session.id, actor: auth.principal, proposalId: body.proposalId, decision: body.action === "confirm_action" ? "confirm" : "cancel" });
+      return jsonOk(await readAssistantSession(token, auth.principal));
+    }
     if (body.action === "register") {
       await enforceRateLimit(rateLimiters.login, `assistant-signup-email:${body.email}`);
       const registered = await registerConversationClient({ capability: token, body: {

@@ -1,4 +1,5 @@
 import type { Principal } from "@/server/auth/policy";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db/prisma";
 import { assertClientPortalAccess } from "./client-portal-service";
 import { z } from "zod";
@@ -21,10 +22,10 @@ export async function listOwnConsultationRequests(actor: Principal) {
 }
 
 export const alternativeTimeSchema = z.object({ startsAt: z.iso.datetime(), mode: z.enum(["PHONE", "ONLINE", "OFFICE"]), version: z.number().int().nonnegative() }).strict();
-export async function requestAlternativeTime(actor: Principal, id: string, input: unknown) {
+export async function requestAlternativeTime(actor: Principal, id: string, input: unknown, transaction?: Prisma.TransactionClient) {
   const clientId = assertClientPortalAccess(actor); const body = parseWithSchema(alternativeTimeSchema, input);
-  const slot = await assertPublicConsultationSlotAvailable({ startsAt: new Date(body.startsAt), mode: body.mode });
-  return prisma.$transaction(async tx => {
+  const slot = await assertPublicConsultationSlotAvailable({ startsAt: new Date(body.startsAt), mode: body.mode, client: transaction });
+  const operation = async (tx: Prisma.TransactionClient) => {
     await tx.$queryRaw`SELECT "id" FROM consultation_requests WHERE "id" = ${id}::uuid FOR UPDATE`;
     const row = await tx.consultationRequest.findFirst({ where: { id, clientId, client: { userId: actor.id, deletedAt: null }, assistantSession: { isNot: null } } });
     if (!row) throw new ApiError(404, "NOT_FOUND", "Request not found.");
@@ -32,5 +33,6 @@ export async function requestAlternativeTime(actor: Principal, id: string, input
     await tx.consultationRequest.update({ where: { id }, data: { requestedStartsAt: new Date(slot.startsAt), requestedEndsAt: new Date(slot.endsAt), preferredMode: body.mode, outcomeVersion: { increment: 1 } } });
     await appendAuditLog({ client: tx, actorId: actor.id, clientId, action: "consultation.alternative.requested", resourceType: "ConsultationRequest", resourceId: id });
     return { requested: true, confirmed: false };
-  });
+  };
+  return transaction ? operation(transaction) : prisma.$transaction(operation);
 }

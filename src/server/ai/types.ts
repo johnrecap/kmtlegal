@@ -87,6 +87,7 @@ export type AIChatTool = {
 };
 
 export type AIChatInput = {
+  toolChoice?: { type: "function"; function: { name: string } };
   maxTokens?: number;
   messages: AIChatMessage[];
   tools: AIChatTool[];

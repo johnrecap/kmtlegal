@@ -74,6 +74,14 @@ describe("legal context, official research and safety boundaries", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
     fetch.mockRejectedValueOnce(new Error("PRIVATE_ERROR")); expect((await requestLegalResearch(config, research)).status).toBe("UNAVAILABLE");
   });
+  it("ignores new annotation kinds without treating them or model prose as legal evidence", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ choices: [{ message: { annotations: [
+      { type: "new_provider_annotation", content: "Invented law" },
+      { type: "url_citation", url_citation: { title: "Official fixture", url: "https://cc.gov.eg/", content: "A synthetic excerpt" } },
+      { type: "url_citation", url_citation: { title: "Missing excerpt", url: "https://eta.gov.eg/" } }
+    ] } }] })));
+    expect((await requestLegalResearch(config, research)).sources).toMatchObject([{ id: "S1", excerpt: "A synthetic excerpt" }]);
+  });
   it.each(["أرشح المحامي أحمد", "أنصحك بمكتب محاماة آخر", "ابحث عن محامي", "I recommend lawyer John", "Contact a law firm outside", "Book at https://outside.invalid/", "أنا محاميك", "اضمن لك الفوز"])("rejects outside referrals, impersonation or guarantees: %s", text => { expect(legalAnswerSafe(text)).toBe(false); });
   it("allows official citations, conditional explanation and internal booking", () => {
     expect(legalAnswerSafe("لا أضمن نتيجة. المسودة أولية وتتوقف على الوقائع.")).toBe(true);

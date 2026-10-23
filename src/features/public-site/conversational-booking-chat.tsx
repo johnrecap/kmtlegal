@@ -15,6 +15,7 @@ import { ConversationAccountForm } from "./conversation-account-form";
 import type { PublicLocale } from "@/lib/public-locale";
 import { legalSourceSchema, type LegalSource } from "@/lib/legal-assistant";
 import { legalAssistantCopy } from "@/content/legal-assistant-copy";
+import { assistantActionCopy } from "@/content/assistant-action-copy";
 import { conversationRequest, ConversationRequestError, type ConversationState as State } from "./conversation-request";
 import "./consultation-experience.css";
 
@@ -169,6 +170,8 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
       : failure.kind === "TIMEOUT" || code === "AI_PROVIDER_TIMEOUT" ? copy.timeout
       : failure.kind === "NETWORK" ? copy.network
       : failure.kind === "INVALID_RESPONSE" ? copy.invalidResponse
+      : code === "AI_OUTPUT_INVALID" ? copy.replyInvalid
+      : code === "AI_PROVIDER_UNAVAILABLE" ? copy.providerUnavailable
       : code === "ACCOUNT_EMAIL_UNAVAILABLE" ? copy.accountUnavailable
       : code === "CONVERSATION_LIMIT_REACHED" ? copy.messageLimit
       : failure.status === 429 ? copy.accountRateLimited
@@ -295,7 +298,7 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
   const Heading = layout === "portal" ? "h1" : "h2";
   const panelEpoch = requestEpoch.current;
   const bookingAccessFailure = useCallback((error: unknown) => { if (panelEpoch === requestEpoch.current) showFailure(error); }, [panelEpoch, showFailure]);
-  const deliveryLabel = (delivery?: string) => delivery === "SENDING" ? copy.deliveryPending : delivery === "FAILED" ? copy.deliveryFailed : delivery === "PENDING" ? copy.deliveryProcessing : delivery === "UNKNOWN" ? copy.deliveryUnknown : undefined;
+  const deliveryLabel = (delivery?: string, code?: string | null) => delivery === "SENDING" ? copy.deliveryPending : delivery === "FAILED" ? code === "AI_OUTPUT_INVALID" ? copy.replyInvalid : code === "AI_PROVIDER_UNAVAILABLE" ? copy.providerUnavailable : code === "AI_PROVIDER_TIMEOUT" ? copy.timeout : copy.deliveryFailed : delivery === "PENDING" ? copy.deliveryProcessing : delivery === "UNKNOWN" ? copy.deliveryUnknown : undefined;
   const languageControl = <Button type="button" variant="ghost" disabled={busy || !state} onClick={() => void action({ action: "set_locale", locale: language === "ar" ? "en" : "ar" })}>{language === "ar" ? "English" : "العربية"}</Button>;
 
   return <section ref={experience} lang={language} aria-label={copy.title} className={`kmt-consultation${layout === "portal" ? " kmt-consultation--portal" : ""}`} dir={language === "ar" ? "rtl" : "ltr"}>
@@ -308,7 +311,7 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
         {!state?.turns.length && !state?.staffMessages?.length && !Object.values(pendingMessages).some(Boolean) && <p className="consultation-empty">{copy.emptyConversation}</p>}
         {[
           ...(state?.turns.flatMap((turn, index) => [
-            { id: `${turn.messageId}-user`, body: turn.userText, type: "user", sources: [] as LegalSource[], recipient: turnRecipient(turn), delivery: deliveryLabel(pendingMessages[turnRecipient(turn)]?.messageId === turn.messageId ? pendingMessages[turnRecipient(turn)]?.delivery : turn.status), at: turn.createdAt ? Date.parse(turn.createdAt) : index * 2 },
+            { id: `${turn.messageId}-user`, body: turn.userText, type: "user", sources: [] as LegalSource[], recipient: turnRecipient(turn), delivery: deliveryLabel(pendingMessages[turnRecipient(turn)]?.messageId === turn.messageId ? pendingMessages[turnRecipient(turn)]?.delivery : turn.status, turn.errorCode), at: turn.createdAt ? Date.parse(turn.createdAt) : index * 2 },
             ...(turn.assistantText ? [{ id: `${turn.messageId}-assistant`, body: turn.assistantText, type: "assistant", sources: turn.sources, at: turn.updatedAt ? Date.parse(turn.updatedAt) : turn.createdAt ? Date.parse(turn.createdAt) + 1 : index * 2 + 1 }] : [])
           ]) ?? []),
           ...(state?.staffMessages?.map(item => ({ id: item.id, body: item.body, type: "staff", sources: [] as LegalSource[], at: Date.parse(item.createdAt) })) ?? []),
@@ -321,6 +324,14 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
             {item.sources.filter(s => legalSourceSchema.safeParse(s).success).slice(0, 5).map(source => <p key={source.id} className="break-words"><a href={source.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">[{source.id}] {source.title}</a>{" · "}{legalAssistantCopy[language].accessed} {new Intl.DateTimeFormat(language, { dateStyle: "medium" }).format(new Date(source.retrievedAt))}</p>)}
           </nav>}
         </div>)}
+      {state?.proposals?.map(proposal => <section key={proposal.id} aria-label={proposal.preview.title} className="space-y-2 rounded-xl border p-3 text-sm">
+        <p className="font-semibold">{proposal.preview.title}</p>
+        {proposal.preview.lines.map((line, index) => <p key={index} dir="auto" className="whitespace-pre-wrap break-words">{line}</p>)}
+        {proposal.status === "PENDING" && Date.parse(proposal.expiresAt) > Date.now() ? <div className="flex flex-wrap gap-2">
+          <Button type="button" disabled={busy || sessionExpired} onClick={() => void action({ action: "confirm_action", proposalId: proposal.id, confirmed: true })}>{assistantActionCopy[language].confirm}</Button>
+          <Button type="button" variant="outline" disabled={busy || sessionExpired} onClick={() => void action({ action: "cancel_action", proposalId: proposal.id })}>{assistantActionCopy[language].cancel}</Button>
+        </div> : <p role="status">{assistantActionCopy[language][proposal.status === "COMPLETED" ? "completed" : proposal.status === "CANCELLED" ? "cancelled" : "stale"]}</p>}
+      </section>)}
       </div>
       {newMessages && <Button className="consultation-latest" variant="outline" type="button" onClick={() => { followLatest.current = true; setNewMessages(false); if (log.current) log.current.scrollTop = log.current.scrollHeight; }}>{copy.latest}</Button>}
       </div>
@@ -339,6 +350,7 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
       </form>
       {busy && <p role="status" className="consultation-feedback">{recipient === "OFFICE" ? copy.officeSending : copy.waiting}</p>}
       {pendingMessage && !busy && <Button type="button" variant="outline" disabled={sessionExpired || limitStopsAttempt || pendingMessage.delivery === "PENDING" || pendingMessage.delivery === "SENDING"} onClick={() => void send()}>{copy.retry}</Button>}
+
       {state?.messageLimitReached && <p role="status" className="consultation-feedback">{copy.messageLimit}</p>}
       {notice && !panelOpen && <p role="status" className="break-words text-sm leading-7">{notice}</p>}
       {showPanel && <Button ref={panelTrigger} className="h-auto min-h-11 whitespace-normal" type="button" onClick={() => setPanelOpen(true)}>{state?.submitted ? direct.openDetails : booking ? direct.openForm : policy.account}</Button>}

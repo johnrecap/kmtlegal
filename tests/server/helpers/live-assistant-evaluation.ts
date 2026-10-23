@@ -4,7 +4,7 @@ import { vi } from "vitest";
 import { getAIProviderConfig } from "@/server/ai/config";
 
 // Import only provider settings. Production database/auth/mail settings never enter the fixture.
-export const liveAIKeys = ["AI_PROVIDER", "AI_API_KEY", "AI_BASE_URL", "AI_MODEL", "AI_TIMEOUT_MS", "AI_CONVERSATION_TIMEOUT_MS", "AI_MAX_TOKENS", "AI_TEMPERATURE", "AI_STRUCTURED_OUTPUTS"] as const;
+export const liveAIKeys = ["AI_PROVIDER", "AI_API_KEY", "AI_BASE_URL", "AI_MODEL", "AI_TIMEOUT_MS", "AI_CONVERSATION_TIMEOUT_MS", "AI_MAX_TOKENS", "AI_TEMPERATURE", "AI_STRUCTURED_OUTPUTS", "AI_OPENROUTER_PROVIDERS"] as const;
 export async function liveAssistantEvaluation(nativeFetch: typeof fetch, directory: string) {
   const env = parseEnv(await readFile(process.env.KMT_LIVE_AI_ENV_FILE || ".env", "utf8"));
   for (const key of liveAIKeys) vi.stubEnv(key, env[key] ?? "");

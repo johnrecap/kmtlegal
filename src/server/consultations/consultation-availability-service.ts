@@ -205,13 +205,20 @@ export async function assertPublicConsultationSlotAvailable(input: {
   startsAt: Date;
   mode: ConsultationMode;
   now?: Date;
+  client?: Prisma.TransactionClient;
 }) {
   const parts = cairoClockFormatter.formatToParts(input.startsAt);
   const clock = (type: string) => parts.find(part => part.type === type)?.value ?? "";
-  const slots = await listPublicConsultationSlots({
+  const filter = {
     mode: input.mode, now: input.now, date: cairoDateString(input.startsAt),
     fromTime: clock("hour") + ":" + clock("minute"), limit: 1
-  });
+  };
+  const slots = input.client ? await (async () => {
+    const setting = await input.client!.systemSetting.findUnique({ where: { key: CONSULTATION_AVAILABILITY_SETTING_KEY } });
+    const availability = normalizeAvailability(setting?.value);
+    const appointments = await input.client!.appointment.findMany({ where: { type: "CONSULTATION", status: { in: ["RESERVED", "SCHEDULED", "RESCHEDULED"] }, startsAt: { lt: new Date(input.startsAt.getTime() + 86400000) }, endsAt: { gt: input.startsAt } }, select: { startsAt: true, endsAt: true } });
+    return generateConsultationSlots({ ...filter, availability, appointments });
+  })() : await listPublicConsultationSlots(filter);
   const match = slots.find((slot) => slot.startsAt === input.startsAt.toISOString());
   if (!match) {
     throw new ApiError(409, "CONFLICT", "This consultation slot is no longer available. Please choose another time.");

@@ -1,5 +1,7 @@
 export const conversationCopy = {
   ar: {
+    replyInvalid: "تعذر تجهيز إجابة موثوقة لهذه الرسالة. يمكنك إعادة المحاولة بنفس الرسالة.",
+    providerUnavailable: "خدمة الرد غير متاحة مؤقتًا. رسالتك محفوظة ويمكنك إعادة المحاولة.",
     messageLimit: "وصلت هذه المحادثة إلى حد الرسائل. ابدأ محادثة جديدة للمتابعة؛ سيبقى النص الذي كتبته هنا. الحجز يظل متاحًا.",
     deliveryPending: "جارٍ إرسال رسالتك…", deliveryFailed: "وصلت رسالتك، لكن تعذر تجهيز الرد. يمكنك إعادة المحاولة بنفس الرسالة.",
     deliveryProcessing: "وصلت رسالتك والرد ما زال قيد التجهيز. سنتحقق من حالته هنا.", deliveryUnknown: "لم نتمكن من تأكيد وصول الرسالة. النص موجود هنا؛ تحقق من الاتصال ثم أعد المحاولة.",
@@ -35,6 +37,8 @@ export const conversationCopy = {
     requested: "الموعد المطلوب", confirmed: "الموعد المعتمد", noTime: "يُنسّق مع المكتب", noConfirmation: "لم يُعتمد موعد بعد", nextStep: "تابع حالة طلبك هنا؛ سيتولى المكتب مراجعته."
   },
   en: {
+    replyInvalid: "We could not prepare a reliable answer to this message. You can retry the same message.",
+    providerUnavailable: "The reply service is temporarily unavailable. Your message is saved and you can retry.",
     messageLimit: "This conversation reached its message limit. Start a new conversation to continue; your typed text will stay here. Booking remains available.",
     deliveryPending: "Sending your message…", deliveryFailed: "Your message was received, but the reply failed. You can retry the same message.",
     deliveryProcessing: "Your message was received and the reply is still processing. Its status will update here.", deliveryUnknown: "We could not confirm delivery. Your text remains here; check your connection before retrying.",

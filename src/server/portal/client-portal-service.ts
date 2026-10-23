@@ -305,10 +305,10 @@ export async function getPortalProfile(actor: Principal) {
   return client;
 }
 
-export async function updatePortalProfile(input: { actor: Principal; body: unknown }) {
+export async function updatePortalProfile(input: { actor: Principal; body: unknown; transaction?: Prisma.TransactionClient }) {
   const clientId = assertClientPortalAccess(input.actor);
   const body = parseWithSchema(portalProfileUpdateSchema, input.body, "Profile payload is invalid.");
-  const client = await prisma.client.findUnique({
+  const client = await (input.transaction ?? prisma).client.findUnique({
     where: { id: clientId },
     select: { id: true, userId: true }
   });
@@ -317,7 +317,7 @@ export async function updatePortalProfile(input: { actor: Principal; body: unkno
     throw new ApiError(404, "NOT_FOUND", "Client profile was not found.");
   }
 
-  return prisma.$transaction(async (tx) => {
+  const operation = async (tx: Prisma.TransactionClient) => {
     const updatedClient = await tx.client.update({
       where: { id: clientId },
       data: {
@@ -338,7 +338,8 @@ export async function updatePortalProfile(input: { actor: Principal; body: unkno
     });
 
     return updatedClient;
-  });
+  };
+  return input.transaction ? operation(input.transaction) : prisma.$transaction(operation);
 }
 
 export async function updateClientPreferences(input: {

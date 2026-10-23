@@ -5,6 +5,7 @@ import { requestConversation } from "@/server/ai/providers/conversational";
 import { getAIProvider } from "@/server/ai/provider-registry";
 import { runConversationTurn } from "@/server/ai/conversation-gateway";
 import { boundedConversationProvider, INPUT_POLICY, OUTPUT_POLICY, messageAssessmentSchema, policyDecision, replyReviewSchema } from "@/server/ai/company-conversation-policy";
+import { conversationRequestParameters } from "@/server/ai/providers/request-parameters";
 
 const config: AIProviderConfig = {
   provider: "openrouter", model: "deepseek/deepseek-v4.1-flash", baseUrl: "https://provider.test/v1",
@@ -23,6 +24,37 @@ const toolResponse = (name: string, args: unknown, id = name) => Response.json({
 }] });
 
 afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+
+it.each([true, false])("repairs invalid classification once without accepting extra fields (repair succeeds: %s)", async succeeds => {
+  const valid = { scope: "LEGAL", intent: "NONE", evidence: "", locale: "ar", offerAppropriate: false, inScopeQuestion: "الموقّع ما استلمش فلوس", legal: { topics: ["TRUST_RECEIPT"], mode: "ANALYSIS" } };
+  let calls = 0;
+  const fetchMock = vi.fn(async (_url: string, init: RequestInit) => {
+    const body = JSON.parse(String(init.body));
+    calls++;
+    if (calls === 2) expect(JSON.stringify(body.messages)).toContain("belong inside legal");
+    return toolResponse("classify_company_message", calls === 2 && succeeds ? valid : { ...valid, jurisdiction: "EG", conflict: false });
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  const result = policyDecision(getAIProvider(config), messageAssessmentSchema, "classify_company_message", INPUT_POLICY, { message: valid.inScopeQuestion }, "fixture");
+  if (succeeds) await expect(result).resolves.toEqual(valid);
+  else await expect(result).rejects.toMatchObject({ code: "AI_OUTPUT_INVALID" });
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+});
+
+it.each(["openai/gpt-6.1-sol", "anthropic/claude-sonnet-5.5"])("omits unsupported sampling parameters and pins the route for %s", model => {
+  const payload = JSON.parse(JSON.stringify({ temperature: .2, ...conversationRequestParameters({ ...config, model, providerOnly: ["synthetic-route"] }) }));
+  expect(payload).not.toHaveProperty("temperature"); expect(payload).not.toHaveProperty("parallel_tool_calls");
+  expect(payload).toMatchObject({ reasoning: { effort: "low" }, provider: { only: ["synthetic-route"], allow_fallbacks: false, require_parameters: true } });
+});
+
+it("uses compatible Sonnet tool selection but rejects prose instead of the required result", async () => {
+  const fetchMock = vi.fn(async (_url: string, init: RequestInit) => {
+    expect(JSON.parse(String(init.body)).tool_choice).toBe("auto");
+    return textResponse("I cannot return a structured result.");
+  });
+  vi.stubGlobal("fetch", fetchMock);
+  await expect(policyDecision(getAIProvider({ ...config, model: "anthropic/claude-sonnet-5.5" }), z.strictObject({ ok: z.boolean() }), "diagnostic", "Return the diagnostic tool.", {}, "fixture")).rejects.toMatchObject({ code: "AI_OUTPUT_INVALID" });
+});
 
 describe("OpenRouter DeepSeek request profile", () => {
   it("routes DeepSeek without the incompatible parallel-tool parameter and keeps reasoning disabled", async () => {
@@ -144,14 +176,15 @@ describe("OpenRouter DeepSeek request profile", () => {
     const fetchMock = vi.fn(async () => Response.json({ error: { message: "private upstream body and fixture-key" } }, { status }));
     vi.stubGlobal("fetch", fetchMock);
     await expect(requestConversation(config, {
-      messages: [{ role: "user", content: "private client prompt" }], tools: [], requestId: "safe-correlation"
+      messages: [{ role: "user", content: "private client prompt" }], tools: [], requestId: "10000000-0000-4000-8000-000000000001"
     })).rejects.toMatchObject({ code: "AI_PROVIDER_UNAVAILABLE", message: "AI provider request failed." });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledTimes(1);
     const line = String(warn.mock.calls[0][0]);
     expect(JSON.parse(line)).toMatchObject({ event: "ai.provider_request_failed" });
     expect(JSON.parse(line).metadata).toEqual({
-      provider: config.provider, model: config.model, requestId: "safe-correlation", diagnosticKind: "provider", status
+      provider: config.provider, model: config.model, requestId: "10000000-0000-4000-8000-000000000001", diagnosticKind: "provider", status,
+      elapsedMs: expect.any(Number), callTimeoutMs: config.timeoutMs
     });
     expect(line).not.toMatch(/fixture-key|private upstream|private client/);
   });

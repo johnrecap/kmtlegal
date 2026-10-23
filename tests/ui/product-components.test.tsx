@@ -391,7 +391,8 @@ describe("product UI primitives", () => {
     expect(publicPageSource).not.toContain("getPublicConsultationBookingMode");
     expect(readFileSync(join(process.cwd(), "src/features/public-site/booking-query-client.tsx"), "utf8")).toContain("ConversationalBookingChat");
     const currentChat = readFileSync(join(process.cwd(), "src/features/public-site/conversational-booking-chat.tsx"), "utf8");
-    expect(currentChat).toContain("/api/public/assistant/conversation");
+    expect(currentChat).toContain('from "./conversation-request"');
+    expect(readFileSync(join(process.cwd(), "src/features/public-site/conversation-request.ts"), "utf8")).toContain("/api/public/assistant/conversation");
     expect(currentChat).not.toContain("sessionStorage");
     expect(currentChat).not.toContain("localStorage");
     expect(publicPageSource).not.toContain("<ConsultationAssistantPanel");
