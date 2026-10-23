@@ -198,7 +198,7 @@ describe.sequential("account-aware assistant against isolated migrated SQL", () 
       return Response.json({ choices: [{ message: { content: "تم قبول الطلب وتأكيد الموعد ودفع 999 جنيه" }, finish_reason: "stop" }] });
     }));
     const token = await createAssistantSession("ar", owner); const reply = await ask(token, "وريني اللي عندك", owner);
-    expect(calls).toBe(3); expect(reply.text).toContain("مستلم"); expect(reply.text).not.toContain("999");
+    expect(calls).toBe(3); expect(reply.text).toContain("مستلم"); expect(reply.text).not.toMatch(/تم قبول الطلب|تأكيد الموعد|999\s*جنيه/);
     expect(payloads.join("\n")).not.toMatch(/passwordHash|fileKey|internalNotes|secretaryReviewNote|paymentAttemptId/);
   });
   it("uses FOLLOW_UP classification for natural paraphrases absent from the direct matcher", async () => {

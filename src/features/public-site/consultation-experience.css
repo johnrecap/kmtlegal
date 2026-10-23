@@ -98,3 +98,4 @@
   .kmt-consultation-dialog[data-compact-viewport]>div:nth-child(2){padding-block:12px}
   .kmt-consultation-dialog[data-compact-viewport]>div:last-child:not(:nth-child(2)){padding-top:8px;padding-bottom:max(8px,env(safe-area-inset-bottom))}
 }
+.consultation-response{display:grid;gap:.65em;overflow-wrap:anywhere;text-align:start;min-width:0}.consultation-response p{margin:0;white-space:pre-wrap}.consultation-response ul,.consultation-response ol{margin:0;padding-inline-start:1.5em;list-style-position:outside}.consultation-response ul{list-style-type:disc}.consultation-response ol{list-style-type:decimal}.consultation-response li+li{margin-top:.35em}.consultation-response-heading{font-weight:600}.consultation-response pre{max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere}.consultation-response code{font-size:.95em}

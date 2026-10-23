@@ -85,6 +85,18 @@ describe.sequential("legal assistance with isolated SQL and controlled provider"
     await resolveAssistantAction({ sessionId: session.id, actor, proposalId: preview.proposals[0].id, decision: "confirm" });
     expect(await fixture.db.conversationMessage.count({ where: { thread: { clientId: actor.clientId }, body: message } })).toBe(1);
   });
+  it("keeps a tenant role correction in legal dialogue even when classification proposes an account action", async () => {
+    const token = await createAssistantSession("ar");
+    const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });
+    await fixture.db.assistantSession.update({ where: { id: session.id }, data: { dialogue: { activeDomain: "LEGAL", legal: { jurisdiction: "EG", topics: ["RENT"], mode: "ANALYSIS" } } } });
+    const message = "تصحيح في حالة الإيجار: أنا المالك مش المستأجر، والمستأجر هو اللي طالب تخفيض الإيجار، مش زيادة. لخّص فقط الوقائع المصححة في جملة واحدة ومن غير رأي قانوني أو سؤال.";
+    const answer = "أنت المالك، والمستأجر طلب تخفيض الإيجار قبل نهاية مدة العقد المكتوب.";
+    mockProvider({ search: "fail", answer, classification: { scope: "OFFICE", intent: "ACTION", evidence: "تصحيح في حالة الإيجار", legal: { topics: ["RENT"], mode: "ANALYSIS" } } });
+    const result = await ask(token, message);
+    expect(result.turns.at(-1)?.assistantText).toBe(answer);
+    expect(result.dialogue.activeDomain).toBe("LEGAL");
+    expect(result.proposals).toHaveLength(0);
+  });
   it("routes the original receipt question away from an existing account focus and retains facts after rejected replies", async () => {
     const actor = await account(), token = await createAssistantSession("ar", actor);
     const session = await fixture.db.assistantSession.findUniqueOrThrow({ where: { capabilityHash: capabilityHash(token) } });

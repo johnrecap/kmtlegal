@@ -29,7 +29,7 @@ import { formatDateTime } from "@/lib/legal-format";
 import { getClientContent } from "@/content/client-content";
 import { legalSourceMetadata, readLegalSources } from "@/lib/legal-assistant";
 import { legalAssistantCopy } from "@/content/legal-assistant-copy";
-import { legalContextForMessage, legalSubjectQuestion, explicitAccountQuestion } from "@/server/ai/legal-context";
+import { legalContextForMessage, legalSubjectQuestion, explicitAccountQuestion, legalFactCorrection } from "@/server/ai/legal-context";
 import { legalTopics } from "@/server/ai/legal-assistance-contract";
 import { composeLegalAssistance } from "@/server/ai/legal-assistance-service";
 import { rememberLegalMessage, rememberLegalQuestion } from "@/server/ai/legal-memory";
@@ -187,6 +187,9 @@ export async function sendAssistantMessage(input: {
     let assessment = directBooking ? messageAssessmentSchema.parse({ scope: "OFFICE", intent: "BOOK", evidence: input.message, locale: input.locale, offerAppropriate: false, inScopeQuestion: input.message }) : formFollowup ? messageAssessmentSchema.parse({ scope: "OFFICE", intent: "NONE", evidence: "", locale: input.locale, offerAppropriate: false, inScopeQuestion: input.message }) : category ? messageAssessmentSchema.parse({ scope: "OFFICE", intent: "FOLLOW_UP", evidence: input.message, locale: input.locale, offerAppropriate: false, inScopeQuestion: input.message }) : await policyDecision(provider, messageAssessmentSchema, "classify_company_message", INPUT_POLICY,
       { message: input.message, history, dialogue: initialDialogue, legalTopics: Object.keys(legalTopics), memoryInstruction: "For legal dialogue return factQuotes: up to three exact verbatim spans from the CURRENT customer message containing relevant facts or corrections. Never quote assistant claims. Retain the existing topic for short factual answers; use new topics only for an actual subject change.", actionInstruction: "For an explicit request to change the customer's contact profile, language, service request or consultation booking, request an alternative consultation time, or prepare a message to the office, use OFFICE/ACTION and actionDraft with exact current evidence. This only prepares a proposal for a separate confirmation button; never interpret yes/okay as execution. Use only a targetId from the server dialogue selection; omit when unknown. Never invent missing fields. Login credentials, payments and uploads use existing secure account pages. General legal advice about cancellation is LEGAL, not ACTION.", serviceIds: knowledge.services.map(s => ({ id: s.id, title: s.title })) }, input.requestId);
     if (assessment.intent === "FOLLOW_UP" && (legalSubjectQuestion(input.message) || legalContinuation)) assessment = { ...assessment, scope: "LEGAL", intent: "NONE", evidence: "" };
+    if (legalContinuation && legalFactCorrection(input.message) && ["ACTION", "ACCOUNT", "FOLLOW_UP"].includes(assessment.intent)) {
+      assessment = { ...assessment, scope: "LEGAL", intent: "NONE", evidence: "", actionDraft: undefined, accountEvidence: undefined, offerAppropriate: false };
+    }
     await assertActive();
     const copy = assistantPolicyCopy[assessment.locale];
     const dialogue = applyAssessment(initialDialogue, assessment, input.message);

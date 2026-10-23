@@ -38,3 +38,8 @@ export function legalSubjectQuestion(text: string) {
 export function explicitAccountQuestion(text: string) {
   return /طلبي|طلباتي|طلب (?:بتاعي|الخاص بي|للمكتب)|فاتورتي|فواتيري|ميعادي|موعدي|مواعيدي|ملفي|ملفاتي|مستنداتي|قضيتي|قضايايا|جلساتي|مدفوعاتي|بياناتي|رصيدي|عليا كام|علي كام|\b(?:owe|my (?:request|filing|booking|invoice|appointment|case|profile|balance|documents?|files?))\b|\b(?:CONS|CONTRACT|HEALTH|CASE|INV|SRV|REQ|SR|KMT)[-_][a-z0-9-]+/i.test(normalizedLegalText(text));
 }
+
+/** Correcting reported dialogue facts is not a command to edit an account record. */
+export function legalFactCorrection(text: string) {
+  return !explicitAccountQuestion(text) && /^(?:تصحيح(?:\s|:)|اصحح\s|تصحيحا\s|correction\b|to correct\b|let me correct\b)/i.test(normalizedLegalText(text).trim());
+}

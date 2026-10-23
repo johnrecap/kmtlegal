@@ -108,3 +108,15 @@ it("repairs an unsupported correction response using a concrete reason while ret
   expect(result.text).toContain(answer);
   expect(result.text).not.toContain("999");
 });
+it("repairs extra prose around an explicitly bounded Arabic document list", async () => {
+  const answer = "1. عقد العمل.\n2. كشوف تحويل الراتب.\n3. المراسلات بشأن الأجر المتأخر.";
+  let attempts = 0;
+  vi.stubGlobal("fetch", vi.fn(async (_url, init) => {
+    const name = JSON.parse(String(init?.body)).tools[0].function.name;
+    return response(name, name === "compose_legal_reply" ? { answer: ++attempts === 1 ? `${answer}\nويفضل إضافة أوراق أخرى.` : answer, sourceIds: [] } : review);
+  }));
+  const result = await composeLegalAssistance(input("اذكر فقط 3 مستندات أجهزها لمناقشة تأخر راتبي، من غير سؤال إضافي."));
+  expect(attempts).toBe(2);
+  expect(result.text).toBe(answer);
+  expect(result.allowConsultationOffer).toBe(false);
+});

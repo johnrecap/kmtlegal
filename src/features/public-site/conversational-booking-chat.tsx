@@ -10,6 +10,7 @@ import { assistantPolicyCopy } from "@/content/assistant-policy-copy";
 import { publicOfficeProfile } from "@/content/public-office-profile";
 import { directBookingCopy } from "@/content/direct-booking-copy";
 import { DirectBookingPanel } from "./direct-booking-panel";
+import { AssistantMessageBody } from "./assistant-message-body";
 import { OfficeContactDialog, type OfficeContactInput } from "./office-contact-dialog";
 import { ConversationAccountForm } from "./conversation-account-form";
 import type { PublicLocale } from "@/lib/public-locale";
@@ -317,7 +318,7 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
           ...(state?.staffMessages?.map(item => ({ id: item.id, body: item.body, type: "staff", sources: [] as LegalSource[], at: Date.parse(item.createdAt) })) ?? []),
           ...Object.values(pendingMessages).flatMap(pending => pending && !state?.turns.some(turn => sameAttempt(turn, pending)) ? [{ id: `${pending.messageId}-user`, body: pending.message, type: "user", recipient: pending.recipient, delivery: deliveryLabel(pending.delivery), sources: [] as LegalSource[], at: pending.at }] : [])
         ].sort((a, b) => a.at - b.at).map(item => <div key={item.id} className={`consultation-message consultation-message-${item.type}`}>
-          <p className="consultation-author">{item.type === "user" ? <UserRound aria-hidden="true" /> : item.type === "staff" ? <Headset aria-hidden="true" /> : <Scale aria-hidden="true" />}{item.type === "user" ? copy.you : item.type === "staff" ? copy.staff : copy.assistant}{"recipient" in item && <span className="consultation-recipient-label">{item.recipient === "OFFICE" ? copy.sentToOffice : copy.sentToAssistant}</span>}</p><p className="whitespace-pre-wrap break-words" dir="auto">{item.body}</p>
+          <p className="consultation-author">{item.type === "user" ? <UserRound aria-hidden="true" /> : item.type === "staff" ? <Headset aria-hidden="true" /> : <Scale aria-hidden="true" />}{item.type === "user" ? copy.you : item.type === "staff" ? copy.staff : copy.assistant}{"recipient" in item && <span className="consultation-recipient-label">{item.recipient === "OFFICE" ? copy.sentToOffice : copy.sentToAssistant}</span>}</p>{item.type === "assistant" ? <AssistantMessageBody body={item.body} draftLabel={legalAssistantCopy[language].draft} /> : <p className="whitespace-pre-wrap break-words" dir="auto">{item.body}</p>}
           {"delivery" in item && item.delivery && <p role="status" className="text-sm leading-7">{item.delivery}</p>}
           {item.sources?.some(s => legalSourceSchema.safeParse(s).success) && <nav aria-label={legalAssistantCopy[language].sources} className="mt-3 space-y-2 text-sm">
             <p>{legalAssistantCopy[language].sources}</p>
