@@ -120,3 +120,19 @@ it("repairs extra prose around an explicitly bounded Arabic document list", asyn
   expect(result.text).toBe(answer);
   expect(result.allowConsultationOffer).toBe(false);
 });
+
+it.each([
+  ["List only 3 documents for my wage discussion.", true],
+  ["Explain which documents matter for my wage discussion.", false]
+])("separates customer facts from prior assistant prose for bounded lists: %s", async (message, bounded) => {
+  const oldUser = "My wages are two months late.";
+  const oldAssistant = "UNTRUSTED OLD BOILERPLATE";
+  vi.stubGlobal("fetch", vi.fn(async (_url, init) => {
+    const body = JSON.parse(String(init?.body)), name = body.tools[0].function.name;
+    const data = JSON.parse(body.messages[1].content);
+    expect(data.history).toEqual([{ user: oldUser, assistant: bounded ? null : oldAssistant }]);
+    return response(name, name === "compose_legal_reply" ? { answer: "1. Employment contract.\n2. Wage statements.\n3. Payment correspondence.", sourceIds: [] } : review);
+  }));
+  const result = await composeLegalAssistance({ ...input(message), history: [{ user: oldUser, assistant: oldAssistant }] });
+  expect(result.text).toContain("Employment contract.");
+});
