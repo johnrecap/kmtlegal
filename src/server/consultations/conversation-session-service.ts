@@ -354,7 +354,7 @@ export async function sendAssistantMessage(input: {
       const legalReply = await composeLegalAssistance({ provider, context: legal.context, locale: assessment.locale, message: input.message, requestId: input.requestId, history, memory, knowledge: approvedKnowledge, showJurisdiction: legal.changed, showResearchNotice: legal.changed || !dialogue.legalResearchNoticeShown, ownedRecord });
       dialogue.legalResearchNoticeShown ||= legalReply.researchNoticeShown;
       dialogue.legalMemory = rememberLegalQuestion(memory, input.messageId, legalReply.text);
-      if (legalReply.accepted && shouldOfferConsultation({ dialogue, assessment, completedExchanges: prior.filter(answeredExchange).length, submitted: !!session.consultationRequestId })) {
+      if (legalReply.accepted && legalReply.allowConsultationOffer && shouldOfferConsultation({ dialogue, assessment, completedExchanges: prior.filter(answeredExchange).length, submitted: !!session.consultationRequestId })) {
         dialogue.offerShown = true; legalReply.text += "\n\n" + copy.offer;
       }
       return await finalize(legalReply.text, dialogue, [legalSourceMetadata(legalReply.sources), ...(legalReply.accepted ? [{ role: "system" as const, content: LEGAL_ANSWER_MARKER }] : [])]);

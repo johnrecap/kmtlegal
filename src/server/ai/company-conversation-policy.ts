@@ -120,18 +120,26 @@ export async function policyDecision<T>(provider: AIProviderAdapter, schema: z.Z
   ];
   // Repair classification shape once within the same outer six-call/time budget.
   // Do not relax the schema, execute a tool, or replay rejected model arguments.
-  const attempts = name === "classify_company_message" ? 2 : 1;
+  const attempts = name === "classify_company_message" || name === "review_legal_reply" ? 2 : 1;
+  let schemaProblems: string[] = [];
   for (let attempt = 0; attempt < attempts; attempt++) {
     try {
       const reply = await provider.chat!({ messages, tools: [{ type: "function", function: { name, description: "Return the requested structured result only; this has no external side effects.", parameters: z.toJSONSchema(schema, { target: "draft-07" }) as Record<string, unknown> } }], toolChoice: { type: "function", function: { name } }, requestId, ...(maxTokens ? { maxTokens } : {}) });
       const calls = reply.message.tool_calls;
       if (calls?.length !== 1 || calls[0].function.name !== name) throw new ApiError(502, "AI_OUTPUT_INVALID", "Policy decision is invalid.");
-      try { return schema.parse(JSON.parse(calls[0].function.arguments)); }
-      catch { throw new ApiError(502, "AI_OUTPUT_INVALID", "Policy decision is invalid."); }
+      try {
+        const parsed = schema.safeParse(JSON.parse(calls[0].function.arguments));
+        if (parsed.success) return parsed.data;
+        // Only schema-owned root field names and issue codes; never values or raw errors.
+        const properties = (z.toJSONSchema(schema, { target: "draft-07" }) as { properties?: Record<string, unknown> }).properties ?? {};
+        schemaProblems = parsed.error.issues.slice(0, 5).map(issue => `${typeof issue.path[0] === "string" && Object.hasOwn(properties, issue.path[0]) ? issue.path[0] : "result"}:${issue.code}`);
+      } catch { schemaProblems = ["result:invalid_json"]; }
+      safeLog("warn", "assistant.policy_shape_rejected", { requestId, reason: `${name}:${schemaProblems.join(",")}` });
+      throw new ApiError(502, "AI_OUTPUT_INVALID", "Policy decision is invalid.");
     } catch (error) {
       if (!(error instanceof ApiError) || error.code !== "AI_OUTPUT_INVALID" || attempt + 1 === attempts) throw error;
-      safeLog("warn", "assistant.classification_repair", { requestId, reason: "INVALID_OUTPUT_SCHEMA" });
-      messages.push({ role: "system", content: "The previous result did not match the tool schema. Return exactly one call with only the documented fields. In classify_company_message, jurisdiction, jurisdictionEvidence, conflict, topics and mode belong inside legal, never at the root. Keep identity and permission fields out of actionDraft. Do not explain the error to the customer." });
+      safeLog("warn", name === "classify_company_message" ? "assistant.classification_repair" : "assistant.review_shape_repair", { requestId, reason: "INVALID_OUTPUT_SCHEMA" });
+      messages.push({ role: "system", content: `The previous result did not match the tool schema (${schemaProblems.join(",")}). Return exactly one call with only documented fields and native JSON boolean values. For review_legal_reply return the eight booleans; omit corrections when all pass, otherwise at most three strings of at most 240 characters each. In classify_company_message, jurisdiction, jurisdictionEvidence, conflict, topics and mode belong inside legal, never at the root. Keep identity and permission fields out of actionDraft. Do not explain the error to the customer.` });
     }
   }
   throw new ApiError(502, "AI_OUTPUT_INVALID", "Policy decision is invalid.");

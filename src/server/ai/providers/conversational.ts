@@ -59,7 +59,7 @@ export async function requestConversation(config: AIProviderConfig, input: AICha
     const parsed = responseSchema.safeParse(value);
     if (!parsed.success) throw new ApiError(502, "AI_OUTPUT_INVALID", "AI provider response is invalid.");
     const reply = parsed.data.choices[0];
-    safeLog("info", "assistant.provider_usage", { requestId: input.requestId, model: config.model, provider: config.provider, inputCount: parsed.data.usage?.prompt_tokens, outputCount: parsed.data.usage?.completion_tokens, costUsd: parsed.data.usage?.cost, elapsedMs: Math.round(performance.now() - startedAt), policyVersion: "kmt-legal-20261023" });
+    safeLog("info", "assistant.provider_usage", { requestId: input.requestId, model: config.model, provider: config.provider, inputCount: parsed.data.usage?.prompt_tokens, outputCount: parsed.data.usage?.completion_tokens, costUsd: parsed.data.usage?.cost, elapsedMs: Math.round(performance.now() - startedAt), policyVersion: "kmt-legal-20261023-r2" });
     const calls = reply.message.tool_calls;
     if ((!calls?.length && !reply.message.content?.trim()) ||
       (reply.finish_reason === "tool_calls" && !calls?.length) ||
