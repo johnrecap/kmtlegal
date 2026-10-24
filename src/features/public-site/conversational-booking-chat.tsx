@@ -49,6 +49,7 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
   const setMessage = (value: string) => setDrafts(current => ({ ...current, [recipient]: value }));
   const [signedIn, setSignedIn] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [assistantRequestPending, setAssistantRequestPending] = useState(false);
   const [notice, setNotice] = useState("");
   const [pendingMessages, setPendingMessages] = useState<Record<Recipient, PendingMessage | null>>({ ASSISTANT: null, OFFICE: null });
   const pendingMessage = pendingMessages[recipient];
@@ -63,6 +64,7 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
   const recoverySnapshot = useRef<State | null>(null);
   const lastFailure = useRef<ConversationRequestError | null>(null);
   const awaitingAnswer = !!state?.turns.some(turn => turn.status === "PENDING");
+  const preparingReply = !sessionExpired && (assistantRequestPending || !!state?.turns.some(turn => turn.status === "PENDING" && turnRecipient(turn) === "ASSISTANT"));
   const booking = state?.dialogue?.mode === "BOOKING" && !!state.dialogue.consentAt;
   const interactive = !state?.submitted && !sessionExpired;
   const hasOffice = !!state?.officeThreadStatus || !!state?.humanOwned || state?.handoffState === "QUEUED";
@@ -85,7 +87,7 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
   useEffect(() => {
     if (followLatest.current && log.current) log.current.scrollTop = log.current.scrollHeight;
     else setNewMessages(true);
-  }, [state?.turns.length, latestAssistant, state?.staffMessages?.length, pendingMessages.ASSISTANT?.messageId, pendingMessages.OFFICE?.messageId]);
+  }, [state?.turns.length, latestAssistant, state?.staffMessages?.length, pendingMessages.ASSISTANT?.messageId, pendingMessages.OFFICE?.messageId, preparingReply]);
 
   useEffect(() => {
     if (!state) return;
@@ -246,9 +248,11 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
           if (recovered === "ACCEPTED" || recovered === "PENDING") return;
         } catch (error) { showFailure(error); if (next.local || !(error instanceof ConversationRequestError) || ![401, 403].includes(error.status ?? 0)) updateDelivery(next, "UNKNOWN"); return; }
       }
+      setAssistantRequestPending(next.recipient === "ASSISTANT");
       updateDelivery(next, "SENDING");
       if (!currentState.current && !await action({ action: "start", locale, service: initialService })) { updateDelivery(next, "UNKNOWN"); return; }
       const sent = await action({ action: "message", messageId: next.messageId, message: next.message, recipient: next.recipient, locale: language });
+      setAssistantRequestPending(false);
       if (sent) { reconcileAttempt(currentState.current, next); return; }
       if ([401, 403].includes(lastFailure.current?.status ?? 0)) { if (next.local) updateDelivery(next, "UNKNOWN"); return; }
       const epoch = requestEpoch.current;
@@ -262,7 +266,7 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
         if (denied) showFailure(error);
         if (next.local || !denied) updateDelivery(next, "UNKNOWN");
       }
-    } finally { sendPending.current = false; setBusy(false); }
+    } finally { sendPending.current = false; setBusy(false); setAssistantRequestPending(false); }
   }
 
   function updateDelivery(pending: PendingMessage, delivery: PendingMessage["delivery"]) {
@@ -333,6 +337,10 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
           <Button type="button" variant="outline" disabled={busy || sessionExpired} onClick={() => void action({ action: "cancel_action", proposalId: proposal.id })}>{assistantActionCopy[language].cancel}</Button>
         </div> : <p role="status">{assistantActionCopy[language][proposal.status === "COMPLETED" ? "completed" : proposal.status === "CANCELLED" ? "cancelled" : "stale"]}</p>}
       </section>)}
+      {preparingReply && <div className="consultation-message consultation-message-assistant consultation-reply-pending">
+        <p className="consultation-author"><Scale aria-hidden="true" />{copy.assistant}</p>
+        <p className="consultation-reply-progress"><span className="consultation-reply-dots" aria-hidden="true"><span /><span /><span /></span><span>{copy.waiting}</span></p>
+      </div>}
       </div>
       {newMessages && <Button className="consultation-latest" variant="outline" type="button" onClick={() => { followLatest.current = true; setNewMessages(false); if (log.current) log.current.scrollTop = log.current.scrollHeight; }}>{copy.latest}</Button>}
       </div>
@@ -349,7 +357,7 @@ export function ConversationalBookingChat({ locale, initialService, layout = "pu
         <textarea ref={messageInput} id="kmt-chat-message" placeholder={recipient === "OFFICE" ? copy.officePlaceholder : copy.placeholder} value={message} onChange={event => { setMessage(event.target.value); if (pendingMessage) setPendingMessages(current => ({ ...current, [recipient]: null })); }} maxLength={4000} rows={1} disabled={busy || sessionExpired || (recipient === "OFFICE" && !!state?.closed)} dir="auto" />
         <Button aria-label={busy ? copy.waiting : copy.send} disabled={busy || sessionExpired || limitStopsAttempt || (recipient === "OFFICE" && !!state?.closed) || !message.trim()} type="submit"><ArrowUp aria-hidden="true" /></Button>
       </form>
-      {busy && <p role="status" className="consultation-feedback">{recipient === "OFFICE" ? copy.officeSending : copy.waiting}</p>}
+      {busy && (!preparingReply || recipient === "OFFICE") && <p role="status" className="consultation-feedback">{recipient === "OFFICE" ? copy.officeSending : copy.waiting}</p>}
       {pendingMessage && !busy && <Button type="button" variant="outline" disabled={sessionExpired || limitStopsAttempt || pendingMessage.delivery === "PENDING" || pendingMessage.delivery === "SENDING"} onClick={() => void send()}>{copy.retry}</Button>}
 
       {state?.messageLimitReached && <p role="status" className="consultation-feedback">{copy.messageLimit}</p>}
